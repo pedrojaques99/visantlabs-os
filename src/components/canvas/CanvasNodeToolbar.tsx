@@ -25,6 +25,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/utils';
 import { getTextColors, lightenColor } from '@/utils/colorUtils';
+import { Button } from '@/components/ui/button'
 
 interface CanvasToolbarProps {
   onAddMerge: () => void;
@@ -241,8 +242,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
     if (isCollapsed) {
       return (
         <Tooltip content={tool.tooltip} position="right">
-          <button
-            draggable
+          <Button variant="ghost"             draggable
             onDragStart={(e) => handleDragStart(e, tool.id)}
             onClick={tool.onClick}
             className={cn(
@@ -278,15 +278,14 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             aria-label={tool.label}
           >
             {tool.icon}
-          </button>
+          </Button>
         </Tooltip>
       );
     }
 
     return (
       <Tooltip content={tool.tooltip} position="right">
-        <button
-          draggable
+        <Button variant="ghost"           draggable
           onDragStart={(e) => handleDragStart(e, tool.id)}
           onClick={tool.onClick}
           className={cn(
@@ -332,7 +331,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           >
             {tool.label}
           </span>
-        </button>
+        </Button>
       </Tooltip>
     );
   };
@@ -423,8 +422,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
                 }
                 position="bottom"
               >
-                <button
-                  onClick={onToggleToolbar}
+                <Button variant="ghost"                   onClick={onToggleToolbar}
                   className={cn(
                     "p-2 transition-colors h-full",
                     isLight
@@ -443,13 +441,12 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
                       isCollapsed && "rotate-180"
                     )}
                   />
-                </button>
+                </Button>
               </Tooltip>
             )}
             {/* Close Button */}
             {onClose && (
-              <button
-                onClick={onClose}
+              <Button variant="ghost"                 onClick={onClose}
                 className={cn(
                   "p-2 border-l transition-colors h-full rounded-tr-2xl",
                   isLight
@@ -461,7 +458,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
                 onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
               >
                 <X size={14} />
-              </button>
+              </Button>
             )}
           </div>
         </div>

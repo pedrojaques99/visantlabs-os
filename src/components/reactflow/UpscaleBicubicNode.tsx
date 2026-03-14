@@ -18,6 +18,8 @@ import { toast } from 'sonner';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { MockupPresetModal } from '../MockupPresetModal';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { NodeButton } from './shared/node-button'
+import { Input } from '@/components/ui/input'
 
 export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -419,7 +421,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
       dragging={dragging}
       warning={data.oversizedWarning}
       onFitToContent={handleFitToContent}
-      className="p-5 min-w-[320px] w-full h-full flex flex-col"
+      className="min-w-[320px] w-full h-full flex flex-col"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
@@ -439,178 +441,173 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
       <NodeHandles />
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-3">
-        <Maximize2 size={16} className="text-brand-cyan" />
-        <h3 className="text-xs font-semibold text-neutral-300 font-mono">Upscale Bicubic</h3>
-        <span className="text-xs text-neutral-500 font-mono ml-auto">{scaleFactor}x</span>
+      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
+            <Maximize2 size={16} className="text-brand-cyan" />
+          </div>
+          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
+            {t('canvasNodes.upscaleNode.title') || 'Upscale'}
+          </h3>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0 ml-4">
+          <span className="text-[10px] text-neutral-500 font-mono uppercase tracking-wider bg-neutral-900/40 px-2 py-0.5 rounded border border-neutral-700/30">
+            {scaleFactor}x
+          </span>
+        </div>
       </div>
 
-      {/* Sharpening Control */}
-      <div className="mb-3 space-y-1.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Sparkles size={12} className="text-brand-cyan" />
-            <span className="text-xs font-mono text-neutral-400">Sharpening</span>
+      <div className="p-4 flex flex-col gap-[var(--node-gap)] flex-1 overflow-hidden">
+        {/* Sharpening Control */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Sparkles size={12} className="text-brand-cyan" />
+              <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider">Sharpening</span>
+            </div>
+            <span className="text-[10px] font-mono text-neutral-500">{Math.round(localSharpening * 100)}%</span>
           </div>
-          <span className="text-xs font-mono text-neutral-500">{Math.round(localSharpening * 100)}%</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={localSharpening}
+            onChange={handleSharpeningChange}
+            onMouseUp={handleSharpeningCommit}
+            onTouchEnd={handleSharpeningCommit}
+            className="w-full h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+          />
         </div>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.05"
-          value={localSharpening}
-          onChange={handleSharpeningChange}
-          onMouseUp={handleSharpeningCommit}
-          onTouchEnd={handleSharpeningCommit}
-          className="w-full h-1.5 bg-neutral-700/50 rounded-full appearance-none cursor-pointer
-            [&::-webkit-slider-thumb]:appearance-none
-            [&::-webkit-slider-thumb]:w-3
-            [&::-webkit-slider-thumb]:h-3
-            [&::-webkit-slider-thumb]:rounded-full
-            [&::-webkit-slider-thumb]:bg-brand-cyan
-            [&::-webkit-slider-thumb]:cursor-pointer
-            [&::-webkit-slider-thumb]:transition-all
-            [&::-webkit-slider-thumb]:hover:scale-110
-            [&::-moz-range-thumb]:w-3
-            [&::-moz-range-thumb]:h-3
-            [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:bg-brand-cyan
-            [&::-moz-range-thumb]:border-0
-            [&::-moz-range-thumb]:cursor-pointer"
-        />
-      </div>
 
-      {/* Status/Info */}
-      {!isLoading && hasConnectedImage && !hasResult ? (
-        <div className="w-full px-2 py-1.5 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
-          <Maximize2 size={14} />
-          Ready to upscale
-        </div>
-      ) : null}
-
-      {/* Floating Processing Indicator */}
-      {isLoading && !hasResult && hasConnectedImage && (
-        <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-neutral-950/10 rounded-md border border-neutral-700/30">
-          <div className="p-2 rounded-md bg-neutral-950/60 backdrop-blur-sm border border-[brand-cyan]/30 shadow-lg">
-            <GlitchLoader size={14} color="brand-cyan" />
-          </div>
-        </div>
-      )}
-
-      {!hasConnectedImage ? (
-        <div className="w-full space-y-2">
-          <div className="w-full px-2 py-1.5 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-50">
+        {/* Status/Info */}
+        {!isLoading && hasConnectedImage && !hasResult ? (
+          <div className="w-full px-2 py-3 bg-neutral-900/40 border border-neutral-700/30 rounded-md text-[10px] font-mono text-neutral-400 flex items-center justify-center gap-3 uppercase tracking-wider backdrop-blur-sm">
             <Maximize2 size={14} />
-            Connect an image or video
+            Ready to upscale
           </div>
-          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
-            <Upload size={14} />
-            Upload Image
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-          </label>
-        </div>
-      ) : null}
+        ) : null}
 
-      {/* Result Display */}
-      {hasResult && !isLoading && (
-        <div className="mt-3 space-y-2 flex-1 min-h-0 flex flex-col">
-          {hasVideoResult ? (
-            <div className="relative w-full h-full bg-neutral-950/20 rounded-md overflow-hidden border border-neutral-700/50 flex-1 min-h-0">
-              <video
-                src={resultVideoUrl || undefined}
-                controls
-                className="w-full h-full object-contain"
-                onLoadedMetadata={(e) => {
-                  const video = e.target as HTMLVideoElement;
-                  if (video.videoWidth > 0 && video.videoHeight > 0) {
-                    if (data.onUpdateData) {
-                      data.onUpdateData(String(id), {
-                        imageWidth: video.videoWidth,
-                        imageHeight: video.videoHeight,
-                      });
-                    }
-                  }
-                }}
-                onError={(e) => {
-                  console.error('Video load error:', e);
-                }}
-              />
+        {/* Floating Processing Indicator */}
+        {isLoading && !hasResult && hasConnectedImage && (
+          <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-neutral-950/20 rounded-md border border-neutral-700/30 backdrop-blur-sm">
+            <div className="p-3 rounded-md bg-neutral-950/40 backdrop-blur-md border border-brand-cyan/20 shadow-xl">
+              <GlitchLoader size={16} color="brand-cyan" />
             </div>
-          ) : resultImageUrl ? (
-            <div className="relative w-full h-full bg-neutral-950/20 rounded-md overflow-hidden border border-neutral-700/50 flex items-center justify-center flex-1 min-h-0">
-              <img
-                src={isSafeUrl(resultImageUrl) ? resultImageUrl : ''}
-                alt="Upscaled result"
-                className="w-full h-full object-contain rounded"
-                style={{
-                  display: 'block',
-                  imageRendering: 'auto', // Use browser's best quality rendering
-                  ['WebkitImageSmoothing' as any]: 'high',
-                }}
-                onLoad={(e) => {
-                  const img = e.target as HTMLImageElement;
-                  if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-                    if (data.onUpdateData) {
-                      data.onUpdateData(String(id), {
-                        imageWidth: img.naturalWidth,
-                        imageHeight: img.naturalHeight,
-                      });
-                    }
-                  }
-                }}
-                loading="eager"
-                decoding="sync"
-                onError={(e) => {
-                  console.error('Image load error:', e);
-                }}
-              />
+          </div>
+        )}
+
+        {!hasConnectedImage ? (
+          <div className="w-full space-y-3">
+            <div className="w-full px-2 py-3 bg-neutral-900/40 border border-neutral-700/30 rounded-md text-[10px] font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-70 uppercase tracking-wider backdrop-blur-sm">
+              <Maximize2 size={14} />
+              Connect an image or video
             </div>
-          ) : null}
-        </div>
-      )}
+            <label className="w-full px-4 py-2.5 bg-brand-cyan/5 hover:bg-brand-cyan/10 border border-brand-cyan/20 hover:border-brand-cyan/40 rounded-md text-[10px] font-mono font-bold text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all uppercase tracking-widest nodrag shadow-sm backdrop-blur-sm">
+              <Upload size={14} />
+              Upload Image
+              <Input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </label>
+          </div>
+        ) : null}
+
+        {/* Result Display */}
+        {hasResult && !isLoading && (
+          <div className="space-y-2 flex-1 min-h-[240px] flex flex-col pt-2">
+            {hasVideoResult ? (
+              <div className="relative w-full h-full bg-neutral-950/20 rounded-md overflow-hidden border border-neutral-700/50 flex-1 min-h-0">
+                <video
+                  src={resultVideoUrl || undefined}
+                  controls
+                  className="w-full h-full object-contain"
+                  onLoadedMetadata={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    if (video.videoWidth > 0 && video.videoHeight > 0) {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(String(id), {
+                          imageWidth: video.videoWidth,
+                          imageHeight: video.videoHeight,
+                        });
+                      }
+                    }
+                  }}
+                  onError={(e) => {
+                    console.error('Video load error:', e);
+                  }}
+                />
+              </div>
+            ) : resultImageUrl ? (
+              <div className="relative w-full h-full bg-neutral-950/20 rounded-md overflow-hidden border border-neutral-700/50 flex items-center justify-center flex-1 min-h-0">
+                <img
+                  src={isSafeUrl(resultImageUrl) ? resultImageUrl : ''}
+                  alt="Upscaled result"
+                  className="w-full h-full object-contain rounded"
+                  style={{
+                    display: 'block',
+                    imageRendering: 'auto', // Use browser's best quality rendering
+                    ['WebkitImageSmoothing' as any]: 'high',
+                  }}
+                  onLoad={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(String(id), {
+                          imageWidth: img.naturalWidth,
+                          imageHeight: img.naturalHeight,
+                        });
+                      }
+                    }
+                  }}
+                  loading="eager"
+                  decoding="sync"
+                  onError={(e) => {
+                    console.error('Image load error:', e);
+                  }}
+                />
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
 
       {!dragging && (resultImageUrl || resultVideoUrl) && (
         <NodeActionBar selected={selected} getZoom={getZoom}>
           {data.onView && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleView();
-              }}
-              className="p-1 bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
+            <NodeButton variant="ghost" size="xs" onClick={(e) => {
+              e.stopPropagation();
+              handleView();
+            }}
+              className="bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
               title={t('canvasNodes.imageNode.viewFullScreen')}
               onMouseDown={(e) => e.stopPropagation()}
             >
               <Maximize2 size={12} strokeWidth={2} />
-            </button>
+            </NodeButton>
           )}
-          <button
-            onClick={handleDownload}
-            className="p-1 bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
+          <NodeButton variant="ghost" size="xs" onClick={handleDownload}
+            className="bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
             title={t('canvasNodes.imageNode.downloadImage')}
             onMouseDown={(e) => e.stopPropagation()}
           >
             <Download size={12} strokeWidth={2} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSave();
-            }}
+          </NodeButton>
+          <NodeButton variant="ghost" size="xs" onClick={(e) => {
+            e.stopPropagation();
+            handleSave();
+          }}
             disabled={isSaving}
             className={cn(
-              "p-1 rounded transition-colors backdrop-blur-sm border",
+              "transition-colors backdrop-blur-sm border",
               isSaving
                 ? "bg-neutral-950/70 text-neutral-500 cursor-wait border border-neutral-700/30"
                 : isLiked
                   ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-[brand-cyan]/20"
-                  : "bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30"
+                  : "bg-neutral-950/70 hover:bg-neutral-950/60 border border-neutral-700/30"
             )}
             title={isLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
             onMouseDown={(e) => e.stopPropagation()}
@@ -620,44 +617,41 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             ) : (
               <Heart size={12} className={isLiked ? "fill-current" : ""} strokeWidth={2} />
             )}
-          </button>
+          </NodeButton>
           {data.onDelete && savedMockupId && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDeleteModal(true);
-              }}
-              className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors backdrop-blur-sm border border-red-500/30"
+            <NodeButton variant="ghost" size="xs" onClick={(e) => {
+              e.stopPropagation();
+              setShowDeleteModal(true);
+            }}
+              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-colors backdrop-blur-sm border border-red-500/30"
               title={t('canvasNodes.imageNode.delete')}
               onMouseDown={(e) => e.stopPropagation()}
             >
               <Trash2 size={12} strokeWidth={2} />
-            </button>
+            </NodeButton>
           )}
           {data.onBrandKit && (resultImageUrl || resultVideoUrl) && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowBrandKitModal(true);
-              }}
-              className="p-1 bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
+            <NodeButton variant="ghost" size="xs" onClick={(e) => {
+              e.stopPropagation();
+              setShowBrandKitModal(true);
+            }}
+              className="bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
               title={t('canvasNodes.imageNode.brandKit')}
               onMouseDown={(e) => e.stopPropagation()}
             >
               <Palette size={12} strokeWidth={2} />
-            </button>
+            </NodeButton>
           )}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDescribe();
-            }}
+          <NodeButton variant="ghost" size="xs" onClick={(e) => {
+            e.stopPropagation();
+            handleDescribe();
+          }}
             disabled={isDescribing || !resultImageUrl}
             className={cn(
-              "p-1 rounded transition-colors backdrop-blur-sm border",
+              "transition-colors backdrop-blur-sm border",
               isDescribing || !resultImageUrl
                 ? "bg-neutral-700/20 text-neutral-500 cursor-not-allowed border-neutral-700/20"
-                : "bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 border-neutral-700/30 hover:border-neutral-600/50"
+                : "bg-neutral-950/70 hover:bg-neutral-950/60 border border-neutral-700/30 hover:border-neutral-600/50"
             )}
             title={isDescribing ? t('canvasNodes.imageNode.analyzingImage') : t('canvasNodes.imageNode.describeImageWithAI')}
             onMouseDown={(e) => e.stopPropagation()}
@@ -667,7 +661,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             ) : (
               <FileText size={12} strokeWidth={2} />
             )}
-          </button>
+          </NodeButton>
         </NodeActionBar>
       )}
 

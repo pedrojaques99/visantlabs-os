@@ -5,6 +5,7 @@ import { X, Upload, FileText, Save, RefreshCw } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { budgetApi } from '@/services/budgetApi';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input'
 
 interface PdfUploadSectionProps {
   customPdfUrl?: string;
@@ -162,7 +163,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
             <h4 className="text-lg font-semibold font-mono text-neutral-200 mb-4">
               Salvar como Preset
             </h4>
-            <input
+            <Input
               type="text"
               value={presetName}
               onChange={(e) => setPresetName(e.target.value)}
@@ -180,8 +181,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               autoFocus
             />
             <div className="flex gap-2">
-              <Button
-                onClick={handleSavePreset}
+              <Button variant="brand"                 onClick={handleSavePreset}
                 disabled={isSavingPreset || !presetName.trim()}
                 className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 text-brand-cyan"
               >
@@ -226,7 +226,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               </p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <input
+              <Input
                 ref={fileInputRef}
                 type="file"
                 accept="application/pdf"
@@ -245,21 +245,20 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
                 <span className="hidden sm:inline">Substituir PDF</span>
                 <span className="sm:hidden">Substituir</span>
               </Button>
-              <button
-                onClick={handleRemovePdf}
+              <Button variant="destructive"                 onClick={handleRemovePdf}
                 className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 transition-colors font-mono text-sm whitespace-nowrap"
                 title="Remover PDF"
               >
                 <X size={16} className="inline mr-1" />
                 <span className="hidden sm:inline">Remover</span>
                 <span className="sm:hidden">X</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       ) : (
         <div className="flex items-center gap-2">
-          <input
+          <Input
             ref={fileInputRef}
             type="file"
             accept="application/pdf"

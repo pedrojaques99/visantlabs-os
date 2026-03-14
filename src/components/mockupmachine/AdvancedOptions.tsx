@@ -6,6 +6,11 @@ import { translateTag } from '@/utils/localeUtils';
 import { Tag } from '@/components/shared/Tag';
 import type { DesignType } from '@/types/types';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
+import { MicroTitle } from '../ui/MicroTitle';
+import { GlassPanel } from '../ui/GlassPanel';
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 
 interface AdvancedOptionsProps {
   selectedLocationTags: string[];
@@ -173,16 +178,15 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
     : '';
 
   return (
-    <div className={`rounded-xl border transition-all duration-200 overflow-hidden group ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
+    <GlassPanel className="group overflow-hidden">
+      <Button variant="ghost"         onClick={() => setIsExpanded(!isExpanded)}
         className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <div className="flex-shrink-0">{icon}</div>}
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
             <SkeletonText loading={isGenerating}>
-              <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{title}</span>
+              <MicroTitle as="span">{title}</MicroTitle>
             </SkeletonText>
             {!isExpanded && (hasSelection || poolTagsList.length > 0) && (
               <span className="text-[10px] font-mono truncate max-w-[200px]">
@@ -200,8 +204,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
         <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           {/* Clear selection button (only on hover when there are selected tags) */}
           {hasSelection && (
-            <button
-              type="button"
+            <Button variant="ghost"               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 // Clear all selected tags for this section
@@ -210,7 +213,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
               className="text-[9px] font-mono px-1.5 py-0.5 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-700/40"
             >
               {t('mockup.clearAll') || 'Clear all'}
-            </button>
+            </Button>
           )}
 
           <div
@@ -226,7 +229,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
           {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
           {isExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
         </div>
-      </button>
+      </Button>
 
       {isExpanded && (
         <div className={`p-3 pt-0 animate-fade-in`}>
@@ -242,7 +245,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 <Plus size={12} />
               </Tag>
             ) : (
-              <input
+              <Input
                 ref={inputRef}
                 type="text"
                 value={customInput}
@@ -311,7 +314,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </GlassPanel>
   );
 };
 
@@ -467,16 +470,15 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
 
       {/* Prompts Section */}
       <div className="space-y-2">
-        <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-          <button
-            onClick={() => setIsNegativeExpanded(!isNegativeExpanded)}
+        <GlassPanel className="overflow-hidden">
+          <Button variant="ghost"             onClick={() => setIsNegativeExpanded(!isNegativeExpanded)}
             className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <XCircle size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
-                  <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.negativePrompt')}</span>
+                  <MicroTitle as="span">{t('mockup.negativePrompt')}</MicroTitle>
                 </SkeletonText>
                 {!isNegativeExpanded && negativePrompt && (
                   <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">{negativePrompt}</span>
@@ -486,11 +488,11 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
             <div className="flex items-center gap-2 flex-shrink-0">
               {isNegativeExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
             </div>
-          </button>
+          </Button>
 
           {isNegativeExpanded && (
             <div className="p-3 pt-0">
-              <textarea
+              <Textarea
                 value={negativePrompt}
                 onChange={onNegativePromptChange}
                 rows={2}
@@ -502,18 +504,17 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
               />
             </div>
           )}
-        </div>
+        </GlassPanel>
 
-        <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-          <button
-            onClick={() => setIsAdditionalExpanded(!isAdditionalExpanded)}
+        <GlassPanel className="overflow-hidden">
+          <Button variant="ghost"             onClick={() => setIsAdditionalExpanded(!isAdditionalExpanded)}
             className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <FilePlus size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
-                  <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.additionalPrompt')}</span>
+                  <MicroTitle as="span">{t('mockup.additionalPrompt')}</MicroTitle>
                 </SkeletonText>
                 {!isAdditionalExpanded && additionalPrompt && (
                   <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">{additionalPrompt}</span>
@@ -523,11 +524,11 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
             <div className="flex items-center gap-2 flex-shrink-0">
               {isAdditionalExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
             </div>
-          </button>
+          </Button>
 
           {isAdditionalExpanded && (
             <div className="p-3 pt-0">
-              <textarea
+              <Textarea
                 value={additionalPrompt}
                 onChange={onAdditionalPromptChange}
                 rows={2}
@@ -539,7 +540,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
               />
             </div>
           )}
-        </div>
+        </GlassPanel>
       </div>
     </div>
   );

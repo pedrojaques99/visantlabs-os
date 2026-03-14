@@ -28,6 +28,9 @@ import { MockupPreset } from '../../types/mockupPresets';
 import { useMockup } from './MockupContext';
 import { InstructionsIdentityPanel } from './InstructionsIdentityPanel';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
+import { MicroTitle } from '../ui/MicroTitle';
+import { GlassPanel } from '../ui/GlassPanel';
+import { Button } from '@/components/ui/button';
 
 interface CategoriesSectionProps {
   suggestedTags: string[];
@@ -90,13 +93,14 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
     poolTags.length > 0 ? poolTags.map((tag) => translateTag(tag)).join(', ') : '';
 
   return (
-    <div
+    <GlassPanel
       className={cn(
-        `rounded-xl border-1 border-neutral-800/50 transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-1 border-neutral-800/50' : 'bg-white/50 border-1 border-neutral-200'}`,
+        "group overflow-hidden",
         className
       )}
     >
-      <button
+      <Button
+        variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
         className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
       >
@@ -104,15 +108,15 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
           {icon && <div className="flex-shrink-0">{icon}</div>}
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
             <SkeletonText loading={isGenerating}>
-              <span
-                className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}
-              >
+              <MicroTitle as="span">
                 {title}
-              </span>
+              </MicroTitle>
             </SkeletonText>
             {!isExpanded && (hasSelection || poolTags.length > 0) && (
-              <span className="text-[10px] font-mono truncate max-w-[200px]">
-                {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
+              <MicroTitle className="text-[10px] truncate max-w-[200px]">
+                {hasSelection && (
+                  <span className="text-brand-cyan">{selectionSummary}</span>
+                )}
                 {hasSelection && poolTags.length > 0 && (
                   <span className="text-neutral-500"> · </span>
                 )}
@@ -121,20 +125,19 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
                     {poolTagsSummary} {t('mockup.inPool')}
                   </span>
                 )}
-              </span>
+              </MicroTitle>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
           {isExpanded ? (
-            <ChevronUp size={16} className="text-neutral-500" />
+            <ChevronUp size={16} className="" />
           ) : (
-            <ChevronDown size={16} className="text-neutral-500" />
+            <ChevronDown size={16} className="" />
           )}
         </div>
-      </button>
-
+      </Button>
       {isExpanded && (
         <div className="p-3 pt-0 animate-fade-in">
           <div className="flex flex-wrap gap-1.5 mt-2">
@@ -144,7 +147,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </GlassPanel>
   );
 };
 
@@ -204,6 +207,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
 
   const [isEditingCustom, setIsEditingCustom] = useState(false);
   const [isFinalExpanded, setIsFinalExpanded] = useState(false);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const blurTimeoutRef = useRef<number | null>(null);
 
@@ -217,7 +221,6 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
     if (isEditingCustom && inputRef.current) {
       inputRef.current.focus();
     }
-
     return () => {
       if (blurTimeoutRef.current) {
         clearTimeout(blurTimeoutRef.current);
@@ -298,24 +301,30 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         id: cat.id,
         key: cat.name,
         tags: mergedTags.filter(
-          (tag) => dbTagNames.includes(tag) || presetNamesInCategory.includes(tag)
+          (tag) =>
+            dbTagNames.includes(tag) || presetNamesInCategory.includes(tag)
         ),
       };
     });
-
     return groups.filter((g) => g.tags.length > 0);
   }, [tagCategories, mergedTags, mockupPresets]);
 
   const strayTags = useMemo(() => {
     if (!tagCategories || tagCategories.length === 0) return [];
-
-    const allCategorizedTags = tagCategories.flatMap((c) => c.tags.map((t) => t.name));
+    const allCategorizedTags = tagCategories.flatMap((c) =>
+      c.tags.map((t) => t.name)
+    );
     const allCategorizedPresets = (mockupPresets || [])
-      .filter((p) => p.mockupCategoryId && tagCategories.some((c) => c.id === p.mockupCategoryId))
+      .filter(
+        (p) =>
+          p.mockupCategoryId &&
+          tagCategories.some((c) => c.id === p.mockupCategoryId)
+      )
       .map((p) => p.name);
-
     return mergedTags.filter(
-      (tag) => !allCategorizedTags.includes(tag) && !allCategorizedPresets.includes(tag)
+      (tag) =>
+        !allCategorizedTags.includes(tag) &&
+        !allCategorizedPresets.includes(tag)
     );
   }, [tagCategories, mergedTags, mockupPresets]);
 
@@ -327,45 +336,83 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
     () => dynamicGroups.find((g) => g.id === 'drinkware'),
     [dynamicGroups]
   );
-  const otherGroup = useMemo(() => dynamicGroups.find((g) => g.id === 'other'), [dynamicGroups]);
+
+  const otherGroup = useMemo(
+    () => dynamicGroups.find((g) => g.id === 'other'),
+    [dynamicGroups]
+  );
 
   const drinkwareTags = drinkwareGroup?.tags || [];
   const otherTags = [...(otherGroup?.tags || []), ...strayTags];
   const finalTags = [...drinkwareTags, ...otherTags];
 
   const getCategoryIcon = (group: { id: string | number; key: string }) => {
-    const categoryId = typeof group.id === 'string' ? group.id : group.key.toLowerCase();
-
+    const categoryId =
+      typeof group.id === 'string' ? group.id : group.key.toLowerCase();
     const iconMap: Record<string, React.ReactNode> = {
       stationery: (
         <FileText
           size={14}
-          className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+          className={
+            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+          }
         />
       ),
       packaging: (
-        <Package size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+        <Package
+          size={14}
+          className={
+            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+          }
+        />
       ),
       apparel: (
-        <Shirt size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+        <Shirt
+          size={14}
+          className={
+            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+          }
+        />
       ),
       devices: (
         <Smartphone
           size={14}
-          className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+          className={
+            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+          }
         />
       ),
       signage: (
-        <MapPin size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+        <MapPin
+          size={14}
+          className={
+            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+          }
+        />
       ),
       drinkware: (
-        <CupSoda size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+        <CupSoda
+          size={14}
+          className={
+            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+          }
+        />
       ),
       art: (
-        <Palette size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+        <Palette
+          size={14}
+          className={
+            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+          }
+        />
       ),
       other: (
-        <Grid3x3 size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+        <Grid3x3
+          size={14}
+          className={
+            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+          }
+        />
       ),
     };
 
@@ -377,16 +424,21 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         return icon;
       }
     }
-
     return null;
   };
 
   const hasFinalSection = finalTags.length > 0;
-  const finalSelectedTags = finalTags.filter((tag) => selectedTags.includes(tag));
+  const finalSelectedTags = finalTags.filter((tag) =>
+    selectedTags.includes(tag)
+  );
   const hasFinalSelection = finalSelectedTags.length > 0;
-  const finalPoolTags = isSurpriseMeMode ? finalTags.filter((t) => categoriesPool.includes(t)) : [];
+  const finalPoolTags = isSurpriseMeMode
+    ? finalTags.filter((t) => categoriesPool.includes(t))
+    : [];
   const finalPoolTagsSummary =
-    finalPoolTags.length > 0 ? finalPoolTags.map((tag) => translateTag(tag)).join(', ') : '';
+    finalPoolTags.length > 0
+      ? finalPoolTags.map((tag) => translateTag(tag)).join(', ')
+      : '';
 
   const renderTagButton = (tag: string) => {
     const isSelected = selectedTags.includes(tag);
@@ -411,7 +463,10 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         inPool={isInPool}
         onToggle={handleClick}
         disabled={hasAnalyzed}
-        className={cn('scale-90 origin-left', hasAnalyzed ? 'cursor-default' : 'cursor-pointer')}
+        className={cn(
+          'scale-90 origin-left',
+          hasAnalyzed ? 'cursor-default' : 'cursor-pointer'
+        )}
       />
     );
   };
@@ -423,16 +478,10 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
     return (
       <section id="categories-section" className="animate-fade-in pb-0">
         <Tooltip content={t('mockup.categoriesComment')} position="top">
-          <h3
-            className={cn(
-              'text-[10px] font-mono uppercase tracking-wider mb-3 cursor-help',
-              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
-            )}
-          >
+          <MicroTitle as="h3" className="mb-3 cursor-help ">
             {t('mockup.categories')}
-          </h3>
+          </MicroTitle>
         </Tooltip>
-
         <div className="flex flex-wrap gap-2">
           {selectedTags.map((tag) => renderTagButton(tag))}
         </div>
@@ -448,25 +497,20 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
 
   return (
     <section id="categories-section" className={cn('animate-fade-in', isComplete && 'pb-0')}>
-      <div
-        className={cn(
-          `rounded-xl border-1 border-neutral-800/50 transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-1 border-neutral-800/50' : 'bg-white/50 border-1 border-neutral-200'}`
-        )}
-      >
-        <button
+      <GlassPanel className="overflow-hidden">
+        <Button
+          variant="ghost"
           onClick={() => setIsSectionExpanded(!isSectionExpanded)}
           className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-              <span
-                className={`text-[10px] font-mono uppercase tracking-widest flex items-center gap-2 ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}
-              >
+              <MicroTitle as="span" className="flex items-center gap-2">
                 {t('mockup.categories') || 'TIPOS DE MOCKUP'}
                 {isAnalyzing && <GlitchLoader size={16} color="#71717a" />}
-              </span>
+              </MicroTitle>
               {!isSectionExpanded && hasSectionSelection && (
-                <span className="text-[10px] font-mono truncate max-w-[200px]">
+                <span className="text-[10px] truncate max-w-[200px]">
                   <span className="text-brand-cyan">{sectionSelectionSummary}</span>
                 </span>
               )}
@@ -486,8 +530,8 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                   className={cn(
                     'p-1.5 rounded-md transition-all duration-200 z-10',
                     theme === 'dark'
-                      ? 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 border border-transparent hover:border-neutral-700/50'
-                      : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 border border-transparent hover:border-neutral-300'
+                      ? ' hover:text-neutral-300 hover:bg-neutral-800/50 border border-transparent hover:border-neutral-700/50'
+                      : ' hover:text-neutral-700 hover:bg-neutral-100 border border-transparent hover:border-neutral-300'
                   )}
                   title={t('mockup.clearAllTags') || 'Limpar todas as tags'}
                   aria-label={t('mockup.clearAllTags') || 'Limpar todas as tags'}
@@ -497,283 +541,207 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
               </Tooltip>
             )}
             {isSectionExpanded ? (
-              <ChevronUp size={16} className="text-neutral-500" />
+              <ChevronUp size={16} className="" />
             ) : (
-              <ChevronDown size={16} className="text-neutral-500" />
+              <ChevronDown size={16} className="" />
             )}
           </div>
-        </button>
-
+        </Button>
         {isSectionExpanded && (
           <div className="p-3 pt-0 animate-fade-in border-t border-white/5 mt-1">
             <InstructionsIdentityPanel />
-
-            <div className="space-y-2 mt-4">
-              {/* Smart Suggestion Input */}
-              <div
-                className={cn(
-                  'rounded-xl border p-3 transition-all duration-200',
-                  theme === 'dark'
-                    ? 'bg-neutral-900/50 border-neutral-800/50'
-                    : 'bg-white/50 border-neutral-200'
-                )}
-              >
-                <div className="flex flex-col gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Digite para buscar ou adicionar tags..."
-                    value={customInput}
-                    onChange={(e) => onCustomInputChange(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && customInput.trim()) {
-                        e.preventDefault();
-                        onAddCustomTag();
-                        onCustomInputChange('');
-                      }
-                    }}
-                    className={cn(
-                      'h-9 text-sm font-mono rounded-lg border transition-all duration-200 focus:ring-1',
-                      theme === 'dark'
-                        ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-200 placeholder:text-neutral-500 focus:border-brand-cyan/50 focus:ring-brand-cyan/20'
-                        : 'bg-white border-neutral-300 text-neutral-900 placeholder:text-neutral-500 focus:border-brand-cyan/50 focus:ring-brand-cyan/20'
-                    )}
-                  />
-                  {/* Smart Suggestions as Badges */}
-                  {displaySuggestedTags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      <span
-                        className={cn(
-                          'text-[9px] font-mono uppercase tracking-widest self-center mr-1',
-                          theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
-                        )}
-                      >
-                        Sugestões:
-                      </span>
-                      {displaySuggestedTags.slice(0, 5).map((tag) => (
-                        <button
-                          key={tag}
-                          onClick={() => !selectedTags.includes(tag) && onTagToggle(tag)}
-                          disabled={selectedTags.includes(tag)}
-                          className={cn(
-                            'px-2 py-0.5 text-[10px] font-mono rounded-full border transition-all duration-200',
-                            selectedTags.includes(tag)
-                              ? 'bg-brand-cyan/20 border-brand-cyan/30 text-brand-cyan cursor-default'
-                              : theme === 'dark'
-                                ? 'bg-neutral-800/80 border-neutral-700/50 text-neutral-300 hover:bg-brand-cyan/10 hover:border-brand-cyan/30 hover:text-brand-cyan cursor-pointer'
-                                : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-brand-cyan/10 hover:border-brand-cyan/30 hover:text-brand-cyan cursor-pointer'
-                          )}
-                        >
-                          {translateTag(tag)}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+            {/* Comment */}
+            {!isComplete && (
+              <div className="mb-2 px-1 mt-4">
+                <p className="text-[10px] tracking-tighter">
+                  {t('mockup.categoriesComment')}
+                </p>
               </div>
+            )}
 
-              {/* Comment */}
-              {!isComplete && (
-                <div className="mb-2 px-1">
-                  <p className="text-[10px] text-neutral-500 font-mono uppercase tracking-tighter">
-                    {t('mockup.categoriesComment')}
-                  </p>
-                </div>
+            {/* Category Groups */}
+            <div
+              className={cn(
+                'grid grid-cols-1 gap-2 transition-opacity duration-300',
+                isComplete && 'opacity-80'
               )}
+            >
+              {groupsToDisplay.map((group) => (
+                <CollapsableCategoryGroup
+                  key={group.id}
+                  title={t(`mockup.categoryGroups.${group.key}`)}
+                  tags={group.tags}
+                  selectedTags={selectedTags}
+                  renderTagButton={renderTagButton}
+                  theme={theme}
+                  t={t}
+                  isSurpriseMeMode={isSurpriseMeMode}
+                  categoriesPool={categoriesPool}
+                  icon={getCategoryIcon(group)}
+                  isGenerating={isGenerating}
+                />
+              ))}
 
-              {/* Category Groups */}
-              <div
-                className={cn(
-                  'grid grid-cols-1 gap-2 transition-opacity duration-300',
-                  isComplete && 'opacity-80'
-                )}
-              >
-                {groupsToDisplay.map((group) => (
-                  <CollapsableCategoryGroup
-                    key={group.id}
-                    title={t(`mockup.categoryGroups.${group.key}`)}
-                    tags={group.tags}
-                    selectedTags={selectedTags}
-                    renderTagButton={renderTagButton}
-                    theme={theme}
-                    t={t}
-                    isSurpriseMeMode={isSurpriseMeMode}
-                    categoriesPool={categoriesPool}
-                    icon={getCategoryIcon(group)}
-                    isGenerating={isGenerating}
-                  />
-                ))}
-
-                {/* Final Section (Drinkware + Other) - Always visible; contains custom tags */}
-                <div
-                  className={cn(
-                    `rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`
-                  )}
+              {/* Final Section (Drinkware + Other) - Always visible; contains custom tags */}
+              <GlassPanel className="overflow-hidden">
+                <Button
+                  variant="ghost"
+                  onClick={() => setIsFinalExpanded(!isFinalExpanded)}
+                  className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
                 >
-                  <button
-                    onClick={() => setIsFinalExpanded(!isFinalExpanded)}
-                    className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
-                  >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      {drinkwareTags.length > 0 ? (
-                        <CupSoda
-                          size={14}
-                          className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-                        />
-                      ) : (
-                        <Grid3x3
-                          size={14}
-                          className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-                        />
-                      )}
-                      <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-                        <span
-                          className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}
-                        >
-                          {drinkwareTags.length > 0
-                            ? t(`mockup.categoryGroups.drinkware`) +
-                              (otherTags.length > 0 ? ` / ${t(`mockup.categoryGroups.other`)}` : '')
-                            : t(`mockup.categoryGroups.other`)}
-                        </span>
-                        {!isFinalExpanded &&
-                          (hasFinalSelection ||
-                            finalPoolTags.length > 0 ||
-                            customSelectedTags.length > 0) && (
-                            <span className="text-[10px] font-mono truncate max-w-[200px]">
-                              {hasFinalSelection && (
-                                <span className="text-brand-cyan">
-                                  {finalSelectedTags.map((tag) => translateTag(tag)).join(', ')}
-                                </span>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {drinkwareTags.length > 0 ? (
+                      <CupSoda
+                        size={14}
+                        className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+                      />
+                    ) : (
+                      <Grid3x3
+                        size={14}
+                        className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+                      />
+                    )}
+                    <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+                      <MicroTitle as="span">
+                        {drinkwareTags.length > 0
+                          ? t(`mockup.categoryGroups.drinkware`) +
+                          (otherTags.length > 0 ? ` / ${t(`mockup.categoryGroups.other`)}` : '')
+                          : t(`mockup.categoryGroups.other`)}
+                      </MicroTitle>
+                      {!isFinalExpanded &&
+                        (hasFinalSelection ||
+                          finalPoolTags.length > 0 ||
+                          customSelectedTags.length > 0) && (
+                          <span className="text-[10px] font-mono truncate max-w-[200px]">
+                            {hasFinalSelection && (
+                              <span className="text-brand-cyan">
+                                {finalSelectedTags.map((tag) => translateTag(tag)).join(', ')}
+                              </span>
+                            )}
+                            {hasFinalSelection &&
+                              (finalPoolTags.length > 0 || customSelectedTags.length > 0) && (
+                                <span className="text-neutral-500"> · </span>
                               )}
-                              {hasFinalSelection &&
-                                (finalPoolTags.length > 0 || customSelectedTags.length > 0) && (
-                                  <span className="text-neutral-500"> · </span>
-                                )}
-                              {finalPoolTags.length > 0 && (
-                                <span className="text-neutral-500">
-                                  {finalPoolTagsSummary} {t('mockup.inPool')}
-                                </span>
-                              )}
-                              {customSelectedTags.length > 0 && (
-                                <span className="text-neutral-500">
-                                  {customSelectedTags.map((tag) => translateTag(tag)).join(', ')}
-                                </span>
-                              )}
-                            </span>
-                          )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
-                      {isFinalExpanded ? (
-                        <ChevronUp size={16} className="text-neutral-500" />
-                      ) : (
-                        <ChevronDown size={16} className="text-neutral-500" />
-                      )}
-                    </div>
-                  </button>
-
-                  {isFinalExpanded && (
-                    <div className="p-3 pt-0 animate-fade-in space-y-3">
-                      {/* Predefined tags (drinkware + other) */}
-                      <div className="flex flex-wrap gap-1.5">
-                        {drinkwareTags.map((tag) => renderTagButton(tag))}
-                        {otherTags.map((tag) => renderTagButton(tag))}
-                      </div>
-
-                      {/* Custom tags section - inside OUTROS */}
-                      <div
-                        className={cn(
-                          'rounded-lg border p-2.5 transition-all duration-200',
-                          customSelectedTags.length > 0 || isEditingCustom
-                            ? theme === 'dark'
-                              ? 'bg-neutral-800/30 border-white/5'
-                              : 'bg-white/60 border-neutral-200'
-                            : theme === 'dark'
-                              ? 'bg-neutral-900/20 border-white/5'
-                              : 'bg-white/30 border-neutral-200/50'
+                            {finalPoolTags.length > 0 && (
+                              <span className="text-neutral-500">
+                                {finalPoolTagsSummary} {t('mockup.inPool')}
+                              </span>
+                            )}
+                            {customSelectedTags.length > 0 && (
+                              <span className="text-neutral-500">
+                                {customSelectedTags.map((tag) => translateTag(tag)).join(', ')}
+                              </span>
+                            )}
+                          </span>
                         )}
-                      >
-                        <div className="flex items-center gap-1.5 mb-2">
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
+                    {isFinalExpanded ? (
+                      <ChevronUp size={16} className="text-neutral-500" />
+                    ) : (
+                      <ChevronDown size={16} className="text-neutral-500" />
+                    )}
+                  </div>
+                </Button>
+
+                {isFinalExpanded && (
+                  <div className="p-3 pt-0 animate-fade-in space-y-3">
+                    {/* Predefined tags (drinkware + other) */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {drinkwareTags.map((tag) => renderTagButton(tag))}
+                      {otherTags.map((tag) => renderTagButton(tag))}
+                    </div>
+
+                    {/* Custom tags section - inside OUTROS */}
+                    <div
+                      className={cn(
+                        'rounded-md border p-2.5 transition-all duration-200',
+                        customSelectedTags.length > 0 || isEditingCustom
+                          ? theme === 'dark'
+                            ? 'bg-neutral-800/30 border-white/5'
+                            : 'bg-white/60 border-neutral-200'
+                          : theme === 'dark'
+                            ? 'bg-neutral-900/20 border-white/5'
+                            : 'bg-white/30 border-neutral-200/50'
+                      )}
+                    >
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <MicroTitle as="span" className="text-[9px]">
+                          {t('mockup.customCategories') || 'CUSTOM'}
+                        </MicroTitle>
+                        {customSelectedTags.length > 0 && (
                           <span
                             className={cn(
-                              'text-[9px] font-mono uppercase tracking-widest',
-                              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
+                              'text-[9px] font-mono',
+                              theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                             )}
                           >
-                            {t('mockup.customCategories') || 'CUSTOM'}
+                            ({customSelectedTags.length})
                           </span>
-                          {customSelectedTags.length > 0 && (
-                            <span
-                              className={cn(
-                                'text-[9px] font-mono',
-                                theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
-                              )}
-                            >
-                              ({customSelectedTags.length})
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap gap-1.5 items-center">
-                          {customSelectedTags.map((tag) => (
-                            <Tag
-                              key={`custom-${tag}`}
-                              label={translateTag(tag)}
-                              selected
-                              removable
-                              onRemove={() => onTagToggle(tag)}
-                              onToggle={() => onTagToggle(tag)}
-                              size="sm"
-                              className="scale-90"
-                            />
-                          ))}
-                          {isEditingCustom ? (
-                            <Input
-                              ref={inputRef}
-                              type="text"
-                              value={customInput}
-                              onChange={(e) => onCustomInputChange(e.target.value)}
-                              onKeyDown={handleKeyDown}
-                              onBlur={handleBlur}
-                              placeholder={t('mockup.customCategoryPlaceholder')}
-                              className={cn(
-                                'px-3 py-1 text-[10px] h-7 transition-all duration-200 focus:ring-0 w-[160px] font-mono rounded-full border animate-in fade-in',
-                                theme === 'dark'
-                                  ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-200 placeholder:text-neutral-500 focus:border-brand-cyan/50'
-                                  : 'bg-neutral-100 border-neutral-300 text-neutral-900 placeholder:text-neutral-500 focus:border-brand-cyan/50'
-                              )}
-                              autoFocus
-                            />
-                          ) : (
-                            <Tag
-                              label={t('mockup.addCustomCategoryLabel') || 'Custom tag'}
-                              onToggle={handleCustomTagClick}
-                              size="sm"
-                              className="scale-90 group [&_svg]:group-hover:rotate-90 [&_svg]:transition-transform [&_svg]:duration-300"
-                            >
-                              <Plus size={12} />
-                            </Tag>
-                          )}
-                          {customSelectedTags.length === 0 && !isEditingCustom && (
-                            <span
-                              className={cn(
-                                'text-[9px] font-mono ml-1',
-                                theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
-                              )}
-                            >
-                              {t('mockup.addCustomCategoryHint') ||
-                                'Adicione categorias personalizadas'}
-                            </span>
-                          )}
-                        </div>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 items-center">
+                        {customSelectedTags.map((tag) => (
+                          <Tag
+                            key={`custom-${tag}`}
+                            label={translateTag(tag)}
+                            selected
+                            removable
+                            onRemove={() => onTagToggle(tag)}
+                            onToggle={() => onTagToggle(tag)}
+                            size="sm"
+                            className="scale-90"
+                          />
+                        ))}
+                        {isEditingCustom ? (
+                          <Input
+                            ref={inputRef}
+                            type="text"
+                            value={customInput}
+                            onChange={(e) => onCustomInputChange(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            onBlur={handleBlur}
+                            placeholder={t('mockup.customCategoryPlaceholder')}
+                            className={cn(
+                              'px-3 py-1 text-[10px] h-7 transition-all duration-200 focus:ring-0 w-[160px] font-mono rounded-full border animate-in fade-in',
+                              theme === 'dark'
+                                ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-200 placeholder:text-neutral-500 focus:border-brand-cyan/50'
+                                : 'bg-neutral-100 border-neutral-300 text-neutral-900 placeholder:text-neutral-500 focus:border-brand-cyan/50'
+                            )}
+                            autoFocus
+                          />
+                        ) : (
+                          <Tag
+                            label={t('mockup.addCustomCategoryLabel') || 'Custom tag'}
+                            onToggle={handleCustomTagClick}
+                            size="sm"
+                            className="scale-90 group [&_svg]:group-hover:rotate-90 [&_svg]:transition-transform [&_svg]:duration-300"
+                          >
+                            <Plus size={12} />
+                          </Tag>
+                        )}
+                        {customSelectedTags.length === 0 && !isEditingCustom && (
+                          <span
+                            className={cn(
+                              'text-[9px] font-mono ml-1',
+                              theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
+                            )}
+                          >
+                            {t('mockup.addCustomCategoryHint') ||
+                              'Adicione categorias personalizadas'}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
-              </div>
+                  </div>
+                )}
+              </GlassPanel>
             </div>
           </div>
         )}
-      </div>
+      </GlassPanel>
     </section>
   );
 };

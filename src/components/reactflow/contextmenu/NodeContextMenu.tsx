@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Trash2, Copy as CopyIcon } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button'
 
 interface NodeContextMenuProps {
   x: number;
@@ -32,16 +33,16 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
     >
       <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-2xl">
         <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">{t('canvasNodes.nodeContextMenu.title')}</span>
-        <button
+        <Button variant="ghost" 
           onClick={onClose}
           className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
         >
           <X size={16} />
-        </button>
+        </Button>
       </div>
 
       <div className="p-2">
-        <button
+        <Button variant="ghost" 
           onClick={() => {
             onDuplicate();
             onClose();
@@ -50,9 +51,9 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
         >
           <CopyIcon size={16} className="text-neutral-400" />
           <span className="font-medium text-[11px] tracking-wide">{t('canvasNodes.nodeContextMenu.duplicate')}</span>
-        </button>
+        </Button>
 
-        <button
+        <Button variant="ghost" 
           onClick={() => {
             onDelete();
             onClose();
@@ -61,7 +62,7 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
         >
           <Trash2 size={16} className="text-red-400" />
           <span className="font-medium text-[11px] tracking-wide">{t('canvasNodes.nodeContextMenu.delete')}</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

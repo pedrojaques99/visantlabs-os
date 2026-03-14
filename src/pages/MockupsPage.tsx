@@ -21,6 +21,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../components/ui/breadcrumb";
+import { GlassPanel } from '../components/ui/GlassPanel';
+import { Button } from '@/components/ui/button'
 
 export const MockupsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -314,15 +316,14 @@ export const MockupsPage: React.FC = () => {
           <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4">
             <div className="bg-red-500/10 border border-red-500/20 rounded-md p-3 flex items-center justify-between backdrop-blur-sm">
               <p className="text-red-400 font-mono text-xs flex-1">{error}</p>
-              <button
-                onClick={() => {
+              <Button variant="ghost"                 onClick={() => {
                   setError(null);
                   loadMockups();
                 }}
                 className="ml-2 px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-mono text-xs rounded transition-colors"
               >
                 {t('mockupsPage.retry')}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -371,13 +372,12 @@ export const MockupsPage: React.FC = () => {
 
               {/* Search Button */}
               <div className="relative flex-shrink-0">
-                <button
-                  onClick={() => setShowSearch(!showSearch)}
+                <Button variant="ghost"                   onClick={() => setShowSearch(!showSearch)}
                   className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-950/20"
                   title={t('mockupsPage.search')}
                 >
                   <Search size={20} />
-                </button>
+                </Button>
                 {showSearch && (
                   <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-neutral-700/30 rounded-md p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
                     <SearchBar
@@ -401,29 +401,27 @@ export const MockupsPage: React.FC = () => {
           {/* Floating Column Control */}
           {filteredMockups.length > 0 && !isMobile && (
             <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
-              <div className="flex items-center gap-1 bg-neutral-950/50 backdrop-blur-md border border-neutral-800/60 rounded-md p-1.5 shadow-lg">
-                <button
-                  onClick={() => handleColumnsChange(columns - 1)}
+              <GlassPanel padding="sm" className="flex-row items-center gap-1 bg-neutral-950/50">
+                <Button variant="ghost"                   onClick={() => handleColumnsChange(columns - 1)}
                   disabled={columns <= 1}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Decrease columns"
                 >
                   <Minus size={14} />
-                </button>
+                </Button>
                 <div className="px-2.5">
                   <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
                     {columns}
                   </span>
                 </div>
-                <button
-                  onClick={() => handleColumnsChange(columns + 1)}
+                <Button variant="ghost"                   onClick={() => handleColumnsChange(columns + 1)}
                   disabled={columns >= 6}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Increase columns"
                 >
                   <Plus size={14} />
-                </button>
-              </div>
+                </Button>
+              </GlassPanel>
             </div>
           )}
 
@@ -447,9 +445,9 @@ export const MockupsPage: React.FC = () => {
                 if (!imageUrl) return null;
 
                 return (
-                  <div
+                  <GlassPanel
                     key={mockup._id}
-                    className="group relative bg-neutral-950/30 backdrop-blur-sm border border-neutral-800/60 rounded-md overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
+                    className="group relative overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
                   >
                     {/* Image */}
                     <div
@@ -463,7 +461,7 @@ export const MockupsPage: React.FC = () => {
                         loading="lazy"
                       />
                     </div>
-                  </div>
+                  </GlassPanel>
                 );
               })}
             </div>

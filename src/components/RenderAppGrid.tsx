@@ -5,6 +5,7 @@ import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { ImageOff } from 'lucide-react';
+import { MicroTitle } from '@/components/ui/MicroTitle'
 
 interface RenderAppGridProps {
     title: string;
@@ -57,7 +58,7 @@ export const RenderAppGrid: React.FC<RenderAppGridProps> = ({
                                 <img
                                     src={app.thumbnail}
                                     alt={app.name}
-                                    className="w-full h-full object-cover opacity-40 group-hover:opacity-100 transition-opacity duration-500"
+                                    className="w-full h-full object-cover opacity-40 group-hover:opacity-100 transition-opacity duration-300"
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center">
@@ -69,9 +70,9 @@ export const RenderAppGrid: React.FC<RenderAppGridProps> = ({
                             {/* Premium CTA Overlay for small cards */}
                             {app.badgeVariant === 'premium' && !hasAccess && !isAccessLoading && (
                                 <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-30">
-                                    <span className="bg-brand-cyan text-black px-4 py-1.5 rounded-full font-bold text-[10px] tracking-wider uppercase">
+                                    <MicroTitle className="bg-brand-cyan text-black px-4 py-1.5 rounded-full font-bold text-[10px] tracking-wider">
                                         {t('apps.subscribeNow')}
-                                    </span>
+                                    </MicroTitle>
                                 </div>
                             )}
                         </div>

@@ -3,6 +3,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { FormInput } from '@/components/ui/form-input';
 import type { Signature } from '@/types/types';
 import { Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button'
 
 interface SignaturesSectionProps {
   signatures: Signature[];
@@ -38,13 +39,13 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({
         <h3 className="text-lg font-semibold text-neutral-200 font-mono">
           {t('budget.signatures') || 'Assinaturas'}
         </h3>
-        <button
+        <Button variant="brand" 
           onClick={addSignature}
           className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
           title={t('budget.addSignature') || 'Adicionar Assinatura'}
         >
           <Plus size={18} />
-        </button>
+        </Button>
       </div>
 
       {signatures.length === 0 ? (
@@ -85,13 +86,13 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({
                     />
                   </div>
                 </div>
-                <button
+                <Button variant="ghost" 
                   onClick={() => removeSignature(index)}
                   className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                   title={t('budget.removeSignature') || 'Remover assinatura'}
                 >
                   <Trash2 size={18} />
-                </button>
+                </Button>
               </div>
             </div>
           ))}

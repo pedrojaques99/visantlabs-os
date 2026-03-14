@@ -62,6 +62,8 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
         // Keep all visual styles consistent during dragging
         'border border-neutral-800/50 rounded-xl relative node-container flex flex-col backdrop-blur-[4px]',
         'min-w-[200px] h-fit rounded-xl',
+        // Default gap and space-y if not overridden
+        'gap-[var(--node-gap)]',
         // Border color - maintain border even when dragging
         selected ? 'border-neutral-500' : warning ? 'border-neutral-600/40' : 'border-gray-700/30',
         dragging && 'pointer-events-none',

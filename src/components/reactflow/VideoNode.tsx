@@ -18,6 +18,8 @@ import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { NodeButton } from './shared/node-button'
+import { Input } from '@/components/ui/input'
 
 const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -168,7 +170,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="p-0 min-w-[320px] max-w-[400px] overflow-visible"
+      className="min-w-[320px] max-w-[400px] overflow-visible"
     >
       {selected && !dragging && (
         <NodeResizer
@@ -277,14 +279,13 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
         {/* Advanced Settings */}
         <div className="border border-neutral-800 rounded-md bg-neutral-900/30">
-          <button
-            onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-            className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors w-full p-2 hover:bg-neutral-800/50"
+          <NodeButton variant="ghost" size="sm" onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+            className="text-xs font-mono text-neutral-400 hover:text-neutral-200 w-full p-2 hover:bg-neutral-800/50"
           >
             <Settings size={12} />
             <span>{t('Advanced Settings')}</span>
             <ChevronRight size={12} className={cn("transition-transform ml-auto", isAdvancedOpen && "rotate-90")} />
-          </button>
+          </NodeButton>
 
           {isAdvancedOpen && (
             <div className="p-3 space-y-3 border-t border-neutral-800 bg-neutral-900/50">
@@ -351,7 +352,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
               <div>
                 <NodeLabel>{t('Negative Prompt')}</NodeLabel>
-                <input
+                <Input
                   className="w-full bg-neutral-900 border border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-[brand-cyan] outline-none placeholder:text-neutral-600"
                   placeholder={t('What to avoid...')}
                   value={negativePrompt}
@@ -367,16 +368,14 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
         </div>
 
         {/* Generate Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleGenerate();
-          }}
-          disabled={isLoading || (!prompt && !data.connectedText && !data.connectedImage1)} // Basic validation
-          className={cn(
-            'w-full px-3 py-2.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-2 group',
-            (isLoading || (!prompt && !data.connectedText && !data.connectedImage1)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-          )}
+        <NodeButton onClick={(e) => {
+          e.stopPropagation();
+          handleGenerate();
+        }}
+          disabled={isLoading || (!prompt && !data.connectedText && !data.connectedImage1)}
+          variant="primary"
+          size="full"
+          className="py-2.5"
         >
           {isLoading ? (
             <>
@@ -385,16 +384,16 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
             </>
           ) : (
             <>
-              <VideoIcon size={16} className="group-hover:scale-110 transition-transform" />
+              <VideoIcon size={16} />
               <span>{t('Generate Video')}</span>
               <span className="text-brand-cyan/50 ml-1">({creditsRequired})</span>
             </>
           )}
-        </button>
+        </NodeButton>
 
         {/* Result Preview */}
         {(data.resultVideoUrl || data.resultVideoBase64) && !isLoading && (
-          <div className="mt-4 rounded-lg overflow-hidden border border-neutral-700 bg-black relative group shadow-lg">
+          <div className="mt-4 rounded-md overflow-hidden border border-neutral-700 bg-black relative group shadow-lg">
             <video
               src={data.resultVideoUrl || (data.resultVideoBase64 ? `data:video/mp4;base64,${data.resultVideoBase64}` : undefined)}
               className="w-full h-auto max-h-[200px] object-contain"

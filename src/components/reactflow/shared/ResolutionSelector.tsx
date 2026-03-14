@@ -1,9 +1,9 @@
 import React from 'react';
-import type { Resolution } from '@/types/types';
+import type { Resolution, GeminiModel } from '@/types/types';
 import { cn } from '@/lib/utils';
 import { getCreditsRequired } from '@/utils/creditCalculator';
-import type { GeminiModel } from '@/types/types';
 import { Select } from '@/components/ui/select';
+import { NodeButton } from './node-button';
 
 const ALL_RESOLUTIONS: Resolution[] = ['512px', '1K', '2K', '4K', '720p', '1080p'];
 
@@ -28,13 +28,13 @@ function renderResolutionButton(
   const credits = getCreditsRequired(model, res);
 
   return (
-    <button
+    <NodeButton variant="ghost" 
       key={res}
       onClick={() => !disabled && onChange(res)}
       disabled={disabled}
       className={cn(
         compact
-          ? 'flex-1 flex items-center justify-center gap-1 py-1.5 px-2 text-xs font-mono rounded border transition-all min-w-0'
+          ? 'flex-1 flex items-center justify-center gap-1 py-1.5 px-2 text-xs font-mono transition-all min-w-0'
           : 'flex flex-col items-center justify-center gap-1 py-2 px-3 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer',
         isSelected
           ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
@@ -46,7 +46,7 @@ function renderResolutionButton(
     >
       <span className={compact ? 'text-[10px]' : 'font-semibold'}>{res}</span>
       {!compact && <span className="text-[10px] text-neutral-500">{credits}c</span>}
-    </button>
+    </NodeButton>
   );
 }
 
@@ -59,7 +59,7 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
 }) => {
   if (compact) {
     return (
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-[var(--node-gap-sm)]">
         {ALL_RESOLUTIONS.map((res) =>
           renderResolutionButton(res, value, model, disabled, onChange, true, (e) =>
             e.stopPropagation()
@@ -91,4 +91,3 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
     </>
   );
 };
-

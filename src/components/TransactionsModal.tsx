@@ -3,6 +3,7 @@ import { X, CreditCard } from 'lucide-react';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { subscriptionService, type TransactionRecord } from '../services/subscriptionService';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button'
 
 interface TransactionsModalProps {
   isOpen: boolean;
@@ -113,13 +114,13 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
               {t('transactions.subtitle')}
             </h2>
           </div>
-          <button
+          <Button variant="ghost" 
             onClick={onClose}
             className="p-2 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60 transition-colors"
             aria-label="Close"
           >
             <X size={18} />
-          </button>
+          </Button>
         </div>
 
         <div className="p-6 max-h-[70vh] overflow-y-auto space-y-4">

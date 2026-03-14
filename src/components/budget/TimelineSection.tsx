@@ -4,6 +4,7 @@ import { FormInput } from '@/components/ui/form-input';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import type { TimelineMilestone } from '@/types/types';
 import { Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button'
 
 interface TimelineSectionProps {
   timeline: TimelineMilestone[];
@@ -39,13 +40,13 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({
         <h3 className="text-lg font-semibold text-neutral-200 font-mono">
           {t('budget.timeline') || 'Timeline do Projeto'}
         </h3>
-        <button
+        <Button variant="brand" 
           onClick={addMilestone}
           className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
         >
           <Plus size={16} />
           {t('budget.addMilestone') || 'Adicionar Milestone'}
-        </button>
+        </Button>
       </div>
 
       {timeline.length === 0 ? (
@@ -105,13 +106,13 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({
                     />
                   </div>
                 </div>
-                <button
+                <Button variant="ghost" 
                   onClick={() => removeMilestone(index)}
                   className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                   title={t('budget.removeMilestone') || 'Remover milestone'}
                 >
                   <Trash2 size={18} />
-                </button>
+                </Button>
               </div>
             </div>
           ))}

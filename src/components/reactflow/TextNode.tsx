@@ -11,6 +11,7 @@ import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { NodeButton } from './shared/node-button'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -101,7 +102,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="p-0 min-w-[320px] min-h-[200px] h-auto flex flex-col overflow-hidden"
+      className="min-w-[320px] min-h-[200px] h-auto flex flex-col overflow-hidden"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
@@ -126,28 +127,24 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
             <Type size={16} className="text-brand-cyan" />
           </div>
-          <h3 className="text-sm font-semibold text-neutral-200 font-mono tracking-tight uppercase">
+          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
             {t('canvasNodes.textNode.title') || 'Text Node'}
           </h3>
         </div>
 
         {/* Header Actions */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 ml-4">
           {/* Copy Button */}
           {text.trim() && (
-            <button
+            <NodeButton 
+              variant="ghost" 
+              size="xs" 
               onClick={(e) => {
                 e.stopPropagation();
                 handleCopyText();
               }}
               onMouseDown={(e) => e.stopPropagation()}
-              className={cn(
-                "p-2 rounded-md border transition-all nodrag",
-                "bg-neutral-900/60 border-neutral-700/40 text-neutral-400",
-                "hover:bg-neutral-800/70 hover:border-neutral-600/60 hover:text-neutral-200",
-                "backdrop-blur-sm shadow-sm hover:shadow-md",
-                "hover:scale-105 active:scale-95"
-              )}
+              className="nodrag shadow-sm backdrop-blur-sm"
               title={t('canvasNodes.textNode.copy') || 'Copy text'}
             >
               {isCopied ? (
@@ -155,7 +152,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               ) : (
                 <Copy size={14} />
               )}
-            </button>
+            </NodeButton>
           )}
         </div>
       </div>
@@ -186,7 +183,9 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
           {/* Improve Prompt Button - Enhanced */}
           {text.trim() && (
-            <button
+            <NodeButton 
+              variant="ghost" 
+              size="xs" 
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -195,12 +194,8 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               onMouseDown={(e) => e.stopPropagation()}
               disabled={isImproving || !text.trim()}
               className={cn(
-                "absolute top-2 right-2 p-2 rounded-md transition-all node-interactive",
-                "shadow-sm hover:shadow-md",
-                "hover:scale-105 active:scale-95",
-                isImproving || !text.trim()
-                  ? "bg-neutral-800/50 text-neutral-500 cursor-not-allowed"
-                  : "bg-gradient-to-br from-brand-cyan/20 to-brand-cyan/10 hover:from-brand-cyan/30 hover:to-brand-cyan/20 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50"
+                "absolute top-2 right-2 transition-all nodrag shadow-sm backdrop-blur-sm",
+                !isImproving && text.trim() && "text-brand-cyan border-brand-cyan/30 bg-brand-cyan/5 hover:bg-brand-cyan/10"
               )}
               title={isImproving
                 ? (t('canvasNodes.textNode.improvingPrompt') || 'Improving prompt...')
@@ -209,9 +204,9 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               {isImproving ? (
                 <GlitchLoader size={14} color="currentColor" />
               ) : (
-                <Wand2 size={14} strokeWidth={2} className="animate-pulse" />
+                <Wand2 size={14} strokeWidth={2} />
               )}
-            </button>
+            </NodeButton>
           )}
 
           {/* Character Counter - Bottom Right */}

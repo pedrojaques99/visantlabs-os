@@ -284,7 +284,7 @@ class PluginBridge {
   private startHeartbeat(session: PluginSession): void {
     session.heartbeatInterval = setInterval(() => {
       if (session.ws.readyState === WebSocket.OPEN) {
-        session.ws.ping((err) => {
+        session.ws.ping((err: Error | undefined) => {
           if (err) {
             console.error(
               `[PluginBridge] Heartbeat failed for ${session.fileId}:`,

@@ -206,6 +206,10 @@ app.use(`${routePrefix}/figma`, figmaRoutes);
 import pluginRoutes, { initPluginWebSocket } from './routes/plugin.js';
 app.use(`${routePrefix}/plugin`, pluginRoutes);
 
+// Import brand guidelines routes
+import brandGuidelinesRoutes from './routes/brand-guidelines.js';
+app.use(`${routePrefix}/brand-guidelines`, brandGuidelinesRoutes);
+
 // Import documentation routes
 import docsRoutes from './routes/docs.js';
 app.use(`${routePrefix}/docs`, docsRoutes);

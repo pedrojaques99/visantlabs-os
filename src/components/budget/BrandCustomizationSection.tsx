@@ -8,6 +8,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { getContrastColor } from '@/utils/colorUtils';
 import { budgetApi } from '@/services/budgetApi';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 
 interface BrandCustomizationSectionProps {
   brandName: string;
@@ -164,17 +165,16 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
               alt="Brand logo"
               className="max-h-32 max-w-48 object-contain rounded-md border border-neutral-800"
             />
-            <button
-              type="button"
+            <Button variant="destructive"               type="button"
               onClick={handleRemoveLogo}
               className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 rounded-md text-white transition-colors"
             >
               <X size={14} />
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <input
+            <Input
               ref={fileInputRef}
               type="file"
               accept={SUPPORTED_MIME_TYPES.join(',')}
@@ -216,13 +216,12 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
             className="flex-1"
           />
           {brandBackgroundColor && (
-            <button
-              type="button"
+            <Button variant="ghost"               type="button"
               onClick={() => onBrandBackgroundColorChange(undefined)}
               className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-xl text-red-400 font-mono text-sm transition-colors"
             >
               <X size={16} />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -247,13 +246,12 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
             className="flex-1"
           />
           {brandAccentColor && (
-            <button
-              type="button"
+            <Button variant="ghost"               type="button"
               onClick={() => onBrandAccentColorChange(undefined)}
               className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-xl text-red-400 font-mono text-sm transition-colors"
             >
               <X size={16} />
-            </button>
+            </Button>
           )}
         </div>
       </div>

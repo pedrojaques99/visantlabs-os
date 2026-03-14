@@ -4,10 +4,10 @@ import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
 import { AuthRequest } from '../middleware/auth.js';
-import { JWT_SECRET } from '../utils/jwtSecret.js';
-import jwt from 'jsonwebtoken';
+import { getUserIdFromToken } from '../utils/auth.js';
 import { ObjectId } from 'mongodb';
 import WebSocket, { WebSocketServer } from 'ws';
+import type { BrandGuideline } from '../types/brandGuideline.js';
 
 const router = express.Router();
 
@@ -114,16 +114,10 @@ function handlePluginMessage(fileId: string, message: any) {
 }
 
 /**
- * Validate plugin token — real JWT verification using same secret as auth.ts
+ * Validate plugin token — reuses centralized JWT verification from utils/auth.ts
  */
 function validatePluginToken(token: string | null): string | null {
-  if (!token) return null;
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
-    return decoded.userId;
-  } catch (_e) {
-    return null;
-  }
+  return getUserIdFromToken(token);
 }
 
 /**
@@ -132,14 +126,10 @@ function validatePluginToken(token: string | null): string | null {
  */
 function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction) {
   const token = req.headers.authorization?.replace('Bearer ', '') || req.body?.authToken;
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
-      req.userId = decoded.userId;
-      req.userEmail = decoded.email;
-    } catch (_e) {
-      // Invalid token — continue without auth
-    }
+  const userId = getUserIdFromToken(token);
+  if (userId) {
+    req.userId = userId;
+    // Note: email is not extracted by getUserIdFromToken for minimal token validation
   }
   next();
 }
@@ -236,6 +226,7 @@ interface PluginRequest {
   attachments?: Array<{ name: string; mimeType: string; data: string }>; // Base64 data
   mentions?: Array<{ name: string; type: string; id: string }>; // @mentions
   designSystem?: DesignSystemJSON | null; // Imported design system tokens
+  brandGuideline?: any  // BrandGuideline from plugin
   thinkMode?: boolean; // Think mode: analyze + ask questions before generating
 }
 
@@ -335,6 +326,60 @@ function buildDesignSystemContext(ds: DesignSystemJSON): string {
   }
 
   return lines.join('\n');
+}
+
+function buildBrandContext(bg: BrandGuideline): string {
+  const lines: string[] = []
+  const name = bg.identity?.name || 'Marca'
+  lines.push(`═══ BRAND: ${name} ═══`)
+  if (bg.identity?.tagline) lines.push(`"${bg.identity.tagline}"`)
+  if (bg.identity?.website) lines.push(`Site: ${bg.identity.website}`)
+  lines.push('')
+
+  if (bg.colors?.length) {
+    lines.push('CORES (hex → RGB 0-1 no Figma):')
+    for (const c of bg.colors) lines.push(`  ${c.name}: ${c.hex}${c.role ? ` (${c.role})` : ''}`)
+    lines.push('')
+  }
+
+  if (bg.typography?.length) {
+    lines.push('FONTES (fontFamily + fontStyle exatos):')
+    for (const t of bg.typography) {
+      const parts = [t.family, t.style].filter(Boolean).join(' ')
+      const size = t.size ? ` ${t.size}` : ''
+      const lh = t.lineHeight ? `/${t.lineHeight}` : ''
+      lines.push(`  ${t.role}: ${parts}${size}${lh}`)
+    }
+    lines.push('')
+  }
+
+  if (bg.guidelines) {
+    if (bg.guidelines.voice) lines.push(`TOM: ${bg.guidelines.voice}`)
+    if (bg.guidelines.dos?.length) lines.push(`FAZER: ${bg.guidelines.dos.join(' | ')}`)
+    if (bg.guidelines.donts?.length) lines.push(`EVITAR: ${bg.guidelines.donts.join(' | ')}`)
+    lines.push('')
+  }
+
+  if (bg.logos?.length) {
+    lines.push('LOGOS:')
+    for (const l of bg.logos) lines.push(`  ${l.variant}: ${l.url}${l.label ? ` (${l.label})` : ''}`)
+    lines.push('')
+  }
+
+  if (bg.media?.length) {
+    lines.push('MEDIA KIT (reference assets — use as templates/inspiration):')
+    for (const m of bg.media) lines.push(`  [${m.type}] ${m.url}${m.label ? ` — ${m.label}` : ''}`)
+    lines.push('')
+  }
+
+  if (bg.tokens?.spacing) {
+    lines.push(`SPACING: ${Object.entries(bg.tokens.spacing).map(([k, v]) => `${k}=${v}`).join(' ')}`)
+  }
+  if (bg.tokens?.radius) {
+    lines.push(`RADIUS: ${Object.entries(bg.tokens.radius).map(([k, v]) => `${k}=${v}`).join(' ')}`)
+  }
+
+  return lines.join('\n')
 }
 
 function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thinkMode?: boolean): string {
@@ -500,13 +545,13 @@ Exemplo de bate-papo:
 ]
 
 ${thinkModeBlock}${chatHistory ? `═══ HISTÓRICO DE CONVERSA ═══\n${chatHistory}\n` : ''}
-${req.designSystem ? buildDesignSystemContext(req.designSystem) + '\n' : ''}
+${req.brandGuideline ? buildBrandContext(req.brandGuideline) + '\n' : (req.designSystem ? buildDesignSystemContext(req.designSystem) + '\n' : '')}
 ═══ CONTEXTO DO ARQUIVO ═══
 
-BRAND GUIDELINES DO USUÁRIO:
+${!req.brandGuideline ? `BRAND GUIDELINES DO USUÁRIO:
 - Logo(s): ${logoInfo}
 - Fonte(s) de marca: ${fontInfo}
-- Cores de marca: ${brandColorsInfo}
+- Cores de marca: ${brandColorsInfo}` : ''}
 
 FRAMES/CONTAINERS SELECIONADOS (use o "id" como "parentNodeId" para criar DENTRO deles):
 ${containersHint}
@@ -545,17 +590,39 @@ CRIAÇÃO — dois modos de especificar o pai:
      "cornerRadius": 12, "clipsContent": true
    }}
 
-2. CREATE_RECTANGLE — Retângulo, divider, background
+   Exemplo com layoutMode NONE + posicionamento absoluto dos filhos:
+   { "type": "CREATE_FRAME", "ref": "canvas", "props": {
+     "name": "Canvas", "width": 800, "height": 600, "layoutMode": "NONE",
+     "fills": [{"type": "SOLID", "color": {"r": 1, "g": 1, "b": 1}}], "clipsContent": true
+   }}
+   Filhos dentro de layoutMode NONE usam x, y para posição absoluta:
+   { "type": "CREATE_FRAME", "ref": "box", "parentRef": "canvas", "props": {
+     "name": "Box", "width": 200, "height": 100, "x": 50, "y": 80,
+     "layoutMode": "NONE", "fills": [{"type": "SOLID", "color": {"r": 0.9, "g": 0.9, "b": 1}}]
+   }}
+
+2. CREATE_RECTANGLE — Retângulo, divider, background, linhas
    { "type": "CREATE_RECTANGLE", "ref": "divider", "parentRef": "card", "props": {
      "name": "Divider", "width": 360, "height": 1,
      "fills": [{"type": "SOLID", "color": {"r": 0.9, "g": 0.9, "b": 0.9}}],
      "layoutSizingHorizontal": "FILL"
    }}
+   Exemplo com posição absoluta + rotação (linha diagonal):
+   { "type": "CREATE_RECTANGLE", "parentRef": "canvas", "props": {
+     "name": "Line", "width": 200, "height": 2, "x": 100, "y": 300, "rotation": -45,
+     "fills": [{"type": "SOLID", "color": {"r": 0.3, "g": 0.3, "b": 0.3}}]
+   }}
 
-3. CREATE_ELLIPSE — Círculo, avatar, dot
+3. CREATE_ELLIPSE — Círculo, avatar, dot, outline
    { "type": "CREATE_ELLIPSE", "ref": "avatar", "parentRef": "header", "props": {
      "name": "Avatar", "width": 40, "height": 40,
      "fills": [{"type": "SOLID", "color": {"r": 0.85, "g": 0.85, "b": 0.9}}]
+   }}
+   Exemplo com stroke, opacity e posição absoluta:
+   { "type": "CREATE_ELLIPSE", "parentRef": "canvas", "props": {
+     "name": "Circle Outline", "width": 120, "height": 120, "x": 340, "y": 240,
+     "fills": [], "strokes": [{"type": "SOLID", "color": {"r": 0.2, "g": 0.5, "b": 1}}],
+     "strokeWeight": 3, "opacity": 0.8
    }}
 
 4. CREATE_TEXT — Texto com tipografia completa
@@ -565,6 +632,13 @@ CRIAÇÃO — dois modos de especificar o pai:
      "fills": [{"type": "SOLID", "color": {"r": 0.07, "g": 0.07, "b": 0.07}}],
      "textAutoResize": "WIDTH_AND_HEIGHT",
      "layoutSizingHorizontal": "FILL"
+   }}
+   Exemplo com posição absoluta + rotação (label vertical):
+   { "type": "CREATE_TEXT", "parentRef": "canvas", "props": {
+     "name": "Y Axis", "content": "Performance", "x": 10, "y": 300, "rotation": 90,
+     "fontFamily": "Inter", "fontStyle": "Regular", "fontSize": 12,
+     "fills": [{"type": "SOLID", "color": {"r": 0.4, "g": 0.4, "b": 0.4}}],
+     "textAutoResize": "WIDTH_AND_HEIGHT"
    }}
 
 5. CREATE_COMPONENT_INSTANCE — Instanciar componente existente
@@ -610,7 +684,7 @@ ESTRUTURA:
 
 ═══ REGRAS DE OURO ═══
 
-1. SEMPRE use auto-layout (layoutMode: "VERTICAL" ou "HORIZONTAL") nos frames container. NUNCA posicione filhos com x/y dentro de auto-layout.
+1. SEMPRE use auto-layout (layoutMode: "VERTICAL" ou "HORIZONTAL") nos frames container. NUNCA posicione filhos com x/y dentro de auto-layout. MAS: quando o parent tem layoutMode: "NONE" (canvas livre, gráficos, diagramas), USE x/y para posicionar os filhos — é o único jeito. Rotation (graus, sentido anti-horário) também está disponível para todos os nós.
 2. Use "ref"/"parentRef" para hierarquia. O frame root tem "ref", filhos referenciam com "parentRef".
 3. Cores são RGB normalizado 0-1. Vermelho = {"r":1,"g":0,"b":0}. Branco = {"r":1,"g":1,"b":1}. Preto = {"r":0,"g":0,"b":0}.
 4. Se o usuário tiver cores de marca, USE-AS com prioridade.

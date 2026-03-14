@@ -105,6 +105,7 @@ async function generateDesign(command, context) {
     availableLayers: context.availableLayers || [],
     mentions: context.mentions || [],
     designSystem: state.designSystem || undefined,
+    brandGuideline: state.brandGuideline || undefined,
     attachments: (context.attachments || []).map(att => ({
       name: att.name,
       mimeType: att.mimeType,
@@ -326,11 +327,11 @@ function openExternal(url) {
 
 /**
  * Login with email/password → gets JWT token
- * Reuses existing /api/auth/login endpoint
+ * Reuses existing /api/auth/signin endpoint
  */
 async function authLogin(email, password) {
   try {
-    const result = await apiCall('/auth/login', 'POST', { email, password });
+    const result = await apiCall('/auth/signin', 'POST', { email, password });
     if (result.token) {
       setState('authToken', result.token);
       setState('authEmail', email);

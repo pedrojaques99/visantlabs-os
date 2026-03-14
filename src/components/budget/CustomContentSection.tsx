@@ -4,6 +4,7 @@ import { FormInput } from '@/components/ui/form-input';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import type { CustomContent } from '@/types/types';
 import { Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface CustomContentSectionProps {
   customContent: CustomContent;
@@ -106,13 +107,13 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
           <h3 className="text-lg font-semibold text-neutral-200 font-mono">
             {t('budget.projectDetailSections') || 'Seções de Descrição do Projeto'}
           </h3>
-          <button
+          <Button variant="brand" 
             onClick={addProjectDetailSection}
             className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
           >
             <Plus size={16} />
             {t('budget.addSection') || 'Adicionar Seção'}
-          </button>
+          </Button>
         </div>
 
         {(customContent.projectDetailSections || []).length === 0 ? (
@@ -145,13 +146,13 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                         <label className="block text-xs text-neutral-400 font-mono">
                           {t('budget.paragraphs') || 'Parágrafos'}
                         </label>
-                        <button
+                        <Button variant="ghost" 
                           onClick={() => addParagraph(sectionIndex)}
                           className="px-2 py-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded text-brand-cyan font-mono text-xs transition-all duration-300 flex items-center gap-1"
                         >
                           <Plus size={12} />
                           {t('budget.addParagraph') || 'Parágrafo'}
-                        </button>
+                        </Button>
                       </div>
                       {section.paragraphs.map((paragraph, paragraphIndex) => (
                         <div key={paragraphIndex} className="flex gap-2">
@@ -165,24 +166,24 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                             className="flex-1"
                           />
                           {section.paragraphs.length > 1 && (
-                            <button
+                            <Button variant="ghost" 
                               onClick={() => removeParagraph(sectionIndex, paragraphIndex)}
                               className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors h-fit"
                             >
                               <Trash2 size={16} />
-                            </button>
+                            </Button>
                           )}
                         </div>
                       ))}
                     </div>
                   </div>
-                  <button
+                  <Button variant="ghost" 
                     onClick={() => removeProjectDetailSection(sectionIndex)}
                     className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                     title={t('budget.removeSection') || 'Remover seção'}
                   >
                     <Trash2 size={18} />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
@@ -196,13 +197,13 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
           <h3 className="text-lg font-semibold text-neutral-200 font-mono">
             {t('budget.infoBoxes') || 'Caixas de Informação'}
           </h3>
-          <button
+          <Button variant="brand" 
             onClick={addInfoBox}
             className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
           >
             <Plus size={16} />
             {t('budget.addInfoBox') || 'Adicionar Caixa'}
-          </button>
+          </Button>
         </div>
 
         {(customContent.infoBoxes || []).length === 0 ? (
@@ -240,13 +241,13 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                       />
                     </div>
                   </div>
-                  <button
+                  <Button variant="ghost" 
                     onClick={() => removeInfoBox(index)}
                     className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                     title={t('budget.removeInfoBox') || 'Remover caixa'}
                   >
                     <Trash2 size={18} />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}

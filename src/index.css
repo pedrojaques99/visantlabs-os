@@ -96,26 +96,26 @@
    * 
    * NodeContainer automatically applies --node-padding unless overridden.
    */
-  --node-padding: 1.75rem;
-  /* p-5 = 20px - default padding for all nodes */
-  --node-gap: 0.75rem;
-  /* gap-3 = 12px - default gap between elements */
+  --node-padding: 2rem;
+  /* p-8 = 32px - default padding for all nodes */
+  --node-gap: 1rem;
+  /* gap-4 = 16px - default gap between elements */
   --node-gap-sm: 0.75rem;
-  /* gap-2 = 8px - small gap */
-  --node-gap-lg: 0.75rem;
-  /* gap-4 = 16px - large gap */
-  --node-margin: 0.75rem;
+  /* gap-3 = 12px - small gap */
+  --node-gap-lg: 1.25rem;
+  /* gap-5 = 20px - large gap */
+  --node-margin: 1rem;
   /* mb-4 = 16px - default margin-bottom */
   --node-margin-sm: 0.75rem;
   /* mb-3 = 12px - small margin */
-  --node-margin-lg: 0.75rem;
+  --node-margin-lg: 1.25rem;
   /* mb-5 = 20px - large margin */
-  --node-space-y: 0.75rem;
-  /* space-y-3 = 12px - default vertical spacing */
+  --node-space-y: 1rem;
+  /* space-y-4 = 16px - default vertical spacing */
   --node-space-y-sm: 0.75rem;
-  /* space-y-2 = 8px - small vertical spacing */
-  --node-space-y-lg: 0.75rem;
-  /* space-y-4 = 16px - large vertical spacing */
+  /* space-y-3 = 12px - small vertical spacing */
+  --node-space-y-lg: 1.25rem;
+  /* space-y-5 = 20px - large vertical spacing */
 
   /* Brand specific colors (Cyan accent) */
   --brand-cyan: oklch(0.81 0.156 198.6);

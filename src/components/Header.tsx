@@ -162,8 +162,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
 
   return (
     <header className="fixed top-0 left-0 right-0 h-10 md:h-14 bg-neutral-950/95 backdrop-blur-[2px] border-b border-black/95 flex items-center justify-between px-2 md:px-6 z-50">
-      <button
-        onClick={handleLogoClick}
+      <Button variant="ghost"         onClick={handleLogoClick}
         className="flex items-center gap-1.5 md:gap-2.5 hover:opacity-80 transition-opacity group cursor-pointer"
       >
         <img
@@ -175,18 +174,16 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           <span className="text-xs md:text-sm font-mono text-neutral-500 uppercase">Visant Labs®</span>
           <span className="text-[10px] font-mono text-neutral-600">v1.1</span>
         </div>
-      </button>
+      </Button>
       <div className="flex items-center gap-1.5 md:gap-4">
         {/* Pricing button hidden */}
-        {/* <button
-          onClick={onPricingClick}
+        {/* <Button variant="ghost"           onClick={onPricingClick}
           className="hidden md:block text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors tracking-wider uppercase"
         >
           {t('header.pricing')}
-        </button> */}
+        </Button> */}
         {/* Mockup Machine button hidden */}
-        {/* <button
-          onClick={() => {
+        {/* <Button variant="ghost"           onClick={() => {
             if (navigateToHome) {
               navigateToHome();
             } else {
@@ -198,7 +195,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           aria-label="Go to Mockup Machine"
         >
           <Pickaxe size={14} className="md:w-4 md:h-4" />
-        </button> */}
+        </Button> */}
         {/* New Mockup button - hidden on WelcomeScreen */}
         {!isOnWelcomeScreen && (
           <Button
@@ -215,8 +212,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         )}
         {/* Explore Mockups button */}
         {/* Explore Mockups button - hidden */}
-        {/* <button
-          onClick={() => {
+        {/* <Button variant="ghost"           onClick={() => {
             window.history.pushState({}, '', '/mockups');
             const popStateEvent = new PopStateEvent('popstate', { state: {} });
             window.dispatchEvent(popStateEvent);
@@ -227,10 +223,9 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         >
           <Search size={12} className="md:w-3.5 md:h-3.5" />
           <span className="hidden sm:inline">{t('welcome.exploreMockups')}</span>
-        </button> */}
+        </Button> */}
         {/* Community button */}
-        <button
-          onClick={() => {
+        <Button variant="ghost"           onClick={() => {
             window.history.pushState({}, '', '/community');
             const popStateEvent = new PopStateEvent('popstate', { state: {} });
             window.dispatchEvent(popStateEvent);
@@ -240,11 +235,10 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           aria-label="Community"
         >
           <Globe size={14} className="md:w-4 md:h-4" strokeWidth={2} />
-        </button>
+        </Button>
         {/* About button - only on WelcomeScreen */}
         {isOnWelcomeScreen && (
-          <button
-            onClick={() => {
+          <Button variant="ghost"             onClick={() => {
               window.history.pushState({}, '', '/about');
               const popStateEvent = new PopStateEvent('popstate', { state: {} });
               window.dispatchEvent(popStateEvent);
@@ -255,38 +249,34 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           >
             <Info size={12} className="md:w-3.5 md:h-3.5" />
             <span className="hidden sm:inline">{t('about.title') || 'About'}</span>
-          </button>
+          </Button>
         )}
         {/* Temporarily hidden */}
-        {/* <button
-          onClick={() => {
+        {/* <Button variant="ghost"           onClick={() => {
             window.location.href = '/branding-machine';
           }}
           className="hidden md:block text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors tracking-wider uppercase"
         >
           Branding
-        </button> */}
+        </Button> */}
         {/* Budget Machine temporarily hidden */}
-        {/* <button
-          onClick={() => {
+        {/* <Button variant="ghost"           onClick={() => {
             window.location.href = '/budget-machine';
           }}
           className="hidden md:block text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors tracking-wider uppercase"
         >
           Budget
-        </button> */}
+        </Button> */}
         {isAuthenticated === false && (
-          <button
-            onClick={() => setShowRegisterModal(true)}
+          <Button variant="ghost"             onClick={() => setShowRegisterModal(true)}
             className="flex items-center gap-0.5 md:gap-1.5 p-1.5 md:px-3 md:py-1.5 bg-brand-cyan/20 text-brand-cyan rounded-md border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 hover:bg-brand-cyan/30 text-[10px] md:text-xs font-mono transition-colors cursor-pointer"
           >
             <UserPlus size={11} className="md:w-[14px] md:h-[14px]" />
             <span className="hidden sm:inline">Register</span>
-          </button>
+          </Button>
         )}
         {isAuthenticated && onMyOutputsClick && (
-          <button
-            onClick={onMyOutputsClick}
+          <Button variant="ghost"             onClick={onMyOutputsClick}
             className="relative p-1.5 md:p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded hover:bg-neutral-800/30 cursor-pointer"
             title="Saved"
             aria-label="View saved outputs"
@@ -297,12 +287,11 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
                 {savedCount > 99 ? '99+' : savedCount}
               </span>
             )}
-          </button>
+          </Button>
         )}
         {/* My Branding Projects button hidden */}
         {/* {isAuthenticated && onMyBrandingsClick && (
-          <button
-            onClick={onMyBrandingsClick}
+          <Button variant="ghost"             onClick={onMyBrandingsClick}
             className="relative p-1.5 md:p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded hover:bg-neutral-800/30"
             title="My Branding Projects"
             aria-label="View my branding projects"
@@ -313,12 +302,11 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
                 {brandingsCount > 99 ? '99+' : brandingsCount}
               </span>
             )}
-          </button>
+          </Button>
         )} */}
         <AuthButton subscriptionStatus={subscriptionStatus} onCreditsClick={onCreditsClick} />
         {/* Theme button hidden */}
-        {/* <button
-          onClick={() => {
+        {/* <Button variant="ghost"           onClick={() => {
             toggleTheme();
             window.location.reload();
           }}
@@ -331,7 +319,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           ) : (
             <Moon size={11} className="md:w-3 md:h-3" />
           )}
-        </button> */}
+        </Button> */}
       </div>
 
       {showRegisterModal && (

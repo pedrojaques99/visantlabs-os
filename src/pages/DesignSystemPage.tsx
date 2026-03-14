@@ -33,6 +33,9 @@ import { Modal } from '../components/ui/Modal';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import type { CommunityPrompt } from '../types/communityPrompts';
+import { PremiumButton } from '../components/ui/PremiumButton';
+import { GlassPanel } from '../components/ui/GlassPanel';
+import { MicroTitle } from '../components/ui/MicroTitle';
 
 /**
  * Helper component to display a color swatch with copy functionality.
@@ -62,8 +65,7 @@ const ColorSwatch: React.FC<{
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h4 className="font-mono font-semibold text-neutral-200">{name}</h4>
-            <button
-              onClick={copyToClipboard}
+            <Button variant="ghost" onClick={copyToClipboard}
               className="p-1 hover:bg-neutral-800/50 rounded transition-colors"
               title="Copy CSS variable"
             >
@@ -72,7 +74,7 @@ const ColorSwatch: React.FC<{
               ) : (
                 <Copy className="w-3 h-3 text-neutral-400" />
               )}
-            </button>
+            </Button>
           </div>
           <p className="font-mono text-xs text-neutral-500 mb-2 break-all">
             {variable}
@@ -247,6 +249,17 @@ export const DesignSystemPage: React.FC = () => {
         { id: 'canvas-toolbar', label: t('designSystem.components.canvasToolbar.title') || 'Canvas Toolbar' },
         { id: 'canvas-header', label: t('designSystem.components.canvasHeader.title') || 'Canvas Header' },
         { id: 'canvas-flow', label: t('designSystem.components.canvasFlow.title') || 'Canvas Flow' },
+        { id: 'premium-button', label: t('designSystem.components.premiumButton.title') || 'Premium Button' },
+        { id: 'glass-panel', label: t('designSystem.components.glassPanel.title') || 'Glass Panel' },
+        { id: 'micro-title', label: t('designSystem.components.microTitle.title') || 'Micro Title' },
+      ],
+    },
+    {
+      id: 'patterns',
+      label: t('designSystem.tabs.patterns') || 'Patterns',
+      icon: LayoutGrid,
+      sections: [
+        { id: 'setup-container', label: t('designSystem.patterns.setupContainer.title') || 'Setup Container' },
       ],
     },
     {
@@ -430,28 +443,26 @@ export const DesignSystemPage: React.FC = () => {
       <div className="mt-8 pt-8 border-t border-neutral-800/50">
         <div className="flex items-center justify-between gap-4">
           {previousTab ? (
-            <button
-              onClick={() => handleNavigationClick(previousTab)}
+            <Button variant="ghost" onClick={() => handleNavigationClick(previousTab)}
               className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-brand-cyan/30"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>{t('designSystem.navigation.previous') || 'Previous'}</span>
               <span className="text-neutral-500">•</span>
               <span className="text-neutral-500">{getTabLabel(previousTab)}</span>
-            </button>
+            </Button>
           ) : (
             <div />
           )}
           {nextTab && (
-            <button
-              onClick={() => handleNavigationClick(nextTab)}
+            <Button variant="ghost" onClick={() => handleNavigationClick(nextTab)}
               className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-brand-cyan/30 ml-auto"
             >
               <span className="text-neutral-500">{getTabLabel(nextTab)}</span>
               <span className="text-neutral-500">•</span>
               <span>{t('designSystem.navigation.next') || 'Next'}</span>
               <ChevronRight className="w-4 h-4" />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -530,15 +541,14 @@ export const DesignSystemPage: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        const event = new KeyboardEvent('keydown', {
-                          key: 'k',
-                          ctrlKey: true,
-                          bubbles: true,
-                        });
-                        document.dispatchEvent(event);
-                      }}
+                    <Button variant="ghost" onClick={() => {
+                      const event = new KeyboardEvent('keydown', {
+                        key: 'k',
+                        ctrlKey: true,
+                        bubbles: true,
+                      });
+                      document.dispatchEvent(event);
+                    }}
                       className="hidden md:flex items-center gap-2 px-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-brand-cyan/30 transition-colors text-sm font-mono"
                       title={t('designSystem.commandPalette.searchShortcut') || 'Search (Ctrl+K)'}
                     >
@@ -548,7 +558,7 @@ export const DesignSystemPage: React.FC = () => {
                         <Command className="w-3 h-3" />
                         <kbd className="text-xs">K</kbd>
                       </div>
-                    </button>
+                    </Button>
                   </div>
                 )}
 
@@ -723,7 +733,7 @@ export const DesignSystemPage: React.FC = () => {
                             <h3 className="font-mono font-semibold text-neutral-200 mb-2">{font.name}</h3>
                             <p className="text-sm text-neutral-400 font-mono mb-4">{font.description}</p>
                             <p className={cn('text-2xl', font.className)}>
-                              The quick brown fox jumps over the lazy dog
+                              Aa
                             </p>
                             <p className={cn('text-lg mt-2', font.className)}>
                               ABCDEFGHIJKLMNOPQRSTUVWXYZ
@@ -783,13 +793,13 @@ export const DesignSystemPage: React.FC = () => {
                         </div>
                         <Separator />
                         <div className="flex flex-wrap gap-4">
-                          <Button size="sm">Small</Button>
-                          <Button size="default">Default</Button>
-                          <Button size="lg">Large</Button>
-                          <Button size="icon">
+                          <Button variant="ghost" size="sm">Small</Button>
+                          <Button variant="ghost" size="default">Default</Button>
+                          <Button variant="ghost" size="lg">Large</Button>
+                          <Button variant="ghost" size="icon">
                             <Palette className="w-4 h-4" />
                           </Button>
-                          <Button size="sidebar">Sidebar</Button>
+                          <Button variant="ghost" size="sidebar">Sidebar</Button>
                         </div>
                         <Separator />
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
@@ -803,13 +813,13 @@ export const DesignSystemPage: React.FC = () => {
                           </div>
                           <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
                             <div className="text-xs font-mono text-neutral-500 mb-1">Icon</div>
-                            <Button size="icon" className="w-full">
+                            <Button variant="ghost" size="icon" className="w-full">
                               <Palette className="w-4 h-4" />
                             </Button>
                           </div>
                           <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
                             <div className="text-xs font-mono text-neutral-500 mb-1">Large</div>
-                            <Button size="lg" className="w-full">Large</Button>
+                            <Button variant="ghost" size="lg" className="w-full">Large</Button>
                           </div>
                         </div>
                       </CardContent>
@@ -1196,7 +1206,7 @@ export const DesignSystemPage: React.FC = () => {
                                 <Badge variant="outline">Sizes</Badge>
                                 <Badge variant="outline">Footer</Badge>
                               </div>
-                              <Button onClick={() => setShowSharedModal(true)} variant="outline" size="sm">
+                              <Button variant="ghost" onClick={() => setShowSharedModal(true)} size="sm">
                                 Open Shared Modal
                               </Button>
                             </div>
@@ -1213,7 +1223,7 @@ export const DesignSystemPage: React.FC = () => {
                                 <Badge variant="outline">Danger</Badge>
                                 <Badge variant="outline">Info</Badge>
                               </div>
-                              <Button onClick={() => setShowModal(true)} variant="outline" size="sm">
+                              <Button variant="ghost" onClick={() => setShowModal(true)} size="sm">
                                 {t('designSystem.modal.exampleTitle') || 'Open Confirmation Modal'}
                               </Button>
                             </div>
@@ -1655,6 +1665,149 @@ export const DesignSystemPage: React.FC = () => {
                         </div>
                       </CardContent>
                     </Card>
+
+                    {/* Essentialist Components */}
+                    <Card id="premium-button">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.premiumButton.title') || 'Premium Button'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.premiumButton.description') || 'A highly animated, glitch-capable action button with shimmer effects'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Agent-First LLM Metadata */}
+                        <script type="application/json" data-component-api="PremiumButton" dangerouslySetInnerHTML={{
+                          __html: JSON.stringify({
+                            import: "import { PremiumButton } from '@/components/ui/PremiumButton';",
+                            props: {
+                              isLoading: "boolean",
+                              loadingText: "string (default: 'LOADING...')",
+                              icon: "LucideIcon | null (default: ArrowRight)",
+                              disabled: "boolean (merges with isLoading)"
+                            }
+                          })
+                        }} />
+                        <div className="flex flex-col max-w-sm gap-4">
+                          <PremiumButton>Continue</PremiumButton>
+                          <PremiumButton isLoading loadingText="ANALYZING...">Continue</PremiumButton>
+                          <PremiumButton disabled>Disabled Action</PremiumButton>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card id="glass-panel">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.glassPanel.title') || 'Glass Panel'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.glassPanel.description') || 'Essentialist translucent layout container to establish visual hierarchy'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Agent-First LLM Metadata */}
+                        <script type="application/json" data-component-api="GlassPanel" dangerouslySetInnerHTML={{
+                          __html: JSON.stringify({
+                            import: "import { GlassPanel } from '@/components/ui/GlassPanel';",
+                            props: {
+                              padding: "'none' | 'sm' | 'md' | 'lg' (default: 'none')"
+                            }
+                          })
+                        }} />
+                        <GlassPanel padding="md" className="max-w-md">
+                          <p className="text-sm font-mono text-neutral-300">Glass Panel Content with 'md' padding</p>
+                        </GlassPanel>
+                        <GlassPanel padding="lg" className="max-w-md border-brand-cyan/20">
+                          <p className="text-sm font-mono text-brand-cyan text-center">Large padded panel</p>
+                        </GlassPanel>
+                      </CardContent>
+                    </Card>
+
+                    <Card id="micro-title">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.microTitle.title') || 'Micro Title'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.microTitle.description') || 'Heavily spaced uppercase mono typography for precise labeling'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Agent-First LLM Metadata */}
+                        <script type="application/json" data-component-api="MicroTitle" dangerouslySetInnerHTML={{
+                          __html: JSON.stringify({
+                            import: "import { MicroTitle } from '@/components/ui/MicroTitle';",
+                            props: {
+                              as: "'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'span' | 'p' (default: 'span')"
+                            }
+                          })
+                        }} />
+                        <div className="p-6 border border-neutral-800/50 rounded-md bg-neutral-900/30">
+                          <MicroTitle as="h3" className="mb-2 block">Settings</MicroTitle>
+                          <p className="text-sm text-neutral-400">Regular text follows the micro title.</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <TabNavigation />
+                  </TabsContent>
+
+                  {/* Patterns Tab */}
+                  <TabsContent value="patterns" className="space-y-6">
+                    <Card id="setup-container">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.patterns.setupContainer.title') || 'Setup Container'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.patterns.setupContainer.description') || 'A standardized layout for configuration sidebars combining MicroTitle, GlassPanel, and PremiumButton.'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-8">
+                        {/* Pattern Documentation */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div className="space-y-4">
+                            <h4 className="text-sm font-semibold text-neutral-300 font-mono">Usage Guidelines</h4>
+                            <ul className="text-xs text-neutral-500 font-mono space-y-2 list-disc list-inside">
+                              <li>Use <code className="text-brand-cyan">MicroTitle</code> for section headers (uppercase, tracking-wider).</li>
+                              <li>Wrap configuration inputs in a <code className="text-brand-cyan">GlassPanel</code> for visual depth.</li>
+                              <li>Place the primary action in a <code className="text-brand-cyan">PremiumButton</code> at the bottom, preferably sticky.</li>
+                              <li>Maintain consistent <code className="text-brand-cyan">gap-8</code> between major sections.</li>
+                            </ul>
+                          </div>
+
+                          <div className="space-y-4 flex flex-col p-6 rounded-xl border border-neutral-800/50 bg-neutral-900/30">
+                            <MicroTitle className="px-1 mb-2">SETUP PREVIEW</MicroTitle>
+                            <GlassPanel padding="md" className="flex-1 min-h-[100px] flex items-center justify-center border-dashed border-white/10">
+                              <span className="text-[10px] font-mono text-neutral-600">CONFIGURATION AREA</span>
+                            </GlassPanel>
+                            <div className="pt-4 border-t border-white/5">
+                              <PremiumButton className="w-full">
+                                CONTINUE
+                              </PremiumButton>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Separator className="bg-neutral-800/50" />
+
+                        <div className="space-y-4">
+                          <h4 className="text-sm font-semibold text-neutral-300 font-mono">Real-world Example (Mockup Machine)</h4>
+                          <div className="p-4 bg-neutral-950 border border-white/5 rounded-md overflow-x-auto">
+                            <pre className="text-[10px] font-mono text-neutral-400">
+                              {`/* Simplified Structure */
+<div className="flex flex-col h-full gap-8">
+  <div className="flex-1 min-h-0 flex flex-col gap-4">
+    <MicroTitle>CONFIGURAÇÕES</MicroTitle>
+    <GlassPanel className="flex-1 overflow-y-auto">
+      <BrandGuidelineSelector />
+    </GlassPanel>
+  </div>
+  
+  <div className="sticky bottom-0 bg-neutral-900/50 backdrop-blur-sm">
+    <PremiumButton>CONTINUE</PremiumButton>
+  </div>
+</div>`}
+                            </pre>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
                     <TabNavigation />
                   </TabsContent>
 

@@ -8,6 +8,7 @@ import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
 import { NodeButton } from './shared/node-button';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Input } from '@/components/ui/input'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -94,7 +95,7 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="p-5 min-w-[240px] max-w-[300px]"
+      className="min-w-[240px] max-w-[300px]"
     >
       {/* Output Handle */}
       <Handle
@@ -105,47 +106,63 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
       />
 
       {/* Header */}
-      <NodeHeader icon={FileText} title={t('canvasNodes.pdfNode.title')} />
+      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
+            <FileText size={16} className="text-brand-cyan" />
+          </div>
+          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
+            {t('canvasNodes.pdfNode.title') || 'PDF Node'}
+          </h3>
+        </div>
+      </div>
 
       {/* PDF Upload Section */}
-      {pdfBase64 || nodeData.pdfUrl ? (
-        <div className="mt-3 space-y-3">
-          <div className="relative group/pdf">
-            {PdfThumbnailComponent ? (
-              <PdfThumbnailComponent
-                pdfBase64={pdfBase64}
-                pdfUrl={nodeData.pdfUrl}
-                fileName={fileName}
-                onRemove={handleRemovePdf}
-                className="w-full h-32"
-              />
-            ) : (
-              <div className="w-full h-32 bg-neutral-900/50 border border-neutral-700/30 rounded flex items-center justify-center">
-                <FileText size={16} className="text-neutral-600" />
+      <div className="p-4 flex-1 flex flex-col gap-[var(--node-gap)]">
+        {pdfBase64 || nodeData.pdfUrl ? (
+          <div className="space-y-3">
+            <div className="relative group/pdf">
+              {PdfThumbnailComponent ? (
+                <PdfThumbnailComponent
+                  pdfBase64={pdfBase64}
+                  pdfUrl={nodeData.pdfUrl}
+                  fileName={fileName}
+                  onRemove={handleRemovePdf}
+                  className="w-full h-32 rounded-md border border-neutral-700/30 overflow-hidden"
+                />
+              ) : (
+                <div className="w-full h-32 bg-neutral-900/50 border border-neutral-700/30 rounded-md flex items-center justify-center">
+                  <FileText size={16} className="text-neutral-600" />
+                </div>
+              )}
+            </div>
+            {fileName && (
+              <div className="text-[10px] font-mono truncate text-brand-cyan px-1 uppercase tracking-wider">
+                {fileName}
               </div>
             )}
           </div>
-          {fileName && (
-            <div className="text-xs font-mono truncate text-brand-cyan px-1">
-              {fileName}
-            </div>
-          )}
-        </div>
-      ) : (
-        <>
-          <input
-            ref={pdfInputRef}
-            type="file"
-            accept="application/pdf"
-            onChange={handlePdfFileChange}
-            className="hidden"
-          />
-          <NodeButton onClick={handlePdfUploadClick}>
-            <UploadCloud size={14} />
-            Upload PDF
-          </NodeButton>
-        </>
-      )}
+        ) : (
+          <div className="flex flex-col gap-3">
+            <Input
+              ref={pdfInputRef}
+              type="file"
+              accept="application/pdf"
+              onChange={handlePdfFileChange}
+              className="hidden"
+            />
+            <NodeButton
+              variant="primary"
+              size="full"
+              onClick={handlePdfUploadClick}
+              className="nodrag shadow-sm backdrop-blur-sm"
+            >
+              <UploadCloud size={14} className="mr-2" />
+              {t('canvasNodes.pdfNode.uploadPdf') || 'Upload PDF'}
+            </NodeButton>
+          </div>
+        )}
+      </div>
     </NodeContainer>
   );
 });

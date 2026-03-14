@@ -54,6 +54,9 @@ plugin/Visant Copilot _Beta_/
 plugin/.agent/
 plugin/.firecrawl/
 
+#Scripts
+scripts/
+
 # Node
 node_modules/
 

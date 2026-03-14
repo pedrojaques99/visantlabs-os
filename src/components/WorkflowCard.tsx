@@ -5,6 +5,7 @@ import { cn } from '../lib/utils';
 import { authService } from '../services/authService';
 import type { CanvasWorkflow } from '../services/workflowApi';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
+import { Button } from '@/components/ui/button'
 
 interface WorkflowCardProps {
     workflow: CanvasWorkflow;
@@ -90,7 +91,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                     </div>
                     <div className="flex gap-1 flex-shrink-0">
                         {isAuthenticated && onDuplicate && (
-                            <button
+                            <Button variant="ghost" 
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onDuplicate();
@@ -99,10 +100,10 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                 title={isOwner ? t('workflows.actions.duplicate') || 'Duplicate' : t('workflows.actions.addToLibrary') || 'Add to Library'}
                             >
                                 {isOwner ? <Copy className="h-4 w-4" /> : <Download className="h-4 w-4" />}
-                            </button>
+                            </Button>
                         )}
                         {(isOwner || canEdit) && onEdit && (
-                            <button
+                            <Button variant="ghost" 
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onEdit?.();
@@ -111,10 +112,10 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                 title={t('workflows.actions.edit') || 'Edit'}
                             >
                                 <Edit2 className="h-4 w-4" />
-                            </button>
+                            </Button>
                         )}
                         {(isOwner || canEdit) && onDelete && (
-                            <button
+                            <Button variant="ghost" 
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onDelete?.();
@@ -123,7 +124,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                 title={t('workflows.actions.delete') || 'Delete'}
                             >
                                 <Trash2 className="h-4 w-4" />
-                            </button>
+                            </Button>
                         )}
                     </div>
                 </div>
@@ -154,7 +155,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                             </span>
                         )}
                         {isAuthenticated && onToggleLike && (
-                            <button
+                            <Button variant="ghost" 
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onToggleLike();
@@ -167,7 +168,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                             >
                                 <Heart size={12} className={isLiked ? 'fill-current' : ''} />
                                 <span>{likesCount}</span>
-                            </button>
+                            </Button>
                         )}
                     </div>
 

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { X, Lock, Shield, Key, AlertCircle, ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ApiKeyPolicyModalProps {
   isOpen: boolean;
@@ -33,13 +34,13 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
         className="relative max-w-4xl w-full max-h-[90vh] bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl p-6 md:p-8 my-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
+        <Button variant="ghost" 
           onClick={onClose}
           className="absolute top-4 right-4 bg-neutral-800 hover:bg-neutral-700 p-2 rounded-md text-neutral-300 hover:text-white transition-colors z-10"
           title="Close"
         >
           <X size={20} />
-        </button>
+        </Button>
 
         <div className="pr-8">
           <div className="flex items-center gap-3 mb-2">

@@ -26,6 +26,16 @@ class OperationValidator {
       return { valid: false, errors };
     }
 
+    // Normalization: Figma often uses "HUG" but we expect "AUTO"
+    if (op.props) {
+      if (op.props.primaryAxisSizingMode === 'HUG') op.props.primaryAxisSizingMode = 'AUTO';
+      if (op.props.counterAxisSizingMode === 'HUG') op.props.counterAxisSizingMode = 'AUTO';
+    }
+    if ((op as any).layoutMode) {
+      if ((op as any).primaryAxisSizingMode === 'HUG') (op as any).primaryAxisSizingMode = 'AUTO';
+      if ((op as any).counterAxisSizingMode === 'HUG') (op as any).counterAxisSizingMode = 'AUTO';
+    }
+
     if (!op.type) {
       errors.push('Missing operation type');
       return { valid: false, errors };

@@ -96,7 +96,7 @@ export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({
             <div className="flex flex-wrap items-center gap-2 w-full">
                 {/* Hex Input Group */}
                 <div className="flex gap-2 flex-1 w-full min-w-[180px]">
-                    <input
+                    <Input
                         type="text"
                         value={hexInput}
                         onChange={handleHexInputChange}
@@ -109,7 +109,7 @@ export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({
                             isValidHex && "border-brand-cyan/30"
                         )}
                     />
-                    <button
+                    <Button variant="brand" 
                         type="button"
                         onClick={handleAddCustomColor}
                         disabled={disabled || !isValidHex || limitReached}
@@ -119,7 +119,7 @@ export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({
                         )}
                     >
                         {t('common.add')}
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Color Squares */}
@@ -127,7 +127,7 @@ export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({
                     {allColors.map((color) => {
                         const isSelected = selectedColors.includes(color);
                         return (
-                            <button
+                            <Button variant="ghost" 
                                 key={color}
                                 type="button"
                                 onClick={() => isSelected ? onRemoveColor(color) : (!limitReached && onColorToggle(color))}
@@ -141,7 +141,7 @@ export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({
                                 title={color}
                             >
                                 {isSelected && <div className="w-1 h-1 bg-white rounded-full shadow-sm" />}
-                            </button>
+                            </Button>
                         );
                     })}
                 </div>

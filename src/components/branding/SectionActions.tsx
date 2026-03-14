@@ -5,6 +5,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
 import { extractTextFromContent } from '@/utils/brandingHelpers';
+import { Button } from '@/components/ui/button';
 
 interface SectionActionsProps {
   hasData: boolean;
@@ -64,7 +65,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
     return (
       <div className="flex items-center gap-1 opacity-100 transition-opacity duration-200">
         <Tooltip content={t('branding.save') || 'Save'} position="top">
-          <button
+          <Button variant="ghost" 
             onClick={(e) => {
               e.stopPropagation();
               onSave();
@@ -73,10 +74,10 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
             className="h-7 w-7 px-2 hover:bg-brand-cyan/20 rounded-md flex items-center justify-center text-brand-cyan hover:bg-brand-cyan/30 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             <Check className="h-4 w-4" />
-          </button>
+          </Button>
         </Tooltip>
         <Tooltip content={t('branding.cancelEdit') || 'Cancel'} position="top">
-          <button
+          <Button variant="ghost" 
             onClick={(e) => {
               e.stopPropagation();
               onEdit(); // Toggle edit mode off (dismiss)
@@ -85,7 +86,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               }`}
           >
             <X className="h-4 w-4" />
-          </button>
+          </Button>
         </Tooltip>
       </div>
     );
@@ -96,7 +97,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
       {hasData && onRegenerate && (
         <Tooltip content={t('branding.regenerate') || 'Regenerate'} position="top">
-          <button
+          <Button variant="ghost" 
             onClick={(e) => {
               e.stopPropagation();
               onRegenerate();
@@ -108,12 +109,12 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               }`}
           >
             <RotateCw className="h-4 w-4" />
-          </button>
+          </Button>
         </Tooltip>
       )}
       {hasData && (
         <Tooltip content={copied ? (t('branding.copied') || 'Copied!') : (t('branding.copy') || 'Copy text')} position="top">
-          <button
+          <Button variant="ghost" 
             onClick={handleCopy}
             className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 transition-colors hover:text-brand-cyan ${theme === 'dark'
               ? 'hover:bg-neutral-950/70 text-neutral-400'
@@ -125,12 +126,12 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
             ) : (
               <Copy className="h-4 w-4" />
             )}
-          </button>
+          </Button>
         </Tooltip>
       )}
       {canEdit && (
         <Tooltip content={t('branding.edit') || 'Edit'} position="top">
-          <button
+          <Button variant="ghost" 
             onClick={(e) => {
               e.stopPropagation();
               onEdit();
@@ -141,12 +142,12 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               }`}
           >
             <Edit2 className="h-4 w-4" />
-          </button>
+          </Button>
         </Tooltip>
       )}
       {hasData && onFeedback && prompt && stepNumber && (
         <Tooltip content={feedbackGiven === 'up' ? (t('branding.feedbackGiven') || 'Thanks for your feedback!') : (t('branding.thumbsUp') || 'Good result')} position="top">
-          <button
+          <Button variant="ghost" 
             onClick={(e) => {
               e.stopPropagation();
               if (feedbackGiven !== null) return;
@@ -162,7 +163,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               }`}
           >
             <ThumbsUp className={`h-4 w-4 ${feedbackGiven === 'up' ? 'fill-current' : ''}`} />
-          </button>
+          </Button>
         </Tooltip>
       )}
     </div>

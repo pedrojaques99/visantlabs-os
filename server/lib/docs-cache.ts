@@ -1,99 +1,50 @@
 /**
  * Documentation Caching Service
- * Manages in-memory caching with TTL for generated specs
+ * Uses lru-cache for efficient in-memory caching with TTL
  */
 
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-  ttl: number; // milliseconds
-}
+import { LRUCache } from 'lru-cache';
 
-export class DocsCache {
-  private cache = new Map<string, CacheEntry<any>>();
-  private timers = new Map<string, NodeJS.Timeout>();
+const DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
 
+const cache = new LRUCache<string, any>({
+  max: 50,
+  ttl: DEFAULT_TTL,
+});
+
+export const docsCache = {
   /**
    * Get cached value or generate new one
    * @param key - Cache key
    * @param generator - Function to generate value if not cached
    * @param ttl - Time to live in milliseconds (default: 5 minutes)
    */
-  getOrGenerate<T>(
-    key: string,
-    generator: () => T,
-    ttl: number = 5 * 60 * 1000 // 5 minutes default
-  ): T {
-    const cached = this.cache.get(key);
-    const now = Date.now();
-
-    // Return cached value if still valid
-    if (cached && now - cached.timestamp < cached.ttl) {
-      return cached.data as T;
+  getOrGenerate<T>(key: string, generator: () => T, ttl: number = DEFAULT_TTL): T {
+    const cached = cache.get(key) as T | undefined;
+    if (cached !== undefined) {
+      return cached;
     }
 
-    try {
-      // Generate new value
-      const data = generator();
+    const data = generator();
+    cache.set(key, data, { ttl });
+    return data;
+  },
 
-      // Store in cache
-      this.cache.set(key, {
-        data,
-        timestamp: now,
-        ttl,
-      });
-
-      // Clear old timer if exists
-      if (this.timers.has(key)) {
-        clearTimeout(this.timers.get(key));
-      }
-
-      // Set auto-cleanup timer
-      const timer = setTimeout(() => {
-        this.cache.delete(key);
-        this.timers.delete(key);
-      }, ttl);
-
-      this.timers.set(key, timer);
-
-      return data;
-    } catch (error) {
-      // Log error but don't cache failures
-      console.error(`[DocsCache] Generation failed for key "${key}":`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Manually invalidate cache entry
-   */
+  /** Manually invalidate cache entry */
   invalidate(key: string): void {
-    this.cache.delete(key);
-    if (this.timers.has(key)) {
-      clearTimeout(this.timers.get(key));
-      this.timers.delete(key);
-    }
-  }
+    cache.delete(key);
+  },
 
-  /**
-   * Invalidate all cache entries
-   */
+  /** Invalidate all cache entries */
   invalidateAll(): void {
-    this.timers.forEach((timer) => clearTimeout(timer));
-    this.cache.clear();
-    this.timers.clear();
-  }
+    cache.clear();
+  },
 
-  /**
-   * Get cache statistics
-   */
+  /** Get cache statistics */
   getStats() {
     return {
-      totalEntries: this.cache.size,
-      keys: Array.from(this.cache.keys()),
+      totalEntries: cache.size,
+      keys: [...cache.keys()],
     };
-  }
-}
-
-// Singleton instance
-export const docsCache = new DocsCache();
+  },
+};

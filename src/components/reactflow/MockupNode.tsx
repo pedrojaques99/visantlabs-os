@@ -25,6 +25,8 @@ import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { applyPresetDataToNodes } from '@/lib/presetImportUtils';
+import { NodeButton } from './shared/node-button';
+import { Input } from '@/components/ui/input'
 
 const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -318,7 +320,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       dragging={dragging}
       warning={data.oversizedWarning}
       onFitToContent={handleFitToContent}
-      className="p-5"
+      className="min-w-[320px]"
       style={{
         height: 'auto'
       }}
@@ -352,15 +354,14 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       />
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-3">
+      <div className="flex items-center gap-3 node-margin">
         <CategoryIcon size={16} className={cn(categoryConfig.color)} />
         <h3 className="text-xs font-semibold text-neutral-300 font-mono">{categoryTitle}</h3>
       </div>
 
       {/* Preset Selector - Button to open modal */}
-      <div className="mb-2">
-        <button
-          onClick={(e) => {
+      <div className="node-margin">
+        <NodeButton variant="ghost"           onClick={(e) => {
             e.stopPropagation();
             setIsPresetModalOpen(true);
           }}
@@ -416,7 +417,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           </div>
           {/* Click indicator */}
           <ChevronDown size={14} className="text-neutral-400 flex-shrink-0" />
-        </button>
+        </NodeButton>
       </div>
 
 
@@ -424,7 +425,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       {/* Connected Images from BrandCore or legacy image node */}
       {/* HIERARCHY: Logo (priority 1) as primary focus, Identity (priority 2) as context/colors/vibe */}
       {hasBrandCoreConnection ? (
-        <div className="mb-3 space-y-3">
+        <div className="node-margin space-y-[var(--node-gap)]">
           {connectedLogo && (
             <ConnectedImagesDisplay
               images={[connectedLogo]}
@@ -477,8 +478,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Prompt Editor Toggle */}
       <div className="mb-2">
-        <button
-          onClick={(e) => {
+        <NodeButton variant="ghost"           onClick={(e) => {
             e.stopPropagation();
             const newIsOpen = !isPromptOpen;
             setIsPromptOpen(newIsOpen);
@@ -516,7 +516,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               isPromptOpen && 'rotate-90'
             )}
           />
-        </button>
+        </NodeButton>
       </div>
 
       {/* Prompt Editor Textarea */}
@@ -543,8 +543,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Color & Human Section - Collapsable */}
       <div className="mb-2">
-        <button
-          onClick={(e) => {
+        <NodeButton variant="ghost"           onClick={(e) => {
             e.stopPropagation();
             setIsColorSectionOpen(!isColorSectionOpen);
           }}
@@ -573,7 +572,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               isColorSectionOpen && 'rotate-90'
             )}
           />
-        </button>
+        </NodeButton>
 
         {isColorSectionOpen && (
           <div className="mt-3 space-y-3">
@@ -583,12 +582,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                 {t('canvasNodes.promptNode.model')}
               </NodeLabel>
               <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={(e) => {
+                <NodeButton variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     const newModel: GeminiModel = GEMINI_MODELS.FLASH;
                     setModel(newModel);
-
                     if (data.onUpdateData) {
                       data.onUpdateData(id, {
                         model: newModel,
@@ -612,14 +609,12 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   <span className="text-[10px] text-neutral-500 mt-0.5">
                     {getCreditsRequired(GEMINI_MODELS.FLASH)} {t('canvasNodes.promptNode.credits')}
                   </span>
-                </button>
+                </NodeButton>
 
-                <button
-                  onClick={(e) => {
+                <NodeButton variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     const newModel: GeminiModel = GEMINI_MODELS.NB2;
                     setModel(newModel);
-
                     if (data.onUpdateData) {
                       const updates: Partial<MockupNodeData> = { model: newModel };
                       if (!data.resolution) {
@@ -643,19 +638,17 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     isLoading && 'opacity-50 cursor-not-allowed'
                   )}
                 >
-                  <span className="text-2xl">🍌</span>
+                  <span className="text-2xl">Banana</span>
                   <span className="font-semibold text-sm">NB2</span>
                   <span className="text-[10px] text-neutral-500 mt-0.5">
                     {getCreditsRequired(GEMINI_MODELS.NB2, resolution)} {t('canvasNodes.promptNode.credits')}
                   </span>
-                </button>
+                </NodeButton>
 
-                <button
-                  onClick={(e) => {
+                <NodeButton variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     const newModel: GeminiModel = GEMINI_MODELS.PRO;
                     setModel(newModel);
-
                     if (data.onUpdateData) {
                       const updates: Partial<MockupNodeData> = { model: newModel };
                       if (!data.resolution) {
@@ -684,7 +677,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   <span className="text-[10px] text-neutral-500 mt-0.5">
                     {getCreditsRequired(GEMINI_MODELS.PRO, resolution)} {t('canvasNodes.promptNode.credits')}
                   </span>
-                </button>
+                </NodeButton>
               </div>
             </div>
 
@@ -737,7 +730,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               <h4 className="text-xs font-mono mb-1.5 text-neutral-500">{t('canvasNodes.mockupNode.colorPalette')}</h4>
               <div className="flex gap-3">
                 <div className="flex-grow relative flex items-center">
-                  <input
+                  <Input
                     type="text"
                     value={colorInput}
                     onChange={handleColorInputChange}
@@ -761,21 +754,16 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     ></span>
                   )}
                 </div>
-                <button
-                  onClick={(e) => {
+                <NodeButton variant="ghost" size="xs"                   onClick={(e) => {
                     e.stopPropagation();
                     handleAddColor();
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   disabled={isLoading || !isValidColor}
-                  className={cn(
-                    'px-2 rounded-md border text-xs font-mono transition-colors node-interactive',
-                    'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:bg-neutral-700/50 hover:text-neutral-300',
-                    (isLoading || !isValidColor) && 'opacity-50 cursor-not-allowed'
-                  )}
+                  className="nodrag nopan"
                 >
                   {t('canvasNodes.mockupNode.add')}
-                </button>
+                </NodeButton>
               </div>
               {selectedColors.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-1.5 min-h-[24px]">
@@ -786,16 +774,15 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                         style={{ backgroundColor: color }}
                       ></span>
                       <span className="font-mono text-[10px]">{color}</span>
-                      <button
-                        onClick={(e) => {
+                      <NodeButton variant="ghost" size="xs"                         onClick={(e) => {
                           e.stopPropagation();
                           handleRemoveColor(color);
                         }}
                         onMouseDown={(e) => e.stopPropagation()}
-                        className="rounded-md text-neutral-500 hover:text-white transition-colors node-interactive"
+                        className="p-1 min-w-0 h-auto"
                       >
                         <X size={10} />
-                      </button>
+                      </NodeButton>
                     </div>
                   ))}
                 </div>
@@ -833,7 +820,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       </div>
 
       {/* Generate Button */}
-      <button
+      <NodeButton 
+        variant="primary"
+        size="full"
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -844,7 +833,6 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         }}
         disabled={isLoading || !hasConnectedImage}
         className={cn(
-          'w-full px-2 py-1.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive',
           (isLoading || !hasConnectedImage) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
         )}
         title={!hasConnectedImage ? t('canvasNodes.mockupNode.connectBrandCoreHint') : undefined}
@@ -860,14 +848,13 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             {t('canvasNodes.mockupNode.generateMockup')}
           </>
         )}
-      </button>
+      </NodeButton>
 
 
 
       {/* Add Mockup Button */}
       <div className="mt-2 pt-2 border-t border-neutral-700/30 flex justify-center">
-        <button
-          onClick={(e) => {
+        <NodeButton variant="ghost" size="xs"           onClick={(e) => {
             e.stopPropagation();
             if (data.onAddMockupNode) {
               data.onAddMockupNode();
@@ -886,7 +873,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           title={t('canvasNodes.mockupNode.addAnotherMockupNode')}
         >
           <Plus size={12} />
-        </button>
+        </NodeButton>
       </div>
 
       {/* Preset Selection Modal */}

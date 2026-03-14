@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Cpu, Sparkles } from 'lucide-react';
+import { Cpu, Sparkles, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { authService } from '@/services/authService';
 import { Select } from '@/components/ui/select';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { ImageProvider, DesignType, GeminiModel, Resolution, AspectRatio } from '@/types/types';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { MicroTitle } from '@/components/ui/MicroTitle'
 
 interface OutputConfigSectionProps {
   mockupCount: number;
@@ -132,8 +135,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 // const isHd = res === 'HD';
 
                 return (
-                  <button
-                    key={res}
+                  <Button variant="ghost"                     key={res}
                     onClick={() => onResolutionChange(res as Resolution)}
                     className={`flex-1 flex flex-col items-center justify-center text-[10px] font-mono rounded transition-all duration-200 border cursor-pointer relative group ${isActive
                         ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
@@ -145,7 +147,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                     <SkeletonText loading={isGenerating}>
                       <span className={isActive ? 'font-bold' : ''}>{res}</span>
                     </SkeletonText>
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -161,7 +163,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
             <div
               className={`relative flex items-center rounded-md border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-800/50 border-neutral-700/50 hover:border-neutral-600' : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'}`}
             >
-              <input
+              <Input
                 type="number"
                 min={1}
                 max={4}
@@ -169,14 +171,28 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 onChange={(e) =>
                   onMockupCountChange(Math.min(Math.max(parseInt(e.target.value) || 1, 1), 4))
                 }
-                className={`w-full p-2.5 bg-transparent border-none focus:outline-none focus:ring-0 text-xs font-monoSync ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}
+                className={`w-full py-2.5 pl-3 pr-14 bg-transparent border-none focus:outline-none focus:ring-0 text-xs font-monoSync [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}
               />
-              <div className="absolute right-8 pointer-events-none">
+              <div className="absolute right-7 pointer-events-none">
                 <SkeletonText loading={isGenerating}>
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter">
+                  <MicroTitle className="text-[10px] tracking-tighter">
                     outputs
-                  </span>
+                  </MicroTitle>
                 </SkeletonText>
+              </div>
+              <div className={`absolute right-1 flex flex-col h-[80%] my-auto justify-center space-y-[1px] ${theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-300'} border-l pl-1`}>
+                <Button variant="ghost"                   type="button"
+                  onClick={() => onMockupCountChange(Math.min(mockupCount + 1, 4))}
+                  className={`flex items-center justify-center p-0.5 rounded-sm transition-colors ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-700/50' : 'text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200'}`}
+                >
+                  <ChevronUp size={12} />
+                </Button>
+                <Button variant="ghost"                   type="button"
+                  onClick={() => onMockupCountChange(Math.max(mockupCount - 1, 1))}
+                  className={`flex items-center justify-center p-0.5 rounded-sm transition-colors ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-700/50' : 'text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200'}`}
+                >
+                  <ChevronDown size={12} />
+                </Button>
               </div>
             </div>
           </div>
@@ -205,8 +221,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 const isSelected = aspectRatio === ratio;
 
                 return (
-                  <button
-                    key={ratio}
+                  <Button variant="ghost"                     key={ratio}
                     onClick={() => onAspectRatioChange(ratio)}
                     className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${isSelected
                         ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
@@ -222,12 +237,11 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                     <SkeletonText loading={isGenerating}>
                       <span className="text-[9px] font-mono mt-0.5">{ratio}</span>
                     </SkeletonText>
-                  </button>
+                  </Button>
                 );
               })}
 
-              <button
-                onClick={() => setShowOther(!showOther)}
+              <Button variant="ghost"                 onClick={() => setShowOther(!showOther)}
                 className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${isOtherSelected
                     ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
                     : theme === 'dark'
@@ -240,7 +254,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                     {t('mockup.otherAspectRatio') || 'OUTROS'}
                   </span>
                 </SkeletonText>
-              </button>
+              </Button>
             </div>
 
             {showOther && (
@@ -252,8 +266,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                   const isSelected = aspectRatio === ratio;
 
                   return (
-                    <button
-                      key={ratio}
+                    <Button variant="ghost"                       key={ratio}
                       onClick={() => {
                         onAspectRatioChange(ratio);
                         setShowOther(false);
@@ -272,7 +285,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                       <SkeletonText loading={isGenerating}>
                         <span className="text-[9px] font-mono mt-0.5">{ratio}</span>
                       </SkeletonText>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>

@@ -4,6 +4,9 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { getBrandingStepCredits } from '@/utils/creditCalculator';
 import { getSectionEmoji } from '@/utils/brandingHelpers';
+import { GlassPanel } from '@/components/ui/GlassPanel';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface EmptySectionCardProps {
   stepNumber: number;
@@ -38,24 +41,27 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
   };
 
   return (
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        if (!isBlocked) {
-          onGenerate();
-        }
-      }}
-      disabled={isGenerating || isBlocked}
-      className={`aspect-square border-2 rounded-xl p-4 md:p-6 active:scale-[0.98] transition-all duration-200 relative flex flex-col items-center justify-center gap-3 w-full ${isBlocked
-        ? theme === 'dark'
-          ? 'bg-neutral-950/30 border-neutral-700/50 cursor-not-allowed opacity-60'
-          : 'bg-neutral-50 border-neutral-300/50 cursor-not-allowed opacity-60'
-        : theme === 'dark'
-          ? 'bg-black border-white/10 hover:border-white/20 hover:bg-white/5 active:bg-white/10 cursor-pointer group'
-          : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400 hover:bg-neutral-200 active:bg-neutral-300 cursor-pointer group'
-        } ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
-      title={isBlocked ? `Bloqueado: requer ${getMissingDepsText()}` : undefined}
+    <GlassPanel
+      asChild
+      className={cn(
+        "aspect-square border-2 active:scale-[0.98] transition-all duration-200 relative flex flex-col items-center justify-center gap-3 w-full",
+        isBlocked
+          ? 'opacity-60 cursor-not-allowed border-red-500/20'
+          : 'border-white/10 hover:border-white/20 hover:bg-white/5 cursor-pointer group',
+        isGenerating && 'opacity-50 cursor-not-allowed'
+      )}
+      padding="none"
     >
+      <Button variant="ghost" 
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!isBlocked) {
+            onGenerate();
+          }
+        }}
+        disabled={isGenerating || isBlocked}
+        title={isBlocked ? `Bloqueado: requer ${getMissingDepsText()}` : undefined}
+      >
       {/* Blocked Icon Overlay */}
       {isBlocked && (
         <div className={`absolute top-2 left-2 p-1.5 rounded-md ${theme === 'dark' ? 'bg-red-500/20' : 'bg-red-100'
@@ -117,7 +123,8 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
             }`} />
         </div>
       )}
-    </button>
+      </Button>
+    </GlassPanel>
   );
 };
 

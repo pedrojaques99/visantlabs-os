@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, memo, useEffect } from 'react';
 import { Handle, Position, NodeResizer, type NodeProps, useReactFlow } from '@xyflow/react';
-import { UploadCloud, Palette, X, Copy, RefreshCw } from 'lucide-react';
+import { UploadCloud, Palette, X, RefreshCw } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { ColorExtractorNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -15,17 +15,17 @@ import { NodeActionBar } from './shared/NodeActionBar';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { Input } from '@/components/ui/input'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
-  const { setNodes, getNode, getZoom } = useReactFlow();
+  const { getZoom } = useReactFlow();
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const nodeData = data as ColorExtractorNodeData;
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [glitchText, setGlitchText] = useState('');
 
-  // Glitch effect for extraction state
   useEffect(() => {
     if (!nodeData.isExtracting) {
       setGlitchText('');
@@ -43,13 +43,11 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
     return () => clearInterval(glitchInterval);
   }, [nodeData.isExtracting]);
 
-  // Prioritize connected data over direct uploads
   const connectedImage = nodeData.connectedImage;
   const imageBase64 = connectedImage || nodeData.imageBase64;
   const extractedColors = nodeData.extractedColors || [];
   const isExtracting = nodeData.isExtracting || false;
 
-  // Format image URL - handle base64, data URLs, and HTTP(S) URLs
   const imageUrl = imageBase64
     ? (imageBase64.startsWith('data:') || imageBase64.startsWith('http')
       ? imageBase64
@@ -67,23 +65,13 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
 
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file', { duration: 3000 });
-      if (imageInputRef.current) {
-        imageInputRef.current.value = '';
-      }
       return;
     }
 
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
     if (file.size > MAX_FILE_SIZE) {
       toast.error('File size exceeds 10MB limit', { duration: 5000 });
-      if (imageInputRef.current) {
-        imageInputRef.current.value = '';
-      }
       return;
-    }
-
-    if (imageInputRef.current) {
-      imageInputRef.current.value = '';
     }
 
     try {
@@ -102,7 +90,6 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
       return;
     }
 
-    // Convert URLs to base64 if necessary
     let imageForExtraction = imageBase64;
 
     if (imageBase64.startsWith('http://') || imageBase64.startsWith('https://')) {
@@ -110,21 +97,16 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         imageForExtraction = await normalizeImageToBase64(imageBase64);
       } catch (error: any) {
         toast.error('Failed to load image', { duration: 3000 });
-        console.error('Failed to convert image URL to base64:', error);
         return;
       }
     }
 
-    // Pass shouldRandomize=true if this is a regeneration action
     await nodeData.onExtract(id, imageForExtraction, isRegeneration);
   }, [nodeData, id, imageBase64]);
 
   const handleRemoveImage = () => {
     if (nodeData.onUpdateData) {
       nodeData.onUpdateData(id, { imageBase64: undefined });
-    }
-    if (imageInputRef.current) {
-      imageInputRef.current.value = '';
     }
   };
 
@@ -134,7 +116,6 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
       toast.success(`Copied ${color} to clipboard`, { duration: 2000 });
     } catch (error) {
       console.error('Failed to copy color:', error);
-      toast.error('Failed to copy color', { duration: 3000 });
     }
   }, []);
 
@@ -162,7 +143,6 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
     const height = nodeData.imageHeight;
 
     if (width && height) {
-      // Calculate a reasonable size if image is too large
       let targetWidth = width;
       let targetHeight = height;
       const MAX_FIT_WIDTH = 1000;
@@ -175,14 +155,12 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
 
       fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), nodeData.onResize);
     } else {
-      // For nodes without extracted colors yet, reset to 'auto' height
       fitToContent(id, 320, 'auto', nodeData.onResize);
     }
   }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
 
   const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-    const { width, height } = params;
-    handleResizeWithDebounce(id, width, height, nodeData.onResize as any);
+    handleResizeWithDebounce(id, params.width, params.height, nodeData.onResize as any);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   return (
@@ -190,12 +168,8 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="p-5 min-w-[320px] max-w-[400px]"
-      onContextMenu={(e) => {
-        // Allow ReactFlow to handle the context menu event
-      }}
+      className="min-w-[320px] max-w-[400px]"
     >
-      {/* Input Handle - accepts image connections from ImageNode and OutputNode */}
       {selected && !dragging && (
         <NodeResizer
           color="brand-cyan"
@@ -217,17 +191,14 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         style={{ top: '90px' }}
       />
 
-      {/* Output Handle */}
       <Handle
         type="source"
         position={Position.Right}
         className="node-handle"
       />
 
-      {/* Header */}
       <NodeHeader icon={Palette} title="Color Extractor" />
 
-      {/* Image Upload Section */}
       <div className="mb-4">
         <NodeLabel>
           Image {connectedImage && <span className="text-[10px] text-neutral-500">(connected)</span>}
@@ -255,14 +226,14 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
           </div>
         ) : (
           <>
-            <input
+            <Input
               ref={imageInputRef}
               type="file"
               accept="image/*"
               onChange={handleFileChange}
               className="hidden"
             />
-            <NodeButton onClick={handleUploadClick}>
+            <NodeButton onClick={handleUploadClick} className="w-full">
               <UploadCloud size={14} />
               Upload Image
             </NodeButton>
@@ -270,12 +241,11 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         )}
       </div>
 
-      {/* Extract Button */}
       <NodeButton
         onClick={() => handleExtract(false)}
         disabled={!canExtract}
         variant="primary"
-        className="mb-4"
+        className="w-full mb-4"
       >
         {isExtracting ? (
           <>
@@ -290,7 +260,6 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         )}
       </NodeButton>
 
-      {/* Extracted Colors Display */}
       {extractedColors.length > 0 && (
         <div className="border-t border-neutral-700/30 pt-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -299,7 +268,8 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
               onClick={() => handleExtract(true)}
               disabled={!canExtract}
               variant="default"
-              className="w-auto px-3 py-2 mb-0"
+              size="xs"
+              className="px-2"
             >
               <RefreshCw size={12} />
               Regenerate All
@@ -310,8 +280,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
             {extractedColors.map((color, index) => (
               <div
                 key={`${color}-${index}`}
-                className="flex items-center gap-2 p-2 bg-neutral-900/50 rounded border border-neutral-700/30 hover:border-[brand-cyan]/50 transition-colors group/color cursor-pointer hover:bg-neutral-800/50 opacity-0 animate-[fadeInScale_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards] relative"
-                style={{ animationDelay: `${index * 50}ms` }}
+                className="flex items-center gap-2 p-2 bg-neutral-900/50 rounded border border-neutral-700/30 hover:border-[brand-cyan]/50 transition-colors group/color cursor-pointer hover:bg-neutral-800/50 relative"
                 onClick={() => handleCopyColor(color)}
                 title="Click to copy hex code"
               >
@@ -323,40 +292,24 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
                   {color}
                 </span>
 
-                {/* Actions: Regenerate & Edit */}
-                <div
-                  className="flex items-center gap-1 flex-shrink-0 relative z-20"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {/* Regenerate Single Color */}
+                <div className="flex items-center gap-1 flex-shrink-0 relative z-20" onClick={(e) => e.stopPropagation()}>
                   <div
-                    className="p-1.5 rounded hover:bg-neutral-700/50 opacity-0 group-hover/color:opacity-100 transition-opacity cursor-pointer relative"
+                    className="p-1 rounded hover:bg-neutral-700/50 opacity-0 group-hover/color:opacity-100 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
-                      e.preventDefault();
                       handleRegenerateOne(index);
                     }}
-                    title="Regenerate only this color"
                   >
-                    <RefreshCw size={10} className="text-neutral-400 hover:text-brand-cyan transition-colors" />
+                    <RefreshCw size={10} className="text-neutral-400 hover:text-brand-cyan" />
                   </div>
-
-                  {/* Manual Edit via invisible input + visible icon */}
                   <div className="relative w-5 h-5 flex items-center justify-center opacity-0 group-hover/color:opacity-100 transition-opacity">
                     <input
                       type="color"
                       value={color}
-                      onClick={(e) => e.stopPropagation()}
                       onChange={(e) => handleColorChange(index, e.target.value)}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
-                      title="Edit specific color"
                     />
-                    {/* Visual fake icon for edit */}
-                    <div className="p-1 rounded hover:bg-neutral-700/50 pointer-events-none">
-                      <div className="w-2.5 h-2.5 rounded-full border border-neutral-400/50 bg-transparent flex items-center justify-center">
-                        <div className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
-                      </div>
-                    </div>
+                    <div className="w-2.5 h-2.5 rounded-full border border-neutral-400/50 bg-neutral-400" />
                   </div>
                 </div>
               </div>
@@ -367,26 +320,31 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
 
       {!dragging && imageUrl && !connectedImage && (
         <NodeActionBar selected={selected} getZoom={getZoom}>
-          <button
+          <NodeButton variant="ghost" size="xs"
             onClick={(e) => {
               e.stopPropagation();
               handleRemoveImage();
             }}
-            className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
+            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
             title="Remove image"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <X size={12} strokeWidth={2} />
-          </button>
+          </NodeButton>
         </NodeActionBar>
       )}
     </NodeContainer>
   );
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.id === nextProps.id &&
+    prevProps.selected === nextProps.selected &&
+    prevProps.dragging === nextProps.dragging &&
+    prevProps.data.isExtracting === nextProps.data.isExtracting &&
+    prevProps.data.imageBase64 === nextProps.data.imageBase64 &&
+    prevProps.data.connectedImage === nextProps.data.connectedImage &&
+    prevProps.data.extractedColors === nextProps.data.extractedColors
+  );
 });
 
 ColorExtractorNode.displayName = 'ColorExtractorNode';
-
-
-
-
-

@@ -91,6 +91,7 @@ import { isLocalDevelopment } from '@/utils/env';
 import { ExportPanel } from '../components/ui/ExportPanel';
 import type { CommunityPrompt } from '../types/communityPrompts';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { Input } from '@/components/ui/input'
 
 
 // Node types
@@ -4011,7 +4012,7 @@ export const CanvasPage: React.FC = () => {
         )}
 
         {/* JSON Import — hidden file input */}
-        <input
+        <Input
           ref={importJsonInputRef}
           type="file"
           accept=".json"

@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button'
 
 interface EdgeContextMenuProps {
   x: number;
@@ -28,15 +29,15 @@ export const EdgeContextMenu: React.FC<EdgeContextMenuProps> = ({
     >
       <div className="px-2 py-1.5 border-b border-neutral-700/30 flex items-center justify-between sticky top-0 bg-neutral-950/90 backdrop-blur-sm z-10">
         <span className="text-xs font-mono text-neutral-400 uppercase">Connection</span>
-        <button
+        <Button variant="ghost" 
           onClick={onClose}
           className="p-0.5 text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer"
         >
           <X size={12} />
-        </button>
+        </Button>
       </div>
 
-      <button
+      <Button variant="ghost" 
         onClick={() => {
           onRemove();
           onClose();
@@ -45,7 +46,7 @@ export const EdgeContextMenu: React.FC<EdgeContextMenuProps> = ({
       >
         <Trash2 size={14} />
         Remove Connection
-      </button>
+      </Button>
     </div>
   );
 };

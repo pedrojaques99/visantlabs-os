@@ -1,5 +1,18 @@
 import jwt from 'jsonwebtoken';
+import { Request } from 'express';
 import { JWT_SECRET } from './jwtSecret.js';
+
+/**
+ * Get the client IP address from a request.
+ * Handles X-Forwarded-For header for proxied requests.
+ */
+export function getClientIp(req: Request): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip = forwarded
+    ? (typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : forwarded[0])
+    : req.socket.remoteAddress || 'unknown';
+  return ip || 'unknown';
+}
 
 /**
  * Extracts the user ID from a JWT token string.

@@ -131,10 +131,16 @@ export const DocsPage: React.FC = () => {
       id: 'mcp',
       label: 'MCP Tools',
       icon: Terminal,
-      sections: mcpSpec?.tools.map(tool => ({
-        id: `tool-${tool.name}`,
-        label: tool.name
-      })) || [],
+      sections: [
+        { id: 'mcp-overview', label: 'Overview' },
+        { id: 'mcp-setup', label: 'Setup & Connection' },
+        { id: 'mcp-auth', label: 'Authentication' },
+        { id: 'mcp-figma-tools', label: 'Figma MCP Tools' },
+        ...(mcpSpec?.tools.map(tool => ({
+          id: `tool-${tool.name}`,
+          label: tool.name
+        })) || []),
+      ],
     },
     {
       id: 'plugin',
@@ -195,12 +201,19 @@ export const DocsPage: React.FC = () => {
       lines.push(`\n## Overview\nThe canvas is a React Flow graph stored as a project with \`nodes[]\` and \`edges[]\` arrays.\nThere is no individual node CRUD — to add/update/remove a node: GET the project, mutate the array, PUT the full array back.\n\n**Workflow:**\n1. \`POST /api/canvas\` — create project\n2. \`GET /api/canvas/:id\` — fetch current nodes\n3. Mutate locally\n4. \`PUT /api/canvas/:id\` — persist the full nodes array`);
       lines.push(`\n## Projects CRUD\n\n### GET /api/canvas\nList all projects for the authenticated user.\n\`\`\`json\n{ "projects": [{ "_id": "...", "name": "...", "nodes": [...], "edges": [...], "createdAt": "...", "updatedAt": "..." }] }\n\`\`\``);
       lines.push(`\n### GET /api/canvas/:id\nGet a single project by ID.\n\`\`\`json\n{ "project": { "_id": "...", "name": "...", "nodes": [...], "edges": [...] } }\n\`\`\``);
-      lines.push(`\n### POST /api/canvas\nCreate a new canvas project.\n**Body:**\n\`\`\`json\n{\n  "name": "My Canvas",\n  "nodes": [\n    {\n      "id": "prompt-1",\n      "type": "prompt",\n      "position": { "x": 100, "y": 100 },\n      "data": { "type": "prompt", "prompt": "A product photo on white background", "model": "gemini-2.0-flash-exp" }\n    }\n  ],\n  "edges": []\n}\n\`\`\`\n**Response:** \`{ "project": { "_id": "abc123", ... } }\``);
+      lines.push(`\n### POST /api/canvas\nCreate a new canvas project.\n**Body:**\n\`\`\`json\n{\n  "name": "My Canvas",\n  "nodes": [\n    {\n      "id": "prompt-1",\n      "type": "prompt",\n      "position": { "x": 100, "y": 100 },\n      "data": { "type": "prompt", "prompt": "A product photo on white background", "model": "gemini-2.5-flash" }\n    }\n  ],\n  "edges": []\n}\n\`\`\`\n**Response:** \`{ "project": { "_id": "abc123", ... } }\``);
       lines.push(`\n### PUT /api/canvas/:id\nUpdate a project. Send only fields to change; nodes/edges require the full array.\n**Body:** \`{ "name"?: string, "nodes"?: Node[], "edges"?: Edge[], "drawings"?: any[] }\`\n**Limits:** max 10 000 nodes, 15 MB payload after R2 offload.`);
       lines.push(`\n### DELETE /api/canvas/:id\nDelete a project permanently.\n**Response:** \`{ "success": true }\``);
       lines.push(`\n## Node Structure\nEvery node follows the React Flow node schema:\n\`\`\`json\n{\n  "id": "unique-id",\n  "type": "prompt",\n  "position": { "x": 0, "y": 0 },\n  "width": 320,\n  "height": 240,\n  "data": {\n    "type": "prompt",\n    "prompt": "...",\n    ...typeSpecificFields\n  }\n}\n\`\`\``);
-      lines.push(`\n## Node Types\n| type | description | key data fields |\n|------|-------------|----------------|\n| \`prompt\` | Text-to-image generation | prompt, model, aspectRatio, resolution, resultImageUrl |\n| \`image\` | Display a mockup/image | mockup: { imageUrl, ... } |\n| \`output\` | Result viewer (receives from flow nodes) | resultImageUrl, resultVideoUrl, sourceNodeId |\n| \`merge\` | Combine 2+ connected images with AI | prompt, model, resultImageUrl |\n| \`edit\` | Edit image with Mockup Machine | uploadedImage, referenceImage, tags[], model, designType |\n| \`upscale\` | AI upscaling (Gemini) | targetResolution, resultImageUrl, connectedImage |\n| \`upscaleBicubic\` | Bicubic shader upscaling | scaleFactor, sharpening, resultImageUrl, resultVideoUrl |\n| \`mockup\` | AI mockup from preset templates | selectedPreset, selectedColors[], withHuman, customPrompt |\n| \`angle\` | Re-render with camera angle preset | selectedAngle, resultImageUrl, connectedImage |\n| \`texture\` | Apply 3D texture/style preset | selectedPreset, resultImageUrl, connectedImage |\n| \`ambience\` | Apply background/environment preset | selectedPreset, resultImageUrl, connectedImage |\n| \`luminance\` | Apply light setup preset | selectedPreset, resultImageUrl, connectedImage |\n| \`shader\` | GLSL shader effects (halftone, VHS, ASCII…) | shaderType, dotSize, contrast, resultVideoUrl |\n| \`colorExtractor\` | Extract color palette from image | connectedImage, extractedColors: string[] |\n| \`text\` | Editable text block (connects to prompt/chat) | text: string |\n| \`logo\` | Logo upload node | logoImageUrl, logoBase64 |\n| \`pdf\` | Identity guide PDF upload | pdfUrl, fileName |\n| \`videoInput\` | Video upload for shader/processing | uploadedVideoUrl |\n| \`video\` | Video generation via Veo | prompt, model, aspectRatio, duration, resultVideoUrl |\n| \`brand\` | Brand identity extractor (legacy) | logoImage, identityPdfUrl, brandIdentity |\n| \`brandCore\` | Brand catalyst — generates visual prompts | connectedLogo, connectedPdf, visualPrompts, brandIdentity |\n| \`strategy\` | Brand strategy generation | strategyType, prompt, strategyData |\n| \`director\` | AI-assisted prompt builder with tag selection | connectedImage, suggestedTags, generatedPrompt |\n| \`chat\` | Conversational AI with multimodal context | messages[], model, systemPrompt, connectedImage1..4 |`);
-      lines.push(`\n## Edges\n\`\`\`json\n{ "id": "e1", "source": "prompt-1", "target": "output-1", "sourceHandle": "output", "targetHandle": "input" }\n\`\`\`\n\n| Connection | sourceHandle | targetHandle | Effect |\n|------------|-------------|--------------|--------|\n| image → merge | output | input-1 / input-2 | Feeds source image into merge |\n| prompt → output | output | input | Generated image to output display |\n| text → prompt | output | text-input | Text syncs to prompt node |\n| logo → brandCore | output | logo-input | Logo fed to brand core |\n| pdf → brandCore | output | identity-input | PDF identity guide to brand core |\n| brandCore → mockup | output | brand-input | Brand prompts/colors to mockup |\n| strategy → brandCore | output | strategy-input | Strategy data consolidated |\n| image → chat | output | input-1..input-4 | Visual context to chat node |`);
+      lines.push(`\n## Node Types\n| type | description | key data fields |\n|------|-------------|----------------|\n| \`prompt\` | Text-to-image generation | prompt, model, aspectRatio, resolution, resultImageUrl |\n| \`image\` | Display a mockup/image | mockup: { imageUrl, ... } |\n| \`output\` | Result viewer (receives from flow nodes) | resultImageUrl, resultVideoUrl, sourceNodeId |\n| \`merge\` | Combine 2+ connected images with AI | prompt, model, resultImageUrl |\n| \`edit\` | Edit image with Mockup Machine | uploadedImage, referenceImage, tags[], model, designType |\n| \`upscale\` | AI upscaling (Gemini) | targetResolution, resultImageUrl, connectedImage |\n| \`upscaleBicubic\` | Bicubic shader upscaling | scaleFactor, sharpening, resultImageUrl, resultVideoUrl |\n| \`mockup\` | AI mockup from preset templates | selectedPreset, selectedColors[], withHuman, customPrompt |\n| \`angle\` | Re-render with camera angle preset | selectedAngle, resultImageUrl, connectedImage |\n| \`texture\` | Apply 3D texture/style preset | selectedPreset, resultImageUrl, connectedImage |\n| \`ambience\` | Apply background/environment preset | selectedPreset, resultImageUrl, connectedImage |\n| \`luminance\` | Apply light setup preset | selectedPreset, resultImageUrl, connectedImage |\n| \`shader\` | GLSL shader effects (halftone, VHS, ASCII…) | shaderType, dotSize, contrast, resultVideoUrl |\n| \`colorExtractor\` | Extract color palette from image | connectedImage, extractedColors: string[] |\n| \`text\` | Editable text block (connects to prompt/chat) | text: string |\n| \`logo\` | Logo upload node | logoImageUrl, logoBase64 |\n| \`pdf\` | Identity guide PDF upload | pdfUrl, fileName |\n| \`videoInput\` | Video upload for shader/processing | uploadedVideoUrl |\
+| \`video\` | Video generation via Veo | prompt, model, aspectRatio, duration, resultVideoUrl |\
+| \`brand\` | Brand identity extractor (legacy) | logoImage, identityPdfUrl, brandIdentity |\
+| \`brandCore\` | Brand catalyst — generates visual prompts | connectedLogo, connectedPdf, visualPrompts, brandIdentity |\
+| \`strategy\` | Brand strategy generation | strategyType, prompt, strategyData |\
+| \`director\` | AI-assisted prompt builder with tag selection | connectedImage, suggestedTags, generatedPrompt |\
+| \`chat\` | Conversational AI with multimodal context | messages[], model, systemPrompt, connectedImage1..4 |`);
+      lines.push(`\n## Edges\n\`\`\`json\n{ "id": "e1", "source": "prompt-1", "target": "output-1", "sourceHandle": "output", "targetHandle": "input" }\n\`\`\`\n\n| Connection | sourceHandle | targetHandle | Effect |\n|------------|-------------|--------------|--------|\n| image → merge | output | input-1 / input-2 | Feeds source image into merge |\n| prompt → output | output | input | Generated image to output display |\n| text → prompt | output | text-input | Text syncs to prompt node |\n| logo → brandCore | output | logo-input | Logo fed to brand core |\n| pdf → brandCore | output | identity-input | PDF identity guide to brand core |\n| brandCore → mockup | output | brand-input | Brand prompts/colors to mockup |\n| strategy → brandCore | output | strategy-input | Strategy data consolidated |\
+| image → chat | output | input-1..input-4 | Visual context to chat node |`);
       lines.push(`\n## Media Upload\n\n### POST /api/canvas/image/upload\nUpload image (base64) to R2. Returns persistent URL.\n**Body:** \`{ "base64Image": "data:image/png;base64,...", "canvasId": "...", "nodeId": "..." }\`\n**Response:** \`{ "imageUrl": "https://r2.example.com/..." }\`\n\n### GET /api/canvas/image/upload-url\nPresigned URL for direct large-image upload (bypasses Vercel limit).\n**Query:** \`canvasId, nodeId, contentType\`\n**Response:** \`{ "presignedUrl": "...", "finalUrl": "..." }\`\n\n### POST /api/canvas/video/upload\n**Body:** \`{ "videoBase64": "data:video/mp4;base64,...", "canvasId": "...", "nodeId": "..." }\`\n**Response:** \`{ "videoUrl": "..." }\`\n\n### GET /api/canvas/video/upload-url\nPresigned URL for direct large-video upload.\n**Query:** \`canvasId, nodeId, contentType\`\n\n### POST /api/canvas/pdf/upload\n**Body:** \`{ "pdfBase64": "data:application/pdf;base64,...", "canvasId": "...", "nodeId": "..." }\`\n**Response:** \`{ "pdfUrl": "..." }\`\n\n### DELETE /api/canvas/image?url=<encoded>\nDelete image from R2 by URL.`);
       lines.push(`\n## Sharing & Collaboration\nRequires Admin or Premium plan.\n\n### POST /api/canvas/:id/share\n**Body:** \`{ "canEdit": ["user@example.com"], "canView": ["viewer@example.com"] }\`\n**Response:** \`{ "shareId": "abc123", "shareUrl": "/canvas/shared/abc123" }\`\n\n### GET /api/canvas/shared/:shareId\nFetch shared project — no authentication required.\n\n### PUT /api/canvas/:id/share-settings\n**Body:** \`{ "canEdit": [...], "canView": [...] }\`\n\n### DELETE /api/canvas/:id/share\nDisable sharing and revoke all access.`);
       lines.push(`\n## Agent Integration Patterns\n\n### Create and read a project\n\`\`\`js\nconst headers = { "Authorization": "Bearer TOKEN", "Content-Type": "application/json" };\n\nconst { project } = await fetch("/api/canvas", {\n  method: "POST", headers,\n  body: JSON.stringify({\n    name: "Agent Canvas",\n    nodes: [{ id: "p1", type: "prompt", position: { x: 0, y: 0 }, data: { type: "prompt", prompt: "Product photo" } }],\n    edges: []\n  })\n}).then(r => r.json());\n\n// Read after generation\nconst { project: updated } = await fetch(\`/api/canvas/\${project._id}\`, { headers }).then(r => r.json());\nconst resultUrl = updated.nodes.find(n => n.type === "output")?.data?.resultImageUrl;\n\`\`\`\n\n### Add a node to existing project\n\`\`\`js\nconst { project } = await fetch(\`/api/canvas/\${id}\`, { headers }).then(r => r.json());\nawait fetch(\`/api/canvas/\${id}\`, {\n  method: "PUT", headers,\n  body: JSON.stringify({\n    nodes: [...project.nodes, { id: "text-1", type: "text", position: { x: 0, y: 0 }, data: { type: "text", text: "neon lighting" } }],\n    edges: project.edges\n  })\n});\n\`\`\`\n\n**Key rules:**\n- Node IDs must be unique within the project (use UUID or timestamp suffix)\n- Always PUT the full nodes array (no individual node PATCH)\n- Prefer R2 URLs over base64 — base64 expires in 7 days\n- Generation is async (happens in browser) — poll GET to read updated results`);
@@ -211,9 +224,17 @@ export const DocsPage: React.FC = () => {
     if (tab === 'mcp') {
       if (!mcpSpec) return '# MCP Tools\n\nSpec not loaded yet.';
       lines.push('# MCP Tools Reference');
-      lines.push(`\nIntegrate Visant Copilot into your AI agents via Model Context Protocol.\n`);
+      lines.push(`\nIntegrate Visant Labs directly into AI agents via the Model Context Protocol.\n`);
+      lines.push(`## Two MCP Servers\n`);
+      lines.push(`| Server | Transport | Endpoint | Tools |`);
+      lines.push(`|--------|-----------|----------|-------|`);
+      lines.push(`| Platform MCP | HTTP/SSE | \`/api/mcp\` | 19 (mockups, canvas, branding, AI) |`);
+      lines.push(`| Figma MCP | stdio | \`npm run mcp:figma\` | 9 (Figma node manipulation) |`);
+      lines.push(`\n## Setup — Claude Desktop\n\n\`\`\`json\n{\n  "mcpServers": {\n    "visant-platform": {\n      "url": "https://your-domain.com/api/mcp",\n      "transport": "sse",\n      "headers": { "Authorization": "Bearer visant_sk_xxx" }\n    }\n  }\n}\n\`\`\``);
+      lines.push(`\n## Authentication\n\nPass your API key in every request:\n\`Authorization: Bearer visant_sk_xxxxxxxxxxxx\`\n\nCreate keys at Settings → API Keys. Scopes: read, write, generate.\n`);
+      lines.push(`\n## Figma MCP — Tool Reference\n`);
       mcpSpec.tools.forEach(tool => {
-        lines.push(`\n## ${tool.name}\n\n${tool.description}\n`);
+        lines.push(`\n### ${tool.name}\n\n${tool.description}\n`);
         const props = Object.entries(tool.inputSchema?.properties || {});
         if (props.length > 0) {
           lines.push('**Parameters:**\n');
@@ -425,7 +446,7 @@ export const DocsPage: React.FC = () => {
               {ep.parameters && ep.parameters.length > 0 && (
                 <div className="mt-4">
                   <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Parameters</h4>
-                  <div className="border border-border rounded-lg overflow-hidden">
+                  <div className="border border-border rounded-md overflow-hidden">
                     <table className="w-full text-sm text-left">
                       <thead className="bg-secondary/50">
                         <tr>
@@ -512,11 +533,11 @@ export const DocsPage: React.FC = () => {
                     </BreadcrumbList>
                   </BreadcrumbWithBack>
 
-                  <button
+                  <Button variant="brand"
                     onClick={handleCopyMarkdown}
                     title="Copy this section as clean Markdown — ideal for pasting into LLM contexts"
                     className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-redhatmono transition-all duration-200 shrink-0",
+                      "flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-redhatmono transition-all duration-200 shrink-0",
                       copied
                         ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-500"
                         : "bg-secondary/60 border-border text-muted-foreground hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-brand-cyan/5"
@@ -524,7 +545,7 @@ export const DocsPage: React.FC = () => {
                   >
                     {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     {copied ? 'Copied!' : 'Copy as Markdown'}
-                  </button>
+                  </Button>
                 </div>
 
                 {activeTab === 'overview' && (
@@ -544,7 +565,7 @@ export const DocsPage: React.FC = () => {
                 )}
 
                 {/* Agent-first hint bar */}
-                <div className="mb-6 flex items-start gap-3 bg-brand-cyan/5 border border-brand-cyan/20 rounded-lg px-4 py-3">
+                <div className="mb-6 flex items-start gap-3 bg-brand-cyan/5 border border-brand-cyan/20 rounded-md px-4 py-3">
                   <FileText className="w-4 h-4 text-brand-cyan mt-0.5 shrink-0" />
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     <span className="text-brand-cyan font-medium">LLM / Agent tip —</span>{' '}
@@ -616,12 +637,12 @@ export const DocsPage: React.FC = () => {
                         <div>
                           <h3 className="text-lg font-medium mb-2">1. Authentication</h3>
                           <p className="text-muted-foreground mb-3 font-sm">All API requests require authentication via JWT token or API key in the Authorization header.</p>
-                          <div className="bg-secondary/50 rounded-lg p-4 border border-border space-y-2">
+                          <div className="bg-secondary/50 rounded-md p-4 border border-border space-y-2">
                             <div className="text-xs font-redhatmono text-muted-foreground mb-2 uppercase tracking-wide">HTTP Header</div>
                             <code className="text-brand-cyan font-redhatmono text-sm block">Authorization: Bearer YOUR_JWT_TOKEN</code>
                             <code className="text-brand-cyan font-redhatmono text-sm block">Authorization: Bearer visant_sk_xxxxxxxxxxxx</code>
                           </div>
-                          <p className="text-muted-foreground text-xs mt-2">For agents, create an API key from <a href="/settings/api-keys" className="text-brand-cyan hover:underline">Settings → API Keys</a>. See the <button onClick={() => setActiveTab('agents')} className="text-brand-cyan hover:underline">For Agents</button> tab for details.</p>
+                          <p className="text-muted-foreground text-xs mt-2">For agents, create an API key from <a href="/settings/api-keys" className="text-brand-cyan hover:underline">Settings → API Keys</a>. See the <Button variant="ghost" onClick={() => setActiveTab('agents')} className="text-brand-cyan hover:underline">For Agents</Button> tab for details.</p>
                         </div>
 
                         <div>
@@ -655,7 +676,175 @@ export const DocsPage: React.FC = () => {
                   <TabsContent value="mcp" className="space-y-8 mt-0">
                     <div>
                       <h2 className="text-3xl font-semibold tracking-tight mb-2">MCP Tools</h2>
-                      <p className="text-muted-foreground">Integrate Visant Copilot functionality directly into your AI agents via the Model Context Protocol.</p>
+                      <p className="text-muted-foreground">Integrate Visant Labs directly into AI agents via the Model Context Protocol. Two servers available: <strong>Platform MCP</strong> (HTTP/SSE) for mockups, canvas, branding, and <strong>Figma MCP</strong> (stdio) for direct Figma manipulation.</p>
+                    </div>
+
+                    {/* Overview */}
+                    <Card id="mcp-overview" className="border border-border bg-card">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Server className="w-5 h-5 text-brand-cyan" /> Two MCP Servers</CardTitle>
+                        <CardDescription>Choose the server that fits your use case. You can use both simultaneously.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-secondary/40 border border-border rounded-md p-5">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs">HTTP/SSE</Badge>
+                              <span className="font-semibold text-foreground text-sm">Platform MCP</span>
+                            </div>
+                            <p className="text-muted-foreground text-xs mb-3">Generate mockups, manage canvas projects, branding, budgets, and AI tools — all via your API key over SSE.</p>
+                            <div className="space-y-1 text-xs text-muted-foreground">
+                              <p>Endpoint: <code className="font-redhatmono bg-secondary px-1 rounded">/api/mcp</code></p>
+                              <p>Auth: <code className="font-redhatmono bg-secondary px-1 rounded">Bearer visant_sk_xxx</code></p>
+                              <p>19 tools available</p>
+                            </div>
+                          </div>
+                          <div className="bg-secondary/40 border border-border rounded-md p-5">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs">stdio</Badge>
+                              <span className="font-semibold text-foreground text-sm">Figma MCP</span>
+                            </div>
+                            <p className="text-muted-foreground text-xs mb-3">Create frames, rectangles, text, and send AI commands directly to the Figma plugin sandbox via WebSocket bridge.</p>
+                            <div className="space-y-1 text-xs text-muted-foreground">
+                              <p>Command: <code className="font-redhatmono bg-secondary px-1 rounded">npm run mcp:figma</code></p>
+                              <p>Requires: Figma plugin connected</p>
+                              <p>9 tools available</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Setup & Connection */}
+                    <Card id="mcp-setup" className="border border-border bg-card">
+                      <CardHeader>
+                        <CardTitle>Setup & Connection</CardTitle>
+                        <CardDescription>Configuration examples for popular AI clients.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Claude Desktop</h4>
+                          <p className="text-muted-foreground text-sm mb-2">Add to your <code className="font-redhatmono bg-secondary px-1 rounded">claude_desktop_config.json</code>:</p>
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Platform MCP (SSE)</div>
+                            <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
+  "mcpServers": {
+    "visant-platform": {
+      "url": "https://your-domain.com/api/mcp",
+      "transport": "sse",
+      "headers": {
+        "Authorization": "Bearer visant_sk_xxxxxxxxxxxx"
+      }
+    }
+  }
+}`}</pre>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Figma MCP (stdio)</div>
+                            <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
+  "mcpServers": {
+    "visant-figma": {
+      "command": "npx",
+      "args": ["-y", "visant-figma-mcp"],
+      "env": {
+        "VISANT_API_URL": "https://your-domain.com"
+      }
+    }
+  }
+}`}</pre>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Cursor / VS Code</h4>
+                          <p className="text-muted-foreground text-sm mb-2">Add to your <code className="font-redhatmono bg-secondary px-1 rounded">.cursor/mcp.json</code> or workspace settings:</p>
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">mcp.json</div>
+                            <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
+  "mcpServers": {
+    "visant-platform": {
+      "url": "https://your-domain.com/api/mcp",
+      "transport": "sse",
+      "headers": {
+        "Authorization": "Bearer visant_sk_xxxxxxxxxxxx"
+      }
+    }
+  }
+}`}</pre>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Custom Agent (TypeScript)</h4>
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">@modelcontextprotocol/sdk</div>
+                            <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+
+const transport = new SSEClientTransport(
+  new URL("https://your-domain.com/api/mcp"),
+  {
+    requestInit: {
+      headers: {
+        Authorization: "Bearer visant_sk_xxxxxxxxxxxx"
+      }
+    }
+  }
+);
+
+const client = new Client({ name: "my-agent", version: "1.0.0" });
+await client.connect(transport);
+
+// List available tools
+const { tools } = await client.listTools();
+
+// Call a tool
+const result = await client.callTool({
+  name: "mockup-generate",
+  arguments: {
+    prompt: "A smartphone mockup on a marble desk",
+    model: "gemini-2.0-flash-exp"
+  }
+});`}</pre>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Authentication */}
+                    <Card id="mcp-auth" className="border border-border bg-card">
+                      <CardHeader>
+                        <CardTitle>Authentication</CardTitle>
+                        <CardDescription>API keys are required for the Platform MCP server. The Figma MCP server authenticates through the plugin connection.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="bg-secondary/60 border border-border rounded-md p-4 font-redhatmono text-sm space-y-2">
+                          <p className="text-muted-foreground"># Pass your API key in every request</p>
+                          <p className="text-foreground">Authorization: Bearer visant_sk_xxxxxxxxxxxx</p>
+                        </div>
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                          <p>1. Go to <a href="/settings/api-keys" className="text-brand-cyan hover:underline">Settings &rarr; API Keys</a> and create a new key</p>
+                          <p>2. Select scopes: <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs mx-1">read</Badge> <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs mx-1">write</Badge> <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs mx-1">generate</Badge></p>
+                          <p>3. Copy the key immediately &mdash; it is shown only once</p>
+                          <p>4. Store it securely (environment variable or secrets manager)</p>
+                        </div>
+                        <div className="bg-secondary/30 rounded-md border border-border p-4">
+                          <p className="text-xs text-muted-foreground">Every tool response includes a <code className="font-redhatmono bg-secondary px-1 rounded">_meta</code> field with your remaining credits, so your agent can track usage automatically.</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Figma MCP Tools */}
+                    <div id="mcp-figma-tools">
+                      <h3 className="text-2xl font-semibold tracking-tight mb-2">Figma MCP &mdash; Tool Reference</h3>
+                      <p className="text-muted-foreground mb-6 text-sm">9 tools for direct Figma manipulation via the plugin bridge. Requires the Visant Copilot Figma plugin to be running and connected.</p>
                     </div>
 
                     {loading ? (
@@ -663,7 +852,7 @@ export const DocsPage: React.FC = () => {
                     ) : (
                       <div className="space-y-8">
                         {mcpSpec?.tools.map((tool, idx) => (
-                          <Card key={idx} id={`tool-${tool.name}`} className="border border-border bg-card overfow-hidden">
+                          <Card key={idx} id={`tool-${tool.name}`} className="border border-border bg-card overflow-hidden">
                             <CardHeader className="border-b border-border/50 bg-secondary/20 pb-4">
                               <div className="flex items-center gap-3">
                                 <Code className="w-5 h-5 text-brand-cyan" />
@@ -674,7 +863,7 @@ export const DocsPage: React.FC = () => {
                             <CardContent className="pt-6 space-y-6">
                               <div>
                                 <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Input Schema</h4>
-                                <div className="border border-border rounded-lg overflow-hidden">
+                                <div className="border border-border rounded-md overflow-hidden">
                                   <table className="w-full text-sm text-left">
                                     <thead className="bg-secondary/50">
                                       <tr>
@@ -711,7 +900,7 @@ export const DocsPage: React.FC = () => {
                               {tool.examples && tool.examples.length > 0 && (
                                 <div>
                                   <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Example</h4>
-                                  <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                                  <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                                     <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">
                                       Input JSON
                                     </div>
@@ -784,7 +973,7 @@ export const DocsPage: React.FC = () => {
                         <CardDescription>The Plugin API is imperative (JavaScript), not declarative. This JSON spec is parsed and executed by a renderer utility.</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="bg-secondary/30 rounded-lg border border-border p-4">
+                        <div className="bg-secondary/30 rounded-md border border-border p-4">
                           <pre className="text-sm font-redhatmono text-foreground m-0">{`JSON spec  →  buildNode(spec, parent)  →  Figma nodes
 
 1. Define the layout tree in JSON (NodeSpec)
@@ -799,7 +988,7 @@ export const DocsPage: React.FC = () => {
                             { type: 'ELLIPSE', desc: 'Circle or oval shape', supports: 'fills, strokes' },
                             { type: 'TEXT', desc: 'Text with full typography control', supports: 'font, spacing' },
                           ].map(n => (
-                            <div key={n.type} className="bg-card border border-border rounded-lg p-3">
+                            <div key={n.type} className="bg-card border border-border rounded-md p-3">
                               <code className="text-brand-cyan font-redhatmono font-semibold text-sm">{n.type}</code>
                               <p className="text-muted-foreground text-xs mt-1">{n.desc}</p>
                               <p className="text-muted-foreground/60 text-xs mt-1 font-redhatmono">{n.supports}</p>
@@ -815,7 +1004,7 @@ export const DocsPage: React.FC = () => {
                         <CardTitle>NodeSpec — Full Property Reference</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="border border-border rounded-lg overflow-hidden">
+                        <div className="border border-border rounded-md overflow-hidden">
                           <table className="w-full text-sm text-left">
                             <thead className="bg-secondary/50">
                               <tr>
@@ -873,14 +1062,14 @@ export const DocsPage: React.FC = () => {
                       <CardContent className="space-y-4">
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-2">Solid Fill</h4>
-                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">JSON</div>
                             <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{ "type": "SOLID", "color": { "r": 0.98, "g": 0.35, "b": 0.35 }, "opacity": 1 }`}</pre>
                           </div>
                         </div>
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-2">Linear Gradient</h4>
-                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">JSON</div>
                             <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
   "type": "GRADIENT_LINEAR",
@@ -894,7 +1083,7 @@ export const DocsPage: React.FC = () => {
                         </div>
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-2">Inner Shadow Effect</h4>
-                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">JSON</div>
                             <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
   "type": "INNER_SHADOW",
@@ -917,7 +1106,7 @@ export const DocsPage: React.FC = () => {
                         <CardDescription>These mistakes will silently fail or produce wrong results.</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="border border-border rounded-lg overflow-hidden">
+                        <div className="border border-border rounded-md overflow-hidden">
                           <table className="w-full text-sm text-left">
                             <thead className="bg-secondary/50">
                               <tr>
@@ -961,13 +1150,13 @@ export const DocsPage: React.FC = () => {
                             { fn: 'buildNode(spec, parent)', desc: 'Creates the correct node type, sets all properties, appends to parent, recurses into children.' },
                             { fn: 'createFromSpec(spec)', desc: 'Entry point. Collects fonts → loads them in parallel → builds tree → centers viewport.' },
                           ].map(({ fn, desc }) => (
-                            <div key={fn} className="bg-card border border-border rounded-lg p-4">
+                            <div key={fn} className="bg-card border border-border rounded-md p-4">
                               <code className="text-brand-cyan font-redhatmono text-xs font-semibold block mb-2">{fn}</code>
                               <p className="text-muted-foreground text-sm">{desc}</p>
                             </div>
                           ))}
                         </div>
-                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                        <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">plugin/src/code.ts — Usage</div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`import { createFromSpec } from './render'
 import spec from './social-media-spec.json'
@@ -992,7 +1181,7 @@ figma.ui.onmessage = async (msg) => {
                       <CardContent className="space-y-4">
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Layer Structure</h4>
-                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`Instagram Post — 1080x1080  (FRAME, VERTICAL auto-layout)
 ├── Header                  (FRAME, HORIZONTAL, padding H:32 V:24, gap:16)
 │   ├── Avatar              (ELLIPSE, 72×72, gradient + white stroke 3px)
@@ -1015,7 +1204,7 @@ figma.ui.onmessage = async (msg) => {
 
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Key Dimension Decisions</h4>
-                          <div className="border border-border rounded-lg overflow-hidden">
+                          <div className="border border-border rounded-md overflow-hidden">
                             <table className="w-full text-sm text-left">
                               <thead className="bg-secondary/50">
                                 <tr>
@@ -1074,13 +1263,13 @@ figma.ui.onmessage = async (msg) => {
                         ].map(({ title, code }) => (
                           <div key={title}>
                             <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-2">{title}</h4>
-                            <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                            <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                               <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{code}</pre>
                             </div>
                           </div>
                         ))}
 
-                        <div className="bg-card border border-amber-500/20 rounded-lg p-4 mt-4">
+                        <div className="bg-card border border-amber-500/20 rounded-md p-4 mt-4">
                           <p className="text-amber-500 text-sm font-medium mb-1">Related files</p>
                           <div className="space-y-1">
                             {[
@@ -1120,18 +1309,18 @@ figma.ui.onmessage = async (msg) => {
                             { step: '2', title: 'Read & Modify Nodes', desc: 'GET /api/canvas/:id to fetch current state. Modify the nodes array locally.' },
                             { step: '3', title: 'Persist Changes', desc: 'PUT /api/canvas/:id with the full updated nodes[] and edges[] to save.' },
                           ].map(({ step, title, desc }) => (
-                            <div key={step} className="bg-card border border-border rounded-lg p-4">
+                            <div key={step} className="bg-card border border-border rounded-md p-4">
                               <div className="text-brand-cyan font-redhatmono text-xs uppercase tracking-wider mb-1">Step {step}</div>
                               <div className="font-medium text-foreground mb-1">{title}</div>
                               <div className="text-muted-foreground text-xs">{desc}</div>
                             </div>
                           ))}
                         </div>
-                        <div className="bg-secondary/30 rounded-lg border border-border p-4">
+                        <div className="bg-secondary/30 rounded-md border border-border p-4">
                           <div className="text-xs font-redhatmono text-muted-foreground mb-2 uppercase tracking-wide">Base URL</div>
                           <code className="text-brand-cyan font-redhatmono text-sm">https://your-domain.com/api/canvas</code>
                         </div>
-                        <div className="bg-secondary/30 rounded-lg border border-border p-4">
+                        <div className="bg-secondary/30 rounded-md border border-border p-4">
                           <div className="text-xs font-redhatmono text-muted-foreground mb-2 uppercase tracking-wide">Key Design Note</div>
                           <p className="text-sm text-muted-foreground">There is no individual node endpoint. Nodes are stored as a JSON array inside the project document. To add, update, or remove a node, fetch the project, mutate the nodes array, and PUT the full array back.</p>
                         </div>
@@ -1145,12 +1334,12 @@ figma.ui.onmessage = async (msg) => {
                         <CardDescription>All endpoints require a JWT Bearer token except the public shared-project endpoint.</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                        <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">HTTP Header (all requests)</div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0">{`Authorization: Bearer <your_jwt_token>
 Content-Type: application/json`}</pre>
                         </div>
-                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                        <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Obtain Token — POST /api/auth/login</div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`// Request
 { "email": "user@example.com", "password": "..." }
@@ -1226,12 +1415,12 @@ Content-Type: application/json`}</pre>
                             </div>
                             <p className="text-muted-foreground text-sm">{summary}</p>
                             {request && (
-                              <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                              <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                                 <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Request Body</div>
                                 <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto">{request}</pre>
                               </div>
                             )}
-                            <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                            <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                               <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Response</div>
                               <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto">{response}</pre>
                             </div>
@@ -1247,7 +1436,7 @@ Content-Type: application/json`}</pre>
                         <CardDescription>All 23 node types available in the canvas. Each node must have an <code className="bg-secondary px-1 py-0.5 rounded text-xs">id</code>, <code className="bg-secondary px-1 py-0.5 rounded text-xs">type</code>, <code className="bg-secondary px-1 py-0.5 rounded text-xs">position</code>, and a <code className="bg-secondary px-1 py-0.5 rounded text-xs">data</code> object with <code className="bg-secondary px-1 py-0.5 rounded text-xs">type</code> matching the node type.</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
-                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                        <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Base Node Structure</div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
   "id": "unique-node-id",          // string — must be unique within the project
@@ -1262,7 +1451,7 @@ Content-Type: application/json`}</pre>
 }`}</pre>
                         </div>
 
-                        <div className="border border-border rounded-lg overflow-hidden">
+                        <div className="border border-border rounded-md overflow-hidden">
                           <table className="w-full text-sm text-left">
                             <thead className="bg-secondary/50">
                               <tr>
@@ -1308,7 +1497,7 @@ Content-Type: application/json`}</pre>
                           </table>
                         </div>
 
-                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                        <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Example — Creating a Prompt Node</div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
   "id": "prompt-1",
@@ -1324,7 +1513,7 @@ Content-Type: application/json`}</pre>
 }`}</pre>
                         </div>
 
-                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                        <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Example — Text Node connected to Prompt Node</div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`// Text Node
 {
@@ -1352,7 +1541,7 @@ Content-Type: application/json`}</pre>
                         <CardDescription>Edges are React Flow edges connecting node outputs to node inputs. They drive data flow between nodes (e.g. an image node feeding into a merge node).</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                        <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Edge Structure</div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
   "id": "edge-1",               // string — must be unique
@@ -1364,7 +1553,7 @@ Content-Type: application/json`}</pre>
 }`}</pre>
                         </div>
 
-                        <div className="border border-border rounded-lg overflow-hidden">
+                        <div className="border border-border rounded-md overflow-hidden">
                           <table className="w-full text-sm text-left">
                             <thead className="bg-secondary/50">
                               <tr>
@@ -1397,7 +1586,7 @@ Content-Type: application/json`}</pre>
                           </table>
                         </div>
 
-                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                        <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Example — Prompt → Output flow</div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`"edges": [
   {
@@ -1468,11 +1657,11 @@ Content-Type: application/json`}</pre>
                             </div>
                             <p className="text-muted-foreground text-sm">{summary}</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                              <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                                 <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Request</div>
                                 <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto">{request}</pre>
                               </div>
-                              <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                              <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                                 <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Response</div>
                                 <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto">{response}</pre>
                               </div>
@@ -1527,11 +1716,11 @@ Content-Type: application/json`}</pre>
                             </div>
                             <p className="text-muted-foreground text-sm">{summary}</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                              <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                                 <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Request</div>
                                 <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto">{request}</pre>
                               </div>
-                              <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                              <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                                 <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Response</div>
                                 <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto">{response}</pre>
                               </div>
@@ -1550,7 +1739,7 @@ Content-Type: application/json`}</pre>
                       <CardContent className="space-y-6">
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Workflow A — Create a canvas with a prompt node and read the result</h4>
-                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">JavaScript / TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`const BASE = "https://your-domain.com/api";
 const TOKEN = "your_jwt_token";
@@ -1597,7 +1786,7 @@ console.log("Generated image:", imageUrl);`}</pre>
 
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Workflow B — Add a node to an existing project</h4>
-                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">JavaScript / TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`// Fetch current state
 const { project } = await fetch(\`\${BASE}/canvas/\${projectId}\`, { headers }).then(r => r.json());
@@ -1624,7 +1813,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
 
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Workflow C — Upload an image and set it in an image node</h4>
-                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">JavaScript / TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`// Step 1 — Upload image to R2
 const { imageUrl } = await fetch(\`\${BASE}/canvas/image/upload\`, {
@@ -1658,7 +1847,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                           </div>
                         </div>
 
-                        <div className="bg-card border border-amber-500/20 rounded-lg p-4">
+                        <div className="bg-card border border-amber-500/20 rounded-md p-4">
                           <p className="text-amber-500 text-sm font-medium mb-2">Key Patterns for Agents</p>
                           <ul className="space-y-1.5 text-sm text-muted-foreground">
                             <li>• <strong className="text-foreground">Node IDs must be unique</strong> within a project. Use a UUID or timestamp-based suffix.</li>
@@ -1680,7 +1869,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                       <CardContent className="space-y-6">
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Top-level structure</h4>
-                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`interface VisantCanvasExport {
   meta: {
@@ -1702,7 +1891,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                           <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Fields stripped on export</h4>
                           <p className="text-sm text-muted-foreground mb-3">The following fields are removed from node data before export to keep files portable and compact:</p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="bg-secondary/20 rounded-lg border border-border p-3">
+                            <div className="bg-secondary/20 rounded-md border border-border p-3">
                               <p className="font-redhatmono text-xs text-muted-foreground uppercase tracking-wider mb-2">Large binary data (kept as R2 URLs)</p>
                               <ul className="space-y-0.5 text-xs font-redhatmono text-foreground">
                                 {['resultImageBase64', 'resultVideoBase64', 'imageBase64', 'base64', 'pdfBase64', 'identityPdfBase64', 'identityImageBase64', 'logoBase64', 'uploadedVideo', 'startFrame', 'endFrame'].map(f => (
@@ -1710,7 +1899,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                                 ))}
                               </ul>
                             </div>
-                            <div className="bg-secondary/20 rounded-lg border border-border p-3">
+                            <div className="bg-secondary/20 rounded-md border border-border p-3">
                               <p className="font-redhatmono text-xs text-muted-foreground uppercase tracking-wider mb-2">Transient / recomputed from edges</p>
                               <ul className="space-y-0.5 text-xs font-redhatmono text-foreground">
                                 {['connectedImages', 'connectedImage', 'connectedLogo', 'connectedPdf', 'connectedText', 'connectedVideo', 'oversizedWarning', 'isGenerating', 'isLoading', 'promptSuggestions', 'suggestedTags', 'userMockups'].map(f => (
@@ -1723,7 +1912,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
 
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Exporting programmatically</h4>
-                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`import { exportCanvasToJson, downloadJsonFile } from '@/utils/canvas/canvasJsonExport';
 
@@ -1737,12 +1926,14 @@ downloadJsonFile(exported, projectName);`}</pre>
 
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Importing programmatically</h4>
-                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`import { readJsonFile, validateVisantJson } from '@/utils/canvas/canvasJsonExport';
 import { canvasApi } from '@/services/canvasApi';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
-// file: File from <input type="file" accept=".json">
+// file: File from <Input type="file" accept=".json">
 const raw = await readJsonFile(file);
 
 if (!validateVisantJson(raw)) {
@@ -1763,7 +1954,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                           </div>
                         </div>
 
-                        <div className="bg-card border border-brand-cyan/20 rounded-lg p-4">
+                        <div className="bg-card border border-brand-cyan/20 rounded-md p-4">
                           <p className="text-brand-cyan text-sm font-medium mb-2">UI Entry Points</p>
                           <ul className="space-y-1.5 text-sm text-muted-foreground">
                             <li>• <strong className="text-foreground">Canvas header → Download dropdown</strong> — "Exportar como JSON" / "Importar de JSON" buttons.</li>
@@ -1797,15 +1988,15 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                             Visant Labs provides three ways for AI agents to interact with the platform:
                           </p>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-secondary/40 border border-border rounded-lg p-4">
+                            <div className="bg-secondary/40 border border-border rounded-md p-4">
                               <p className="text-brand-cyan font-semibold text-sm mb-1">Discovery</p>
                               <p className="text-muted-foreground text-xs">Read <code className="font-redhatmono bg-secondary px-1 rounded">/llms.txt</code> to understand what the platform offers</p>
                             </div>
-                            <div className="bg-secondary/40 border border-border rounded-lg p-4">
+                            <div className="bg-secondary/40 border border-border rounded-md p-4">
                               <p className="text-brand-cyan font-semibold text-sm mb-1">MCP Tools</p>
                               <p className="text-muted-foreground text-xs">Connect via SSE to <code className="font-redhatmono bg-secondary px-1 rounded">/api/mcp</code> and invoke tools directly</p>
                             </div>
-                            <div className="bg-secondary/40 border border-border rounded-lg p-4">
+                            <div className="bg-secondary/40 border border-border rounded-md p-4">
                               <p className="text-brand-cyan font-semibold text-sm mb-1">REST API</p>
                               <p className="text-muted-foreground text-xs">Full HTTP API with JSON responses for all platform features</p>
                             </div>
@@ -1819,7 +2010,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                           <p className="text-muted-foreground text-sm mb-3">
                             Agents authenticate using API keys. Create one from <a href="/settings/api-keys" className="text-brand-cyan hover:underline">Settings → API Keys</a>.
                           </p>
-                          <div className="bg-secondary/60 border border-border rounded-lg p-4 font-redhatmono text-sm">
+                          <div className="bg-secondary/60 border border-border rounded-md p-4 font-redhatmono text-sm">
                             <p className="text-muted-foreground mb-1"># Pass your API key in the Authorization header</p>
                             <p className="text-foreground">Authorization: Bearer visant_sk_xxxxxxxxxxxx</p>
                           </div>
@@ -1837,7 +2028,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                           <p className="text-muted-foreground text-sm mb-3">
                             Connect to the Platform MCP server via HTTP/SSE transport:
                           </p>
-                          <div className="bg-secondary/60 border border-border rounded-lg p-4 font-redhatmono text-sm space-y-2">
+                          <div className="bg-secondary/60 border border-border rounded-md p-4 font-redhatmono text-sm space-y-2">
                             <p className="text-muted-foreground"># SSE endpoint (GET to connect, POST to send messages)</p>
                             <p className="text-foreground">GET /api/mcp</p>
                             <p className="text-foreground">POST /api/mcp/message?sessionId=...</p>
@@ -1904,7 +2095,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                           <p className="text-muted-foreground text-sm mb-3">
                             Every MCP tool response includes quota information in the <code className="font-redhatmono bg-secondary px-1 rounded">_meta</code> field:
                           </p>
-                          <div className="bg-secondary/60 border border-border rounded-lg p-4 font-redhatmono text-sm">
+                          <div className="bg-secondary/60 border border-border rounded-md p-4 font-redhatmono text-sm">
                             <pre className="text-foreground whitespace-pre-wrap">{`{
   "results": [...],
   "_meta": {
@@ -1927,28 +2118,28 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                         <div id="ag-example" className="scroll-mt-20">
                           <h3 className="text-lg font-semibold text-foreground mb-3">Example Flow</h3>
                           <div className="space-y-3 text-sm">
-                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-lg p-4">
+                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-4">
                               <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">1</span>
                               <div>
                                 <p className="text-foreground font-medium">Get an API key</p>
                                 <p className="text-muted-foreground text-xs">Go to Settings → API Keys → Create New Key with "read" + "generate" scopes</p>
                               </div>
                             </div>
-                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-lg p-4">
+                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-4">
                               <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">2</span>
                               <div>
                                 <p className="text-foreground font-medium">Connect to MCP</p>
                                 <p className="text-muted-foreground text-xs">SSE connect to /api/mcp with your API key in the Authorization header</p>
                               </div>
                             </div>
-                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-lg p-4">
+                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-4">
                               <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">3</span>
                               <div>
                                 <p className="text-foreground font-medium">Check your balance</p>
                                 <p className="text-muted-foreground text-xs">Call <code className="font-redhatmono bg-secondary px-1 rounded">account-usage</code> to see available credits</p>
                               </div>
                             </div>
-                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-lg p-4">
+                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-4">
                               <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">4</span>
                               <div>
                                 <p className="text-foreground font-medium">Generate content</p>

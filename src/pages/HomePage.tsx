@@ -6,6 +6,7 @@ import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { InteractiveASCII } from '../components/ui/InteractiveASCII';
 import { SEO } from '../components/SEO';
 import { UploadCloud } from 'lucide-react';
+import { PremiumButton } from '../components/ui/PremiumButton';
 
 export const HomePage: React.FC = () => {
     const { t } = useTranslation();
@@ -52,17 +53,13 @@ export const HomePage: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col gap-4 justify-center items-center">
-                        <button
+                        <PremiumButton
                             onClick={() => navigate('/mockupmachine?action=upload')}
-                            className="inline-flex flex-col items-center gap-1 bg-brand-cyan/80 hover:bg-brand-cyan disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed cursor-pointer text-black font-bold py-5 px-12 rounded-md transition-all duration-300 font-mono shadow-lg shadow-brand-cyan/20"
+                            className="max-w-md h-16 text-lg"
+                            icon={UploadCloud}
                         >
-                            <div className="flex items-center gap-3">
-                                <UploadCloud size={22} className="md:w-8 md:h-8" />
-                                <span className="text-sm md:text-base">
-                                    {t('homepage.sendImage')}
-                                </span>
-                            </div>
-                        </button>
+                            {t('homepage.sendImage')}
+                        </PremiumButton>
                         <span className="text-[10px] md:text-xs font-normal opacity-70 hover:opacity-100">
                             {t('homepage.goToMockupMachine')}
                         </span>

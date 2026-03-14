@@ -101,7 +101,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
       />
       <div className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh] px-4">
         <div
-          className="w-full max-w-2xl bg-card border border-neutral-800/50 rounded-lg shadow-2xl overflow-hidden"
+          className="w-full max-w-2xl bg-card border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-800/50">

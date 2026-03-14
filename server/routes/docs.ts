@@ -329,4 +329,120 @@ router.get('/export', (req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /docs/api/components-usage
+ * Component usage metrics from codebase analysis
+ *
+ * Returns component usage statistics for displaying in design system.
+ * Perfect for understanding which components are most critical.
+ */
+router.get('/api/components-usage', (req: Request, res: Response) => {
+  try {
+    const fs = require('fs').promises;
+    const path = require('path');
+
+    // Load pre-generated metrics
+    const metricsPath = path.join(process.cwd(), 'scripts', 'reports', 'component-usage.json');
+
+    fs.readFile(metricsPath, 'utf-8')
+      .then((data: string) => {
+        const metrics = JSON.parse(data);
+
+        setDocsHeaders(res, 3600); // Cache for 1 hour
+        res.json({
+          success: true,
+          generatedAt: new Date(Date.now()).toISOString(),
+          summary: metrics.metadata,
+          distribution: metrics.categorized,
+          components: (metrics.components || []).map((c: any) => ({
+            name: c.name,
+            path: c.path,
+            imports: c.imports,
+            category: c.category,
+            usage: {
+              percentage: Math.min(100, (c.imports / 167) * 100), // button is 167
+              level:
+                c.imports > 30
+                  ? 'critical'
+                  : c.imports > 10
+                  ? 'frequent'
+                  : c.imports > 2
+                  ? 'moderate'
+                  : c.imports > 0
+                  ? 'rare'
+                  : 'unused',
+            },
+          })),
+          topComponents: (metrics.components || []).slice(0, 10),
+          orphaned: (metrics.components || []).filter((c: any) => c.imports === 0),
+        });
+      })
+      .catch((err: Error) => {
+        console.error('Error reading component metrics:', err);
+        setDocsHeaders(res);
+        res.status(404).json({
+          error: 'Component metrics not available',
+          suggestion: 'Run: node scripts/analyze-components.js --json',
+          details: err.message,
+        });
+      });
+  } catch (err) {
+    handleDocsError(err, res);
+  }
+});
+
+/**
+ * GET /docs/api/component/:name
+ * Get usage details for a specific component
+ */
+router.get('/api/component/:name', (req: Request, res: Response) => {
+  try {
+    const { name } = req.params;
+    const fs = require('fs').promises;
+    const path = require('path');
+
+    const metricsPath = path.join(process.cwd(), 'scripts', 'reports', 'component-usage.json');
+
+    fs.readFile(metricsPath, 'utf-8')
+      .then((data: string) => {
+        const metrics = JSON.parse(data);
+        const component = (metrics.components || []).find(
+          (c: any) => c.name.toLowerCase() === name.toLowerCase()
+        );
+
+        if (component) {
+          setDocsHeaders(res, 3600);
+          res.json({
+            success: true,
+            component: {
+              ...component,
+              usage: {
+                percentage: Math.min(100, (component.imports / 167) * 100),
+                level:
+                  component.imports > 30
+                    ? 'critical'
+                    : component.imports > 10
+                    ? 'frequent'
+                    : component.imports > 2
+                    ? 'moderate'
+                    : component.imports > 0
+                    ? 'rare'
+                    : 'unused',
+              },
+            },
+          });
+        } else {
+          setDocsHeaders(res);
+          res.status(404).json({ error: `Component '${name}' not found` });
+        }
+      })
+      .catch((err: Error) => {
+        setDocsHeaders(res);
+        res.status(500).json({ error: 'Failed to read component metrics', details: err.message });
+      });
+  } catch (err) {
+    handleDocsError(err, res);
+  }
+});
+
 export default router;

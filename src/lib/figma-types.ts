@@ -54,7 +54,13 @@ export type FigmaOperation =
       name: string;
       width: number;
       height: number;
+      x?: number;
+      y?: number;
+      rotation?: number;
+      opacity?: number;
       fills?: FigmaPaint[];
+      strokes?: FigmaPaint[];
+      strokeWeight?: number;
       cornerRadius?: number;
       cornerSmoothing?: number;
       clipsContent?: boolean;
@@ -88,6 +94,9 @@ export type FigmaOperation =
       name: string;
       width: number;
       height: number;
+      x?: number;
+      y?: number;
+      rotation?: number;
       fills?: FigmaPaint[];
       cornerRadius?: number;
       strokes?: FigmaPaint[];
@@ -108,7 +117,13 @@ export type FigmaOperation =
       name: string;
       width: number;
       height: number;
+      x?: number;
+      y?: number;
+      rotation?: number;
       fills?: FigmaPaint[];
+      strokes?: FigmaPaint[];
+      strokeWeight?: number;
+      opacity?: number;
       effects?: FigmaEffect[];
       constraints?: { horizontal: string; vertical: string };
       layoutSizingHorizontal?: 'FIXED' | 'FILL';
@@ -136,6 +151,10 @@ export type FigmaOperation =
       paragraphSpacing?: number;
       fills?: FigmaPaint[];
       textStyleId?: string;
+      x?: number;
+      y?: number;
+      rotation?: number;
+      opacity?: number;
       layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
       layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
     };
@@ -286,7 +305,8 @@ export type FigmaOperation =
   }
   | {
     type: 'MOVE';
-    nodeId: string;
+    nodeId?: string;
+    ref?: string;
     x: number;
     y: number;
   }
@@ -498,15 +518,76 @@ export type AvailableLayer = {
   type: string;
 };
 
-// ── Brand Guideline preset ──
+// ── Brand Guideline preset (V2) ──
+export interface BrandGuidelineColor {
+  hex: string
+  name: string
+  role?: string
+}
 
-export type BrandGuideline = {
-  id: string;         // uuid / timestamp string
-  name: string;       // e.g. "Creatina Power"
-  logo?: { id: string; name: string; key?: string };
-  font?: { id: string; name: string };
-  colors: Array<{ id: string; name: string; value: string }>;
-};
+export interface BrandGuidelineTypography {
+  family: string
+  style?: string
+  role: string
+  size?: number
+  lineHeight?: number
+}
+export interface BrandGuideline {
+  id?: string
+  userId?: string
+  name?: string
+  tagline?: string
+  description?: string
+  identity?: {
+    name?: string
+    website?: string
+    instagram?: string
+    linkedin?: string
+    portfolio?: string
+    x?: string
+    tagline?: string
+    description?: string
+  }
+  logos?: Array<{
+    id: string
+    url: string
+    variant: 'primary' | 'dark' | 'light' | 'icon' | 'custom'
+    label?: string
+  }>
+  colors?: BrandGuidelineColor[]
+  typography?: BrandGuidelineTypography[]
+  tags?: Record<string, string[]>
+  media?: Array<{
+    id: string
+    url: string
+    type: 'image' | 'pdf'
+    label?: string
+  }>
+  tokens?: {
+    spacing?: Record<string, number>
+    radius?: Record<string, number>
+    shadows?: Record<string, { x: number; y: number; blur: number; spread: number; color: string; opacity: number }>
+    components?: Record<string, any>
+  }
+  guidelines?: {
+    voice?: string
+    dos?: string[]
+    donts?: string[]
+    imagery?: string
+    accessibility?: string
+  }
+  _extraction?: {
+    sources: Array<{ type: 'url' | 'pdf' | 'image' | 'json' | 'manual'; ref?: string; date: string }>
+    completeness: number
+  }
+  extraction?: { // Keep this for backend compatibility if it uses "extraction"
+    sources: Array<{ type: 'url' | 'pdf' | 'image' | 'json' | 'manual'; ref?: string; date: string }>
+    completeness: number
+  }
+  updatedAt?: string
+  orderedBlocks?: string[]
+  activeSections?: string[]
+}
 
 // ── UI → Sandbox messages ──
 
@@ -548,6 +629,9 @@ export type UIMessage =
   // Design System
   | { type: 'GET_DESIGN_SYSTEM' }
   | { type: 'SAVE_DESIGN_SYSTEM'; designSystem: any }
+  // Brand Guidelines V2
+  | { type: 'GET_BRAND_GUIDELINE' }
+  | { type: 'SAVE_BRAND_GUIDELINE'; selectedId: string | null; guideline: string | null }
   // Undo
   | { type: 'UNDO_LAST_BATCH' };
 
@@ -576,4 +660,7 @@ export type PluginMessage =
   | { type: 'ANTHROPIC_KEY_LOADED'; key: string }
   // Guideline presets
   | { type: 'GUIDELINES_LOADED'; guidelines: BrandGuideline[] }
-  | { type: 'GUIDELINE_SAVED'; guidelines: BrandGuideline[]; savedId: string };
+  | { type: 'GUIDELINE_SAVED'; guidelines: BrandGuideline[]; savedId: string }
+  // Brand Guidelines V2
+  | { type: 'BRAND_GUIDELINE_LOADED'; selectedId: string | null; guideline: string | null }
+  | { type: 'BRAND_GUIDELINE_SAVED' };

@@ -4,6 +4,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { RichTextEditor } from './RichTextEditor';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface ArchetypesSectionProps {
   archetypes: {
@@ -237,7 +239,7 @@ const ArchetypeCard: React.FC<{
               <div className="space-y-2">
                 {localArchetype.examples.map((example, index) => (
                   <div key={index} className="flex gap-2">
-                    <input
+                    <Input
                       type="text"
                       value={example}
                       onChange={(e) => handleExampleChange(index, e.target.value)}
@@ -248,27 +250,25 @@ const ArchetypeCard: React.FC<{
                       placeholder="Exemplo de marca"
                     />
                     {localArchetype.examples.length > 1 && (
-                      <button
-                        onClick={() => handleRemoveExample(index)}
+                      <Button variant="ghost"                         onClick={() => handleRemoveExample(index)}
                         className={`px-3 py-2 rounded-md text-sm transition-colors ${theme === 'dark'
                           ? 'bg-red-900/30 hover:bg-red-900/50 text-red-400'
                           : 'bg-red-50 hover:bg-red-100 text-red-600'
                           }`}
                       >
                         Remover
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ))}
-                <button
-                  onClick={handleAddExample}
+                <Button variant="ghost"                   onClick={handleAddExample}
                   className={`w-full px-3 py-2 rounded-md text-sm font-manrope transition-colors ${theme === 'dark'
                     ? 'bg-neutral-800/40 hover:bg-neutral-800/60 text-neutral-300 border border-neutral-700'
                     : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border border-neutral-300'
                     }`}
                 >
                   + Adicionar Exemplo
-                </button>
+                </Button>
               </div>
             </div>
           </div>

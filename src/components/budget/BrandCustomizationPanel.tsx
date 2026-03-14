@@ -4,6 +4,8 @@ import type { BudgetData } from '@/types/types';
 import { Palette, X, Save, FolderOpen, Trash2 } from 'lucide-react';
 import { BrandCustomizationSection } from './BrandCustomizationSection';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface BrandCustomizationPanelProps {
   data: BudgetData;
@@ -154,7 +156,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
     <>
       {/* Toggle Button */}
       {renderButton && (
-        <button
+        <Button variant="ghost" 
           onClick={togglePanel}
           className={`
             flex items-center justify-center
@@ -171,7 +173,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
           title={t('budget.brandCustomization') || 'Customização da Marca'}
         >
           <Palette size={18} />
-        </button>
+        </Button>
       )}
 
       {/* Floating Panel */}
@@ -194,13 +196,13 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
             <h3 className="text-lg font-semibold text-neutral-200 font-mono">
               {t('budget.brandCustomization') || 'Customização da Marca'}
             </h3>
-            <button
+            <Button variant="ghost" 
               onClick={togglePanel}
               className="p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded-md transition-colors"
               aria-label="Close panel"
             >
               <X size={20} />
-            </button>
+            </Button>
           </div>
 
           <div className="p-6">
@@ -233,7 +235,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   </span>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
-                  <button
+                  <Button variant="ghost" 
                     type="button"
                     onClick={() => handleContentWidthChange(595)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${data.contentWidth === 595
@@ -243,8 +245,8 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   >
                     A4
                     <div className="text-[10px] text-neutral-500 mt-0.5">595px</div>
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="ghost" 
                     type="button"
                     onClick={() => handleContentWidthChange(842)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${data.contentWidth === 842
@@ -254,8 +256,8 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   >
                     A3
                     <div className="text-[10px] text-neutral-500 mt-0.5">842px</div>
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="ghost" 
                     type="button"
                     onClick={() => handleContentWidthChange(612)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${data.contentWidth === 612
@@ -265,8 +267,8 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   >
                     Letter
                     <div className="text-[10px] text-neutral-500 mt-0.5">612px</div>
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="ghost" 
                     type="button"
                     onClick={() => handleContentWidthChange(800)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${(data.contentWidth === 800 || !data.contentWidth)
@@ -276,12 +278,12 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   >
                     Custom
                     <div className="text-[10px] text-neutral-500 mt-0.5">800px</div>
-                  </button>
+                  </Button>
                 </div>
                 {/* Custom width input if not a standard format */}
                 {data.contentWidth && ![595, 842, 612, 800].includes(data.contentWidth) && (
                   <div className="mt-2">
-                    <input
+                    <Input
                       type="number"
                       min="400"
                       max="1200"
@@ -300,7 +302,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs text-neutral-400 font-mono">Altura</label>
                   <div className="flex items-center gap-2">
-                    <input
+                    <Input
                       type="number"
                       min="0"
                       step="50"
@@ -319,13 +321,13 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     />
                     <span className="text-xs text-neutral-500">px</span>
                     {data.contentHeight && (
-                      <button
+                      <Button variant="ghost" 
                         onClick={() => handleContentHeightChange(0)}
                         className="px-2 py-1 text-xs text-red-400 hover:text-red-300"
                         title="Remover altura fixa"
                       >
                         Auto
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -359,21 +361,21 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
             {/* Template Actions */}
             <div className="mt-6 pt-6 border-t border-neutral-800 space-y-3 mb-[40px]">
               <div className="flex gap-2">
-                <button
+                <Button variant="ghost" 
                   onClick={() => setShowSaveModal(true)}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[brand-cyan]/30 rounded-md text-brand-cyan text-sm font-mono transition-all"
                 >
                   <Save size={16} />
                   Salvar como Template
-                </button>
-                <button
+                </Button>
+                <Button variant="ghost" 
                   onClick={() => setShowLoadModal(true)}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 text-sm font-mono transition-all"
                   disabled={templates.length === 0}
                 >
                   <FolderOpen size={16} />
                   Carregar Template
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -387,7 +389,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
             <h3 className="text-lg font-semibold text-neutral-200 font-mono mb-4">
               Salvar como Template
             </h3>
-            <input
+            <Input
               type="text"
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
@@ -404,13 +406,13 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
               }}
             />
             <div className="flex gap-2">
-              <button
+              <Button variant="brand" 
                 onClick={saveTemplate}
                 className="flex-1 px-4 py-2 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold rounded-md text-sm font-mono transition-all"
               >
                 Salvar
-              </button>
-              <button
+              </Button>
+              <Button variant="ghost" 
                 onClick={() => {
                   setShowSaveModal(false);
                   setTemplateName('');
@@ -418,7 +420,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                 className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-md text-sm font-mono transition-all"
               >
                 Cancelar
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -461,24 +463,24 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                           ))}
                         </div>
                       </div>
-                      <button
+                      <Button variant="ghost" 
                         onClick={(e) => deleteTemplate(template.id, e)}
                         className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-opacity"
                         title="Remover template"
                       >
                         <Trash2 size={16} />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))
               )}
             </div>
-            <button
+            <Button variant="ghost" 
               onClick={() => setShowLoadModal(false)}
               className="w-full px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-md text-sm font-mono transition-all"
             >
               Fechar
-            </button>
+            </Button>
           </div>
         </div>
       )}

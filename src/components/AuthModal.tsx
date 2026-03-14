@@ -10,6 +10,7 @@ import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { SiGoogle } from '@icons-pack/react-simple-icons';
+import { Input } from '@/components/ui/input';
 
 export interface AuthModalProps {
   isOpen: boolean;
@@ -171,12 +172,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
             {isSignUp ? t('auth.signUp') : t('auth.signIn')}
           </h2>
-          <button
-            onClick={handleClose}
+          <Button variant="ghost"             onClick={handleClose}
             className="text-neutral-500 hover:text-neutral-300 transition-colors"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Google OAuth button - temporarily hidden during verification */}
@@ -215,7 +215,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <label className="block text-xs font-mono text-neutral-400 mb-1">
                 {t('auth.name')}
               </label>
-              <input
+              <Input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -229,7 +229,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <label className="block text-xs font-mono text-neutral-400 mb-1">
               {t('auth.email')}
             </label>
-            <input
+            <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -243,7 +243,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <label className="block text-xs font-mono text-neutral-400 mb-1">
               {t('auth.password')}
             </label>
-            <input
+            <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -258,13 +258,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </p>
             )}
             {!isSignUp && (
-              <button
-                type="button"
+              <Button variant="ghost"                 type="button"
                 onClick={() => setShowForgotPassword(true)}
                 className="text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono mt-1 text-right w-full"
               >
                 {t('auth.forgotPassword')}
-              </button>
+              </Button>
             )}
           </div>
 
@@ -290,8 +289,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           )}
 
-          <button
-            type="submit"
+          <Button variant="brand"             type="submit"
             disabled={isAuthLoading || !email || !password}
             className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
           >
@@ -303,7 +301,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             ) : (
               isSignUp ? t('auth.signUp') : t('auth.signIn')
             )}
-          </button>
+          </Button>
         </form>
 
         <div className="mt-4 pt-4 border-t border-neutral-800/50">

@@ -150,7 +150,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
       dragging={dragging}
       onFitToContent={handleFitToContent}
       warning={data.oversizedWarning}
-      className="p-5 min-w-[280px]"
+      className="min-w-[280px]"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
@@ -189,144 +189,154 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
       />
 
       {/* Header */}
-      <NodeHeader icon={Wrench} title={t('canvasNodes.mergeNode.title')} />
+      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
+            <Wrench size={16} className="text-brand-cyan" />
+          </div>
+          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
+            {t('canvasNodes.mergeNode.title') || 'Merge Node'}
+          </h3>
+        </div>
+      </div>
 
-      {/* Connected Images Thumbnails - unified component */}
-      <ConnectedImagesDisplay
-        images={connectedImages}
-        label={t('canvasNodes.mergeNode.inputImages')}
-        showLabel={connectedImages.length > 0}
-        maxThumbnails={3}
-      />
+      <div className="p-4 flex flex-col gap-[var(--node-gap)]">
+        {/* Connected Images Thumbnails - unified component */}
+        <ConnectedImagesDisplay
+          images={connectedImages}
+          label={t('canvasNodes.mergeNode.inputImages')}
+          showLabel={connectedImages.length > 0}
+          maxThumbnails={3}
+        />
 
-      {/* Generate Prompt Button */}
-      {hasEnoughImages && (
-        <NodeButton
-          onClick={(e) => {
+        {/* Generate Prompt Button */}
+        {hasEnoughImages && (
+          <NodeButton
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              handleGeneratePrompt();
+            }}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+            }}
+            disabled={isGeneratingPrompt || isLoading}
+            variant="purple"
+            size="full"
+            className="shadow-sm backdrop-blur-sm"
+          >
+            {isGeneratingPrompt ? (
+              <>
+                <GlitchLoader size={14} className="mr-2" color="currentColor" />
+                <span>Generating Prompt...</span>
+              </>
+            ) : (
+              <>
+                <Wand2 size={14} className="mr-2" />
+                <span>Generate Prompt</span>
+              </>
+            )}
+          </NodeButton>
+        )}
+
+        {/* Prompt Input */}
+        <Textarea
+          ref={textareaRef}
+          value={prompt}
+          onChange={(e) => {
             e.stopPropagation();
-            e.preventDefault();
-            handleGeneratePrompt();
+            const newPrompt = e.target.value;
+            setPrompt(newPrompt);
+            adjustTextareaHeight();
+            debouncedUpdateData({ prompt: newPrompt });
           }}
           onMouseDown={(e) => {
             e.stopPropagation();
           }}
-          disabled={isGeneratingPrompt || isLoading}
-          variant="purple"
-          className="mb-4"
-        >
-          {isGeneratingPrompt ? (
-            <>
-              <GlitchLoader size={14} color="currentColor" />
-              Generating Prompt...
-            </>
-          ) : (
-            <>
-              <Wand2 size={14} />
-              Generate Prompt
-            </>
-          )}
-        </NodeButton>
-      )}
+          placeholder={t('canvasNodes.mergeNode.promptPlaceholder')}
+          className="text-xs nodrag nopan bg-neutral-900/40 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
+          rows={3}
+          disabled={isLoading || isGeneratingPrompt}
+        />
 
-      {/* Prompt Input */}
-      <Textarea
-        ref={textareaRef}
-        value={prompt}
-        onChange={(e) => {
-          e.stopPropagation();
-          const newPrompt = e.target.value;
-          setPrompt(newPrompt);
-          adjustTextareaHeight();
-          debouncedUpdateData({ prompt: newPrompt });
-        }}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-        }}
-        placeholder={t('canvasNodes.mergeNode.promptPlaceholder')}
-        className="text-xs mb-4 nodrag nopan"
-        rows={3}
-        disabled={isLoading || isGeneratingPrompt}
-      />
-
-      {/* Model Selector */}
-      <div className="mb-4">
+        {/* Model Selector */}
         <div className="grid grid-cols-3 gap-2">
           {([
             { geminiModel: GEMINI_MODELS.FLASH, label: 'HD', emoji: '⛏️', credits: getCreditsRequired(GEMINI_MODELS.FLASH) },
             { geminiModel: GEMINI_MODELS.NB2, label: 'NB2', emoji: '🍌', credits: getCreditsRequired(GEMINI_MODELS.NB2, isAdvancedModel(model) ? '1K' : undefined) },
             { geminiModel: GEMINI_MODELS.PRO, label: '4K Pro', emoji: '⛏️💎', credits: getCreditsRequired(GEMINI_MODELS.PRO, isAdvancedModel(model) ? '1K' : undefined) },
           ] as const).map(({ geminiModel, label, emoji, credits }) => (
-            <button
+            <NodeButton
+              variant={model === geminiModel ? "primary" : "ghost"}
               key={geminiModel}
               onClick={(e) => { e.stopPropagation(); handleModelChange(geminiModel); }}
               onMouseDown={(e) => e.stopPropagation()}
               disabled={isLoading || isGeneratingPrompt}
               className={cn(
-                'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
-                model === geminiModel
-                  ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                  : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
-                (isLoading || isGeneratingPrompt) && 'opacity-50 cursor-not-allowed'
+                'w-full aspect-square flex flex-col items-center justify-center gap-1 p-2 nodrag shadow-sm backdrop-blur-sm',
+                model === geminiModel && "border-brand-cyan/30 bg-brand-cyan/5 shadow-[0_0_10px_rgba(var(--brand-cyan),0.1)]"
               )}
             >
-              <span className="text-2xl">{emoji}</span>
-              <span className="font-semibold text-sm">{label}</span>
-              <span className="text-[10px] text-neutral-500 mt-0.5">
-                {credits} {t('canvasNodes.promptNode.credits')}
+              <span className="text-xl">{emoji}</span>
+              <span className="font-bold text-[10px] uppercase tracking-tighter">{label}</span>
+              <span className="text-[9px] text-neutral-500 font-mono">
+                {credits}c
               </span>
-            </button>
+            </NodeButton>
           ))}
         </div>
-      </div>
 
-      {/* Generate Image Button */}
-      <NodeButton
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          handleGenerateImage();
-        }}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-        }}
-        disabled={isLoading || isGeneratingPrompt || !prompt.trim()}
-        variant="primary"
-      >
-        {isLoading ? (
-          <>
-            <GlitchLoader size={14} className="mr-1" color="brand-cyan" />
-            Generating Image...
-          </>
-        ) : (
-          <>
-            <Wrench size={14} />
-            <span>Generate Image</span>
-            <span className="opacity-70">({creditsRequired} credits)</span>
-          </>
-        )}
-      </NodeButton>
+        {/* Generate Image Button */}
+        <NodeButton
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handleGenerateImage();
+          }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+          }}
+          disabled={isLoading || isGeneratingPrompt || !prompt.trim()}
+          variant="primary"
+          size="full"
+          className="shadow-sm backdrop-blur-sm"
+        >
+          {isLoading ? (
+            <>
+              <GlitchLoader size={14} className="mr-2" color="currentColor" />
+              <span>Generating Image...</span>
+            </>
+          ) : (
+            <>
+              <Wrench size={14} className="mr-2" />
+              <span>{t('canvasNodes.mergeNode.generateImage') || 'Generate Image'}</span>
+              <span className="ml-2 text-[10px] opacity-70">({creditsRequired}c)</span>
+            </>
+          )}
+        </NodeButton>
 
-      {/* Result Preview */}
-      {hasResult && (data.resultImageUrl || data.resultImageBase64) && (
-        <div className="mt-3 pt-3 border-t border-neutral-700/30">
-          <img
-            src={data.resultImageUrl || (data.resultImageBase64 ? `data:image/png;base64,${data.resultImageBase64}` : '')}
-            alt={t('canvasNodes.mergeNode.result')}
-            className="w-full h-auto rounded"
-            onLoad={(e) => {
-              const img = e.target as HTMLImageElement;
-              if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-                if (data.onUpdateData) {
-                  data.onUpdateData(id, {
-                    imageWidth: img.naturalWidth,
-                    imageHeight: img.naturalHeight,
-                  });
+        {/* Result Preview */}
+        {hasResult && (data.resultImageUrl || data.resultImageBase64) && (
+          <div className="pt-2">
+            <img
+              src={data.resultImageUrl || (data.resultImageBase64 ? `data:image/png;base64,${data.resultImageBase64}` : '')}
+              alt={t('canvasNodes.mergeNode.result')}
+              className="w-full h-auto rounded-md border border-neutral-700/30 shadow-sm"
+              onLoad={(e) => {
+                const img = e.target as HTMLImageElement;
+                if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                  if (data.onUpdateData) {
+                    data.onUpdateData(id, {
+                      imageWidth: img.naturalWidth,
+                      imageHeight: img.naturalHeight,
+                    });
+                  }
                 }
-              }
-            }}
-          />
-        </div>
-      )}
+              }}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Output Handle */}
       <Handle

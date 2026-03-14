@@ -13,7 +13,7 @@ export const EditNode: React.FC<NodeProps<Node<EditNodeData>>> = memo(({ data, s
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="p-5 min-w-[320px]"
+      className="min-w-[320px]"
     >
       <NodeHeader icon={Wrench} title={t('canvasNodes.editNode.title') || 'Edit Node'} />
 
