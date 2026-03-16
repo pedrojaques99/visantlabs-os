@@ -6,32 +6,44 @@
  * Run with: npm run mcp:figma
  */
 
-import {
-  Server,
-  Tool,
-} from '@modelcontextprotocol/sdk/server/index.js';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
+
+// Tool interface (not exported from SDK v1.20+)
+interface Tool {
+  name: string;
+  description: string;
+  inputSchema: {
+    type: string;
+    properties: Record<string, unknown>;
+    required?: string[];
+  };
+}
 
 const server = new Server(
   {
     name: 'figma-mcp',
     version: '1.0.0',
+  },
+  {
     capabilities: {
       tools: {},
     },
-  },
-  {
-    capabilities: {},
   }
 );
 
 // ═══ Tool: get_selection ═══
 server.setRequestHandler(
-  { method: 'tools/call' },
-  async (request: any): Promise<{ content: any[] }> => {
-    const { name, arguments: args } = request.params;
+  CallToolRequestSchema,
+  async (request): Promise<{ content: { type: string; text: string }[] }> => {
+    const { name, arguments: rawArgs } = request.params;
+    const args = (rawArgs ?? {}) as Record<string, unknown>;
 
     switch (name) {
       case 'get_selection': {
@@ -734,7 +746,7 @@ const tools: Tool[] = [
 ];
 
 // Register tools
-server.setRequestHandler({ method: 'tools/list' }, async () => ({
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools,
 }));
 

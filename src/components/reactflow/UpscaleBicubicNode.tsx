@@ -197,24 +197,6 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
     }
   }, [data, id, localSharpening, sharpening]);
 
-  // Prioritize R2 URL for MAXIMUM QUALITY display
-  // Only use base64 as fallback when R2 URL is not yet available
-
-  // Dev logging for debugging display quality
-  useEffect(() => {
-    if (hasResult) {
-      const base64Size = data.resultImageBase64 ? ((data.resultImageBase64.length * 3 / 4) / 1024 / 1024).toFixed(2) : null;
-      console.log('[UpscaleBicubicNode] Display state:', {
-        nodeId: id,
-        hasR2Url: !!data.resultImageUrl,
-        hasBase64: !!data.resultImageBase64,
-        usingSource: data.resultImageUrl ? 'R2 URL (max quality)' : 'Base64 (fallback)',
-        r2Url: data.resultImageUrl?.substring(0, 80) + '...',
-        base64SizeMB: base64Size ? `${base64Size}MB` : null,
-      });
-    }
-  }, [id, hasResult, data.resultImageUrl, data.resultImageBase64]);
-
   // Custom download handler that prioritizes R2 URL for maximum quality
   const handleDownload = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();

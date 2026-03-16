@@ -39,12 +39,6 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
     // Read connected image directly from nodeData to ensure we have the latest value
     const connectedImageFromData = (data as any).connectedImage as string | undefined;
 
-    console.log('[UpscaleNode] Upscaling with:', {
-      nodeId: id,
-      targetResolution,
-      hasConnectedImage: !!connectedImageFromData,
-    });
-
     try {
       await data.onUpscale(id, connectedImageFromData || '', targetResolution);
     } catch (error) {
@@ -75,7 +69,6 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
       toast.success(t('canvasNodes.upscaleNode.imageSavedSuccessfully'), { duration: 3000 });
     } catch (error: any) {
       toast.error(error?.message || 'Failed to save image', { duration: 3000 });
-      console.error('Failed to save:', error);
     } finally {
       setIsSaving(false);
     }

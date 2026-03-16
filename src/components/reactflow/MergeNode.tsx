@@ -7,14 +7,13 @@ import type { GeminiModel } from '@/types/types';
 import { cn } from '@/lib/utils';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { NodeContainer } from './shared/NodeContainer';
-import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { NodeHeader } from './shared/node-header';
 import { NodeButton } from './shared/node-button';
 import { ModelSelector } from './shared/ModelSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
-import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel } from '@/constants/geminiModels';
+import { GEMINI_MODELS, DEFAULT_MODEL, isAdvancedModel } from '@/constants/geminiModels';
 import { isSafeUrl } from '@/utils/imageUtils';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
@@ -46,26 +45,14 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
 
   // Sync prompt and model with data
   useEffect(() => {
-    if (data.prompt !== undefined) {
-      setPrompt(data.prompt);
-    }
-  }, [data.prompt]);
+    if (data.prompt !== undefined) setPrompt(data.prompt);
+    if (data.model) setModel(data.model);
+  }, [data.prompt, data.model]);
 
   // Adjust textarea height when prompt changes or component mounts
   useEffect(() => {
     adjustTextareaHeight();
   }, [prompt]);
-
-  // Initial resize on mount
-  useEffect(() => {
-    adjustTextareaHeight();
-  }, []);
-
-  useEffect(() => {
-    if (data.model) {
-      setModel(data.model);
-    }
-  }, [data.model]);
 
   const handleGeneratePrompt = async () => {
     if (!data.onGeneratePrompt || !hasEnoughImages) {
@@ -88,17 +75,6 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
     // Read connected images directly from nodeData to ensure we have the latest values
     // This prevents synchronization issues between local state and nodeData
     const connectedImagesFromData = data.connectedImages || [];
-
-    console.log('[MergeNode] Generating with:', {
-      prompt: prompt.trim(),
-      model,
-      connectedImagesCount: connectedImagesFromData.length,
-      images: connectedImagesFromData.map((img, idx) => ({
-        index: idx,
-        type: img?.startsWith('http') ? 'URL' : img?.startsWith('data:') ? 'dataURL' : 'base64',
-        length: img?.length || 0,
-      })),
-    });
 
     await data.onGenerate(id, connectedImagesFromData, prompt, model);
   };
@@ -254,16 +230,18 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
           disabled={isLoading || isGeneratingPrompt}
         />
 
-        <ModelSelector
-          selectedModel={model}
-          onModelChange={(newModel) => {
-            setModel(newModel);
-            if (data.onUpdateData) {
-              data.onUpdateData(id, { model: newModel });
-            }
-          }}
-          disabled={isLoading || isGeneratingPrompt}
-        />
+        <div className="flex flex-col gap-3">
+          <ModelSelector
+            selectedModel={model}
+            onModelChange={(newModel) => {
+              setModel(newModel);
+              if (data.onUpdateData) {
+                data.onUpdateData(id, { model: newModel });
+              }
+            }}
+            disabled={isLoading || isGeneratingPrompt}
+          />
+        </div>
 
         {/* Generate Image Button */}
         <NodeButton
