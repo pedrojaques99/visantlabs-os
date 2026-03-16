@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import type { BrandGuideline } from '@/lib/figma-types';
 
 interface CanvasHeaderContextValue {
   projectName?: string;
@@ -8,6 +9,13 @@ interface CanvasHeaderContextValue {
   // Project sharing data
   projectId: string | null;
   setProjectId: (id: string | null) => void;
+  // Brand guideline linking
+  linkedGuidelineId: string | null;
+  setLinkedGuidelineId: (id: string | null) => void;
+  onLinkedGuidelineChange?: (id: string | null) => void;
+  setOnLinkedGuidelineChange: (handler: ((id: string | null) => void) | undefined) => void;
+  linkedGuideline: BrandGuideline | null;
+  setLinkedGuideline: (guideline: BrandGuideline | null) => void;
   shareId: string | null;
   setShareId: (id: string | null) => void;
   isCollaborative: boolean;
@@ -99,6 +107,9 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
   const [selectedNodesCount, setSelectedNodesCount] = useState<number>(0);
   // Project sharing state
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [linkedGuidelineId, setLinkedGuidelineId] = useState<string | null>(null);
+  const [linkedGuideline, setLinkedGuideline] = useState<BrandGuideline | null>(null);
+  const [onLinkedGuidelineChange, setOnLinkedGuidelineChange] = useState<((id: string | null) => void) | undefined>(undefined);
   const [shareId, setShareId] = useState<string | null>(null);
   const [isCollaborative, setIsCollaborative] = useState(false);
   const [canEdit, setCanEdit] = useState<string[]>([]);
@@ -136,6 +147,12 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     setSelectedNodesCount,
     projectId,
     setProjectId,
+    linkedGuidelineId,
+    setLinkedGuidelineId,
+    linkedGuideline,
+    setLinkedGuideline,
+    onLinkedGuidelineChange,
+    setOnLinkedGuidelineChange,
     shareId,
     setShareId,
     isCollaborative,
@@ -188,6 +205,9 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     projectName,
     selectedNodesCount,
     projectId,
+    linkedGuidelineId,
+    linkedGuideline,
+    onLinkedGuidelineChange,
     shareId,
     isCollaborative,
     canEdit,
