@@ -2833,7 +2833,7 @@ Generate the new mockup image with the requested changes applied.`;
               </Button>
             )}
 
-            <div className="w-auto max-w-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl border border-white/10 relative">
+            <div className="w-auto max-w-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl relative">
               <SurpriseMeControl
                 onSurpriseMe={handleSurpriseMeWithDice}
                 isGeneratingPrompt={isGeneratingPrompt}
@@ -2846,7 +2846,6 @@ Generate the new mockup image with the requested changes applied.`;
                 mockupCount={mockupCount}
                 resolution={resolution}
                 showBackground={true}
-                containerClassName="!p-0 !pb-0 !bg-neutral-900/80 !backdrop-blur-2xl !overflow-visible"
                 onGeneratePrompt={handleGenerateSmartPrompt}
                 onGenerateOutputs={handleGenerateClick}
                 isGenerateDisabled={isGenerateDisabled}

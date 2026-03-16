@@ -11,6 +11,7 @@ import { MockupTagCategory } from '@/services/mockupTagService';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { MicroTitle } from '@/components/ui/MicroTitle'
+import { SuggestedTagsBadges } from './SuggestedTagsBadges';
 
 type SectionKey = 'categories' | 'location' | 'angle' | 'lighting' | 'effects' | 'material';
 
@@ -357,6 +358,13 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
     removeText,
     surpriseMePool,
     setSurpriseMePool,
+    // Suggested tags from AI analysis
+    suggestedTags: suggestedCategoryTags,
+    suggestedLocationTags,
+    suggestedAngleTags,
+    suggestedLightingTags,
+    suggestedEffectTags,
+    suggestedMaterialTags,
     // Setters
     setSelectedTags,
     setSelectedLocationTags,
@@ -398,6 +406,16 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
     lighting: availableLightingTags,
     effects: availableEffectTags,
     material: availableMaterialTags,
+  };
+
+  // AI suggested tags map (from analysis)
+  const suggestedTagsMap: Record<SectionKey, string[]> = {
+    categories: suggestedCategoryTags || [],
+    location: suggestedLocationTags || [],
+    angle: suggestedAngleTags || [],
+    lighting: suggestedLightingTags || [],
+    effects: suggestedEffectTags || [],
+    material: suggestedMaterialTags || [],
   };
 
   const settersMap: Record<SectionKey, (tags: string[]) => void> = {
@@ -510,6 +528,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
         {SECTIONS.map(({ key, labelKey }) => {
           const tags = sectionData[key];
           const availableTags = availableTagsMap[key];
+          const suggested = suggestedTagsMap[key];
 
           return (
             <div key={key} className="flex flex-col gap-1">
@@ -523,6 +542,13 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
                   {t(labelKey)}:
                 </span>
               </SkeletonText>
+              {/* AI Suggested badges */}
+              <SuggestedTagsBadges
+                suggestedTags={suggested}
+                selectedTags={tags}
+                onSelect={(tag) => handleTagSelect(key, tag)}
+                isLoading={isGenerating}
+              />
               <TagDropdown
                 selectedTags={tags}
                 isMulti={isSurpriseMeMode}
