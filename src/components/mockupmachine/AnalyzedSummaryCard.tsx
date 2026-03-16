@@ -87,12 +87,12 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
             <div className="relative p-4 md:p-5 flex flex-col gap-4">
                 {/* Media Container - Full Width */}
                 <div className="w-full shrink-0">
-                    <div className="relative w-full aspect-video rounded-md overflow-hidden bg-neutral-900 shadow-inner group">
+                    <div className="relative w-full h-[200px] rounded-md overflow-hidden bg-neutral-900 shadow-inner group">
                         {uploadedImage ? (
                             <>
                                 <img
                                     src={uploadedImage.url || (uploadedImage.base64 && isSafeUrl(`data:${uploadedImage.mimeType};base64,${uploadedImage.base64}`) ? `data:${uploadedImage.mimeType};base64,${uploadedImage.base64}` : '')}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 p-10"
+                                    className="w-full h-full object-cover p-10"
                                     alt="Analyzed Design"
                                 />
                                 {onReplaceImage && (

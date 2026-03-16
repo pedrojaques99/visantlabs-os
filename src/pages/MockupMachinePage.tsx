@@ -160,8 +160,8 @@ const MockupMachinePageContent: React.FC = () => {
   const [mockupLikedStatus, setMockupLikedStatus] = useState<Map<number, boolean>>(new Map()); // Map index -> isLiked
   const [savedMockupIds, setSavedMockupIds] = useState<Map<number, string>>(new Map()); // Map index -> mockup ID
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
-  const [isDiceAnimatingFloating, setIsDiceAnimatingFloating] = useState(false);
-  const [autoGenerateFloating, setAutoGenerateFloating] = useState(true);
+  const [isDiceAnimating, setIsDiceAnimating] = useState(false);
+  const [autoGenerate, setAutoGenerate] = useState(true);
 
   // React to external tag changes (e.g. SurpriseMeSelectedTagsDisplay reroll)
   useEffect(() => {
@@ -767,9 +767,16 @@ const MockupMachinePageContent: React.FC = () => {
         }
       }
 
-      const userContext = selectedBrandingTags.length > 0 ? { selectedBrandingTags } : undefined;
+      const userContext = {
+        ...(selectedBrandingTags.length > 0 && { selectedBrandingTags }),
+        ...(selectedBrandGuideline && { brandGuidelineId: selectedBrandGuideline }),
+      };
       if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup start', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-      const analysis = await aiApi.analyzeSetup(imageToAnalyze, instructions, userContext);
+      const analysis = await aiApi.analyzeSetup(
+        imageToAnalyze,
+        instructions,
+        Object.keys(userContext).length > 0 ? userContext : undefined
+      );
       if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
 
       setSuggestedBrandingTags(analysis.branding);
@@ -1801,14 +1808,14 @@ const MockupMachinePageContent: React.FC = () => {
   }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups, isSurpriseMeMode, surpriseMePool]);
 
   const handleSurpriseMeWithDice = useCallback((autoGen: boolean) => {
-    setIsDiceAnimatingFloating(true);
+    setIsDiceAnimating(true);
     showTemporaryOverlay(300);
     handleSurpriseMe(autoGen);
-    setTimeout(() => setIsDiceAnimatingFloating(false), 800);
+    setTimeout(() => setIsDiceAnimating(false), 800);
   }, [handleSurpriseMe, showTemporaryOverlay]);
 
   useEffect(() => {
-    if (isGeneratingPrompt) setIsDiceAnimatingFloating(false);
+    if (isGeneratingPrompt) setIsDiceAnimating(false);
   }, [isGeneratingPrompt]);
 
   const handleSaveAllUnsaved = useCallback(async () => {
@@ -2706,13 +2713,7 @@ Generate the new mockup image with the requested changes applied.`;
           onImageUpload={handleImageUpload}
         />
       ) : (
-        <div className="h-full w-full pt-12 md:pt-14 overflow-hidden bg-background">
-          <a
-            href="#mockup-main-content"
-            className="absolute -top-12 left-4 z-[100] px-4 py-2 bg-brand-cyan text-black font-mono text-sm rounded-md transition-top duration-200 focus:top-4 focus:outline-none focus:ring-2 focus:ring-brand-cyan/50"
-          >
-            {t('mockup.skipToContent') || 'Skip to main content'}
-          </a>
+        <div className="h-full w-full pt-12 md:pt-14 bg-background">
           <div className={cn(
             "flex h-full transition-all duration-300",
             isSetupMode ? "flex-col items-center justify-center p-4 md:p-8" : "flex-row"
@@ -2731,7 +2732,7 @@ Generate the new mockup image with the requested changes applied.`;
                 sidebarWidth={sidebarWidth}
                 sidebarRef={sidebarRef}
                 onSidebarWidthChange={setSidebarWidth}
-                onSurpriseMe={handleSurpriseMe}
+                onSurpriseMe={handleSurpriseMeWithDice}
                 onImageUpload={handleImageUpload}
                 onReplaceImage={handleReplaceImage}
                 onReferenceImagesChange={setReferenceImages}
@@ -2752,8 +2753,7 @@ Generate the new mockup image with the requested changes applied.`;
             {/* Dashboard Main Area */}
             {isDashboardMode && (
               <main id="mockup-main-content" className={cn(
-                "flex-1 min-w-0 h-full relative overflow-hidden transition-all duration-300",
-                "p-2 md:p-6 lg:p-8 custom-scrollbar",
+                "flex-1 min-w-0 h-full relative overflow-hidden transition-all duration-300 flex flex-col",
                 isSidebarCollapsed && "lg:pl-16 shadow-[inset_20px_0_30px_-20px_rgba(0,0,0,0.3)]"
               )}>
 
@@ -2772,19 +2772,6 @@ Generate the new mockup image with the requested changes applied.`;
                   </Button>
                 </div>
 
-                {/* Mobile Sidebar Toggle - only when floating bar is hidden (bar has its own expand btn) */}
-                {!isSidebarVisibleMobile && !((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed) && (
-                  <div className="lg:hidden fixed bottom-6 left-4 z-50">
-                    <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(true)}
-                      size="icon"
-                      className="w-12 h-12 rounded-full bg-brand-cyan text-black shadow-2xl shadow-brand-cyan/20 hover:scale-110 active:scale-95 transition-all"
-                      title={t('mockup.openSidebar') || 'Abrir barra lateral'}
-                    >
-                      <PanelLeftOpen className="h-6 w-6" />
-                    </Button>
-                  </div>
-                )}
-
                 {/* Top Action Bar (Mobile Only - Closes Sidebar) */}
                 {isSidebarVisibleMobile && (
                   <div className="lg:hidden fixed top-6 right-6 z-50 mt-[30px]">
@@ -2797,34 +2784,85 @@ Generate the new mockup image with the requested changes applied.`;
                   </div>
                 )}
 
-                {/* Content Rendering */}
-                <div className="h-full w-full min-w-0 animate-fade-in-up overflow-hidden">
-                  <MockupDisplay
-                    mockups={mockups}
-                    isLoading={isLoading}
-                    isSidebarCollapsed={isSidebarCollapsed}
-                    onRedraw={handleRedrawClick}
-                    onView={handleOpenFullScreen}
-                    onNewAngle={handleNewAngleFromOutput}
-                    onNewBackground={handleNewBackgroundFromOutput}
-                    onReImagine={handleReImagineFromOutput}
-                    onSave={handleSaveMockup}
-                    savedIndices={savedIndices}
-                    savedMockupIds={savedMockupIds}
-                    onToggleLike={handleToggleLike}
-                    likedIndices={mockupLikedStatus}
-                    onRemove={handleRemoveMockup}
-                    prompt={promptPreview}
-                    designType={designType || undefined}
-                    tags={selectedTags}
-                    brandingTags={selectedBrandingTags}
-                    aspectRatio={aspectRatio as '16:9' | '4:3' | '1:1'}
-                    editButtonsDisabled={isEditOperationDisabled}
-                    creditsPerOperation={creditsNeededForEdit}
-                  />
+                <div className="flex-1 min-h-0 w-full relative p-2 md:p-6 lg:p-8">
+                  {/* Content Rendering */}
+                  <div className="h-full w-full min-w-0 animate-fade-in-up overflow-hidden">
+                    <MockupDisplay
+                      mockups={mockups}
+                      isLoading={isLoading}
+                      isSidebarCollapsed={isSidebarCollapsed}
+                      onRedraw={handleRedrawClick}
+                      onView={handleOpenFullScreen}
+                      onNewAngle={handleNewAngleFromOutput}
+                      onNewBackground={handleNewBackgroundFromOutput}
+                      onReImagine={handleReImagineFromOutput}
+                      onSave={handleSaveMockup}
+                      savedIndices={savedIndices}
+                      savedMockupIds={savedMockupIds}
+                      onToggleLike={handleToggleLike}
+                      likedIndices={mockupLikedStatus}
+                      onRemove={handleRemoveMockup}
+                      prompt={promptPreview}
+                      designType={designType || undefined}
+                      tags={selectedTags}
+                      brandingTags={selectedBrandingTags}
+                      aspectRatio={aspectRatio as '16:9' | '4:3' | '1:1'}
+                      editButtonsDisabled={isEditOperationDisabled}
+                      creditsPerOperation={creditsNeededForEdit}
+                    />
+                  </div>
                 </div>
               </main>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Global Floating Control Bar (Dashboard Mode) */}
+      {isDashboardMode && (hasAnalyzed || shouldShowGenerateButton) && (
+        <div className="fixed bottom-10 left-0 right-0 z-[100] px-4 pointer-events-none flex justify-center">
+          <div className="pointer-events-auto flex items-center gap-3 animate-in fade-in slide-in-from-bottom-8 duration-500">
+            {/* Mobile Sidebar Shortcut */}
+            {!isSidebarVisibleMobile && (
+              <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(true)}
+                size="icon"
+                className="lg:hidden shrink-0 w-12 h-12 rounded-2xl border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl hover:bg-neutral-800 hover:border-brand-cyan/40 text-neutral-400 hover:text-brand-cyan transition-all group"
+                title={t('mockup.openSidebar') || 'Abrir barra lateral'}
+              >
+                <PanelLeftOpen className="h-6 w-6 group-hover:scale-110 transition-all" />
+              </Button>
+            )}
+
+            <div className="w-auto max-w-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl border border-white/10 relative">
+              <SurpriseMeControl
+                onSurpriseMe={handleSurpriseMeWithDice}
+                isGeneratingPrompt={isGeneratingPrompt}
+                isDiceAnimating={isDiceAnimating}
+                isSurpriseMeMode={isSurpriseMeMode}
+                setIsSurpriseMeMode={setIsSurpriseMeMode}
+                autoGenerate={autoGenerate}
+                setAutoGenerate={setAutoGenerate}
+                selectedModel={selectedModel}
+                mockupCount={mockupCount}
+                resolution={resolution}
+                showBackground={true}
+                containerClassName="!p-0 !pb-0 !bg-neutral-900/80 !backdrop-blur-2xl !overflow-visible"
+                onGeneratePrompt={handleGenerateSmartPrompt}
+                onGenerateOutputs={handleGenerateClick}
+                isGenerateDisabled={isGenerateDisabled}
+                isGeneratingOutputs={isLoading.some(Boolean)}
+                isPromptReady={isPromptReady}
+                setSelectedModel={setSelectedModel}
+                imageProvider={imageProvider}
+                setImageProvider={setImageProvider}
+                uploadedImage={uploadedImage}
+                setMockupCount={setMockupCount}
+                setResolution={setResolution}
+                aspectRatio={aspectRatio}
+                setAspectRatio={setAspectRatio}
+                showGenerateButtons={true}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -2860,46 +2898,6 @@ Generate the new mockup image with the requested changes applied.`;
         />
       )}
 
-      {/* Floating SurpriseMeControl (mobile only, when sidebar hidden) */}
-      {!isSidebarVisibleMobile && ((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed) && (
-        <div className="fixed bottom-0 right-0 left-0 z-[60] lg:hidden animate-in fade-in slide-in-from-bottom-4 duration-300 bg-background px-4 md:px-6">
-          <div className="flex items-center gap-2 w-full">
-            <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(true)}
-              size="icon"
-              className="shrink-0 w-10 h-10 rounded-xl border-white/10 bg-neutral-900/80 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan"
-              title={t('mockup.openSidebar') || 'Abrir barra lateral'}
-            >
-              <PanelLeftOpen className="h-5 w-5" />
-            </Button>
-            <div className="flex-1 min-w-0">
-              <SurpriseMeControl
-                onSurpriseMe={handleSurpriseMeWithDice}
-                isGeneratingPrompt={isGeneratingPrompt}
-                isDiceAnimating={isDiceAnimatingFloating}
-                isSurpriseMeMode={isSurpriseMeMode}
-                setIsSurpriseMeMode={setIsSurpriseMeMode}
-                autoGenerate={autoGenerateFloating}
-                setAutoGenerate={setAutoGenerateFloating}
-                selectedModel={selectedModel}
-                setSelectedModel={setSelectedModel}
-                imageProvider={imageProvider}
-                setImageProvider={setImageProvider}
-                mockupCount={mockupCount}
-                resolution={resolution}
-                showBackground
-                containerClassName="shadow-lg !pb-0 rounded-b-none"
-                onGeneratePrompt={handleGenerateSmartPrompt}
-                onGenerateOutputs={handleGenerateClick}
-                isGenerateDisabled={isGenerateDisabled}
-                isGeneratingOutputs={isLoading.some(Boolean)}
-                isPromptReady={isPromptReady}
-                showGenerateButtons
-                uploadedImage={uploadedImage}
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Confirmation & Settings Modals */}
       {showUnsavedDialog && unsavedDialogConfig && (

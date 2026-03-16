@@ -396,7 +396,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
 
                     {/* Settings Feedback/Menu Overlay */}
                     {showSettings && (
-                        <div className="absolute bottom-full right-0 mb-3 w-72 p-4 rounded-xl bg-neutral-900/95 border border-white/10 backdrop-blur-xl shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-200 z-50">
+                        <div className="absolute bottom-full right-0 mb-3 w-72 p-4 rounded-xl bg-neutral-900/95 border border-white/10 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-2 duration-200 z-[110]">
                             <div className="space-y-5">
                                 <div className="space-y-3 pb-4 border-b border-white/5">
                                     <div className="flex items-center justify-between">

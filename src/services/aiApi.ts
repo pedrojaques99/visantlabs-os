@@ -84,7 +84,10 @@ export const aiApi = {
   async analyzeSetup(
     baseImage: UploadedImage,
     instructions?: string,
-    userContext?: { selectedBrandingTags?: string[] }
+    userContext?: {
+      selectedBrandingTags?: string[];
+      brandGuidelineId?: string;
+    }
   ): Promise<MockupSetupAnalysis> {
     const t0 = Date.now();
     if (import.meta.env.DEV) console.log('[dev] aiApi.analyzeSetup: fetch start');

@@ -67,7 +67,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     isGeneratingPrompt,
   } = useMockup();
 
-  const [isDiceAnimating, setIsDiceAnimating] = useState(false);
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(!hasAnalyzed);
 
   // Use analysis overlay hook
@@ -91,28 +90,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     categoriesComplete: selectedTags.length > 0
   });
 
-  const handleSurpriseMe = (autoGenerate: boolean = true) => {
-    setIsDiceAnimating(true);
-
-    // Show "fake" analysis overlay briefly
-    showTemporaryOverlay(300);
-
-    // All Pool Mode logic is now handled in MockupMachinePage.handleSurpriseMe
-    // Just call the external handler which will use the Context pool when Pool Mode is active
-    onSurpriseMe(autoGenerate);
-
-    // Reset animation after it completes
-    setTimeout(() => {
-      setIsDiceAnimating(false);
-    }, 800);
-  };
-
-  // Reset animation when prompt generation starts
-  useEffect(() => {
-    if (isGeneratingPrompt) {
-      setIsDiceAnimating(false);
-    }
-  }, [isGeneratingPrompt]);
 
   return (
     <>
@@ -151,13 +128,12 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
               onGenerateClick={onGenerateClick}
               onRegenerate={onRegenerate}
               onSurpriseMe={onSurpriseMe}
-              handleSurpriseMe={handleSurpriseMe}
+              handleSurpriseMe={onSurpriseMe}
               onSuggestPrompts={onSuggestPrompts}
               onGenerateSmartPrompt={onGenerateSmartPrompt}
               onSimplify={onSimplify}
               onGenerateSuggestion={onGenerateSuggestion}
               generateOutputsButtonRef={generateOutputsButtonRef}
-              isDiceAnimating={isDiceAnimating}
               onStartOver={onStartOver}
               onReplaceImage={onReplaceImage}
               onReferenceImagesChange={onReferenceImagesChange}

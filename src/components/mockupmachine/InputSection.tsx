@@ -233,17 +233,17 @@ export const InputSection: React.FC<InputSectionProps> = ({
       highlight ? "bg-brand-cyan/[0.03] border-brand-cyan/20 shadow-lg shadow-brand-cyan/5" : "bg-neutral-900/40 border-white/[0.05] hover:border-white/10"
     )}>
       {/* Image Container */}
-      <div className="relative h-auto max-h-[min(300px,38vh)] w-full rounded-md overflow-hidden bg-black/40 flex items-center justify-center group/img-container">
+      <div className="relative h-auto max-h-[min(200px,38vh)] w-full rounded-md overflow-hidden flex items-center justify-center group/img-container">
         <img
           src={getImageSrc(img)}
           alt={label}
           loading="lazy"
           decoding="async"
-          className="max-h-[min(300px,38vh)] w-full h-auto object-contain transition-transform duration-300 group-hover/img-container:scale-[1.02]"
+          className="max-h-[min(200px,28vh)] w-full h-auto object-contain transition-transform duration-300 group-hover/img-container:scale-[1.02]"
         />
 
         {/* Hover Overlay with Replace Action */}
-        <div className="absolute inset-0 bg-black/70 flex items-center justify-center gap-4 opacity-0 group-hover/img-container:opacity-100 transition-all duration-300 backdrop-blur-[2px] p-4">
+        <div className="absolute inset-0 bg-black/20 flex items-center justify-center gap-4 opacity-0 group-hover/img-container:opacity-100 transition-all duration-300 backdrop-blur-[10px] p-3">
           <Button variant="ghost" type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -341,8 +341,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
                   )}
                   title={t('mockup.transparentBackground') || 'Isolar Logotipo'}
                 >
-                  <Switch 
-                    checked={designType === 'logo'} 
+                  <Switch
+                    checked={designType === 'logo'}
                     onCheckedChange={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
                     className="scale-[0.6] origin-left pointer-events-none"
                   />
