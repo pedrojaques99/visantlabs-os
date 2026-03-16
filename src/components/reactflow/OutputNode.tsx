@@ -1,19 +1,15 @@
-import React, { useRef, useState, useCallback, memo, useEffect } from 'react';
-import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer, useViewport } from '@xyflow/react';
-import { Edit, Maximize2 } from 'lucide-react';
+import React, { useRef, useState, useCallback, memo, useEffect, useMemo } from 'react';
+import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer } from '@xyflow/react';
+import { Maximize2 } from 'lucide-react';
 import type { OutputNodeData, FlowNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
-import { isSafeUrl } from '@/utils/imageUtils';
-import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { mockupApi } from '@/services/mockupApi';
 import { aiApi } from '@/services/aiApi';
 import { normalizeImageToBase64 } from '@/services/reactFlowService';
 import { toast } from 'sonner';
 import { NodeHandles } from './shared/NodeHandles';
-import { NodeLabel } from './shared/NodeLabel';
-import { NodePlaceholder } from './shared/NodePlaceholder';
 import { NodeContainer } from './shared/NodeContainer';
-import { NodeImageContainer } from './shared/NodeImageContainer';
+import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
 import { NodeActionBar } from './shared/NodeActionBar';
 import { ImageNodeActionButtons } from './shared/ImageNodeActionButtons';
 import { useNodeDownload } from './shared/useNodeDownload';
@@ -22,98 +18,54 @@ import { useMockupLike } from '@/hooks/useMockupLike';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { MockupPresetModal } from '../MockupPresetModal';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { useMediaSource } from '@/hooks/canvas/useMediaSource';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
   const nodes = useNodes();
   const edges = useEdges();
-  const { setNodes, getNode, getZoom } = useReactFlow();
+  const { getNode, getZoom } = useReactFlow();
   const nodeData = data as OutputNodeData;
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [savedMockupId, setSavedMockupId] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [isVideo, setIsVideo] = useState(false);
+  const [isLiked, setIsLiked] = useState(nodeData.isLiked || false);
+  const [savedMockupId, setSavedMockupId] = useState<string | null>(nodeData.savedMockupId || null);
   const [isDescribing, setIsDescribing] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showBrandKitModal, setShowBrandKitModal] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const previousImageUrlRef = useRef<string | null>(null);
-  const previousVideoUrlRef = useRef<string | null>(null);
-  const loadingStartTimeRef = useRef<number | null>(null);
-  const { handleDownload, isDownloading } = useNodeDownload(imageUrl || videoUrl, 'output-media');
 
-  // Extract values from nodeData to avoid object recreation issues in dependencies
-  const resultImageUrl = nodeData.resultImageUrl;
-  const resultImageBase64 = nodeData.resultImageBase64;
-  const resultVideoUrl = nodeData.resultVideoUrl;
-  const resultVideoBase64 = nodeData.resultVideoBase64;
-  const savedMockupIdFromData = nodeData.savedMockupId;
-  const isLikedFromData = nodeData.isLiked;
   const isLoading = nodeData.isLoading || false;
+
+  // Use centralized media source hook - replaces 130+ lines of useEffect
+  const ownResult = useMemo(() => ({
+    imageUrl: nodeData.resultImageUrl,
+    imageBase64: nodeData.resultImageBase64,
+    videoUrl: nodeData.resultVideoUrl,
+    videoBase64: nodeData.resultVideoBase64,
+  }), [nodeData.resultImageUrl, nodeData.resultImageBase64, nodeData.resultVideoUrl, nodeData.resultVideoBase64]);
+
+  const mediaSource = useMediaSource({
+    nodeId: id,
+    nodes: nodes as any,
+    edges,
+    ownResult,
+  });
+
+  const mediaUrl = mediaSource.url;
+  const isVideo = mediaSource.isVideo;
+  const { handleDownload, isDownloading } = useNodeDownload(mediaUrl, 'output-media');
 
   // Sync state with nodeData
   useEffect(() => {
-    if (savedMockupIdFromData !== undefined) {
-      setSavedMockupId(savedMockupIdFromData);
+    if (nodeData.savedMockupId !== undefined) {
+      setSavedMockupId(nodeData.savedMockupId);
     }
-    if (isLikedFromData !== undefined) {
-      setIsLiked(isLikedFromData);
+    if (nodeData.isLiked !== undefined) {
+      setIsLiked(nodeData.isLiked);
     }
-  }, [savedMockupIdFromData, isLikedFromData]);
-
-  // Timer for loading state
-  useEffect(() => {
-    if (isLoading) {
-      // Start timer when loading begins
-      if (loadingStartTimeRef.current === null) {
-        loadingStartTimeRef.current = Date.now();
-        setElapsedTime(0);
-      }
-
-      // Update timer every second
-      const interval = setInterval(() => {
-        if (loadingStartTimeRef.current !== null) {
-          const elapsed = Math.floor((Date.now() - loadingStartTimeRef.current) / 1000);
-          setElapsedTime(elapsed);
-        }
-      }, 1000);
-
-      return () => {
-        clearInterval(interval);
-      };
-    } else {
-      // Reset timer when loading ends
-      loadingStartTimeRef.current = null;
-      setElapsedTime(0);
-    }
-  }, [isLoading]);
-
-  // Lock node deletion while generating (TEMPORARILY REMOVED)
-  /*
-  useEffect(() => {
-    setNodes((nds) =>
-      nds.map((node) => {
-        if (node.id === id) {
-          const shouldBeDeletable = !isLoading;
-          const isDeletable = node.deletable ?? true;
-
-          if (isDeletable !== shouldBeDeletable) {
-            return {
-              ...node,
-              deletable: shouldBeDeletable,
-            };
-          }
-        }
-        return node;
-      })
-    );
-  }, [isLoading, id, setNodes]);
-  */
+  }, [nodeData.savedMockupId, nodeData.isLiked]);
 
   // Use centralized like hook
   const { toggleLike: handleToggleLike } = useMockupLike({
@@ -127,140 +79,6 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     },
     translationKeyPrefix: 'canvas',
   });
-
-  // Get image from connected source node
-  useEffect(() => {
-    if (!nodes || !edges) return;
-
-    // PRIORITY 1: Use result from THIS node if available (OutputNode's own memory)
-    // This ensures that once an output is generated, it stays fixed and doesn't change when PromptNode updates
-    if (resultImageUrl || resultImageBase64) {
-      const newImageUrl = resultImageUrl || (resultImageBase64 ? `data:image/png;base64,${resultImageBase64}` : null);
-      if (newImageUrl !== previousImageUrlRef.current) {
-        previousImageUrlRef.current = newImageUrl;
-        setImageUrl(newImageUrl);
-        // Reset video state if we have an image result
-        setVideoUrl(null);
-        setIsVideo(false);
-      }
-      return;
-    }
-
-    // PRIORITY 2: If no result yet, look for connected source node (Preview/Loading state)
-
-    // Find edge connecting to this node
-    const incomingEdge = edges.find(e => e.target === id);
-    if (!incomingEdge) {
-      // No edge and no result -> clear
-      if (previousImageUrlRef.current !== null) {
-        previousImageUrlRef.current = null;
-        setImageUrl(null);
-      }
-      return;
-    }
-
-    // Find source node
-    const sourceNode = nodes.find(n => n.id === incomingEdge.source);
-    if (!sourceNode) {
-      // Source node missing -> keep current state or clear? Better clear if strictly following state.
-      // But to avoid flicker, maybe do nothing? Let's clear to be safe state-wise.
-      if (previousImageUrlRef.current !== null) {
-        previousImageUrlRef.current = null;
-        setImageUrl(null);
-      }
-      return;
-    }
-
-    // Get image from source node based on type
-    let sourceImageUrl: string | null = null;
-    const sourceData = sourceNode.data as FlowNodeData;
-
-    if (sourceData.type === 'merge') {
-      sourceImageUrl = (sourceData as any).resultImageUrl ||
-        ((sourceData as any).resultImageBase64 ? `data:image/png;base64,${(sourceData as any).resultImageBase64}` : null);
-    } else if (sourceData.type === 'edit') {
-      sourceImageUrl = (sourceData as any).resultImageUrl ||
-        ((sourceData as any).resultImageBase64 ? `data:image/png;base64,${(sourceData as any).resultImageBase64}` : null);
-    } else if (sourceData.type === 'upscale') {
-      sourceImageUrl = (sourceData as any).resultImageUrl ||
-        ((sourceData as any).resultImageBase64 ? `data:image/png;base64,${(sourceData as any).resultImageBase64}` : null);
-    } else if (sourceData.type === 'mockup') {
-      sourceImageUrl = (sourceData as any).resultImageUrl ||
-        ((sourceData as any).resultImageBase64 ? `data:image/png;base64,${(sourceData as any).resultImageBase64}` : null);
-    } else if (sourceData.type === 'prompt') {
-      sourceImageUrl = (sourceData as any).resultImageUrl ||
-        ((sourceData as any).resultImageBase64 ? `data:image/png;base64,${(sourceData as any).resultImageBase64}` : null);
-    } else if (sourceData.type === 'video') {
-      // Check for video from video node (generated)
-      const videoUrl = (sourceData as any).resultVideoUrl;
-      const videoBase64 = (sourceData as any).resultVideoBase64;
-      if (videoUrl) {
-        sourceImageUrl = videoUrl;
-      } else if (videoBase64) {
-        sourceImageUrl = `data:video/mp4;base64,${videoBase64}`;
-      }
-    } else if (sourceData.type === 'videoInput') {
-      // Check for video from video input node (uploaded)
-      const uploadedVideoUrl = (sourceData as any).uploadedVideoUrl;
-      const uploadedVideo = (sourceData as any).uploadedVideo;
-      if (uploadedVideoUrl) {
-        sourceImageUrl = uploadedVideoUrl;
-      } else if (uploadedVideo) {
-        // uploadedVideo might be a data URL or base64
-        if (typeof uploadedVideo === 'string' && uploadedVideo.startsWith('data:')) {
-          sourceImageUrl = uploadedVideo;
-        } else {
-          sourceImageUrl = `data:video/mp4;base64,${uploadedVideo}`;
-        }
-      }
-    } else if (sourceData.type === 'output') {
-      // Check for video first, then image
-      const outputVideoUrl = (sourceData as any).resultVideoUrl;
-      const outputVideoBase64 = (sourceData as any).resultVideoBase64;
-      if (outputVideoUrl) {
-        sourceImageUrl = outputVideoUrl;
-      } else if (outputVideoBase64) {
-        sourceImageUrl = `data:video/mp4;base64,${outputVideoBase64}`;
-      } else {
-        sourceImageUrl = (sourceData as any).resultImageUrl ||
-          ((sourceData as any).resultImageBase64 ? `data:image/png;base64,${(sourceData as any).resultImageBase64}` : null);
-      }
-    }
-
-    // Check if we have video data
-    const hasVideo = !!(resultVideoUrl || resultVideoBase64 ||
-      (sourceData?.type === 'video' && ((sourceData as any).resultVideoUrl || (sourceData as any).resultVideoBase64)) ||
-      (sourceData?.type === 'videoInput' && ((sourceData as any).uploadedVideoUrl || (sourceData as any).uploadedVideo)) ||
-      (sourceData?.type === 'output' && ((sourceData as any).resultVideoUrl || (sourceData as any).resultVideoBase64)));
-
-    if (hasVideo) {
-      // Check if resultVideoBase64 is already a data URL (starts with "data:")
-      const videoBase64Url = resultVideoBase64
-        ? (typeof resultVideoBase64 === 'string' && resultVideoBase64.startsWith('data:')
-          ? resultVideoBase64
-          : `data:video/mp4;base64,${resultVideoBase64}`)
-        : null;
-
-      const newVideoUrl = resultVideoUrl || videoBase64Url || sourceImageUrl;
-
-
-      if (newVideoUrl && newVideoUrl !== previousVideoUrlRef.current) {
-        previousVideoUrlRef.current = newVideoUrl;
-        setVideoUrl(newVideoUrl);
-        setImageUrl(null);
-        setIsVideo(true);
-      }
-    } else {
-      const newImageUrl = sourceImageUrl; // Only use source if we didn't have a result (handled at top)
-
-      if (newImageUrl !== previousImageUrlRef.current) {
-        previousImageUrlRef.current = newImageUrl;
-        setImageUrl(newImageUrl);
-        setVideoUrl(null);
-        setIsVideo(false);
-      }
-    }
-  }, [nodes, edges, id, resultImageUrl, resultImageBase64, resultVideoUrl, resultVideoBase64]);
 
   const handleSave = useCallback(async () => {
     if (!imageUrl || isSaving) return;

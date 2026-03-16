@@ -200,20 +200,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       ? (prompt ? `${nodeData.connectedTextDirection}\n\n${prompt}` : nodeData.connectedTextDirection)
       : prompt;
 
-    console.log('[PromptNode] Generating with:', {
-      prompt: finalPrompt.trim(),
-      model,
-      connectedImagesCount: limitedImages.length,
-      maxImages,
-      hasLogo: !!nodeData.connectedLogo,
-      hasIdentity: !!nodeData.connectedIdentity,
-      hasTextDirection: !!nodeData.connectedTextDirection,
-      hasImage1: !!nodeData.connectedImage1,
-      hasImage2: !!nodeData.connectedImage2,
-      hasImage3: !!nodeData.connectedImage3,
-      hasImage4: !!nodeData.connectedImage4,
-    });
-
     await nodeData.onGenerate(id, finalPrompt.trim(), limitedImages.length > 0 ? limitedImages : undefined, model);
   };
 

@@ -91,10 +91,6 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         try {
           const allPresets = await getAllPresetsAsync();
           setLoadedPresets(allPresets);
-          console.log('[MockupNode] Reloaded presets after modal close:', {
-            count: allPresets.length,
-            ids: allPresets.map(p => p.id).slice(0, 10),
-          });
         } catch (error) {
           console.error('Failed to reload presets:', error);
           // Keep existing loaded presets if reload fails
@@ -274,21 +270,6 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     const finalPrompt = connectedTextDirection
       ? (customPrompt ? `${connectedTextDirection}\n\n${customPrompt}` : connectedTextDirection)
       : customPrompt;
-
-    console.log('[MockupNode] Generating with:', {
-      nodeId: id,
-      presetId: selectedPresetId,
-      hasLogo: !!connectedLogo,
-      hasIdentity: !!connectedIdentity,
-      hasLegacyImage: !!data.connectedImage,
-      imageToUse: imageToUse === connectedLogo ? 'LOGO (primary)' : 'LEGACY_IMAGE',
-      hasTextDirection: !!connectedTextDirection,
-      imageType: imageToUse?.startsWith('http') ? 'URL' : imageToUse?.startsWith('data:') ? 'dataURL' : 'base64',
-      colorsCount: selectedColors.length,
-      withHuman,
-      hasCustomPrompt: !!customPrompt,
-      hasFinalPrompt: !!finalPrompt,
-    });
 
     const isAdvanced = isAdvancedModel(model);
     const finalResolution = isAdvanced ? resolution : undefined;
