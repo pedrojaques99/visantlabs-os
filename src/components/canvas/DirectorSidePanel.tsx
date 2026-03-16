@@ -545,12 +545,12 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
         {connectedImage ? (
           <>
             <DesignTypeSection
-              selectedDesignType={selectedDesignType}
-              onSelectDesignType={(type) => {
+              designType={selectedDesignType}
+              onDesignTypeChange={(type) => {
                 onUpdateData(nodeId, { selectedDesignType: type });
               }}
-              theme={theme}
-              t={t}
+              uploadedImage={connectedImage ? { url: connectedImage, mimeType: 'image/png' } : null}
+              onScrollToSection={() => {}}
             />
 
             {!hasAnalyzed && (

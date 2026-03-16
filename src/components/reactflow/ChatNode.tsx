@@ -151,7 +151,7 @@ const ActionDetector = ({
         <div className="mt-4 pt-3 border-t border-neutral-700/20 space-y-2.5 min-w-0">
             <MicroTitle className="text-[10px] text-brand-cyan/80 flex items-center gap-1.5 mb-2 min-w-0">
                 <Sparkles size={11} className="animate-pulse text-brand-cyan shrink-0" />
-                <span className="tracking-wider truncate uppercase">
+                <span className=" truncate uppercase">
                     {t('canvasNodes.chatNode.detectedActions') || 'Detected Actions'}
                 </span>
             </MicroTitle>
@@ -308,7 +308,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 {showSystemPromptEditor && (
                     <div className="px-4 py-3 border-b border-neutral-700/30 bg-neutral-900/50 backdrop-blur-sm animate-in slide-in-from-top-1">
                         <div className="flex items-center justify-between mb-2">
-                            <label className="text-[10px] font-mono text-neutral-400 font-semibold uppercase tracking-wider">System Prompt</label>
+                            <label className="text-[10px] font-mono text-neutral-400 font-semibold uppercase ">System Prompt</label>
                             <div className="flex items-center gap-2">
                                 <NodeButton variant="ghost" size="xs" onClick={handleResetSystemPrompt} className="text-[9px]">Reset</NodeButton>
                                 <NodeButton variant="primary" size="xs" onClick={handleSaveSystemPrompt} className="text-[9px]">Save</NodeButton>

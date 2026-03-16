@@ -451,7 +451,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
           </h3>
         </div>
         <div className="flex items-center gap-1.5 shrink-0 ml-4">
-          <span className="text-[10px] text-neutral-500 font-mono uppercase tracking-wider bg-neutral-900/40 px-2 py-0.5 rounded border border-neutral-700/30">
+          <span className="text-[10px] text-neutral-500 font-mono uppercase  bg-neutral-900/40 px-2 py-0.5 rounded border border-neutral-700/30">
             {scaleFactor}x
           </span>
         </div>
@@ -463,7 +463,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Sparkles size={12} className="text-brand-cyan" />
-              <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider">Sharpening</span>
+              <span className="text-[10px] font-mono text-neutral-400 uppercase ">Sharpening</span>
             </div>
             <span className="text-[10px] font-mono text-neutral-500">{Math.round(localSharpening * 100)}%</span>
           </div>
@@ -482,7 +482,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
         {/* Status/Info */}
         {!isLoading && hasConnectedImage && !hasResult ? (
-          <div className="w-full px-2 py-3 bg-neutral-900/40 border border-neutral-700/30 rounded-md text-[10px] font-mono text-neutral-400 flex items-center justify-center gap-3 uppercase tracking-wider backdrop-blur-sm">
+          <div className="w-full px-2 py-3 bg-neutral-900/40 border border-neutral-700/30 rounded-md text-[10px] font-mono text-neutral-400 flex items-center justify-center gap-3 uppercase  backdrop-blur-sm">
             <Maximize2 size={14} />
             Ready to upscale
           </div>
@@ -499,7 +499,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
         {!hasConnectedImage ? (
           <div className="w-full space-y-3">
-            <div className="w-full px-2 py-3 bg-neutral-900/40 border border-neutral-700/30 rounded-md text-[10px] font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-70 uppercase tracking-wider backdrop-blur-sm">
+            <div className="w-full px-2 py-3 bg-neutral-900/40 border border-neutral-700/30 rounded-md text-[10px] font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-70 uppercase  backdrop-blur-sm">
               <Maximize2 size={14} />
               Connect an image or video
             </div>

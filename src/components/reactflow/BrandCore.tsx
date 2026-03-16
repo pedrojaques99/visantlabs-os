@@ -378,7 +378,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]",
                   hasLogo ? "text-brand-cyan bg-brand-cyan" : "text-neutral-500 bg-neutral-600"
                 )} />
-                <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">{t('canvasNodes.brandCore.logo')}</span>
+                <span className="text-[10px] font-mono text-neutral-400 uppercase">{t('canvasNodes.brandCore.logo')}</span>
               </div>
               {hasLogo && uploadedLogo && !connectedLogo && (
                 <NodeButton
@@ -439,7 +439,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]",
                   hasIdentity ? "text-brand-cyan bg-brand-cyan" : "text-neutral-500 bg-neutral-600"
                 )} />
-                <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">{t('canvasNodes.brandCore.identityGuide')}</span>
+                <span className="text-[10px] font-mono text-neutral-400 uppercase">{t('canvasNodes.brandCore.identityGuide')}</span>
               </div>
               {(uploadedIdentity || uploadedIdentityUrl) && !connectedPdf && !connectedImage && (
                 <NodeButton
@@ -499,7 +499,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]",
                 hasStrategies ? "text-brand-cyan bg-brand-cyan" : "text-neutral-500 bg-neutral-600"
               )} />
-              <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">Strategy</span>
+              <span className="text-[10px] font-mono text-neutral-400 uppercase">Strategy</span>
             </div>
             <div className="text-[11px] text-neutral-500 font-mono pl-3.5">
               {hasStrategies
@@ -540,7 +540,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               <div className="p-1.5 rounded-full bg-brand-cyan/20 animate-pulse">
                 <GlitchLoader size={12} color="brand-cyan" />
               </div>
-              <span className="text-[10px] font-mono text-brand-cyan uppercase tracking-widest font-bold">Analysis in progress...</span>
+              <span className="text-[10px] font-mono text-brand-cyan uppercase font-bold">Analysis in progress...</span>
             </div>
             {nodeData.onCancelAnalyze && (
               <NodeButton
@@ -564,7 +564,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               onClick={() => setIsExpandedBrandIdentity(!isExpandedBrandIdentity)}
               className="flex items-center justify-between group/expand px-1"
             >
-              <span className="text-[10px] font-mono font-bold text-neutral-500 group-hover:text-neutral-300 uppercase tracking-widest transition-colors">Brand Identity</span>
+              <span className="text-[10px] font-mono font-bold text-neutral-500 group-hover:text-neutral-300 uppercase transition-colors">Brand Identity</span>
               <div className="p-1 rounded-full bg-neutral-900/50 group-hover:bg-neutral-800 transition-colors">
                 {isExpandedBrandIdentity ? <ChevronUp size={12} className="text-neutral-400" /> : <ChevronDown size={12} className="text-neutral-400" />}
               </div>
@@ -672,7 +672,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                       {brandIdentity.personality.values && brandIdentity.personality.values.length > 0 && (
                         <div className="flex flex-wrap gap-1 pt-1.5 border-t border-neutral-700/10">
                           {brandIdentity.personality.values.map((value, idx) => (
-                            <span key={idx} className="px-2 py-0.5 bg-neutral-950/40 rounded text-[9px] text-brand-cyan/70 border border-brand-cyan/20 uppercase tracking-wider">
+                            <span key={idx} className="px-2 py-0.5 bg-neutral-950/40 rounded text-[9px] text-brand-cyan/70 border border-brand-cyan/20 uppercase ">
                               {value}
                             </span>
                           ))}

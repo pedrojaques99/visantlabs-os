@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
 import { BrandingChatInput } from './BrandingChatInput';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { useTheme } from '@/hooks/useTheme';
 import { getTotalBrandingCredits } from '@/utils/creditCalculator';
 import { InteractiveASCIICopy } from '@/components/ui/InteractiveASCIICopy';
+import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
 import { toast } from 'sonner';
 import { AuthModal } from '../AuthModal';
 import { GlassPanel } from '@/components/ui/GlassPanel';
@@ -67,7 +67,7 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
         </div>
         <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
           <div className="space-y-4">
-            <h1 className={`text-2xl md:text-3xl font-regular font-manrope tracking-wider flex items-center justify-center gap-2 ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
+            <h1 className={`text-2xl md:text-3xl font-regular font-manrope  flex items-center justify-center gap-2 ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
               }`}>
               BRANDING MACHINE® <MicroTitle as="span" className="text-brand-cyan">v1.0</MicroTitle>
             </h1>

@@ -877,6 +877,12 @@ export const useCanvasNodeHandlers = (
       }
     }
 
+    // Apply brand guideline context on top of the already-built enhanced prompt
+    const { tokens: mockupBrandTokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
+    if (mockupBrandTokens) {
+      enhancedPrompt = buildEnhancement(enhancedPrompt, mockupBrandTokens);
+    }
+
     let newOutputNodeId: string | null = null;
     const skeletonNode = createOutputNodeWithSkeletonForGenerated(node, nodeId);
 
@@ -973,7 +979,7 @@ export const useCanvasNodeHandlers = (
       updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
       toast.error(error?.message || 'Failed to generate mockup', { duration: 5000 });
     }
-  }, [setNodes, setEdges, addToHistory, uploadImageToR2Auto, updateNodeLoadingState, validateBase64Image, createOutputNodeWithSkeletonForGenerated, updateOutputNodeWithResult, updateOutputNodeWithR2Url, cleanupFailedNode, refreshSubscriptionStatus, edgesRef]);
+  }, [setNodes, setEdges, addToHistory, uploadImageToR2Auto, updateNodeLoadingState, validateBase64Image, createOutputNodeWithSkeletonForGenerated, updateOutputNodeWithResult, updateOutputNodeWithR2Url, cleanupFailedNode, refreshSubscriptionStatus, edgesRef, linkedGuideline]);
 
   // ========== ANGLE NODE HANDLERS ==========
   // Handlers para gerenciar operações de geração de ângulos de imagem
@@ -991,6 +997,7 @@ export const useCanvasNodeHandlers = (
     addToHistory,
     refreshSubscriptionStatus,
     canvasId,
+    linkedGuideline,
   });
 
   // ========== TEXTURE NODE HANDLERS ==========
@@ -1008,6 +1015,7 @@ export const useCanvasNodeHandlers = (
     addToHistory,
     refreshSubscriptionStatus,
     canvasId,
+    linkedGuideline,
   });
 
 
@@ -1026,6 +1034,7 @@ export const useCanvasNodeHandlers = (
     addToHistory,
     refreshSubscriptionStatus,
     canvasId,
+    linkedGuideline,
   });
 
 
@@ -1044,6 +1053,7 @@ export const useCanvasNodeHandlers = (
     addToHistory,
     refreshSubscriptionStatus,
     canvasId,
+    linkedGuideline,
   });
 
   // ========== SHADER NODE HANDLERS ==========

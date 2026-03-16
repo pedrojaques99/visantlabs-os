@@ -44,7 +44,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
                     "w-full flex items-center justify-between px-3 py-2 bg-neutral-900/50 border border-white/5 rounded-xl text-xs font-mono transition-all",
-                    isOpen ? "border-brand-cyan/30 ring-1 ring-brand-cyan/20" : "hover:border-white/10"
+                    isOpen ? "border-brand-cyan/30 bg-neutral-900/80 shadow-[0_0_15px_-5px_oklch(0.81_0.156_198.6_/_0.1)]" : "hover:border-white/10"
                 )}
                 style={{ fontFamily: value }}
             >

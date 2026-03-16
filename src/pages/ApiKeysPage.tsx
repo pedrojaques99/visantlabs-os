@@ -235,7 +235,7 @@ export const ApiKeysPage: React.FC = () => {
       <SEO title="API Keys" description="Manage your API keys for agent and programmatic access" noindex={true} />
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
+          
         </div>
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
 
@@ -366,8 +366,8 @@ export const ApiKeysPage: React.FC = () => {
                           type="button"
                           onClick={() => toggleScope(scope.value)}
                           className={`px-3 py-2 rounded-md border text-sm transition-colors ${newKeyScopes.includes(scope.value)
-                              ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan'
-                              : 'bg-neutral-800/30 border-neutral-700/50 text-neutral-500 hover:border-neutral-600'
+                            ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan'
+                            : 'bg-neutral-800/30 border-neutral-700/50 text-neutral-500 hover:border-neutral-600'
                             }`}
                         >
                           <span className="font-medium">{scope.label}</span>
@@ -434,13 +434,13 @@ export const ApiKeysPage: React.FC = () => {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-neutral-800/50">
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase tracking-wider">Name</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase tracking-wider">Key</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase tracking-wider">Scopes</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase tracking-wider hidden md:table-cell">Last Used</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase tracking-wider hidden md:table-cell">Created</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase tracking-wider">Status</th>
-                        <th className="text-right p-4 text-neutral-500 font-medium font-mono text-xs uppercase tracking-wider"></th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">Name</th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">Key</th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">Scopes</th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase  hidden md:table-cell">Last Used</th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase  hidden md:table-cell">Created</th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">Status</th>
+                        <th className="text-right p-4 text-neutral-500 font-medium font-mono text-xs uppercase "></th>
                       </tr>
                     </thead>
                     <tbody>

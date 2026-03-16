@@ -93,8 +93,8 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
       onMouseDown={(e) => e.stopPropagation()}
     >
       <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-2xl">
-        <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">Image Actions</span>
-        <Button variant="ghost"           onClick={onClose}
+        <span className="text-xs font-semibold text-neutral-300 uppercase ">Image Actions</span>
+        <Button variant="ghost" onClick={onClose}
           className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
         >
           <X size={16} />
@@ -103,17 +103,17 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
 
       <div className="p-2">
 
-        <Button variant="ghost"           onClick={() => {
-            onLike();
-            onClose();
-          }}
+        <Button variant="ghost" onClick={() => {
+          onLike();
+          onClose();
+        }}
           className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
           <Heart size={16} className={cn("text-neutral-400", isLiked && "fill-current text-brand-cyan")} />
           <span className="font-medium text-[11px] tracking-wide">{isLiked ? 'Unlike' : 'Like'}</span>
         </Button>
 
-        <Button variant="ghost"           onClick={handleDownload}
+        <Button variant="ghost" onClick={handleDownload}
           disabled={isDownloading}
           className={cn(
             "w-full px-3 py-2.5 text-left text-sm text-neutral-400 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md",
@@ -125,10 +125,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         </Button>
 
         {onExport && (
-          <Button variant="ghost"             onClick={() => {
-              onExport();
-              onClose();
-            }}
+          <Button variant="ghost" onClick={() => {
+            onExport();
+            onClose();
+          }}
             className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
           >
             <Upload size={16} className="text-neutral-400" />
@@ -136,7 +136,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           </Button>
         )}
 
-        <Button variant="ghost"           onClick={handleFullscreen}
+        <Button variant="ghost" onClick={handleFullscreen}
           className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
           <Maximize2 size={16} className="text-neutral-400" />
@@ -144,10 +144,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         </Button>
 
         {imageUrl && (
-          <Button variant="ghost"             onClick={() => {
-              window.open(imageUrl, '_blank', 'noopener,noreferrer');
-              onClose();
-            }}
+          <Button variant="ghost" onClick={() => {
+            window.open(imageUrl, '_blank', 'noopener,noreferrer');
+            onClose();
+          }}
             className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
           >
             <ExternalLink size={16} className="text-neutral-400" />
@@ -155,10 +155,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           </Button>
         )}
 
-        <Button variant="ghost"           onClick={() => {
-            onCopy();
-            onClose();
-          }}
+        <Button variant="ghost" onClick={() => {
+          onCopy();
+          onClose();
+        }}
           className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
           <Copy size={16} className="text-neutral-400" />
@@ -169,10 +169,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         </Button>
 
         {onCopyPNG && (
-          <Button variant="ghost"             onClick={() => {
-              onCopyPNG();
-              onClose();
-            }}
+          <Button variant="ghost" onClick={() => {
+            onCopyPNG();
+            onClose();
+          }}
             className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
           >
             <CopyIcon size={16} className="text-neutral-400" />
@@ -184,10 +184,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         )}
 
         {onDescribe && (
-          <Button variant="ghost"             onClick={() => {
-              onDescribe();
-              onClose();
-            }}
+          <Button variant="ghost" onClick={() => {
+            onDescribe();
+            onClose();
+          }}
             className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
           >
             <FileText size={16} className="text-neutral-400" />
@@ -197,10 +197,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
 
         <div className="h-px bg-neutral-800/30 my-1.5" />
 
-        <Button variant="ghost"           onClick={() => {
-            onEditWithPrompt();
-            onClose();
-          }}
+        <Button variant="ghost" onClick={() => {
+          onEditWithPrompt();
+          onClose();
+        }}
           className="w-full px-3 py-2.5 text-left text-sm text-brand-cyan hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md font-semibold"
         >
           <Wand2 size={16} className="text-brand-cyan" />
@@ -209,19 +209,19 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
 
         <div className="h-px bg-neutral-800/30 my-1.5" />
 
-        <Button variant="ghost"           onClick={() => {
-            onDuplicate();
-            onClose();
-          }}
+        <Button variant="ghost" onClick={() => {
+          onDuplicate();
+          onClose();
+        }}
           className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
           <CopyIcon size={16} className="text-neutral-400" />
           <span className="font-medium text-[11px] tracking-wide">Duplicate</span>
         </Button>
-        <Button variant="ghost"           onClick={() => {
-            onDelete();
-            onClose();
-          }}
+        <Button variant="ghost" onClick={() => {
+          onDelete();
+          onClose();
+        }}
           className="w-full px-3 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
           <Trash2 size={16} className="text-red-400" />

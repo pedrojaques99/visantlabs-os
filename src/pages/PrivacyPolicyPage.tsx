@@ -28,11 +28,10 @@ export const PrivacyPolicyPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-300 relative">
       <div className="fixed inset-0 z-0">
-        <GridDotsBackground />
-      </div>
+              </div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 pt-[30px] pb-16 md:pb-24">
-        <Button variant="ghost"           onClick={() => navigate('/')}
+        <Button variant="ghost" onClick={() => navigate('/')}
           className="mb-8 flex items-center gap-2 text-neutral-400 hover:text-neutral-200 transition-colors font-mono text-sm"
         >
           <ArrowLeft size={16} />
@@ -40,7 +39,7 @@ export const PrivacyPolicyPage: React.FC = () => {
         </Button>
 
         <div className="bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl p-6 md:p-8">
-          <h1 className="text-2xl md:text-3xl font-semibold font-mono text-neutral-200 mb-2 tracking-wider uppercase">
+          <h1 className="text-2xl md:text-3xl font-semibold font-mono text-neutral-200 mb-2  uppercase">
             {t('privacy.title')}
           </h1>
           <p className="text-xs text-neutral-500 font-mono mb-8">
@@ -51,7 +50,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             <p dangerouslySetInnerHTML={{ __html: t('privacy.overview') }} />
 
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">{t('privacy.sections.informationWeCollect.title')}</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">{t('privacy.sections.informationWeCollect.title')}</h2>
 
               <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">{t('privacy.sections.informationWeCollect.accountInfo.title')}</h3>
               <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4">
@@ -113,7 +112,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">{t('privacy.sections.howWeUseData.title')}</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">{t('privacy.sections.howWeUseData.title')}</h2>
               <p className="text-neutral-400 mb-3">
                 {t('privacy.sections.howWeUseData.intro')}
               </p>
@@ -152,7 +151,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">{t('privacy.sections.dataSharing.title')}</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">{t('privacy.sections.dataSharing.title')}</h2>
               <p className="text-neutral-400 mb-3">
                 {t('privacy.sections.dataSharing.intro')}
               </p>
@@ -196,7 +195,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">{t('privacy.sections.storageAndSecurity.title')}</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">{t('privacy.sections.storageAndSecurity.title')}</h2>
               <p className="text-neutral-400 mb-3">
                 {t('privacy.sections.storageAndSecurity.intro')}
               </p>
@@ -226,7 +225,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">{t('privacy.sections.yourRights.title')}</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">{t('privacy.sections.yourRights.title')}</h2>
               <p className="text-neutral-400 mb-3">
                 {t('privacy.sections.yourRights.intro')}
               </p>
@@ -241,7 +240,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">{t('privacy.sections.cookiesAndTracking.title')}</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">{t('privacy.sections.cookiesAndTracking.title')}</h2>
               <p className="text-neutral-400 mb-3">
                 {t('privacy.sections.cookiesAndTracking.intro')}
               </p>
@@ -285,7 +284,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">{t('privacy.sections.dataRetention.title')}</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">{t('privacy.sections.dataRetention.title')}</h2>
               <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">{t('privacy.sections.dataRetention.general.title')}</h3>
               <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4 mb-4">
                 {getArray('privacy.sections.dataRetention.general.items').map((item, idx) => (
@@ -344,14 +343,14 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">{t('privacy.sections.changesToPolicy.title')}</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">{t('privacy.sections.changesToPolicy.title')}</h2>
               <p className="text-neutral-400">
                 {t('privacy.sections.changesToPolicy.note')}
               </p>
             </div>
 
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">{t('privacy.sections.contact.title')}</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">{t('privacy.sections.contact.title')}</h2>
               <p className="text-neutral-400 mb-2" dangerouslySetInnerHTML={{ __html: `<strong class="text-neutral-300">${t('privacy.sections.contact.company')}</strong>` }} />
               <p className="text-neutral-400">
                 {t('privacy.sections.contact.support').split('contato@visant.co')[0]}

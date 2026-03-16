@@ -157,7 +157,7 @@
 
 @layer base {
   * {
-    @apply outline-ring/50;
+    @apply border-border;
   }
 
   html {

@@ -45,6 +45,7 @@ const DesignSystemPage = lazyWithRetry(() => import('./pages/DesignSystemPage').
 const DocsPage = lazyWithRetry(() => import('./pages/DocsPage').then(m => ({ default: m.DocsPage })));
 const ApiKeysPage = lazyWithRetry(() => import('./pages/ApiKeysPage').then(m => ({ default: m.ApiKeysPage })));
 const BrandGuidelinesPage = lazyWithRetry(() => import('./pages/BrandGuidelinesPage').then(m => ({ default: m.BrandGuidelinesPage })));
+const PublicBrandGuideline = lazyWithRetry(() => import('./pages/PublicBrandGuideline').then(m => ({ default: m.PublicBrandGuideline })));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
@@ -85,6 +86,7 @@ const App: React.FC = () => {
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/privacy" element={<PrivacyPolicyPage />} />
                 <Route path="/brand-guidelines" element={<BrandGuidelinesPage />} />
+                <Route path="/brand/:slug" element={<PublicBrandGuideline />} />
                 <Route path="/design-system" element={<DesignSystemPage />} />
                 <Route path="/docs" element={<DocsPage />} />
                 <Route path="/settings/api-keys" element={<ApiKeysPage />} />

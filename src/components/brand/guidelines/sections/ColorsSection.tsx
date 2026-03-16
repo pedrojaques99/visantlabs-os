@@ -8,7 +8,13 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { Palette, Plus, Trash2, Tag } from 'lucide-react';
+import { Palette, Plus, Trash2, Copy } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -37,6 +43,38 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
     onUpdate({ colors: data.colors });
     setIsEditing(false);
   });
+
+  const copyAllColors = (format: 'json' | 'css' | 'tailwind') => {
+    const colors = guideline.colors || [];
+    if (colors.length === 0) {
+      toast.error('No colors to copy');
+      return;
+    }
+
+    let content = '';
+    switch (format) {
+      case 'json':
+        content = JSON.stringify(colors.map(c => ({ name: c.name, hex: c.hex })), null, 2);
+        break;
+      case 'css':
+        content = colors.map(c => {
+          const name = (c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+          return `--color-${name}: ${c.hex};`;
+        }).join('\n');
+        break;
+      case 'tailwind':
+        const obj: Record<string, string> = {};
+        colors.forEach(c => {
+          const name = (c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+          obj[name] = c.hex;
+        });
+        content = JSON.stringify(obj, null, 2);
+        break;
+    }
+
+    navigator.clipboard.writeText(content);
+    toast.success(`Copied ${colors.length} colors as ${format.toUpperCase()}`);
+  };
 
   return (
     <SectionBlock
@@ -71,13 +109,35 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
         </div>
       ) : undefined}
       actions={(
-        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
-          onClick={() => {
-            if (!isEditing) setIsEditing(true);
-            append({ hex: '#000000', name: 'New Color' });
-          }}>
-          <Plus size={12} />
-        </Button>
+        <div className="flex items-center gap-1">
+          {guideline.colors && guideline.colors.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white">
+                  <Copy size={12} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[120px]">
+                <DropdownMenuItem onClick={() => copyAllColors('json')} className="text-xs font-mono">
+                  JSON
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => copyAllColors('css')} className="text-xs font-mono">
+                  CSS Variables
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => copyAllColors('tailwind')} className="text-xs font-mono">
+                  Tailwind
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
+            onClick={() => {
+              if (!isEditing) setIsEditing(true);
+              append({ hex: '#000000', name: 'New Color' });
+            }}>
+            <Plus size={12} />
+          </Button>
+        </div>
       )}
     >
       <div className="py-2">
@@ -106,7 +166,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                   />
                   <Input
                     {...form.register(`colors.${i}.hex`)}
-                    className="h-6 bg-transparent border-none p-0 text-[10px] font-mono text-brand-cyan/70 focus-visible:ring-0 uppercase tracking-wider placeholder:text-neutral-700"
+                    className="h-6 bg-transparent border-none p-0 text-[10px] font-mono text-brand-cyan/70 focus-visible:ring-0 uppercase  placeholder:text-neutral-700"
                     placeholder="#000000"
                   />
                 </div>
@@ -124,7 +184,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 gap-2.5 h-full w-full flex-1">
             {guideline.colors && guideline.colors.length > 0 ? (
               guideline.colors.map((c, i) => (
                 <motion.div
@@ -137,7 +197,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                   }}
                 >
                   <div
-                    className="w-full aspect-square max-w-[64px] rounded-xl border border-white/5 shadow-lg group-hover/color:border-brand-cyan/30 group-hover/color:shadow-brand-cyan/10 transition-all duration-300 relative overflow-hidden"
+                    className="w-full aspect-square max-w-[64px] rounded-xl border border-white/5 shadow-lg group-hover/color:border-white/10 transition-all duration-300 relative overflow-hidden"
                     style={{ backgroundColor: c.hex }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-100 transition-opacity" />
@@ -149,8 +209,25 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                 </motion.div>
               ))
             ) : (
-              <div className="col-span-full py-12 text-center opacity-10 italic text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-2xl">
-                No Palette Defined
+              <div className="grid grid-cols-2 gap-3 w-full h-full min-h-[160px] flex-1">
+                {[
+                  { name: 'Primary', color: 'bg-neutral-900/40' },
+                  { name: 'Secondary', color: 'bg-neutral-900/30' },
+                  { name: 'Accent', color: 'bg-neutral-800/20' },
+                  { name: 'Surface', color: 'bg-neutral-800/10' },
+                ].map((p, i) => (
+                  <div 
+                    key={i} 
+                    className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-white/[0.02] bg-white/[0.01] opacity-40 h-full w-full cursor-pointer hover:bg-white/[0.03] transition-colors"
+                    onClick={() => {
+                        setIsEditing(true);
+                        append({ hex: '#000000', name: p.name });
+                    }}
+                  >
+                    <div className={cn("w-full aspect-square max-w-[56px] rounded-lg border border-dashed border-white/10", p.color)} />
+                    <span className="text-[8px] font-mono uppercase tracking-widest text-neutral-600">{p.name}</span>
+                  </div>
+                ))}
               </div>
             )}
           </div>

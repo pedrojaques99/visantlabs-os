@@ -125,10 +125,10 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
           "p-3 sm:p-4 md:p-6 lg:p-8",
           "w-full", // Base width
           !hasAnalyzed ? [
-            "rounded-md border",
+            "rounded-md",
             isSurpriseMeMode
-              ? "border-brand-cyan/40 border-dashed shadow-[0_0_25px_rgba(0,210,255,0.08)] animate-pool-border-glow"
-              : "border-sidebar-border/5",
+              ? "border border-brand-cyan/40 border-dashed shadow-[0_0_25px_rgba(0,210,255,0.08)] animate-pool-border-glow"
+              : "border-none shadow-none",
             "max-w-screen-2xl mx-auto", // Full width for Step 1
             "min-w-0"
           ] : [
@@ -136,7 +136,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             "h-full px-4 lg:px-6 py-10",
             isSurpriseMeMode
               ? "border-l border-brand-cyan/70 border-dashed shadow-[-10px_0_30px_rgba(0,210,255,0.05)]"
-              : "border-r border-sidebar-border/10",
+              : "", // Removed border-r border-sidebar-border/10
             "lg:w-auto"
           ]
         )}
@@ -181,12 +181,12 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
       {/* Setup Modal */}
       <SetupModal
         isOpen={isSetupModalOpen}
-        canClose={hasAnalyzed}
+        canClose={true}
         onClose={() => {
-          // Only allow closing if hasAnalyzed is true (setup is complete)
-          if (hasAnalyzed) {
-            setIsSetupModalOpen(false);
+          if (!hasAnalyzed) {
+            onStartOver();
           }
+          setIsSetupModalOpen(false);
         }}
         onImageUpload={onImageUpload}
         onReferenceImagesChange={onReferenceImagesChange}

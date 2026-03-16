@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Modal } from '../ui/Modal';
 import { GlitchLoader } from '../ui/GlitchLoader';
@@ -57,14 +57,14 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     const hasUrl = trimmedUrl.length > 0;
     const canSubmit = trimmedName.length > 0 && !isSubmitting && !isIngesting;
 
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         if (isSubmitting || isIngesting) return;
         setName('');
         setUrl('');
         onClose();
-    };
+    }, [isSubmitting, isIngesting, onClose]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         if (!canSubmit) return;
 
@@ -125,7 +125,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             setIsSubmitting(false);
             setIsIngesting(false);
         }
-    };
+    }, [canSubmit, isEditMode, trimmedName, trimmedUrl, editGuideline, hasUrl, onSuccess, t]);
 
     const submitLabel = isIngesting
         ? t('mockup.brandWizardExtracting')

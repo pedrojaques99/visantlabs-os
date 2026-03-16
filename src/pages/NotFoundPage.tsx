@@ -24,8 +24,7 @@ export const NotFoundPage: React.FC = () => {
     <div className={`w-full min-h-screen relative ${theme === 'dark' ? 'bg-[#0C0C0C] text-neutral-300' : 'bg-neutral-50 text-neutral-800'
       }`}>
       <div className="fixed inset-0 z-0">
-        <GridDotsBackground />
-      </div>
+              </div>
 
       <div className="relative z-10 min-h-screen pt-[30px] pb-[30px]">
         {/* Breadcrumb Navigation */}

@@ -26,6 +26,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { applyPresetDataToNodes } from '@/lib/presetImportUtils';
 import { NodeButton } from './shared/node-button';
+import { ModelSelector } from './shared/ModelSelector';
+import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
 import { Input } from '@/components/ui/input'
 
 const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, selected, id, dragging }) => {
@@ -576,154 +578,44 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
         {isColorSectionOpen && (
           <div className="mt-3 space-y-3">
-            {/* Model Selector */}
-            <div>
-              <NodeLabel className="mb-1.5 text-[10px]">
-                {t('canvasNodes.promptNode.model')}
-              </NodeLabel>
-              <div className="grid grid-cols-3 gap-2">
-                <NodeButton variant="ghost"                   onClick={(e) => {
-                    e.stopPropagation();
-                    const newModel: GeminiModel = GEMINI_MODELS.FLASH;
-                    setModel(newModel);
-                    if (data.onUpdateData) {
-                      data.onUpdateData(id, {
-                        model: newModel,
-                        resolution: undefined,
-                        aspectRatio: undefined
-                      });
-                    }
-                  }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  disabled={isLoading}
-                  className={cn(
-                    'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
-                    model === GEMINI_MODELS.FLASH
-                      ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                      : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
-                    isLoading && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  <span className="text-2xl">⛏️</span>
-                  <span className="font-semibold text-sm">HD</span>
-                  <span className="text-[10px] text-neutral-500 mt-0.5">
-                    {getCreditsRequired(GEMINI_MODELS.FLASH)} {t('canvasNodes.promptNode.credits')}
-                  </span>
-                </NodeButton>
+            <ModelSelector
+              selectedModel={model}
+              onModelChange={(newModel) => {
+                setModel(newModel);
+                if (data.onUpdateData) {
+                  data.onUpdateData(id, { model: newModel });
+                }
+              }}
+              resolution={resolution}
+              disabled={isLoading}
+              onSyncResolution={(res) => {
+                setResolution(res);
+                if (data.onUpdateData) data.onUpdateData(id, { resolution: res });
+              }}
+              onClearAdvancedConfig={() => {
+                if (data.onUpdateData) {
+                  data.onUpdateData(id, {
+                    resolution: undefined,
+                    aspectRatio: undefined
+                  });
+                }
+              }}
+            />
 
-                <NodeButton variant="ghost"                   onClick={(e) => {
-                    e.stopPropagation();
-                    const newModel: GeminiModel = GEMINI_MODELS.NB2;
-                    setModel(newModel);
-                    if (data.onUpdateData) {
-                      const updates: Partial<MockupNodeData> = { model: newModel };
-                      if (!data.resolution) {
-                        updates.resolution = '1K';
-                        setResolution('1K');
-                      }
-                      if (!data.aspectRatio) {
-                        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
-                        setAspectRatio(DEFAULT_ASPECT_RATIO);
-                      }
-                      data.onUpdateData(id, updates);
-                    }
-                  }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  disabled={isLoading}
-                  className={cn(
-                    'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
-                    model === GEMINI_MODELS.NB2
-                      ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                      : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
-                    isLoading && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  <span className="text-2xl">Banana</span>
-                  <span className="font-semibold text-sm">NB2</span>
-                  <span className="text-[10px] text-neutral-500 mt-0.5">
-                    {getCreditsRequired(GEMINI_MODELS.NB2, resolution)} {t('canvasNodes.promptNode.credits')}
-                  </span>
-                </NodeButton>
-
-                <NodeButton variant="ghost"                   onClick={(e) => {
-                    e.stopPropagation();
-                    const newModel: GeminiModel = GEMINI_MODELS.PRO;
-                    setModel(newModel);
-                    if (data.onUpdateData) {
-                      const updates: Partial<MockupNodeData> = { model: newModel };
-                      if (!data.resolution) {
-                        updates.resolution = '4K';
-                        setResolution('4K');
-                      }
-                      if (!data.aspectRatio) {
-                        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
-                        setAspectRatio(DEFAULT_ASPECT_RATIO);
-                      }
-                      data.onUpdateData(id, updates);
-                    }
-                  }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  disabled={isLoading}
-                  className={cn(
-                    'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
-                    model === GEMINI_MODELS.PRO
-                      ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                      : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
-                    isLoading && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  <span className="text-2xl">⛏️💎</span>
-                  <span className="font-semibold text-sm">4K Pro</span>
-                  <span className="text-[10px] text-neutral-500 mt-0.5">
-                    {getCreditsRequired(GEMINI_MODELS.PRO, resolution)} {t('canvasNodes.promptNode.credits')}
-                  </span>
-                </NodeButton>
-              </div>
-            </div>
-
-            {/* Advanced Model Settings (NB2 + Pro) */}
-            {isAdvancedModel(model) && (
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <NodeLabel className="mb-1.5 text-[10px]">
-                    {t('canvasNodes.promptNode.aspectRatio')}
-                  </NodeLabel>
-                  <div onMouseDown={(e) => e.stopPropagation()}>
-                    <AspectRatioSelector
-                      value={aspectRatio}
-                      onChange={(ratio) => {
-                        setAspectRatio(ratio);
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { aspectRatio: ratio });
-                        }
-                      }}
-                      disabled={isLoading}
-                      compact
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <NodeLabel className="mb-1.5 text-[10px]">
-                    {t('canvasNodes.promptNode.resolution')}
-                  </NodeLabel>
-                  <div onMouseDown={(e) => e.stopPropagation()}>
-                    <ResolutionSelector
-                      value={resolution}
-                      onChange={(res) => {
-                        setResolution(res);
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { resolution: res });
-                        }
-                      }}
-                      model={model}
-                      disabled={isLoading}
-                      compact
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+            <AdvancedModelSettings
+              model={model}
+              aspectRatio={aspectRatio}
+              resolution={resolution}
+              onAspectRatioChange={(ratio) => {
+                setAspectRatio(ratio);
+                if (data.onUpdateData) data.onUpdateData(id, { aspectRatio: ratio });
+              }}
+              onResolutionChange={(res) => {
+                setResolution(res);
+                if (data.onUpdateData) data.onUpdateData(id, { resolution: res });
+              }}
+              isLoading={isLoading}
+            />
 
             {/* Color Picker */}
             <div>

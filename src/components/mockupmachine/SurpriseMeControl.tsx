@@ -51,7 +51,7 @@ interface SurpriseMeControlProps {
 
 const buttonLabel = (dark: boolean, isActive?: boolean) =>
     cn(
-        'text-[10px] font-mono uppercase tracking-wider whitespace-nowrap text-center leading-tight',
+        'text-[10px] font-mono uppercase  whitespace-nowrap text-center leading-tight',
         isActive ? 'text-white' : (dark ? 'text-neutral-400' : 'text-neutral-600')
     );
 const toggleLabel = (dark: boolean) =>

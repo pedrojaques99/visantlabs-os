@@ -11,6 +11,7 @@ import { rateLimit } from 'express-rate-limit';
 import { detectAbuse, recordSignupAttempt } from '../utils/abuseDetection.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
 import { signupSchema, signinSchema, forgotPasswordSchema, resetPasswordSchema, formatZodError } from '../utils/schemas.js';
+import { isValidEmail } from '../utils/validation.js';
 
 const router = express.Router();
 

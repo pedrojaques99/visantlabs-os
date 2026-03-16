@@ -50,6 +50,8 @@ interface PresetGenerationParams {
   errorMessage?: string;
   successMessage?: string;
   onSuccess?: (nodeId: string, resultImageBase64: string) => void;
+  /** Optional prompt override – replaces preset.prompt when provided (e.g. brand-enhanced prompt) */
+  promptOverride?: string;
 }
 
 export const generateImageWithPreset = async ({
@@ -72,6 +74,7 @@ export const generateImageWithPreset = async ({
   errorMessage = `Connect an image to generate ${nodeType}`,
   successMessage = `${nodeType} applied successfully!`,
   onSuccess,
+  promptOverride,
 }: PresetGenerationParams): Promise<void> => {
   const node = nodesRef.current.find(n => n.id === nodeId);
   if (!node || node.type !== nodeType) {
@@ -124,7 +127,7 @@ export const generateImageWithPreset = async ({
     };
 
     const result = await mockupApi.generate({
-      promptText: preset.prompt,
+      promptText: promptOverride ?? preset.prompt,
       baseImage: {
         base64: baseImage.base64,
         mimeType: baseImage.mimeType

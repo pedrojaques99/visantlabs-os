@@ -45,7 +45,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                             billingCycle === 'monthly' ? "left-1 w-[calc(50%-4px)]" : "left-[50%] w-[calc(50%-4px)]"
                         )}
                     />
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                         onClick={() => setBillingCycle('monthly')}
                         className={cn(
                             "relative z-10 px-6 py-2 text-sm font-medium rounded-full transition-colors duration-200 min-w-[100px]",
@@ -54,7 +54,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                     >
                         {t('pricing.monthly') || 'Mensal'}
                     </Button>
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                         onClick={() => setBillingCycle('yearly')}
                         className={cn(
                             "relative z-10 px-6 py-2 text-sm font-medium rounded-full transition-colors duration-200 min-w-[100px] flex items-center justify-center gap-2",
@@ -63,7 +63,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                     >
                         {t('pricing.yearly') || 'Anual'}
                         <span className={cn(
-                            "text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                            "text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase ",
                             billingCycle === 'yearly' ? "bg-neutral-950/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
                         )}>
                             {t('pricing.yearlyDiscount') || '-16%'}
@@ -114,7 +114,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                                                 {billingCycle === 'yearly' ? (t('pricing.perYear') || '/ano') : t('pricing.perMonth')}
                                             </span>
                                         </div>
-                                        <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 font-mono mt-2 uppercase tracking-wider">
+                                        <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 font-mono mt-2 uppercase ">
                                             <Pickaxe size={12} className="text-brand-cyan/60" />
                                             <span>{plan.credits} {t('pricing.creditsLabel')}</span>
                                         </div>

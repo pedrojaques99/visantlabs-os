@@ -371,8 +371,7 @@ export const CanvasProjectsPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
-        </div>
+                  </div>
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
           {/* Header Skeleton */}
           <div className="mb-4">
@@ -443,8 +442,7 @@ export const CanvasProjectsPage: React.FC = () => {
       />
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
-        </div>
+                  </div>
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
           {/* Header */}
           <div className="mb-4">

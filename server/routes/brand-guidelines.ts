@@ -1,6 +1,7 @@
 // server/routes/brand-guidelines.ts
 import express from 'express'
 import crypto from 'crypto'
+import { nanoid } from 'nanoid'
 import { authenticate, AuthRequest } from '../middleware/auth.js'
 import { prisma } from '../db/prisma.js'
 import { rateLimit } from 'express-rate-limit'
@@ -10,6 +11,7 @@ import { extractBrandData } from '../lib/brand-extract.js'
 import { mergeBrandGuidelines } from '../lib/brand-merge.js'
 import { uploadBrandMedia, deleteImage } from '../services/r2Service.js'
 import { brandSharedService } from '../services/brandSharedService.js'
+import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js'
 
 const router = express.Router()
 
@@ -580,6 +582,230 @@ router.get('/:id/context', apiRateLimiter, authenticate, async (req: AuthRequest
   } catch (error: any) {
     console.error('Error fetching brand context:', error)
     res.status(500).json({ error: 'Failed to fetch brand context' })
+  }
+})
+
+// ═══════════════════════════════════════════════════
+// PUBLIC SHARING ENDPOINTS
+// ═══════════════════════════════════════════════════
+
+// POST /api/brand-guidelines/:id/share — generate public link
+router.post('/:id/share', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    // Generate slug if not exists
+    let publicSlug = guideline.publicSlug
+    if (!publicSlug) {
+      // Generate a unique, URL-safe slug
+      const baseName = ((guideline.identity as any)?.name || 'brand')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .slice(0, 30)
+      publicSlug = `${baseName}-${nanoid(8)}`
+    }
+
+    const updated = await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { publicSlug, isPublic: true },
+    })
+
+    const baseUrl = process.env.VITE_SITE_URL || `${req.protocol}://${req.get('host')}`
+    const shareUrl = `${baseUrl}/brand/${publicSlug}`
+
+    res.json({
+      publicSlug,
+      shareUrl,
+      isPublic: true,
+      guideline: { ...updated, _id: updated.id },
+    })
+  } catch (error: any) {
+    console.error('[Brand Share] Error:', error)
+    res.status(500).json({ error: 'Failed to create share link', message: error.message })
+  }
+})
+
+// DELETE /api/brand-guidelines/:id/share — remove public access
+router.delete('/:id/share', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const updated = await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { isPublic: false },
+      // Keep publicSlug so re-sharing uses the same URL
+    })
+
+    res.json({
+      isPublic: false,
+      guideline: { ...updated, _id: updated.id },
+    })
+  } catch (error: any) {
+    console.error('[Brand Unshare] Error:', error)
+    res.status(500).json({ error: 'Failed to remove share', message: error.message })
+  }
+})
+
+// GET /api/brand-guidelines/public/:slug — public read-only access (NO AUTH)
+router.get('/public/:slug', apiRateLimiter, async (req, res) => {
+  try {
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { publicSlug: req.params.slug, isPublic: true },
+    })
+
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found or not public' })
+
+    // Return guideline data (strip userId for privacy)
+    const { userId, ...publicData } = guideline as any
+    res.json({
+      guideline: { ...publicData, _id: guideline.id },
+    })
+  } catch (error: any) {
+    console.error('[Brand Public] Error:', error)
+    res.status(500).json({ error: 'Failed to fetch public guideline' })
+  }
+})
+
+// ═══════════════════════════════════════════════════
+// PHASE 6: CONTEXT API FOR EXTERNAL TOOLS
+// ═══════════════════════════════════════════════════
+
+/**
+ * GET /api/brand-guidelines/public/:slug/context
+ * Returns LLM-ready formatted brand context (NO AUTH)
+ *
+ * Query params:
+ *   - format: 'full' (default) | 'compact' (optimized for image gen)
+ *   - output: 'text' (default) | 'json'
+ *
+ * Use cases:
+ *   - External AI agents needing brand context
+ *   - MCP servers querying brand information
+ *   - Third-party apps integrating with brand guidelines
+ */
+router.get('/public/:slug/context', apiRateLimiter, async (req, res) => {
+  try {
+    const { format = 'full', output = 'text' } = req.query as { format?: string; output?: string }
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { publicSlug: req.params.slug, isPublic: true },
+    })
+
+    if (!guideline) {
+      return res.status(404).json({ error: 'Brand guideline not found or not public' })
+    }
+
+    // Reconstruct BrandGuideline object from Prisma model
+    const guidelineData = {
+      id: guideline.id,
+      identity: guideline.identity as any,
+      logos: guideline.logos as any,
+      colors: guideline.colors as any,
+      typography: guideline.typography as any,
+      tags: guideline.tags as any,
+      media: guideline.media as any,
+      tokens: guideline.tokens as any,
+      guidelines: guideline.guidelines as any,
+    }
+
+    // Build context based on format
+    const context = format === 'compact'
+      ? buildBrandContextForImageGen(guidelineData)
+      : buildBrandContext(guidelineData)
+
+    // Return based on output format
+    if (output === 'json') {
+      res.json({
+        slug: req.params.slug,
+        brandName: (guidelineData.identity as any)?.name || 'Unknown',
+        format,
+        context,
+        // Also include structured data for programmatic access
+        data: {
+          colors: guidelineData.colors,
+          typography: guidelineData.typography,
+          guidelines: guidelineData.guidelines,
+          tokens: guidelineData.tokens,
+        }
+      })
+    } else {
+      // Return plain text for direct LLM injection
+      res.type('text/plain').send(context)
+    }
+  } catch (error: any) {
+    console.error('[Brand Context API] Error:', error)
+    res.status(500).json({ error: 'Failed to generate brand context' })
+  }
+})
+
+/**
+ * GET /api/brand-guidelines/:id/context
+ * Returns LLM-ready formatted brand context (REQUIRES AUTH)
+ *
+ * Same query params as public endpoint
+ */
+router.get('/:id/context', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const { format = 'full', output = 'text' } = req.query as { format?: string; output?: string }
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+
+    if (!guideline) {
+      return res.status(404).json({ error: 'Brand guideline not found' })
+    }
+
+    // Reconstruct BrandGuideline object from Prisma model
+    const guidelineData = {
+      id: guideline.id,
+      identity: guideline.identity as any,
+      logos: guideline.logos as any,
+      colors: guideline.colors as any,
+      typography: guideline.typography as any,
+      tags: guideline.tags as any,
+      media: guideline.media as any,
+      tokens: guideline.tokens as any,
+      guidelines: guideline.guidelines as any,
+    }
+
+    // Build context based on format
+    const context = format === 'compact'
+      ? buildBrandContextForImageGen(guidelineData)
+      : buildBrandContext(guidelineData)
+
+    // Return based on output format
+    if (output === 'json') {
+      res.json({
+        id: guideline.id,
+        brandName: (guidelineData.identity as any)?.name || 'Unknown',
+        format,
+        context,
+        data: {
+          colors: guidelineData.colors,
+          typography: guidelineData.typography,
+          guidelines: guidelineData.guidelines,
+          tokens: guidelineData.tokens,
+        }
+      })
+    } else {
+      res.type('text/plain').send(context)
+    }
+  } catch (error: any) {
+    console.error('[Brand Context API] Error:', error)
+    res.status(500).json({ error: 'Failed to generate brand context' })
   }
 })
 

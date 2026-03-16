@@ -279,7 +279,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                       playClickSound();
                       setActiveTab('credits');
                     }}
-                    className="text-xs text-neutral-500 hover:text-neutral-300 font-mono uppercase tracking-wider transition-colors flex items-center gap-1 px-2 py-1 hover:bg-neutral-800/30 rounded"
+                    className="text-xs text-neutral-500 hover:text-neutral-300 font-mono uppercase  transition-colors flex items-center gap-1 px-2 py-1 hover:bg-neutral-800/30 rounded"
                   >
                     <span>←</span>
                     {t('credits.title') || 'Créditos'}
@@ -291,7 +291,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                       playClickSound();
                       setActiveTab('buy');
                     }}
-                    className="text-xs text-neutral-500 hover:text-neutral-300 font-mono uppercase tracking-wider transition-colors flex items-center gap-1 px-2 py-1 hover:bg-neutral-800/30 rounded"
+                    className="text-xs text-neutral-500 hover:text-neutral-300 font-mono uppercase  transition-colors flex items-center gap-1 px-2 py-1 hover:bg-neutral-800/30 rounded"
                   >
                     {t('creditsPackages.buy') || 'Comprar'}
                     <span>→</span>
@@ -311,7 +311,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             playClickSound();
                             setBuySection('credits');
                           }}
-                          className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-mono uppercase tracking-wider transition-all rounded-md ${buySection === 'credits'
+                          className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-mono uppercase  transition-all rounded-md ${buySection === 'credits'
                             ? 'bg-neutral-800 text-white shadow-sm'
                             : 'text-neutral-500 hover:text-neutral-300'
                             }`}
@@ -323,7 +323,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             playClickSound();
                             setBuySection('subscriptions');
                           }}
-                          className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-mono uppercase tracking-wider transition-all rounded-md ${buySection === 'subscriptions'
+                          className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-mono uppercase  transition-all rounded-md ${buySection === 'subscriptions'
                             ? 'bg-neutral-800 text-white shadow-sm'
                             : 'text-neutral-500 hover:text-neutral-300'
                             }`}
@@ -384,7 +384,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   </Button>
                                 </div>
 
-                                <div className="flex items-center justify-center gap-2 text-sm text-neutral-400 font-mono uppercase tracking-wider">
+                                <div className="flex items-center justify-center gap-2 text-sm text-neutral-400 font-mono uppercase ">
                                   <Pickaxe
                                     size={14}
                                     className="md:w-4 md:h-4 text-brand-cyan/70 flex-shrink-0"
@@ -491,8 +491,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 onClick={handlePreviousPlan}
                                 disabled={selectedPlanIndex === 0}
                                 className={`p-2 sm:p-2.5 md:p-3 transition-all duration-200 rounded-md active:scale-[0.95] flex-shrink-0 ${selectedPlanIndex === 0
-                                    ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                                    : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
+                                  ? 'text-neutral-600 cursor-not-allowed opacity-50'
+                                  : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
                                   }`}
                                 aria-label="Previous plan"
                               >
@@ -546,7 +546,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                           }`}
                                       >
                                         {t('pricing.yearly') || 'Anual'}
-                                        <span className={`text-[7px] sm:text-[8px] px-0.5 sm:px-1 py-0.5 rounded-full font-bold uppercase tracking-wider ${billingCycle === 'yearly' ? "bg-neutral-950/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
+                                        <span className={`text-[7px] sm:text-[8px] px-0.5 sm:px-1 py-0.5 rounded-full font-bold uppercase  ${billingCycle === 'yearly' ? "bg-neutral-950/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
                                           }`}>
                                           {t('pricing.yearlyDiscount') || '-16%'}
                                         </span>
@@ -568,7 +568,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                         {billingCycle === 'yearly' ? (t('pricing.perYear') || '/ano') : t('pricing.perMonth') || '/mês'}
                                       </span>
                                     </div>
-                                    <MicroTitle className="flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-neutral-400 mt-2 tracking-wider">
+                                    <MicroTitle className="flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-neutral-400 mt-2 ">
                                       <Pickaxe size={10} className="sm:w-3 sm:h-3 text-brand-cyan/60" />
                                       <span>{currentPlan.credits} {t('pricing.creditsLabel') || 'créditos'}</span>
                                     </MicroTitle>
@@ -616,8 +616,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 onClick={handleNextPlan}
                                 disabled={selectedPlanIndex === filteredPlans.length - 1}
                                 className={`p-2 sm:p-2.5 md:p-3 transition-all duration-200 rounded-md active:scale-[0.95] flex-shrink-0 ${selectedPlanIndex === filteredPlans.length - 1
-                                    ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                                    : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
+                                  ? 'text-neutral-600 cursor-not-allowed opacity-50'
+                                  : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
                                   }`}
                                 aria-label="Next plan"
                               >
@@ -635,8 +635,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                     setSelectedPlanIndex(index);
                                   }}
                                   className={`h-2 rounded-md transition-all duration-300 ease-out ${index === selectedPlanIndex
-                                      ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
-                                      : 'bg-neutral-600 hover:bg-neutral-500 w-2 hover:scale-125'
+                                    ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
+                                    : 'bg-neutral-600 hover:bg-neutral-500 w-2 hover:scale-125'
                                     }`}
                                   aria-label={`Select plan ${index + 1}`}
                                 />
@@ -692,7 +692,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               </div>
                             </div>
 
-                            <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-neutral-400 font-mono uppercase tracking-wider">
+                            <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-neutral-400 font-mono uppercase ">
                               <Pickaxe
                                 size={12}
                                 className="sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-brand-cyan/70 flex-shrink-0"
@@ -760,7 +760,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         playClickSound();
                         setActiveTab('buy');
                       }}
-                      className="text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono uppercase tracking-wider transition-colors px-3 py-2 hover:bg-neutral-800/30 rounded"
+                      className="text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono uppercase  transition-colors px-3 py-2 hover:bg-neutral-800/30 rounded"
                     >
                       {t('creditsPackages.buy') || 'Comprar'} →
                     </Button>

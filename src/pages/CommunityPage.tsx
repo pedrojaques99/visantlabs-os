@@ -318,8 +318,7 @@ export const CommunityPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-x-hidden">
       <div className="fixed inset-0 z-0">
-        <GridDotsBackground />
-      </div>
+              </div>
 
       <div className="max-w-7xl mx-auto px-4 pt-8 pb-16 md:pb-24 relative z-10">
         <div className="mb-8">

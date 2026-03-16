@@ -47,7 +47,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
           {Object.entries(guideline.tags).map(([cat, vals]: any) => (
             <div key={cat} className="space-y-3">
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-bold font-mono text-brand-cyan/70 uppercase tracking-[0.2em]">{cat}</span>
+                <span className="text-[10px] font-bold font-mono text-brand-cyan/70 uppercase">{cat}</span>
                 <div className="h-[1px] flex-1 bg-white/[0.03]" />
               </div>
               <div className="flex flex-wrap gap-2">
@@ -78,7 +78,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
         {isEditing ? (
           <div className="w-full space-y-4 pt-2">
             <div className="space-y-2">
-              <MicroTitle className="text-[9px] opacity-40 uppercase tracking-widest pl-1">Strategic Framework (JSON)</MicroTitle>
+              <MicroTitle className="text-[9px] opacity-40 uppercase pl-1">Strategic Framework (JSON)</MicroTitle>
               <Textarea
                 value={tagsJson}
                 onChange={(e) => setTagsJson(e.target.value)}
@@ -88,7 +88,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
             </div>
             <div className="flex items-center gap-2">
               <CircleAlert size={10} className="text-neutral-700" />
-              <p className="text-[8px] text-neutral-700 font-mono uppercase tracking-widest leading-none">Format: JSON Object required</p>
+              <p className="text-[8px] text-neutral-700 font-mono uppercase leading-none">Format: JSON Object required</p>
             </div>
           </div>
         ) : (
@@ -97,7 +97,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
               Object.entries(guideline.tags).map(([cat, vals]: any) => (
                 <div key={cat} className="space-y-2.5">
                   <div className="flex items-center gap-3">
-                    <span className="text-[9px] font-bold font-mono text-brand-cyan/60 uppercase tracking-[0.2em] shrink-0">{cat}</span>
+                    <span className="text-[9px] font-bold font-mono text-brand-cyan/60 uppercase shrink-0">{cat}</span>
                     <div className="h-[1px] flex-1 bg-white/[0.03]" />
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -117,7 +117,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
             ) : (
               <div className="py-10 flex flex-col items-center justify-center opacity-5 gap-3 border border-dashed border-white/5 rounded-2xl">
                 <Tag size={28} strokeWidth={1} />
-                <p className="text-[9px] text-white font-bold font-mono uppercase tracking-[0.3em]">Strategy Pending</p>
+                <p className="text-[9px] text-white font-bold font-mono uppercase">Strategy Pending</p>
               </div>
             )}
           </div>

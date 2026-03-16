@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import type { BrandingData } from '../types/types';
+import type { BrandingData, TimerRef } from '../types/types';
 
 interface UseAutoSaveProps {
   data: BrandingData;
@@ -18,7 +18,7 @@ export const useAutoSave = ({
   debounceMs = 2000, // 2 seconds default
   enabled = true,
 }: UseAutoSaveProps) => {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<TimerRef | null>(null);
   const lastSavedDataRef = useRef<string>('');
   const isSavingRef = useRef(false);
   const savePromiseRef = useRef<Promise<void> | null>(null);

@@ -317,8 +317,7 @@ export const CommunityProfilePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
-        </div>
+                  </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
@@ -335,8 +334,7 @@ export const CommunityProfilePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
-        </div>
+                  </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
@@ -359,8 +357,7 @@ export const CommunityProfilePage: React.FC = () => {
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 relative overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 z-0 pointer-events-none">
-          <GridDotsBackground />
-        </div>
+                  </div>
 
         {/* Content */}
         <div className="relative z-10 pt-20 md:pt-24 pb-12">

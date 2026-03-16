@@ -347,7 +347,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           {/* Form Fields Section */}
           <div className="space-y-8 pt-8 mt-8 border-t border-neutral-800/30">
             <div className="space-y-4">
-              <label className={`flex items-center gap-2 text-xs font-mono uppercase tracking-[0.3em] mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+              <label className={`flex items-center gap-2 text-xs font-mono uppercase mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}>
                 <User size={14} />
                 {t('profile.name') || 'Name'}
@@ -363,7 +363,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
               />
             </div>
             <div className="space-y-4">
-              <label className={`flex items-center gap-2 text-xs font-mono uppercase tracking-[0.3em] mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+              <label className={`flex items-center gap-2 text-xs font-mono uppercase mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}>
                 <Mail size={14} />
                 {t('profile.email') || 'Email'}

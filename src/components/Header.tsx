@@ -162,7 +162,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
 
   return (
     <header className="fixed top-0 left-0 right-0 h-10 md:h-14 bg-neutral-950/95 backdrop-blur-[2px] border-b border-black/95 flex items-center justify-between px-2 md:px-6 z-50">
-      <Button variant="ghost"         onClick={handleLogoClick}
+      <Button variant="ghost" onClick={handleLogoClick}
         className="flex items-center gap-1.5 md:gap-2.5 hover:opacity-80 transition-opacity group cursor-pointer"
       >
         <img
@@ -178,7 +178,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
       <div className="flex items-center gap-1.5 md:gap-4">
         {/* Pricing button hidden */}
         {/* <Button variant="ghost"           onClick={onPricingClick}
-          className="hidden md:block text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors tracking-wider uppercase"
+          className="hidden md:block text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors  uppercase"
         >
           {t('header.pricing')}
         </Button> */}
@@ -225,11 +225,11 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           <span className="hidden sm:inline">{t('welcome.exploreMockups')}</span>
         </Button> */}
         {/* Community button */}
-        <Button variant="ghost"           onClick={() => {
-            window.history.pushState({}, '', '/community');
-            const popStateEvent = new PopStateEvent('popstate', { state: {} });
-            window.dispatchEvent(popStateEvent);
-          }}
+        <Button variant="ghost" onClick={() => {
+          window.history.pushState({}, '', '/community');
+          const popStateEvent = new PopStateEvent('popstate', { state: {} });
+          window.dispatchEvent(popStateEvent);
+        }}
           className="p-1.5 md:p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded hover:bg-neutral-800/30 cursor-pointer"
           title="Community"
           aria-label="Community"
@@ -238,11 +238,11 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         </Button>
         {/* About button - only on WelcomeScreen */}
         {isOnWelcomeScreen && (
-          <Button variant="ghost"             onClick={() => {
-              window.history.pushState({}, '', '/about');
-              const popStateEvent = new PopStateEvent('popstate', { state: {} });
-              window.dispatchEvent(popStateEvent);
-            }}
+          <Button variant="ghost" onClick={() => {
+            window.history.pushState({}, '', '/about');
+            const popStateEvent = new PopStateEvent('popstate', { state: {} });
+            window.dispatchEvent(popStateEvent);
+          }}
             className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-neutral-400 hover:text-brand-cyan transition-colors rounded border border-neutral-700/30 hover:border-[brand-cyan]/50 hover:bg-neutral-800/30 cursor-pointer"
             title="About"
             aria-label="About"
@@ -255,7 +255,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         {/* <Button variant="ghost"           onClick={() => {
             window.location.href = '/branding-machine';
           }}
-          className="hidden md:block text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors tracking-wider uppercase"
+          className="hidden md:block text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors  uppercase"
         >
           Branding
         </Button> */}
@@ -263,12 +263,12 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         {/* <Button variant="ghost"           onClick={() => {
             window.location.href = '/budget-machine';
           }}
-          className="hidden md:block text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors tracking-wider uppercase"
+          className="hidden md:block text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors  uppercase"
         >
           Budget
         </Button> */}
         {isAuthenticated === false && (
-          <Button variant="ghost"             onClick={() => setShowRegisterModal(true)}
+          <Button variant="ghost" onClick={() => setShowRegisterModal(true)}
             className="flex items-center gap-0.5 md:gap-1.5 p-1.5 md:px-3 md:py-1.5 bg-brand-cyan/20 text-brand-cyan rounded-md border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 hover:bg-brand-cyan/30 text-[10px] md:text-xs font-mono transition-colors cursor-pointer"
           >
             <UserPlus size={11} className="md:w-[14px] md:h-[14px]" />
@@ -276,7 +276,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           </Button>
         )}
         {isAuthenticated && onMyOutputsClick && (
-          <Button variant="ghost"             onClick={onMyOutputsClick}
+          <Button variant="ghost" onClick={onMyOutputsClick}
             className="relative p-1.5 md:p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded hover:bg-neutral-800/30 cursor-pointer"
             title="Saved"
             aria-label="View saved outputs"

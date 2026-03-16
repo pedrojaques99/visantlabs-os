@@ -1271,8 +1271,7 @@ export const AdminPresetsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
       <div className="fixed inset-0 z-0">
-        <GridDotsBackground />
-      </div>
+              </div>
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         {!isCheckingAuth && !isAuthenticated && (
           <div className="max-w-md mx-auto">

@@ -70,7 +70,7 @@ export const QRCodePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0C0C0C] text-zinc-300 pt-12 md:pt-14 relative overflow-hidden">
       <div className="fixed inset-0 z-0">
-        <GridDotsBackground />
+        
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 py-8">

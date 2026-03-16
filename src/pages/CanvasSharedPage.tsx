@@ -53,7 +53,7 @@ export const CanvasSharedPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
+          
         </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex items-center justify-center min-h-[60vh]">
@@ -68,7 +68,7 @@ export const CanvasSharedPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
+          
         </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="mb-6">

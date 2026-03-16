@@ -3,7 +3,6 @@ import { Save, FileDown, Zap, Edit2, Check, X } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { generateBrandingPDF } from '@/utils/generateBrandingPDF';
-import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
 import { useBrandingMoodboard } from '@/hooks/useBrandingMoodboard';
 import { useSectionLayout } from '@/hooks/useSectionLayout';
 import { useAutoSave } from '@/hooks/useAutoSave';
@@ -237,8 +236,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
     <div className={`w-full relative min-h-screen ${theme === 'dark' ? 'bg-[#0C0C0C] text-neutral-300' : 'bg-neutral-50 text-neutral-800'
       }`}>
       <div className="fixed inset-0 z-0">
-        <GridDotsBackground />
-      </div>
+              </div>
       <div className="relative z-10 pt-10 md:pt-14">
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 space-y-3">
           {/* Header Section */}

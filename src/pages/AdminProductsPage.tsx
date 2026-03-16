@@ -309,8 +309,7 @@ export const AdminProductsPage: React.FC = () => {
             <SEO title="Admin | Produtos" noindex={true} />
             <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative pb-20">
                 <div className="fixed inset-0 z-0">
-                    <GridDotsBackground />
-                </div>
+                                    </div>
 
                 <div className="max-w-7xl mx-auto px-4 pt-8 relative z-10">
                     <div className="mb-6">
@@ -480,7 +479,7 @@ export const AdminProductsPage: React.FC = () => {
                             {/* Basic Info */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">ID do Produto (único)</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">ID do Produto (único)</label>
                                     <Input
                                         placeholder="ex: credits_20, plan_pro"
                                         value={formData.productId}
@@ -489,7 +488,7 @@ export const AdminProductsPage: React.FC = () => {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Tipo</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">Tipo</label>
                                     <Select
                                         value={formData.type}
                                         onChange={(val: any) => setFormData({ ...formData, type: val })}
@@ -501,7 +500,7 @@ export const AdminProductsPage: React.FC = () => {
                                     />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Nome Comercial</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">Nome Comercial</label>
                                     <Input
                                         placeholder="ex: Pacote Gamer"
                                         value={formData.name}
@@ -510,7 +509,7 @@ export const AdminProductsPage: React.FC = () => {
                                     />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Descrição</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">Descrição</label>
                                     <Textarea
                                         placeholder="Descrição breve do que este produto oferece..."
                                         value={formData.description}
@@ -520,7 +519,7 @@ export const AdminProductsPage: React.FC = () => {
                                 </div>
                                 {formData.type === 'subscription_plan' && (
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Benefícios (um por linha para lista em marcadores)</label>
+                                        <label className="text-xs font-bold text-neutral-500 uppercase ">Benefícios (um por linha para lista em marcadores)</label>
                                         <Textarea
                                             placeholder="Benefício 1&#10;Benefício 2&#10;Benefício 3..."
                                             value={formData.metadata?.features ? (Array.isArray(formData.metadata.features) ? formData.metadata.features.join('\n') : '') : ''}
@@ -542,7 +541,7 @@ export const AdminProductsPage: React.FC = () => {
                             {/* Values & Limits */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Créditos</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">Créditos</label>
                                     <Input
                                         type="number"
                                         value={formData.credits}
@@ -551,7 +550,7 @@ export const AdminProductsPage: React.FC = () => {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Preço R$ (BRL)</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">Preço R$ (BRL)</label>
                                     <div className="relative">
                                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">R$</span>
                                         <Input
@@ -564,7 +563,7 @@ export const AdminProductsPage: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Preço $ (USD) - Opcional</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">Preço $ (USD) - Opcional</label>
                                     <div className="relative">
                                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">$</span>
                                         <Input

@@ -2,11 +2,10 @@ import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { InputSection } from './InputSection';
-import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { useMockup } from './MockupContext';
 import type { UploadedImage, DesignType } from '../../types/types';
 import { PremiumButton } from '../ui/PremiumButton';
-import { GlassPanel } from '../ui/GlassPanel';
+import { Button } from '../ui/button';
 import { MicroTitle } from '../ui/MicroTitle';
 import { cn } from '@/lib/utils';
 import { ArrowRight } from 'lucide-react';
@@ -17,6 +16,7 @@ interface SidebarSetupSectionProps {
     onStartOver: () => void;
     onDesignTypeChange: (type: DesignType) => void;
     onAnalyze: () => void;
+    onClose?: () => void;
 }
 
 export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
@@ -25,6 +25,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
     onStartOver,
     onDesignTypeChange,
     onAnalyze,
+    onClose,
 }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
@@ -44,10 +45,10 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
     return (
         <div
             id="section-setup"
-            className="flex flex-col h-full w-full gap-8"
+            className="flex flex-col h-full w-full gap-4 md:gap-6"
         >
-            <div className="flex-1 min-h-0 flex flex-col gap-8">
-                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 auto-rows-min">
+            <div className="flex-1 min-h-0 flex flex-col gap-4 md:gap-6">
+                <div className="flex flex-col gap-4 md:gap-6 max-w-2xl mx-auto w-full">
                     {/* Upload Section */}
                     <InputSection
                         uploadedImage={uploadedImage}
@@ -61,37 +62,39 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                         onDesignTypeChange={onDesignTypeChange}
                         onScrollToSection={() => { }}
                     />
-
-                    <div className="flex flex-col gap-4">
-                        <MicroTitle className="px-1">
-                            {t('mockup.setup') || 'CONFIGURAÇÕES'}
-                        </MicroTitle>
-
-                        <GlassPanel className="flex-1 p-4 md:p-6 overflow-y-auto max-h-[400px] lg:max-h-none">
-                            {/* Brand Guideline Selection */}
-                            <BrandGuidelineSelector />
-                        </GlassPanel>
-                    </div>
                 </div>
             </div>
 
-            {/* Bottom Action Button - Now at the end of the flex column but inside the container */}
-            <div className="w-full pt-4 border-t border-white/5 bg-neutral-900/50 backdrop-blur-sm -mx-4 px-4 -mb-4 pb-4 md:-mx-8 md:px-8 md:-mb-8 md:pb-8 sticky bottom-0 z-[60]">
-                <PremiumButton
-                    onClick={onAnalyze}
-                    disabled={!canAnalyze}
-                    isLoading={isAnalyzing}
-                    loadingText={t('mockup.analyzing') || 'ANALYZING...'}
-                    icon={ArrowRight}
-                    className="w-full h-14 text-base"
-                >
-                    {t('mockup.continue') || 'CONTINUE'}
-                </PremiumButton>
+            {/* Bottom Action Area - More elegant and proportionate */}
+            <div className="w-full pt-6 mt-2 border-t border-white/5 flex flex-col items-center gap-3">
+                <div className="flex items-center gap-3 w-full max-w-md">
+                    {onClose && (
+                        <Button
+                            variant="ghost"
+                            onClick={onClose}
+                            className="h-12 px-6 text-neutral-500 hover:text-white hover:bg-white/5 font-mono text-xs uppercase"
+                        >
+                            {t('common.cancel') || 'Fechar'}
+                        </Button>
+                    )}
+                    <PremiumButton
+                        onClick={onAnalyze}
+                        disabled={!canAnalyze}
+                        isLoading={isAnalyzing}
+                        loadingText={t('mockup.analyzing') || 'ANALYZING...'}
+                        icon={ArrowRight}
+                        className="flex-1 h-12 text-sm"
+                    >
+                        {t('mockup.continue') || 'CONTINUE'}
+                    </PremiumButton>
+                </div>
 
-                {!canAnalyze && !isAnalyzing && !hasAnalyzed && !uploadedImage && (
-                    <MicroTitle as="p" className="text-center mt-3 block text-neutral-500 text-[10px]">
-                        {t('mockup.uploadRequired') || 'Aproxime-se e envie uma imagem para continuar'}
+                {!canAnalyze && !isAnalyzing && !hasAnalyzed && !uploadedImage ? (
+                    <MicroTitle as="p" className="text-center opacity-40 text-[9px] uppercase tracking-widest">
+                        {t('mockup.uploadRequired') || 'Upload an image to continue'}
                     </MicroTitle>
+                ) : (
+                    <div className="h-2" /> 
                 )}
             </div>
         </div>

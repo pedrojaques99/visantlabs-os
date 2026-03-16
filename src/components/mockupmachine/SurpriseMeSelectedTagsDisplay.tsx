@@ -516,7 +516,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
               <SkeletonText loading={isGenerating}>
                 <span
                   className={cn(
-                    "text-[9px] font-mono uppercase tracking-wider",
+                    "text-[9px] font-mono uppercase ",
                     theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                   )}
                 >

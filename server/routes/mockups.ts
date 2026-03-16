@@ -11,6 +11,7 @@ import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 import { safeFetch, getErrorMessage } from '../utils/securityValidation.js';
 import { ensureOptionalBoolean, ensureString, isValidObjectId, sanitizeLogValue } from '../utils/validation.js';
 import { rateLimit } from 'express-rate-limit';
+import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -711,6 +712,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       provider = 'gemini', // 'gemini' | 'seedream'
       width, // Optional: custom width in pixels (for Figma plugin)
       height, // Optional: custom height in pixels (for Figma plugin)
+      brandGuidelineId, // Optional: brand guideline ID for context injection
     } = req.body;
 
     // Helper to download image from URL if base64 is not provided
@@ -751,6 +753,43 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     // Replace original images with processed ones (now containing base64)
     const finalBaseImage = processedBaseImage;
     const finalReferenceImages = processedReferenceImages?.filter(img => img !== null);
+
+    // Build final prompt with optional brand context injection
+    let finalPromptText = promptText;
+    if (brandGuidelineId) {
+      try {
+        const brandGuideline = await prisma.brandGuideline.findUnique({
+          where: { id: brandGuidelineId },
+        });
+        if (brandGuideline) {
+          // Reconstruct BrandGuideline object from Prisma model fields
+          const guidelineData = {
+            id: brandGuideline.id,
+            identity: brandGuideline.identity as any,
+            logos: brandGuideline.logos as any,
+            colors: brandGuideline.colors as any,
+            typography: brandGuideline.typography as any,
+            tags: brandGuideline.tags as any,
+            media: brandGuideline.media as any,
+            tokens: brandGuideline.tokens as any,
+            guidelines: brandGuideline.guidelines as any,
+          };
+          const brandContext = buildBrandContextForImageGen(guidelineData);
+          // Prepend brand context to prompt
+          finalPromptText = `${brandContext}\n\n--- USER PROMPT ---\n${promptText}`;
+          console.log(`${logPrefix} [BRAND] Injected brand context from guideline:`, {
+            guidelineId: brandGuidelineId,
+            brandName: (guidelineData.identity as any)?.name || 'Unknown',
+            contextLength: brandContext.length,
+          });
+        } else {
+          console.warn(`${logPrefix} [BRAND] Brand guideline not found:`, brandGuidelineId);
+        }
+      } catch (brandError: any) {
+        // Non-critical - continue without brand context
+        console.error(`${logPrefix} [BRAND] Error fetching brand guideline:`, brandError.message);
+      }
+    }
 
     // CRITICAL: Check for duplicate recent requests to prevent multiple credit deductions
     // Use a distributed lock mechanism to prevent concurrent requests from deducting credits
@@ -1009,7 +1048,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       });
 
       imageBase64 = await generateSeedreamImage({
-        prompt: promptText,
+        prompt: finalPromptText,
         baseImage: finalBaseImage as any,
         model: seedreamModel as any,
         resolution: resolution as any,
@@ -1019,7 +1058,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     } else {
       // Use Gemini (default)
       imageBase64 = await generateMockup(
-        promptText,
+        finalPromptText,
         finalBaseImage as any,
         model as any,
         resolution as any,

@@ -389,10 +389,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
       </div>
       <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
         <div className="space-y-4">
-          <h1 className={`text-2xl md:text-3xl font-regular font-manrope tracking-wider ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'}`}>
-            {t('welcome.uploadLogo') || 'Envie seu logo ou layout'}
+          <h1 className={`text-3xl md:text-4xl font-bold font-redhatmono tracking-tight ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'}`}>
+            {t('welcome.title') || 'MOCKUP MACHINE®'}
           </h1>
-          <MicroTitle className="text-brand-cyan uppercase tracking-[0.2em]">
+          <MicroTitle className="text-brand-cyan uppercase">
             {t('welcome.magicHappens') || 'e veja a mágica acontecer'}
           </MicroTitle>
         </div>
@@ -424,7 +424,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
               </PremiumButton>
             </div>
           </Tooltip>
-          
+
           <MicroTitle as="span" className="text-[10px] md:text-xs opacity-60 hover:opacity-100 transition-opacity">
             {t('welcome.pasteTipSmall') || 'ou ctrl + v para colar'}
           </MicroTitle>
@@ -446,7 +446,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
         {showTutorialButton && (
           <div className="fixed z-40 tutorial-button-position group relative">
             {/* Mobile: Simple compact button */}
-            <Button variant="ghost"               onClick={() => setShowTutorialModal(true)}
+            <Button variant="ghost" onClick={() => setShowTutorialModal(true)}
               className={`md:hidden flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg ${theme === 'dark'
                 ? 'bg-neutral-900/90 hover:bg-neutral-800/95 border border-neutral-700/50 hover:border-brand-cyan/30'
                 : 'bg-white/90 hover:bg-white border border-neutral-300 hover:border-brand-cyan/50'
@@ -482,7 +482,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
             </Button>
 
             {/* Desktop: Full thumbnail preview */}
-            <Button variant="ghost"               onClick={() => setShowTutorialModal(true)}
+            <Button variant="ghost" onClick={() => setShowTutorialModal(true)}
               className="hidden md:block w-64 opacity-60 hover:opacity-100 overflow-hidden rounded-md transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md relative"
             >
               {/* Thumbnail Container */}
@@ -525,10 +525,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
             </Button>
 
             {/* Close Button for Desktop - Subtle - Only visible on hover */}
-            <Button variant="ghost"               onClick={(e) => {
-                e.stopPropagation();
-                setShowTutorialButton(false);
-              }}
+            <Button variant="ghost" onClick={(e) => {
+              e.stopPropagation();
+              setShowTutorialButton(false);
+            }}
               className={`hidden md:flex absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-md items-center justify-center opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 z-50 ${theme === 'dark'
                 ? 'bg-neutral-950/80 hover:bg-red-500/90 text-neutral-300 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
                 : 'bg-white/80 hover:bg-red-500/90 text-neutral-600 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'

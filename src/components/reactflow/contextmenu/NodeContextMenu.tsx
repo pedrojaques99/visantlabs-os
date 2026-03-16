@@ -32,8 +32,8 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
       onMouseDown={(e) => e.stopPropagation()}
     >
       <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-2xl">
-        <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">{t('canvasNodes.nodeContextMenu.title')}</span>
-        <Button variant="ghost" 
+        <span className="text-xs font-semibold text-neutral-300 uppercase ">{t('canvasNodes.nodeContextMenu.title')}</span>
+        <Button variant="ghost"
           onClick={onClose}
           className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
         >
@@ -42,7 +42,7 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
       </div>
 
       <div className="p-2">
-        <Button variant="ghost" 
+        <Button variant="ghost"
           onClick={() => {
             onDuplicate();
             onClose();
@@ -53,7 +53,7 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
           <span className="font-medium text-[11px] tracking-wide">{t('canvasNodes.nodeContextMenu.duplicate')}</span>
         </Button>
 
-        <Button variant="ghost" 
+        <Button variant="ghost"
           onClick={() => {
             onDelete();
             onClose();
