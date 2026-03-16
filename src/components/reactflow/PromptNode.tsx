@@ -14,8 +14,6 @@ import { NodeInput } from './shared/node-input';
 import { NodeLabel } from './shared/node-label';
 import { NodeHeader } from './shared/node-header';
 import { LabeledHandle } from './shared/LabeledHandle';
-import { AspectRatioSelector } from './shared/AspectRatioSelector';
-import { ResolutionSelector } from './shared/ResolutionSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
@@ -96,56 +94,37 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
   const hasConnectedImages = allConnectedImages.some(img => !!img) || hasBrandCoreConnection;
 
-  // Sync prompt and model with data
-  // If connectedText exists, use it for real-time sync from TextNode
+  // Sync all node data into local state in a consolidated effect
   useEffect(() => {
     if (hasTextNodeConnection && connectedText !== undefined) {
-      // Real-time sync from connected TextNode
       setPrompt(connectedText);
     } else if (nodeData.prompt !== undefined) {
-      // Manual prompt or disconnected state
       setPrompt(nodeData.prompt);
     }
-  }, [nodeData.prompt, connectedText, hasTextNodeConnection]);
 
-  useEffect(() => {
-    if (nodeData.model) {
-      setModel(nodeData.model);
-    }
-  }, [nodeData.model]);
-
-  useEffect(() => {
-    if (nodeData.aspectRatio) {
-      setAspectRatio(nodeData.aspectRatio);
-    }
-  }, [nodeData.aspectRatio]);
-
-  useEffect(() => {
-    if (nodeData.resolution) {
-      setResolution(nodeData.resolution);
-    }
-  }, [nodeData.resolution]);
-
-  // Sync connected images with data - force re-render when images change
-  useEffect(() => {
+    if (nodeData.model) setModel(nodeData.model);
+    if (nodeData.aspectRatio) setAspectRatio(nodeData.aspectRatio);
+    if (nodeData.resolution) setResolution(nodeData.resolution);
+    if (nodeData.pdfPageReference !== undefined) setPdfPageReference(nodeData.pdfPageReference || '');
+    
+    // Track connected images for manual UI refreshes if needed
     setConnectedImage1(nodeData.connectedImage1);
-  }, [nodeData.connectedImage1]);
-
-  useEffect(() => {
     setConnectedImage2(nodeData.connectedImage2);
-  }, [nodeData.connectedImage2]);
-
-  useEffect(() => {
     setConnectedImage3(nodeData.connectedImage3);
-  }, [nodeData.connectedImage3]);
-
-  useEffect(() => {
     setConnectedImage4(nodeData.connectedImage4);
-  }, [nodeData.connectedImage4]);
-
-  useEffect(() => {
-    setPdfPageReference(nodeData.pdfPageReference || '');
-  }, [nodeData.pdfPageReference]);
+  }, [
+    nodeData.prompt, 
+    nodeData.model, 
+    nodeData.aspectRatio, 
+    nodeData.resolution, 
+    nodeData.pdfPageReference,
+    nodeData.connectedImage1,
+    nodeData.connectedImage2,
+    nodeData.connectedImage3,
+    nodeData.connectedImage4,
+    connectedText, 
+    hasTextNodeConnection
+  ]);
 
   // Sync BrandCore connection data
   useEffect(() => {
