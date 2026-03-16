@@ -82,7 +82,7 @@ ${userContext.brandContext}
   return `Você é um especialista em mockup, fotografia de produto e design visual.
 
 **SUA TAREFA:**
-Analise a imagem fornecida e sugira as melhores tags para cada categoria para criar um mockup perfeito e profissional.${availableTagsSection}${userContextSection}${instructionsSection}
+Analise a imagem fornecida e sugira as melhores tags para cada categoria para criar um mockup perfeito e profissional.${availableTagsSection}${brandContextSection}${userContextSection}${instructionsSection}
 
 **DIRETRIZES PARA SUGESTÕES:**
 

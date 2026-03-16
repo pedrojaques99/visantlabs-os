@@ -277,7 +277,6 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
             media: brandGuideline.media as any,
             tokens: brandGuideline.tokens as any,
             guidelines: brandGuideline.guidelines as any,
-            strategy: brandGuideline.strategy as any,
           };
           const brandContext = buildBrandContextForImageGen(guidelineData);
           enrichedUserContext = {
