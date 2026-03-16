@@ -236,6 +236,7 @@ model CanvasProject {
   isCollaborative Boolean  @default(false) // Se o projeto está em modo colaborativo
   canEdit         String[] @default([]) // IDs de usuários que podem editar
   canView         String[] @default([]) // IDs de usuários que podem visualizar
+  linkedGuidelineId String? @db.ObjectId // Brand guideline linked to this canvas
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -436,6 +437,10 @@ model BrandGuideline {
 
   // Extraction metadata
   extraction Json?   // { sources[], completeness }
+
+  // Public sharing
+  publicSlug String?  @unique
+  isPublic   Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

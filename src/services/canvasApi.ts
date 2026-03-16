@@ -198,6 +198,7 @@ export interface CanvasProject {
   isCollaborative?: boolean;
   canEdit?: string[];
   canView?: string[];
+  linkedGuidelineId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -283,7 +284,7 @@ export const canvasApi = {
     return data.project;
   },
 
-  async save(name: string, nodes: Node[], edges: Edge[], projectId?: string, drawings?: any[]): Promise<CanvasProject> {
+  async save(name: string, nodes: Node[], edges: Edge[], projectId?: string, drawings?: any[], linkedGuidelineId?: string | null): Promise<CanvasProject> {
     const url = projectId
       ? `${API_BASE_URL}/canvas/${projectId}`
       : `${API_BASE_URL}/canvas`;
@@ -293,12 +294,17 @@ export const canvasApi = {
     // Clean base64 images before sending to reduce payload size
     const cleanedNodes = cleanBase64FromNodes(nodes as Node<FlowNodeData>[]);
 
-    const payload = {
+    const payload: any = {
       name: name || 'Untitled',
       nodes: cleanedNodes,
       edges,
       drawings: drawings !== undefined ? drawings : null,
     };
+
+    // Only include linkedGuidelineId if explicitly provided
+    if (linkedGuidelineId !== undefined) {
+      payload.linkedGuidelineId = linkedGuidelineId;
+    }
 
     const response = await fetch(url, {
       method,

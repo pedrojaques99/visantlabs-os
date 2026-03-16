@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, FileJson } from 'lucide-react';
+import { FileText, FileJson, FileCode, Braces } from 'lucide-react';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
 
@@ -105,6 +105,80 @@ function guidelineToMarkdown(g: BrandGuideline): string {
   return lines.join('\n');
 }
 
+function guidelineToCSSVariables(g: BrandGuideline): string {
+  const lines: string[] = [':root {'];
+
+  // Colors
+  g.colors?.forEach(c => {
+    const name = (c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    lines.push(`  --color-${name}: ${c.hex};`);
+  });
+
+  // Typography
+  g.typography?.forEach(t => {
+    const role = (t.role || 'font').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    lines.push(`  --font-${role}: '${t.family}', sans-serif;`);
+  });
+
+  // Spacing tokens
+  if (g.tokens?.spacing) {
+    Object.entries(g.tokens.spacing).forEach(([k, v]) => {
+      if (v) lines.push(`  --spacing-${k}: ${v}px;`);
+    });
+  }
+
+  // Radius tokens
+  if (g.tokens?.radius) {
+    Object.entries(g.tokens.radius).forEach(([k, v]) => {
+      if (v) lines.push(`  --radius-${k}: ${v}px;`);
+    });
+  }
+
+  lines.push('}');
+  return lines.join('\n');
+}
+
+function guidelineToTailwindConfig(g: BrandGuideline): string {
+  const colors: Record<string, string> = {};
+  g.colors?.forEach(c => {
+    const name = (c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    colors[name] = c.hex;
+  });
+
+  const fontFamily: Record<string, string[]> = {};
+  g.typography?.forEach(t => {
+    const role = (t.role || 'sans').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    fontFamily[role] = [t.family, 'sans-serif'];
+  });
+
+  const spacing: Record<string, string> = {};
+  if (g.tokens?.spacing) {
+    Object.entries(g.tokens.spacing).forEach(([k, v]) => {
+      if (v) spacing[k] = `${v}px`;
+    });
+  }
+
+  const borderRadius: Record<string, string> = {};
+  if (g.tokens?.radius) {
+    Object.entries(g.tokens.radius).forEach(([k, v]) => {
+      if (v) borderRadius[k] = `${v}px`;
+    });
+  }
+
+  const extend: Record<string, unknown> = {};
+  if (Object.keys(colors).length) extend.colors = colors;
+  if (Object.keys(fontFamily).length) extend.fontFamily = fontFamily;
+  if (Object.keys(spacing).length) extend.spacing = spacing;
+  if (Object.keys(borderRadius).length) extend.borderRadius = borderRadius;
+
+  return `/** @type {import('tailwindcss').Config} */
+module.exports = {
+  theme: {
+    extend: ${JSON.stringify(extend, null, 6).replace(/"([^"]+)":/g, '$1:')}
+  }
+}`;
+}
+
 export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guideline }) => {
   const { t } = useTranslation();
   const safeName = (guideline.name || 'brand').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
@@ -117,6 +191,16 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
   const exportMarkdown = () => {
     downloadBlob(guidelineToMarkdown(guideline), `${safeName}-guidelines.md`, 'text/markdown');
     toast.success('Exported as Markdown');
+  };
+
+  const exportCSS = () => {
+    downloadBlob(guidelineToCSSVariables(guideline), `${safeName}-variables.css`, 'text/css');
+    toast.success('Exported as CSS Variables');
+  };
+
+  const exportTailwind = () => {
+    downloadBlob(guidelineToTailwindConfig(guideline), `${safeName}.tailwind.config.js`, 'text/javascript');
+    toast.success('Exported as Tailwind Config');
   };
 
   return (
@@ -139,6 +223,24 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
       >
         <FileText size={12} />
         Markdown
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={exportCSS}
+        className="h-8 px-3 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan hover:bg-brand-cyan/5 gap-2"
+      >
+        <FileCode size={12} />
+        CSS
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={exportTailwind}
+        className="h-8 px-3 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan hover:bg-brand-cyan/5 gap-2"
+      >
+        <Braces size={12} />
+        Tailwind
       </Button>
     </div>
   );

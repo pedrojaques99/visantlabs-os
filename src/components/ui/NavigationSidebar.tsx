@@ -197,7 +197,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
         </div>
         <div className="p-4 pt-24 md:pt-28 space-y-2">
           {title && (
-            <h2 className="text-sm font-semibold font-mono text-neutral-400 uppercase tracking-wider mb-4 px-2">
+            <h2 className="text-sm font-semibold font-mono text-neutral-400 uppercase  mb-4 px-2">
               {title}
             </h2>
           )}

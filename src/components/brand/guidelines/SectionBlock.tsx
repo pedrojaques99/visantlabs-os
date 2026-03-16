@@ -76,8 +76,7 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
         className={cn(
           "group relative flex flex-col gap-2 p-1 transition-all duration-300",
           span === '1' && "col-span-1",
-          span === '2' && "md:col-span-2 lg:col-span-2",
-          span === 'full' && "md:col-span-2 lg:col-span-3",
+          (span === '2' || span === 'full') && "lg:col-span-2",
           rowSpan === '2' && "md:row-span-2",
           isDragging && "scale-[1.01] drop-shadow-2xl z-50",
           className
@@ -95,7 +94,7 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
         <div className="flex items-center justify-between px-2 mb-1 min-h-[28px]">
           <div className="flex items-center gap-2.5">
             {icon && <div className="text-neutral-600 group-hover:text-brand-cyan/70 transition-colors">{icon}</div>}
-            {title && <MicroTitle className="text-[10px] uppercase tracking-[0.2em] text-neutral-500/80 font-bold">{title}</MicroTitle>}
+            {title && <MicroTitle className="text-[10px] uppercase  text-neutral-500/80 font-bold">{title}</MicroTitle>}
           </div>
           <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex gap-1.5 items-center">
             {isSaving && <Loader2 size={12} className="text-brand-cyan animate-spin mr-2" />}
@@ -130,14 +129,16 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
         <GlassPanel
           padding="md"
           className={cn(
-            "flex-1 bg-neutral-900/40 hover:bg-neutral-900/60 border-white/[0.05] hover:border-neutral-900/50 transition-all duration-300 cursor-default",
+            "flex-1 flex flex-col bg-neutral-900/40 hover:bg-neutral-900/60 border-white/[0.05] hover:border-neutral-900/50 transition-all duration-300 cursor-default",
             isDragging && "border-brand-cyan/40 bg-neutral-800/80"
           )}
           onDoubleClick={() => {
             if (!isEditing && onEdit) onEdit();
           }}
         >
-          {children}
+          <div className="flex-1 flex flex-col h-full w-full">
+            {children}
+          </div>
         </GlassPanel>
       </div>
 

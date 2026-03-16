@@ -29,6 +29,7 @@ import { EditorialSection } from './sections/EditorialSection';
 import { AccessibilitySection } from './sections/AccessibilitySection';
 import { MediaSection } from './sections/MediaSection';
 import { LogosSection } from './sections/LogosSection';
+import { StrategySection } from './sections/StrategySection';
 import { GuidelineExportBar } from './GuidelineExportBar';
 
 interface GuidelineDetailProps {
@@ -70,12 +71,12 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
 
   const [orderedBlocks, setOrderedBlocks] = useState<string[]>(() => {
     const saved = localStorage.getItem('brand_guidelines_block_order');
-    return guideline.orderedBlocks || (saved ? JSON.parse(saved) : ['identity', 'logos', 'colors', 'typography', 'tags', 'tokens', 'editorial', 'accessibility', 'media']);
+    return guideline.orderedBlocks || (saved ? JSON.parse(saved) : ['identity', 'strategy', 'logos', 'colors', 'typography', 'tags', 'tokens', 'editorial', 'accessibility', 'media']);
   });
 
   React.useEffect(() => {
     setOrderedBlocks(
-      guideline.orderedBlocks || ['identity', 'logos', 'colors', 'typography', 'tags', 'tokens', 'editorial', 'accessibility', 'media']
+      guideline.orderedBlocks || ['identity', 'strategy', 'logos', 'colors', 'typography', 'tags', 'tokens', 'editorial', 'accessibility', 'media']
     );
   }, [guideline.id]);
 
@@ -123,19 +124,21 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
             onOpenWizard={onOpenWizard}
             onDelete={handleDelete}
             isDeleting={deleteMutation.isPending}
-            span="2"
+            span="full"
           />
         );
+      case 'strategy':
+        return <StrategySection key="strategy" guideline={guideline} onUpdate={handleUpdate} span="full" />;
       case 'logos':
         return <LogosSection key="logos" guideline={guideline} logos={localLogos} onLogosChange={setLocalLogos} span="1" />;
       case 'colors':
         return <ColorsSection key="colors" guideline={guideline} onUpdate={handleUpdate} span="1" />;
       case 'typography':
-        return <TypographySection key="typography" guideline={guideline} onUpdate={handleUpdate} span="2" />;
+        return <TypographySection key="typography" guideline={guideline} onUpdate={handleUpdate} span="full" />;
       case 'tags':
         return <TagsSection key="tags" guideline={guideline} onUpdate={handleUpdate} span="1" />;
       case 'editorial':
-        return <EditorialSection key="editorial" guideline={guideline} onUpdate={handleUpdate} span="2" />;
+        return <EditorialSection key="editorial" guideline={guideline} onUpdate={handleUpdate} span="full" />;
       case 'tokens':
         return <TokensSection key="tokens" guideline={guideline} onUpdate={handleUpdate} span="1" />;
       case 'accessibility':
@@ -165,7 +168,7 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
             variants={containerVariants}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8"
           >
             {orderedBlocks.map((blockId) => (
               <React.Fragment key={blockId}>

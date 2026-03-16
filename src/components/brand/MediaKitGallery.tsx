@@ -166,7 +166,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
             {(logos.length > 0 || !readOnly) && (
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                        <MicroTitle className="text-[10px] tracking-[0.2em]">
+                        <MicroTitle className="text-[10px] ">
                             {t('mockup.mediaKit.logos')}
                         </MicroTitle>
                         {!readOnly && (
@@ -247,7 +247,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
             {/* Media Section */}
             <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                    <span className="text-[10px] tracking-[0.2em]">
+                    <span className="text-[10px] ">
                         {t('mockup.mediaKit.title')}
                     </span>
                     {!readOnly && (
@@ -332,20 +332,17 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             ))}
                         </div>
                     ) : !readOnly ? (
-                        <div className="flex flex-col items-center justify-center py-6 gap-2 text-neutral-600">
-                            {isUploading ? (
-                                <Loader2 size={20} className="animate-spin text-brand-cyan" />
-                            ) : (
-                                <>
-                                    <ImageIcon size={20} />
-                                    <span className="text-[10px] font-mono">
-                                        {t('mockup.mediaKit.dropHere')}
-                                    </span>
-                                </>
-                            )}
+                        <div className="flex flex-col items-center justify-center py-12 gap-4 border border-dashed border-white/5 rounded-3xl bg-white/[0.01]">
+                            <div className="p-3 rounded-full bg-white/[0.02] border border-white/[0.03]">
+                                <ImageIcon size={24} strokeWidth={1} className="text-neutral-800" />
+                            </div>
+                            <div className="space-y-1 text-center">
+                                <p className="text-[10px] uppercase font-bold text-neutral-500">{t('mockup.mediaKit.vaultEmpty') || 'Vault Empty'}</p>
+                                <p className="text-[9px] text-neutral-700 font-mono">{t('mockup.mediaKit.dropHere')}</p>
+                            </div>
                         </div>
                     ) : (
-                        <p className="text-[10px] font-mono text-neutral-700 italic p-3">
+                        <p className="text-[10px] font-mono text-neutral-700 italic p-3 text-center">
                             {t('mockup.mediaKit.noMedia')}
                         </p>
                     )}

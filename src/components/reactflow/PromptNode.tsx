@@ -24,6 +24,8 @@ import { PromptContextMenu } from './contextmenu/PromptContextMenu';
 import { MockupPresetModal } from '@/components/MockupPresetModal';
 import { getPresetByIdSync } from '@/services/unifiedPresetService';
 import { NodeButton } from './shared/node-button';
+import { ModelSelector } from './shared/ModelSelector';
+import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -319,101 +321,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     setPdfPageReference(value);
     debouncedUpdateData({ pdfPageReference: value || undefined });
   };
-
-  // Centralized model selection handler — avoids duplicating conditional logic across buttons
-  const handleModelChange = useCallback((newModel: GeminiModel) => {
-    setModel(newModel);
-    if (!nodeData.onUpdateData) return;
-
-    const updates: Partial<PromptNodeData> = { model: newModel };
-
-    if (newModel === GEMINI_MODELS.FLASH) {
-      updates.resolution = undefined;
-      updates.aspectRatio = undefined;
-    } else {
-      if (!nodeData.aspectRatio) {
-        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
-        setAspectRatio(DEFAULT_ASPECT_RATIO);
-      }
-      if (!nodeData.resolution) {
-        const defaultRes = newModel === GEMINI_MODELS.NB2 ? '1K' : '4K';
-        updates.resolution = defaultRes as Resolution;
-        setResolution(defaultRes as Resolution);
-      }
-    }
-
-    nodeData.onUpdateData(id, updates);
-  }, [id, nodeData, setModel, setAspectRatio, setResolution]);
-
-  // Unified HD/NB2/1K/2K/4K resolution handler
-  const handleResolutionClick = (res: 'HD' | 'NB2' | Resolution) => {
-    const previousModel = model;
-    const wasAdvancedModel = isAdvancedModelFn(previousModel);
-
-    if (res === 'HD') {
-      setModel(GEMINI_MODELS.FLASH);
-
-      if (!nodeData.onUpdateData) return;
-
-      const updates: Partial<PromptNodeData> = {
-        model: GEMINI_MODELS.FLASH,
-        resolution: undefined,
-        aspectRatio: undefined
-      };
-
-      // If switching from advanced model to Flash, clear images 3 and 4
-      if (wasAdvancedModel) {
-        updates.connectedImage3 = undefined;
-        updates.connectedImage4 = undefined;
-
-        if (nodeData.onRemoveEdge) {
-          if (connectedImage3) nodeData.onRemoveEdge(id, 'input-3');
-          if (connectedImage4) nodeData.onRemoveEdge(id, 'input-4');
-        }
-
-        setConnectedImage3(undefined);
-        setConnectedImage4(undefined);
-      }
-
-      nodeData.onUpdateData(id, updates);
-    } else if (res === 'NB2') {
-      setModel(GEMINI_MODELS.NB2);
-      setResolution('1K');
-
-      if (!nodeData.onUpdateData) return;
-
-      const updates: Partial<PromptNodeData> = {
-        model: GEMINI_MODELS.NB2,
-        resolution: '1K'
-      };
-
-      if (!nodeData.aspectRatio) {
-        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
-        setAspectRatio(DEFAULT_ASPECT_RATIO);
-      }
-
-      nodeData.onUpdateData(id, updates);
-    } else {
-      setModel(GEMINI_MODELS.PRO);
-      setResolution(res);
-
-      if (!nodeData.onUpdateData) return;
-
-      const updates: Partial<PromptNodeData> = {
-        model: GEMINI_MODELS.PRO,
-        resolution: res
-      };
-
-      if (!nodeData.aspectRatio) {
-        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
-        setAspectRatio(DEFAULT_ASPECT_RATIO);
-      }
-
-      nodeData.onUpdateData(id, updates);
-    }
-  };
-
-  const currentActiveResolution = isAdvanced ? resolution : 'HD';
 
   // Debounced fit-to-content: update node size when container content changes
   const debouncedFitToContent = useDebouncedCallback(() => {
@@ -718,83 +625,46 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
       {/* Settings Section - Compact */}
       <div className="node-margin space-y-[var(--node-gap)]">
-        {/* Model Selector */}
-        <div>
-          <NodeLabel className="mb-1.5 text-[10px]">
-            {t('canvasNodes.promptNode.model')}
-          </NodeLabel>
-          <div className="grid grid-cols-3 gap-2">
-            {([
-              { geminiModel: GEMINI_MODELS.FLASH, label: 'HD', emoji: '⛏️', credits: getCreditsRequired(GEMINI_MODELS.FLASH) },
-              { geminiModel: GEMINI_MODELS.NB2, label: 'NB2', emoji: '🍌', credits: getCreditsRequired(GEMINI_MODELS.NB2, resolution) },
-              { geminiModel: GEMINI_MODELS.PRO, label: '4K Pro', emoji: '⛏️💎', credits: getCreditsRequired(GEMINI_MODELS.PRO, resolution) },
-            ] as const).map(({ geminiModel, label, emoji, credits }) => (
-              <NodeButton variant="ghost"                 key={geminiModel}
-                onClick={(e) => { e.stopPropagation(); handleModelChange(geminiModel); }}
-                onMouseDown={(e) => e.stopPropagation()}
-                disabled={isLoading}
-                className={cn(
-                  'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
-                  model === geminiModel
-                    ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                    : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
-                  isLoading && 'opacity-50 cursor-not-allowed'
-                )}
-              >
-                <span className="text-2xl">{emoji}</span>
-                <span className="font-semibold text-sm">{label}</span>
-                <span className="text-[10px] text-neutral-500 mt-0.5">
-                  {credits} {t('canvasNodes.promptNode.credits')}
-                </span>
-              </NodeButton>
-            ))}
-          </div>
-        </div>
+        <ModelSelector
+          selectedModel={model}
+          onModelChange={(newModel) => {
+            setModel(newModel);
+            if (nodeData.onUpdateData) {
+              nodeData.onUpdateData(id, { model: newModel });
+            }
+          }}
+          resolution={resolution}
+          disabled={isLoading}
+          onSyncResolution={(res) => {
+            setResolution(res);
+            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { resolution: res });
+          }}
+          onClearAdvancedConfig={() => {
+            if (nodeData.onUpdateData) {
+              nodeData.onUpdateData(id, {
+                resolution: undefined,
+                aspectRatio: undefined,
+                connectedImage3: undefined,
+                connectedImage4: undefined
+              });
+            }
+          }}
+        />
 
-        {/* Advanced Settings (Aspect Ratio & Resolution) - For advanced models (NB2 + Pro) */}
-        {isAdvanced && (
-          <div className="grid grid-cols-2 gap-2.5">
-            <div>
-              <NodeLabel className="mb-1.5 text-[10px]">
-                {t('canvasNodes.promptNode.aspectRatio')}
-              </NodeLabel>
-              <div onMouseDown={(e) => e.stopPropagation()}>
-                <AspectRatioSelector
-                  value={aspectRatio}
-                  onChange={(ratio) => {
-                    setAspectRatio(ratio);
-                    if (nodeData.onUpdateData) {
-                      nodeData.onUpdateData(id, { aspectRatio: ratio });
-                    }
-                  }}
-                  disabled={isLoading}
-                  compact
-                />
-              </div>
-            </div>
-
-            <div>
-              <NodeLabel className="mb-1.5 text-[10px]">
-                {t('canvasNodes.promptNode.resolution')}
-              </NodeLabel>
-              <div onMouseDown={(e) => e.stopPropagation()}>
-                <ResolutionSelector
-                  value={resolution}
-                  onChange={(res) => {
-                    setResolution(res);
-                    if (nodeData.onUpdateData) {
-                      nodeData.onUpdateData(id, { resolution: res });
-                    }
-                  }}
-                  model={model}
-                  disabled={isLoading}
-                  compact
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
+        <AdvancedModelSettings
+          model={model}
+          aspectRatio={aspectRatio}
+          resolution={resolution}
+          onAspectRatioChange={(ratio) => {
+            setAspectRatio(ratio);
+            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { aspectRatio: ratio });
+          }}
+          onResolutionChange={(res) => {
+            setResolution(res);
+            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { resolution: res });
+          }}
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Generate Image Button */}

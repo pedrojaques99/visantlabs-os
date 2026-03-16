@@ -181,4 +181,34 @@ export const brandGuidelineApi = {
     if (format === 'prompt') return response.text();
     return response.json();
   },
+
+  // ── Public Sharing ──
+
+  async share(guidelineId: string): Promise<{ publicSlug: string; shareUrl: string; isPublic: boolean }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/share`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) throw new Error('Failed to create share link');
+    return response.json();
+  },
+
+  async unshare(guidelineId: string): Promise<{ isPublic: boolean }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/share`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) throw new Error('Failed to remove share');
+    return response.json();
+  },
+
+  async getPublic(slug: string): Promise<BrandGuideline> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/public/${slug}`);
+
+    if (!response.ok) throw new Error('Brand guideline not found or not public');
+    const data = await response.json();
+    return data.guideline;
+  },
 };

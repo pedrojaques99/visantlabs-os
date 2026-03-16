@@ -205,7 +205,7 @@ const ArchetypeCard: React.FC<{
       {/* Coluna 2: Texto */}
       <div className="space-y-4">
         <div>
-          <span className={`text-xs font-mono uppercase tracking-wider ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
+          <span className={`text-xs font-mono uppercase  ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
             }`}>
             {isPrimary ? 'Arquétipo Primário' : 'Arquétipo Secundário'}
           </span>
@@ -250,7 +250,7 @@ const ArchetypeCard: React.FC<{
                       placeholder="Exemplo de marca"
                     />
                     {localArchetype.examples.length > 1 && (
-                      <Button variant="ghost"                         onClick={() => handleRemoveExample(index)}
+                      <Button variant="ghost" onClick={() => handleRemoveExample(index)}
                         className={`px-3 py-2 rounded-md text-sm transition-colors ${theme === 'dark'
                           ? 'bg-red-900/30 hover:bg-red-900/50 text-red-400'
                           : 'bg-red-50 hover:bg-red-100 text-red-600'
@@ -261,7 +261,7 @@ const ArchetypeCard: React.FC<{
                     )}
                   </div>
                 ))}
-                <Button variant="ghost"                   onClick={handleAddExample}
+                <Button variant="ghost" onClick={handleAddExample}
                   className={`w-full px-3 py-2 rounded-md text-sm font-manrope transition-colors ${theme === 'dark'
                     ? 'bg-neutral-800/40 hover:bg-neutral-800/60 text-neutral-300 border border-neutral-700'
                     : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border border-neutral-300'

@@ -336,7 +336,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-neutral-800/50 bg-neutral-900/20">
           <div className="flex items-center gap-2">
             <ImageIcon size={20} className="text-brand-cyan" />
-            <h2 id="mockup-preset-modal-title" className="text-sm font-mono text-neutral-300 uppercase tracking-wider">
+            <h2 id="mockup-preset-modal-title" className="text-sm font-mono text-neutral-300 uppercase ">
               {multiSelect
                 ? t('canvasNodes.promptNode.presetModal.titleMulti')
                   .replace('{selected}', selectedPresetIds.size.toString())

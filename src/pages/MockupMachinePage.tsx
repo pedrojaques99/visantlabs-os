@@ -138,6 +138,7 @@ const MockupMachinePageContent: React.FC = () => {
     surpriseMePool,
     imageProvider,
     setImageProvider,
+    selectedBrandGuideline,
   } = useMockup();
 
   // Custom hooks for common operations (after getting mockupCount from context)
@@ -1298,6 +1299,7 @@ const MockupMachinePageContent: React.FC = () => {
           feature: 'mockupmachine',
           uniqueId: index, // Use slot index to differentiate parallel batch requests
           provider: imageProvider,
+          brandGuidelineId: selectedBrandGuideline || undefined, // Auto-inject brand context
         });
 
         // Image successfully generated - set it in state (prefer URL; if only base64, try client-side upload)
@@ -1499,7 +1501,7 @@ const MockupMachinePageContent: React.FC = () => {
         }
       }
     }
-  }, [uploadedImage, selectedTags, selectedBrandingTags, promptPreview, hasGenerated, designType, mockupCount, subscriptionStatus, aspectRatio, selectedModel, resolution, validateCredits, onSubscriptionModalOpen, setSubscriptionStatus, mockups, referenceImages, t]);
+  }, [uploadedImage, selectedTags, selectedBrandingTags, promptPreview, hasGenerated, designType, mockupCount, subscriptionStatus, aspectRatio, selectedModel, resolution, validateCredits, onSubscriptionModalOpen, setSubscriptionStatus, mockups, referenceImages, t, imageProvider, selectedBrandGuideline]);
 
   const handleSurpriseMe = useCallback(async (autoGenerate: boolean = false) => {
     // Ensure model is selected (default to gemini-2.5-flash-image if not set)

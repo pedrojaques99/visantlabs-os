@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import type { BudgetData } from '../types/types';
+import type { BudgetData, TimerRef } from '../types/types';
 import { budgetApi, type BudgetProject } from '../services/budgetApi';
 
 interface UseBudgetAutoSaveProps {
@@ -23,12 +23,12 @@ export const useBudgetAutoSave = ({
   onSaveSuccess,
   onSaveError,
 }: UseBudgetAutoSaveProps) => {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<TimerRef | null>(null);
   const lastSavedDataRef = useRef<string>('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const savePromiseRef = useRef<Promise<BudgetProject> | null>(null);
-  const saveStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveStatusTimeoutRef = useRef<TimerRef | null>(null);
   const isSavingRef = useRef(false);
 
   // Deep comparison helper (simple JSON comparison)

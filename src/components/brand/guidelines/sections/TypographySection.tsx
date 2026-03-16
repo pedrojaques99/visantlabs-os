@@ -62,7 +62,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
               </span>
               <div className="flex-1 min-w-0 space-y-2">
                 <div className="flex items-center gap-3 flex-wrap">
-                  <span className="text-[11px] text-brand-cyan font-bold font-mono tracking-[0.2em] uppercase">{f.role || 'Primary'}</span>
+                  <span className="text-[11px] text-brand-cyan font-bold font-mono uppercase">{f.role || 'Primary'}</span>
                   <span className="text-[10px] text-neutral-600 font-mono bg-white/[0.03] px-2 py-1 rounded border border-white/5">{f.size || '16'}px</span>
                 </div>
                 <p className="text-[12px] text-neutral-400 font-mono">{f.family} · {f.style || 'Regular'}</p>
@@ -91,7 +91,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
               <div key={field.id} className="flex flex-col gap-4 p-5 rounded-2xl bg-white/[0.02] border border-white/[0.05] group/font relative hover:border-brand-cyan/20 transition-all shadow-xl">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <MicroTitle className="text-[9px] opacity-40 uppercase tracking-widest pl-1">Label / Role</MicroTitle>
+                    <MicroTitle className="text-[9px] opacity-40 uppercase pl-1">Label / Role</MicroTitle>
                     <Input
                       {...form.register(`typography.${i}.role`)}
                       className="h-9 bg-neutral-900/50 border-white/5 text-[11px] font-mono text-white focus:border-brand-cyan/20 px-3"
@@ -99,7 +99,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                     />
                   </div>
                   <div className="space-y-2">
-                    <MicroTitle className="text-[9px] opacity-40 uppercase tracking-widest pl-1">Font Family</MicroTitle>
+                    <MicroTitle className="text-[9px] opacity-40 uppercase pl-1">Font Family</MicroTitle>
                     <GoogleFontPicker
                       value={form.watch(`typography.${i}.family`)}
                       onChange={(val) => form.setValue(`typography.${i}.family`, val)}
@@ -108,7 +108,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <MicroTitle className="text-[9px] opacity-40 uppercase tracking-widest pl-1">Style</MicroTitle>
+                    <MicroTitle className="text-[9px] opacity-40 uppercase pl-1">Style</MicroTitle>
                     <Input
                       {...form.register(`typography.${i}.style`)}
                       className="h-9 bg-neutral-900/50 border-white/5 text-[10px] font-mono focus:border-brand-cyan/20 px-3"
@@ -116,7 +116,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                     />
                   </div>
                   <div className="space-y-2">
-                    <MicroTitle className="text-[9px] opacity-40 uppercase tracking-widest pl-1">Size (PX)</MicroTitle>
+                    <MicroTitle className="text-[9px] opacity-40 uppercase pl-1">Size (PX)</MicroTitle>
                     <Input
                       type="number"
                       {...form.register(`typography.${i}.size`, { valueAsNumber: true })}
@@ -144,7 +144,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                     </span>
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] text-brand-cyan font-bold font-mono tracking-[0.2em] uppercase opacity-70">{f.role || 'Primary'}</span>
+                        <span className="text-[10px] text-brand-cyan font-bold font-mono uppercase opacity-70">{f.role || 'Primary'}</span>
                         <span className="text-[9px] text-neutral-700 font-mono bg-white/[0.02] px-1.5 py-0.5 rounded border border-white/5">{f.size || '16'}px</span>
                       </div>
                       <p className="text-[11px] text-neutral-400 font-mono truncate">{f.family} · {f.style || 'Regular'}</p>
@@ -153,7 +153,29 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                 ))}
               </div>
             ) : (
-              <div className="py-12 text-center opacity-10 italic text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-2xl">No Typography Defined</div>
+              <div className="flex flex-col gap-4 w-full h-full flex-1 opacity-30">
+                {[
+                  { role: 'Heading / Display', size: '48px', weight: 'Bold' },
+                  { role: 'Body / Sans', size: '16px', weight: 'Regular' },
+                ].map((p, i) => (
+                  <div 
+                    key={i} 
+                    className="flex items-center gap-4 p-4 rounded-xl border border-white/[0.02] bg-white/[0.01] flex-1 cursor-pointer hover:bg-white/[0.03] transition-colors"
+                    onClick={() => {
+                        setIsEditing(true);
+                        append({ family: 'Inter', role: p.role === 'Heading / Display' ? 'Heading' : 'Body', style: p.weight, size: parseInt(p.size.replace('px', '')) });
+                    }}
+                  >
+                    <div className="w-12 h-12 flex items-center justify-center rounded-lg border border-dashed border-white/5 text-neutral-800 font-bold text-xl">
+                      Aa
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-[9px] font-mono uppercase tracking-widest text-neutral-600 font-bold">{p.role}</p>
+                      <p className="text-[8px] font-mono text-neutral-800 uppercase">{p.size} · {p.weight}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}

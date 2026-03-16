@@ -532,6 +532,31 @@ export interface BrandGuidelineTypography {
   size?: number
   lineHeight?: number
 }
+export interface BrandArchetype {
+  name: string
+  role?: 'primary' | 'secondary'
+  description: string
+  image?: string
+  examples?: string[]
+}
+
+export interface BrandPersona {
+  name: string
+  age?: number
+  occupation?: string
+  traits?: string[]
+  bio?: string
+  desires?: string[]
+  painPoints?: string[]
+  image?: string
+}
+
+export interface BrandToneOfVoiceValue {
+  title: string
+  description: string
+  example: string
+}
+
 export interface BrandGuideline {
   id?: string
   userId?: string
@@ -576,6 +601,13 @@ export interface BrandGuideline {
     imagery?: string
     accessibility?: string
   }
+  strategy?: {
+    manifesto?: string
+    positioning?: string[]
+    archetypes?: BrandArchetype[]
+    personas?: BrandPersona[]
+    voiceValues?: BrandToneOfVoiceValue[]
+  }
   _extraction?: {
     sources: Array<{ type: 'url' | 'pdf' | 'image' | 'json' | 'manual'; ref?: string; date: string }>
     completeness: number
@@ -587,6 +619,9 @@ export interface BrandGuideline {
   updatedAt?: string
   orderedBlocks?: string[]
   activeSections?: string[]
+  // Public sharing
+  publicSlug?: string
+  isPublic?: boolean
 }
 
 // ── UI → Sandbox messages ──

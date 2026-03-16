@@ -14,6 +14,8 @@ import { MicroTitle } from '../ui/MicroTitle';
 import { GlassPanel } from '../ui/GlassPanel';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { BrandGuidelineSelector } from './BrandGuidelineSelector';
+import { Switch } from '@/components/ui/switch';
 
 
 interface InputSectionProps {
@@ -231,13 +233,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
       highlight ? "bg-brand-cyan/[0.03] border-brand-cyan/20 shadow-lg shadow-brand-cyan/5" : "bg-neutral-900/40 border-white/[0.05] hover:border-white/10"
     )}>
       {/* Image Container */}
-      <div className="relative h-auto max-h-[400px] w-full rounded-md overflow-hidden bg-black/40 flex items-center justify-center group/img-container">
+      <div className="relative h-auto max-h-[min(300px,38vh)] w-full rounded-md overflow-hidden bg-black/40 flex items-center justify-center group/img-container">
         <img
           src={getImageSrc(img)}
           alt={label}
           loading="lazy"
           decoding="async"
-          className="max-h-[400px] w-full h-auto object-contain transition-transform duration-300 group-hover/img-container:scale-[1.02]"
+          className="max-h-[min(300px,38vh)] w-full h-auto object-contain transition-transform duration-300 group-hover/img-container:scale-[1.02]"
         />
 
         {/* Hover Overlay with Replace Action */}
@@ -283,7 +285,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
       <div className="mt-3 flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className={cn(
-            "text-[11px] font-mono font-bold uppercase tracking-wider truncate mb-0.5",
+            "text-[11px] font-mono font-bold uppercase  truncate mb-0.5",
             highlight ? "text-brand-cyan" : "text-neutral-300"
           )}>
             {label}
@@ -311,7 +313,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
       {/* Files Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
-          <MicroTitle className="text-brand-cyan uppercase tracking-[0.2em]">
+          <MicroTitle className="text-brand-cyan uppercase ">
             {t('mockup.files') || 'ARQUIVOS'}
           </MicroTitle>
           {hasImage && (
@@ -324,30 +326,37 @@ export const InputSection: React.FC<InputSectionProps> = ({
         {!isLoadingImage && (
           <div className="flex items-center gap-3">
             {uploadedImage && (
-              <Button variant="ghost" type="button"
-                onClick={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
-                className={cn(
-                  "px-3 py-1.5 rounded-md transition-all flex items-center gap-2 border",
-                  designType === 'logo'
-                    ? "bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan shadow-[0_0_15px_rgba(0,210,255,0.1)]"
-                    : "bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10"
-                )}
-                title={t('mockup.transparentBackground') || 'Isolar Logotipo'}
-              >
-                <div className={cn(
-                  "w-2.5 h-2.5 rounded-full transition-all duration-300",
-                  designType === 'logo' ? "bg-brand-cyan shadow-[0_0_10px_rgba(0,210,255,1)]" : "bg-neutral-600"
-                )} />
-                <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">
-                  {t('mockup.transparentBackground') || 'ISOLAR'}
-                </MicroTitle>
-              </Button>
+              <>
+                {/* Brand Guideline Button */}
+                <BrandGuidelineSelector asButton />
+
+                <Button variant="ghost" type="button"
+                  size="sm"
+                  onClick={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
+                  className={cn(
+                    "px-3 h-8 rounded-md transition-all flex items-center gap-2 border",
+                    designType === 'logo'
+                      ? "bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan"
+                      : "bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10"
+                  )}
+                  title={t('mockup.transparentBackground') || 'Isolar Logotipo'}
+                >
+                  <Switch 
+                    checked={designType === 'logo'} 
+                    onCheckedChange={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
+                    className="scale-[0.6] origin-left pointer-events-none"
+                  />
+                  <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">
+                    {t('mockup.transparentBackground') || 'ISOLAR'}
+                  </MicroTitle>
+                </Button>
+              </>
             )}
 
             {canAddMoreReferences && (
               <label
                 htmlFor="multiple-image-upload"
-                className="cursor-pointer px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-all text-neutral-400 hover:text-white flex items-center gap-2"
+                className="cursor-pointer px-3 h-8 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-all text-neutral-400 hover:text-white flex items-center gap-2"
                 title={t('mockup.addReferenceImage', { count: referenceImages.length })}
               >
                 <Plus size={12} />
@@ -357,7 +366,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             {!displayImage && (
               <label
                 htmlFor="image-upload-blank"
-                className="cursor-pointer px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-md transition-all text-brand-cyan flex items-center gap-2 animate-pulse"
+                className="cursor-pointer px-3 h-8 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-md transition-all text-brand-cyan flex items-center gap-2 animate-pulse"
               >
                 <Plus size={12} />
                 <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">UPLOAD</MicroTitle>

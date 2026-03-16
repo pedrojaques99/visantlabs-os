@@ -66,16 +66,21 @@ export const Modal: React.FC<ModalProps> = ({
     document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', handleEscape);
 
-    const modalElement = modalRef.current;
-    if (modalElement) {
-      modalElement.focus();
-    }
-
     return () => {
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, onClose, closeOnEscape]);
+
+  // Handle initial focus only when opening
+  useEffect(() => {
+    if (isOpen) {
+      const modalElement = modalRef.current;
+      if (modalElement) {
+        modalElement.focus();
+      }
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -103,8 +108,8 @@ export const Modal: React.FC<ModalProps> = ({
     >
       <div
         className={cn(
-          'relative max-h-[90vh] bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col',
-          id === 'setup-modal' ? 'w-fit px-[15px] py-[10px] justify-center' : 'w-full',
+          'relative max-h-[92vh] bg-neutral-950/98 backdrop-blur-3xl border border-white/5 rounded-md shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col',
+          id === 'setup-modal' ? 'w-fit h-fit min-w-[320px] max-w-[95vw]' : 'w-full',
           sizeClasses[size],
           contentClassName
         )}
@@ -115,7 +120,7 @@ export const Modal: React.FC<ModalProps> = ({
           <div className={cn('flex items-center justify-between p-4 border-b border-neutral-800/50 flex-shrink-0', headerClassName)}>
             <div className="flex-1 min-w-0">
               {title && (
-                <h2 id={`${id}-title`} className="text-sm font-mono text-neutral-300 uppercase">
+                <h2 id={`${id}-title`} className="text-[10px] font-bold font-mono text-neutral-500 uppercase tracking-[0.2em]">
                   {title}
                 </h2>
               )}
@@ -144,7 +149,10 @@ export const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">{children}</div>
+        <div className={cn(
+          "flex-1 overflow-y-auto",
+          id === 'setup-modal' ? "p-4 md:p-6" : "p-4 sm:p-6 md:p-8"
+        )}>{children}</div>
 
         {/* Footer */}
         {footer && (

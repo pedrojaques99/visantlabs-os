@@ -308,8 +308,7 @@ export const MockupsPage: React.FC = () => {
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 relative overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 z-0 pointer-events-none">
-          <GridDotsBackground />
-        </div>
+                  </div>
 
         {/* Error Banner */}
         {showErrorBanner && (

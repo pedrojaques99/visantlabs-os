@@ -234,8 +234,7 @@ export const PricingPage: React.FC = () => {
       />
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
-        </div>
+                  </div>
         <div className="max-w-5xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
           <div className="mb-4">
             <BreadcrumbWithBack to="/">
@@ -360,7 +359,7 @@ export const PricingPage: React.FC = () => {
                           <div className="flex flex-col gap-3 pt-6">
                             <PremiumButton
                               onClick={handleBuyCredits}
-                              className="w-full h-12 uppercase tracking-wider"
+                              className="w-full h-12 uppercase "
                             >
                               <CreditCard className="mr-2 h-4 w-4" />
                               {t('pricing.buyCredits')}
@@ -369,7 +368,7 @@ export const PricingPage: React.FC = () => {
                             {currencyInfo?.currency === 'BRL' && (
                               <PremiumButton
                                 onClick={handleBuyWithPix}
-                                className="w-full h-12 uppercase tracking-wider bg-transparent border-green-500/30 text-green-400 hover:bg-green-500/10 shadow-none"
+                                className="w-full h-12 uppercase  bg-transparent border-green-500/30 text-green-400 hover:bg-green-500/10 shadow-none"
                                 icon={QrCode}
                               >
                                 {t('pix.payWithPix')}

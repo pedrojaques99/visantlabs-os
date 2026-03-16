@@ -242,7 +242,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
     if (isCollapsed) {
       return (
         <Tooltip content={tool.tooltip} position="right">
-          <Button variant="ghost"             draggable
+          <Button variant="ghost" draggable
             onDragStart={(e) => handleDragStart(e, tool.id)}
             onClick={tool.onClick}
             className={cn(
@@ -285,7 +285,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
 
     return (
       <Tooltip content={tool.tooltip} position="right">
-        <Button variant="ghost"           draggable
+        <Button variant="ghost" draggable
           onDragStart={(e) => handleDragStart(e, tool.id)}
           onClick={tool.onClick}
           className={cn(
@@ -354,7 +354,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         <div className="flex items-center gap-1.5 px-1 py-1">
           <span style={{ color: textColors.subtle }}>{icon}</span>
           <span
-            className="text-[9px] font-semibold uppercase tracking-wider"
+            className="text-[9px] font-semibold uppercase "
             style={{ color: textColors.subtle }}
           >
             {title}
@@ -422,7 +422,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
                 }
                 position="bottom"
               >
-                <Button variant="ghost"                   onClick={onToggleToolbar}
+                <Button variant="ghost" onClick={onToggleToolbar}
                   className={cn(
                     "p-2 transition-colors h-full",
                     isLight
@@ -446,7 +446,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             )}
             {/* Close Button */}
             {onClose && (
-              <Button variant="ghost"                 onClick={onClose}
+              <Button variant="ghost" onClick={onClose}
                 className={cn(
                   "p-2 border-l transition-colors h-full rounded-tr-2xl",
                   isLight

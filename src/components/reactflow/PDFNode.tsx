@@ -137,7 +137,7 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
               )}
             </div>
             {fileName && (
-              <div className="text-[10px] font-mono truncate text-brand-cyan px-1 uppercase tracking-wider">
+              <div className="text-[10px] font-mono truncate text-brand-cyan px-1 uppercase ">
                 {fileName}
               </div>
             )}

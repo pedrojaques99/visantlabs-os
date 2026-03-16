@@ -43,7 +43,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <Grid3x3 size={12} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
-          <span className={cn('text-[10px] uppercase font-mono tracking-widest', theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600')}>
+          <span className={cn('text-[10px] uppercase font-mono', theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600')}>
             {t('mockup.tags') || 'PALAVRAS-CHAVE'}
           </span>
         </div>
@@ -86,7 +86,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
             <div className="flex flex-wrap gap-1.5 mt-1">
               <span
                 className={cn(
-                  'text-[9px] font-mono uppercase tracking-widest self-center mr-1',
+                  'text-[9px] font-mono uppercase self-center mr-1',
                   theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
                 )}
               >

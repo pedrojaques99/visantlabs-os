@@ -74,8 +74,7 @@ export const AboutPage: React.FC = () => {
       <OrganizationSchema />
       <div className="min-h-screen bg-background text-neutral-300 pt-12 pb-100 md:pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
-        </div>
+                  </div>
 
         {/* Scanlines Effect */}
         <div className="fixed inset-0 pointer-events-none z-10 opacity-5"

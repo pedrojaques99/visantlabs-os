@@ -478,8 +478,7 @@ export const DesignSystemPage: React.FC = () => {
       />
       <div className="bg-background text-neutral-300 relative min-h-screen">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
-        </div>
+                  </div>
 
         <div className="flex relative z-10">
           {/* Sidebar Navigation */}
@@ -1446,8 +1445,7 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="relative h-32 border border-neutral-800/50 rounded-md overflow-hidden">
-                          <GridDotsBackground />
-                          <div className="relative z-10 flex items-center justify-center h-full">
+                                                    <div className="relative z-10 flex items-center justify-center h-full">
                             <p className="text-sm font-mono text-neutral-400">Grid Dots Background Example</p>
                           </div>
                         </div>
@@ -1763,7 +1761,7 @@ export const DesignSystemPage: React.FC = () => {
                           <div className="space-y-4">
                             <h4 className="text-sm font-semibold text-neutral-300 font-mono">Usage Guidelines</h4>
                             <ul className="text-xs text-neutral-500 font-mono space-y-2 list-disc list-inside">
-                              <li>Use <code className="text-brand-cyan">MicroTitle</code> for section headers (uppercase, tracking-wider).</li>
+                              <li>Use <code className="text-brand-cyan">MicroTitle</code> for section headers (uppercase, ).</li>
                               <li>Wrap configuration inputs in a <code className="text-brand-cyan">GlassPanel</code> for visual depth.</li>
                               <li>Place the primary action in a <code className="text-brand-cyan">PremiumButton</code> at the bottom, preferably sticky.</li>
                               <li>Maintain consistent <code className="text-brand-cyan">gap-8</code> between major sections.</li>

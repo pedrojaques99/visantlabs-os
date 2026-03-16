@@ -108,8 +108,7 @@ export const MyBrandingsPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
-        </div>
+                  </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -133,8 +132,7 @@ export const MyBrandingsPage: React.FC = () => {
       />
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
-        </div>
+                  </div>
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
           {/* Breadcrumb with Back Button */}
           <div className="mb-6">

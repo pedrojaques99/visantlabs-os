@@ -12,6 +12,8 @@ import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { getLuminancePreset } from '@/services/luminancePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
 import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
+import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBrandContext';
+import type { BrandGuideline } from '@/lib/figma-types';
 
 interface UseLuminanceNodeHandlersParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -24,6 +26,7 @@ interface UseLuminanceNodeHandlersParams {
   addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void;
   refreshSubscriptionStatus: () => Promise<void>;
   canvasId?: string;
+  linkedGuideline?: BrandGuideline | null;
 }
 
 export const useLuminanceNodeHandlers = ({
@@ -37,6 +40,7 @@ export const useLuminanceNodeHandlers = ({
   addToHistory,
   refreshSubscriptionStatus,
   canvasId,
+  linkedGuideline,
 }: UseLuminanceNodeHandlersParams) => {
   const handleLuminanceNodeDataUpdate = createNodeDataUpdateHandler<LuminanceNodeData>(updateNodeData, 'luminance');
 
@@ -49,6 +53,9 @@ export const useLuminanceNodeHandlers = ({
 
     const node = nodesRef.current.find(n => n.id === nodeId);
     const luminanceData = node?.data as LuminanceNodeData;
+
+    const { tokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
+    const promptOverride = tokens ? buildEnhancement(preset.prompt, tokens) : undefined;
 
     await generateImageWithPreset({
       nodeId,
@@ -69,8 +76,9 @@ export const useLuminanceNodeHandlers = ({
       canvasId,
       errorMessage: 'Connect an image to generate luminance',
       successMessage: 'Luminance applied successfully!',
+      promptOverride,
     });
-  }, [nodesRef, edgesRef, setNodes, setEdges, updateNodeData, updateNodeLoadingState, reactFlowInstance, addToHistory, refreshSubscriptionStatus, canvasId]);
+  }, [nodesRef, edgesRef, setNodes, setEdges, updateNodeData, updateNodeLoadingState, reactFlowInstance, addToHistory, refreshSubscriptionStatus, canvasId, linkedGuideline]);
 
   return {
     handleLuminanceGenerate,

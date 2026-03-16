@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { Analytics } from '@vercel/analytics/react';
 import { Header } from './Header';
 import ASCIIFooter from './ASCIIFooter';
@@ -559,7 +560,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <RefundPolicy isOpen={isRefundOpen || location.pathname === '/refund'} onClose={handleCloseRefund} />
         <UsagePolicy isOpen={isUsagePolicyOpen || location.pathname === '/usage-policy'} onClose={handleCloseUsagePolicy} />
 
-        {!location.pathname.startsWith('/canvas/') && (
+        {!location.pathname.startsWith('/canvas/') && !location.pathname.startsWith('/brand/') && location.pathname !== '/' && (
           <Header
             subscriptionStatus={subscriptionStatus}
             onPricingClick={() => navigate('/pricing')}
@@ -605,7 +606,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           initialTab={creditPackagesModalTab}
         />
 
-        {!location.pathname.startsWith('/budget/shared') && (
+        {!location.pathname.startsWith('/budget/shared') && !location.pathname.startsWith('/brand/') && (
           <FloatingSupportButton onClick={() => setIsSupportModalOpen(true)} />
         )}
 
@@ -616,11 +617,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           userEmail={currentUser?.email || ''}
         />
 
-        <div className={location.pathname.startsWith('/canvas/') ? "flex-1 overflow-hidden" : "flex-1 overflow-y-auto"}>
+        <div className={cn(
+          "flex-1",
+          location.pathname.startsWith('/canvas/') ? "overflow-hidden" : ""
+        )}>
           {children}
         </div>
 
-        {!location.pathname.startsWith('/canvas/') && (
+        {!location.pathname.startsWith('/canvas/') && !location.pathname.startsWith('/brand/') && location.pathname !== '/' && (
           <ASCIIFooter
             className={location.pathname === '/' ? 'hidden lg:block' : ''}
             onPrivacyClick={() => {

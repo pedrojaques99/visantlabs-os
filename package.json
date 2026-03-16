@@ -114,6 +114,7 @@
     "lru-cache": "^11.2.7",
     "lucide-react": "^0.418.0",
     "mongodb": "^6.21.0",
+    "nanoid": "^5.1.7",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^2.4.5",
     "perfect-freehand": "^1.2.2",

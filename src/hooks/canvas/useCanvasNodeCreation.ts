@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useCanvasStrategyHandler } from './useCanvasStrategyHandler';
 import { useCanvasChatHandler } from './useCanvasChatHandler';
 import { canvasApi } from '@/services/canvasApi';
+import type { BrandGuideline } from '@/lib/figma-types';
 import { isLocalDevelopment } from '@/utils/env';
 import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
@@ -30,7 +31,8 @@ export const useCanvasNodeCreation = (
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>,
   updateNodeData: <T extends FlowNodeData>(nodeId: string, newData: Partial<T>, nodeType?: string) => void,
   saveImmediately?: () => Promise<void>,
-  canvasId?: string
+  canvasId?: string,
+  linkedGuideline?: BrandGuideline | null
 ) => {
   // ========== STRATEGY NODE HANDLERS ==========
   // Handlers para gerenciar operações de node de estratégia
@@ -90,6 +92,7 @@ export const useCanvasNodeCreation = (
     nodeCreators: nodeCreatorsRef.current,
     setEdges: undefined, // Will be passed from CanvasPage if needed
     addPromptNode: (pos, data) => nodeCreatorsRef.current.addPromptNode?.(pos, data),
+    linkedGuideline,
   });
 
   // Atualiza handlersRef com os Strategy handlers

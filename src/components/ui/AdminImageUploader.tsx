@@ -135,7 +135,7 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
               <GlitchLoader size={24} color="brand-cyan" />
               <div className="text-left min-w-0">
                 <p className="text-sm font-semibold text-neutral-400">Processando imagem...</p>
-                <p className="text-xs font-mono tracking-wider text-neutral-500">Aguarde</p>
+                <p className="text-xs font-mono  text-neutral-500">Aguarde</p>
               </div>
             </>
           )}
@@ -144,7 +144,7 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
               <UploadCloud size={32} className="text-brand-cyan/80 transition-colors flex-shrink-0" />
               <div className="text-left min-w-0">
                 <p className="text-sm font-semibold text-neutral-300">Solte a imagem aqui</p>
-                <p className="text-xs font-mono tracking-wider text-neutral-500">Solte para fazer upload</p>
+                <p className="text-xs font-mono  text-neutral-500">Solte para fazer upload</p>
               </div>
             </>
           )}
@@ -153,7 +153,7 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
               <UploadCloud size={32} className="text-neutral-600 group-hover:text-brand-cyan/80 transition-colors flex-shrink-0" />
               <div className="text-left min-w-0">
                 <p className="text-sm font-semibold text-neutral-400">Clique para fazer upload</p>
-                <p className="text-xs font-mono tracking-wider text-neutral-500">JPEG, PNG, WebP ou GIF (máx. {MAX_IMAGE_SIZE_MB}MB)</p>
+                <p className="text-xs font-mono  text-neutral-500">JPEG, PNG, WebP ou GIF (máx. {MAX_IMAGE_SIZE_MB}MB)</p>
               </div>
             </>
           )}

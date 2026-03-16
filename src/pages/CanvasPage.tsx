@@ -80,7 +80,7 @@ import { collectR2UrlsForDeletion } from '@/hooks/canvas/utils/r2UploadHelpers';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useCanvasDrawing } from '@/hooks/canvas/useCanvasDrawing';
 import { useDirectorNodeHandler } from '@/hooks/canvas/useDirectorNodeHandler';
-import type { UploadedImage } from '../types/types';
+import type { UploadedImage, TimerRef } from '../types/types';
 
 import { SaveWorkflowDialog } from '../components/SaveWorkflowDialog';
 import { workflowApi } from '../services/workflowApi';
@@ -611,10 +611,12 @@ export const CanvasPage: React.FC = () => {
     isCollaborative,
     canEdit,
     canView,
+    linkedGuidelineId,
     setShareId,
     setIsCollaborative,
     setCanEdit,
     setCanView,
+    setLinkedGuidelineId,
   } = useCanvasProject(
     isAuthenticated,
     nodes,
@@ -902,7 +904,30 @@ export const CanvasPage: React.FC = () => {
     setOthersCountInContext(othersCount);
   }, [othersCount, setOthersCountInContext]);
 
+  // Sync linked guideline ID to context
+  const setLinkedGuidelineIdInContext = canvasHeader.setLinkedGuidelineId;
+  useEffect(() => {
+    setLinkedGuidelineIdInContext(linkedGuidelineId || null);
+  }, [linkedGuidelineId, setLinkedGuidelineIdInContext]);
 
+  // Handle linked guideline change from header
+  const handleLinkedGuidelineChange = useCallback(async (id: string | null) => {
+    setLinkedGuidelineId(id);
+    // Save immediately when guideline changes
+    if (projectId && saveImmediately) {
+      try {
+        await saveImmediately();
+      } catch (error) {
+        console.error('Failed to save linked guideline:', error);
+      }
+    }
+  }, [setLinkedGuidelineId, projectId, saveImmediately]);
+
+  // Set up handler in context
+  const setOnLinkedGuidelineChangeInContext = canvasHeader.setOnLinkedGuidelineChange;
+  useEffect(() => {
+    setOnLinkedGuidelineChangeInContext(() => handleLinkedGuidelineChange);
+  }, [handleLinkedGuidelineChange, setOnLinkedGuidelineChangeInContext]);
 
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [projectModalNodeId, setProjectModalNodeId] = useState<string | null>(null);
@@ -1016,6 +1041,7 @@ export const CanvasPage: React.FC = () => {
     setEdges,
     addToHistory,
     handlersRef,
+    linkedGuideline: canvasHeader.linkedGuideline,
   });
 
   // Canvas tool state
@@ -1152,7 +1178,8 @@ export const CanvasPage: React.FC = () => {
     nodesRef,
     updateNodeData,
     saveImmediately,
-    projectId
+    projectId,
+    canvasHeader.linkedGuideline
   );
 
   const {
@@ -3464,7 +3491,7 @@ export const CanvasPage: React.FC = () => {
   
   useEffect(() => {
     const directorNodes = nodes.filter(n => n.type === 'director');
-    const timeoutIds: NodeJS.Timeout[] = [];
+    const timeoutIds: TimerRef[] = [];
     
     directorNodes.forEach(node => {
       const directorData = node.data as DirectorNodeData;
@@ -3617,8 +3644,7 @@ export const CanvasPage: React.FC = () => {
         style={{ backgroundColor: backgroundColor, minHeight: '100vh' }}
       >
         <div className="fixed inset-0 z-0" style={{ position: 'relative', opacity: 1, scale: 5 }}>
-          <GridDotsBackground />
-        </div>
+                  </div>
 
         {/* Main Canvas Container with Sidebar Layout - Starts below header (65px) */}
         <div className="flex relative w-full" style={{ height: 'calc(100vh - 65px)', paddingTop: '0px', justifyContent: 'flex-start' }}>

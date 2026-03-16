@@ -364,8 +364,7 @@ export const MyOutputsPage: React.FC = () => {
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 relative overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 z-0 pointer-events-none">
-          <GridDotsBackground />
-        </div>
+                  </div>
 
         {/* Header with Controls and Sidebar */}
         <div className="relative z-30 pt-16 md:pt-20 pb-6">

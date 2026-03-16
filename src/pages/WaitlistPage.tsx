@@ -78,8 +78,7 @@ export const WaitlistPage: React.FC = () => {
             direction="vertical"
             fullHeight={true}
           />
-          <GridDotsBackground />
-        </div>
+                  </div>
         <div className="max-w-3xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
           {/* Main Content Card */}
           <GlassPanel padding="lg" className="md:p-12 shadow-sm relative overflow-hidden">

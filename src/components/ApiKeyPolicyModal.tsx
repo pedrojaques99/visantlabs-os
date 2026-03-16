@@ -34,7 +34,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
         className="relative max-w-4xl w-full max-h-[90vh] bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl p-6 md:p-8 my-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <Button variant="ghost" 
+        <Button variant="ghost"
           onClick={onClose}
           className="absolute top-4 right-4 bg-neutral-800 hover:bg-neutral-700 p-2 rounded-md text-neutral-300 hover:text-white transition-colors z-10"
           title="Close"
@@ -45,7 +45,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
         <div className="pr-8">
           <div className="flex items-center gap-3 mb-2">
             <Shield className="text-brand-cyan" size={24} />
-            <h1 className="text-2xl md:text-3xl font-semibold font-mono text-neutral-200 tracking-wider uppercase">
+            <h1 className="text-2xl md:text-3xl font-semibold font-mono text-neutral-200  uppercase">
               API Key Security Policy
             </h1>
           </div>
@@ -56,7 +56,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
           <div className="space-y-6 text-sm text-neutral-300 leading-relaxed max-h-[calc(90vh-180px)] overflow-y-auto">
             {/* Overview */}
             <div>
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-3 tracking-wider uppercase">Overview</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-3  uppercase">Overview</h2>
               <p className="text-neutral-400">
                 This document explains how we handle and secure your Gemini API keys when you choose to use your own API key with our service.
               </p>
@@ -64,7 +64,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Security Measures */}
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">Security Measures</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">Security Measures</h2>
 
               <div className="space-y-4">
                 <div>
@@ -106,7 +106,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Your Responsibilities */}
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">Your Responsibilities</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">Your Responsibilities</h2>
 
               <div className="space-y-4">
                 <div>
@@ -139,7 +139,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* How It Works */}
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">How It Works</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">How It Works</h2>
               <ol className="list-decimal list-inside space-y-1 text-neutral-400 ml-6">
                 <li><strong className="text-neutral-300">Saving:</strong> When you save your API key, it's encrypted using AES-256-GCM before being stored</li>
                 <li><strong className="text-neutral-300">Storage:</strong> Only the encrypted version is stored in our database</li>
@@ -150,7 +150,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Data Privacy */}
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">Data Privacy</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">Data Privacy</h2>
               <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-6">
                 <li>We never share your API keys with third parties</li>
                 <li>We never use your API keys for any purpose other than processing your requests</li>
@@ -161,7 +161,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Compliance */}
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">Compliance</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">Compliance</h2>
               <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-6">
                 <li><strong className="text-neutral-300">Encryption Standards:</strong> We follow industry standards (AES-256) for data encryption</li>
                 <li><strong className="text-neutral-300">Access Controls:</strong> We implement proper authentication and authorization controls</li>
@@ -173,7 +173,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
             <div className="border-t border-neutral-800/50 pt-6">
               <div className="flex items-center gap-2 mb-3">
                 <AlertCircle className="text-amber-500" size={18} />
-                <h2 className="text-lg font-semibold font-mono text-neutral-200 tracking-wider uppercase">Support</h2>
+                <h2 className="text-lg font-semibold font-mono text-neutral-200  uppercase">Support</h2>
               </div>
               <p className="text-neutral-400 mb-2">
                 If you have concerns about API key security or notice any suspicious activity:
@@ -187,7 +187,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Additional Resources */}
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4 tracking-wider uppercase">Additional Resources</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">Additional Resources</h2>
               <ul className="list-disc list-inside space-y-2 text-neutral-400 ml-6">
                 <li>
                   <a

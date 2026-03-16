@@ -12,6 +12,8 @@ import type {
 import { toast } from 'sonner';
 import { sendChatMessage } from '@/services/chatService';
 import { getChatMessageCreditsRequired } from '@/utils/creditCalculator';
+import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBrandContext';
+import type { BrandGuideline } from '@/lib/figma-types';
 
 import type { ImageNodeData } from '@/types/reactFlow';
 
@@ -41,6 +43,7 @@ interface UseChatNodeHandlerParams {
   setEdges?: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void;
   // Legacy support
   addPromptNode?: (customPosition?: { x: number; y: number }, initialData?: Partial<PromptNodeData>) => string | undefined;
+  linkedGuideline?: BrandGuideline | null;
 }
 
 export const useCanvasChatHandler = ({
@@ -52,6 +55,7 @@ export const useCanvasChatHandler = ({
   nodeCreators,
   setEdges,
   addPromptNode,
+  linkedGuideline,
 }: UseChatNodeHandlerParams) => {
 
   // Merge legacy addPromptNode with nodeCreators
@@ -79,6 +83,15 @@ export const useCanvasChatHandler = ({
       toast.error('Message cannot be empty', { duration: 3000 });
       return;
     }
+
+    // Apply brand context to the message if available
+    const { tokens: chatBrandTokens } = getBrandContextForNode(
+      nodeId,
+      nodesRef.current,
+      edgesRef?.current ?? [],
+      linkedGuideline
+    );
+    const enhancedMessage = chatBrandTokens ? buildEnhancement(message.trim(), chatBrandTokens) : message.trim();
 
     // Increment user message count
     const currentMessageCount = (chatData.userMessageCount || 0) + 1;
@@ -113,9 +126,10 @@ export const useCanvasChatHandler = ({
 
     try {
       // Prepare messages for API (convert to ChatMessage format)
-      const apiMessages = updatedMessages.map(msg => ({
+      // Replace the last user message with the brand-enhanced version (if context was added)
+      const apiMessages = updatedMessages.map((msg, idx) => ({
         role: msg.role,
-        content: msg.content,
+        content: idx === updatedMessages.length - 1 && msg.role === 'user' ? enhancedMessage : msg.content,
       }));
 
       // Call chat service with custom system prompt if available
@@ -155,7 +169,7 @@ export const useCanvasChatHandler = ({
 
       toast.error(error?.message || 'Failed to send message. Please try again.', { duration: 5000 });
     }
-  }, [nodesRef, updateNodeData, userId, saveImmediately]);
+  }, [nodesRef, edgesRef, updateNodeData, userId, saveImmediately, linkedGuideline]);
 
   const handleChatUpdateData = useCallback((nodeId: string, newData: Partial<ChatNodeData>) => {
     updateNodeData<ChatNodeData>(nodeId, newData, 'chat');

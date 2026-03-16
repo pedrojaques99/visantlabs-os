@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { chooseProvider } from '../lib/ai-providers/router.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
+import { prisma } from '../db/prisma.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
 import { AuthRequest } from '../middleware/auth.js';
@@ -8,6 +9,7 @@ import { getUserIdFromToken } from '../utils/auth.js';
 import { ObjectId } from 'mongodb';
 import WebSocket, { WebSocketServer } from 'ws';
 import type { BrandGuideline } from '../types/brandGuideline.js';
+import { buildBrandContext } from '../lib/brandContextBuilder.js';
 
 const router = express.Router();
 
@@ -226,7 +228,8 @@ interface PluginRequest {
   attachments?: Array<{ name: string; mimeType: string; data: string }>; // Base64 data
   mentions?: Array<{ name: string; type: string; id: string }>; // @mentions
   designSystem?: DesignSystemJSON | null; // Imported design system tokens
-  brandGuideline?: any  // BrandGuideline from plugin
+  brandGuideline?: any  // BrandGuideline from plugin UI
+  brandGuidelineId?: string; // ID of saved brand guideline to fetch from DB
   thinkMode?: boolean; // Think mode: analyze + ask questions before generating
 }
 
@@ -328,59 +331,7 @@ function buildDesignSystemContext(ds: DesignSystemJSON): string {
   return lines.join('\n');
 }
 
-function buildBrandContext(bg: BrandGuideline): string {
-  const lines: string[] = []
-  const name = bg.identity?.name || 'Marca'
-  lines.push(`═══ BRAND: ${name} ═══`)
-  if (bg.identity?.tagline) lines.push(`"${bg.identity.tagline}"`)
-  if (bg.identity?.website) lines.push(`Site: ${bg.identity.website}`)
-  lines.push('')
-
-  if (bg.colors?.length) {
-    lines.push('CORES (hex → RGB 0-1 no Figma):')
-    for (const c of bg.colors) lines.push(`  ${c.name}: ${c.hex}${c.role ? ` (${c.role})` : ''}`)
-    lines.push('')
-  }
-
-  if (bg.typography?.length) {
-    lines.push('FONTES (fontFamily + fontStyle exatos):')
-    for (const t of bg.typography) {
-      const parts = [t.family, t.style].filter(Boolean).join(' ')
-      const size = t.size ? ` ${t.size}` : ''
-      const lh = t.lineHeight ? `/${t.lineHeight}` : ''
-      lines.push(`  ${t.role}: ${parts}${size}${lh}`)
-    }
-    lines.push('')
-  }
-
-  if (bg.guidelines) {
-    if (bg.guidelines.voice) lines.push(`TOM: ${bg.guidelines.voice}`)
-    if (bg.guidelines.dos?.length) lines.push(`FAZER: ${bg.guidelines.dos.join(' | ')}`)
-    if (bg.guidelines.donts?.length) lines.push(`EVITAR: ${bg.guidelines.donts.join(' | ')}`)
-    lines.push('')
-  }
-
-  if (bg.logos?.length) {
-    lines.push('LOGOS:')
-    for (const l of bg.logos) lines.push(`  ${l.variant}: ${l.url}${l.label ? ` (${l.label})` : ''}`)
-    lines.push('')
-  }
-
-  if (bg.media?.length) {
-    lines.push('MEDIA KIT (reference assets — use as templates/inspiration):')
-    for (const m of bg.media) lines.push(`  [${m.type}] ${m.url}${m.label ? ` — ${m.label}` : ''}`)
-    lines.push('')
-  }
-
-  if (bg.tokens?.spacing) {
-    lines.push(`SPACING: ${Object.entries(bg.tokens.spacing).map(([k, v]) => `${k}=${v}`).join(' ')}`)
-  }
-  if (bg.tokens?.radius) {
-    lines.push(`RADIUS: ${Object.entries(bg.tokens.radius).map(([k, v]) => `${k}=${v}`).join(' ')}`)
-  }
-
-  return lines.join('\n')
-}
+// buildBrandContext is now imported from ../lib/brandContextBuilder.js
 
 function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thinkMode?: boolean): string {
   // Build logo info — support multi-variant logos
@@ -867,6 +818,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       attachments = [],
       mentions = [],
       designSystem,
+      brandGuideline: brandGuidelineFromUI,
+      brandGuidelineId,
       thinkMode = false,
     } = req.body as PluginRequest;
 
@@ -880,6 +833,34 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       const credits = await checkCredits(req.userId);
       if (!credits.canGenerate) {
         return res.status(403).json({ error: credits.reason, code: 'NO_CREDITS' });
+      }
+    }
+
+    // Phase 5: Fetch saved brand guideline if brandGuidelineId is provided
+    let brandGuideline: BrandGuideline | null = brandGuidelineFromUI || null;
+    if (brandGuidelineId && !brandGuideline) {
+      try {
+        const savedGuideline = await prisma.brandGuideline.findUnique({
+          where: { id: brandGuidelineId },
+        });
+        if (savedGuideline) {
+          // Reconstruct BrandGuideline object from Prisma model
+          brandGuideline = {
+            id: savedGuideline.id,
+            identity: savedGuideline.identity as any,
+            logos: savedGuideline.logos as any,
+            colors: savedGuideline.colors as any,
+            typography: savedGuideline.typography as any,
+            tags: savedGuideline.tags as any,
+            media: savedGuideline.media as any,
+            tokens: savedGuideline.tokens as any,
+            guidelines: savedGuideline.guidelines as any,
+          };
+          console.log('[Plugin] Loaded brand guideline from DB:', brandGuidelineId);
+        }
+      } catch (bgError) {
+        console.error('[Plugin] Error fetching brand guideline:', bgError);
+        // Continue without brand guideline
       }
     }
 
@@ -938,6 +919,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         attachments,
         mentions,
         designSystem: designSystem || null,
+        brandGuideline: brandGuideline || undefined,
       },
       chatHistory,
       thinkMode

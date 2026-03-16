@@ -9,6 +9,7 @@ import { CanvasSettingsModal } from './CanvasSettingsModal';
 import { CommunityPresetsSidebar } from './CommunityPresetsSidebar';
 import { ShareModal } from './ShareModal';
 import { useCanvasHeader } from './CanvasHeaderContext';
+import { BrandSelector } from './BrandSelector';
 import { canvasApi } from '@/services/canvasApi';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button'
@@ -27,6 +28,8 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
     projectName,
     onProjectNameChange,
     projectId,
+    linkedGuidelineId,
+    onLinkedGuidelineChange,
     shareId,
     isCollaborative,
     canEdit,
@@ -185,6 +188,11 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <BrandSelector
+            value={linkedGuidelineId}
+            onChange={(id) => onLinkedGuidelineChange?.(id)}
+            className="hidden sm:flex"
+          />
           {projectId && (
             <Button variant="ghost" onClick={(e) => {
               e.preventDefault();

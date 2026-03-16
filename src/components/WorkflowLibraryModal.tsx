@@ -206,7 +206,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                         <div className="flex items-center gap-2">
                             <Layout size={20} className="text-brand-cyan" />
                             <div>
-                                <h2 className="text-sm font-mono text-neutral-300 uppercase tracking-wider">
+                                <h2 className="text-sm font-mono text-neutral-300 uppercase ">
                                     {t('workflows.library.title') || 'Workflow Library'}
                                 </h2>
                                 <p className="text-[10px] text-neutral-500 font-mono hidden sm:block">
@@ -214,7 +214,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                                 </p>
                             </div>
                         </div>
-                        <Button variant="ghost" 
+                        <Button variant="ghost"
                             onClick={onClose}
                             className="p-2 text-neutral-500 hover:text-white transition-colors hover:bg-neutral-800/50 rounded-full"
                         >
@@ -224,7 +224,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
 
                     {/* Tabs */}
                     <div className="flex gap-1 px-4 pt-4 border-b border-neutral-800/50 bg-neutral-900/10">
-                        <Button variant="ghost" 
+                        <Button variant="ghost"
                             onClick={() => setActiveTab('community')}
                             className={cn(
                                 'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
@@ -238,7 +238,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                         </Button>
 
                         {isAuthenticated && (
-                            <Button variant="ghost" 
+                            <Button variant="ghost"
                                 onClick={() => setActiveTab('my')}
                                 className={cn(
                                     'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
@@ -268,7 +268,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                         {/* Category filters */}
                         {activeTab === 'community' && (
                             <div className="flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent items-center">
-                                <Button variant="ghost" 
+                                <Button variant="ghost"
                                     onClick={() => setSelectedCategory('all')}
                                     className={cn(
                                         'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
@@ -283,7 +283,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                                 {Object.entries(WORKFLOW_CATEGORY_CONFIG).map(([key, config]) => {
                                     const Icon = config.icon;
                                     return (
-                                        <Button variant="ghost" 
+                                        <Button variant="ghost"
                                             key={key}
                                             onClick={() => setSelectedCategory(key as WorkflowCategory)}
                                             className={cn(

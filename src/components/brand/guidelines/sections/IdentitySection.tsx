@@ -178,7 +178,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
                 
                 <div className="flex flex-wrap items-center gap-4 pt-1">
                   {(guideline.identity?.tagline || guideline.tagline) && (
-                    <p className="text-[10px] font-mono text-brand-cyan uppercase tracking-[0.3em] opacity-80">
+                    <p className="text-[10px] font-mono text-brand-cyan uppercase opacity-80">
                       {guideline.identity?.tagline || guideline.tagline}
                     </p>
                   )}
