@@ -26,7 +26,7 @@ import { extractColors } from '@/utils/colorExtraction';
 import { authService } from '@/services/authService';
 
 // ========== IMPORTS - Utils ==========
-import { generateNodeId, getImageFromNode, getConnectedImages, cleanEdgeHandles, getConnectedBrandIdentity } from '@/utils/canvas/canvasNodeUtils';
+import { generateNodeId, getImageFromNode, getConnectedImages, cleanEdgeHandles } from '@/utils/canvas/canvasNodeUtils';
 import { getImageUrl } from '@/utils/imageUtils';
 
 // ========== IMPORTS - UI/UX ==========
@@ -796,91 +796,24 @@ export const useCanvasNodeHandlers = (
       }
     }
 
-    // Check for connected BrandNode and get brand identity
-    const brandIdentity = getConnectedBrandIdentity(nodeId, nodesRef.current, edgesRef.current);
-
-    // Merge brand colors with manually selected colors (brand colors take priority)
-    let finalColors = [...(selectedColors || [])];
-    if (brandIdentity) {
-      const brandColors = [
-        ...brandIdentity.colors.primary,
-        ...brandIdentity.colors.secondary,
-        ...brandIdentity.colors.accent,
-      ];
-      // Add brand colors that aren't already in selectedColors
-      brandColors.forEach(color => {
-        if (!finalColors.includes(color.toUpperCase())) {
-          finalColors.push(color.toUpperCase());
-        }
-      });
-      // Limit to 5 colors total
-      finalColors = finalColors.slice(0, 5);
-    }
-
-    // Build enhanced prompt with colors, brand identity, and human interaction
-    // If customPrompt is provided, use it directly; otherwise build from preset
+    // Build base prompt from custom or preset
     let enhancedPrompt: string;
     if (customPrompt && customPrompt.trim()) {
-      // Use custom prompt as base, but still add colors/human/brand if not already included
       enhancedPrompt = customPrompt.trim();
-
-      // Add brand identity information if available
-      if (brandIdentity) {
-        if (!enhancedPrompt.toLowerCase().includes('brand') && !enhancedPrompt.toLowerCase().includes('identity')) {
-          const brandInfo: string[] = [];
-          if (brandIdentity.personality?.tone) {
-            brandInfo.push(`brand tone: ${brandIdentity.personality.tone}`);
-          }
-          if (brandIdentity.typography?.primary) {
-            brandInfo.push(`typography: ${brandIdentity.typography.primary}`);
-          }
-          if (brandInfo.length > 0) {
-            enhancedPrompt += ` Brand identity: ${brandInfo.join(', ')}.`;
-          }
-        }
-      }
-
-      if (finalColors.length > 0 && !enhancedPrompt.toLowerCase().includes('color')) {
-        enhancedPrompt += ` The scene's color palette should be dominated by or feature accents of: ${finalColors.join(', ')}.`;
-      }
-      if (withHuman && !enhancedPrompt.toLowerCase().includes('human') && !enhancedPrompt.toLowerCase().includes('person')) {
-        const humanAction = Math.random() < 0.5 ? 'looking at' : 'interacting with';
-        enhancedPrompt += ` The scene should include a human person naturally ${humanAction} the mockup product. Ensure the moment feels contextual for the product type.`;
-      }
     } else {
-      // Build from preset prompt
       enhancedPrompt = preset.prompt;
-
-      // Add brand identity information if available
-      if (brandIdentity) {
-        const brandInfo: string[] = [];
-        if (brandIdentity.personality?.tone) {
-          brandInfo.push(`brand tone: ${brandIdentity.personality.tone}`);
-        }
-        if (brandIdentity.typography?.primary) {
-          brandInfo.push(`typography: ${brandIdentity.typography.primary}`);
-        }
-        if (brandIdentity.composition?.style) {
-          brandInfo.push(`composition style: ${brandIdentity.composition.style}`);
-        }
-        if (brandInfo.length > 0) {
-          enhancedPrompt += ` Brand identity: ${brandInfo.join(', ')}.`;
-        }
-      }
-
-      if (finalColors.length > 0) {
-        enhancedPrompt += ` The scene's color palette should be dominated by or feature accents of: ${finalColors.join(', ')}.`;
-      }
-      if (withHuman) {
-        const humanAction = Math.random() < 0.5 ? 'looking at' : 'interacting with';
-        enhancedPrompt += ` The scene should include a human person naturally ${humanAction} the mockup product. Ensure the moment feels contextual for the product type.`;
-      }
     }
 
-    // Apply brand guideline context on top of the already-built enhanced prompt
+    // Apply brand guideline context (handles colors, fonts, tone, dos/donts)
     const { tokens: mockupBrandTokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
     if (mockupBrandTokens) {
       enhancedPrompt = buildEnhancement(enhancedPrompt, mockupBrandTokens);
+    }
+
+    // Add human interaction if requested
+    if (withHuman && !enhancedPrompt.toLowerCase().includes('human') && !enhancedPrompt.toLowerCase().includes('person')) {
+      const humanAction = Math.random() < 0.5 ? 'looking at' : 'interacting with';
+      enhancedPrompt += ` The scene should include a human person naturally ${humanAction} the mockup product. Ensure the moment feels contextual for the product type.`;
     }
 
     let newOutputNodeId: string | null = null;

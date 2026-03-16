@@ -16,8 +16,6 @@ import { NodeHandles } from './shared/NodeHandles';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeLabel } from './shared/node-label';
-import { AspectRatioSelector } from './shared/AspectRatioSelector';
-import { ResolutionSelector } from './shared/ResolutionSelector';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel } from '@/constants/geminiModels';
 import { Textarea } from '@/components/ui/textarea';
@@ -142,33 +140,26 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     }
   }, [data.selectedPreset]);
 
-  // Sync colors, withHuman, and customPrompt with data
+  // Consolidate syncing node data into local state
   useEffect(() => {
-    if (data.selectedColors !== undefined) {
-      setSelectedColors(data.selectedColors);
-    }
-    if (data.colorInput !== undefined) {
-      setColorInput(data.colorInput);
-    }
-    if (data.isValidColor !== undefined) {
-      setIsValidColor(data.isValidColor);
-    }
-    if (data.withHuman !== undefined) {
-      setWithHuman(data.withHuman);
-    }
-    if (data.customPrompt !== undefined) {
-      setCustomPrompt(data.customPrompt);
-    }
-    if (data.model) {
-      setModel(data.model);
-    }
-    if (data.aspectRatio) {
-      setAspectRatio(data.aspectRatio);
-    }
-    if (data.resolution) {
-      setResolution(data.resolution);
-    }
-  }, [data.selectedColors, data.colorInput, data.isValidColor, data.withHuman, data.customPrompt, data.model, data.aspectRatio, data.resolution]);
+    if (data.selectedColors !== undefined) setSelectedColors(data.selectedColors);
+    if (data.colorInput !== undefined) setColorInput(data.colorInput);
+    if (data.isValidColor !== undefined) setIsValidColor(data.isValidColor);
+    if (data.withHuman !== undefined) setWithHuman(data.withHuman);
+    if (data.customPrompt !== undefined) setCustomPrompt(data.customPrompt);
+    if (data.model) setModel(data.model);
+    if (data.aspectRatio) setAspectRatio(data.aspectRatio);
+    if (data.resolution) setResolution(data.resolution);
+  }, [
+    data.selectedColors, 
+    data.colorInput, 
+    data.isValidColor, 
+    data.withHuman, 
+    data.customPrompt, 
+    data.model, 
+    data.aspectRatio, 
+    data.resolution
+  ]);
 
 
   const { getNodes } = useReactFlow();
