@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Book, Server, Puzzle, Home, ChevronLeft, ChevronRight, Terminal, Code, Sparkles, Layers, Workflow, Copy, Check, FileText, Bot } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { Book, Server, Puzzle, Terminal, Code, Sparkles, Layers, Workflow, Copy, Check, FileText, Bot } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { BreadcrumbWithBack } from '../components/ui/BreadcrumbWithBack';
 import {
@@ -12,45 +10,25 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '../components/ui/BreadcrumbWithBack';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
+import { Tabs, TabsContent } from '../components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Separator } from '../components/ui/separator';
-import { NavigationSidebar, type NavigationItem } from '../components/ui/NavigationSidebar';
+import { NavigationSidebar } from '../components/ui/NavigationSidebar';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
 import { cn } from '../lib/utils';
 
-interface OpenAPISpec {
-  openapi: string;
-  info: {
-    title: string;
-    version: string;
-    description: string;
-  };
-  paths: Record<string, Record<string, any>>;
-}
-
-interface MCPSpec {
-  tools: Array<{
-    name: string;
-    description: string;
-    inputSchema: {
-      type: string;
-      properties: Record<string, any>;
-      required?: string[];
-    };
-    examples?: Array<{
-      name: string;
-      description?: string;
-      input: any;
-      expectedOutput?: string;
-    }>;
-  }>;
-}
+// Modular docs imports
+import {
+  useDocsData,
+  DOCS_NAVIGATION_ITEMS,
+  buildNavigationWithMcpTools,
+  generateTabMarkdown,
+  PLATFORM_MCP_TOOLS,
+} from './docs';
 
 export const DocsPage: React.FC = () => {
-  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState<string | undefined>(undefined);
@@ -61,240 +39,30 @@ export const DocsPage: React.FC = () => {
     }
     return 256;
   });
-
-  const [openApiSpec, setOpenApiSpec] = useState<OpenAPISpec | null>(null);
-  const [mcpSpec, setMcpSpec] = useState<MCPSpec | null>(null);
-  const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    const fetchDocs = async () => {
-      try {
-        const [apiRes, mcpRes] = await Promise.all([
-          fetch('/api/docs/api/spec'),
-          fetch('/api/docs/plugin/mcp.json')
-        ]);
+  // Use modular data hook
+  const {
+    openApiSpec,
+    mcpSpec,
+    loading,
+    authEndpoints,
+    mockupEndpoints,
+    pluginEndpoints,
+    mcpToolNames,
+  } = useDocsData();
 
-        if (apiRes.ok) setOpenApiSpec(await apiRes.json());
-        if (mcpRes.ok) setMcpSpec(await mcpRes.json());
-      } catch (error) {
-        console.error('Failed to fetch documentation specs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Build navigation with dynamic MCP tools
+  const navigationItems = useMemo(
+    () => buildNavigationWithMcpTools(mcpToolNames),
+    [mcpToolNames]
+  );
 
-    fetchDocs();
-  }, []);
-
-  const apiEndpoints = useMemo(() => {
-    if (!openApiSpec) return [];
-
-    const endpoints: Array<any> = [];
-    const paths = openApiSpec.paths || {};
-
-    Object.entries(paths).forEach(([path, methods]) => {
-      Object.entries(methods as Record<string, any>).forEach(([method, details]) => {
-        if (['get', 'post', 'put', 'delete', 'patch'].includes(method)) {
-          endpoints.push({
-            path,
-            method: method.toUpperCase(),
-            ...details
-          });
-        }
-      });
-    });
-
-    return endpoints;
-  }, [openApiSpec]);
-
-  const authEndpoints = apiEndpoints.filter(e => e.tags?.includes('auth'));
-  const mockupEndpoints = apiEndpoints.filter(e => e.tags?.includes('mockups'));
-  const pluginEndpoints = apiEndpoints.filter(e => e.tags?.includes('plugin'));
-
-  const navigationItems: NavigationItem[] = [
-    {
-      id: 'overview',
-      label: 'Overview',
-      icon: Home,
-    },
-    {
-      id: 'api',
-      label: 'REST API',
-      icon: Server,
-      sections: [
-        { id: 'api-auth', label: 'Authentication' },
-        { id: 'api-mockups', label: 'Mockups' },
-        { id: 'api-plugin', label: 'Plugin' },
-      ],
-    },
-    {
-      id: 'mcp',
-      label: 'MCP Tools',
-      icon: Terminal,
-      sections: [
-        { id: 'mcp-overview', label: 'Overview' },
-        { id: 'mcp-setup', label: 'Setup & Connection' },
-        { id: 'mcp-auth', label: 'Authentication' },
-        { id: 'mcp-figma-tools', label: 'Figma MCP Tools' },
-        ...(mcpSpec?.tools.map(tool => ({
-          id: `tool-${tool.name}`,
-          label: tool.name
-        })) || []),
-      ],
-    },
-    {
-      id: 'plugin',
-      label: 'Figma Plugin',
-      icon: Puzzle,
-    },
-    {
-      id: 'figma-nodes',
-      label: 'Figma Node JSON',
-      icon: Layers,
-      sections: [
-        { id: 'fn-overview', label: 'Overview' },
-        { id: 'fn-nodespec', label: 'NodeSpec Reference' },
-        { id: 'fn-fills', label: 'Fill & Effect Types' },
-        { id: 'fn-rules', label: 'Critical Rules' },
-        { id: 'fn-renderer', label: 'Renderer (render.ts)' },
-        { id: 'fn-social', label: 'Social Media Example' },
-        { id: 'fn-patterns', label: 'Common Patterns' },
-      ],
-    },
-    {
-      id: 'agents',
-      label: 'For Agents',
-      icon: Bot,
-      sections: [
-        { id: 'ag-overview', label: 'Overview' },
-        { id: 'ag-auth', label: 'Authentication' },
-        { id: 'ag-mcp', label: 'MCP Connection' },
-        { id: 'ag-tools', label: 'Available Tools' },
-        { id: 'ag-brand-guidelines', label: 'Brand Guidelines API' },
-        { id: 'ag-credits', label: 'Credits & Limits' },
-        { id: 'ag-example', label: 'Example Flow' },
-      ],
-    },
-    {
-      id: 'canvas-api',
-      label: 'Canvas API',
-      icon: Workflow,
-      sections: [
-        { id: 'ca-overview', label: 'Overview' },
-        { id: 'ca-auth', label: 'Authentication' },
-        { id: 'ca-projects', label: 'Projects CRUD' },
-        { id: 'ca-nodes', label: 'Node Types' },
-        { id: 'ca-edges', label: 'Edges & Connections' },
-        { id: 'ca-media', label: 'Media Upload' },
-        { id: 'ca-share', label: 'Sharing & Collab' },
-        { id: 'ca-agents', label: 'Agent Integration' },
-        { id: 'ca-json', label: 'JSON Export Format' },
-      ],
-    },
-  ];
-
-  const generateTabMarkdown = useCallback((tab: string): string => {
-    const lines: string[] = [];
-
-    if (tab === 'canvas-api') {
-      lines.push(`# Canvas API Reference`);
-      lines.push(`\nBase URL: \`/api/canvas\`\nAuth: \`Authorization: Bearer <jwt_token>\`\nContent-Type: \`application/json\``);
-      lines.push(`\n## Overview\nThe canvas is a React Flow graph stored as a project with \`nodes[]\` and \`edges[]\` arrays.\nThere is no individual node CRUD — to add/update/remove a node: GET the project, mutate the array, PUT the full array back.\n\n**Workflow:**\n1. \`POST /api/canvas\` — create project\n2. \`GET /api/canvas/:id\` — fetch current nodes\n3. Mutate locally\n4. \`PUT /api/canvas/:id\` — persist the full nodes array`);
-      lines.push(`\n## Projects CRUD\n\n### GET /api/canvas\nList all projects for the authenticated user.\n\`\`\`json\n{ "projects": [{ "_id": "...", "name": "...", "nodes": [...], "edges": [...], "createdAt": "...", "updatedAt": "..." }] }\n\`\`\``);
-      lines.push(`\n### GET /api/canvas/:id\nGet a single project by ID.\n\`\`\`json\n{ "project": { "_id": "...", "name": "...", "nodes": [...], "edges": [...] } }\n\`\`\``);
-      lines.push(`\n### POST /api/canvas\nCreate a new canvas project.\n**Body:**\n\`\`\`json\n{\n  "name": "My Canvas",\n  "nodes": [\n    {\n      "id": "prompt-1",\n      "type": "prompt",\n      "position": { "x": 100, "y": 100 },\n      "data": { "type": "prompt", "prompt": "A product photo on white background", "model": "gemini-2.5-flash" }\n    }\n  ],\n  "edges": []\n}\n\`\`\`\n**Response:** \`{ "project": { "_id": "abc123", ... } }\``);
-      lines.push(`\n### PUT /api/canvas/:id\nUpdate a project. Send only fields to change; nodes/edges require the full array.\n**Body:** \`{ "name"?: string, "nodes"?: Node[], "edges"?: Edge[], "drawings"?: any[] }\`\n**Limits:** max 10 000 nodes, 15 MB payload after R2 offload.`);
-      lines.push(`\n### DELETE /api/canvas/:id\nDelete a project permanently.\n**Response:** \`{ "success": true }\``);
-      lines.push(`\n## Node Structure\nEvery node follows the React Flow node schema:\n\`\`\`json\n{\n  "id": "unique-id",\n  "type": "prompt",\n  "position": { "x": 0, "y": 0 },\n  "width": 320,\n  "height": 240,\n  "data": {\n    "type": "prompt",\n    "prompt": "...",\n    ...typeSpecificFields\n  }\n}\n\`\`\``);
-      lines.push(`\n## Node Types\n| type | description | key data fields |\n|------|-------------|----------------|\n| \`prompt\` | Text-to-image generation | prompt, model, aspectRatio, resolution, resultImageUrl |\n| \`image\` | Display a mockup/image | mockup: { imageUrl, ... } |\n| \`output\` | Result viewer (receives from flow nodes) | resultImageUrl, resultVideoUrl, sourceNodeId |\n| \`merge\` | Combine 2+ connected images with AI | prompt, model, resultImageUrl |\n| \`edit\` | Edit image with Mockup Machine | uploadedImage, referenceImage, tags[], model, designType |\n| \`upscale\` | AI upscaling (Gemini) | targetResolution, resultImageUrl, connectedImage |\n| \`upscaleBicubic\` | Bicubic shader upscaling | scaleFactor, sharpening, resultImageUrl, resultVideoUrl |\n| \`mockup\` | AI mockup from preset templates | selectedPreset, selectedColors[], withHuman, customPrompt |\n| \`angle\` | Re-render with camera angle preset | selectedAngle, resultImageUrl, connectedImage |\n| \`texture\` | Apply 3D texture/style preset | selectedPreset, resultImageUrl, connectedImage |\n| \`ambience\` | Apply background/environment preset | selectedPreset, resultImageUrl, connectedImage |\n| \`luminance\` | Apply light setup preset | selectedPreset, resultImageUrl, connectedImage |\n| \`shader\` | GLSL shader effects (halftone, VHS, ASCII…) | shaderType, dotSize, contrast, resultVideoUrl |\n| \`colorExtractor\` | Extract color palette from image | connectedImage, extractedColors: string[] |\n| \`text\` | Editable text block (connects to prompt/chat) | text: string |\n| \`logo\` | Logo upload node | logoImageUrl, logoBase64 |\n| \`pdf\` | Identity guide PDF upload | pdfUrl, fileName |\n| \`videoInput\` | Video upload for shader/processing | uploadedVideoUrl |\
-| \`video\` | Video generation via Veo | prompt, model, aspectRatio, duration, resultVideoUrl |\
-| \`brand\` | Brand identity extractor (legacy) | logoImage, identityPdfUrl, brandIdentity |\
-| \`brandCore\` | Brand catalyst — generates visual prompts | connectedLogo, connectedPdf, visualPrompts, brandIdentity |\
-| \`strategy\` | Brand strategy generation | strategyType, prompt, strategyData |\
-| \`director\` | AI-assisted prompt builder with tag selection | connectedImage, suggestedTags, generatedPrompt |\
-| \`chat\` | Conversational AI with multimodal context | messages[], model, systemPrompt, connectedImage1..4 |`);
-      lines.push(`\n## Edges\n\`\`\`json\n{ "id": "e1", "source": "prompt-1", "target": "output-1", "sourceHandle": "output", "targetHandle": "input" }\n\`\`\`\n\n| Connection | sourceHandle | targetHandle | Effect |\n|------------|-------------|--------------|--------|\n| image → merge | output | input-1 / input-2 | Feeds source image into merge |\n| prompt → output | output | input | Generated image to output display |\n| text → prompt | output | text-input | Text syncs to prompt node |\n| logo → brandCore | output | logo-input | Logo fed to brand core |\n| pdf → brandCore | output | identity-input | PDF identity guide to brand core |\n| brandCore → mockup | output | brand-input | Brand prompts/colors to mockup |\n| strategy → brandCore | output | strategy-input | Strategy data consolidated |\
-| image → chat | output | input-1..input-4 | Visual context to chat node |`);
-      lines.push(`\n## Media Upload\n\n### POST /api/canvas/image/upload\nUpload image (base64) to R2. Returns persistent URL.\n**Body:** \`{ "base64Image": "data:image/png;base64,...", "canvasId": "...", "nodeId": "..." }\`\n**Response:** \`{ "imageUrl": "https://r2.example.com/..." }\`\n\n### GET /api/canvas/image/upload-url\nPresigned URL for direct large-image upload (bypasses Vercel limit).\n**Query:** \`canvasId, nodeId, contentType\`\n**Response:** \`{ "presignedUrl": "...", "finalUrl": "..." }\`\n\n### POST /api/canvas/video/upload\n**Body:** \`{ "videoBase64": "data:video/mp4;base64,...", "canvasId": "...", "nodeId": "..." }\`\n**Response:** \`{ "videoUrl": "..." }\`\n\n### GET /api/canvas/video/upload-url\nPresigned URL for direct large-video upload.\n**Query:** \`canvasId, nodeId, contentType\`\n\n### POST /api/canvas/pdf/upload\n**Body:** \`{ "pdfBase64": "data:application/pdf;base64,...", "canvasId": "...", "nodeId": "..." }\`\n**Response:** \`{ "pdfUrl": "..." }\`\n\n### DELETE /api/canvas/image?url=<encoded>\nDelete image from R2 by URL.`);
-      lines.push(`\n## Sharing & Collaboration\nRequires Admin or Premium plan.\n\n### POST /api/canvas/:id/share\n**Body:** \`{ "canEdit": ["user@example.com"], "canView": ["viewer@example.com"] }\`\n**Response:** \`{ "shareId": "abc123", "shareUrl": "/canvas/shared/abc123" }\`\n\n### GET /api/canvas/shared/:shareId\nFetch shared project — no authentication required.\n\n### PUT /api/canvas/:id/share-settings\n**Body:** \`{ "canEdit": [...], "canView": [...] }\`\n\n### DELETE /api/canvas/:id/share\nDisable sharing and revoke all access.`);
-      lines.push(`\n## Agent Integration Patterns\n\n### Create and read a project\n\`\`\`js\nconst headers = { "Authorization": "Bearer TOKEN", "Content-Type": "application/json" };\n\nconst { project } = await fetch("/api/canvas", {\n  method: "POST", headers,\n  body: JSON.stringify({\n    name: "Agent Canvas",\n    nodes: [{ id: "p1", type: "prompt", position: { x: 0, y: 0 }, data: { type: "prompt", prompt: "Product photo" } }],\n    edges: []\n  })\n}).then(r => r.json());\n\n// Read after generation\nconst { project: updated } = await fetch(\`/api/canvas/\${project._id}\`, { headers }).then(r => r.json());\nconst resultUrl = updated.nodes.find(n => n.type === "output")?.data?.resultImageUrl;\n\`\`\`\n\n### Add a node to existing project\n\`\`\`js\nconst { project } = await fetch(\`/api/canvas/\${id}\`, { headers }).then(r => r.json());\nawait fetch(\`/api/canvas/\${id}\`, {\n  method: "PUT", headers,\n  body: JSON.stringify({\n    nodes: [...project.nodes, { id: "text-1", type: "text", position: { x: 0, y: 0 }, data: { type: "text", text: "neon lighting" } }],\n    edges: project.edges\n  })\n});\n\`\`\`\n\n**Key rules:**\n- Node IDs must be unique within the project (use UUID or timestamp suffix)\n- Always PUT the full nodes array (no individual node PATCH)\n- Prefer R2 URLs over base64 — base64 expires in 7 days\n- Generation is async (happens in browser) — poll GET to read updated results`);
-      lines.push(`\n## JSON Export / Import Format (visant-canvas/v1)\n\nCanvas projects can be exported and imported as portable JSON files using the schema \`visant-canvas/v1\`.\n\n### Schema\n\`\`\`json\n{\n  "meta": {\n    "schema": "visant-canvas/v1",\n    "exportedAt": "2026-01-01T00:00:00.000Z",\n    "nodeCount": 5,\n    "edgeCount": 4,\n    "drawingCount": 0\n  },\n  "name": "My Workflow",\n  "nodes": [...],\n  "edges": [...],\n  "drawings": []\n}\n\`\`\`\n\n### Stripped fields (on export)\n**Binary data (only R2 URLs are kept):** resultImageBase64, resultVideoBase64, imageBase64, base64, pdfBase64, identityPdfBase64, identityImageBase64, logoBase64, uploadedVideo, startFrame, endFrame\n\n**Transient / recomputed from edges:** connectedImages, connectedImage, connectedLogo, connectedPdf, connectedText, connectedVideo, oversizedWarning, isGenerating, isLoading, promptSuggestions, suggestedTags, userMockups\n\n### Import (programmatic)\n\`\`\`js\nimport { readJsonFile, validateVisantJson } from '@/utils/canvas/canvasJsonExport';\nimport { canvasApi } from '@/services/canvasApi';\n\nconst raw = await readJsonFile(file); // file: File from input[type=file]\nif (!validateVisantJson(raw)) throw new Error('Not a valid visant-canvas/v1 file');\n\nconst newProject = await canvasApi.save(raw.name, raw.nodes, raw.edges, undefined, raw.drawings ?? []);\nnavigate(\`/canvas/\${newProject._id}\`);\n\`\`\`\n\n### UI Entry Points\n- Canvas header → Download dropdown → "Exportar como JSON" / "Importar de JSON"\n- Projects listing page → "Import from JSON" button\n- On import a **new project is always created** — existing projects are never overwritten`);
-      return lines.join('\n');
-    }
-
-    if (tab === 'mcp') {
-      if (!mcpSpec) return '# MCP Tools\n\nSpec not loaded yet.';
-      lines.push('# MCP Tools Reference');
-      lines.push(`\nIntegrate Visant Labs directly into AI agents via the Model Context Protocol.\n`);
-      lines.push(`## Two MCP Servers\n`);
-      lines.push(`| Server | Transport | Endpoint | Tools |`);
-      lines.push(`|--------|-----------|----------|-------|`);
-      lines.push(`| Platform MCP | HTTP/SSE | \`/api/mcp\` | 19 (mockups, canvas, branding, AI) |`);
-      lines.push(`| Figma MCP | stdio | \`npm run mcp:figma\` | 9 (Figma node manipulation) |`);
-      lines.push(`\n## Setup — Claude Desktop\n\n\`\`\`json\n{\n  "mcpServers": {\n    "visant-platform": {\n      "url": "https://your-domain.com/api/mcp",\n      "transport": "sse",\n      "headers": { "Authorization": "Bearer visant_sk_xxx" }\n    }\n  }\n}\n\`\`\``);
-      lines.push(`\n## Authentication\n\nPass your API key in every request:\n\`Authorization: Bearer visant_sk_xxxxxxxxxxxx\`\n\nCreate keys at Settings → API Keys. Scopes: read, write, generate.\n`);
-      lines.push(`\n## Figma MCP — Tool Reference\n`);
-      mcpSpec.tools.forEach(tool => {
-        lines.push(`\n### ${tool.name}\n\n${tool.description}\n`);
-        const props = Object.entries(tool.inputSchema?.properties || {});
-        if (props.length > 0) {
-          lines.push('**Parameters:**\n');
-          lines.push('| name | type | required | description |');
-          lines.push('|------|------|----------|-------------|');
-          props.forEach(([name, prop]: [string, any]) => {
-            const req = tool.inputSchema.required?.includes(name) ? 'yes' : 'no';
-            lines.push(`| \`${name}\` | ${prop.type || 'string'} | ${req} | ${prop.description || '-'} |`);
-          });
-        }
-        if (tool.examples?.[0]) {
-          lines.push(`\n**Example input:**\n\`\`\`json\n${JSON.stringify(tool.examples[0].input, null, 2)}\n\`\`\``);
-        }
-      });
-      return lines.join('\n');
-    }
-
-    if (tab === 'api') {
-      if (!openApiSpec) return '# REST API\n\nSpec not loaded yet.';
-      lines.push(`# ${openApiSpec.info.title} — REST API Reference`);
-      lines.push(`\nVersion: ${openApiSpec.info.version}\nAuth: \`Authorization: Bearer <jwt_token>\``);
-      const paths = openApiSpec.paths || {};
-      Object.entries(paths).forEach(([path, methods]) => {
-        Object.entries(methods as Record<string, any>).forEach(([method, details]) => {
-          if (!['get', 'post', 'put', 'delete', 'patch'].includes(method)) return;
-          lines.push(`\n## ${method.toUpperCase()} ${path}`);
-          if (details.summary) lines.push(`\n${details.summary}`);
-          if (details.description) lines.push(`\n${details.description}`);
-          if (details.parameters?.length > 0) {
-            lines.push('\n**Parameters:**\n');
-            lines.push('| name | in | type | description |');
-            lines.push('|------|----|------|-------------|');
-            details.parameters.forEach((p: any) => {
-              lines.push(`| \`${p.name}\` | ${p.in} | ${p.schema?.type || 'string'} | ${p.schema?.description || '-'} |`);
-            });
-          }
-        });
-      });
-      return lines.join('\n');
-    }
-
-    if (tab === 'figma-nodes') {
-      lines.push('# Figma Node JSON Spec');
-      lines.push(`\nData-driven pattern for creating Figma nodes via Plugin API. Define JSON → execute with render.ts.\n\n**Flow:** JSON spec → collectFonts() → figma.loadFontAsync() → buildNode() recursively`);
-      lines.push(`\n## Supported Node Types\n- FRAME — container with auto-layout, padding, fills, children\n- RECTANGLE — solid or gradient-filled box\n- ELLIPSE — circle or oval shape\n- TEXT — text with full typography control`);
-      lines.push(`\n## NodeSpec Properties\n| property | type | notes |\n|----------|------|-------|\n| type | string | 'FRAME' \\| 'RECTANGLE' \\| 'ELLIPSE' \\| 'TEXT' — required |\n| name | string | Layer name — required |\n| width / height | number | Applied via resize() internally |\n| fills | FillSpec[] | Array of solid or gradient fills. Empty array = transparent |\n| strokes | FillSpec[] | Stroke paints (same format as fills) |\n| strokeWeight | number | Stroke width in pixels |\n| cornerRadius | number | Rounded corners in pixels |\n| opacity | number | 0–1 |\n| effects | EffectSpec[] | DROP_SHADOW, INNER_SHADOW, LAYER_BLUR, BACKGROUND_BLUR |\n| layoutMode | string | 'NONE' \\| 'HORIZONTAL' \\| 'VERTICAL' — FRAME only |\n| primaryAxisAlignItems | string | 'MIN' \\| 'MAX' \\| 'CENTER' \\| 'SPACE_BETWEEN' |\n| counterAxisAlignItems | string | 'MIN' \\| 'MAX' \\| 'CENTER' \\| 'BASELINE' |\n| paddingTop/Bottom/Left/Right | number | Inner spacing — auto-layout frames only |\n| itemSpacing | number | Gap between children |\n| layoutSizingHorizontal | string | 'FIXED' \\| 'FILL' \\| 'HUG' — set AFTER appendChild |\n| layoutSizingVertical | string | 'FIXED' \\| 'FILL' \\| 'HUG' — set AFTER appendChild |\n| characters | string | Text content — TEXT only |\n| fontSize | number | Font size in px — TEXT only |\n| fontName | object | { family: string, style: string } — must be loaded first |\n| textAlignHorizontal | string | 'LEFT' \\| 'CENTER' \\| 'RIGHT' \\| 'JUSTIFIED' |\n| children | NodeSpec[] | Nested nodes — FRAME only |`);
-      lines.push(`\n## Critical Rules\n- **Colors are 0–1 floats** — { r: 1, g: 0, b: 0 } = red. Never 0–255.\n- **Use resize(), not width=** — width/height are read-only.\n- **Load fonts before text** — figma.loadFontAsync() must complete first.\n- **appendChild before layoutSizing** — FILL/HUG only works after node is in auto-layout parent.\n- **fontName.style must be exact** — 'SemiBold' not 'Semi Bold'.\n- **lineHeight AUTO has no value** — { unit: 'AUTO' } — omit value field.\n- **Empty fills = transparent** — fills: [] removes all background.`);
-      lines.push(`\n## Fill Examples\n\`\`\`json\n// Solid fill\n{ "type": "SOLID", "color": { "r": 0.98, "g": 0.35, "b": 0.35 }, "opacity": 1 }\n\n// Linear gradient\n{\n  "type": "GRADIENT_LINEAR",\n  "gradientTransform": [[0.7, 0.7, -0.1], [-0.7, 0.7, 0.7]],\n  "gradientStops": [\n    { "color": { "r": 0.06, "g": 0.09, "b": 0.22, "a": 1 }, "position": 0 },\n    { "color": { "r": 0.40, "g": 0.06, "b": 0.20, "a": 1 }, "position": 1 }\n  ]\n}\n\`\`\``);
-      return lines.join('\n');
-    }
-
-    if (tab === 'plugin') {
-      return `# Figma Plugin Guide\n\n## Installation\n1. Open any file in Figma.\n2. Go to Resources > Plugins.\n3. Search for "Visant Copilot" and click Run.\n4. Follow the on-screen prompts to connect your account.\n\n## Capabilities\n- **Mockups** — select frames and convert them to 3D device mockups instantly.\n- **Chat with AI** — describe what to build; nodes are created automatically.\n- **Brand identity extraction** — upload logo + identity PDF to generate brand-aware prompts.\n- **Image generation** — text-to-image, edit, merge, upscale inside Figma.\n\n## Plugin API (for developers)\nThe plugin communicates with the server via WebSocket (pluginBridge). Agents can send commands via the \`/api/plugin/agent-command\` endpoint which validates and queues operations for execution inside Figma.`;
-    }
-
-    // overview
-    return `# Visant Copilot Documentation\n\n## Sections\n- **REST API** — HTTP endpoints for auth, mockups, and canvas manipulation.\n- **Canvas API** — Create and manipulate canvas projects and nodes programmatically.\n- **MCP Tools** — Model Context Protocol tools for Claude and AI agent integration.\n- **Figma Plugin** — Design automation inside Figma.\n- **Figma Node JSON** — Data-driven node creation spec for the plugin renderer.\n\n## Authentication\nAll endpoints: \`Authorization: Bearer <jwt_token>\`\nObtain token: \`POST /api/auth/login\` → \`{ "email": "...", "password": "..." }\`\n\n## Base URL\n\`https://your-domain.com/api\``;
-  }, [mcpSpec, openApiSpec]);
+  // Use modular markdown generator
+  const getMarkdown = useCallback(
+    (tab: string) => generateTabMarkdown(tab as any, mcpSpec, openApiSpec),
+    [mcpSpec, openApiSpec]
+  );
 
   const markCopied = useCallback(() => {
     setCopied(true);
@@ -317,9 +85,9 @@ export const DocsPage: React.FC = () => {
   }, [markCopied]);
 
   const handleCopyMarkdown = useCallback(async () => {
-    const md = generateTabMarkdown(activeTab);
+    const md = getMarkdown(activeTab);
     await copyToClipboard(md);
-  }, [activeTab, generateTabMarkdown, copyToClipboard]);
+  }, [activeTab, getMarkdown, copyToClipboard]);
 
   const handleNavigationClick = (itemId: string, sectionId?: string) => {
     setActiveTab(itemId);
@@ -512,11 +280,8 @@ export const DocsPage: React.FC = () => {
           />
 
           <div
-            className="flex-1 min-w-0 pt-10 md:pt-12 transition-all duration-300"
-            style={{
-              marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024
-                ? `${sidebarWidth}px` : '0'
-            }}
+            className="flex-1 min-w-0 pt-10 md:pt-12 transition-all duration-300 lg:ml-[var(--sidebar-width)]"
+            style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
           >
             <div className="h-screen overflow-y-auto">
               <div className="max-w-5xl mx-auto px-4 pt-[30px] pb-16 md:pb-24">
@@ -616,6 +381,16 @@ export const DocsPage: React.FC = () => {
                         </CardHeader>
                         <CardContent>
                           <p className="text-muted-foreground text-sm">Connect AI agents via MCP, API keys, llms.txt discovery, and clean HTML.</p>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('brand-guidelines')}>
+                        <CardHeader>
+                          <Sparkles className="w-8 h-8 text-brand-cyan mb-2" />
+                          <CardTitle>Brand Guidelines</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-muted-foreground text-sm">Centralized brand identity vaults with automated context extraction for AI agents.</p>
                         </CardContent>
                       </Card>
 
@@ -1970,9 +1745,99 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
 
                   </TabsContent>
 
+                  {/* Brand Guidelines Tab */}
+                  <TabsContent value="brand-guidelines" className="space-y-8 mt-0">
+                    <Card className="bg-card border border-border">
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <Sparkles className="h-8 w-8 text-brand-cyan" />
+                          <div>
+                            <CardTitle className="text-2xl">Brand Guidelines API</CardTitle>
+                            <CardDescription>Structured brand identity context for AI agents</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div id="bg-overview" className="scroll-mt-20">
+                          <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                            Brand Guidelines are more than static documents — they are <strong className="text-foreground">identity vaults</strong> that provide structured context for AI generation. 
+                            By connecting a guideline to a prompt or canvas, you ensure the AI maintains visual consistency with colors, typography, and tone of voice.
+                          </p>
+                        </div>
+
+                        <Separator />
+
+                        <div id="bg-rest" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">REST Endpoints</h3>
+                          <div className="bg-secondary/40 border border-border rounded-md p-4">
+                            <div className="font-redhatmono text-xs space-y-2">
+                              <p className="flex justify-between border-b border-border/30 pb-1.5"><span className="text-green-400">GET</span> <span className="text-foreground">/api/brand-guidelines</span> <span className="text-muted-foreground">List all user's guidelines</span></p>
+                              <p className="flex justify-between border-b border-border/30 pb-1.5"><span className="text-green-400">GET</span> <span className="text-foreground">/api/brand-guidelines/:id</span> <span className="text-muted-foreground">Fetch detailed guideline</span></p>
+                              <p className="flex justify-between border-b border-border/30 pb-1.5"><span className="text-blue-400">POST</span> <span className="text-foreground">/api/brand-guidelines</span> <span className="text-muted-foreground">Create new identity vault</span></p>
+                              <p className="flex justify-between border-b border-border/30 pb-1.5"><span className="text-amber-400">PUT</span> <span className="text-foreground">/api/brand-guidelines/:id</span> <span className="text-muted-foreground">Update guideline fields</span></p>
+                              <p className="flex justify-between border-b border-border/30 pb-1.5"><span className="text-red-400">DELETE</span> <span className="text-foreground">/api/brand-guidelines/:id</span> <span className="text-muted-foreground">Remove guideline permanently</span></p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div id="bg-schema" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">Data Schema</h3>
+                          <div className="bg-secondary/60 rounded p-4 font-redhatmono text-xs overflow-x-auto text-foreground">
+                            <pre className="whitespace-pre">{`{
+  "identity": { "name": "Brand", "tagline": "...", "description": "Story..." },
+  "colors": [{ "hex": "#00E5CC", "name": "Primary", "role": "primary" }],
+  "typography": [{ "family": "Inter", "role": "heading", "size": 32 }],
+  "strategy": { 
+    "manifesto": "...", 
+    "archetypes": ["Creator"],
+    "voiceValues": [{ "title": "Bold", "example": "Be direct." }] 
+  },
+  "guidelines": { "voice": "Professional", "dos": [], "donts": [] }
+}`}</pre>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div id="bg-sharing" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">Public Sharing</h3>
+                          <p className="text-muted-foreground text-sm mb-4">
+                            Guidelines can be shared publicly via a unique slug. This allows external tools and reviewers to access brand data without authentication.
+                          </p>
+                          <div className="bg-secondary/40 border border-border rounded-md p-4">
+                            <div className="font-redhatmono text-xs space-y-2">
+                              <p><span className="text-blue-400">POST</span> <span className="text-foreground">/api/brand-guidelines/:id/share</span> <span className="text-muted-foreground">— Enable sharing</span></p>
+                              <p><span className="text-green-400">GET</span> <span className="text-foreground">/api/brand-guidelines/public/:slug</span> <span className="text-muted-foreground">— Read public data</span></p>
+                              <p><span className="text-red-400">DELETE</span> <span className="text-foreground">/api/brand-guidelines/:id/share</span> <span className="text-muted-foreground">— Disable sharing</span></p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div id="bg-context" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">LLM Context Endpoint</h3>
+                          <p className="text-muted-foreground text-sm mb-4">
+                            Use the <code className="font-redhatmono bg-secondary px-1 rounded">/context</code> endpoint to get a version of the guideline optimized for prompt injection.
+                          </p>
+                          <div className="bg-secondary/60 border border-border rounded-md p-4 font-redhatmono text-xs space-y-3">
+                            <p className="text-muted-foreground"># GET /api/brand-guidelines/:id/context?format=prompt&output=text</p>
+                            <pre className="text-brand-cyan leading-relaxed">{`═══ BRAND: Visant ═══
+Tagline: "Design at the speed of thought"
+COLORS:
+  Primary: #00E5CC (primary)
+  Dark: #0A0A0A (background)
+VOICE: Friendly but technical. Avoid jargon.`}</pre>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
                   {/* For Agents Tab */}
                   <TabsContent value="agents" className="space-y-8 mt-0">
-
                     <Card className="bg-card border border-border">
                       <CardHeader>
                         <div className="flex items-center gap-3">
@@ -1992,7 +1857,17 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="bg-secondary/40 border border-border rounded-md p-4">
                               <p className="text-brand-cyan font-semibold text-sm mb-1">Discovery</p>
-                              <p className="text-muted-foreground text-xs">Read <code className="font-redhatmono bg-secondary px-1 rounded">/llms.txt</code> to understand what the platform offers</p>
+                              <div className="space-y-1.5">
+                                <p className="text-muted-foreground text-xs">
+                                  <code className="font-redhatmono bg-secondary px-1 rounded">/llms.txt</code> — Concise overview
+                                </p>
+                                <p className="text-muted-foreground text-xs">
+                                  <code className="font-redhatmono bg-secondary px-1 rounded">/llms-full.txt</code> — Full platform reference
+                                </p>
+                                <p className="text-muted-foreground text-xs">
+                                  <code className="font-redhatmono bg-secondary px-1 rounded">/api/docs/api/spec</code> — OpenAPI JSON
+                                </p>
+                              </div>
                             </div>
                             <div className="bg-secondary/40 border border-border rounded-md p-4">
                               <p className="text-brand-cyan font-semibold text-sm mb-1">MCP Tools</p>
@@ -2016,38 +1891,26 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                             <p className="text-muted-foreground mb-1"># Pass your API key in the Authorization header</p>
                             <p className="text-foreground">Authorization: Bearer visant_sk_xxxxxxxxxxxx</p>
                           </div>
-                          <div className="mt-3 space-y-2 text-sm text-muted-foreground">
-                            <p>• Key format: <code className="font-redhatmono bg-secondary px-1 rounded">visant_sk_</code> + 64 hex characters</p>
-                            <p>• Keys are shown only once on creation — store securely</p>
-                            <p>• Scopes: <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs mx-1">read</Badge> <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs mx-1">write</Badge> <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs mx-1">generate</Badge></p>
-                          </div>
                         </div>
 
                         <Separator />
 
                         <div id="ag-mcp" className="scroll-mt-20">
                           <h3 className="text-lg font-semibold text-foreground mb-3">MCP Connection</h3>
-                          <p className="text-muted-foreground text-sm mb-3">
-                            Connect to the Platform MCP server via HTTP/SSE transport:
-                          </p>
                           <div className="bg-secondary/60 border border-border rounded-md p-4 font-redhatmono text-sm space-y-2">
-                            <p className="text-muted-foreground"># SSE endpoint (GET to connect, POST to send messages)</p>
                             <p className="text-foreground">GET /api/mcp</p>
                             <p className="text-foreground">POST /api/mcp/message?sessionId=...</p>
                           </div>
-                          <p className="text-muted-foreground text-xs mt-3">
-                            For Claude Desktop, add to your MCP config. For custom agents, use the <code className="font-redhatmono bg-secondary px-1 rounded">@modelcontextprotocol/sdk</code> client.
-                          </p>
                         </div>
 
                         <Separator />
 
                         <div id="ag-tools" className="scroll-mt-20">
                           <h3 className="text-lg font-semibold text-foreground mb-3">Available MCP Tools</h3>
-                          <div className="overflow-x-auto">
+                          <div className="overflow-x-auto border border-border rounded-md">
                             <table className="w-full text-sm">
                               <thead>
-                                <tr className="border-b border-border">
+                                <tr className="border-b border-border bg-secondary/30">
                                   <th className="text-left p-3 text-muted-foreground font-medium text-xs uppercase">Tool</th>
                                   <th className="text-left p-3 text-muted-foreground font-medium text-xs uppercase">Description</th>
                                   <th className="text-left p-3 text-muted-foreground font-medium text-xs uppercase">Cost</th>
@@ -2055,34 +1918,23 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                               </thead>
                               <tbody className="divide-y divide-border/50">
                                 {[
-                                  { name: 'account-usage', desc: 'Get credit usage, limits, and plan info', cost: 'Free' },
-                                  { name: 'account-profile', desc: 'Get your profile information', cost: 'Free' },
+                                  { name: 'account-usage', desc: 'Get credit usage, limits, plan info', cost: 'Free' },
                                   { name: 'mockup-list', desc: 'List your generated mockups', cost: 'Free' },
-                                  { name: 'mockup-get', desc: 'Get a specific mockup by ID', cost: 'Free' },
-                                  { name: 'mockup-presets', desc: 'Browse preset categories', cost: 'Free' },
                                   { name: 'mockup-generate', desc: 'Generate a mockup from prompt', cost: '1 credit' },
-                                  { name: 'branding-list', desc: 'List branding projects', cost: 'Free' },
-                                  { name: 'branding-get', desc: 'Get branding project details', cost: 'Free' },
-                                  { name: 'branding-generate', desc: 'Generate brand identity', cost: 'Credits' },
                                   { name: 'brand-guidelines-list', desc: 'List brand guidelines', cost: 'Free' },
                                   { name: 'brand-guidelines-get', desc: 'Get guideline with colors/fonts/strategy', cost: 'Free' },
                                   { name: 'brand-guidelines-public', desc: 'Get public guideline by slug (no auth)', cost: 'Free' },
                                   { name: 'canvas-list', desc: 'List canvas projects', cost: 'Free' },
                                   { name: 'canvas-get', desc: 'Get canvas with nodes/edges', cost: 'Free' },
                                   { name: 'canvas-create', desc: 'Create new canvas project', cost: 'Free' },
-                                  { name: 'budget-list', desc: 'List budget proposals', cost: 'Free' },
-                                  { name: 'budget-get', desc: 'Get budget details', cost: 'Free' },
-                                  { name: 'budget-create', desc: 'Create budget proposal', cost: 'Free' },
                                   { name: 'ai-improve-prompt', desc: 'Enhance a text prompt', cost: '1 credit' },
                                   { name: 'ai-describe-image', desc: 'Analyze an image', cost: '1 credit' },
-                                  { name: 'community-presets', desc: 'Browse shared presets', cost: 'Free' },
-                                  { name: 'community-profiles', desc: 'Browse community profiles', cost: 'Free' },
                                 ].map(tool => (
-                                  <tr key={tool.name} className="hover:bg-secondary/30">
+                                  <tr key={tool.name} className="hover:bg-secondary/20">
                                     <td className="p-3 font-redhatmono text-foreground text-xs">{tool.name}</td>
-                                    <td className="p-3 text-muted-foreground">{tool.desc}</td>
+                                    <td className="p-3 text-muted-foreground text-xs">{tool.desc}</td>
                                     <td className="p-3">
-                                      <Badge className={tool.cost === 'Free' ? 'bg-green-500/20 text-green-400 border border-green-500/30 text-xs' : 'bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs'}>
+                                      <Badge className={tool.cost === 'Free' ? 'bg-green-500/20 text-green-400 text-xs' : 'bg-purple-500/20 text-purple-400 text-xs'}>
                                         {tool.cost}
                                       </Badge>
                                     </td>
@@ -2091,129 +1943,18 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                               </tbody>
                             </table>
                           </div>
+                          <p className="text-muted-foreground text-xs mt-2">See <button onClick={() => setActiveTab('mcp')} className="text-brand-cyan hover:underline">MCP Tools tab</button> for full tool reference with input schemas.</p>
                         </div>
-
-                        <Separator />
 
                         <div id="ag-brand-guidelines" className="scroll-mt-20">
                           <h3 className="text-lg font-semibold text-foreground mb-3">Brand Guidelines API</h3>
-                          <p className="text-muted-foreground text-sm mb-4">
-                            Brand Guidelines are structured brand identity data that serve as <strong className="text-foreground">context for AI generation</strong>, not just static documentation.
-                            Use them to maintain visual consistency across generated content.
+                          <p className="text-muted-foreground text-sm mb-3">
+                            Guidelines are centralized identity vaults. Use the <code className="font-redhatmono bg-secondary px-1 rounded">/context</code> endpoint for optimized prompt context.
                           </p>
-
-                          <div className="space-y-4">
-                            <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-brand-cyan font-semibold text-sm mb-2">REST Endpoints</p>
-                              <div className="font-redhatmono text-xs space-y-1">
-                                <p><span className="text-green-400">GET</span> <span className="text-foreground">/api/brand-guidelines</span> <span className="text-muted-foreground">— List all guidelines</span></p>
-                                <p><span className="text-green-400">GET</span> <span className="text-foreground">/api/brand-guidelines/:id</span> <span className="text-muted-foreground">— Get by ID</span></p>
-                                <p><span className="text-green-400">GET</span> <span className="text-foreground">/api/brand-guidelines/public/:slug</span> <span className="text-muted-foreground">— Public page (no auth)</span></p>
-                                <p><span className="text-blue-400">POST</span> <span className="text-foreground">/api/brand-guidelines</span> <span className="text-muted-foreground">— Create new</span></p>
-                                <p><span className="text-amber-400">PUT</span> <span className="text-foreground">/api/brand-guidelines/:id</span> <span className="text-muted-foreground">— Update</span></p>
-                                <p><span className="text-blue-400">POST</span> <span className="text-foreground">/api/brand-guidelines/:id/share</span> <span className="text-muted-foreground">— Generate public slug</span></p>
-                                <p><span className="text-red-400">DELETE</span> <span className="text-foreground">/api/brand-guidelines/:id/share</span> <span className="text-muted-foreground">— Revoke public access</span></p>
-                              </div>
-                            </div>
-
-                            <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-brand-cyan font-semibold text-sm mb-2">BrandGuideline Schema</p>
-                              <div className="bg-secondary/60 rounded p-3 font-redhatmono text-xs overflow-x-auto">
-                                <pre className="text-foreground whitespace-pre">{`{
-  "id": "uuid",
-  "identity": {
-    "name": "Brand Name",
-    "tagline": "Slogan",
-    "description": "Brand story",
-    "website": "https://..."
-  },
-  "colors": [
-    { "hex": "#00E5CC", "name": "Primary Cyan", "role": "primary" }
-  ],
-  "typography": [
-    { "family": "Inter", "role": "heading", "size": 32, "style": "Bold" }
-  ],
-  "logos": [
-    { "url": "https://r2.../logo.svg", "variant": "full", "label": "Primary Logo" }
-  ],
-  "strategy": {
-    "manifesto": "Our purpose is...",
-    "archetypes": [{ "name": "Creator", "description": "..." }],
-    "personas": [{ "name": "João", "age": 32, "traits": ["tech-savvy"] }],
-    "voiceValues": [{ "title": "Bold", "description": "...", "example": "..." }]
-  },
-  "guidelines": {
-    "voice": "Friendly but professional",
-    "dos": ["Use active voice", "Be concise"],
-    "donts": ["Avoid jargon", "No exclamation marks"]
-  },
-  "isPublic": true,
-  "publicSlug": "my-brand-abc123"
-}`}</pre>
-                              </div>
-                            </div>
-
-                            <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-brand-cyan font-semibold text-sm mb-2">Export Formats</p>
-                              <p className="text-muted-foreground text-xs mb-3">
-                                Public pages at <code className="font-redhatmono bg-secondary px-1 rounded">/brand/:slug</code> provide downloadable formats:
-                              </p>
-                              <div className="grid grid-cols-2 gap-2 text-xs">
-                                <div className="bg-secondary/60 rounded p-2">
-                                  <p className="text-foreground font-medium">JSON</p>
-                                  <p className="text-muted-foreground">Full structured data for programmatic use</p>
-                                </div>
-                                <div className="bg-secondary/60 rounded p-2">
-                                  <p className="text-foreground font-medium">CSS Variables</p>
-                                  <p className="text-muted-foreground">:root tokens for web projects</p>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-brand-cyan font-semibold text-sm mb-2">Agent Integration Example</p>
-                              <div className="bg-secondary/60 rounded p-3 font-redhatmono text-xs overflow-x-auto">
-                                <pre className="text-foreground whitespace-pre">{`// 1. Fetch brand context
-const brand = await fetch('/api/brand-guidelines/public/my-brand-abc123')
-  .then(r => r.json());
-
-// 2. Extract colors for generation prompt
-const colors = brand.colors.map(c => c.hex).join(', ');
-const fonts = brand.typography.map(t => t.family).join(', ');
-
-// 3. Build generation prompt with brand context
-const prompt = \`Create a product mockup using brand colors: \${colors}.
-Typography: \${fonts}. Voice: \${brand.guidelines?.voice || 'professional'}\`;
-
-// 4. Use with mockup-generate MCP tool
-await mcpClient.call('mockup-generate', { prompt });`}</pre>
-                              </div>
-                            </div>
-
-                            <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-brand-cyan font-semibold text-sm mb-2">Canvas Integration</p>
-                              <p className="text-muted-foreground text-xs mb-2">
-                                Link a Brand Guideline to a Canvas project for automatic context injection:
-                              </p>
-                              <div className="bg-secondary/60 rounded p-3 font-redhatmono text-xs">
-                                <pre className="text-foreground whitespace-pre">{`// Canvas project with linked guideline
-PUT /api/canvas/:id
-{
-  "linkedGuidelineId": "guideline-uuid",
-  "nodes": [...],
-  "edges": [...]
-}
-
-// The linked guideline context will be available
-// in all prompt/chat nodes within the canvas`}</pre>
-                              </div>
-                            </div>
-
-                            <div className="mt-3 space-y-2 text-sm text-muted-foreground">
-                              <p>• Guidelines are the <strong className="text-foreground">source of truth</strong> for AI generation context</p>
-                              <p>• Public pages are SEO-friendly and LLM-scrapable</p>
-                              <p>• All read operations are <Badge className="bg-green-500/20 text-green-400 border border-green-500/30 text-xs">Free</Badge></p>
-                              <p>• Use <code className="font-redhatmono bg-secondary px-1 rounded">strategy.voiceValues</code> to guide tone in text generation</p>
+                          <div className="bg-secondary/40 border border-border rounded-md p-4 mb-4">
+                            <div className="font-redhatmono text-xs space-y-2">
+                              <p className="flex justify-between border-b border-border/30 pb-1.5"><span className="text-green-400">GET</span> <span className="text-foreground">/api/brand-guidelines/:id/context</span></p>
+                              <p className="text-muted-foreground text-xs mt-1">Query params: <code className="text-foreground">format=prompt|structured</code>, <code className="text-foreground">output=text|json</code></p>
                             </div>
                           </div>
                         </div>
@@ -2222,24 +1963,9 @@ PUT /api/canvas/:id
 
                         <div id="ag-credits" className="scroll-mt-20">
                           <h3 className="text-lg font-semibold text-foreground mb-3">Credits & Limits</h3>
-                          <p className="text-muted-foreground text-sm mb-3">
-                            Every MCP tool response includes quota information in the <code className="font-redhatmono bg-secondary px-1 rounded">_meta</code> field:
-                          </p>
-                          <div className="bg-secondary/60 border border-border rounded-md p-4 font-redhatmono text-sm">
-                            <pre className="text-foreground whitespace-pre-wrap">{`{
-  "results": [...],
-  "_meta": {
-    "credits_remaining": 42,
-    "credits_used": 8,
-    "plan": "pro"
-  }
-}`}</pre>
-                          </div>
-                          <div className="mt-3 space-y-2 text-sm text-muted-foreground">
-                            <p>• Free tier: 4 generations total</p>
-                            <p>• Paid tiers: monthly credit allowance (resets automatically)</p>
-                            <p>• Read operations (list, get) are always free</p>
-                            <p>• Generation operations cost 1+ credits</p>
+                          <p className="text-muted-foreground text-sm mb-3">Every MCP tool response includes quota info in <code className="font-redhatmono bg-secondary px-1 rounded">_meta</code>:</p>
+                          <div className="bg-secondary/60 border border-border rounded-md p-4 font-redhatmono text-xs">
+                            <pre className="text-foreground">{`{ "_meta": { "credits_remaining": 42, "plan": "pro" } }`}</pre>
                           </div>
                         </div>
 
@@ -2248,40 +1974,24 @@ PUT /api/canvas/:id
                         <div id="ag-example" className="scroll-mt-20">
                           <h3 className="text-lg font-semibold text-foreground mb-3">Example Flow</h3>
                           <div className="space-y-3 text-sm">
-                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-4">
-                              <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">1</span>
-                              <div>
-                                <p className="text-foreground font-medium">Get an API key</p>
-                                <p className="text-muted-foreground text-xs">Go to Settings → API Keys → Create New Key with "read" + "generate" scopes</p>
+                            {[
+                              { step: '1', title: 'Get an API key', desc: 'Settings → API Keys → Create with "read" + "generate" scopes' },
+                              { step: '2', title: 'Connect to MCP', desc: 'SSE connect to /api/mcp with Authorization header' },
+                              { step: '3', title: 'Check balance', desc: 'Call account-usage to see available credits' },
+                              { step: '4', title: 'Generate', desc: 'Call mockup-generate, check _meta.credits_remaining' },
+                            ].map(({ step, title, desc }) => (
+                              <div key={step} className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-3">
+                                <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">{step}</span>
+                                <div>
+                                  <p className="text-foreground font-medium text-sm">{title}</p>
+                                  <p className="text-muted-foreground text-xs">{desc}</p>
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-4">
-                              <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">2</span>
-                              <div>
-                                <p className="text-foreground font-medium">Connect to MCP</p>
-                                <p className="text-muted-foreground text-xs">SSE connect to /api/mcp with your API key in the Authorization header</p>
-                              </div>
-                            </div>
-                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-4">
-                              <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">3</span>
-                              <div>
-                                <p className="text-foreground font-medium">Check your balance</p>
-                                <p className="text-muted-foreground text-xs">Call <code className="font-redhatmono bg-secondary px-1 rounded">account-usage</code> to see available credits</p>
-                              </div>
-                            </div>
-                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-4">
-                              <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">4</span>
-                              <div>
-                                <p className="text-foreground font-medium">Generate content</p>
-                                <p className="text-muted-foreground text-xs">Call <code className="font-redhatmono bg-secondary px-1 rounded">mockup-generate</code> with your prompt. Check _meta.credits_remaining in the response.</p>
-                              </div>
-                            </div>
+                            ))}
                           </div>
                         </div>
-
                       </CardContent>
                     </Card>
-
                   </TabsContent>
 
                 </Tabs>

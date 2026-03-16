@@ -27,7 +27,6 @@ interface SidebarGenerationConfigProps {
     onSimplify: () => void;
     onGenerateSuggestion: (suggestion: string) => void;
     generateOutputsButtonRef: React.RefObject<HTMLButtonElement>;
-    isDiceAnimating: boolean;
     onStartOver: () => void;
     onReplaceImage?: (image: UploadedImage) => void;
     onReferenceImagesChange: (images: UploadedImage[]) => void;
@@ -43,7 +42,6 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
     onSimplify,
     onGenerateSuggestion,
     generateOutputsButtonRef,
-    isDiceAnimating,
     onReplaceImage,
     onReferenceImagesChange,
     authenticationRequiredMessage,
@@ -327,15 +325,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                         categoriesPool={surpriseMePool.selectedCategoryTags || []}
                         onPoolToggle={(tag) => togglePoolTag('selectedCategoryTags', tag, surpriseMePool, setSurpriseMePool)}
                     />
-                )}                {/* Keywords / Custom Tags Section */}
-                <KeywordsSection
-                    customInput={customCategoryInput}
-                    onCustomInputChange={setCustomCategoryInput}
-                    onAddCustomTag={handleAddCustomCategoryTag}
-                    displaySuggestedTags={displaySuggestedTags}
-                    selectedTags={selectedTags}
-                    onTagToggle={handleTagToggle}
-                />
+                )}
 
                 {/* RefineSection - Only visible in Pool Mode */}
                 {isSurpriseMeMode && (
@@ -416,7 +406,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                 )}
 
                 {/* 3. Prompt Section */}
-                <PromptSection 
+                <PromptSection
                     promptPreview={promptPreview}
                     isSidebarGenerating={isSidebarGenerating}
                     onPromptChange={handlePromptChange}
@@ -471,35 +461,6 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                     'flex flex-col items-center justify-end pb-4 pt-10'
                 )}
             >
-                <div className="pointer-events-auto w-full flex justify-center">
-                <SurpriseMeControl
-                    onSurpriseMe={handleSurpriseMe}
-                    isGeneratingPrompt={isGeneratingPrompt}
-                    isDiceAnimating={isDiceAnimating}
-                    isSurpriseMeMode={isSurpriseMeMode}
-                    setIsSurpriseMeMode={setIsSurpriseMeMode}
-                    autoGenerate={autoGenerate}
-                    setAutoGenerate={setAutoGenerate}
-                    selectedModel={selectedModel}
-                    mockupCount={mockupCount}
-                    resolution={resolution}
-                    showBackground={true}
-                    containerClassName="shadow-lg !pb-0 rounded-b-none"
-                    onGeneratePrompt={onGenerateSmartPrompt}
-                    onGenerateOutputs={onGenerateClick}
-                    isGenerateDisabled={isGenerateDisabled}
-                    isGeneratingOutputs={isGenerating}
-                    isPromptReady={isPromptReady}
-                    setSelectedModel={setSelectedModel}
-                    imageProvider={imageProvider}
-                    setImageProvider={setImageProvider}
-                    uploadedImage={uploadedImage}
-                    setMockupCount={setMockupCount}
-                    setResolution={setResolution}
-                    aspectRatio={aspectRatio}
-                    setAspectRatio={setAspectRatio}
-                />
-                </div>
             </div>
         </div>
     );

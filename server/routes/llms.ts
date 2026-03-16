@@ -19,6 +19,7 @@ router.get('/llms.txt', (req, res) => {
 
 - **Mockup Generation**: AI-generated product mockups from text prompts and images
 - **Branding Machine**: Complete brand identity generation (logos, colors, typography, guidelines)
+- **Brand Guidelines**: Centralized identity vault to maintain visual consistency across designs
 - **Canvas Editor**: Collaborative design canvas with real-time multiplayer
 - **Budget Machine**: AI-powered project budget estimation and planning
 - **Figma Plugin**: Direct AI generation inside Figma via plugin + MCP server
@@ -104,6 +105,11 @@ API keys are generated in the user dashboard under Settings > API Keys.
 - \`list_community_posts\` — Browse public gallery
 - \`get_community_post\` — Get post details
 
+**Brand Guidelines Tools**:
+- \`brand-guidelines-list\` — List user's brand guidelines
+- \`brand-guidelines-get\` — Get detailed guideline context
+- \`brand-guidelines-public\` — Get public guidelines (no auth)
+
 **Account Tools**:
 - \`get_credits\` — Check credit balance
 - \`get_usage\` — Get usage statistics
@@ -140,6 +146,17 @@ API keys are generated in the user dashboard under Settings > API Keys.
 - \`GET /api/canvas/:id\` — Get canvas by ID
 - \`PUT /api/canvas/:id\` — Update canvas
 - \`DELETE /api/canvas/:id\` — Delete canvas
+
+### Brand Guidelines — \`/api/brand-guidelines\`
+- \`GET /api/brand-guidelines\` — List all guidelines
+- \`GET /api/brand-guidelines/:id\` — Get guideline details
+- \`POST /api/brand-guidelines\` — Create new guideline
+- \`PUT /api/brand-guidelines/:id\` — Update guideline
+- \`DELETE /api/brand-guidelines/:id\` — Delete guideline
+- \`GET /api/brand-guidelines/:id/context\` — Get LLM-ready context (text/json)
+- \`POST /api/brand-guidelines/:id/share\` — Enable public sharing
+- \`GET /api/brand-guidelines/public/:slug\` — Public read access
+- \`GET /api/brand-guidelines/public/:slug/context\` — Public LLM context
 
 ### Budget — \`/api/budget\`
 - \`POST /api/budget/generate\` — Generate budget estimate (consumes credits)

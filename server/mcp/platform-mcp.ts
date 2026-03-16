@@ -428,6 +428,94 @@ export function createPlatformMcpServer(): McpServer {
   );
 
   // ═══════════════════════════════════════════
+  // Brand Guidelines
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'brand-guidelines-list',
+    'List all brand guidelines (identity vaults) owned by the authenticated user.',
+    {},
+    async () => {
+      if (!currentUserId) return authError();
+      try {
+        const guidelines = await prisma.brandGuideline.findMany({
+          where: { userId: currentUserId },
+          orderBy: { updatedAt: 'desc' },
+          select: { id: true, identity: true, isPublic: true, publicSlug: true, updatedAt: true },
+        });
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ guidelines, total: guidelines.length, _meta: quota });
+      } catch (err: any) {
+        return jsonResponse({ error: err.message });
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-get',
+    'Get a detailed brand guideline by ID, including colors, typography, logos, and strategy context.',
+    {
+      id: z.string().describe('The brand guideline ID.'),
+      format: z.enum(['structured', 'prompt']).default('structured').describe('Output format: "structured" (JSON) or "prompt" (LLM-ready text).'),
+    },
+    async ({ id, format }) => {
+      if (!currentUserId) return authError();
+      try {
+        const guideline = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
+        if (!guideline) return jsonResponse({ error: 'Brand guideline not found' });
+        
+        const quota = await getQuotaMeta(currentUserId);
+
+        if (format === 'prompt') {
+          // Use a simple prompt builder for the text response
+          const bg = guideline as any;
+          const lines: string[] = [];
+          lines.push(`═══ BRAND: ${bg.identity?.name || 'Brand'} ═══`);
+          if (bg.identity?.tagline) lines.push(`Tagline: ${bg.identity.tagline}`);
+          if (bg.colors?.length) {
+            lines.push('\nCOLORS:');
+            bg.colors.forEach((c: any) => lines.push(`- ${c.name}: ${c.hex} (${c.role || 'primary'})`));
+          }
+          if (bg.typography?.length) {
+            lines.push('\nTYPOGRAPHY:');
+            bg.typography.forEach((t: any) => lines.push(`- ${t.role}: ${t.family} ${t.style || ''}`));
+          }
+          if (bg.guidelines?.voice) lines.push(`\nVOICE: ${bg.guidelines.voice}`);
+          return jsonResponse({ context: lines.join('\n'), id: guideline.id, _meta: quota });
+        }
+
+        return jsonResponse({ ...guideline, _meta: quota });
+      } catch (err: any) {
+        return jsonResponse({ error: err.message });
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-public',
+    'Get a public brand guideline by its slug. No authentication required.',
+    {
+      slug: z.string().describe('The public slug of the brand guideline.'),
+    },
+    async ({ slug }) => {
+      try {
+        const guideline = await prisma.brandGuideline.findFirst({
+          where: { publicSlug: slug, isPublic: true },
+        });
+        if (!guideline) return jsonResponse({ error: 'Public brand guideline not found or not public' });
+        
+        // Return without userId for privacy
+        const { userId, ...publicData } = guideline as any;
+        return jsonResponse({ guideline: publicData });
+      } catch (err: any) {
+        return jsonResponse({ error: err.message });
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
   // Community (public, no auth needed)
   // ═══════════════════════════════════════════
 

@@ -6,6 +6,9 @@ import type { AvailableTags } from '../services/tagService.js';
  */
 export interface UserContext {
   selectedBrandingTags?: string[];
+  brandGuidelineId?: string;
+  /** Pre-built brand context string from brandContextBuilder */
+  brandContext?: string;
 }
 
 /**
@@ -46,6 +49,14 @@ export function buildAnalysisPrompt(params: AnalysisPromptParams): string {
 - **Materiais/Texturas:** ${availableTags.materials.length > 0 ? slice(availableTags.materials).join(', ') : 'N/A'}
 
 **IMPORTANT:** When suggesting tags, prioritize exact matches from the available tags list above. Only suggest tags not in the list if they are highly relevant and no suitable alternative exists.`
+    : '';
+
+  // Build brand context section if provided (from brand guideline)
+  const brandContextSection = userContext?.brandContext
+    ? `\n\n**BRAND GUIDELINE CONTEXT:**
+${userContext.brandContext}
+
+**CONTEXT:** Use this brand information to suggest tags that align with the brand identity, colors, typography, and visual style described above.`
     : '';
 
   // Build user context section if provided

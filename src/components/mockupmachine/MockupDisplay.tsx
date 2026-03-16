@@ -72,19 +72,9 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
   if (!hasContent) {
     return (
       <div className="relative flex flex-col items-center justify-center h-full w-full min-w-0 text-center p-6 sm:p-8 md:p-12 animate-fade-in overflow-hidden">
-        {/* Interactive ASCII Background */}
-        <div className="absolute inset-0 z-0 opacity-40">
-          <InteractiveASCIICopy 
-            isDarkMode={true} 
-            fullHeight={true} 
-          />
-        </div>
 
-        {/* Decorative background - absolute so it doesn't affect flex; parent has relative */}
-        <div className="absolute inset-0 rounded-full blur-[100px] pointer-events-none z-0" aria-hidden />
-
-        <GlassPanel padding="lg" className="relative z-10 flex flex-col items-center bg-black/60 backdrop-blur-md shadow-2xl">
-          <MicroTitle as="h2" className="text-xl md:text-2xl font-bold text-neutral-300 mb-4 drop-shadow-md">
+        <GlassPanel padding="lg" className="relative z-10 flex flex-col items-center backdrop-blur-md shadow-2xl">
+          <MicroTitle as="h3" className="text-xl md:text-2xl font-bold text-neutral-300 mb-4 drop-shadow-md">
             {t('mockup.awaitingGeneration')}
           </MicroTitle>
 

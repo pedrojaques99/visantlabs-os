@@ -45,10 +45,10 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
     return (
         <div
             id="section-setup"
-            className="flex flex-col h-full w-full gap-4 md:gap-6"
+            className="flex flex-col h-full w-full mx-auto gap-4 md:gap-6"
         >
             <div className="flex-1 min-h-0 flex flex-col gap-4 md:gap-6">
-                <div className="flex flex-col gap-4 md:gap-6 max-w-2xl mx-auto w-full">
+                <div className="flex flex-col gap-4 md:gap-6 max-w-6xl mx-auto w-full">
                     {/* Upload Section */}
                     <InputSection
                         uploadedImage={uploadedImage}
@@ -67,7 +67,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
 
             {/* Bottom Action Area - More elegant and proportionate */}
             <div className="w-full pt-6 mt-2 border-t border-white/5 flex flex-col items-center gap-3">
-                <div className="flex items-center gap-3 w-full max-w-md">
+                <div className="flex items-center gap-3 w-full max-w-6xl">
                     {onClose && (
                         <Button
                             variant="ghost"
@@ -94,7 +94,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                         {t('mockup.uploadRequired') || 'Upload an image to continue'}
                     </MicroTitle>
                 ) : (
-                    <div className="h-2" /> 
+                    <div className="h-2" />
                 )}
             </div>
         </div>
