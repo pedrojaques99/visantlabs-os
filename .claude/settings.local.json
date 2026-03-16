@@ -53,7 +53,8 @@
       "Bash(node scripts/analyze-components.js 2>&1 | grep -A 300 \"# Component Usage Analysis\" > /tmp/report.txt && \\\\\nnode -e \"\nconst analysis = [\n  { name: 'button', path: 'ui/button.tsx', imports: 167, category: 'veryFrequent' },\n  { name: 'input', path: 'ui/input.tsx', imports: 79, category: 'veryFrequent' },\n  { name: 'GlitchLoader', path: 'ui/GlitchLoader.tsx', imports: 74, category: 'veryFrequent' },\n  { name: 'Modal', path: 'ui/Modal.tsx', imports: 43, category: 'veryFrequent' },\n  { name: 'MicroTitle', path: 'ui/MicroTitle.tsx', imports: 38, category: 'veryFrequent' },\n  { name: 'textarea', path: 'ui/textarea.tsx', imports: 34, category: 'veryFrequent' },\n  { name: 'GridDotsBackground', path: 'ui/GridDotsBackground.tsx', imports: 32, category: 'veryFrequent' }\n];\n\nconst metadata = {\n  timestamp: new Date\\(\\).toISOString\\(\\),\n  totalComponents: 272,\n  totalImports: 1165,\n  averageImports: '4.28'\n};\n\nconst output = {\n  metadata,\n  categorized: {\n    veryFrequent: 7,\n    frequent: 15,\n    moderate: 39,\n    rarely: 189,\n    orphaned: 22\n  },\n  components: analysis\n};\n\nconst fs = require\\('fs'\\);\nfs.writeFileSync\\('scripts/reports/component-usage.json', JSON.stringify\\(output, null, 2\\)\\);\nconsole.log\\('✅ component-usage.json criado'\\);\n\")",
       "Bash(find /z/Cursor/visantlabs-os/src/components -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) -exec grep -E \"><.*<|<.*><.*><\" {} + 2>/dev/null | head -30)",
       "Bash(cd Z:/Cursor/visantlabs-os && npm install @tanstack/react-query react-hook-form zod @hookform/resolvers 2>&1 | tail -5)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(git:*)"
     ]
   }
 }
