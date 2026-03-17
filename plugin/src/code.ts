@@ -1640,6 +1640,28 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
+  // ── Get templates (frames with [Template] prefix) ──
+  if (msg.type === 'GET_TEMPLATES') {
+    const templates = figma.currentPage.findAll(node =>
+      node.type === 'FRAME' && node.name.startsWith('[Template]')
+    ) as FrameNode[];
+
+    const result = templates.map(t => ({
+      id: t.id,
+      name: t.name.replace(/^\[Template\]\s*/, ''),
+      width: Math.round(t.width),
+      height: Math.round(t.height),
+      childCount: t.children?.length || 0,
+    }));
+
+    postToUI({
+      type: 'TEMPLATES_RESULT',
+      requestId: (msg as any).requestId,
+      templates: result,
+    });
+    return;
+  }
+
   // ── Select and zoom to a node by ID (clickable node chips in chat) ──
   if (msg.type === 'SELECT_AND_ZOOM') {
     try {
