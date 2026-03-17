@@ -80,8 +80,8 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
   };
   if (isCollapsed) {
     return (
-      <Button variant="ghost"         onClick={onToggleCollapse}
-        className="w-full bg-neutral-950/30 backdrop-blur-sm border border-neutral-800/40 rounded-md px-3 py-2 opacity-70 hover:opacity-100 transition-opacity flex items-center gap-2 justify-center"
+      <Button variant="ghost" onClick={onToggleCollapse}
+        className="w-full bg-neutral-950/30 backdrop-blur-sm border border-neutral-800/40 rounded-md px-3 py-2 opacity-70 hover:opacity-300 transition-opacity flex items-center gap-2 justify-center"
         title="Show filters"
       >
         <Menu size={16} className="text-neutral-500 flex-shrink-0" />
@@ -119,7 +119,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                   autoFocus
                 />
               ) : (
-                <Button variant="ghost"                   onClick={onToggleSearch}
+                <Button variant="ghost" onClick={onToggleSearch}
                   className="p-1.5 text-neutral-500 hover:text-brand-cyan transition-colors"
                   title="Search"
                 >
@@ -128,7 +128,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
               )}
             </>
           )}
-          <Button variant="ghost"             onClick={onToggleCollapse}
+          <Button variant="ghost" onClick={onToggleCollapse}
             className="p-1 text-neutral-500 hover:text-neutral-400 transition-colors flex-shrink-0"
             title="Collapse"
           >
@@ -147,7 +147,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
         >
-          <Button variant="ghost"             onClick={(e) => handleTagClick(null, e)}
+          <Button variant="ghost" onClick={(e) => handleTagClick(null, e)}
             className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${filterTag === null
               ? 'text-brand-cyan border-[brand-cyan]/30 bg-brand-cyan/10'
               : 'text-neutral-500 border-neutral-700/20 hover:border-neutral-600/30 hover:bg-neutral-800/30'
@@ -156,7 +156,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
             All
           </Button>
           {allTags.map((tag) => (
-            <Button variant="ghost"               key={tag}
+            <Button variant="ghost" key={tag}
               onClick={(e) => handleTagClick(tag, e)}
               className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${filterTag === tag
                 ? 'text-brand-cyan border-[brand-cyan]/30 bg-brand-cyan/10'

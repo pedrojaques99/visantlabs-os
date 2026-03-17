@@ -52,7 +52,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
       )}
       padding="none"
     >
-      <Button variant="ghost" 
+      <Button variant="ghost"
         onClick={(e) => {
           e.stopPropagation();
           if (!isBlocked) {
@@ -62,67 +62,67 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
         disabled={isGenerating || isBlocked}
         title={isBlocked ? `Bloqueado: requer ${getMissingDepsText()}` : undefined}
       >
-      {/* Blocked Icon Overlay */}
-      {isBlocked && (
-        <div className={`absolute top-2 left-2 p-1.5 rounded-md ${theme === 'dark' ? 'bg-red-500/20' : 'bg-red-100'
-          }`}>
-          <Lock className={`h-3 w-3 ${theme === 'dark' ? 'text-red-400' : 'text-red-600'
-            }`} />
-        </div>
-      )}
-
-      {/* Emoji Icon */}
-      <div className={`text-3xl md:text-4xl filter transition-all duration-200 ${isBlocked
-        ? 'grayscale opacity-50'
-        : 'grayscale group-hover:grayscale-0'
-        }`}>
-        {emoji}
-      </div>
-
-      {/* Label */}
-      <h3 className={`font-semibold font-manrope text-xs md:text-sm text-center leading-tight max-w-full truncate px-2 ${theme === 'dark' ? 'text-white' : 'text-neutral-800'
-        }`}>
-        {stepTitle}
-      </h3>
-
-      {/* Credits Badge - Pilula style */}
-      {!isBlocked && (
-        <div className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 transition-all duration-200 ${theme === 'dark'
-          ? 'bg-white/10 border-white/20 group-hover:bg-white/15'
-          : 'bg-neutral-200 border-neutral-300 group-hover:bg-neutral-300'
-          }`}>
-          <Pickaxe size={12} className={theme === 'dark' ? 'text-white/80' : 'text-neutral-700'} />
-          <span className={`text-xs font-mono font-semibold ${theme === 'dark' ? 'text-white/90' : 'text-neutral-800'
+        {/* Blocked Icon Overlay */}
+        {isBlocked && (
+          <div className={`absolute top-2 left-2 p-1.5 rounded-md ${theme === 'dark' ? 'bg-red-500/20' : 'bg-red-100'
             }`}>
-            {creditsRequired}
-          </span>
-        </div>
-      )}
+            <Lock className={`h-3 w-3 ${theme === 'dark' ? 'text-red-400' : 'text-red-600'
+              }`} />
+          </div>
+        )}
 
-      {/* Blocked Badge */}
-      {isBlocked && (
-        <div className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 ${theme === 'dark'
-          ? 'bg-red-500/20 border-red-500/30'
-          : 'bg-red-100 border-red-300'
+        {/* Emoji Icon */}
+        <div className={`text-3xl md:text-4xl filter transition-all duration-200 ${isBlocked
+          ? 'grayscale opacity-50'
+          : 'grayscale group-hover:grayscale-0'
           }`}>
-          <Lock size={12} className={theme === 'dark' ? 'text-red-400' : 'text-red-600'} />
-          <span className={`text-xs font-mono font-semibold ${theme === 'dark' ? 'text-red-400' : 'text-red-600'
+          {emoji}
+        </div>
+
+        {/* Label */}
+        <h3 className={`font-semibold font-manrope text-xs md:text-sm text-center leading-tight max-w-full truncate px-2 ${theme === 'dark' ? 'text-white' : 'text-neutral-800'
+          }`}>
+          {stepTitle}
+        </h3>
+
+        {/* Credits Badge - Pilula style */}
+        {!isBlocked && (
+          <div className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 transition-all duration-200 ${theme === 'dark'
+            ? 'bg-white/10 border-white/20 group-hover:bg-white/15'
+            : 'bg-neutral-200 border-neutral-300 group-hover:bg-neutral-300'
             }`}>
-            Bloqueado
-          </span>
-        </div>
-      )}
+            <Pickaxe size={12} className={theme === 'dark' ? 'text-white/80' : 'text-neutral-700'} />
+            <span className={`text-xs font-mono font-semibold ${theme === 'dark' ? 'text-white/90' : 'text-neutral-800'
+              }`}>
+              {creditsRequired}
+            </span>
+          </div>
+        )}
 
-      {/* Loading overlay */}
-      {isGenerating && (
-        <div className={`absolute inset-0 rounded-xl flex items-center justify-center z-10 ${theme === 'dark' ? 'bg-neutral-950/80' : 'bg-white/90'
-          }`}>
-          <div className={`w-6 h-6 border-2 rounded-md animate-spin ${theme === 'dark'
-            ? 'border-white/30 border-t-white'
-            : 'border-neutral-400 border-t-neutral-600'
-            }`} />
-        </div>
-      )}
+        {/* Blocked Badge */}
+        {isBlocked && (
+          <div className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 ${theme === 'dark'
+            ? 'bg-red-500/20 border-red-500/30'
+            : 'bg-red-100 border-red-300'
+            }`}>
+            <Lock size={12} className={theme === 'dark' ? 'text-red-400' : 'text-red-600'} />
+            <span className={`text-xs font-mono font-semibold ${theme === 'dark' ? 'text-red-400' : 'text-red-600'
+              }`}>
+              Bloqueado
+            </span>
+          </div>
+        )}
+
+        {/* Loading overlay */}
+        {isGenerating && (
+          <div className={`absolute inset-0 rounded-xl flex items-center justify-center z-10 ${theme === 'dark' ? 'bg-neutral-950/80' : 'bg-white/90'
+            }`}>
+            <div className={`w-6 h-6 border-2 rounded-md animate-spin ${theme === 'dark'
+              ? 'border-white/30 border-t-white'
+              : 'border-neutral-400 border-t-neutral-600'
+              }`} />
+          </div>
+        )}
       </Button>
     </GlassPanel>
   );

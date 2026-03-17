@@ -87,7 +87,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                                 key={plan.id}
                                 className="bg-neutral-900/40 border-neutral-800/50 hover:border-brand-cyan/30 transition-all duration-300 flex flex-col group relative overflow-hidden"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 pointer-events-none" />
 
                                 <CardHeader className="text-center pb-2 relative z-10">
                                     {plan.displayOrder === 1 && (
@@ -156,7 +156,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-20 text-neutral-600 font-mono italic">
+                    <div className="text-center py-20 text-neutral-600 font-mono ">
                         {t('pricing.noPlansFound') || 'Nenhum plano disponível no momento.'}
                     </div>
                 );

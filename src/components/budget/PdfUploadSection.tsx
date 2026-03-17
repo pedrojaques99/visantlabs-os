@@ -181,7 +181,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               autoFocus
             />
             <div className="flex gap-2">
-              <Button variant="brand"                 onClick={handleSavePreset}
+              <Button variant="brand" onClick={handleSavePreset}
                 disabled={isSavingPreset || !presetName.trim()}
                 className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 text-brand-cyan"
               >
@@ -245,7 +245,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
                 <span className="hidden sm:inline">Substituir PDF</span>
                 <span className="sm:hidden">Substituir</span>
               </Button>
-              <Button variant="destructive"                 onClick={handleRemovePdf}
+              <Button variant="destructive" onClick={handleRemovePdf}
                 className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 transition-colors font-mono text-sm whitespace-nowrap"
                 title="Remover PDF"
               >

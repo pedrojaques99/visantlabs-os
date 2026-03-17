@@ -1,7 +1,7 @@
 /// <reference types="@figma/plugin-typings" />
 // Figma plugin sandbox — runs in QuickJS, no browser APIs
 
-import type { UIMessage, FigmaOperation, SerializedContext, SerializedNode, ComponentInfo, ColorVariable, FontVariable, AvailableLayer } from '../../src/lib/figma-types';
+import type { UIMessage, FigmaOperation, SerializedContext, SerializedNode, SerializedFill, ComponentInfo, ColorVariable, FontVariable, AvailableLayer } from '../../src/lib/figma-types';
 
 
 function postToUI(msg: { type: string } & Record<string, unknown>) {
@@ -37,11 +37,20 @@ async function serializeNode(node: SceneNode, depth = 0, maxDepth = 5): Promise<
 
   // Fills
   if ('fills' in node && Array.isArray(node.fills)) {
-    base.fills = (node.fills as ReadonlyArray<Paint>).map((f: Paint) => ({
-      type: f.type,
-      color: f.type === 'SOLID' ? (f as SolidPaint).color : undefined,
-      opacity: 'opacity' in f ? (f as SolidPaint).opacity : undefined,
-    }));
+    base.fills = (node.fills as ReadonlyArray<Paint>).map((f: Paint) => {
+      const fill: SerializedFill = {
+        type: f.type,
+        opacity: 'opacity' in f ? (f as SolidPaint).opacity : undefined,
+      };
+      if (f.type === 'SOLID') {
+        fill.color = (f as SolidPaint).color;
+      } else if (f.type === 'IMAGE') {
+        // Capture image hash so LLM knows there's an image (even if can't recreate)
+        fill.imageHash = (f as ImagePaint).imageHash;
+        fill.scaleMode = (f as ImagePaint).scaleMode;
+      }
+      return fill;
+    });
   }
 
   // Fix 1.5: Strokes
@@ -91,6 +100,14 @@ async function serializeNode(node: SceneNode, depth = 0, maxDepth = 5): Promise<
     if (typeof node.fontSize === 'number') {
       base.fontSize = node.fontSize;
     }
+    // Capture font info (critical for template reproduction)
+    if (typeof node.fontName !== 'symbol') {
+      base.fontFamily = node.fontName.family;
+      base.fontStyle = node.fontName.style;
+    }
+    if (node.textAlignHorizontal) base.textAlignHorizontal = node.textAlignHorizontal;
+    if (node.textAlignVertical) base.textAlignVertical = node.textAlignVertical;
+    if (node.textAutoResize) base.textAutoResize = node.textAutoResize;
   }
 
   // Instance info — must use async API with documentAccess: dynamic-page
@@ -324,6 +341,7 @@ async function applyOperations(ops: FigmaOperation[]) {
 
 
   for (const op of ops) {
+    console.log('[OPERATION]', op.type, JSON.stringify(op).slice(0, 200));
     try {
 
       // ═══ CREATE_FRAME ═══
@@ -976,24 +994,76 @@ async function applyOperations(ops: FigmaOperation[]) {
 
         // ═══ FASE 4: CLONE_NODE / DUPLICATE_NODE ═══
       } else if (op.type === 'CLONE_NODE' || op.type === 'DUPLICATE_NODE') {
-        const sourceNode = await figma.getNodeByIdAsync(op.sourceNodeId) as any;
+        console.log('[CLONE_NODE] sourceNodeId:', op.sourceNodeId);
+
+        if (!op.sourceNodeId) {
+          postToUI({ type: 'ERROR', message: 'CLONE_NODE: sourceNodeId é obrigatório' });
+          continue;
+        }
+
+        const sourceNode = await figma.getNodeByIdAsync(op.sourceNodeId);
+        console.log('[CLONE_NODE] sourceNode found:', !!sourceNode, sourceNode?.type);
+
+        if (!sourceNode) {
+          postToUI({ type: 'ERROR', message: `CLONE_NODE: Nó "${op.sourceNodeId}" não encontrado` });
+          continue;
+        }
+
+        if (typeof (sourceNode as any).clone !== 'function') {
+          postToUI({ type: 'ERROR', message: `CLONE_NODE: Nó "${sourceNode.name}" não suporta clone (tipo: ${sourceNode.type})` });
+          continue;
+        }
+
         const parent = await getParent(op.parentRef, op.parentNodeId);
-        if (sourceNode && typeof sourceNode.clone === 'function') {
-          try {
-            const cloned = sourceNode.clone();
-            if (op.overrides?.name) cloned.name = op.overrides.name;
-            if (op.overrides?.width && 'resize' in cloned) {
-              (cloned as any).resize(op.overrides.width, op.overrides.height || (cloned as any).height);
-            }
-            if (op.overrides?.fills && 'fills' in cloned) {
-              (cloned as any).fills = op.overrides.fills as any;
-            }
-            parent.appendChild(cloned);
-            if (op.ref) createdNodes.set(op.ref, cloned);
-            pushSummary(`Clonado @"${cloned.name}"`, cloned);
-          } catch (e) {
-            postToUI({ type: 'ERROR', message: `Clone falhou: ${String(e)}` });
+
+        try {
+          const cloned = (sourceNode as SceneNode).clone();
+          console.log('[CLONE_NODE] Cloned successfully:', cloned.id, cloned.name);
+
+          if (op.overrides?.name) cloned.name = op.overrides.name;
+          if (op.overrides?.width && 'resize' in cloned) {
+            (cloned as any).resize(op.overrides.width, op.overrides.height || (cloned as any).height);
           }
+          if (op.overrides?.fills && 'fills' in cloned) {
+            (cloned as any).fills = op.overrides.fills as any;
+          }
+
+          parent.appendChild(cloned);
+          if (op.ref) createdNodes.set(op.ref, cloned);
+
+          // ═══ TEXT OVERRIDES: Change text content by layer name ═══
+          if (op.textOverrides && Array.isArray(op.textOverrides)) {
+            const findTextByName = (node: SceneNode, targetName: string): TextNode | null => {
+              if (node.type === 'TEXT' && node.name === targetName) return node;
+              if ('children' in node) {
+                for (const child of (node as FrameNode).children) {
+                  const found = findTextByName(child, targetName);
+                  if (found) return found;
+                }
+              }
+              return null;
+            };
+
+            for (const override of op.textOverrides) {
+              const textNode = findTextByName(cloned, override.name);
+              if (textNode) {
+                // Load font before changing text
+                const fontName = typeof textNode.fontName !== 'symbol' ? textNode.fontName : { family: 'Inter', style: 'Regular' };
+                try {
+                  await figma.loadFontAsync(fontName);
+                } catch (_e) {
+                  await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
+                }
+                textNode.characters = override.content;
+                pushSummary(`Texto "${override.name}" → "${override.content.slice(0, 30)}..."`, textNode);
+              }
+            }
+          }
+
+          pushSummary(`Clonado @"${cloned.name}"`, cloned);
+        } catch (e) {
+          console.error('[CLONE_NODE] Error:', e);
+          postToUI({ type: 'ERROR', message: `Clone falhou: ${String(e)}` });
         }
 
         // ═══ FASE 4: REORDER_CHILD ═══
@@ -1646,13 +1716,62 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       node.type === 'FRAME' && node.name.startsWith('[Template]')
     ) as FrameNode[];
 
-    const result = templates.map(t => ({
-      id: t.id,
-      name: t.name.replace(/^\[Template\]\s*/, ''),
-      width: Math.round(t.width),
-      height: Math.round(t.height),
-      childCount: t.children?.length || 0,
-    }));
+    const result = templates.map(t => {
+      // Find all text nodes in template (editable layers)
+      const textLayers: { id: string; name: string; characters: string; fontFamily?: string; fontStyle?: string; fontSize?: number }[] = [];
+      const findTextNodes = (node: SceneNode) => {
+        if (node.type === 'TEXT') {
+          const textNode = node as TextNode;
+          const fontName = typeof textNode.fontName !== 'symbol' ? textNode.fontName : null;
+          textLayers.push({
+            id: textNode.id,
+            name: textNode.name,
+            characters: textNode.characters,
+            fontFamily: fontName?.family,
+            fontStyle: fontName?.style,
+            fontSize: typeof textNode.fontSize === 'number' ? textNode.fontSize : undefined,
+          });
+        }
+        if ('children' in node) {
+          for (const child of (node as FrameNode).children) {
+            findTextNodes(child);
+          }
+        }
+      };
+      for (const child of t.children) {
+        findTextNodes(child);
+      }
+
+      // Check if template has images
+      let hasImages = false;
+      const checkForImages = (node: SceneNode) => {
+        if ('fills' in node && Array.isArray(node.fills)) {
+          for (const fill of node.fills as Paint[]) {
+            if (fill.type === 'IMAGE') {
+              hasImages = true;
+              return;
+            }
+          }
+        }
+        if ('children' in node) {
+          for (const child of (node as FrameNode).children) {
+            if (hasImages) return;
+            checkForImages(child);
+          }
+        }
+      };
+      checkForImages(t);
+
+      return {
+        id: t.id,
+        name: t.name.replace(/^\[Template\]\s*/, ''),
+        width: Math.round(t.width),
+        height: Math.round(t.height),
+        childCount: t.children?.length || 0,
+        textLayers,
+        hasImages,
+      };
+    });
 
     postToUI({
       type: 'TEMPLATES_RESULT',

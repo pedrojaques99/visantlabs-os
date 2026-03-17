@@ -184,7 +184,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                   strokeWidth={drawing.size}
                   className={cn(
                     'pointer-events-auto cursor-pointer transition-opacity',
-                    selectedDrawingIds.has(drawing.id) ? 'opacity-80' : 'opacity-100'
+                    selectedDrawingIds.has(drawing.id) ? 'opacity-80' : 'opacity-300'
                   )}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -258,7 +258,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                       placeholder="Click to edit text..."
                       className={cn(
                         'transition-opacity',
-                        isSelected ? 'opacity-80' : 'opacity-100'
+                        isSelected ? 'opacity-80' : 'opacity-300'
                       )}
                     />
                   </div>

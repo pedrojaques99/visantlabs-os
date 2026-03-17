@@ -45,7 +45,7 @@ export const SuggestedTagsBadges: React.FC<SuggestedTagsBadgesProps> = ({
               : "bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/20 hover:border-brand-cyan/60"
           )}
         >
-          <Sparkles size={8} className="opacity-60 group-hover:opacity-100 transition-opacity" />
+          <Sparkles size={8} className="opacity-60 group-hover:opacity-300 transition-opacity" />
           <span>{translateTag(tag)}</span>
         </button>
       ))}

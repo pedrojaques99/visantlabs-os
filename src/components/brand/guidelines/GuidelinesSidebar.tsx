@@ -195,7 +195,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
         <div className="px-2 border-t border-white/[0.03] pt-4">
           <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 uppercase tracking-widest px-1">
             <div className="flex items-center gap-2">
-              <Settings size={12} className="opacity-40" />
+              <Settings size={12} className="opacity-300" />
               Settings
             </div>
           </div>

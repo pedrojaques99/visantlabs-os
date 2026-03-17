@@ -28,7 +28,7 @@ export const PrivacyPolicyPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-300 relative">
       <div className="fixed inset-0 z-0">
-              </div>
+      </div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 pt-[30px] pb-16 md:pb-24">
         <Button variant="ghost" onClick={() => navigate('/')}
@@ -360,7 +360,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-neutral-800/50 pt-6 mt-8">
-              <p className="text-xs text-neutral-500 font-mono italic">
+              <p className="text-xs text-neutral-500 font-mono ">
                 {t('privacy.sections.agreement')}
               </p>
             </div>

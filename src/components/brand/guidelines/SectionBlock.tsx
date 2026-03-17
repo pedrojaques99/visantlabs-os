@@ -86,7 +86,7 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
         <div
           {...attributes}
           {...listeners}
-          className="absolute -left-6 top-1.5 p-1 opacity-0 group-hover:opacity-30 hover:opacity-100 transition-all cursor-grab active:cursor-grabbing text-neutral-400 hover:text-brand-cyan hidden lg:block rounded-md hover:bg-white/[0.03]"
+          className="absolute -left-6 top-1.5 p-1 opacity-0 group-hover:opacity-30 hover:opacity-300 transition-all cursor-grab active:cursor-grabbing text-neutral-400 hover:text-brand-cyan hidden lg:block rounded-md hover:bg-white/[0.03]"
         >
           <GripVertical size={16} />
         </div>
@@ -96,7 +96,7 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
             {icon && <div className="text-neutral-600 group-hover:text-brand-cyan/70 transition-colors">{icon}</div>}
             {title && <MicroTitle className="text-[10px] uppercase  text-neutral-500/80 font-bold">{title}</MicroTitle>}
           </div>
-          <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex gap-1.5 items-center">
+          <div className="opacity-0 group-hover:opacity-300 focus-within:opacity-300 transition-opacity flex gap-1.5 items-center">
             {isSaving && <Loader2 size={12} className="text-brand-cyan animate-spin mr-2" />}
             {isEditing ? (
               <div className="flex gap-1">

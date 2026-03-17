@@ -15,7 +15,7 @@ export const getTextSelection = (textarea: HTMLTextAreaElement): TextSelection |
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
   const text = textarea.value.substring(start, end);
-  
+
   return {
     start,
     end,
@@ -45,10 +45,10 @@ export const insertText = (
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
   const value = textarea.value;
-  
+
   const newValue = value.substring(0, start) + textToInsert + value.substring(end);
   textarea.value = newValue;
-  
+
   // Set cursor position after inserted text
   const newCursorPos = start + textToInsert.length;
   setTextSelection(textarea, newCursorPos, newCursorPos);
@@ -73,15 +73,15 @@ export const wrapSelection = (
     const newEnd = newStart;
     return { newValue, newStart, newEnd };
   }
-  
+
   // Wrap selected text
   const selectedText = value.substring(start, end);
   const wrappedText = prefix + selectedText + suffix;
-  
+
   const newValue = value.substring(0, start) + wrappedText + value.substring(end);
   const newStart = start;
   const newEnd = start + wrappedText.length;
-  
+
   return { newValue, newStart, newEnd };
 };
 
@@ -98,10 +98,10 @@ export const applyBold = (
 };
 
 /**
- * Apply italic formatting to selected text
+ * Apply  formatting to selected text
  * Returns the new value and cursor position
  */
-export const applyItalic = (
+export const apply = (
   value: string,
   start: number,
   end: number
@@ -123,22 +123,22 @@ export const insertBullet = (
   while (lineStart > 0 && value[lineStart - 1] !== '\n') {
     lineStart--;
   }
-  
+
   // Check if line already starts with a bullet
   const lineText = value.substring(lineStart, start);
   const trimmedLine = lineText.trim();
-  
+
   if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
     // Already has bullet, just return current values
     return { newValue: value, newStart: start, newEnd: end };
   }
-  
+
   // Insert bullet at the start of the line
   const bullet = '- ';
   const newValue = value.substring(0, lineStart) + bullet + value.substring(lineStart);
   const newStart = start + bullet.length;
   const newEnd = newStart;
-  
+
   return { newValue, newStart, newEnd };
 };
 
@@ -161,15 +161,15 @@ export const applyTextColor = (
     const newEnd = newStart;
     return { newValue, newStart, newEnd };
   }
-  
+
   // Wrap selected text with color tags
   const selectedText = value.substring(start, end);
   const wrappedText = `[color:${color}]${selectedText}[/color]`;
-  
+
   const newValue = value.substring(0, start) + wrappedText + value.substring(end);
   const newStart = start;
   const newEnd = start + wrappedText.length;
-  
+
   return { newValue, newStart, newEnd };
 };
 
@@ -179,12 +179,12 @@ export const applyTextColor = (
 export const normalizeColor = (color: string): string => {
   // Remove # if present
   const cleanColor = color.replace('#', '');
-  
+
   // If it's already hex, return with #
   if (/^[0-9A-Fa-f]{6}$/.test(cleanColor)) {
     return cleanColor;
   }
-  
+
   // Try to convert named colors or other formats
   // For now, just return as-is if it doesn't match hex pattern
   return cleanColor;

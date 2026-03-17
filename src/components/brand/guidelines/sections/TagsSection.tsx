@@ -78,7 +78,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
         {isEditing ? (
           <div className="w-full space-y-4 pt-2">
             <div className="space-y-2">
-              <MicroTitle className="text-[9px] opacity-40 uppercase pl-1">Strategic Framework (JSON)</MicroTitle>
+              <MicroTitle className="text-[9px] opacity-300 uppercase pl-1">Strategic Framework (JSON)</MicroTitle>
               <Textarea
                 value={tagsJson}
                 onChange={(e) => setTagsJson(e.target.value)}
@@ -115,9 +115,8 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                 </div>
               ))
             ) : (
-              <div className="py-10 flex flex-col items-center justify-center opacity-5 gap-3 border border-dashed border-white/5 rounded-2xl">
-                <Tag size={28} strokeWidth={1} />
-                <p className="text-[9px] text-white font-bold font-mono uppercase">Strategy Pending</p>
+              <div className="py-12 text-center  text-[10px] opacity-30 font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-2xl">
+                Strategy Pending
               </div>
             )}
           </div>

@@ -173,7 +173,7 @@ const ActionDetector = ({
                     >
                         {getActionIcon(action.type)}
                         <span className="max-w-[180px] truncate font-medium">{action.title}</span>
-                        <Plus size={8} className="opacity-50 group-hover:opacity-100" />
+                        <Plus size={8} className="opacity-50 group-hover:opacity-300" />
                     </NodeButton>
                 ))}
             </div>
@@ -326,7 +326,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 <div ref={messagesAreaRef} className="flex-1 p-4 overflow-y-auto space-y-4 scroll-smooth">
                     {messages.length === 0 ? (
                         <div className="text-center py-12 text-neutral-500">
-                            <MessageSquare size={32} className="mx-auto mb-4 opacity-20" />
+                            <MessageSquare size={32} className="mx-auto mb-4 opacity-40" />
                             <p className="text-sm font-medium">{t('canvasNodes.chatNode.startConversationWithAI')}</p>
                         </div>
                     ) : (
@@ -338,7 +338,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                                         variant="ghost"
                                         size="xs"
                                         onClick={() => handleCopyMessage(msg.id, msg.content)}
-                                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-300 transition-opacity"
                                     >
                                         {copiedMessageId === msg.id ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
                                     </NodeButton>

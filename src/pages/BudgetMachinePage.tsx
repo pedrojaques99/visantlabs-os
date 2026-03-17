@@ -568,7 +568,7 @@ export const BudgetMachinePage: React.FC = () => {
             {/* Preview Side - Full Width */}
             <div className="w-full h-full overflow-y-auto bg-neutral-100 flex flex-col relative min-h-full">
               {/* Toggle Sidebar Button */}
-              <Button variant="ghost"                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              <Button variant="ghost" onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 className="fixed top-12 md:top-16 z-50 p-1.5 bg-neutral-950/30 backdrop-blur-sm border border-neutral-700/20 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-neutral-600/30 hover:bg-neutral-950/70 transition-all duration-200 shadow-sm"
                 style={isSidebarOpen
                   ? (formWidth ? { left: `${formWidth + 16}px` } : { left: '416px' })
@@ -818,11 +818,11 @@ export const BudgetMachinePage: React.FC = () => {
                           readOnly
                           className="flex-1 px-3 py-2 bg-neutral-950/70 border border-neutral-800 rounded-md text-neutral-200 text-sm font-mono"
                         />
-                        <Button variant="ghost"                           onClick={() => {
-                            navigator.clipboard.writeText(shareLink);
-                            setLinkCopied(true);
-                            setTimeout(() => setLinkCopied(false), 2000);
-                          }}
+                        <Button variant="ghost" onClick={() => {
+                          navigator.clipboard.writeText(shareLink);
+                          setLinkCopied(true);
+                          setTimeout(() => setLinkCopied(false), 2000);
+                        }}
                           className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/50 rounded-md text-brand-cyan font-mono text-sm transition-colors flex items-center justify-center gap-2"
                         >
                           <Copy size={16} />

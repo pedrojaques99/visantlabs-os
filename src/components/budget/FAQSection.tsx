@@ -37,7 +37,7 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
         <h3 className="text-lg font-semibold text-neutral-200 font-mono">
           {t('budget.faq')}
         </h3>
-        <Button variant="brand" 
+        <Button variant="brand"
           onClick={addFAQ}
           className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
         >
@@ -85,7 +85,7 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
                     />
                   </div>
                 </div>
-                <Button variant="ghost" 
+                <Button variant="ghost"
                   onClick={() => removeFAQ(index)}
                   className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors self-start sm:self-auto"
                   title={t('budget.removeFAQ')}

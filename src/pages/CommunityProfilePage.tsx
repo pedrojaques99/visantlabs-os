@@ -317,7 +317,7 @@ export const CommunityProfilePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
-                  </div>
+        </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
@@ -334,7 +334,7 @@ export const CommunityProfilePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
-                  </div>
+        </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
@@ -357,7 +357,7 @@ export const CommunityProfilePage: React.FC = () => {
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 relative overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 z-0 pointer-events-none">
-                  </div>
+        </div>
 
         {/* Content */}
         <div className="relative z-10 pt-20 md:pt-24 pb-12">
@@ -550,7 +550,7 @@ export const CommunityProfilePage: React.FC = () => {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 flex items-end p-4">
                             <div className="flex items-center gap-2 text-white">
                               <Heart size={14} className={cn(mockup.isLiked ? "fill-red-500 text-red-500" : "text-white")} />
                               <span className="text-xs font-mono">{mockup.likesCount || 0}</span>
@@ -600,7 +600,7 @@ export const CommunityProfilePage: React.FC = () => {
                           )}
 
                           {/* Overlay Actions */}
-                          <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                          <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-300 transition-opacity duration-200 flex items-center justify-center gap-2">
                             <Button variant="brand" size="sm"
                               className="gap-2 bg-brand-cyan text-black hover:bg-brand-cyan/90 border-none"
                               onClick={(e) => {
@@ -621,7 +621,7 @@ export const CommunityProfilePage: React.FC = () => {
                             </Button>
                           </div>
 
-                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-300 transition-opacity duration-200">
                             <Badge variant="secondary" className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700 text-xs">
                               {workflow.category}
                             </Badge>

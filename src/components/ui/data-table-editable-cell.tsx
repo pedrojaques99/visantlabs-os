@@ -134,13 +134,13 @@ export const DataTableEditableCell = <TData,>({
                 value ? t('common.yes', { defaultValue: 'Sim' }) : t('common.no', { defaultValue: 'Não' })
             ) : type === 'select' ? (
                 options?.find(opt => opt.value === value)?.label || value || (
-                    <span className="text-neutral-600 italic">
+                    <span className="text-neutral-600 ">
                         {placeholder || t('adminPresets.empty', { defaultValue: 'Vazio' })}
                     </span>
                 )
             ) : (
                 value || (
-                    <span className="text-neutral-600 italic">
+                    <span className="text-neutral-600 ">
                         {placeholder || t('adminPresets.empty', { defaultValue: 'Vazio' })}
                     </span>
                 )

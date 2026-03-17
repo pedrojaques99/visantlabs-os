@@ -227,7 +227,7 @@ export const CanvasPage: React.FC = () => {
 
   const [showSaveWorkflow, setShowSaveWorkflow] = useState(false);
   const [showMultiExportModal, setShowMultiExportModal] = useState(false);
-  
+
   // Storage Limit Modal State
   const [storageLimitModal, setStorageLimitModal] = useState<{
     isOpen: boolean;
@@ -2880,17 +2880,17 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'director') {
           const directorData = n.data as DirectorNodeData;
-          
+
           // Sync connected image using helper
           const newConnectedImage = syncConnectedImage(n.id, edges, nds);
           const currentConnectedImage = directorData.connectedImage || undefined;
           const connectedImageChanged = currentConnectedImage !== newConnectedImage;
-          
+
           // Find source image node ID for auto-connect
           const sourceEdge = edges.find(e => e.target === n.id && e.targetHandle === 'image-input');
           const sourceImageNodeId = sourceEdge?.source;
           const sourceNodeChanged = directorData.sourceImageNodeId !== sourceImageNodeId;
-          
+
           const needsUpdate = !directorData.onAnalyze ||
             !directorData.onGeneratePrompt ||
             !directorData.onUpdateData ||
@@ -3488,37 +3488,37 @@ export const CanvasPage: React.FC = () => {
 
   // Auto-analyze Director nodes when image is connected
   const autoAnalyzeRef = useRef<Set<string>>(new Set());
-  
+
   useEffect(() => {
     const directorNodes = nodes.filter(n => n.type === 'director');
     const timeoutIds: TimerRef[] = [];
-    
+
     directorNodes.forEach(node => {
       const directorData = node.data as DirectorNodeData;
       const hasImage = !!directorData.connectedImage;
       const notAnalyzing = !directorData.isAnalyzing;
       const notAnalyzed = !directorData.hasAnalyzed;
       const alreadyTriggered = autoAnalyzeRef.current.has(node.id);
-      
+
       // Auto-analyze if image is connected and hasn't been analyzed yet
       if (hasImage && notAnalyzing && notAnalyzed && !alreadyTriggered && handleDirectorAnalyze) {
         // Mark as triggered to prevent duplicate calls
         autoAnalyzeRef.current.add(node.id);
-        
+
         // Small delay to ensure node data is fully updated
         const timeoutId = setTimeout(() => {
           handleDirectorAnalyze(node.id);
         }, 200);
-        
+
         timeoutIds.push(timeoutId);
       }
-      
+
       // Remove from ref if image is disconnected or already analyzed
       if ((!hasImage || directorData.hasAnalyzed) && alreadyTriggered) {
         autoAnalyzeRef.current.delete(node.id);
       }
     });
-    
+
     return () => {
       timeoutIds.forEach(id => clearTimeout(id));
     };
@@ -3644,7 +3644,7 @@ export const CanvasPage: React.FC = () => {
         style={{ backgroundColor: backgroundColor, minHeight: '100vh' }}
       >
         <div className="fixed inset-0 z-0" style={{ position: 'relative', opacity: 1, scale: 5 }}>
-                  </div>
+        </div>
 
         {/* Main Canvas Container with Sidebar Layout - Starts below header (65px) */}
         <div className="flex relative w-full" style={{ height: 'calc(100vh - 65px)', paddingTop: '0px', justifyContent: 'flex-start' }}>

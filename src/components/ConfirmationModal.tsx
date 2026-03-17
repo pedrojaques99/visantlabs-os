@@ -86,7 +86,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               {message}
             </p>
           </div>
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={onClose}
             className="flex-shrink-0 text-neutral-500 hover:text-neutral-300 transition-colors"
             aria-label="Close"
@@ -97,13 +97,13 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
         <div className="flex items-center justify-between gap-3 mt-6">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={onClose}
               className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
             >
               {cancelText || t('confirmationModal.defaultCancel')}
             </Button>
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={() => {
                 onConfirm();
                 onClose();
@@ -114,7 +114,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             </Button>
           </div>
           {showSaveAll && onSaveAll && (
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={async () => {
                 setIsSaving(true);
                 try {

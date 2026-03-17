@@ -245,7 +245,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
 
         {/* Color Palette Panel (collapsible) */}
         <div className={`mt-2 rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-          <Button variant="ghost"             onClick={() => setIsColorPaletteExpanded(!isColorPaletteExpanded)}
+          <Button variant="ghost" onClick={() => setIsColorPaletteExpanded(!isColorPaletteExpanded)}
             className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -289,7 +289,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                   >
                     <span className="w-3.5 h-3.5 rounded-full border border-white/10" style={{ backgroundColor: color }} />
                     <span className="truncate max-w-[72px]">{color}</span>
-                    <X size={10} className={`opacity-0 group-hover:opacity-100 transition-opacity ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`} />
+                    <X size={10} className={`opacity-0 group-hover:opacity-300 transition-opacity ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`} />
                   </div>
                 ))}
 
@@ -336,7 +336,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                       }}
                       className="hidden"
                     />
-                    <Button variant="ghost"                       onClick={() => colorPickerRef.current?.click()}
+                    <Button variant="ghost" onClick={() => colorPickerRef.current?.click()}
                       className={`flex items-center justify-center w-8 h-8 rounded-md border-2 border-dashed transition-all duration-200 ${theme === 'dark'
                         ? 'border-neutral-700/40 text-neutral-400 hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-neutral-800/50'
                         : 'border-neutral-300 text-neutral-500 hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-neutral-100'

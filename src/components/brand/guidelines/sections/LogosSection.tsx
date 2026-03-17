@@ -104,10 +104,10 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
             {/* Main Stage */}
             <div className="relative flex-1 w-full flex items-center justify-center rounded-3xl bg-neutral-950/40 border border-white/[0.03] group-hover/section:bg-neutral-950/60 group-hover/section:border-white/[0.06] transition-all duration-700 overflow-hidden shadow-[inset_0_0_80px_rgba(0,0,0,0.4)]">
               {/* Background Glow */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-brand-cyan/5 blur-[120px] rounded-full opacity-0 group-hover/section:opacity-100 transition-opacity duration-1000" />
-              
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-brand-cyan/5 blur-[120px] rounded-full opacity-0 group-hover/section:opacity-300 transition-opacity duration-1000" />
+
               {/* Floating Label (On Hover) */}
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover/section:opacity-100 transition-all duration-500 pointer-events-none">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover/section:opacity-300 transition-all duration-500 pointer-events-none">
                 <div className="px-3 py-1 rounded-full bg-neutral-900/80 backdrop-blur-md border border-white/[0.08] shadow-xl">
                   <span className="text-[9px] font-mono text-neutral-400 uppercase tracking-widest leading-none">
                     {logos[Math.min(currentIndex, logos.length - 1)].label || `Logo ${currentIndex + 1}`}
@@ -128,13 +128,13 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
                 <>
                   <button
                     onClick={() => setCurrentIndex((prev) => (prev - 1 + logos.length) % logos.length)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full bg-neutral-900/40 backdrop-blur-md border border-white/[0.06] text-neutral-400 hover:text-white hover:bg-neutral-800/80 hover:border-brand-cyan/40 opacity-0 group-hover/section:opacity-100 -translate-x-4 group-hover/section:translate-x-0 transition-all duration-500"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full bg-neutral-900/40 backdrop-blur-md border border-white/[0.06] text-neutral-400 hover:text-white hover:bg-neutral-800/80 hover:border-brand-cyan/40 opacity-0 group-hover/section:opacity-300 -translate-x-4 group-hover/section:translate-x-0 transition-all duration-500"
                   >
                     <ChevronLeft size={20} />
                   </button>
                   <button
                     onClick={() => setCurrentIndex((prev) => (prev + 1) % logos.length)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full bg-neutral-900/40 backdrop-blur-md border border-white/[0.06] text-neutral-400 hover:text-white hover:bg-neutral-800/80 hover:border-brand-cyan/40 opacity-0 group-hover/section:opacity-100 translate-x-4 group-hover/section:translate-x-0 transition-all duration-500"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full bg-neutral-900/40 backdrop-blur-md border border-white/[0.06] text-neutral-400 hover:text-white hover:bg-neutral-800/80 hover:border-brand-cyan/40 opacity-0 group-hover/section:opacity-300 translate-x-4 group-hover/section:translate-x-0 transition-all duration-500"
                   >
                     <ChevronRight size={20} />
                   </button>
@@ -151,8 +151,8 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
                       key={i}
                       onClick={() => setCurrentIndex(i)}
                       className={`h-1 rounded-full transition-all duration-500 ${i === Math.min(currentIndex, logos.length - 1)
-                          ? 'w-8 bg-brand-cyan shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.5)]'
-                          : 'w-2 bg-neutral-800 hover:bg-neutral-600'
+                        ? 'w-8 bg-brand-cyan shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.5)]'
+                        : 'w-2 bg-neutral-800 hover:bg-neutral-600'
                         }`}
                     />
                   ))}
@@ -161,15 +161,15 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1 opacity-40">
+          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1 opacity-300">
             {[
               { label: 'Main Logo', icon: ImageIcon },
               { label: 'Symbol', icon: Palette },
               { label: 'Negative', icon: ImageIcon },
               { label: 'Alternative', icon: ImageIcon },
             ].map((p, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border border-white/[0.02] bg-white/[0.01] h-full w-full cursor-pointer hover:bg-white/[0.03] transition-colors"
                 onClick={() => fileInputRef.current?.click()}
               >

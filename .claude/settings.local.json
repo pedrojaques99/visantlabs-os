@@ -54,7 +54,8 @@
       "Bash(find /z/Cursor/visantlabs-os/src/components -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) -exec grep -E \"><.*<|<.*><.*><\" {} + 2>/dev/null | head -30)",
       "Bash(cd Z:/Cursor/visantlabs-os && npm install @tanstack/react-query react-hook-form zod @hookform/resolvers 2>&1 | tail -5)",
       "Bash(cd:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "WebFetch(domain:support.claude.com)"
     ]
   }
 }

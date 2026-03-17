@@ -294,7 +294,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
 
                 <div className="flex items-center gap-1 flex-shrink-0 relative z-20" onClick={(e) => e.stopPropagation()}>
                   <div
-                    className="p-1 rounded hover:bg-neutral-700/50 opacity-0 group-hover/color:opacity-100 transition-opacity"
+                    className="p-1 rounded hover:bg-neutral-700/50 opacity-0 group-hover/color:opacity-300 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleRegenerateOne(index);
@@ -302,7 +302,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
                   >
                     <RefreshCw size={10} className="text-neutral-400 hover:text-brand-cyan" />
                   </div>
-                  <div className="relative w-5 h-5 flex items-center justify-center opacity-0 group-hover/color:opacity-100 transition-opacity">
+                  <div className="relative w-5 h-5 flex items-center justify-center opacity-0 group-hover/color:opacity-300 transition-opacity">
                     <input
                       type="color"
                       value={color}

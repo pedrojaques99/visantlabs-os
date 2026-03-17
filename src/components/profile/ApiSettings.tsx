@@ -172,7 +172,7 @@ export const ApiSettings: React.FC = () => {
                 <CardContent className="space-y-6">
                     {/* Info Box */}
                     <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 space-y-3 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-30 transition-opacity">
                             <Lock size={64} />
                         </div>
                         <div className="flex items-start gap-3 relative z-10">

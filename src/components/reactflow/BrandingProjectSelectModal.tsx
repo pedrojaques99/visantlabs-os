@@ -114,7 +114,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-800/60">
           <h2 className="text-lg font-semibold text-neutral-200 font-mono">Select Branding Project</h2>
-          <Button variant="ghost"             onClick={onClose}
+          <Button variant="ghost" onClick={onClose}
             className="p-1.5 rounded hover:bg-neutral-800/50 text-neutral-400 hover:text-neutral-200 transition-colors"
           >
             <X size={18} />
@@ -145,7 +145,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
               filteredProjects.map((project) => {
                 const projectId = project._id || (project as any).id;
                 return (
-                  <Button variant="ghost"                     key={projectId}
+                  <Button variant="ghost" key={projectId}
                     onClick={() => handleSelectProject(project)}
                     className="w-full px-4 py-3 text-left border rounded-md transition-all bg-neutral-900/50 border-neutral-700/30 text-neutral-300 hover:border-[brand-cyan]/50 hover:bg-neutral-800/50 group"
                   >
@@ -182,13 +182,13 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
 
         {/* Footer */}
         <div className="p-4 border-t border-neutral-800/60 flex gap-2">
-          <Button variant="brand"             onClick={handleCreateNew}
+          <Button variant="brand" onClick={handleCreateNew}
             className="flex-1 px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
           >
             <Plus size={16} />
             Create New Project
           </Button>
-          <Button variant="ghost"             onClick={onClose}
+          <Button variant="ghost" onClick={onClose}
             className="px-4 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 rounded-md text-sm font-mono transition-colors"
           >
             Cancel

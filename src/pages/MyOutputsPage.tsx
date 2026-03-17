@@ -364,7 +364,7 @@ export const MyOutputsPage: React.FC = () => {
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 relative overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 z-0 pointer-events-none">
-                  </div>
+        </div>
 
         {/* Header with Controls and Sidebar */}
         <div className="relative z-30 pt-16 md:pt-20 pb-6">
@@ -415,7 +415,7 @@ export const MyOutputsPage: React.FC = () => {
           {filteredMockups.length > 0 && !isMobile && (
             <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
               <GlassPanel padding="sm" className="flex-row items-center gap-1 bg-neutral-950/50">
-                <Button variant="ghost"                   onClick={() => handleColumnsChange(columns - 1)}
+                <Button variant="ghost" onClick={() => handleColumnsChange(columns - 1)}
                   disabled={columns <= 1}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Decrease columns"
@@ -427,7 +427,7 @@ export const MyOutputsPage: React.FC = () => {
                     {columns}
                   </span>
                 </div>
-                <Button variant="ghost"                   onClick={() => handleColumnsChange(columns + 1)}
+                <Button variant="ghost" onClick={() => handleColumnsChange(columns + 1)}
                   disabled={columns >= 6}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Increase columns"
@@ -472,12 +472,12 @@ export const MyOutputsPage: React.FC = () => {
                         loading="lazy"
                       />
                       {/* Overlay on hover */}
-                      <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-300 transition-opacity">
                         {isAuthenticated && mockup._id && (
-                          <Button variant="ghost"                             onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(mockup._id);
-                            }}
+                          <Button variant="ghost" onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(mockup._id);
+                          }}
                             disabled={deletingId === mockup._id}
                             className="absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-red-500/30 rounded text-xs font-mono text-red-400 hover:text-red-300 hover:border-red-400/50 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer z-10"
                             aria-label="Delete output"

@@ -106,23 +106,23 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     if (nodeData.aspectRatio) setAspectRatio(nodeData.aspectRatio);
     if (nodeData.resolution) setResolution(nodeData.resolution);
     if (nodeData.pdfPageReference !== undefined) setPdfPageReference(nodeData.pdfPageReference || '');
-    
+
     // Track connected images for manual UI refreshes if needed
     setConnectedImage1(nodeData.connectedImage1);
     setConnectedImage2(nodeData.connectedImage2);
     setConnectedImage3(nodeData.connectedImage3);
     setConnectedImage4(nodeData.connectedImage4);
   }, [
-    nodeData.prompt, 
-    nodeData.model, 
-    nodeData.aspectRatio, 
-    nodeData.resolution, 
+    nodeData.prompt,
+    nodeData.model,
+    nodeData.aspectRatio,
+    nodeData.resolution,
     nodeData.pdfPageReference,
     nodeData.connectedImage1,
     nodeData.connectedImage2,
     nodeData.connectedImage3,
     nodeData.connectedImage4,
-    connectedText, 
+    connectedText,
     hasTextNodeConnection
   ]);
 
@@ -495,7 +495,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         {/* Prompt Functions Toolbar */}
         <div className="flex items-center justify-between mb-1.5 px-0.5">
           <div className="flex items-center gap-1.5">
-            <NodeButton variant="ghost" size="xs"               type="button"
+            <NodeButton variant="ghost" size="xs" type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -510,7 +510,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             </NodeButton>
           </div>
 
-          <NodeButton variant="ghost" size="xs"             type="button"
+          <NodeButton variant="ghost" size="xs" type="button"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -539,7 +539,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           />
           {/* Prompt Suggestion Button */}
           {!hasTextNodeConnection && prompt.trim() && (
-            <NodeButton variant="ghost" size="xs"               type="button"
+            <NodeButton variant="ghost" size="xs" type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -568,7 +568,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               {t('canvasNodes.promptNode.aiSuggestions') || t('canvasNodes.promptNode.suggestions')}
             </div>
             {promptSuggestions.map((suggestion, index) => (
-              <NodeButton variant="ghost" size="xs"                 key={index}
+              <NodeButton variant="ghost" size="xs" key={index}
                 onClick={(e) => {
                   e.stopPropagation();
                   setPrompt(suggestion);
@@ -633,11 +633,11 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       </div>
 
       {/* Generate Image Button */}
-      <NodeButton variant="primary" size="full"         onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          handleGenerate();
-        }}
+      <NodeButton variant="primary" size="full" onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        handleGenerate();
+      }}
         onMouseDown={(e) => {
           e.stopPropagation();
         }}

@@ -183,7 +183,7 @@ export const PresetsControl: React.FC = () => {
                                     <span className={cn("text-sm transition-colors", theme === 'dark' ? "text-neutral-300 group-hover:text-white" : "text-neutral-700 group-hover:text-black")}>{preset.name}</span>
                                     <Button variant="ghost"
                                         onClick={(e) => handleDelete(e, preset.id)}
-                                        className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                                        className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors opacity-0 group-hover:opacity-300"
                                         title="Remover Preset"
                                     >
                                         <Trash2 size={14} />

@@ -226,7 +226,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             <p className="font-mono mb-4 text-red-400">
               {t('profile.notAuthenticated') || 'Please sign in to edit your profile'}
             </p>
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={onClose}
               className="px-4 py-2 bg-neutral-800/50 text-neutral-400 hover:bg-neutral-700/50 rounded-md text-sm font-mono transition-colors"
             >
@@ -257,7 +257,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             } uppercase`}>
             {t('profile.editTitle') || 'Edit profile'}
           </h2>
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={onClose}
             className={`transition-colors ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-600 hover:text-neutral-900'
               }`}
@@ -382,7 +382,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
 
           {/* Save Button */}
           <div className="pt-10 mt-10 border-t border-neutral-800/30">
-            <Button variant="brand" 
+            <Button variant="brand"
               onClick={handleSave}
               disabled={isSaving}
               className={`w-full px-4 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition flex items-center justify-center gap-2 ${theme === 'dark'

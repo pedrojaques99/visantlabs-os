@@ -20,9 +20,9 @@ interface StrategySectionProps {
 export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onUpdate, span }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<'manifesto' | 'positioning' | 'archetypes' | 'personas' | 'voice'>('manifesto');
-  
+
   const strategy = guideline.strategy || {};
-  
+
   const handleUpdateStrategy = (updatedStrategy: any) => {
     onUpdate({ strategy: { ...strategy, ...updatedStrategy } });
   };
@@ -73,7 +73,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
               <MicroTitle className="text-brand-cyan/60 uppercase tracking-widest">Brand Manifesto</MicroTitle>
               <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] relative overflow-hidden group">
                 <Heart className="absolute -right-4 -bottom-4 text-brand-cyan/5 w-32 h-32 group-hover:scale-110 transition-transform duration-700" />
-                <p className="text-lg md:text-xl text-neutral-300 leading-relaxed font-light italic relative z-10">
+                <p className="text-lg md:text-xl text-neutral-300 leading-relaxed font-light  relative z-10">
                   {strategy.manifesto}
                 </p>
               </div>
@@ -119,7 +119,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                       <span className="text-[10px] font-bold text-white uppercase">{persona.name}, {persona.age}</span>
                     </div>
                     <div className="flex-1 space-y-3">
-                      <p className="text-xs text-neutral-400 italic line-clamp-2">"{persona.bio}"</p>
+                      <p className="text-xs text-neutral-400  line-clamp-2">"{persona.bio}"</p>
                       <div className="flex flex-wrap gap-2">
                         {persona.desires?.map((desire, idx) => (
                           <span key={idx} className="text-[9px] px-2 py-1 rounded-md bg-white/5 border border-white/5 text-neutral-500 whitespace-nowrap">{desire}</span>
@@ -139,8 +139,8 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
           <div className="space-y-8">
             {/* Editing Manifesto */}
             <div className="space-y-2">
-              <MicroTitle className="opacity-40 uppercase text-[9px]">Manifesto</MicroTitle>
-              <Textarea 
+              <MicroTitle className="opacity-300 uppercase text-[9px]">Manifesto</MicroTitle>
+              <Textarea
                 value={strategy.manifesto || ''}
                 onChange={(e) => handleUpdateStrategy({ manifesto: e.target.value })}
                 className="bg-neutral-850 border-white/5 min-h-[120px] text-xs focus:border-brand-cyan/30"
@@ -150,107 +150,107 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
 
             {/* Editing Archetypes */}
             <div className="space-y-4">
-               <div className="flex items-center justify-between">
-                 <MicroTitle className="opacity-40 uppercase text-[9px]">Archetypes</MicroTitle>
-                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => addItem('archetype')}>
-                   <Plus size={12} />
-                 </Button>
-               </div>
-               <div className="space-y-3">
-                 {strategy.archetypes?.map((arch, i) => (
-                   <div key={i} className="p-4 rounded-xl bg-neutral-900/50 border border-white/5 space-y-3">
-                     <div className="flex gap-2">
-                       <Input 
-                         value={arch.name}
-                         onChange={(e) => {
-                           const archetypes = [...(strategy.archetypes || [])];
-                           archetypes[i].name = e.target.value;
-                           handleUpdateStrategy({ archetypes });
-                         }}
-                         className="h-8 bg-neutral-850 border-white/5 text-xs"
-                         placeholder="Name (e.g. O Mago)"
-                       />
-                       <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('archetype', i)}>
-                         <Trash2 size={12} />
-                       </Button>
-                     </div>
-                     <Textarea 
-                       value={arch.description}
-                       onChange={(e) => {
-                         const archetypes = [...(strategy.archetypes || [])];
-                         archetypes[i].description = e.target.value;
-                         handleUpdateStrategy({ archetypes });
-                       }}
-                       className="bg-neutral-850 border-white/5 text-xs min-h-[60px]"
-                       placeholder="Archetype description..."
-                     />
-                   </div>
-                 ))}
-               </div>
+              <div className="flex items-center justify-between">
+                <MicroTitle className="opacity-300 uppercase text-[9px]">Archetypes</MicroTitle>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => addItem('archetype')}>
+                  <Plus size={12} />
+                </Button>
+              </div>
+              <div className="space-y-3">
+                {strategy.archetypes?.map((arch, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-neutral-900/50 border border-white/5 space-y-3">
+                    <div className="flex gap-2">
+                      <Input
+                        value={arch.name}
+                        onChange={(e) => {
+                          const archetypes = [...(strategy.archetypes || [])];
+                          archetypes[i].name = e.target.value;
+                          handleUpdateStrategy({ archetypes });
+                        }}
+                        className="h-8 bg-neutral-850 border-white/5 text-xs"
+                        placeholder="Name (e.g. O Mago)"
+                      />
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('archetype', i)}>
+                        <Trash2 size={12} />
+                      </Button>
+                    </div>
+                    <Textarea
+                      value={arch.description}
+                      onChange={(e) => {
+                        const archetypes = [...(strategy.archetypes || [])];
+                        archetypes[i].description = e.target.value;
+                        handleUpdateStrategy({ archetypes });
+                      }}
+                      className="bg-neutral-850 border-white/5 text-xs min-h-[60px]"
+                      placeholder="Archetype description..."
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Editing Voice Values */}
             <div className="space-y-4">
-               <div className="flex items-center justify-between">
-                 <MicroTitle className="opacity-40 uppercase text-[9px]">Tone of Voice Values</MicroTitle>
-                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => addItem('voice')}>
-                   <Plus size={12} />
-                 </Button>
-               </div>
-               <div className="space-y-3">
-                 {strategy.voiceValues?.map((val, i) => (
-                   <div key={i} className="p-4 rounded-xl bg-neutral-900/50 border border-white/5 space-y-3">
-                     <div className="flex gap-2">
-                       <Input 
-                         value={val.title}
-                         onChange={(e) => {
-                           const voiceValues = [...(strategy.voiceValues || [])];
-                           voiceValues[i].title = e.target.value;
-                           handleUpdateStrategy({ voiceValues });
-                         }}
-                         className="h-8 bg-neutral-850 border-white/5 text-xs"
-                         placeholder="Title"
-                       />
-                       <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('voice', i)}>
-                         <Trash2 size={12} />
-                       </Button>
-                     </div>
-                     <Input 
-                        value={val.description}
+              <div className="flex items-center justify-between">
+                <MicroTitle className="opacity-300 uppercase text-[9px]">Tone of Voice Values</MicroTitle>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => addItem('voice')}>
+                  <Plus size={12} />
+                </Button>
+              </div>
+              <div className="space-y-3">
+                {strategy.voiceValues?.map((val, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-neutral-900/50 border border-white/5 space-y-3">
+                    <div className="flex gap-2">
+                      <Input
+                        value={val.title}
                         onChange={(e) => {
                           const voiceValues = [...(strategy.voiceValues || [])];
-                          voiceValues[i].description = e.target.value;
+                          voiceValues[i].title = e.target.value;
                           handleUpdateStrategy({ voiceValues });
                         }}
                         className="h-8 bg-neutral-850 border-white/5 text-xs"
-                        placeholder="How it sounds..."
-                     />
-                     <Input 
-                        value={val.example}
-                        onChange={(e) => {
-                          const voiceValues = [...(strategy.voiceValues || [])];
-                          voiceValues[i].example = e.target.value;
-                          handleUpdateStrategy({ voiceValues });
-                        }}
-                        className="h-8 bg-neutral-850 border-white/5 text-xs"
-                        placeholder="Example phrase..."
-                     />
-                   </div>
-                 ))}
-               </div>
+                        placeholder="Title"
+                      />
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('voice', i)}>
+                        <Trash2 size={12} />
+                      </Button>
+                    </div>
+                    <Input
+                      value={val.description}
+                      onChange={(e) => {
+                        const voiceValues = [...(strategy.voiceValues || [])];
+                        voiceValues[i].description = e.target.value;
+                        handleUpdateStrategy({ voiceValues });
+                      }}
+                      className="h-8 bg-neutral-850 border-white/5 text-xs"
+                      placeholder="How it sounds..."
+                    />
+                    <Input
+                      value={val.example}
+                      onChange={(e) => {
+                        const voiceValues = [...(strategy.voiceValues || [])];
+                        voiceValues[i].example = e.target.value;
+                        handleUpdateStrategy({ voiceValues });
+                      }}
+                      className="h-8 bg-neutral-850 border-white/5 text-xs"
+                      placeholder="Example phrase..."
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1 opacity-40">
+          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1 opacity-300">
             {[
               { label: 'Manifesto', icon: Heart, type: 'manifesto' },
               { label: 'Archetypes', icon: Sparkles, type: 'archetype' },
               { label: 'Personas', icon: User, type: 'persona' },
               { label: 'Voice Values', icon: MessageCircle, type: 'voice' },
             ].map((p, i) => (
-              <div 
-                key={i} 
-                className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-white/[0.02] bg-white/[0.01] h-full w-full cursor-pointer hover:bg-white/[0.03] transition-colors"
+              <div
+                key={i}
+                className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-white/[0.01] bg-white/[0.01] h-full w-full cursor-pointer hover:bg-white/[0.03] transition-colors"
                 onClick={() => {
                   setIsEditing(true);
                   if (p.type !== 'manifesto') {
@@ -258,10 +258,10 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                   }
                 }}
               >
-                <div className="w-10 h-10 flex items-center justify-center rounded-lg text-neutral-800 border border-dashed border-white/5">
+                <div className="w-10 h-10 flex items-center justify-center rounded-lg text-neutral-800 border border-white/5">
                   <p.icon size={18} strokeWidth={1} />
                 </div>
-                <span className="text-[8px] font-mono uppercase tracking-widest text-neutral-700">{p.label}</span>
+                <span className="py-4 text-center text-[10px] font-mono tracking-widest uppercase w-full opacity-30">{p.label}</span>
               </div>
             ))}
           </div>

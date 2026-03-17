@@ -197,7 +197,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                     <span className="absolute bottom-0 left-0 right-0 text-[8px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase">
                                         {logo.variant}
                                     </span>
-                                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/logo:opacity-100 transition-all duration-300">
+                                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/logo:opacity-300 transition-all duration-300">
                                         <Button
                                             variant="ghost"
                                             size="icon"
@@ -225,7 +225,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             ))}
                         </div>
                     ) : (
-                        <MicroTitle className="text-[10px] text-neutral-700 italic">
+                        <MicroTitle className="text-[10px] text-neutral-700 ">
                             {t('mockup.mediaKit.noLogos')}
                         </MicroTitle>
                     )}
@@ -304,7 +304,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                             {item.label}
                                         </span>
                                     )}
-                                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/media:opacity-100 transition-all duration-300">
+                                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/media:opacity-300 transition-all duration-300">
                                         <Button
                                             variant="ghost"
                                             size="icon"
@@ -342,7 +342,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             </div>
                         </div>
                     ) : (
-                        <p className="text-[10px] font-mono text-neutral-700 italic p-3 text-center">
+                        <p className="text-[10px] font-mono text-neutral-700  p-3 text-center">
                             {t('mockup.mediaKit.noMedia')}
                         </p>
                     )}

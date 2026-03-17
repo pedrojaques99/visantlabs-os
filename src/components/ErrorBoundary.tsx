@@ -255,14 +255,14 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex flex-col sm:flex-row gap-3">
               {isChunkError ? (
                 <>
-                  <Button variant="brand" 
+                  <Button variant="brand"
                     onClick={this.handleRetryChunk}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.reloadPage || 'Reload Page'}
                   </Button>
-                  <Button variant="outline" 
+                  <Button variant="outline"
                     onClick={this.handleGoHome}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                   >
@@ -272,21 +272,21 @@ export class ErrorBoundary extends Component<Props, State> {
                 </>
               ) : (
                 <>
-                  <Button variant="brand" 
+                  <Button variant="brand"
                     onClick={this.handleReset}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.tryAgain || 'Try Again'}
                   </Button>
-                  <Button variant="outline" 
+                  <Button variant="outline"
                     onClick={this.handleReload}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.reloadPage || 'Reload Page'}
                   </Button>
-                  <Button variant="outline" 
+                  <Button variant="outline"
                     onClick={this.handleGoHome}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                   >

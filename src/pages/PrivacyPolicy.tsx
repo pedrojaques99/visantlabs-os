@@ -328,7 +328,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
             </div>
 
             <div className="border-t border-neutral-800/50 pt-6 mt-8">
-              <p className="text-xs text-neutral-500 font-mono italic">
+              <p className="text-xs text-neutral-500 font-mono ">
                 {t('privacy.sections.agreement')}
               </p>
             </div>

@@ -41,7 +41,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 
     // Sync logic helpers
     const config = getModelConfig(newModel);
-    
+
     if (config.supportsImageConfig) {
       if (!resolution && onSyncResolution && config.defaultResolution) {
         onSyncResolution(config.defaultResolution);

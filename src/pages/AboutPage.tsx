@@ -74,7 +74,7 @@ export const AboutPage: React.FC = () => {
       <OrganizationSchema />
       <div className="min-h-screen bg-background text-neutral-300 pt-12 pb-100 md:pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
-                  </div>
+        </div>
 
         {/* Scanlines Effect */}
         <div className="fixed inset-0 pointer-events-none z-10 opacity-5"
@@ -234,7 +234,7 @@ export const AboutPage: React.FC = () => {
                   to="/apps"
                   className="flex items-center gap-2 px-4 py-3 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/20 group mt-4 h-14 shrink-0"
                 >
-                  <span className="flex-1 font-bold italic tracking-tighter">LABS APPS //</span>
+                  <span className="flex-1 font-bold  tracking-tighter">LABS APPS //</span>
                   <ArrowRight className="w-4 h-4 text-brand-cyan group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
@@ -303,7 +303,7 @@ export const AboutPage: React.FC = () => {
       </div>
 
       {/* Huge VISANT Text - Bottom Layer */}
-      <div className="absolute bottom-[10px] left-0 right-0 overflow-hidden pointer-events-none z-0 flex justify-center items-end opacity-10 select-none">
+      <div className="absolute bottom-[10px] left-0 right-0 overflow-hidden pointer-events-none z-0 flex justify-center items-end opacity-30 select-none">
         <RepellantText
           className="text-[20vw] md:text-[30vw] font-manrope font-semibold leading-none tracking-tighter text-neutral-600"
           style={{

@@ -109,7 +109,7 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
     >
       <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-800">
         <span className="text-xs font-mono text-neutral-400">Adicionar campo</span>
-        <Button variant="ghost" 
+        <Button variant="ghost"
           onClick={onClose}
           className="p-1 text-neutral-500 hover:text-neutral-300 rounded transition-colors"
           aria-label="Fechar menu"
@@ -141,7 +141,7 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
           </div>
         ) : (
           filteredFields.map((field, index) => (
-            <Button variant="ghost" 
+            <Button variant="ghost"
               key={field.id}
               onClick={() => {
                 onSelect(field.id);

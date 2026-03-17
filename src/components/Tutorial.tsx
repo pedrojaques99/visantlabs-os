@@ -178,7 +178,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
         {/* CTA Button */}
         {onCreateMockup && (
           <div className="mt-6 sm:mt-8 md:mt-10 flex justify-center">
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={() => {
                 onCreateMockup();
                 onClose();

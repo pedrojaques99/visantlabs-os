@@ -636,6 +636,12 @@ ESTRUTURA:
 20. DETACH_INSTANCE — { "type": "DETACH_INSTANCE", "nodeId": "..." }
 21. DELETE_NODE — { "type": "DELETE_NODE", "nodeId": "..." }
 
+DUPLICAÇÃO:
+22. CLONE_NODE — ⭐ OBRIGATÓRIO para duplicar/copiar frames e templates. Preserva TUDO (fontes, imagens, estilos).
+    { "type": "CLONE_NODE", "sourceNodeId": "<id>", "ref": "copy",
+      "textOverrides": [{ "name": "Nome do Layer de Texto", "content": "Novo texto aqui" }] }
+    ⚠️ Use "textOverrides" para trocar textos PELO NOME DO LAYER durante o clone. Não precisa saber o ID novo!
+
 ═══ REGRAS DE OURO ═══
 
 1. SEMPRE use auto-layout (layoutMode: "VERTICAL" ou "HORIZONTAL") nos frames container. NUNCA posicione filhos com x/y dentro de auto-layout. MAS: quando o parent tem layoutMode: "NONE" (canvas livre, gráficos, diagramas), USE x/y para posicionar os filhos — é o único jeito. Rotation (graus, sentido anti-horário) também está disponível para todos os nós.
@@ -658,7 +664,7 @@ ESTRUTURA:
     ⚠️ SET_TEXT_CONTENT SEMPRE PRECISA de "content". Para mudar apenas a FONTE de um texto existente, precisa reescrever o conteúdo com a nova fonte.
     Exemplo: Se o texto era "Olá" em Inter Regular, para mudar para Barlow Medium use SET_TEXT_CONTENT com content="Olá" fontFamily="Barlow" fontStyle="Medium".
 18. Para criação: sempre comece com o frame/container root e adicione filhos na ORDEM com parentRef.
-19. FontStyle válidos: "Regular", "Medium", "Semi Bold", "Bold", "Light", "Thin", "Extra Bold", "Black", "Italic".
+19. FontStyle válidos: "Regular", "Medium", "Semi Bold", "Bold", "Light", "Thin", "Extra Bold", "Black", "".
 20. GRADIENTES (FASE 2): Tipos suportados: GRADIENT_LINEAR, GRADIENT_RADIAL, GRADIENT_ANGULAR, GRADIENT_DIAMOND. Cada gradiente PRECISA de "gradientTransform" e "gradientStops". Cores nos stops usam RGBA (0-1).
     Transform padrão horizontal: [[1,0,0],[0,1,0]]. Diagonal 45°: [[0.7,0.7,-0.1],[-0.7,0.7,0.5]]. Vertical: [[0,1,0],[-1,0,1]].
     Exemplo completo: { "type": "SET_FILL", "nodeId": "...", "fills": [{"type": "GRADIENT_LINEAR", "gradientTransform": [[1,0,0],[0,1,0]], "gradientStops": [{"position": 0, "color": {"r": 0.05, "g": 0.05, "b": 0.15, "a": 1}}, {"position": 1, "color": {"r": 0.2, "g": 0.1, "b": 0.4, "a": 1}}]}] }
@@ -672,12 +678,20 @@ ESTRUTURA:
     - Se o user quer mudar APENAS a fonte de um texto existente, você PRECISA saber ou INFERIR qual é o conteúdo atual (ex: "Título", "Descrição")
     - Reescreva com a nova formatação: {"type":"SET_TEXT_CONTENT","nodeId":"...","content":"[conteúdo original ou inferido]","fontFamily":"Nova Fonte","fontStyle":"Novo estilo"}
 
-28. ⭐ DUPLICAÇÃO / CÓPIA — PRESERVAÇÃO TOTAL:
-    Se o usuário pedir para duplicar, copiar, replicar ou clonar um frame/elemento:
-    - Preserve EXATAMENTE todas as propriedades do original: fonte, tamanho de fonte, cor do texto, fills, strokes, opacidade, sombras, cornerRadius, espaçamentos, tamanho, conteúdo de texto.
-    - Altere SOMENTE o que foi explicitamente pedido (ex: "duplica e muda o título para X" → só muda o título).
-    - NÃO mude cor, fonte, texto, tamanho ou qualquer outra propriedade por iniciativa própria, mesmo que julgue ser uma "melhoria".
-    - Em caso de dúvida: não mude nada que não foi pedido.
+28. ⭐⭐⭐ REGRA CRÍTICA — TEMPLATES SÃO INTOCÁVEIS:
+    Frames com "[Template]" no nome são MODELOS SAGRADOS. NUNCA edite-os diretamente!
+
+    ❌ PROIBIDO: SET_TEXT_CONTENT, SET_FILL, RESIZE, DELETE em nodes de templates
+    ✅ OBRIGATÓRIO: CLONE_NODE com textOverrides para trocar textos
+
+    EXEMPLO CORRETO (template com texto "THE ACTION CANNOT WAIT."):
+    [
+      { "type": "CLONE_NODE", "sourceNodeId": "123:456",
+        "textOverrides": [{ "name": "THE ACTION CANNOT WAIT.", "content": "A AÇÃO NÃO PODE ESPERAR." }] }
+    ]
+
+    O textOverrides usa o NOME do layer de texto (que aparece no contexto dos templates).
+    Isso clona o frame E troca o texto em uma única operação, sem tocar no original!
 
 29. ⭐ MÚLTIPLOS FRAMES ROOT — POSICIONAMENTO LADO A LADO:
     ⚠️ ESTA REGRA SÓ SE APLICA a frames que vão diretamente para a PÁGINA (sem "parentRef" nem "parentNodeId").
@@ -892,6 +906,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         templateContext = buildTemplateContext(templates);
         if (templates.length > 0) {
           console.log(`[Plugin] Found ${templates.length} templates in file`);
+          console.log(`[Plugin] Template IDs:`, templates.map(t => ({ id: t.id, name: t.name })));
+          console.log(`[Plugin] Template context preview:`, templateContext.slice(0, 500));
         }
       } catch (templateError) {
         console.error('[Plugin] Error scanning templates:', templateError);
@@ -996,12 +1012,16 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         // Agent status callback — broadcasts search progress to plugin UI via WebSocket
         onStatus: fileId
           ? (message: string) => {
-              pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
-            }
+            pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
+          }
           : undefined,
       });
       operations = result.operations;
       usage = result.usage;
+      console.log(`[Plugin] LLM generated ${operations.length} operations:`, operations.map((o: any) => o.type));
+      if (operations.length > 0) {
+        console.log(`[Plugin] First operation:`, JSON.stringify(operations[0]).slice(0, 300));
+      }
     } catch (aiError) {
       console.error(`[Plugin] ${provider.name} error:`, aiError);
       // Fallback gracefully
@@ -1135,7 +1155,7 @@ router.get('/auth/status', optionalAuth, async (req: AuthRequest, res: Response)
 
     res.json({
       authenticated: true,
-      email: req.userEmail,
+      email: user.email,
       subscriptionTier: user.subscriptionTier || 'free',
       hasActiveSubscription,
       freeGenerationsUsed,

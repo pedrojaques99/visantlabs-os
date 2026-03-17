@@ -21,7 +21,7 @@ export const NodeActionBar: React.FC<NodeActionBarProps> = ({
     <div
       className={cn(
         'absolute left-1/2 top-full flex items-center justify-center node-gap-sm transition-opacity duration-200 z-50',
-        selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+        selected ? 'opacity-300' : 'opacity-0 group-hover:opacity-300',
         className
       )}
       style={{

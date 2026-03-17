@@ -21,17 +21,17 @@ export const LinearGradientBackground: React.FC<LinearGradientBackgroundProps> =
     fullHeight = false,
   } = props;
 
-  const gradientDirection = direction === 'vertical' 
-    ? 'to bottom' 
+  const gradientDirection = direction === 'vertical'
+    ? 'to bottom'
     : 'to right';
 
   const gradientStyle = `linear-gradient(${gradientDirection}, ${topColor} 0%, ${middleColor} 50%, ${bottomColor} 100%)`;
 
   // Use responsive opacity classes if opacity prop is default (1), otherwise use the prop value
-  const opacityClasses = opacity === 1 
-    ? 'opacity-60 md:opacity-80 lg:opacity-100' 
+  const opacityClasses = opacity === 1
+    ? 'opacity-60 md:opacity-80 lg:opacity-300'
     : '';
-  
+
   const styleOpacity = opacity === 1 ? undefined : opacity;
 
   // Check if className contains 'rounded-md' (likely modal usage) to disable animations

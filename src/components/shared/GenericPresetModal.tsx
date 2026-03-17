@@ -122,7 +122,7 @@ export function GenericPresetModal<T extends string>({
                 )}
             >
                 {/* Thumbnail */}
-                <Button variant="ghost" 
+                <Button variant="ghost"
                     onClick={(e) => {
                         e.stopPropagation();
                         if (!isLoading) {
@@ -171,7 +171,7 @@ export function GenericPresetModal<T extends string>({
                     {/* Collapsible Prompt */}
                     {preset.prompt && (
                         <div className="flex-1 flex flex-col min-h-0">
-                            <Button variant="ghost" 
+                            <Button variant="ghost"
                                 onClick={(e) => togglePrompt(preset.id, e)}
                                 className="flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-300 transition-colors mb-1"
                                 aria-expanded={isPromptExpanded}
@@ -216,7 +216,7 @@ export function GenericPresetModal<T extends string>({
                         <Icon size={20} className="text-brand-cyan" />
                         <h2 id="preset-modal-title" className="text-sm font-mono text-neutral-300 uppercase">{title}</h2>
                     </div>
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                         onClick={onClose}
                         className="p-2 text-neutral-500 hover:text-white transition-colors"
                         title="Close (Esc)"
@@ -227,7 +227,7 @@ export function GenericPresetModal<T extends string>({
 
                 {/* Tabs */}
                 <div className="flex gap-2 px-4 pt-4 border-b border-neutral-800/50">
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                         onClick={() => setActiveTab('official')}
                         className={cn(
                             'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 relative',
@@ -238,7 +238,7 @@ export function GenericPresetModal<T extends string>({
                     >
                         Official ({officialPresets.length})
                     </Button>
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                         onClick={() => setActiveTab('community')}
                         className={cn(
                             'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative',
@@ -259,7 +259,7 @@ export function GenericPresetModal<T extends string>({
                         className={cn(
                             'transition-all duration-300 ease-in-out',
                             activeTab === 'official'
-                                ? 'opacity-100 translate-y-0'
+                                ? 'opacity-300 translate-y-0'
                                 : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
                         )}
                     >
@@ -276,7 +276,7 @@ export function GenericPresetModal<T extends string>({
                         className={cn(
                             'transition-all duration-300 ease-in-out',
                             activeTab === 'community'
-                                ? 'opacity-100 translate-y-0'
+                                ? 'opacity-300 translate-y-0'
                                 : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
                         )}
                     >

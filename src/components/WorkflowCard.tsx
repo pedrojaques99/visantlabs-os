@@ -91,36 +91,36 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                     </div>
                     <div className="flex gap-1 flex-shrink-0">
                         {isAuthenticated && onDuplicate && (
-                            <Button variant="ghost" 
+                            <Button variant="ghost"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onDuplicate();
                                 }}
-                                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300"
                                 title={isOwner ? t('workflows.actions.duplicate') || 'Duplicate' : t('workflows.actions.addToLibrary') || 'Add to Library'}
                             >
                                 {isOwner ? <Copy className="h-4 w-4" /> : <Download className="h-4 w-4" />}
                             </Button>
                         )}
                         {(isOwner || canEdit) && onEdit && (
-                            <Button variant="ghost" 
+                            <Button variant="ghost"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onEdit?.();
                                 }}
-                                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300"
                                 title={t('workflows.actions.edit') || 'Edit'}
                             >
                                 <Edit2 className="h-4 w-4" />
                             </Button>
                         )}
                         {(isOwner || canEdit) && onDelete && (
-                            <Button variant="ghost" 
+                            <Button variant="ghost"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onDelete?.();
                                 }}
-                                className="p-1.5 text-neutral-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                className="p-1.5 text-neutral-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-300"
                                 title={t('workflows.actions.delete') || 'Delete'}
                             >
                                 <Trash2 className="h-4 w-4" />
@@ -155,7 +155,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                             </span>
                         )}
                         {isAuthenticated && onToggleLike && (
-                            <Button variant="ghost" 
+                            <Button variant="ghost"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onToggleLike();

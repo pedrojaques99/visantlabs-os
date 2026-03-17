@@ -63,9 +63,9 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
   // When editing, show only Check (save) and Dismiss (cancel)
   if (isEditing) {
     return (
-      <div className="flex items-center gap-1 opacity-100 transition-opacity duration-200">
+      <div className="flex items-center gap-1 opacity-300 transition-opacity duration-200">
         <Tooltip content={t('branding.save') || 'Save'} position="top">
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               onSave();
@@ -77,7 +77,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
           </Button>
         </Tooltip>
         <Tooltip content={t('branding.cancelEdit') || 'Cancel'} position="top">
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               onEdit(); // Toggle edit mode off (dismiss)
@@ -94,10 +94,10 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
 
   // Normal mode: show all actions
   return (
-    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-300 transition-opacity duration-200">
       {hasData && onRegenerate && (
         <Tooltip content={t('branding.regenerate') || 'Regenerate'} position="top">
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               onRegenerate();
@@ -114,7 +114,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
       )}
       {hasData && (
         <Tooltip content={copied ? (t('branding.copied') || 'Copied!') : (t('branding.copy') || 'Copy text')} position="top">
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={handleCopy}
             className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 transition-colors hover:text-brand-cyan ${theme === 'dark'
               ? 'hover:bg-neutral-950/70 text-neutral-400'
@@ -131,7 +131,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
       )}
       {canEdit && (
         <Tooltip content={t('branding.edit') || 'Edit'} position="top">
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               onEdit();
@@ -147,7 +147,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
       )}
       {hasData && onFeedback && prompt && stepNumber && (
         <Tooltip content={feedbackGiven === 'up' ? (t('branding.feedbackGiven') || 'Thanks for your feedback!') : (t('branding.thumbsUp') || 'Good result')} position="top">
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               if (feedbackGiven !== null) return;

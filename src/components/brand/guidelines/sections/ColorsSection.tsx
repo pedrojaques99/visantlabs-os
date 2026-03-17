@@ -98,7 +98,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                 className="w-full aspect-square rounded-xl border border-white/5 shadow-lg group-hover/color:border-brand-cyan/30 transition-all relative overflow-hidden"
                 style={{ backgroundColor: c.hex }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-300 transition-opacity" />
               </div>
               <div className="text-center w-full">
                 <p className="text-[11px] font-bold text-white uppercase tracking-tight truncate">{c.name || 'Color'}</p>
@@ -154,7 +154,22 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                   </div>
                   <input
                     type="color"
-                    {...form.register(`colors.${i}.hex`)}
+                    value={form.watch(`colors.${i}.hex`) || '#000000'}
+                    onChange={(e) => {
+                      const val = e.target.value.toUpperCase();
+                      form.setValue(`colors.${i}.hex`, val, {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                        shouldValidate: true
+                      });
+                    }}
+                    onInput={(e) => {
+                      const val = (e.target as HTMLInputElement).value.toUpperCase();
+                      form.setValue(`colors.${i}.hex`, val, {
+                        shouldDirty: true,
+                        shouldValidate: true
+                      });
+                    }}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
                 </div>
@@ -171,14 +186,14 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                   />
                 </div>
                 <Button variant="ghost" size="icon"
-                  className="h-7 w-7 rounded-lg text-neutral-700 hover:text-red-400 opacity-0 group-hover/color:opacity-100 transition-all hover:bg-red-400/10 shrink-0"
+                  className="h-7 w-7 rounded-lg text-neutral-700 hover:text-red-400 opacity-0 group-hover/color:opacity-300 transition-all hover:bg-red-400/10 shrink-0"
                   onClick={() => remove(i)}>
                   <Trash2 size={12} />
                 </Button>
               </div>
             ))}
             {fields.length === 0 && (
-              <div className="py-8 text-center opacity-20 italic text-[10px] font-mono tracking-widest uppercase">
+              <div className="py-8 text-center opacity-40  text-[10px] font-mono tracking-widest uppercase">
                 Click + to add colors
               </div>
             )}
@@ -200,7 +215,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                     className="w-full aspect-square max-w-[64px] rounded-xl border border-white/5 shadow-lg group-hover/color:border-white/10 transition-all duration-300 relative overflow-hidden"
                     style={{ backgroundColor: c.hex }}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-300 transition-opacity" />
                   </div>
                   <div className="text-center min-w-0 w-full">
                     <p className="text-[10px] font-bold text-white uppercase tracking-tight truncate">{c.name || 'Color'}</p>
@@ -216,12 +231,12 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                   { name: 'Accent', color: 'bg-neutral-800/20' },
                   { name: 'Surface', color: 'bg-neutral-800/10' },
                 ].map((p, i) => (
-                  <div 
-                    key={i} 
-                    className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-white/[0.02] bg-white/[0.01] opacity-40 h-full w-full cursor-pointer hover:bg-white/[0.03] transition-colors"
+                  <div
+                    key={i}
+                    className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-white/[0.02] bg-white/[0.01] opacity-300 h-full w-full cursor-pointer hover:bg-white/[0.03] transition-colors"
                     onClick={() => {
-                        setIsEditing(true);
-                        append({ hex: '#000000', name: p.name });
+                      setIsEditing(true);
+                      append({ hex: '#000000', name: p.name });
                     }}
                   >
                     <div className={cn("w-full aspect-square max-w-[56px] rounded-lg border border-dashed border-white/10", p.color)} />

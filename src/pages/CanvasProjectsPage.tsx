@@ -371,7 +371,7 @@ export const CanvasProjectsPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
-                  </div>
+        </div>
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
           {/* Header Skeleton */}
           <div className="mb-4">
@@ -442,7 +442,7 @@ export const CanvasProjectsPage: React.FC = () => {
       />
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
-                  </div>
+        </div>
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
           {/* Header */}
           <div className="mb-4">
@@ -506,19 +506,19 @@ export const CanvasProjectsPage: React.FC = () => {
               )}
             </div>
             <div className="flex flex-col gap-2 flex-shrink-0">
-              <Button variant="brand"                 onClick={handleCreateNew}
+              <Button variant="brand" onClick={handleCreateNew}
                 className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
                 {t('canvas.newProject') || 'New Project'}
               </Button>
-              <Button variant="ghost"                 onClick={() => setShowWorkflowLibrary(true)}
+              <Button variant="ghost" onClick={() => setShowWorkflowLibrary(true)}
                 className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
               >
                 <FolderOpen className="h-4 w-4" />
                 {t('workflows.importWorkflow') || 'Import workflow'}
               </Button>
-              <Button variant="outline"                 onClick={handleImportJsonClick}
+              <Button variant="outline" onClick={handleImportJsonClick}
                 className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
               >
                 <FileJson className="h-4 w-4" />
@@ -544,7 +544,7 @@ export const CanvasProjectsPage: React.FC = () => {
               <p className="text-sm text-neutral-600 font-mono mb-6">
                 {t('canvas.noProjectsMatchSearch') || 'No projects match your search query.'}
               </p>
-              <Button variant="ghost"                 onClick={() => setSearchQuery('')}
+              <Button variant="ghost" onClick={() => setSearchQuery('')}
                 className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
               >
                 {t('canvas.clearSearch') || 'Clear Search'}
@@ -559,7 +559,7 @@ export const CanvasProjectsPage: React.FC = () => {
               <p className="text-sm text-neutral-600 font-mono mb-6">
                 {t('canvas.createFirstProject') || 'Create your first canvas project to start working with nodes.'}
               </p>
-              <Button variant="brand"                 onClick={handleCreateNew}
+              <Button variant="brand" onClick={handleCreateNew}
                 className="px-6 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
               >
                 <Pickaxe className="h-4 w-4" />
@@ -643,16 +643,16 @@ export const CanvasProjectsPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost"                         onClick={(e) => {
-                          e.stopPropagation();
-                          handleView(project);
-                        }}
+                      <Button variant="ghost" onClick={(e) => {
+                        e.stopPropagation();
+                        handleView(project);
+                      }}
                         className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                       >
                         <Eye className="h-4 w-4" />
                         {t('canvas.open') || 'Open'}
                       </Button>
-                      <Button variant="ghost"                         onClick={(e) => handleDeleteClick(project._id, e)}
+                      <Button variant="ghost" onClick={(e) => handleDeleteClick(project._id, e)}
                         disabled={deletingId === project._id}
                         className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >

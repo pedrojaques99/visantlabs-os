@@ -308,17 +308,17 @@ export const MockupsPage: React.FC = () => {
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 relative overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 z-0 pointer-events-none">
-                  </div>
+        </div>
 
         {/* Error Banner */}
         {showErrorBanner && (
           <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4">
             <div className="bg-red-500/10 border border-red-500/20 rounded-md p-3 flex items-center justify-between backdrop-blur-sm">
               <p className="text-red-400 font-mono text-xs flex-1">{error}</p>
-              <Button variant="ghost"                 onClick={() => {
-                  setError(null);
-                  loadMockups();
-                }}
+              <Button variant="ghost" onClick={() => {
+                setError(null);
+                loadMockups();
+              }}
                 className="ml-2 px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-mono text-xs rounded transition-colors"
               >
                 {t('mockupsPage.retry')}
@@ -371,7 +371,7 @@ export const MockupsPage: React.FC = () => {
 
               {/* Search Button */}
               <div className="relative flex-shrink-0">
-                <Button variant="ghost"                   onClick={() => setShowSearch(!showSearch)}
+                <Button variant="ghost" onClick={() => setShowSearch(!showSearch)}
                   className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-950/20"
                   title={t('mockupsPage.search')}
                 >
@@ -401,7 +401,7 @@ export const MockupsPage: React.FC = () => {
           {filteredMockups.length > 0 && !isMobile && (
             <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
               <GlassPanel padding="sm" className="flex-row items-center gap-1 bg-neutral-950/50">
-                <Button variant="ghost"                   onClick={() => handleColumnsChange(columns - 1)}
+                <Button variant="ghost" onClick={() => handleColumnsChange(columns - 1)}
                   disabled={columns <= 1}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Decrease columns"
@@ -413,7 +413,7 @@ export const MockupsPage: React.FC = () => {
                     {columns}
                   </span>
                 </div>
-                <Button variant="ghost"                   onClick={() => handleColumnsChange(columns + 1)}
+                <Button variant="ghost" onClick={() => handleColumnsChange(columns + 1)}
                   disabled={columns >= 6}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Increase columns"

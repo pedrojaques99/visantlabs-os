@@ -56,7 +56,7 @@ export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guid
       <div className="py-4">
         {isEditing ? (
           <div className="space-y-2 pt-2">
-            <MicroTitle className="text-[9px] opacity-40 uppercase tracking-widest pl-1">Compliance & Vision</MicroTitle>
+            <MicroTitle className="text-[9px] opacity-300 uppercase tracking-widest pl-1">Compliance & Vision</MicroTitle>
             <Textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -70,7 +70,7 @@ export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guid
               <div className="w-1 h-[1px] bg-neutral-800" />
               Compliance & Vision
             </MicroTitle>
-            <p className="text-xs text-neutral-400 leading-relaxed pl-3 italic border-l border-white/5 max-w-2xl">
+            <p className="text-xs text-neutral-400 leading-relaxed pl-3  border-l border-white/5 max-w-2xl">
               {guideline.guidelines?.accessibility || "Universal design and accessibility standards applied across all brand touchpoints."}
             </p>
           </div>

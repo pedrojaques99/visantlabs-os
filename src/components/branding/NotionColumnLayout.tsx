@@ -448,7 +448,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                   {/* Section card */}
                   <div
                     className={`transition-all duration-300 ${isDragged
-                      ? 'opacity-40 scale-95'
+                      ? 'opacity-300 scale-95'
                       : isDropTargetBefore || isDropTargetAfter
                         ? 'ring-2 ring-[brand-cyan]/60 rounded-xl shadow-lg shadow-[brand-cyan]/20'
                         : ''
@@ -545,7 +545,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
       {isDesktop && onSetColumnCount && (
         <div className="flex items-center justify-end mb-4">
           <div className="flex items-center gap-1 bg-neutral-950/20 backdrop-blur-sm border border-neutral-800/40 rounded-md p-1">
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={() => handleColumnsChange(columns - 1)}
               disabled={columns <= 1}
               className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
@@ -558,7 +558,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                 {columns}
               </span>
             </div>
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={() => handleColumnsChange(columns + 1)}
               disabled={columns >= 3}
               className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
@@ -621,7 +621,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
             return (
               <div
                 key={stepNumber}
-                className={`transition-all duration-300 ${isDragged ? 'opacity-40 scale-95' : ''
+                className={`transition-all duration-300 ${isDragged ? 'opacity-300 scale-95' : ''
                   }`}
                 style={{
                   // Mobile: sempre span 1 (1 coluna)
@@ -741,7 +741,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                     <div
                       draggable={false}
                       className={`transition-all duration-300 ${isDragged
-                        ? 'opacity-40 scale-95'
+                        ? 'opacity-300 scale-95'
                         : isDropTarget
                           ? 'ring-2 ring-[brand-cyan]/60 rounded-xl shadow-lg shadow-[brand-cyan]/20'
                           : ''

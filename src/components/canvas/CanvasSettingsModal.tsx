@@ -117,7 +117,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
           <h2 className="text-base font-semibold font-mono text-neutral-200 uppercase">
             {t('canvas.settings') || 'Canvas Settings'}
           </h2>
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={onClose}
             className="text-neutral-400 hover:text-neutral-200 transition-colors cursor-pointer"
           >
@@ -135,7 +135,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 {t('canvas.showMinimap') || 'Show Minimap'}
               </label>
             </div>
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={() => onShowMinimapChange?.(!showMinimap)}
               className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showMinimap ? 'bg-brand-cyan' : 'bg-neutral-700'
                 }`}
@@ -155,7 +155,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 {t('canvas.showControls') || 'Show Controls'}
               </label>
             </div>
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={() => onShowControlsChange?.(!showControls)}
               className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showControls ? 'bg-brand-cyan' : 'bg-neutral-700'
                 }`}
@@ -180,7 +180,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
               </div>
             </div>
             <div className="flex gap-1">
-              <Button variant="ghost" 
+              <Button variant="ghost"
                 onClick={() => onEdgeStyleChange?.('solid')}
                 className={`px-2 py-1 text-[10px] rounded border transition-colors ${edgeStyle === 'solid'
                   ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
@@ -188,7 +188,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
               >
                 {t('canvas.edgeStyleSolid') || 'Solid'}
               </Button>
-              <Button variant="ghost" 
+              <Button variant="ghost"
                 onClick={() => onEdgeStyleChange?.('dashed')}
                 className={`px-2 py-1 text-[10px] rounded border transition-colors ${edgeStyle === 'dashed'
                   ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
@@ -209,7 +209,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
               </div>
             </div>
             <div className="flex gap-1">
-              <Button variant="ghost" 
+              <Button variant="ghost"
                 onClick={() => onEdgeStrokeWidthChange?.('normal')}
                 className={`px-2 py-1 text-[10px] rounded border transition-colors ${edgeStrokeWidth === 'normal'
                   ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
@@ -217,7 +217,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
               >
                 {t('canvas.edgeWidthBold') || 'Bold'}
               </Button>
-              <Button variant="ghost" 
+              <Button variant="ghost"
                 onClick={() => onEdgeStrokeWidthChange?.('thin')}
                 className={`px-2 py-1 text-[10px] rounded border transition-colors ${edgeStrokeWidth === 'thin'
                   ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
@@ -243,7 +243,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 </span>
               </div>
             </div>
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={() => onExperimentalModeChange?.(!experimentalMode)}
               className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${experimentalMode ? 'bg-brand-cyan' : 'bg-neutral-700'
                 }`}
@@ -304,7 +304,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   {t('canvas.gridColor') || 'Grid Color'}
                 </label>
               </div>
-              <Button variant="ghost" 
+              <Button variant="ghost"
                 onClick={() => onShowGridChange?.(!showGrid)}
                 className={`relative w-8 h-4 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showGrid ? 'bg-brand-cyan' : 'bg-neutral-700'
                   }`}
@@ -401,7 +401,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
         </div>
 
         <div className="mt-4 pt-3 border-t border-neutral-800/50">
-          <Button variant="brand" 
+          <Button variant="brand"
             onClick={onClose}
             className="w-full px-3 py-1.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded-md transition-all text-xs font-mono cursor-pointer"
           >

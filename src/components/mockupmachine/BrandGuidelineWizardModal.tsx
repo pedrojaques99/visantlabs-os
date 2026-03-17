@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Modal } from '../ui/Modal';
 import { GlitchLoader } from '../ui/GlitchLoader';
@@ -7,8 +7,9 @@ import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FileText, X, ShieldCheck } from 'lucide-react';
 import { MicroTitle } from '../ui/MicroTitle';
+import { pdfToBase64, validatePdfFile } from '@/utils/pdfUtils';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -33,6 +34,10 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isIngesting, setIsIngesting] = useState(false);
 
+    // PDF selection state
+    const [pdfFile, setPdfFile] = useState<File | null>(null);
+    const pdfInputRef = useRef<HTMLInputElement>(null);
+
     // Local media/logos state for the gallery (edit mode)
     const [media, setMedia] = useState<BrandGuideline['media']>([]);
     const [logos, setLogos] = useState<BrandGuideline['logos']>([]);
@@ -44,13 +49,33 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             setUrl(editGuideline.identity?.website || '');
             setMedia(editGuideline.media || []);
             setLogos(editGuideline.logos || []);
-        } else if (isOpen) {
             setName('');
             setUrl('');
             setMedia([]);
             setLogos([]);
+            setPdfFile(null);
+            if (pdfInputRef.current) pdfInputRef.current.value = '';
         }
     }, [isOpen, editGuideline]);
+
+    const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const validation = validatePdfFile(file);
+        if (!validation.isValid) {
+            toast.error(validation.error);
+            if (pdfInputRef.current) pdfInputRef.current.value = '';
+            return;
+        }
+
+        setPdfFile(file);
+    };
+
+    const removePdf = () => {
+        setPdfFile(null);
+        if (pdfInputRef.current) pdfInputRef.current.value = '';
+    };
 
     const trimmedName = name.trim();
     const trimmedUrl = url.trim();
@@ -61,6 +86,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         if (isSubmitting || isIngesting) return;
         setName('');
         setUrl('');
+        setPdfFile(null);
         onClose();
     }, [isSubmitting, isIngesting, onClose]);
 
@@ -70,62 +96,72 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
 
         setIsSubmitting(true);
         try {
+            let workingId: string;
+
             if (isEditMode) {
                 const updatedData: Partial<BrandGuideline> = {
                     identity: { name: trimmedName, website: trimmedUrl || undefined },
                 };
                 await brandGuidelineApi.update(editGuideline!.id!, updatedData);
-
-                const oldUrl = editGuideline!.identity?.website || '';
-                if (hasUrl && trimmedUrl !== oldUrl) {
-                    setIsSubmitting(false);
-                    setIsIngesting(true);
-                    try {
-                        await brandGuidelineApi.ingest(editGuideline!.id!, { source: 'url', url: trimmedUrl });
-                        toast.success(t('mockup.brandWizardSuccessWithExtraction'));
-                    } catch {
-                        toast.warning(t('mockup.brandWizardErrorIngest'));
-                    }
-                    setIsIngesting(false);
-                } else {
-                    toast.success(t('mockup.brandWizardEditSuccess'));
-                }
-
-                setName('');
-                setUrl('');
-                onSuccess(editGuideline!.id!);
+                workingId = editGuideline!.id!;
             } else {
                 const newGuideline = await brandGuidelineApi.create({
                     identity: { name: trimmedName, website: trimmedUrl || undefined },
                 });
+                workingId = newGuideline.id!;
+            }
 
-                const newId = newGuideline.id!;
-
-                if (hasUrl) {
+            // Handle URL Ingestion
+            if (hasUrl) {
+                const oldUrl = isEditMode ? (editGuideline!.identity?.website || '') : '';
+                if (!isEditMode || (isEditMode && trimmedUrl !== oldUrl)) {
                     setIsSubmitting(false);
                     setIsIngesting(true);
                     try {
-                        await brandGuidelineApi.ingest(newId, { source: 'url', url: trimmedUrl });
+                        await brandGuidelineApi.ingest(workingId, { source: 'url', url: trimmedUrl });
                         toast.success(t('mockup.brandWizardSuccessWithExtraction'));
                     } catch {
                         toast.warning(t('mockup.brandWizardErrorIngest'));
                     }
                     setIsIngesting(false);
-                } else {
-                    toast.success(t('mockup.brandWizardSuccess'));
+                } else if (isEditMode) {
+                    toast.success(t('mockup.brandWizardEditSuccess'));
                 }
-
-                setName('');
-                setUrl('');
-                onSuccess(newId);
+            } else if (!pdfFile) {
+                if (isEditMode) toast.success(t('mockup.brandWizardEditSuccess'));
+                else toast.success(t('mockup.brandWizardSuccess'));
             }
+
+            // Handle PDF Ingestion
+            if (pdfFile) {
+                setIsSubmitting(false);
+                setIsIngesting(true);
+                try {
+                    const base64 = await pdfToBase64(pdfFile);
+                    await brandGuidelineApi.ingest(workingId, {
+                        source: 'pdf',
+                        data: base64,
+                        filename: pdfFile.name
+                    });
+                    toast.success(t('mockup.brandWizardSuccessWithExtraction'));
+                } catch {
+                    toast.error(t('mockup.brandWizardErrorPdf'));
+                }
+                setIsIngesting(false);
+            }
+
+            setName('');
+            setUrl('');
+            setPdfFile(null);
+            onSuccess(workingId);
+
         } catch {
             toast.error(isEditMode ? t('mockup.brandWizardErrorEdit') : t('mockup.brandWizardErrorCreate'));
         } finally {
             setIsSubmitting(false);
             setIsIngesting(false);
         }
-    }, [canSubmit, isEditMode, trimmedName, trimmedUrl, editGuideline, hasUrl, onSuccess, t]);
+    }, [canSubmit, isEditMode, trimmedName, trimmedUrl, editGuideline, hasUrl, pdfFile, onSuccess, t]);
 
     const submitLabel = isIngesting
         ? t('mockup.brandWizardExtracting')
@@ -148,7 +184,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             closeOnEscape={!isSubmitting && !isIngesting}
             footer={
                 <div className="flex items-center gap-3 w-full">
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                         type="button"
                         onClick={handleClose}
                         disabled={isSubmitting || isIngesting}
@@ -156,7 +192,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                     >
                         {t('mockup.brandWizardCancel')}
                     </Button>
-                    <Button variant="brand" 
+                    <Button variant="brand"
                         type="submit"
                         form="brand-wizard-form"
                         disabled={!canSubmit}
@@ -209,6 +245,61 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                             Colors, typography, and brand details will be auto-extracted.
                         </MicroTitle>
                     )}
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                    <MicroTitle as="label" htmlFor="brand-wizard-pdf">
+                        {t('mockup.brandWizardPdfLabel')}
+                    </MicroTitle>
+                    <input
+                        ref={pdfInputRef}
+                        id="brand-wizard-pdf"
+                        type="file"
+                        accept=".pdf"
+                        onChange={handlePdfChange}
+                        className="hidden"
+                        disabled={isSubmitting || isIngesting}
+                    />
+
+                    {!pdfFile ? (
+                        <button
+                            type="button"
+                            onClick={() => pdfInputRef.current?.click()}
+                            disabled={isSubmitting || isIngesting}
+                            className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/5 hover:border-brand-cyan/30 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group"
+                        >
+                            <div className="flex items-center gap-3">
+                                <FileText size={18} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
+                                <span className="text-xs truncate">{t('mockup.brandWizardPdfPlaceholder')}</span>
+                            </div>
+                            <ShieldCheck size={14} className="text-neutral-800 group-hover:text-brand-cyan/40" />
+                        </button>
+                    ) : (
+                        <div className="flex items-center justify-between gap-3 bg-brand-cyan/5 border border-brand-cyan/20 rounded-md px-3 py-2.5 overflow-hidden">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <FileText size={18} className="text-brand-cyan shrink-0" />
+                                <div className="flex flex-col min-w-0">
+                                    <span className="text-[10px] font-mono text-brand-cyan/60 uppercase leading-none mb-1">
+                                        {t('mockup.brandWizardPdfSelected')}
+                                    </span>
+                                    <span className="text-[11px] font-mono text-white truncate">
+                                        {pdfFile.name}
+                                    </span>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={removePdf}
+                                className="p-1.5 rounded-full hover:bg-white/5 text-neutral-600 hover:text-white transition-colors"
+                            >
+                                <X size={14} />
+                            </button>
+                        </div>
+                    )}
+
+                    <MicroTitle as="p" className="text-neutral-700 mt-0.5 lowercase">
+                        {t('mockup.brandWizardPdfHint')}
+                    </MicroTitle>
                 </div>
             </form>
 

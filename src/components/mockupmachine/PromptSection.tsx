@@ -239,7 +239,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           {/* Hide suggest button when prompt is empty */}
           {promptPreview.trim() && (
             <Tooltip content={t('mockup.suggestTooltip')} position="top">
-              <Button variant="ghost"                 onClick={onSuggestPrompts}
+              <Button variant="ghost" onClick={onSuggestPrompts}
                 disabled={isSuggestingPrompts || !promptPreview.trim() || isGeneratingPrompt}
                 className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${theme === 'dark' ? 'text-neutral-500 disabled:text-neutral-600' : 'text-neutral-600 disabled:text-neutral-400'
                   }`}
@@ -313,7 +313,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                 className={`flex flex-col gap-2 p-2 rounded-md border ${theme === 'dark' ? 'bg-neutral-900/50 border-neutral-700/50' : 'bg-neutral-100 border-neutral-300'
                   }`}
               >
-                <Button variant="ghost"                   onClick={() => onSuggestionClick(suggestion)}
+                <Button variant="ghost" onClick={() => onSuggestionClick(suggestion)}
                   className={`w-full text-left text-xs font-mono transition-colors cursor-pointer ${theme === 'dark' ? 'text-neutral-200 hover:text-neutral-200' : 'text-neutral-700 hover:text-neutral-900'
                     }`}
                 >
@@ -332,10 +332,10 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                       }
                       position="top"
                     >
-                      <Button variant="ghost"                         onClick={(e) => {
-                          e.stopPropagation();
-                          onGenerateSuggestion(suggestion);
-                        }}
+                      <Button variant="ghost" onClick={(e) => {
+                        e.stopPropagation();
+                        onGenerateSuggestion(suggestion);
+                      }}
                         disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
                         className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 min-h-[44px]"
                         aria-label={isGenerating ? t('mockup.generatingOutputs') : t('mockup.generateOutputs')}
