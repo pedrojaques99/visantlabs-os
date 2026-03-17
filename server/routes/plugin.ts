@@ -10,6 +10,9 @@ import { ObjectId } from 'mongodb';
 import WebSocket, { WebSocketServer } from 'ws';
 import type { BrandGuideline } from '../types/brandGuideline.js';
 import { buildBrandContext } from '../lib/brandContextBuilder.js';
+import { resolveBrandGuideline, buildGuidelineChoiceContext } from '../lib/brandResolver.js';
+import { scanTemplates, buildTemplateContext } from '../lib/templateScanner.js';
+import { buildFormatPresetsContext } from '../lib/formatPresets.js';
 
 const router = express.Router();
 
@@ -836,15 +839,17 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // Phase 5: Fetch saved brand guideline if brandGuidelineId is provided
+    // ═══ BRANDED SOCIAL POSTS: Auto-resolve brand guideline ═══
     let brandGuideline: BrandGuideline | null = brandGuidelineFromUI || null;
+    let brandChoiceContext = '';
+
+    // Try explicit brandGuidelineId first
     if (brandGuidelineId && !brandGuideline) {
       try {
         const savedGuideline = await prisma.brandGuideline.findUnique({
           where: { id: brandGuidelineId },
         });
         if (savedGuideline) {
-          // Reconstruct BrandGuideline object from Prisma model
           brandGuideline = {
             id: savedGuideline.id,
             identity: savedGuideline.identity as any,
@@ -860,9 +865,41 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         }
       } catch (bgError) {
         console.error('[Plugin] Error fetching brand guideline:', bgError);
-        // Continue without brand guideline
       }
     }
+
+    // If still no brand, try auto-resolve from project linkage
+    if (!brandGuideline && fileId && req.userId) {
+      try {
+        const brandResult = await resolveBrandGuideline(fileId, req.userId, brandGuidelineId);
+        if (brandResult.guideline) {
+          brandGuideline = brandResult.guideline;
+          console.log('[Plugin] Auto-resolved brand guideline from project linkage');
+        } else if (brandResult.needsUserChoice) {
+          brandChoiceContext = buildGuidelineChoiceContext(brandResult.availableGuidelines);
+          console.log('[Plugin] No linked brand, LLM will ask user to choose');
+        }
+      } catch (resolveError) {
+        console.error('[Plugin] Error auto-resolving brand:', resolveError);
+      }
+    }
+
+    // ═══ BRANDED SOCIAL POSTS: Scan templates ═══
+    let templateContext = '';
+    if (fileId && pluginBridge.getSession(fileId)) {
+      try {
+        const templates = await scanTemplates(fileId);
+        templateContext = buildTemplateContext(templates);
+        if (templates.length > 0) {
+          console.log(`[Plugin] Found ${templates.length} templates in file`);
+        }
+      } catch (templateError) {
+        console.error('[Plugin] Error scanning templates:', templateError);
+      }
+    }
+
+    // ═══ BRANDED SOCIAL POSTS: Format presets ═══
+    const formatPresetsContext = buildFormatPresetsContext();
 
     // FASE 3: Load or create session for chat memory
     let chatHistory = '';
@@ -903,7 +940,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     const provider = chooseProvider(command, contextSize);
 
     // Build context-aware prompt
-    const systemPrompt = buildSystemPrompt(
+    let systemPrompt = buildSystemPrompt(
       {
         command,
         selectedElements,
@@ -924,6 +961,23 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       chatHistory,
       thinkMode
     );
+
+    // ═══ BRANDED SOCIAL POSTS: Inject additional context ═══
+    const additionalContext = [
+      brandChoiceContext,
+      templateContext,
+      formatPresetsContext,
+    ].filter(Boolean).join('\n\n');
+
+    if (additionalContext) {
+      // Insert before "═══ OPERAÇÕES DISPONÍVEIS ═══"
+      const insertPoint = systemPrompt.indexOf('═══ OPERAÇÕES DISPONÍVEIS ═══');
+      if (insertPoint > 0) {
+        systemPrompt = systemPrompt.slice(0, insertPoint) + additionalContext + '\n\n' + systemPrompt.slice(insertPoint);
+      } else {
+        systemPrompt += '\n\n' + additionalContext;
+      }
+    }
 
     const userPrompt = `═══ PEDIDO DO USUÁRIO ═══\n\n"${command}"`;
 

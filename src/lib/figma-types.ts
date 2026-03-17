@@ -41,6 +41,16 @@ export type FigmaEffect = {
 
 export type RGBA = { r: number; g: number; b: number; a: number };
 
+// ── Template Scanning ──
+
+export interface TemplateSpec {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  childCount: number;
+}
+
 // ── Figma Operations (38 types) ──
 
 export type FigmaOperation =
@@ -668,7 +678,9 @@ export type UIMessage =
   | { type: 'GET_BRAND_GUIDELINE' }
   | { type: 'SAVE_BRAND_GUIDELINE'; selectedId: string | null; guideline: string | null }
   // Undo
-  | { type: 'UNDO_LAST_BATCH' };
+  | { type: 'UNDO_LAST_BATCH' }
+  // Template Scanning
+  | { type: 'GET_TEMPLATES'; requestId?: string };
 
 // ── Sandbox → UI messages ──
 
@@ -698,4 +710,6 @@ export type PluginMessage =
   | { type: 'GUIDELINE_SAVED'; guidelines: BrandGuideline[]; savedId: string }
   // Brand Guidelines V2
   | { type: 'BRAND_GUIDELINE_LOADED'; selectedId: string | null; guideline: string | null }
-  | { type: 'BRAND_GUIDELINE_SAVED' };
+  | { type: 'BRAND_GUIDELINE_SAVED' }
+  // Template Scanning
+  | { type: 'TEMPLATES_RESULT'; requestId?: string; templates: TemplateSpec[] };
