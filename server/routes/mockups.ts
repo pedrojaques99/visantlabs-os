@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
-import { generateMockup, RateLimitError } from '../../src/services/geminiService.js';
+import { generateMockup, RateLimitError, ModelResponseTextError } from '../../src/services/geminiService.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
@@ -1320,16 +1320,28 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
 
     // Return appropriate error status code
     let statusCode = 500;
+    let errorResponse: any = {
+      error: 'Failed to generate mockup',
+      message: error.message || 'An error occurred while generating the image'
+    };
+
     if (error.message?.includes('Insufficient credits')) {
       statusCode = 403;
     } else if (error instanceof RateLimitError || error.name === 'RateLimitError' || error.message?.includes('Rate limit exceeded')) {
       statusCode = 429;
+    } else if (error.name === 'ModelResponseTextError' || error.message?.startsWith('MODEL_RESPONSE_TEXT:')) {
+      // Model responded with text instead of generating an image
+      // Extract the model's response to show user-friendly feedback
+      const modelResponse = error.modelResponse || error.message?.replace('MODEL_RESPONSE_TEXT:', '') || '';
+      statusCode = 422; // Unprocessable Entity - request was valid but model couldn't generate image
+      errorResponse = {
+        error: 'model_response_text',
+        message: modelResponse,
+        isModelQuestion: true // Flag for frontend to show friendly UI
+      };
     }
 
-    res.status(statusCode).json({
-      error: 'Failed to generate mockup',
-      message: error.message || 'An error occurred while generating the image'
-    });
+    res.status(statusCode).json(errorResponse);
   }
 });
 
