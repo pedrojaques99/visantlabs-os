@@ -26,7 +26,7 @@ import {
   buildNavigationWithMcpTools,
   generateTabMarkdown,
   PLATFORM_MCP_TOOLS,
-} from './docs';
+} from './docs/index';
 
 export const DocsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -179,7 +179,7 @@ export const DocsPage: React.FC = () => {
       observers.forEach(observer => observer.disconnect());
       sectionVisibility.clear();
     };
-  }, [activeTab, mcpSpec]); // Add dependencies needed
+  }, [activeTab, navigationItems]);
 
   const renderMethodBadge = (method: string) => {
     let className = 'bg-neutral-800 text-neutral-300';
@@ -215,7 +215,7 @@ export const DocsPage: React.FC = () => {
 
               {ep.parameters && ep.parameters.length > 0 && (
                 <div className="mt-4">
-                  <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Parameters</h4>
+                  <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Parameters</h4>
                   <div className="border border-border rounded-md overflow-hidden">
                     <table className="w-full text-sm text-left">
                       <thead className="bg-secondary/50">
@@ -500,7 +500,7 @@ export const DocsPage: React.FC = () => {
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Claude Desktop</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Claude Desktop</h4>
                           <p className="text-muted-foreground text-sm mb-2">Add to your <code className="font-redhatmono bg-secondary px-1 rounded">claude_desktop_config.json</code>:</p>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">Platform MCP (SSE)</div>
@@ -538,7 +538,7 @@ export const DocsPage: React.FC = () => {
                         <Separator />
 
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Cursor / VS Code</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Cursor / VS Code</h4>
                           <p className="text-muted-foreground text-sm mb-2">Add to your <code className="font-redhatmono bg-secondary px-1 rounded">.cursor/mcp.json</code> or workspace settings:</p>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">mcp.json</div>
@@ -559,7 +559,7 @@ export const DocsPage: React.FC = () => {
                         <Separator />
 
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Custom Agent (TypeScript)</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Custom Agent (TypeScript)</h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">@modelcontextprotocol/sdk</div>
                             <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -639,7 +639,7 @@ const result = await client.callTool({
                             </CardHeader>
                             <CardContent className="pt-6 space-y-6">
                               <div>
-                                <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Input Schema</h4>
+                                <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Input Schema</h4>
                                 <div className="border border-border rounded-md overflow-hidden">
                                   <table className="w-full text-sm text-left">
                                     <thead className="bg-secondary/50">
@@ -676,7 +676,7 @@ const result = await client.callTool({
 
                               {tool.examples && tool.examples.length > 0 && (
                                 <div>
-                                  <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Example</h4>
+                                  <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Example</h4>
                                   <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                                     <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">
                                       Input JSON
@@ -838,14 +838,14 @@ const result = await client.callTool({
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-2">Solid Fill</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-2">Solid Fill</h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">JSON</div>
                             <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{ "type": "SOLID", "color": { "r": 0.98, "g": 0.35, "b": 0.35 }, "opacity": 1 }`}</pre>
                           </div>
                         </div>
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-2">Linear Gradient</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-2">Linear Gradient</h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">JSON</div>
                             <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
@@ -859,7 +859,7 @@ const result = await client.callTool({
                           </div>
                         </div>
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-2">Inner Shadow Effect</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-2">Inner Shadow Effect</h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">JSON</div>
                             <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
@@ -957,7 +957,7 @@ figma.ui.onmessage = async (msg) => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Layer Structure</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Layer Structure</h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`Instagram Post — 1080x1080  (FRAME, VERTICAL auto-layout)
 ├── Header                  (FRAME, HORIZONTAL, padding H:32 V:24, gap:16)
@@ -980,7 +980,7 @@ figma.ui.onmessage = async (msg) => {
                         </div>
 
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Key Dimension Decisions</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Key Dimension Decisions</h4>
                           <div className="border border-border rounded-md overflow-hidden">
                             <table className="w-full text-sm text-left">
                               <thead className="bg-secondary/50">
@@ -1039,7 +1039,7 @@ figma.ui.onmessage = async (msg) => {
                           },
                         ].map(({ title, code }) => (
                           <div key={title}>
-                            <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-2">{title}</h4>
+                            <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-2">{title}</h4>
                             <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                               <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{code}</pre>
                             </div>
@@ -1087,7 +1087,7 @@ figma.ui.onmessage = async (msg) => {
                             { step: '3', title: 'Persist Changes', desc: 'PUT /api/canvas/:id with the full updated nodes[] and edges[] to save.' },
                           ].map(({ step, title, desc }) => (
                             <div key={step} className="bg-card border border-border rounded-md p-4">
-                              <div className="text-brand-cyan font-redhatmono text-xs uppercase  mb-1">Step {step}</div>
+                              <div className="text-brand-cyan font-redhatmono text-xs uppercase mb-1">Step {step}</div>
                               <div className="font-medium text-foreground mb-1">{title}</div>
                               <div className="text-muted-foreground text-xs">{desc}</div>
                             </div>
@@ -1515,7 +1515,7 @@ Content-Type: application/json`}</pre>
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Workflow A — Create a canvas with a prompt node and read the result</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Workflow A — Create a canvas with a prompt node and read the result</h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">JavaScript / TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`const BASE = "https://your-domain.com/api";
@@ -1562,7 +1562,7 @@ console.log("Generated image:", imageUrl);`}</pre>
                         </div>
 
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Workflow B — Add a node to an existing project</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Workflow B — Add a node to an existing project</h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">JavaScript / TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`// Fetch current state
@@ -1589,7 +1589,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                         </div>
 
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Workflow C — Upload an image and set it in an image node</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Workflow C — Upload an image and set it in an image node</h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">JavaScript / TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`// Step 1 — Upload image to R2
@@ -1645,7 +1645,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Top-level structure</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Top-level structure</h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`interface VisantCanvasExport {
@@ -1665,11 +1665,11 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                         </div>
 
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Fields stripped on export</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Fields stripped on export</h4>
                           <p className="text-sm text-muted-foreground mb-3">The following fields are removed from node data before export to keep files portable and compact:</p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="bg-secondary/20 rounded-md border border-border p-3">
-                              <p className="font-redhatmono text-xs text-muted-foreground uppercase  mb-2">Large binary data (kept as R2 URLs)</p>
+                              <p className="font-redhatmono text-xs text-muted-foreground uppercase mb-2">Large binary data (kept as R2 URLs)</p>
                               <ul className="space-y-0.5 text-xs font-redhatmono text-foreground">
                                 {['resultImageBase64', 'resultVideoBase64', 'imageBase64', 'base64', 'pdfBase64', 'identityPdfBase64', 'identityImageBase64', 'logoBase64', 'uploadedVideo', 'startFrame', 'endFrame'].map(f => (
                                   <li key={f} className="text-muted-foreground"><span className="text-brand-cyan">−</span> {f}</li>
@@ -1677,7 +1677,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                               </ul>
                             </div>
                             <div className="bg-secondary/20 rounded-md border border-border p-3">
-                              <p className="font-redhatmono text-xs text-muted-foreground uppercase  mb-2">Transient / recomputed from edges</p>
+                              <p className="font-redhatmono text-xs text-muted-foreground uppercase mb-2">Transient / recomputed from edges</p>
                               <ul className="space-y-0.5 text-xs font-redhatmono text-foreground">
                                 {['connectedImages', 'connectedImage', 'connectedLogo', 'connectedPdf', 'connectedText', 'connectedVideo', 'oversizedWarning', 'isGenerating', 'isLoading', 'promptSuggestions', 'suggestedTags', 'userMockups'].map(f => (
                                   <li key={f} className="text-muted-foreground"><span className="text-brand-cyan">−</span> {f}</li>
@@ -1688,7 +1688,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                         </div>
 
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Exporting programmatically</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Exporting programmatically</h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`import { exportCanvasToJson, downloadJsonFile } from '@/utils/canvas/canvasJsonExport';
@@ -1702,7 +1702,7 @@ downloadJsonFile(exported, projectName);`}</pre>
                         </div>
 
                         <div>
-                          <h4 className="font-redhatmono text-xs uppercase  text-muted-foreground mb-3">Importing programmatically</h4>
+                          <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">Importing programmatically</h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`import { readJsonFile, validateVisantJson } from '@/utils/canvas/canvasJsonExport';
