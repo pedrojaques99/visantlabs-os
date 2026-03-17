@@ -220,7 +220,7 @@ export const PublicBrandGuideline: React.FC = () => {
             }}
             className={cn(
               "group flex items-center gap-3 transition-all duration-300",
-              activeTab === tab.id ? "translate-x-2" : "opacity-40 hover:opacity-100"
+              activeTab === tab.id ? "translate-x-2" : "opacity-300 hover:opacity-300"
             )}
           >
             <div className={cn(
@@ -264,7 +264,7 @@ export const PublicBrandGuideline: React.FC = () => {
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight font-manrope">{brandName}</h1>
           {guideline.identity?.tagline && (
-            <p className="text-xl md:text-2xl text-neutral-500 italic max-w-2xl mx-auto font-serif">
+            <p className="text-xl md:text-2xl text-neutral-500  max-w-2xl mx-auto font-serif">
               "{guideline.identity.tagline}"
             </p>
           )}
@@ -360,7 +360,7 @@ export const PublicBrandGuideline: React.FC = () => {
                       <MicroTitle className="text-brand-cyan/60 tracking-[0.4em]">[Manifesto]</MicroTitle>
                     </div>
                     <div className="relative group">
-                      <div className="absolute -inset-8 bg-brand-cyan/[0.02] blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                      <div className="absolute -inset-8 bg-brand-cyan/[0.02] blur-3xl rounded-full opacity-0 group-hover:opacity-300 transition-opacity duration-1000" />
                       <h3 className="text-4xl md:text-6xl font-bold text-white tracking-tight font-manrope leading-[1.1]">
                         {guideline.strategy.manifesto.split('\n')[0]}
                       </h3>
@@ -392,9 +392,9 @@ export const PublicBrandGuideline: React.FC = () => {
                               <Sparkles size={12} />
                             </div>
                             <div className="flex-1 flex items-center justify-center py-8">
-                              {arch.image ? <img src={arch.image} className="w-full object-contain" /> : <Sparkles size={64} className="opacity-10" />}
+                              {arch.image ? <img src={arch.image} className="w-full object-contain" /> : <Sparkles size={64} className="opacity-30" />}
                             </div>
-                            <div className="w-full text-center border-t border-neutral-900 pt-2 font-bold uppercase tracking-widest text-xs italic">
+                            <div className="w-full text-center border-t border-neutral-900 pt-2 font-bold uppercase tracking-widest text-xs ">
                               {arch.name}
                             </div>
                           </div>
@@ -431,7 +431,7 @@ export const PublicBrandGuideline: React.FC = () => {
                         <GlassPanel key={i} padding="lg" className="border-white/5 bg-white/[0.01]">
                           <div className="flex flex-col md:flex-row gap-12">
                             <div className="w-full md:w-1/3 aspect-square rounded-[32px] overflow-hidden border border-white/10 shadow-2xl">
-                              {persona.image ? <img src={persona.image} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-neutral-900 flex items-center justify-center"><User size={64} className="opacity-10" /></div>}
+                              {persona.image ? <img src={persona.image} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-neutral-900 flex items-center justify-center"><User size={64} className="opacity-30" /></div>}
                             </div>
                             <div className="flex-1 space-y-8">
                               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -459,7 +459,7 @@ export const PublicBrandGuideline: React.FC = () => {
                               </div>
 
                               {persona.bio && (
-                                <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] italic">
+                                <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] ">
                                   <p className="text-sm text-neutral-300 font-light leading-relaxed">"{persona.bio}"</p>
                                 </div>
                               )}
@@ -492,7 +492,7 @@ export const PublicBrandGuideline: React.FC = () => {
                               <h4 className="text-2xl font-bold text-white">{v.title}</h4>
                               <div className="space-y-2">
                                 <span className="text-[10px] font-bold uppercase text-neutral-600 tracking-widest">Como soa:</span>
-                                <p className="text-sm text-neutral-400 leading-relaxed italic">{v.description}</p>
+                                <p className="text-sm text-neutral-400 leading-relaxed ">{v.description}</p>
                               </div>
                               <div className="space-y-3 pt-8 mt-auto">
                                 <span className="text-[10px] font-bold uppercase text-neutral-600 tracking-widest">Exemplo de frase:</span>
@@ -534,8 +534,8 @@ export const PublicBrandGuideline: React.FC = () => {
                       >
                         <div className="relative aspect-square rounded-2xl overflow-hidden border border-white/10 transition-all group-hover:scale-105 group-hover:border-brand-cyan/30 shadow-2xl">
                           <div className="absolute inset-0" style={{ backgroundColor: color.hex }} />
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-300 transition-opacity" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-300 transition-opacity bg-black/20 backdrop-blur-[2px]">
                             <span className="text-[10px] font-mono text-white opacity-60">COPY HEX</span>
                           </div>
                         </div>
@@ -626,7 +626,7 @@ export const PublicBrandGuideline: React.FC = () => {
                           <img src={logo.url} alt={logo.label || 'Logo'} className="w-full h-full object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] group-hover:scale-105 transition-transform duration-500" />
 
                           {/* Quick Actions */}
-                          <div className="absolute inset-x-4 bottom-4 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                          <div className="absolute inset-x-4 bottom-4 flex gap-2 opacity-0 group-hover:opacity-300 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                             <Button
                               className="flex-1 h-9 rounded-xl bg-neutral-900/90 backdrop-blur border border-white/10 text-[9px] font-mono uppercase tracking-widest gap-2 hover:bg-brand-cyan hover:text-black transition-all"
                               onClick={() => {
@@ -671,9 +671,9 @@ export const PublicBrandGuideline: React.FC = () => {
                       >
                         <div className="relative aspect-[16/10] rounded-3xl overflow-hidden border border-white/[0.04] shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-white/10">
                           <img src={item.url} alt={item.label || 'Media'} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-300 transition-opacity" />
 
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-300 transition-all">
                             <Button
                               size="icon"
                               className="w-14 h-14 rounded-full bg-brand-cyan text-black shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.5)] active:scale-90 transition-all"
@@ -713,7 +713,7 @@ export const PublicBrandGuideline: React.FC = () => {
                     {guideline.guidelines?.voice && (
                       <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05]">
                         <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest mb-4 block">Tone of Voice</span>
-                        <p className="text-sm text-neutral-400 leading-relaxed italic">"{guideline.guidelines.voice}"</p>
+                        <p className="text-sm text-neutral-400 leading-relaxed ">"{guideline.guidelines.voice}"</p>
                       </div>
                     )}
                   </div>

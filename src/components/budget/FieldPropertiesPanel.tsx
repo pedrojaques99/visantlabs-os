@@ -145,7 +145,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
         <p className="text-xs text-neutral-400 font-mono mb-3">
           {mapping.label || mapping.fieldId}
         </p>
-        <Button variant="destructive" 
+        <Button variant="destructive"
           onClick={onRemove}
           className="w-full px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-red-400"
           title="Remover campo (Delete)"
@@ -216,7 +216,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
           <label className="block text-xs text-neutral-400 mb-2 font-mono">
             Estilo
           </label>
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={() => updateLocal({ bold: !isBold })}
             className={`w-full px-3 py-2 rounded-md border transition-colors flex items-center justify-center gap-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${isBold
               ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
@@ -259,7 +259,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             Alinhamento
           </label>
           <div className="flex gap-2">
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={() => updateLocal({ align: 'left' })}
               className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${(getValue('align') || 'left') === 'left'
                 ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
@@ -271,7 +271,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             >
               <AlignLeft size={18} className="mx-auto" />
             </Button>
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={() => updateLocal({ align: 'center' })}
               className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${getValue('align') === 'center'
                 ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
@@ -283,7 +283,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             >
               <AlignCenter size={18} className="mx-auto" />
             </Button>
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={() => updateLocal({ align: 'right' })}
               className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${getValue('align') === 'right'
                 ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
@@ -361,7 +361,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
       {/* Apply/Dismiss buttons */}
       {hasChanges && (
         <div className="p-4 border-t border-neutral-800 flex gap-2">
-          <Button variant="brand" 
+          <Button variant="brand"
             onClick={handleApply}
             className="flex-1 px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-md text-brand-cyan font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
             title="Aplicar mudanças"
@@ -370,7 +370,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             <Check size={16} />
             Aplicar
           </Button>
-          <Button variant="outline" 
+          <Button variant="outline"
             onClick={handleDismiss}
             className="flex-1 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-neutral-500"
             title="Descartar mudanças"

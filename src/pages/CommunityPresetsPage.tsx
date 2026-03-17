@@ -761,7 +761,7 @@ export const CommunityPresetsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
       <div className="fixed inset-0 z-0">
-              </div>
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         <div className="mb-6">
@@ -1181,7 +1181,7 @@ const PresetDetailModal: React.FC<{
                     e.stopPropagation();
                     setIsImageFullscreen(true);
                   }}
-                    className="absolute top-2 right-2 p-1.5 bg-neutral-950/60 hover:bg-neutral-950/80 backdrop-blur-sm border border-neutral-700/50 rounded-md text-neutral-300 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                    className="absolute top-2 right-2 p-1.5 bg-neutral-950/60 hover:bg-neutral-950/80 backdrop-blur-sm border border-neutral-700/50 rounded-md text-neutral-300 hover:text-white transition-all opacity-0 group-hover:opacity-300"
                     title="View fullscreen"
                   >
                     <Maximize2 size={14} />

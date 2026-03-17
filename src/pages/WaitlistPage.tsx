@@ -78,7 +78,7 @@ export const WaitlistPage: React.FC = () => {
             direction="vertical"
             fullHeight={true}
           />
-                  </div>
+        </div>
         <div className="max-w-3xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
           {/* Main Content Card */}
           <GlassPanel padding="lg" className="md:p-12 shadow-sm relative overflow-hidden">
@@ -140,7 +140,7 @@ export const WaitlistPage: React.FC = () => {
                   <div className="text-green-400 text-sm font-mono mb-4">
                     {t('waitlist.addedToWaitlist') || '✓ You\'ve been added to the waitlist!'}
                   </div>
-                  <Button variant="ghost"                     onClick={() => setIsSubmitted(false)}
+                  <Button variant="ghost" onClick={() => setIsSubmitted(false)}
                     className="text-brand-cyan hover:text-brand-cyan/80 text-sm font-mono underline"
                   >
                     {t('waitlist.addAnotherEmail') || 'Add another email'}

@@ -250,7 +250,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             >
               <Download size={14} />
             </Button>
-            <div className="absolute right-0 top-full mt-1 w-52 bg-[#1a1a1a] border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
+            <div className="absolute right-0 top-full mt-1 w-52 bg-[#1a1a1a] border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-300 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
               <Button variant="ghost" onClick={() => onExportImagesRequest?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
               >

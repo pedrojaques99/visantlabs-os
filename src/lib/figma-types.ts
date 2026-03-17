@@ -370,6 +370,7 @@ export type FigmaOperation =
       width?: number;
       height?: number;
     };
+    textOverrides?: Array<{ name: string; content: string }>;
   }
   | {
     type: 'DUPLICATE_NODE';
@@ -383,6 +384,7 @@ export type FigmaOperation =
       width?: number;
       height?: number;
     };
+    textOverrides?: Array<{ name: string; content: string }>;
   }
   | {
     type: 'REORDER_CHILD';
@@ -459,6 +461,27 @@ export type FigmaOperation =
 
 // ── Serialized context ──
 
+export type SerializedFill = {
+  type: string;
+  color?: { r: number; g: number; b: number };
+  opacity?: number;
+  imageHash?: string | null;
+  scaleMode?: string;
+};
+
+export type SerializedStroke = {
+  type: string;
+  color?: { r: number; g: number; b: number };
+  opacity?: number;
+};
+
+export type SerializedEffect = {
+  type: string;
+  radius?: number;
+  color?: { r: number; g: number; b: number; a: number };
+  offset?: { x: number; y: number };
+};
+
 export type SerializedNode = {
   id: string;
   type: string;
@@ -478,11 +501,11 @@ export type SerializedNode = {
   counterAxisAlignItems?: string;
   childCount?: number;
   // Appearance
-  fills?: Array<{ type: string; color?: { r: number; g: number; b: number }; opacity?: number }>;
-  strokes?: Array<{ type: string; color?: { r: number; g: number; b: number }; opacity?: number }>;
+  fills?: SerializedFill[];
+  strokes?: SerializedStroke[];
   strokeWeight?: number;
   cornerRadius?: number;
-  effects?: Array<{ type: string; radius?: number; color?: { r: number; g: number; b: number; a: number }; offset?: { x: number; y: number } }>;
+  effects?: SerializedEffect[];
   opacity?: number;
   constraints?: { horizontal: string; vertical: string };
   // Layout sizing (for children of auto-layout)
@@ -491,6 +514,11 @@ export type SerializedNode = {
   // Text
   characters?: string;
   fontSize?: number;
+  fontFamily?: string;
+  fontStyle?: string;
+  textAlignHorizontal?: string;
+  textAlignVertical?: string;
+  textAutoResize?: string;
   // Component
   componentKey?: string;
   componentName?: string;

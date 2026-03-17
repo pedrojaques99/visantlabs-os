@@ -5,12 +5,23 @@
 
 import { pluginBridge } from './pluginBridge.js';
 
+export interface TemplateTextLayer {
+  id: string;
+  name: string;
+  characters: string;
+  fontFamily?: string;
+  fontStyle?: string;
+  fontSize?: number;
+}
+
 export interface TemplateSpec {
   id: string;
   name: string;
   width: number;
   height: number;
   childCount: number;
+  textLayers?: TemplateTextLayer[];
+  hasImages?: boolean;
 }
 
 /**
@@ -38,18 +49,48 @@ export function buildTemplateContext(templates: TemplateSpec[]): string {
   }
 
   const lines = [
-    '## AVAILABLE TEMPLATES',
-    'The following templates are available in this Figma file (frames named [Template] ...):',
+    '## ⚠️ TEMPLATES — REGRA CRÍTICA',
+    '',
+    '**Templates são INTOCÁVEIS. NUNCA use SET_TEXT_CONTENT, SET_FILL ou qualquer edição no template original!**',
+    '',
+    '### Como usar:',
+    '```json',
+    '{ "type": "CLONE_NODE", "sourceNodeId": "<template-id>",',
+    '  "textOverrides": [{ "name": "<nome-do-texto>", "content": "Novo texto" }] }',
+    '```',
+    '',
+    '- `textOverrides` troca textos PELO NOME do layer durante o clone',
+    '- Uma única operação: clona + troca texto, sem tocar no original',
+    '',
+    '### Templates disponíveis:',
     '',
   ];
 
   for (const t of templates) {
-    lines.push(`- **${t.name}** (${t.width}x${t.height}, ${t.childCount} layers)`);
+    lines.push(`#### ${t.name}`);
+    lines.push(`- ID: \`${t.id}\` | Dimensões: ${t.width}x${t.height}${t.hasImages ? ' | Contém imagens' : ''}`);
+
+    if (t.textLayers && t.textLayers.length > 0) {
+      lines.push('- Textos editáveis:');
+      for (const text of t.textLayers) {
+        const fontInfo = text.fontFamily ? ` (${text.fontFamily} ${text.fontStyle}, ${text.fontSize}px)` : '';
+        const preview = text.characters.length > 40 ? text.characters.slice(0, 40) + '...' : text.characters;
+        lines.push(`  - \`${text.id}\` "${text.name}": "${preview}"${fontInfo}`);
+      }
+    }
+    lines.push('');
   }
 
-  lines.push('');
-  lines.push('When a template matches the request, reference its structure and style.');
-  lines.push('Otherwise, create from scratch using brand guidelines.');
+  // Add example with first template if available
+  if (templates.length > 0 && templates[0].textLayers?.length) {
+    const t = templates[0];
+    const txt = t.textLayers[0];
+    lines.push('### Exemplo com este arquivo:');
+    lines.push('```json');
+    lines.push(`{ "type": "CLONE_NODE", "sourceNodeId": "${t.id}",`);
+    lines.push(`  "textOverrides": [{ "name": "${txt.name}", "content": "Seu novo texto aqui" }] }`);
+    lines.push('```');
+  }
 
   return lines.join('\n');
 }

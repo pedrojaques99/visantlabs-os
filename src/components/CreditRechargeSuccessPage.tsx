@@ -183,7 +183,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-neutral-300 pt-12 md:pt-14 relative">
       <div className="fixed inset-0 z-0">
-              </div>
+      </div>
       <div className="max-w-2xl mx-auto px-4 py-12 md:py-20 relative z-10">
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">

@@ -2690,7 +2690,7 @@ Generate the new mockup image with the requested changes applied.`;
               isSetupMode ? "w-full" : [
                 "fixed inset-0 lg:relative lg:inset-auto",
                 isSidebarVisibleMobile ? "flex items-center justify-center bg-background/95 backdrop-blur-md" : "hidden lg:flex lg:items-center lg:justify-center",
-                isSidebarCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none" : "lg:w-auto lg:opacity-100"
+                isSidebarCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none" : "lg:w-auto lg:opacity-300"
               ]
             )}>
               <SidebarOrchestrator

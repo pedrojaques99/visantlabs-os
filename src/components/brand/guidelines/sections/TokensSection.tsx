@@ -31,13 +31,13 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
   const renderTokenGrid = (label: string, entries: Record<string, number>) => (
     <div className="space-y-3">
       <div className="flex items-center gap-2 px-1">
-        <span className="text-[8px] font-mono text-neutral-700 uppercase tracking-widest font-bold opacity-50">{label}</span>
+        <span className="text-[8px] font-mono text-neutral-700 uppercase tracking-widest font-bold opacity-30">{label}</span>
         <div className="h-[1px] flex-1 bg-white/[0.02]" />
       </div>
       <div className="grid grid-cols-2 gap-2">
         {Object.entries(entries).slice(0, 9).map(([k, v]) => (
           <div key={k} className="bg-white/[0.02] group/token px-2 py-2.5 rounded-xl border border-white/[0.05] text-center hover:border-brand-cyan/20 hover:bg-brand-cyan/[0.02] transition-all duration-300">
-            <span className="text-[8px] font-mono text-neutral-700 block uppercase tracking-tight mb-1 opacity-50 group-hover/token:text-brand-cyan/60">{k}</span>
+            <span className="text-[8px] font-mono text-neutral-700 block uppercase tracking-tight mb-1 opacity-30 group-hover/token:text-brand-cyan/60">{k}</span>
             <span className="text-[11px] font-mono text-neutral-400 font-bold group-hover/token:text-white transition-colors">{v}</span>
           </div>
         ))}
@@ -98,7 +98,7 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
         {isEditing ? (
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
-              <MicroTitle className="text-[9px] opacity-40 uppercase tracking-widest pl-1">Design Tokens (JSON)</MicroTitle>
+              <MicroTitle className="text-[9px] opacity-300 uppercase tracking-widest pl-1">Design Tokens (JSON)</MicroTitle>
               <Textarea
                 value={tokensJson}
                 onChange={(e) => setTokensJson(e.target.value)}
@@ -112,7 +112,7 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
             {guideline.tokens?.spacing && renderTokenGrid('Spacing', guideline.tokens.spacing)}
             {guideline.tokens?.radius && renderTokenGrid('Radius', guideline.tokens.radius)}
             {(!guideline.tokens?.spacing && !guideline.tokens?.radius) && (
-              <div className="py-12 text-center opacity-10 italic text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-2xl">No Design Tokens</div>
+              <div className="py-12 text-center opacity-30 text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-2xl">No Design Tokens</div>
             )}
           </div>
         )}

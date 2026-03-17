@@ -8,8 +8,8 @@ import { useTheme } from '@/hooks/useTheme';
 // A small subset of popular fonts to keep it fast, but searchable
 // In a real app, you might fetch this from an API or use a larger list
 const COMMON_GOOGLE_FONTS = [
-    'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 
-    'Poppins', 'Playfair Display', 'Oswald', 'Raleway', 
+    'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat',
+    'Poppins', 'Playfair Display', 'Oswald', 'Raleway',
     'Merriweather', 'Noto Sans', 'Bebas Neue', 'Source Sans Pro',
     'Ubuntu', 'Lora', 'PT Sans', 'Arvo', 'Muli', 'Work Sans',
     'Fira Sans', 'Quicksand', 'Josefin Sans', 'Archivo', 'Manrope'
@@ -26,7 +26,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
     const [search, setSearch] = useState('');
 
     const filteredFonts = useMemo(() => {
-        return COMMON_GOOGLE_FONTS.filter(font => 
+        return COMMON_GOOGLE_FONTS.filter(font =>
             font.toLowerCase().includes(search.toLowerCase())
         );
     }, [search]);
@@ -89,7 +89,8 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
                         )}
                     </div>
                     {/* Add a hidden link to load the fonts from Google Fonts */}
-                    <style dangerouslySetInnerHTML={{ __html: `
+                    <style dangerouslySetInnerHTML={{
+                        __html: `
                         ${filteredFonts.map(font => `@import url('https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}&display=swap');`).join('\n')}
                     `}} />
                 </div>

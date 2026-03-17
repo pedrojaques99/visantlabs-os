@@ -152,12 +152,12 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
                         <div className="flex flex-col">
                             {/* Header / Search Placeholder or Title */}
                             <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
-                                <MicroTitle className="text-[9px] opacity-40">SELECT BRAND</MicroTitle>
-                                {isLoading && <Loader2 size={10} className="animate-spin opacity-40" />}
+                                <MicroTitle className="text-[9px] opacity-300">SELECT BRAND</MicroTitle>
+                                {isLoading && <Loader2 size={10} className="animate-spin opacity-300" />}
                             </div>
 
                             <div className="p-1.5 overflow-y-auto max-h-[280px] custom-scrollbar flex flex-col gap-1">
-                                <button 
+                                <button
                                     onClick={() => { setSelectedBrandGuideline(null); setIsOpen(false); }}
                                     className={cn(
                                         "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all text-[11px] font-medium uppercase tracking-tight",
@@ -180,7 +180,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
                                                 : "hover:bg-white/5"
                                         )}
                                     >
-                                        <button 
+                                        <button
                                             onClick={() => { setSelectedBrandGuideline(g.id!); setIsOpen(false); }}
                                             className={cn(
                                                 "flex-1 flex items-center gap-3 px-2 py-2 text-left truncate transition-colors",
@@ -193,11 +193,11 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
                                             )} />
                                             <span className="truncate text-[11px] font-bold uppercase tracking-tight">{g.identity?.name || 'Unnamed'}</span>
                                         </button>
-                                        
+
                                         <div className="flex items-center gap-1 pr-1">
-                                            <button 
+                                            <button
                                                 onClick={(e) => handleEditGuideline(e, g)}
-                                                className="opacity-0 group-hover/item:opacity-100 p-2 rounded-lg hover:bg-white/10 text-neutral-500 hover:text-white transition-all"
+                                                className="opacity-0 group-hover/item:opacity-300 p-2 rounded-lg hover:bg-white/10 text-neutral-500 hover:text-white transition-all"
                                                 title={t('mockup.brandWizardEdit') || 'Edit'}
                                             >
                                                 <Pencil size={12} />

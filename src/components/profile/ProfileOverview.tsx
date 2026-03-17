@@ -171,7 +171,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                             <UserCog size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
                             <span>{t('profile.edit') || 'Editar perfil'}</span>
                         </div>
-                        <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                        <ArrowRight size={14} className="opacity-0 group-hover:opacity-300 -translate-x-2 group-hover:translate-x-0 transition-all" />
                     </Button>
 
                     {user && (user.id || user.email) && (
@@ -183,7 +183,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                 <ExternalLink size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
                                 <span>{t('profile.viewPublicProfile') || 'Ver Perfil Público'}</span>
                             </div>
-                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-300 -translate-x-2 group-hover:translate-x-0 transition-all" />
                         </Link>
                     )}
 
@@ -196,7 +196,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                 <Heart size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
                                 <span>{t('profile.myMockups') || 'Meus Mockups'}</span>
                             </div>
-                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-300 -translate-x-2 group-hover:translate-x-0 transition-all" />
                         </Link>
                         <Link
                             to="/community"
@@ -206,7 +206,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                 <Users size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
                                 <span>{t('communityPresets.title') || 'Presets da Comunidade'}</span>
                             </div>
-                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-300 -translate-x-2 group-hover:translate-x-0 transition-all" />
                         </Link>
                     </div>
                 </div>

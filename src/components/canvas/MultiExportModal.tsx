@@ -290,7 +290,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                         "absolute inset-0 transition-opacity flex flex-col justify-between p-2",
                                         selectedImages.has(img.id)
                                             ? "bg-[brand-cyan]/10"
-                                            : "bg-neutral-950/0 group-hover:bg-neutral-950/70 opacity-0 group-hover:opacity-100"
+                                            : "bg-neutral-950/0 group-hover:bg-neutral-950/70 opacity-0 group-hover:opacity-300"
                                     )}>
                                         <div className="flex justify-end">
                                             <div className={cn(

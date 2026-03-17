@@ -179,7 +179,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
 
   return (
     <GlassPanel className="group overflow-hidden">
-      <Button variant="ghost"         onClick={() => setIsExpanded(!isExpanded)}
+      <Button variant="ghost" onClick={() => setIsExpanded(!isExpanded)}
         className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -201,10 +201,10 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-300 transition-opacity">
           {/* Clear selection button (only on hover when there are selected tags) */}
           {hasSelection && (
-            <Button variant="ghost"               type="button"
+            <Button variant="ghost" type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 // Clear all selected tags for this section
@@ -471,7 +471,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
       {/* Prompts Section */}
       <div className="space-y-2">
         <GlassPanel className="overflow-hidden">
-          <Button variant="ghost"             onClick={() => setIsNegativeExpanded(!isNegativeExpanded)}
+          <Button variant="ghost" onClick={() => setIsNegativeExpanded(!isNegativeExpanded)}
             className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -507,7 +507,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         </GlassPanel>
 
         <GlassPanel className="overflow-hidden">
-          <Button variant="ghost"             onClick={() => setIsAdditionalExpanded(!isAdditionalExpanded)}
+          <Button variant="ghost" onClick={() => setIsAdditionalExpanded(!isAdditionalExpanded)}
             className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">

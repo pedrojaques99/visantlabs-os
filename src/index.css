@@ -633,9 +633,12 @@
 
 /* Pool mode: glow pulse (no opacity change) */
 @keyframes pool-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     filter: drop-shadow(0 0 8px rgba(82, 221, 235, 0.25));
   }
+
   50% {
     filter: drop-shadow(0 0 20px rgba(82, 221, 235, 0.45));
   }
@@ -643,9 +646,12 @@
 
 /* Pool mode: dot breathe (scale only) */
 @keyframes pool-dot-breathe {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.35);
   }
@@ -653,9 +659,12 @@
 
 /* Pool mode: sidebar border glow (no opacity) */
 @keyframes pool-border-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 15px rgba(82, 221, 235, 0.06);
   }
+
   50% {
     box-shadow: 0 0 30px rgba(82, 221, 235, 0.15);
   }
@@ -1204,58 +1213,68 @@
   left: 0 !important;
   margin-left: -3px !important;
 }
+
 .react-flow__handle[data-handlepos="right"] {
   right: 0 !important;
   margin-right: -3px !important;
 }
+
 .react-flow__handle[data-handlepos="top"] {
   top: 0 !important;
   margin-top: -3px !important;
 }
+
 .react-flow__handle[data-handlepos="bottom"] {
   bottom: 0 !important;
   margin-bottom: -3px !important;
 }
 
-.react-flow__handle[style*="top:"] { margin-top: -3px !important; }
-.react-flow__handle[style*="left:"] { margin-left: -3px !important; }
-.react-flow__handle[style*="right:"] { margin-right: -3px !important; }
-.react-flow__handle[style*="bottom:"] { margin-bottom: -3px !important; }
+.react-flow__handle[style*="top:"] {
+  margin-top: -3px !important;
+}
+
+.react-flow__handle[style*="left:"] {
+  margin-left: -3px !important;
+}
+
+.react-flow__handle[style*="right:"] {
+  margin-right: -3px !important;
+}
+
+.react-flow__handle[style*="bottom:"] {
+  margin-bottom: -3px !important;
+}
 
 /* Compact nodes: smaller handles */
-:is(
-  .react-flow__node-upscale,
+:is(.react-flow__node-upscale,
   .react-flow__node-logo,
   .react-flow__node-pdf,
   .react-flow__node-merge,
-  .react-flow__node-edit:not(.min-w-\[600px\])
-) .react-flow__handle:not(.react-flow__resize-control) {
+  .react-flow__node-edit:not(.min-w-\[600px\])) .react-flow__handle:not(.react-flow__resize-control) {
   width: 3px;
   height: 3px;
   opacity: 0.5;
   border: 0.5px solid rgba(85, 85, 85, 0.3);
   background: #555555;
 }
-:is(
-  .react-flow__node-upscale,
+
+:is(.react-flow__node-upscale,
   .react-flow__node-logo,
   .react-flow__node-pdf,
   .react-flow__node-merge,
-  .react-flow__node-edit:not(.min-w-\[600px\])
-) .react-flow__handle:hover:not(.connected):not([data-connected="true"]):not(.react-flow__resize-control) {
+  .react-flow__node-edit:not(.min-w-\[600px\])) .react-flow__handle:hover:not(.connected):not([data-connected="true"]):not(.react-flow__resize-control) {
   width: 8px;
   height: 8px;
   opacity: 0.7;
   background: #777777;
   border: 0.5px solid rgba(119, 119, 119, 0.4);
 }
-:is(
-  .react-flow__node-upscale,
+
+:is(.react-flow__node-upscale,
   .react-flow__node-logo,
   .react-flow__node-pdf,
   .react-flow__node-merge,
-  .react-flow__node-edit:not(.min-w-\[600px\])
-) :is(.react-flow__handle.connected, .react-flow__handle[data-connected="true"]):not(.react-flow__resize-control) {
+  .react-flow__node-edit:not(.min-w-\[600px\])) :is(.react-flow__handle.connected, .react-flow__handle[data-connected="true"]):not(.react-flow__resize-control) {
   background: #777777 !important;
   border: 0.5px solid rgba(119, 119, 119, 0.4) !important;
   box-shadow: none;
@@ -1282,6 +1301,7 @@
   background: var(--brand-cyan) !important;
   border: 0.5px solid rgba(82, 221, 235, 0.4) !important;
 }
+
 .react-flow__handle.handle-image:hover:not(.connected):not([data-connected="true"]),
 .react-flow__handle.handle-video:hover:not(.connected):not([data-connected="true"]) {
   background: #3dd5e6 !important;
@@ -1292,6 +1312,7 @@
   background: #999999 !important;
   border: 0.5px solid rgba(153, 153, 153, 0.4) !important;
 }
+
 .react-flow__handle.handle-text:hover:not(.connected):not([data-connected="true"]) {
   background: #aaaaaa !important;
   border: 0.5px solid rgba(170, 170, 170, 0.6) !important;
@@ -1301,6 +1322,7 @@
   background: #666666 !important;
   border: 0.5px solid rgba(102, 102, 102, 0.4) !important;
 }
+
 .react-flow__handle.handle-strategy:hover:not(.connected):not([data-connected="true"]) {
   background: #777777 !important;
   border: 0.5px solid rgba(119, 119, 119, 0.6) !important;
@@ -1310,6 +1332,7 @@
   background: #777777 !important;
   border: 0.5px solid rgba(119, 119, 119, 0.4) !important;
 }
+
 .react-flow__handle.handle-generic:hover:not(.connected):not([data-connected="true"]) {
   background: #888888 !important;
   border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
@@ -1319,6 +1342,7 @@
   background: #999999 !important;
   border: 0.5px solid rgba(102, 102, 102, 0.4) !important;
 }
+
 .react-flow__handle.handle-text-inverted:hover:not(.connected):not([data-connected="true"]) {
   background: #aaaaaa !important;
   border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
@@ -1332,6 +1356,7 @@
   box-shadow: none;
   opacity: 0.7;
 }
+
 .react-flow__handle.connected:hover,
 .react-flow__handle[data-connected="true"]:hover {
   width: 6px;
@@ -1346,6 +1371,7 @@
 .react-flow__node .react-flow__handle:not(.react-flow__resize-control) {
   opacity: 0.35;
 }
+
 .react-flow__node:hover .react-flow__handle:not(.react-flow__resize-control) {
   opacity: 1;
 }

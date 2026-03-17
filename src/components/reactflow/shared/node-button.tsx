@@ -35,7 +35,7 @@ export interface NodeButtonProps
 const NodeButton = React.forwardRef<HTMLButtonElement, NodeButtonProps>(
   ({ className, variant, size, ...props }, ref) => {
     return (
-      <Button variant="ghost"         className={cn(nodeButtonVariants({ variant, size, className }))}
+      <Button variant="ghost" className={cn(nodeButtonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
       />

@@ -111,7 +111,7 @@ export default function ASCIIFooter({
               <>
                 <span className="text-neutral-600 hidden sm:inline">|</span>
                 <div className="relative" data-policies-dropdown>
-                  <Button variant="ghost"                     onClick={() => setIsPoliciesMenuOpen(!isPoliciesMenuOpen)}
+                  <Button variant="ghost" onClick={() => setIsPoliciesMenuOpen(!isPoliciesMenuOpen)}
                     className="hover:text-neutral-400 transition-colors border-b border-neutral-500 whitespace-nowrap flex items-center gap-1"
                   >
                     <span>{t('footer.legal')}</span>
@@ -125,21 +125,21 @@ export default function ASCIIFooter({
                       />
                       <div className="absolute bottom-full right-0 mb-2 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-lg z-[70] min-w-[120px]">
                         {onTermsClick && (
-                          <Button variant="ghost"                             onClick={() => handlePolicyClick(onTermsClick)}
+                          <Button variant="ghost" onClick={() => handlePolicyClick(onTermsClick)}
                             className="w-full text-left px-3 py-1.5 text-[10px] font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50"
                           >
                             {t('footer.terms')}
                           </Button>
                         )}
                         {onUsagePolicyClick && (
-                          <Button variant="ghost"                             onClick={() => handlePolicyClick(onUsagePolicyClick)}
+                          <Button variant="ghost" onClick={() => handlePolicyClick(onUsagePolicyClick)}
                             className="w-full text-left px-3 py-1.5 text-[10px] font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50"
                           >
                             {t('footer.usage')}
                           </Button>
                         )}
                         {onRefundClick && (
-                          <Button variant="ghost"                             onClick={() => handlePolicyClick(onRefundClick)}
+                          <Button variant="ghost" onClick={() => handlePolicyClick(onRefundClick)}
                             className="w-full text-left px-3 py-1.5 text-[10px] font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50"
                           >
                             {t('footer.refund')}
@@ -153,7 +153,7 @@ export default function ASCIIFooter({
             )}
             <span className="text-neutral-600 hidden sm:inline">|</span>
             <div className="relative" data-language-dropdown>
-              <Button variant="ghost"                 onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
+              <Button variant="ghost" onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
                 className="hover:text-neutral-400 transition-colors border-b border-neutral-500 whitespace-nowrap flex items-center gap-1"
               >
                 <Globe size={10} />
@@ -167,12 +167,12 @@ export default function ASCIIFooter({
                     onClick={() => setIsLanguageMenuOpen(false)}
                   />
                   <div className="absolute bottom-full right-0 mb-2 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-lg z-[70] min-w-[100px]">
-                    <Button variant="ghost"                       onClick={() => handleLocaleChange('en-US')}
+                    <Button variant="ghost" onClick={() => handleLocaleChange('en-US')}
                       className="w-full text-left px-3 py-1.5 text-[10px] font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50"
                     >
                       {t('footer.english')}
                     </Button>
-                    <Button variant="ghost"                       onClick={() => handleLocaleChange('pt-BR')}
+                    <Button variant="ghost" onClick={() => handleLocaleChange('pt-BR')}
                       className="w-full text-left px-3 py-1.5 text-[10px] font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50"
                     >
                       {t('footer.portuguese')}

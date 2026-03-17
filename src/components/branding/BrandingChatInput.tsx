@@ -102,7 +102,7 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
             {promptSuggestions.map((suggestion, index) => (
               <GlassPanel key={index} className="border-white/5 bg-white/5" padding="sm">
                 <div className="space-y-2">
-                  <Button variant="ghost"                     onClick={() => onSuggestionClick?.(suggestion)}
+                  <Button variant="ghost" onClick={() => onSuggestionClick?.(suggestion)}
                     className="w-full text-left text-xs h-auto py-2 font-normal justify-start hover:text-brand-cyan transition-colors"
                   >
                     {suggestion}

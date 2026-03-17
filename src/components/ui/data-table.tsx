@@ -103,7 +103,7 @@ function DraggableHeader({ header }: DraggableHeaderProps) {
           {...listeners}
           className="px-1 cursor-grab active:cursor-grabbing hover:text-brand-cyan transition-colors"
         >
-          <GripVertical className="h-4 w-4 opacity-30 group-hover:opacity-100" />
+          <GripVertical className="h-4 w-4 opacity-30 group-hover:opacity-300" />
         </div>
 
         <div
@@ -128,7 +128,7 @@ function DraggableHeader({ header }: DraggableHeaderProps) {
                   asc: <ArrowUp className="h-3 w-3" />,
                   desc: <ArrowDown className="h-3 w-3" />,
                 }[header.column.getIsSorted() as string] ?? (
-                    <ArrowUpDown className="h-3 w-3 opacity-30 group-hover:opacity-100 transition-opacity" />
+                    <ArrowUpDown className="h-3 w-3 opacity-30 group-hover:opacity-300 transition-opacity" />
                   )}
               </div>
             )}
@@ -142,8 +142,8 @@ function DraggableHeader({ header }: DraggableHeaderProps) {
           onMouseDown={header.getResizeHandler()}
           onTouchStart={header.getResizeHandler()}
           className={cn(
-            "absolute right-0 top-0 h-full w-1 cursor-col-resize bg-neutral-700/50 opacity-0 group-hover:opacity-100 transition-opacity z-10",
-            header.column.getIsResizing() && "bg-brand-cyan opacity-100 w-0.5"
+            "absolute right-0 top-0 h-full w-1 cursor-col-resize bg-neutral-700/50 opacity-0 group-hover:opacity-300 transition-opacity z-10",
+            header.column.getIsResizing() && "bg-brand-cyan opacity-300 w-0.5"
           )}
         />
       )}

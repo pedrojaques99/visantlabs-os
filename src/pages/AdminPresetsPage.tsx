@@ -299,7 +299,7 @@ export const AdminPresetsPage: React.FC = () => {
             {imageUrl ? (
               <>
                 <img src={imageUrl} alt={row.getValue("name")} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-neutral-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => {
+                <div className="absolute inset-0 bg-neutral-950/50 opacity-0 group-hover:opacity-300 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => {
                   handleEdit((row.original.category as PresetType) || 'mockup', row.original as any);
                 }}>
                   <Edit2 className="w-4 h-4 text-white" />
@@ -1271,7 +1271,7 @@ export const AdminPresetsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
       <div className="fixed inset-0 z-0">
-              </div>
+      </div>
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         {!isCheckingAuth && !isAuthenticated && (
           <div className="max-w-md mx-auto">

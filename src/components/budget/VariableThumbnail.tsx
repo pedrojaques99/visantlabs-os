@@ -69,7 +69,7 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
   };
 
   return (
-    <Button variant="ghost" 
+    <Button variant="ghost"
       ref={setNodeRef}
       style={style}
       {...listeners}

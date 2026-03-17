@@ -148,7 +148,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
                   />
                 </div>
               </div>
-              <Button variant="ghost"                 onClick={() => handleRemoveCompetitor(index)}
+              <Button variant="ghost" onClick={() => handleRemoveCompetitor(index)}
                 className={`absolute top-2 right-2 p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                   }`}
                 title="Remover concorrente"
@@ -158,7 +158,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
             </div>
           ))}
         </div>
-        <Button variant="ghost"           onClick={handleAddCompetitor}
+        <Button variant="ghost" onClick={handleAddCompetitor}
           className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
             ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
             : 'bg-neutral-100 border-neutral-300 text-neutral-800'

@@ -24,7 +24,7 @@ export const NotFoundPage: React.FC = () => {
     <div className={`w-full min-h-screen relative ${theme === 'dark' ? 'bg-[#0C0C0C] text-neutral-300' : 'bg-neutral-50 text-neutral-800'
       }`}>
       <div className="fixed inset-0 z-0">
-              </div>
+      </div>
 
       <div className="relative z-10 min-h-screen pt-[30px] pb-[30px]">
         {/* Breadcrumb Navigation */}
@@ -74,7 +74,7 @@ export const NotFoundPage: React.FC = () => {
 
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-6">
-              <Button variant="ghost"                 onClick={() => navigate('/')}
+              <Button variant="ghost" onClick={() => navigate('/')}
                 className={`px-8 py-3.5 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 shadow-lg cursor-pointer ${theme === 'dark'
                   ? 'shadow-[brand-cyan]/20'
                   : 'shadow-[brand-cyan]/30'
@@ -93,13 +93,13 @@ export const NotFoundPage: React.FC = () => {
                 {t('notFound.helpfulLinks') || 'Links úteis:'}
               </p>
               <div className="flex flex-wrap justify-center gap-6">
-                <Button variant="ghost"                   onClick={() => navigate('/')}
+                <Button variant="ghost" onClick={() => navigate('/')}
                   className={`text-sm hover:text-brand-cyan transition-colors cursor-pointer ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                     }`}
                 >
                   {t('notFound.mockupMachine') || 'Mockup Machine'}
                 </Button>
-                <Button variant="ghost"                   onClick={() => navigate('/pricing')}
+                <Button variant="ghost" onClick={() => navigate('/pricing')}
                   className={`text-sm hover:text-brand-cyan transition-colors cursor-pointer ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                     }`}
                 >

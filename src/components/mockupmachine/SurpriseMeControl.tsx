@@ -233,7 +233,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                     ? 'bg-neutral-100/80 border-neutral-300/50 hover:bg-neutral-200/50 hover:border-neutral-400/50 text-neutral-600 shadow-sm'
                                     : 'bg-neutral-900/80 border-neutral-800/50 hover:bg-neutral-800/60 hover:border-neutral-700/50 text-neutral-400 shadow-sm',
 
-                    disabled && 'opacity-40 cursor-not-allowed grayscale-[0.8] border-white/5 bg-neutral-950/20'
+                    disabled && 'opacity-300 cursor-not-allowed grayscale-[0.8] border-white/5 bg-neutral-950/20'
                 )}
             >
                 <div className={cn(

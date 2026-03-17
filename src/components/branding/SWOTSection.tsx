@@ -101,7 +101,7 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
                       : 'border-neutral-400/50 text-neutral-800'
                       }`}
                   />
-                  <Button variant="ghost" 
+                  <Button variant="ghost"
                     onClick={() => handleRemoveItem(category, index)}
                     className={`p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 self-start mt-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                       }`}
@@ -117,7 +117,7 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
             </div>
           ))}
           {isEditing && onContentChange && (
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={() => handleAddItem(category)}
               className={`flex items-center gap-2 px-3 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-md text-xs font-mono transition-all duration-300 mt-2 ${theme === 'dark'
                 ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-400'

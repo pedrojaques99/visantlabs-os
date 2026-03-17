@@ -236,7 +236,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           </section>
 
           <div className="pt-12 mt-8">
-            <p className="text-sm text-neutral-500 italic">
+            <p className="text-sm text-neutral-500 ">
               {t('usage.sections.agreement')}
             </p>
           </div>

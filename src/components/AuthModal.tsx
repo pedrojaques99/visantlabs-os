@@ -172,7 +172,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
             {isSignUp ? t('auth.signUp') : t('auth.signIn')}
           </h2>
-          <Button variant="ghost"             onClick={handleClose}
+          <Button variant="ghost" onClick={handleClose}
             className="text-neutral-500 hover:text-neutral-300 transition-colors"
           >
             <X size={20} />
@@ -258,7 +258,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </p>
             )}
             {!isSignUp && (
-              <Button variant="ghost"                 type="button"
+              <Button variant="ghost" type="button"
                 onClick={() => setShowForgotPassword(true)}
                 className="text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono mt-1 text-right w-full"
               >
@@ -289,7 +289,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           )}
 
-          <Button variant="brand"             type="submit"
+          <Button variant="brand" type="submit"
             disabled={isAuthLoading || !email || !password}
             className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
           >

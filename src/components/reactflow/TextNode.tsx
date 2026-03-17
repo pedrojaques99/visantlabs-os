@@ -136,9 +136,9 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         <div className="flex items-center gap-1.5 ml-4">
           {/* Copy Button */}
           {text.trim() && (
-            <NodeButton 
-              variant="ghost" 
-              size="xs" 
+            <NodeButton
+              variant="ghost"
+              size="xs"
               onClick={(e) => {
                 e.stopPropagation();
                 handleCopyText();
@@ -183,9 +183,9 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
           {/* Improve Prompt Button - Enhanced */}
           {text.trim() && (
-            <NodeButton 
-              variant="ghost" 
-              size="xs" 
+            <NodeButton
+              variant="ghost"
+              size="xs"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();

@@ -34,7 +34,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             const isSelected = value === ratio;
 
             return (
-              <NodeButton variant="ghost" 
+              <NodeButton variant="ghost"
                 key={ratio}
                 onClick={() => !disabled && onChange(ratio)}
                 disabled={disabled}
@@ -57,7 +57,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             );
           })}
 
-          <NodeButton variant="ghost" 
+          <NodeButton variant="ghost"
             onClick={() => !disabled && setShowOther(!showOther)}
             disabled={disabled}
             className={cn(
@@ -83,7 +83,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                 const isSelected = value === ratio;
 
                 return (
-                  <NodeButton variant="ghost" 
+                  <NodeButton variant="ghost"
                     key={ratio}
                     onClick={() => {
                       if (!disabled) {
@@ -127,7 +127,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
         const isSelected = value === ratio;
 
         return (
-          <NodeButton variant="ghost" 
+          <NodeButton variant="ghost"
             key={ratio}
             onClick={() => !disabled && onChange(ratio)}
             disabled={disabled}
@@ -149,7 +149,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
         );
       })}
 
-      <NodeButton variant="ghost" 
+      <NodeButton variant="ghost"
         onClick={() => !disabled && setShowOther(!showOther)}
         disabled={disabled}
         className={cn(
@@ -173,7 +173,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
               const isSelected = value === ratio;
 
               return (
-                <NodeButton variant="ghost" 
+                <NodeButton variant="ghost"
                   key={ratio}
                   onClick={() => {
                     if (!disabled) {

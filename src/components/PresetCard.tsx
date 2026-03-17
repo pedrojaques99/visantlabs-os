@@ -164,10 +164,10 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                 {migrated.description || migrated.prompt}
               </p>
               {!isPromptExpanded && (migrated.description?.length > 60 || migrated.prompt?.length > 60) && (
-                <Button variant="ghost"                   onClick={(e) => {
-                    e.stopPropagation();
-                    setIsPromptExpanded(true);
-                  }}
+                <Button variant="ghost" onClick={(e) => {
+                  e.stopPropagation();
+                  setIsPromptExpanded(true);
+                }}
                   className="text-[10px] text-neutral-600 hover:text-brand-cyan mt-1 font-mono uppercase"
                 >
                   {t('canvasNodes.promptNode.presetCard.viewMore')}
@@ -184,17 +184,17 @@ export const PresetCard: React.FC<PresetCardProps> = ({
           <div className="flex gap-1 flex-shrink-0 flex-col items-end">
             {/* Actions */}
             <div className="flex gap-1">
-              <Button variant="ghost"                 onClick={async (e) => {
-                  e.stopPropagation();
-                  setIsCopyingPrompt(true);
-                  try {
-                    await navigator.clipboard.writeText(migrated.prompt);
-                    toast.success(t('canvasNodes.promptNode.presetCard.copied'));
-                  } catch (err) {
-                    toast.error(t('canvasNodes.promptNode.presetCard.copyFailed'));
-                  }
-                }}
-                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100 relative min-w-[16px] min-h-[16px] flex items-center justify-center"
+              <Button variant="ghost" onClick={async (e) => {
+                e.stopPropagation();
+                setIsCopyingPrompt(true);
+                try {
+                  await navigator.clipboard.writeText(migrated.prompt);
+                  toast.success(t('canvasNodes.promptNode.presetCard.copied'));
+                } catch (err) {
+                  toast.error(t('canvasNodes.promptNode.presetCard.copyFailed'));
+                }
+              }}
+                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300 relative min-w-[16px] min-h-[16px] flex items-center justify-center"
                 title="Copy prompt"
               >
                 {isCopyingPrompt ? (
@@ -204,22 +204,22 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                 )}
               </Button>
               {isAuthenticated && onDuplicate && (
-                <Button variant="ghost"                   onClick={(e) => {
-                    e.stopPropagation();
-                    onDuplicate();
-                  }}
-                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                <Button variant="ghost" onClick={(e) => {
+                  e.stopPropagation();
+                  onDuplicate();
+                }}
+                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300"
                   title={t('communityPresets.actions.duplicate') || 'Duplicate'}
                 >
                   {canEdit ? <Download className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
               )}
               {isOwner && onEdit && (
-                <Button variant="ghost"                   onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit?.();
-                  }}
-                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                <Button variant="ghost" onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.();
+                }}
+                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300"
                   title={t('communityPresets.actions.edit')}
                 >
                   <Edit2 className="h-4 w-4" />
@@ -228,22 +228,22 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             </div>
             <div>
               {canEdit && onEdit && onDelete && !isOwner && (
-                <Button variant="ghost"                   onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit?.();
-                  }}
-                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                <Button variant="ghost" onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.();
+                }}
+                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300"
                   title={t('communityPresets.actions.edit')}
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>
               )}
               {canEdit && onDelete && (
-                <Button variant="ghost"                   onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete?.();
-                  }}
-                  className="p-1.5 text-neutral-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
+                <Button variant="ghost" onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete?.();
+                }}
+                  className="p-1.5 text-neutral-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-300"
                   title={t('communityPresets.actions.delete')}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -328,10 +328,10 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             {migrated.aspectRatio}
           </span>
           {isAuthenticated && onToggleLike && (
-            <Button variant="ghost"               onClick={(e) => {
-                e.stopPropagation();
-                onToggleLike();
-              }}
+            <Button variant="ghost" onClick={(e) => {
+              e.stopPropagation();
+              onToggleLike();
+            }}
               className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-all text-xs font-mono flex-shrink-0 whitespace-nowrap ${isLiked
                 ? 'bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50'
                 : 'bg-neutral-900/40 text-neutral-500 hover:bg-neutral-800/50 hover:text-neutral-400'

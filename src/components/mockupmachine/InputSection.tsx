@@ -243,7 +243,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         />
 
         {/* Hover Overlay with Replace Action */}
-        <div className="absolute inset-0 bg-black/20 flex items-center justify-center gap-4 opacity-0 group-hover/img-container:opacity-100 transition-all duration-300 backdrop-blur-[10px] p-3">
+        <div className="absolute inset-0 bg-black/20 flex items-center justify-center gap-4 opacity-0 group-hover/img-container:opacity-300 transition-all duration-300 backdrop-blur-[10px] p-3">
           <Button variant="ghost" type="button"
             onClick={(e) => {
               e.stopPropagation();

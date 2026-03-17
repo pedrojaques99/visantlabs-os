@@ -107,7 +107,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
           <h3 className="text-lg font-semibold text-neutral-200 font-mono">
             {t('budget.projectDetailSections') || 'Seções de Descrição do Projeto'}
           </h3>
-          <Button variant="brand" 
+          <Button variant="brand"
             onClick={addProjectDetailSection}
             className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
           >
@@ -146,7 +146,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                         <label className="block text-xs text-neutral-400 font-mono">
                           {t('budget.paragraphs') || 'Parágrafos'}
                         </label>
-                        <Button variant="ghost" 
+                        <Button variant="ghost"
                           onClick={() => addParagraph(sectionIndex)}
                           className="px-2 py-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded text-brand-cyan font-mono text-xs transition-all duration-300 flex items-center gap-1"
                         >
@@ -166,7 +166,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                             className="flex-1"
                           />
                           {section.paragraphs.length > 1 && (
-                            <Button variant="ghost" 
+                            <Button variant="ghost"
                               onClick={() => removeParagraph(sectionIndex, paragraphIndex)}
                               className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors h-fit"
                             >
@@ -177,7 +177,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                       ))}
                     </div>
                   </div>
-                  <Button variant="ghost" 
+                  <Button variant="ghost"
                     onClick={() => removeProjectDetailSection(sectionIndex)}
                     className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                     title={t('budget.removeSection') || 'Remover seção'}
@@ -197,7 +197,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
           <h3 className="text-lg font-semibold text-neutral-200 font-mono">
             {t('budget.infoBoxes') || 'Caixas de Informação'}
           </h3>
-          <Button variant="brand" 
+          <Button variant="brand"
             onClick={addInfoBox}
             className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
           >
@@ -241,7 +241,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                       />
                     </div>
                   </div>
-                  <Button variant="ghost" 
+                  <Button variant="ghost"
                     onClick={() => removeInfoBox(index)}
                     className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                     title={t('budget.removeInfoBox') || 'Remover caixa'}

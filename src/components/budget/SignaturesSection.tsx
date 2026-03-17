@@ -39,7 +39,7 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({
         <h3 className="text-lg font-semibold text-neutral-200 font-mono">
           {t('budget.signatures') || 'Assinaturas'}
         </h3>
-        <Button variant="brand" 
+        <Button variant="brand"
           onClick={addSignature}
           className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
           title={t('budget.addSignature') || 'Adicionar Assinatura'}
@@ -86,7 +86,7 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({
                     />
                   </div>
                 </div>
-                <Button variant="ghost" 
+                <Button variant="ghost"
                   onClick={() => removeSignature(index)}
                   className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                   title={t('budget.removeSignature') || 'Remover assinatura'}

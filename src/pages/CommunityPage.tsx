@@ -318,7 +318,7 @@ export const CommunityPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-x-hidden">
       <div className="fixed inset-0 z-0">
-              </div>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 pt-8 pb-16 md:pb-24 relative z-10">
         <div className="mb-8">
@@ -494,7 +494,7 @@ export const CommunityPage: React.FC = () => {
                           </div>
                         ))
                       ) : (
-                        <MicroTitle as="p" className="italic text-neutral-700 text-left">Ainda sem presets</MicroTitle>
+                        <MicroTitle as="p" className=" text-neutral-700 text-left">Ainda sem presets</MicroTitle>
                       )}
                     </div>
                   </GlassPanel>
@@ -651,7 +651,7 @@ export const CommunityPage: React.FC = () => {
                             <ImageIcon size={48} />
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 p-4 flex flex-col justify-end">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-300 transition-all duration-300 p-4 flex flex-col justify-end">
                           <MicroTitle as="p" className="text-brand-cyan mb-1">Prompt</MicroTitle>
                           <p className="text-xs text-white font-mono line-clamp-2 mb-2">
                             {mockup.prompt}

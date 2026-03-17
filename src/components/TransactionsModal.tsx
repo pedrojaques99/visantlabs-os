@@ -114,7 +114,7 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
               {t('transactions.subtitle')}
             </h2>
           </div>
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={onClose}
             className="p-2 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60 transition-colors"
             aria-label="Close"

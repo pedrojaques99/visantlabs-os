@@ -309,7 +309,7 @@ export const AdminProductsPage: React.FC = () => {
             <SEO title="Admin | Produtos" noindex={true} />
             <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative pb-20">
                 <div className="fixed inset-0 z-0">
-                                    </div>
+                </div>
 
                 <div className="max-w-7xl mx-auto px-4 pt-8 relative z-10">
                     <div className="mb-6">

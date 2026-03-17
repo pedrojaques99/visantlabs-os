@@ -57,7 +57,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
           {guideline.guidelines?.voice && (
             <div className="p-5 rounded-2xl bg-brand-cyan/[0.03] border border-brand-cyan/10">
               <span className="text-[9px] font-mono text-brand-cyan/60 uppercase font-bold block mb-2">Voice & Tone</span>
-              <p className="text-[14px] text-white/90 font-medium leading-relaxed italic">"{guideline.guidelines.voice}"</p>
+              <p className="text-[14px] text-white/90 font-medium leading-relaxed ">"{guideline.guidelines.voice}"</p>
             </div>
           )}
           {guideline.guidelines?.dos && guideline.guidelines.dos.length > 0 && (
@@ -88,7 +88,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
         {isEditing ? (
           <div className="space-y-5">
             <div className="space-y-1.5">
-              <MicroTitle className="text-[9px] opacity-40 uppercase pl-1">Voice Tone</MicroTitle>
+              <MicroTitle className="text-[9px] opacity-300 uppercase pl-1">Voice Tone</MicroTitle>
               <Input
                 {...form.register('voice')}
                 className="text-xs h-9 bg-neutral-850 border-white/5 focus:border-brand-cyan/30"
@@ -96,7 +96,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
               />
             </div>
             <div className="space-y-1.5">
-              <MicroTitle className="text-[9px] opacity-40 uppercase pl-1">Do's (one per line)</MicroTitle>
+              <MicroTitle className="text-[9px] opacity-300 uppercase pl-1">Do's (one per line)</MicroTitle>
               <Textarea
                 value={dosText}
                 onChange={(e) => setDosText(e.target.value)}
@@ -110,14 +110,10 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
             {guideline.guidelines?.voice && (
               <div className="relative group/voice overflow-hidden rounded-xl bg-brand-cyan/[0.02] border border-brand-cyan/10 p-4">
                 <MicroTitle className="block mb-1.5 opacity-50 uppercase text-[8px] font-bold">Voice & Tone</MicroTitle>
-                <p className="text-[12px] text-white/90 font-medium leading-relaxed italic">"{guideline.guidelines.voice}"</p>
+                <p className="text-[12px] text-white/90 font-medium leading-relaxed ">"{guideline.guidelines.voice}"</p>
               </div>
             )}
             <div className="space-y-2 mt-3">
-              <div className="flex items-center gap-3 mb-1">
-                <span className="text-[9px] font-bold font-mono text-neutral-600 uppercase opacity-40">Best Practices</span>
-                <div className="h-[1px] flex-1 bg-white/[0.02]" />
-              </div>
               {guideline.guidelines?.dos && guideline.guidelines.dos.length > 0 ? (
                 guideline.guidelines.dos.map((item: string, i: number) => (
                   <div key={i} className="text-[11px] text-neutral-400 flex items-start gap-3 p-3 rounded-xl border border-white/[0.03] hover:border-brand-cyan/20 hover:bg-white/[0.01] transition-all duration-300 group/item">
@@ -126,7 +122,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
                   </div>
                 ))
               ) : (
-                <div className="py-8 text-center opacity-5 italic text-[10px] font-mono uppercase border border-dashed border-white/5 rounded-2xl">Editorial Framework Pending</div>
+                <div className="py-12 text-center text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 opacity-30">Editorial Framework Pending</div>
               )}
             </div>
           </>

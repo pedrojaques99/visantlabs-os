@@ -22,90 +22,42 @@ import { Sheet, SheetTrigger, SheetContent, SheetTitle } from '@/components/ui/s
 import { GuidelinesSidebar } from '@/components/brand/guidelines/GuidelinesSidebar';
 import { GuidelineDetail } from '@/components/brand/guidelines/GuidelineDetail';
 import { ShareGuidelineDialog } from '@/components/brand/guidelines/ShareGuidelineDialog';
-import { Palette, Layers, AlignLeft, Share2, Eye, Sparkles, Plus, Command } from 'lucide-react';
+import { Palette, Layers, AlignLeft, Share2, Eye, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
-import { PremiumButton } from '@/components/ui/PremiumButton';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
     const { t } = useTranslation();
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full relative overflow-hidden rounded-3xl border border-white/5 bg-neutral-900/10 backdrop-blur-xl p-12 lg:p-24 flex flex-col items-center justify-center text-center gap-12"
+            className="w-full relative overflow-hidden rounded-3xl border border-white/10 bg-neutral-900/20 backdrop-blur-sm p-12 lg:p-24 flex flex-col items-center justify-center text-center gap-10"
         >
-            <GridDotsBackground opacity={0.15} spacing={25} dotSize={1.2} />
-            
             <div className="relative z-10">
-                <motion.div
-                    animate={{ 
-                        scale: [1, 1.05, 1],
-                        rotate: [0, 2, -2, 0]
-                    }}
-                    transition={{ 
-                        duration: 8,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                    }}
-                    className="relative mb-10"
-                >
-                    <div className="absolute inset-0 blur-3xl bg-brand-cyan/15 rounded-full scale-150" />
-                    <div className="relative p-10 rounded-3xl bg-neutral-950/40 border border-white/10 shadow-2xl backdrop-blur-md">
-                        <Palette size={56} className="text-brand-cyan" strokeWidth={1.5} />
-                        <motion.div 
-                            animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.1, 1] }}
-                            transition={{ duration: 4, repeat: Infinity }}
-                            className="absolute -inset-2 border border-brand-cyan/20 rounded-[inherit]"
-                        />
-                    </div>
-                    
-                    <motion.div 
-                        animate={{ 
-                            y: [0, -4, 0],
-                            opacity: [0.5, 1, 0.5]
-                        }}
-                        transition={{ duration: 3, repeat: Infinity }}
-                        className="absolute -top-4 -right-4 p-2 rounded-full bg-neutral-950 border border-brand-cyan/30 text-brand-cyan shadow-lg shadow-brand-cyan/10"
-                    >
-                        <Sparkles size={16} />
-                    </motion.div>
-                </motion.div>
+                <div className="relative mb-8 inline-flex p-8 rounded-3xl bg-neutral-950/50 border border-white/10">
+                    <Palette size={48} className="text-brand-cyan" strokeWidth={1.2} />
+                </div>
 
-                <div className="space-y-4 max-w-lg mx-auto">
-                    <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight uppercase font-mono">
+                <div className="space-y-4 max-w-md mx-auto">
+                    <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
                         {t('brandGuidelines.emptyState')}
                     </h2>
-                    <p className="text-neutral-500 font-mono text-[11px] leading-relaxed uppercase tracking-wide opacity-80">
-                        Authorize the identity vault protocol. Initialize your first brand ecosystem to start orchestration.
+                    <p className="text-neutral-500 text-sm leading-relaxed max-w-xs mx-auto">
+                        Crie e organize suas diretrizes de marca em um único lugar centralizado e profissional.
                     </p>
                 </div>
             </div>
 
-            <div className="relative z-10 w-full max-w-xs">
-                <PremiumButton onClick={onCreate} className="h-14 shadow-[0_20px_50px_rgba(var(--brand-cyan-rgb),0.2)] hover:shadow-[0_20px_60px_rgba(var(--brand-cyan-rgb),0.3)] transition-all">
-                    <span className="flex items-center gap-2">
-                        <Plus size={18} />
-                        {t('brandGuidelines.createFirst')}
-                    </span>
-                </PremiumButton>
-            </div>
-
-            {/* Decorative data points */}
-            <div className="absolute bottom-8 left-8 flex flex-col gap-1 opacity-20 hidden lg:flex text-left">
-                <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
-                    <span className="text-[9px] font-mono text-white uppercase tracking-widest leading-none">Status: Ready</span>
-                </div>
-                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-widest pl-3.5">Vault capacity: 100% available</span>
-            </div>
-            
-            <div className="absolute top-8 right-8 opacity-20 hidden lg:block text-right">
-                <span className="text-[9px] font-mono text-white uppercase tracking-widest flex items-center gap-2">
-                    Orchestrator v2.4.0 <Command size={10} />
-                </span>
+            <div className="relative z-10">
+                <Button
+                    onClick={onCreate}
+                    className="h-12 px-8 bg-brand-cyan text-black hover:bg-brand-cyan/90 transition-all font-bold uppercase tracking-wider text-[11px] rounded-full shadow-lg shadow-brand-cyan/10"
+                >
+                    <Plus size={18} className="mr-2" />
+                    {t('brandGuidelines.createFirst')}
+                </Button>
             </div>
         </motion.div>
     );
@@ -113,55 +65,21 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
 
 const NoSelectionState = () => {
     return (
-        <motion.div 
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full min-h-[500px] flex flex-col items-center justify-center text-center gap-10 border border-white/5 rounded-3xl bg-neutral-950/10 relative overflow-hidden backdrop-blur-[2px]"
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="w-full min-h-[400px] flex flex-col items-center justify-center text-center gap-6 border border-white/10 rounded-3xl bg-neutral-950/20 backdrop-blur-sm"
         >
-            <GridDotsBackground opacity={0.05} spacing={35} dotSize={1} />
-            
-            <motion.div
-                animate={{ 
-                    y: [0, -8, 0],
-                    opacity: [0.4, 0.7, 0.4]
-                }}
-                transition={{ 
-                    duration: 5,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
-                className="relative"
-            >
-                <div className="absolute inset-0 blur-2xl bg-brand-cyan/10 rounded-full scale-150" />
-                <Layers size={72} strokeWidth={0.5} className="text-brand-cyan relative" />
-                
-                {/* Orbital dots */}
-                <motion.div 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className="absolute -inset-12 border border-dashed border-white/5 rounded-full pointer-events-none"
-                />
-            </motion.div>
-
-            <div className="space-y-3 relative z-10">
-                <MicroTitle className="text-brand-cyan/40 uppercase tracking-[0.3em] text-[10px]">Awaiting Instructions</MicroTitle>
-                <p className="text-neutral-500 font-mono text-[10px] max-w-xs mx-auto leading-relaxed uppercase tracking-wider opacity-60">
-                    Select a brand identity from the vault sidebar to load parameters into the orchestrator workspace.
-                </p>
+            <div className="p-6 rounded-full bg-white/5 border border-white/10">
+                <Layers size={32} strokeWidth={1} className="text-neutral-500" />
             </div>
 
-            {/* Scanning light line */}
-            <motion.div 
-                animate={{ y: [0, 480, 0] }}
-                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-brand-cyan/10 to-transparent opacity-30"
-            />
-            
-            {/* Corners */}
-            <div className="absolute top-6 left-6 w-4 h-4 border-t border-l border-white/10" />
-            <div className="absolute top-6 right-6 w-4 h-4 border-t border-r border-white/10" />
-            <div className="absolute bottom-6 left-6 w-4 h-4 border-b border-l border-white/10" />
-            <div className="absolute bottom-6 right-6 w-4 h-4 border-b border-r border-white/10" />
+            <div className="space-y-2">
+                <h3 className="text-neutral-400 font-medium tracking-wide uppercase text-[10px]">Awaiting Selection</h3>
+                <p className="text-neutral-600 text-sm max-w-xs mx-auto">
+                    Selecione uma marca no menu lateral para visualizar e editar suas diretrizes.
+                </p>
+            </div>
         </motion.div>
     );
 };
@@ -262,7 +180,7 @@ export const BrandGuidelinesPage: React.FC = () => {
             <div className="min-h-screen bg-transparent relative z-10 flex">
                 {/* Desktop Sidebar */}
                 {!isLoading && guidelines.length > 0 && (
-                    <aside className="hidden lg:flex flex-col fixed top-10 md:top-14 left-0 bottom-0 w-[260px] xl:w-[280px] border-r border-white/5 bg-neutral-950/80 backdrop-blur-xl z-30">
+                    <aside className="hidden lg:flex flex-col fixed top-10 md:top-14 left-0 bottom-0 w-[260px] xl:w-[280px] border-r border-white/10 bg-neutral-950/80 backdrop-blur-xl z-30">
                         <GuidelinesSidebar
                             guidelines={guidelines}
                             selectedId={selectedId}
@@ -298,7 +216,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                 </BreadcrumbList>
                             </BreadcrumbWithBack>
                         </div>
-                        
+
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                             <div className="sr-only">
                                 <h1 className="text-3xl font-bold text-neutral-100 flex items-center gap-3">
@@ -315,7 +233,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                             <AlignLeft className="h-5 w-5" />
                                         </Button>
                                     </SheetTrigger>
-                                    <SheetContent side="left" className="w-[85vw] max-w-sm p-0 border-r border-white/5 bg-neutral-950/95 backdrop-blur-xl">
+                                    <SheetContent side="left" className="w-[85vw] max-w-sm p-0 border-r border-white/10 bg-neutral-950/95 backdrop-blur-xl">
                                         <SheetTitle className="sr-only">Menu</SheetTitle>
                                         <GuidelinesSidebar
                                             guidelines={guidelines}
@@ -345,7 +263,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                     <Button
                                         variant="ghost"
                                         onClick={() => setIsShareOpen(true)}
-                                        className="h-9 px-4 gap-2 text-neutral-400 hover:text-white border border-white/5 hover:border-white/10"
+                                        className="h-9 px-4 gap-2 text-neutral-400 hover:text-white border border-white/10 hover:border-white/10"
                                     >
                                         <Share2 size={14} />
                                         <span className="hidden sm:inline text-[10px] uppercase font-bold tracking-widest">Share</span>
@@ -365,7 +283,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                         {/* Content */}
                         <AnimatePresence mode="wait">
                             {isLoading ? (
-                                <motion.div 
+                                <motion.div
                                     key="loader"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -380,7 +298,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                             ) : guidelines.length === 0 ? (
                                 <EmptyState key="empty" onCreate={() => handleOpenWizard()} />
                             ) : (
-                                <motion.div 
+                                <motion.div
                                     key="content"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}

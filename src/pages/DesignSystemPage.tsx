@@ -478,7 +478,7 @@ export const DesignSystemPage: React.FC = () => {
       />
       <div className="bg-background text-neutral-300 relative min-h-screen">
         <div className="fixed inset-0 z-0">
-                  </div>
+        </div>
 
         <div className="flex relative z-10">
           {/* Sidebar Navigation */}
@@ -1445,7 +1445,7 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="relative h-32 border border-neutral-800/50 rounded-md overflow-hidden">
-                                                    <div className="relative z-10 flex items-center justify-center h-full">
+                          <div className="relative z-10 flex items-center justify-center h-full">
                             <p className="text-sm font-mono text-neutral-400">Grid Dots Background Example</p>
                           </div>
                         </div>
@@ -1528,7 +1528,7 @@ export const DesignSystemPage: React.FC = () => {
                             </Badge>
                             <Badge
                               variant="outline"
-                              className="opacity-40 cursor-not-allowed bg-neutral-800/50 text-neutral-400 border-neutral-700/50"
+                              className="opacity-300 cursor-not-allowed bg-neutral-800/50 text-neutral-400 border-neutral-700/50"
                             >
                               Disabled Tag
                             </Badge>

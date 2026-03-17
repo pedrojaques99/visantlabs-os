@@ -340,7 +340,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         <div className="flex items-center justify-center mb-4 sm:mb-5 md:mb-6 w-full">
                           {/* Current Package Display */}
                           <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] text-center shadow-sm relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 pointer-events-none" />
 
                             <div className="relative z-10 space-y-4 sm:space-y-6">
                               <div>
@@ -404,7 +404,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                         size={14}
                                         className="text-neutral-500 hover:text-neutral-400 transition-colors cursor-help"
                                       />
-                                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-neutral-300 bg-neutral-900/95 border border-neutral-700/50 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-neutral-300 bg-neutral-900/95 border border-neutral-700/50 rounded whitespace-nowrap opacity-0 group-hover:opacity-300 transition-opacity pointer-events-none z-10">
                                         {t('pricing.oneTimePayment') || (currencyInfo.currency === 'BRL' ? 'Pagamento único' : 'One-time payment')}
                                       </div>
                                     </div>
@@ -501,7 +501,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                               {/* Plan Card */}
                               <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] text-center shadow-sm relative overflow-hidden group">
-                                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 pointer-events-none" />
 
                                 {/* Popular Badge */}
                                 {currentPlan.displayOrder === 1 && (
@@ -644,7 +644,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             </div>
                           </div>
                         ) : (
-                          <div className="text-center py-10 sm:py-14 md:py-16 text-neutral-600 font-mono italic text-sm sm:text-base">
+                          <div className="text-center py-10 sm:py-14 md:py-16 text-neutral-600 font-mono  text-sm sm:text-base">
                             {t('pricing.noPlansFound') || 'Nenhum plano disponível no momento.'}
                           </div>
                         )}

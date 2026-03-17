@@ -134,18 +134,41 @@ class UIManager {
     document.getElementById('authLoginBtn')?.addEventListener('click', async () => {
       const email = document.getElementById('authEmailInput')?.value || '';
       const password = document.getElementById('authPasswordInput')?.value || '';
+      const status = document.getElementById('authLoginStatus');
+      const btn = document.getElementById('authLoginBtn');
+      
       if (!email || !password) {
-        const status = document.getElementById('authLoginStatus');
-        if (status) status.textContent = '⚠ Preencha email e senha';
+        if (status) {
+          status.innerHTML = '<span style="color: var(--figma-color-text-danger);">⚠ Preencha email e senha</span>';
+        }
         return;
       }
-      const btn = document.getElementById('authLoginBtn');
-      if (btn) btn.textContent = 'Entrando...';
-      const result = await authLogin(email, password);
-      if (btn) btn.textContent = 'Entrar';
-      if (!result.success) {
-        const status = document.getElementById('authLoginStatus');
-        if (status) status.textContent = `❌ ${result.error}`;
+
+      if (btn) {
+        btn.classList.add('loading');
+        btn.disabled = true;
+      }
+      
+      if (status) status.textContent = 'Autenticando...';
+
+      try {
+        const result = await authLogin(email, password);
+        if (!result.success) {
+          if (status) {
+            status.innerHTML = `<span style="color: var(--figma-color-text-danger);">❌ ${result.error}</span>`;
+          }
+        } else {
+          if (status) status.textContent = '';
+        }
+      } catch (err) {
+        if (status) {
+          status.innerHTML = `<span style="color: var(--figma-color-text-danger);">❌ ${err.message}</span>`;
+        }
+      } finally {
+        if (btn) {
+          btn.classList.remove('loading');
+          btn.disabled = false;
+        }
       }
     });
 
@@ -163,6 +186,23 @@ class UIManager {
     });
     eventBus.on('auth:no-credits', (message) => {
       this.addSystemMessage(`⚠️ ${message}`);
+    });
+    eventBus.on('auth:session-expired', (data) => {
+      this.updateAuthUI(false);
+      const statusEl = document.getElementById('authLoginStatus');
+      if (statusEl) {
+        statusEl.textContent = `⚠️ ${data?.reason || 'Sessão expirada. Faça login novamente.'}`;
+      }
+      this.addSystemMessage('⚠️ Sua sessão expirou. Faça login novamente na aba Settings.');
+    });
+    eventBus.on('auth:rate-limited', (data) => {
+      this.addSystemMessage(`⏳ ${data?.error || 'Muitas tentativas. Aguarde alguns minutos.'}`);
+    });
+    eventBus.on('auth:login-error', (message) => {
+      const statusEl = document.getElementById('authLoginStatus');
+      if (statusEl) {
+        statusEl.textContent = `❌ ${message || 'Erro ao fazer login'}`;
+      }
     });
 
     // Load saved auth token on initialization
@@ -417,6 +457,10 @@ class UIManager {
 
     if (selection.length === 1) {
       const sel = selection[0];
+      const isTemplate = sel.type === 'FRAME' && sel.name.startsWith('[Template]');
+      const cleanName = isTemplate ? sel.name.replace('[Template]', '').trim() : sel.name;
+      const templateBadge = isTemplate ? `<span class="sel-template-badge" title="Template reconhecido pelo plugin">TEMPLATE</span>` : '';
+      
       const icon = this.getNodeTypeIcon(sel.type);
       const thumb = state.selectionThumb;
       const thumbHtml = thumb
@@ -426,16 +470,21 @@ class UIManager {
       this.selectionIndicator.innerHTML = `
         ${thumbHtml}
         <div class="sel-info">
-          <div class="sel-name" title="${this.escapeHtml(sel.name)}">${this.escapeHtml(sel.name)}</div>
+          <div class="sel-name" title="${this.escapeHtml(sel.name)}">
+            ${this.escapeHtml(cleanName)}${templateBadge}
+          </div>
           <div class="sel-type">${this.getNodeTypeLabel(sel.type)}</div>
         </div>
       `;
     } else {
+      const templatesCount = selection.filter(s => s.type === 'FRAME' && s.name.startsWith('[Template]')).length;
+      const templateText = templatesCount > 0 ? ` <span class="sel-template-badge" style="margin-left:2px; font-size:7px; padding:0 3px;">${templatesCount} TEMPLATE${templatesCount > 1 ? 'S' : ''}</span>` : '';
+      
       const names = selection.map((s) => s.name).join(', ');
       this.selectionIndicator.innerHTML = `
         <div class="sel-icon">${selection.length}</div>
         <div class="sel-info">
-          <div class="sel-multi">${selection.length} camadas selecionadas</div>
+          <div class="sel-multi">${selection.length} camadas selecionadas${templateText}</div>
           <div class="sel-type sel-multi-list" title="${this.escapeHtml(names)}">${this.escapeHtml(names)}</div>
         </div>
       `;

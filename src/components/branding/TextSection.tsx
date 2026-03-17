@@ -54,7 +54,7 @@ export const TextSection: React.FC<TextSectionProps> = ({
     return (
       <Card className={theme === 'dark' ? 'bg-neutral-950/70 border-neutral-800/60' : 'bg-neutral-100 border-neutral-300'}>
         <CardContent className="p-4 md:p-6">
-          <div className={`text-sm font-manrope italic ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
+          <div className={`text-sm font-manrope  ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
             }`}>
             Nenhum conteúdo disponível.
           </div>

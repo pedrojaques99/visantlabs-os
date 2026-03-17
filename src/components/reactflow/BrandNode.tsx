@@ -448,7 +448,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               </div>
             ))}
             {colors.length === 0 && (
-              <span className="text-[10px] text-neutral-600 italic">No colors</span>
+              <span className="text-[10px] text-neutral-600 ">No colors</span>
             )}
           </div>
         )}
@@ -702,7 +702,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     <div className="space-y-1">
                       <div className="text-neutral-300 font-medium">{brandIdentity.typography.primary}</div>
                       {brandIdentity.typography.secondary && (
-                        <div className="text-neutral-500 text-[9px] italic">{brandIdentity.typography.secondary}</div>
+                        <div className="text-neutral-500 text-[9px] ">{brandIdentity.typography.secondary}</div>
                       )}
                     </div>
                   </div>

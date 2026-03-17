@@ -100,7 +100,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
         {isEditing ? (
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5 min-w-0">
-              <MicroTitle className="text-[9px] opacity-40 uppercase">Brand Name</MicroTitle>
+              <MicroTitle className="text-[9px] opacity-300 uppercase">Brand Name</MicroTitle>
               <Input
                 {...form.register('name')}
                 className="h-8 text-sm font-semibold bg-neutral-900/50 border-white/5 text-white placeholder:text-neutral-800 focus:border-brand-cyan/20"
@@ -110,7 +110,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <MicroTitle className="text-[9px] opacity-40 uppercase">Website</MicroTitle>
+                <MicroTitle className="text-[9px] opacity-300 uppercase">Website</MicroTitle>
                 <Input
                   {...form.register('website')}
                   className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
@@ -118,7 +118,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
                 />
               </div>
               <div className="space-y-1.5">
-                <MicroTitle className="text-[9px] opacity-40 uppercase">Portfolio</MicroTitle>
+                <MicroTitle className="text-[9px] opacity-300 uppercase">Portfolio</MicroTitle>
                 <Input
                   {...form.register('portfolio')}
                   className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
@@ -126,7 +126,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
                 />
               </div>
               <div className="space-y-1.5">
-                <MicroTitle className="text-[9px] opacity-40 uppercase">Instagram</MicroTitle>
+                <MicroTitle className="text-[9px] opacity-300 uppercase">Instagram</MicroTitle>
                 <Input
                   {...form.register('instagram')}
                   className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
@@ -134,7 +134,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
                 />
               </div>
               <div className="space-y-1.5">
-                <MicroTitle className="text-[9px] opacity-40 uppercase">LinkedIn</MicroTitle>
+                <MicroTitle className="text-[9px] opacity-300 uppercase">LinkedIn</MicroTitle>
                 <Input
                   {...form.register('linkedin')}
                   className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
@@ -142,7 +142,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
                 />
               </div>
               <div className="space-y-1.5">
-                <MicroTitle className="text-[9px] opacity-40 uppercase">X (Twitter)</MicroTitle>
+                <MicroTitle className="text-[9px] opacity-300 uppercase">X (Twitter)</MicroTitle>
                 <Input
                   {...form.register('x')}
                   className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
@@ -152,7 +152,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
             </div>
 
             <div className="space-y-1.5 min-w-0">
-              <MicroTitle className="text-[9px] opacity-40 uppercase">Tagline</MicroTitle>
+              <MicroTitle className="text-[9px] opacity-300 uppercase">Tagline</MicroTitle>
               <Input
                 {...form.register('tagline')}
                 className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
@@ -160,7 +160,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
               />
             </div>
             <div className="space-y-1.5 min-w-0">
-              <MicroTitle className="text-[9px] opacity-40 uppercase">Description</MicroTitle>
+              <MicroTitle className="text-[9px] opacity-300 uppercase">Description</MicroTitle>
               <Textarea
                 {...form.register('description')}
                 className="min-h-[80px] text-[11px] leading-relaxed bg-neutral-900/50 border-white/5 text-neutral-500 focus:border-brand-cyan/20 py-2"
@@ -175,14 +175,14 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
                 <h2 className="text-4xl md:text-5xl font-semibold text-white leading-none tracking-tight">
                   {guideline.identity?.name || guideline.name || 'Company'}
                 </h2>
-                
+
                 <div className="flex flex-wrap items-center gap-4 pt-1">
                   {(guideline.identity?.tagline || guideline.tagline) && (
                     <p className="text-[10px] font-mono text-brand-cyan uppercase opacity-80">
                       {guideline.identity?.tagline || guideline.tagline}
                     </p>
                   )}
-                  
+
                   {socialLinks.length > 0 && (
                     <div className="flex items-center gap-3">
                       <div className="h-3 w-[1px] bg-white/10 mx-1" />

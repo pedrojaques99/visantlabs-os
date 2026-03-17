@@ -385,7 +385,7 @@ purposevisiónmissionvaleursatitudecomportamientocultureinternapromesseentregaex
             <img
               src={avatarSrc}
               alt={avatarAlt}
-              className={`w-16 h-16 rounded-md border opacity-90 hover:opacity-100 transition-opacity duration-300 ${isDarkMode ? '' : 'invert'
+              className={`w-16 h-16 rounded-md border opacity-90 hover:opacity-300 transition-opacity duration-300 ${isDarkMode ? '' : 'invert'
                 }`}
               style={{
                 borderColor: isDarkMode ? hexToRgba(color, 0.2) : hexToRgba(color, 0.3)

@@ -147,13 +147,13 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     if (data.aspectRatio) setAspectRatio(data.aspectRatio);
     if (data.resolution) setResolution(data.resolution);
   }, [
-    data.selectedColors, 
-    data.colorInput, 
-    data.isValidColor, 
-    data.withHuman, 
-    data.customPrompt, 
-    data.model, 
-    data.aspectRatio, 
+    data.selectedColors,
+    data.colorInput,
+    data.isValidColor,
+    data.withHuman,
+    data.customPrompt,
+    data.model,
+    data.aspectRatio,
     data.resolution
   ]);
 
@@ -335,10 +335,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Preset Selector - Button to open modal */}
       <div className="node-margin">
-        <NodeButton variant="ghost"           onClick={(e) => {
-            e.stopPropagation();
-            setIsPresetModalOpen(true);
-          }}
+        <NodeButton variant="ghost" onClick={(e) => {
+          e.stopPropagation();
+          setIsPresetModalOpen(true);
+        }}
           onMouseDown={(e) => {
             e.stopPropagation();
           }}
@@ -452,21 +452,21 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Prompt Editor Toggle */}
       <div className="mb-2">
-        <NodeButton variant="ghost"           onClick={(e) => {
-            e.stopPropagation();
-            const newIsOpen = !isPromptOpen;
-            setIsPromptOpen(newIsOpen);
-            // If opening and no custom prompt exists, initialize with base prompt or text direction
-            if (newIsOpen && !customPrompt) {
-              const initialPrompt = connectedTextDirection || basePrompt;
-              if (initialPrompt) {
-                setCustomPrompt(initialPrompt);
-                if (data.onUpdateData) {
-                  data.onUpdateData(id, { customPrompt: initialPrompt });
-                }
+        <NodeButton variant="ghost" onClick={(e) => {
+          e.stopPropagation();
+          const newIsOpen = !isPromptOpen;
+          setIsPromptOpen(newIsOpen);
+          // If opening and no custom prompt exists, initialize with base prompt or text direction
+          if (newIsOpen && !customPrompt) {
+            const initialPrompt = connectedTextDirection || basePrompt;
+            if (initialPrompt) {
+              setCustomPrompt(initialPrompt);
+              if (data.onUpdateData) {
+                data.onUpdateData(id, { customPrompt: initialPrompt });
               }
             }
-          }}
+          }
+        }}
           onMouseDown={(e) => e.stopPropagation()}
           disabled={isLoading}
           className={cn(
@@ -517,10 +517,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Color & Human Section - Collapsable */}
       <div className="mb-2">
-        <NodeButton variant="ghost"           onClick={(e) => {
-            e.stopPropagation();
-            setIsColorSectionOpen(!isColorSectionOpen);
-          }}
+        <NodeButton variant="ghost" onClick={(e) => {
+          e.stopPropagation();
+          setIsColorSectionOpen(!isColorSectionOpen);
+        }}
           onMouseDown={(e) => e.stopPropagation()}
           disabled={isLoading}
           className={cn(
@@ -618,10 +618,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     ></span>
                   )}
                 </div>
-                <NodeButton variant="ghost" size="xs"                   onClick={(e) => {
-                    e.stopPropagation();
-                    handleAddColor();
-                  }}
+                <NodeButton variant="ghost" size="xs" onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddColor();
+                }}
                   onMouseDown={(e) => e.stopPropagation()}
                   disabled={isLoading || !isValidColor}
                   className="nodrag nopan"
@@ -638,10 +638,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                         style={{ backgroundColor: color }}
                       ></span>
                       <span className="font-mono text-[10px]">{color}</span>
-                      <NodeButton variant="ghost" size="xs"                         onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveColor(color);
-                        }}
+                      <NodeButton variant="ghost" size="xs" onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveColor(color);
+                      }}
                         onMouseDown={(e) => e.stopPropagation()}
                         className="p-1 min-w-0 h-auto"
                       >
@@ -684,7 +684,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       </div>
 
       {/* Generate Button */}
-      <NodeButton 
+      <NodeButton
         variant="primary"
         size="full"
         onClick={(e) => {
@@ -718,12 +718,12 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Add Mockup Button */}
       <div className="mt-2 pt-2 border-t border-neutral-700/30 flex justify-center">
-        <NodeButton variant="ghost" size="xs"           onClick={(e) => {
-            e.stopPropagation();
-            if (data.onAddMockupNode) {
-              data.onAddMockupNode();
-            }
-          }}
+        <NodeButton variant="ghost" size="xs" onClick={(e) => {
+          e.stopPropagation();
+          if (data.onAddMockupNode) {
+            data.onAddMockupNode();
+          }
+        }}
           onMouseDown={(e) => {
             e.stopPropagation();
           }}

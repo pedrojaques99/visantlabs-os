@@ -90,7 +90,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                 </div>
 
                 {!canAnalyze && !isAnalyzing && !hasAnalyzed && !uploadedImage ? (
-                    <MicroTitle as="p" className="text-center opacity-40 text-[9px] uppercase tracking-widest">
+                    <MicroTitle as="p" className="text-center opacity-300 text-[9px] uppercase tracking-widest">
                         {t('mockup.uploadRequired') || 'Upload an image to continue'}
                     </MicroTitle>
                 ) : (

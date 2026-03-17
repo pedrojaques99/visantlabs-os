@@ -39,7 +39,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as ImageNodeData;
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
-  
+
   const mockup = nodeData?.mockup ?? ({} as Mockup);
   const imageUrl = getImageUrl(mockup);
   const isSaved = !!mockup._id;
@@ -116,8 +116,8 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
     if (!currentHeight || heightDiff > 5) {
       const newHeight = Math.max(150, Math.min(2000, expectedHeight));
-      setNodes((nds) => nds.map((n) => 
-        n.id === id && n.type === 'image' 
+      setNodes((nds) => nds.map((n) =>
+        n.id === id && n.type === 'image'
           ? { ...n, style: { ...n.style, width: currentWidth, height: newHeight } }
           : n
       ));
@@ -210,8 +210,8 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           const base64 = await normalizeImageToBase64(imageUrl, base64Fallback);
           const mimeType = imageUrl.includes('.jpg') || imageUrl.includes('.jpeg') ? 'image/jpeg'
             : imageUrl.includes('.webp') ? 'image/webp'
-            : imageUrl.includes('.gif') ? 'image/gif'
-            : 'image/png';
+              : imageUrl.includes('.gif') ? 'image/gif'
+                : 'image/png';
           imageInput = { base64, mimeType };
         } catch (error: any) {
           toast.error(error?.message || t('canvas.failedToLoadImageForAnalysis'), { duration: 3000 });
@@ -226,15 +226,15 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     try {
       const generatedDescription = await aiApi.describeImage(imageInput);
       const currentNode = nodes.find(n => n.id === id);
-      
+
       if (!currentNode) {
         toast.error(t('canvasNodes.imageNode.failedToFindCurrentNode'), { duration: 3000 });
         nodeData.onUpdateData?.(String(id), { isDescribing: false });
         return;
       }
 
-      const currentHeight = currentNode.measured?.height ?? 
-        (currentNode.style?.height as number) ?? 
+      const currentHeight = currentNode.measured?.height ??
+        (currentNode.style?.height as number) ??
         currentNode.height ?? 300;
       const newNodePosition = {
         x: currentNode.position.x,
@@ -298,7 +298,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
     if (file.size > MAX_FILE_SIZE) {
       const sizeMB = (file.size / 1024 / 1024).toFixed(2);
-      const errorMsg = t('upload.imageTooLarge')?.replace('{size}', sizeMB).replace('{max}', '10') 
+      const errorMsg = t('upload.imageTooLarge')?.replace('{size}', sizeMB).replace('{max}', '10')
         || `File size (${sizeMB}MB) exceeds 10MB limit`;
       toast.error(errorMsg, { duration: 5000 });
       return;
@@ -416,14 +416,14 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           <div className="flex items-center justify-between mb-[var(--node-gap-sm)]">
             <label className="text-xs text-neutral-400 font-mono">{t('canvasNodes.imageNode.description')}</label>
             <div className="flex items-center gap-1">
-              <NodeButton variant="ghost"                 onClick={(e) => { e.stopPropagation(); handleCopyDescription(); }}
+              <NodeButton variant="ghost" onClick={(e) => { e.stopPropagation(); handleCopyDescription(); }}
                 className="p-1 !text-brand-cyan !bg-brand-cyan/10 hover:!bg-brand-cyan/20"
                 title={t('canvasNodes.imageNode.copyDescription')}
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <Copy size={10} strokeWidth={2} />
               </NodeButton>
-              <NodeButton variant="ghost"                 onClick={(e) => { e.stopPropagation(); handleClearDescription(); }}
+              <NodeButton variant="ghost" onClick={(e) => { e.stopPropagation(); handleClearDescription(); }}
                 className="p-1"
                 title={t('canvasNodes.imageNode.clearDescription')}
                 onMouseDown={(e) => e.stopPropagation()}

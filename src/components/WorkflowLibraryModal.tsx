@@ -311,7 +311,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                             </div>
                         ) : displayedWorkflows.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-64 text-neutral-500">
-                                <Search className="w-8 h-8 opacity-20 mb-2" />
+                                <Search className="w-8 h-8 opacity-40 mb-2" />
                                 <p className="text-sm font-mono">
                                     {searchQuery
                                         ? t('workflows.library.noResults') || 'No workflows found'

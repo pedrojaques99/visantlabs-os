@@ -262,7 +262,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                         </div>
                       )}
                     </div>
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                       onClick={() => removePaymentMethod(index)}
                       className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors self-start sm:self-auto"
                       title={t('budget.removePaymentMethod') || 'Remover método'}
@@ -273,7 +273,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                 </div>
                 {index === paymentInfo.paymentMethods.length - 1 && (
                   <div className="flex justify-center pt-2">
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                       onClick={addPaymentMethod}
                       className="flex items-center justify-center p-1.5 bg-neutral-950/30 hover:bg-neutral-950/50 border border-neutral-700/30 hover:border-neutral-600/50 rounded-md text-neutral-400 hover:text-neutral-300 transition-all duration-200"
                       title={t('budget.addPaymentMethod') || 'Adicionar Método'}

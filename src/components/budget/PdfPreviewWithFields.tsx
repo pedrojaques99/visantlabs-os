@@ -796,7 +796,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
         {/* Zoom controls - top right */}
         <div className="sticky top-0 z-40 mb-4 flex justify-end">
           <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-neutral-300/50 rounded-md px-2 py-1.5 shadow-sm">
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={handleZoomOut}
               disabled={zoomLevel <= 0.5}
               className="p-1.5 hover:bg-neutral-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
@@ -807,7 +807,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
             <span className="text-xs font-mono text-neutral-700 px-2 min-w-[3rem] text-center">
               {Math.round(zoomLevel * 100)}%
             </span>
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={handleZoomIn}
               disabled={zoomLevel >= 3.0}
               className="p-1.5 hover:bg-neutral-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
@@ -816,7 +816,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
               <ZoomIn size={16} className="text-neutral-700" />
             </Button>
             <div className="w-px h-4 bg-neutral-300 mx-1" />
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={handleZoomReset}
               className="text-xs font-mono text-neutral-700 px-2 py-1 hover:bg-neutral-200/50 rounded transition-colors"
               title="Resetar zoom"
@@ -834,7 +834,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                 <MapPin size={16} />
                 Posição selecionada! Clique em um campo preenchido do formulário para adicioná-lo aqui.
               </p>
-              <Button variant="ghost" 
+              <Button variant="ghost"
                 onClick={() => setPendingFieldPosition(null)}
                 className="p-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 transition-colors"
                 title="Cancelar"
@@ -854,7 +854,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                 Clique no PDF para posicionar: {AVAILABLE_FIELDS.find(f => f.id === positioningFieldId)?.label || positioningFieldId}
               </p>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" 
+                <Button variant="ghost"
                   onClick={() => {
                     if (onPositioningModeChange) {
                       onPositioningModeChange(null);
@@ -870,7 +870,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                 >
                   <XCircle size={16} />
                 </Button>
-                <Button variant="ghost" 
+                <Button variant="ghost"
                   onClick={() => {
                     if (onPositioningModeChange) {
                       onPositioningModeChange(null);
@@ -1387,7 +1387,7 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
     >
       {fieldValue || `[${fieldLabel}]`}
       {editable && isHovered && !isDragging && !isPositioning && onDelete && (
-        <Button variant="ghost" 
+        <Button variant="ghost"
           onClick={(e) => {
             e.stopPropagation();
             onDelete();

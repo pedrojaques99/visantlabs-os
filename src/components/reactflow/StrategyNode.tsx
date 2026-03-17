@@ -1358,7 +1358,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                         {sectionHasData && !isGeneratingSection && (
                           <div
                             onClick={(e) => handleDeleteSection(section.type, e)}
-                            className="p-1 hover:bg-red-500/20 rounded-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                            className="p-1 hover:bg-red-500/20 rounded-md opacity-0 group-hover:opacity-300 transition-all cursor-pointer"
                             title={t('canvasNodes.strategyNode.deleteSection', { section: section.label })}
                             role="button"
                             tabIndex={0}

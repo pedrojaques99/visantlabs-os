@@ -194,7 +194,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                       : 'bg-neutral-100 border-neutral-300 text-neutral-800'
                       }`}
                   />
-                  <Button variant="ghost"                     onClick={() => handleRemoveDesire(index)}
+                  <Button variant="ghost" onClick={() => handleRemoveDesire(index)}
                     className={`p-2 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 self-start ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                       }`}
                     title="Remover desejo"
@@ -203,7 +203,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                   </Button>
                 </div>
               ))}
-              <Button variant="ghost"                 onClick={handleAddDesire}
+              <Button variant="ghost" onClick={handleAddDesire}
                 className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
                   ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                   : 'bg-neutral-100 border-neutral-300 text-neutral-800'
@@ -252,7 +252,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                       : 'bg-neutral-100 border-neutral-300 text-neutral-800'
                       }`}
                   />
-                  <Button variant="ghost"                     onClick={() => handleRemovePain(index)}
+                  <Button variant="ghost" onClick={() => handleRemovePain(index)}
                     className={`p-2 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 self-start ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                       }`}
                     title="Remover dor"
@@ -261,7 +261,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                   </Button>
                 </div>
               ))}
-              <Button variant="ghost"                 onClick={handleAddPain}
+              <Button variant="ghost" onClick={handleAddPain}
                 className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
                   ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                   : 'bg-neutral-100 border-neutral-300 text-neutral-800'

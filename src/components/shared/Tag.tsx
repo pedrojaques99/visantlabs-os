@@ -66,7 +66,7 @@ export const Tag: React.FC<TagProps> = ({
                         ? 'bg-brand-cyan/5 text-neutral-800 border-brand-cyan/30 shadow-sm shadow-brand-cyan/5'
                         : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900');
 
-    const disabledStyles = disabled ? "opacity-40 cursor-not-allowed" : "";
+    const disabledStyles = disabled ? "opacity-300 cursor-not-allowed" : "";
 
     return (
         <div
@@ -81,7 +81,7 @@ export const Tag: React.FC<TagProps> = ({
                 <span>{label}</span>
             ) : null}
             {removable && onRemove && (
-                <Button variant="ghost" 
+                <Button variant="ghost"
                     onClick={(e) => {
                         e.stopPropagation();
                         onRemove();

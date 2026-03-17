@@ -28,7 +28,7 @@ function renderResolutionButton(
   const credits = getCreditsRequired(model, res);
 
   return (
-    <NodeButton variant="ghost" 
+    <NodeButton variant="ghost"
       key={res}
       onClick={() => !disabled && onChange(res)}
       disabled={disabled}

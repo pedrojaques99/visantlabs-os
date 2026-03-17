@@ -175,7 +175,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
               {t('shareModal.shareProject')}
             </h2>
           </div>
-          <Button variant="ghost"             onClick={onClose}
+          <Button variant="ghost" onClick={onClose}
             className="text-neutral-500 hover:text-neutral-300 transition-colors"
             aria-label="Close"
           >
@@ -196,7 +196,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                 readOnly
                 className="flex-1 px-3 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded text-sm text-neutral-300 font-mono"
               />
-              <Button variant="brand"                 onClick={handleCopyLink}
+              <Button variant="brand" onClick={handleCopyLink}
                 className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded-md transition-all flex items-center gap-2"
               >
                 {copied ? (
@@ -213,7 +213,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
               </Button>
             </div>
           ) : (
-            <Button variant="brand"               onClick={handleGenerateShare}
+            <Button variant="brand" onClick={handleGenerateShare}
               disabled={isGenerating}
               className="w-full px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -253,7 +253,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                     placeholder={t('shareModal.userEmailPlaceholder')}
                     className="flex-1 px-3 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded text-sm text-neutral-300 font-mono placeholder-neutral-600"
                   />
-                  <Button variant="ghost"                     onClick={addEditUser}
+                  <Button variant="ghost" onClick={addEditUser}
                     className="px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border border-neutral-700/50 rounded text-xs font-mono transition-all"
                   >
                     Adicionar
@@ -267,7 +267,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                         className="flex items-center gap-2 px-3 py-1 bg-neutral-800/50 border border-neutral-700/50 rounded text-xs font-mono text-neutral-300"
                       >
                         <span>{userId}</span>
-                        <Button variant="ghost"                           onClick={() => removeEditUser(userId)}
+                        <Button variant="ghost" onClick={() => removeEditUser(userId)}
                           className="text-neutral-500 hover:text-red-400 transition-colors"
                         >
                           <X size={14} />
@@ -297,7 +297,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                     placeholder="E-mail do usuário"
                     className="flex-1 px-3 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded text-sm text-neutral-300 font-mono placeholder-neutral-600"
                   />
-                  <Button variant="ghost"                     onClick={addViewUser}
+                  <Button variant="ghost" onClick={addViewUser}
                     className="px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border border-neutral-700/50 rounded text-xs font-mono transition-all"
                   >
                     Adicionar
@@ -311,7 +311,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                         className="flex items-center gap-2 px-3 py-1 bg-neutral-800/50 border border-neutral-700/50 rounded text-xs font-mono text-neutral-300"
                       >
                         <span>{userId}</span>
-                        <Button variant="ghost"                           onClick={() => removeViewUser(userId)}
+                        <Button variant="ghost" onClick={() => removeViewUser(userId)}
                           className="text-neutral-500 hover:text-red-400 transition-colors"
                         >
                           <X size={14} />
@@ -327,7 +327,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
 
         {/* Actions */}
         <div className="flex items-center justify-between gap-3 pt-4 border-t border-neutral-800/50">
-          <Button variant="ghost"             onClick={handleRemoveShare}
+          <Button variant="ghost" onClick={handleRemoveShare}
             disabled={!isCollaborative || isLoading}
             className="px-4 py-2 text-xs font-mono text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-500/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
@@ -335,13 +335,13 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
             <span>Remover Compartilhamento</span>
           </Button>
           <div className="flex items-center gap-3">
-            <Button variant="ghost"               onClick={onClose}
+            <Button variant="ghost" onClick={onClose}
               className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
             >
               Fechar
             </Button>
             {isCollaborative && hasChanges && (
-              <Button variant="brand"                 onClick={handleUpdatePermissions}
+              <Button variant="brand" onClick={handleUpdatePermissions}
                 disabled={isLoading}
                 className="px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >

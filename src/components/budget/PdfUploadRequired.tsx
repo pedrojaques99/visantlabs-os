@@ -177,7 +177,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
                   autoFocus
                 />
                 <div className="flex gap-2">
-                  <Button variant="brand"                     onClick={handleSavePreset}
+                  <Button variant="brand" onClick={handleSavePreset}
                     disabled={isSavingPreset || !presetName.trim()}
                     className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 text-brand-cyan"
                   >

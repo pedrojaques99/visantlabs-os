@@ -70,7 +70,7 @@ export const QRCodePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0C0C0C] text-zinc-300 pt-12 md:pt-14 relative overflow-hidden">
       <div className="fixed inset-0 z-0">
-        
+
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 py-8">
@@ -202,7 +202,7 @@ export const QRCodePage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="text-center text-zinc-500">
-                    <QrCode className="w-24 h-24 mx-auto mb-4 opacity-20" />
+                    <QrCode className="w-24 h-24 mx-auto mb-4 opacity-40" />
                     <p className="font-mono text-sm">Enter text to generate QR code</p>
                   </div>
                 )}
@@ -210,7 +210,7 @@ export const QRCodePage: React.FC = () => {
 
               {hasText && (
                 <div className="mt-6 flex justify-center">
-                  <Button variant="brand" 
+                  <Button variant="brand"
                     onClick={handleDownload}
                     className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-semibold px-6 py-3 rounded-md flex items-center gap-2"
                   >

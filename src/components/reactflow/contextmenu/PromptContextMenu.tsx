@@ -48,7 +48,7 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
             >
                 <div className="px-2 py-1.5 border-b border-neutral-700/30 flex items-center justify-between sticky top-0 bg-neutral-950/90 backdrop-blur-sm z-10">
                     <span className="text-xs font-mono text-neutral-400 uppercase">Prompt Actions</span>
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                         onClick={onClose}
                         className="p-0.5 text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer"
                     >
@@ -56,7 +56,7 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
                     </Button>
                 </div>
 
-                <Button variant="ghost" 
+                <Button variant="ghost"
                     onClick={() => {
                         onSavePrompt();
                         onClose();
@@ -69,7 +69,7 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
 
                 <div className="h-px bg-neutral-700/30 my-1" />
 
-                <Button variant="ghost" 
+                <Button variant="ghost"
                     onClick={() => {
                         onDuplicate();
                         onClose();
@@ -80,7 +80,7 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
                     {t('canvasNodes.nodeContextMenu.duplicate')}
                 </Button>
 
-                <Button variant="ghost" 
+                <Button variant="ghost"
                     onClick={() => {
                         onDelete();
                         onClose();
