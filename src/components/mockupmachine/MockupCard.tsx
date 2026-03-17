@@ -194,13 +194,13 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                         )}
                     </div>
 
-                    <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                        <GlassPanel padding="none" className="flex items-center gap-1 p-1 bg-neutral-900/90 backdrop-blur-xl border-white/10 rounded-md shadow-2xl pointer-events-auto">
+                    <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                        <GlassPanel padding="none" className="flex flex-row items-center gap-0.5 p-1 bg-neutral-950/80 backdrop-blur-xl border-white/10 rounded-lg shadow-2xl pointer-events-auto">
                             <Tooltip content={t('mockup.download') || "Download"} position="top">
                                 <a
                                     href={imageUrl}
                                     download={`mockup-${Date.now()}.png`}
-                                    className="p-1.5 w-7 h-7 flex items-center justify-center rounded-md text-neutral-400 hover:text-white hover:bg-white/10 transition-all"
+                                    className="p-1.5 w-8 h-8 flex items-center justify-center rounded-md text-neutral-400 hover:text-white hover:bg-white/10 transition-all"
                                     onClick={async (e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
@@ -234,12 +234,12 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                                 <Button variant="ghost"
                                     onClick={(e) => { e.stopPropagation(); onRedraw(); }}
                                     disabled={editButtonsDisabled || isRedrawing}
-                                    className={`p-1.5 rounded-md flex items-center gap-1.5 transition-all min-w-0 ${editButtonsDisabled || isRedrawing
+                                    className={`h-8 px-2 rounded-md flex items-center gap-1.5 transition-all min-w-0 ${editButtonsDisabled || isRedrawing
                                         ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                                        : 'text-neutral-400 hover:text-white hover:bg-white/10'
+                                        : 'text-neutral-300 hover:text-white hover:bg-white/10'
                                         }`}
                                 >
-                                    <RefreshCw size={12} className={isRedrawing ? 'animate-spin' : ''} />
+                                    <RefreshCw size={14} className={isRedrawing ? 'animate-spin' : ''} />
                                     {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
                                         <span className="text-[10px] font-bold text-brand-cyan">
                                             {creditsPerOperation}
@@ -253,12 +253,12 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                                     <Button variant="ghost"
                                         onClick={(e) => { e.stopPropagation(); setShowReImaginePanel(true); }}
                                         disabled={editButtonsDisabled || isRedrawing}
-                                        className={`p-1.5 rounded-md flex items-center gap-1.5 transition-all min-w-0 ${editButtonsDisabled || isRedrawing
+                                        className={`h-8 px-2 rounded-md flex items-center gap-1.5 transition-all min-w-0 ${editButtonsDisabled || isRedrawing
                                             ? 'text-neutral-600 cursor-not-allowed opacity-50'
                                             : 'text-brand-cyan hover:bg-brand-cyan/20'
                                             }`}
                                     >
-                                        <Pencil size={12} />
+                                        <Pencil size={14} />
                                         {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
                                             <span className="text-[10px] font-bold text-brand-cyan">
                                                 {creditsPerOperation}
