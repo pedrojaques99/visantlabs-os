@@ -23,6 +23,28 @@ export interface MockupSetupAnalysis {
   designType: 'logo' | 'layout';
 }
 
+export interface RefineSuggestionsParams {
+  imageDescription?: string;
+  selectedTags: {
+    categories: string[];
+    location: string[];
+    angle: string[];
+    lighting: string[];
+    effects: string[];
+    material: string[];
+  };
+  changedCategory: string;
+}
+
+export interface RefineSuggestionsResult {
+  categories?: string[];
+  locations?: string[];
+  angles?: string[];
+  lighting?: string[];
+  effects?: string[];
+  materials?: string[];
+}
+
 export const aiApi = {
   /**
    * Improve a text prompt using AI
@@ -234,6 +256,29 @@ export const aiApi = {
 
     const data = await response.json();
     return data.operations;
+  },
+
+  /**
+   * Refine tag suggestions based on current selections (lightweight, no image).
+   * Rate limited to 1 request per 2 seconds.
+   */
+  async refineSuggestions(params: RefineSuggestionsParams): Promise<RefineSuggestionsResult> {
+    const response = await fetch(`${API_BASE_URL}/ai/refine-suggestions`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(params),
+    });
+
+    if (!response.ok) {
+      // Rate limit returns 429 - don't throw, just return empty
+      if (response.status === 429) {
+        return {};
+      }
+      const error = await response.json().catch(() => ({ error: 'Failed to refine suggestions' }));
+      throw new Error(error.error || 'Failed to refine suggestions');
+    }
+
+    return response.json();
   },
 };
 
