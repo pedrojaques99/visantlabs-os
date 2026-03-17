@@ -5,6 +5,8 @@ import { authService, type User as UserType } from '../services/authService';
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export interface EditProfileModalProps {
   isOpen: boolean;
@@ -224,12 +226,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             <p className="font-mono mb-4 text-red-400">
               {t('profile.notAuthenticated') || 'Please sign in to edit your profile'}
             </p>
-            <button
+            <Button variant="ghost"
               onClick={onClose}
               className="px-4 py-2 bg-neutral-800/50 text-neutral-400 hover:bg-neutral-700/50 rounded-md text-sm font-mono transition-colors"
             >
               Close
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -255,14 +257,14 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             } uppercase`}>
             {t('profile.editTitle') || 'Edit profile'}
           </h2>
-          <button
+          <Button variant="ghost"
             onClick={onClose}
             className={`transition-colors ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-600 hover:text-neutral-900'
               }`}
             aria-label={t('common.close')}
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Content */}
@@ -293,7 +295,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
 
           {/* Profile Picture Section */}
           <div className="flex flex-col gap-8 md:flex-row md:items-center mb-10">
-            <input
+            <Input
               ref={fileInputRef}
               type="file"
               accept="image/*"
@@ -345,12 +347,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           {/* Form Fields Section */}
           <div className="space-y-8 pt-8 mt-8 border-t border-neutral-800/30">
             <div className="space-y-4">
-              <label className={`flex items-center gap-2 text-xs font-mono uppercase tracking-[0.3em] mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+              <label className={`flex items-center gap-2 text-xs font-mono uppercase mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}>
                 <User size={14} />
                 {t('profile.name') || 'Name'}
               </label>
-              <input
+              <Input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -361,12 +363,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
               />
             </div>
             <div className="space-y-4">
-              <label className={`flex items-center gap-2 text-xs font-mono uppercase tracking-[0.3em] mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+              <label className={`flex items-center gap-2 text-xs font-mono uppercase mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}>
                 <Mail size={14} />
                 {t('profile.email') || 'Email'}
               </label>
-              <input
+              <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -380,7 +382,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
 
           {/* Save Button */}
           <div className="pt-10 mt-10 border-t border-neutral-800/30">
-            <button
+            <Button variant="brand"
               onClick={handleSave}
               disabled={isSaving}
               className={`w-full px-4 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition flex items-center justify-center gap-2 ${theme === 'dark'
@@ -399,7 +401,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   {t('common.save')}
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 /// <reference types="@figma/plugin-typings" />
 // Figma plugin sandbox — runs in QuickJS, no browser APIs
 
-import type { UIMessage, FigmaOperation, SerializedContext, SerializedNode, ComponentInfo, ColorVariable, FontVariable, AvailableLayer } from '../../src/lib/figma-types';
+import type { UIMessage, FigmaOperation, SerializedContext, SerializedNode, SerializedFill, ComponentInfo, ColorVariable, FontVariable, AvailableLayer } from '../../src/lib/figma-types';
 
 
 function postToUI(msg: { type: string } & Record<string, unknown>) {
@@ -37,11 +37,20 @@ async function serializeNode(node: SceneNode, depth = 0, maxDepth = 5): Promise<
 
   // Fills
   if ('fills' in node && Array.isArray(node.fills)) {
-    base.fills = (node.fills as ReadonlyArray<Paint>).map((f: Paint) => ({
-      type: f.type,
-      color: f.type === 'SOLID' ? (f as SolidPaint).color : undefined,
-      opacity: 'opacity' in f ? (f as SolidPaint).opacity : undefined,
-    }));
+    base.fills = (node.fills as ReadonlyArray<Paint>).map((f: Paint) => {
+      const fill: SerializedFill = {
+        type: f.type,
+        opacity: 'opacity' in f ? (f as SolidPaint).opacity : undefined,
+      };
+      if (f.type === 'SOLID') {
+        fill.color = (f as SolidPaint).color;
+      } else if (f.type === 'IMAGE') {
+        // Capture image hash so LLM knows there's an image (even if can't recreate)
+        fill.imageHash = (f as ImagePaint).imageHash;
+        fill.scaleMode = (f as ImagePaint).scaleMode;
+      }
+      return fill;
+    });
   }
 
   // Fix 1.5: Strokes
@@ -91,6 +100,14 @@ async function serializeNode(node: SceneNode, depth = 0, maxDepth = 5): Promise<
     if (typeof node.fontSize === 'number') {
       base.fontSize = node.fontSize;
     }
+    // Capture font info (critical for template reproduction)
+    if (typeof node.fontName !== 'symbol') {
+      base.fontFamily = node.fontName.family;
+      base.fontStyle = node.fontName.style;
+    }
+    if (node.textAlignHorizontal) base.textAlignHorizontal = node.textAlignHorizontal;
+    if (node.textAlignVertical) base.textAlignVertical = node.textAlignVertical;
+    if (node.textAutoResize) base.textAutoResize = node.textAutoResize;
   }
 
   // Instance info — must use async API with documentAccess: dynamic-page
@@ -324,6 +341,7 @@ async function applyOperations(ops: FigmaOperation[]) {
 
 
   for (const op of ops) {
+    console.log('[OPERATION]', op.type, JSON.stringify(op).slice(0, 200));
     try {
 
       // ═══ CREATE_FRAME ═══
@@ -365,12 +383,24 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.cornerSmoothing != null) frame.cornerSmoothing = op.props.cornerSmoothing;
         if (op.props.clipsContent != null) frame.clipsContent = op.props.clipsContent;
 
+        // Strokes
+        if (op.props.strokes) frame.strokes = op.props.strokes as any;
+        if (op.props.strokeWeight != null) frame.strokeWeight = op.props.strokeWeight;
+        if (op.props.opacity != null) frame.opacity = op.props.opacity;
+
         // Position at center if root, otherwise append to parent
         if (parent === figma.currentPage) {
           frame.x = figma.viewport.center.x - fw / 2;
           frame.y = figma.viewport.center.y - fh / 2;
         }
         parent.appendChild(frame);
+
+        // Absolute position & rotation (set AFTER appendChild for correct parent-relative coords)
+        if (parent !== figma.currentPage) {
+          if (op.props.x != null) frame.x = op.props.x;
+          if (op.props.y != null) frame.y = op.props.y;
+        }
+        if (op.props.rotation != null) frame.rotation = op.props.rotation;
 
         // Layout sizing (must be set AFTER appendChild)
         if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
@@ -402,6 +432,12 @@ async function applyOperations(ops: FigmaOperation[]) {
         });
         if (op.props.constraints && 'constraints' in rect) (rect as any).constraints = op.props.constraints;
         parent.appendChild(rect);
+
+        // Absolute position & rotation (set AFTER appendChild)
+        if (op.props.x != null) rect.x = op.props.x;
+        if (op.props.y != null) rect.y = op.props.y;
+        if (op.props.rotation != null) rect.rotation = op.props.rotation;
+
         if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
           rect.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
         }
@@ -418,6 +454,9 @@ async function applyOperations(ops: FigmaOperation[]) {
         ellipse.name = op.props.name;
         ellipse.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
         if (op.props.fills) ellipse.fills = op.props.fills as any;
+        if (op.props.strokes) ellipse.strokes = op.props.strokes as any;
+        if (op.props.strokeWeight != null) ellipse.strokeWeight = op.props.strokeWeight;
+        if (op.props.opacity != null) ellipse.opacity = op.props.opacity;
         if (op.props.effects) ellipse.effects = op.props.effects.map(e => {
           if (e.type === 'LAYER_BLUR' || e.type === 'BACKGROUND_BLUR') {
             return { type: e.type, radius: e.radius, visible: e.visible ?? true } as Effect;
@@ -426,6 +465,12 @@ async function applyOperations(ops: FigmaOperation[]) {
         });
         if (op.props.constraints && 'constraints' in ellipse) (ellipse as any).constraints = op.props.constraints;
         parent.appendChild(ellipse);
+
+        // Absolute position & rotation (set AFTER appendChild)
+        if (op.props.x != null) ellipse.x = op.props.x;
+        if (op.props.y != null) ellipse.y = op.props.y;
+        if (op.props.rotation != null) ellipse.rotation = op.props.rotation;
+
         if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
           ellipse.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
         }
@@ -470,7 +515,15 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.letterSpacing) text.letterSpacing = op.props.letterSpacing;
         if (op.props.paragraphSpacing != null) text.paragraphSpacing = op.props.paragraphSpacing;
 
+        if (op.props.opacity != null) text.opacity = op.props.opacity;
+
         parent.appendChild(text);
+
+        // Absolute position & rotation (set AFTER appendChild)
+        if (op.props.x != null) text.x = op.props.x;
+        if (op.props.y != null) text.y = op.props.y;
+        if (op.props.rotation != null) text.rotation = op.props.rotation;
+
         if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
           text.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
         }
@@ -627,7 +680,7 @@ async function applyOperations(ops: FigmaOperation[]) {
       } else if (op.type === 'MOVE') {
         // Support both nodeId (existing node) and ref (node created in this response)
         const node = (op.ref ? createdNodes.get(op.ref) : null) as SceneNode | null
-          ?? await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
+          ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null : null);
         if (node) {
           node.x = op.x;
           node.y = op.y;
@@ -941,24 +994,76 @@ async function applyOperations(ops: FigmaOperation[]) {
 
         // ═══ FASE 4: CLONE_NODE / DUPLICATE_NODE ═══
       } else if (op.type === 'CLONE_NODE' || op.type === 'DUPLICATE_NODE') {
-        const sourceNode = await figma.getNodeByIdAsync(op.sourceNodeId) as any;
+        console.log('[CLONE_NODE] sourceNodeId:', op.sourceNodeId);
+
+        if (!op.sourceNodeId) {
+          postToUI({ type: 'ERROR', message: 'CLONE_NODE: sourceNodeId é obrigatório' });
+          continue;
+        }
+
+        const sourceNode = await figma.getNodeByIdAsync(op.sourceNodeId);
+        console.log('[CLONE_NODE] sourceNode found:', !!sourceNode, sourceNode?.type);
+
+        if (!sourceNode) {
+          postToUI({ type: 'ERROR', message: `CLONE_NODE: Nó "${op.sourceNodeId}" não encontrado` });
+          continue;
+        }
+
+        if (typeof (sourceNode as any).clone !== 'function') {
+          postToUI({ type: 'ERROR', message: `CLONE_NODE: Nó "${sourceNode.name}" não suporta clone (tipo: ${sourceNode.type})` });
+          continue;
+        }
+
         const parent = await getParent(op.parentRef, op.parentNodeId);
-        if (sourceNode && typeof sourceNode.clone === 'function') {
-          try {
-            const cloned = sourceNode.clone();
-            if (op.overrides?.name) cloned.name = op.overrides.name;
-            if (op.overrides?.width && 'resize' in cloned) {
-              (cloned as any).resize(op.overrides.width, op.overrides.height || (cloned as any).height);
-            }
-            if (op.overrides?.fills && 'fills' in cloned) {
-              (cloned as any).fills = op.overrides.fills as any;
-            }
-            parent.appendChild(cloned);
-            if (op.ref) createdNodes.set(op.ref, cloned);
-            pushSummary(`Clonado @"${cloned.name}"`, cloned);
-          } catch (e) {
-            postToUI({ type: 'ERROR', message: `Clone falhou: ${String(e)}` });
+
+        try {
+          const cloned = (sourceNode as SceneNode).clone();
+          console.log('[CLONE_NODE] Cloned successfully:', cloned.id, cloned.name);
+
+          if (op.overrides?.name) cloned.name = op.overrides.name;
+          if (op.overrides?.width && 'resize' in cloned) {
+            (cloned as any).resize(op.overrides.width, op.overrides.height || (cloned as any).height);
           }
+          if (op.overrides?.fills && 'fills' in cloned) {
+            (cloned as any).fills = op.overrides.fills as any;
+          }
+
+          parent.appendChild(cloned);
+          if (op.ref) createdNodes.set(op.ref, cloned);
+
+          // ═══ TEXT OVERRIDES: Change text content by layer name ═══
+          if (op.textOverrides && Array.isArray(op.textOverrides)) {
+            const findTextByName = (node: SceneNode, targetName: string): TextNode | null => {
+              if (node.type === 'TEXT' && node.name === targetName) return node;
+              if ('children' in node) {
+                for (const child of (node as FrameNode).children) {
+                  const found = findTextByName(child, targetName);
+                  if (found) return found;
+                }
+              }
+              return null;
+            };
+
+            for (const override of op.textOverrides) {
+              const textNode = findTextByName(cloned, override.name);
+              if (textNode) {
+                // Load font before changing text
+                const fontName = typeof textNode.fontName !== 'symbol' ? textNode.fontName : { family: 'Inter', style: 'Regular' };
+                try {
+                  await figma.loadFontAsync(fontName);
+                } catch (_e) {
+                  await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
+                }
+                textNode.characters = override.content;
+                pushSummary(`Texto "${override.name}" → "${override.content.slice(0, 30)}..."`, textNode);
+              }
+            }
+          }
+
+          pushSummary(`Clonado @"${cloned.name}"`, cloned);
+        } catch (e) {
+          console.error('[CLONE_NODE] Error:', e);
+          postToUI({ type: 'ERROR', message: `Clone falhou: ${String(e)}` });
         }
 
         // ═══ FASE 4: REORDER_CHILD ═══
@@ -1605,6 +1710,77 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
+  // ── Get templates (frames with [Template] prefix) ──
+  if (msg.type === 'GET_TEMPLATES') {
+    const templates = figma.currentPage.findAll(node =>
+      node.type === 'FRAME' && node.name.startsWith('[Template]')
+    ) as FrameNode[];
+
+    const result = templates.map(t => {
+      // Find all text nodes in template (editable layers)
+      const textLayers: { id: string; name: string; characters: string; fontFamily?: string; fontStyle?: string; fontSize?: number }[] = [];
+      const findTextNodes = (node: SceneNode) => {
+        if (node.type === 'TEXT') {
+          const textNode = node as TextNode;
+          const fontName = typeof textNode.fontName !== 'symbol' ? textNode.fontName : null;
+          textLayers.push({
+            id: textNode.id,
+            name: textNode.name,
+            characters: textNode.characters,
+            fontFamily: fontName?.family,
+            fontStyle: fontName?.style,
+            fontSize: typeof textNode.fontSize === 'number' ? textNode.fontSize : undefined,
+          });
+        }
+        if ('children' in node) {
+          for (const child of (node as FrameNode).children) {
+            findTextNodes(child);
+          }
+        }
+      };
+      for (const child of t.children) {
+        findTextNodes(child);
+      }
+
+      // Check if template has images
+      let hasImages = false;
+      const checkForImages = (node: SceneNode) => {
+        if ('fills' in node && Array.isArray(node.fills)) {
+          for (const fill of node.fills as Paint[]) {
+            if (fill.type === 'IMAGE') {
+              hasImages = true;
+              return;
+            }
+          }
+        }
+        if ('children' in node) {
+          for (const child of (node as FrameNode).children) {
+            if (hasImages) return;
+            checkForImages(child);
+          }
+        }
+      };
+      checkForImages(t);
+
+      return {
+        id: t.id,
+        name: t.name.replace(/^\[Template\]\s*/, ''),
+        width: Math.round(t.width),
+        height: Math.round(t.height),
+        childCount: t.children?.length || 0,
+        textLayers,
+        hasImages,
+      };
+    });
+
+    postToUI({
+      type: 'TEMPLATES_RESULT',
+      requestId: (msg as any).requestId,
+      templates: result,
+    });
+    return;
+  }
+
   // ── Select and zoom to a node by ID (clickable node chips in chat) ──
   if (msg.type === 'SELECT_AND_ZOOM') {
     try {
@@ -1788,5 +1964,20 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     } catch (_e) {
       postToUI({ type: 'DESIGN_SYSTEM_SAVED', designSystem: null });
     }
+
+  } else if (msg.type === 'GET_BRAND_GUIDELINE') {
+    const selectedId = figma.root.getPluginData('brandGuidelineSelectedId')
+    const cached = figma.root.getPluginData('brandGuidelineCache')
+    postToUI({
+      type: 'BRAND_GUIDELINE_LOADED',
+      selectedId: selectedId || null,
+      guideline: cached || null,
+    })
+
+  } else if (msg.type === 'SAVE_BRAND_GUIDELINE') {
+    const { selectedId, guideline } = msg
+    figma.root.setPluginData('brandGuidelineSelectedId', selectedId || '')
+    figma.root.setPluginData('brandGuidelineCache', guideline || '')
+    postToUI({ type: 'BRAND_GUIDELINE_SAVED' })
   }
 };

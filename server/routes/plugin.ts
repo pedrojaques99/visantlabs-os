@@ -1,13 +1,18 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { chooseProvider } from '../lib/ai-providers/router.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
+import { prisma } from '../db/prisma.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
 import { AuthRequest } from '../middleware/auth.js';
-import { JWT_SECRET } from '../utils/jwtSecret.js';
-import jwt from 'jsonwebtoken';
+import { getUserIdFromToken } from '../utils/auth.js';
 import { ObjectId } from 'mongodb';
 import WebSocket, { WebSocketServer } from 'ws';
+import type { BrandGuideline } from '../types/brandGuideline.js';
+import { buildBrandContext } from '../lib/brandContextBuilder.js';
+import { resolveBrandGuideline, buildGuidelineChoiceContext } from '../lib/brandResolver.js';
+import { scanTemplates, buildTemplateContext } from '../lib/templateScanner.js';
+import { buildFormatPresetsContext } from '../lib/formatPresets.js';
 
 const router = express.Router();
 
@@ -114,16 +119,10 @@ function handlePluginMessage(fileId: string, message: any) {
 }
 
 /**
- * Validate plugin token — real JWT verification using same secret as auth.ts
+ * Validate plugin token — reuses centralized JWT verification from utils/auth.ts
  */
 function validatePluginToken(token: string | null): string | null {
-  if (!token) return null;
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
-    return decoded.userId;
-  } catch (_e) {
-    return null;
-  }
+  return getUserIdFromToken(token);
 }
 
 /**
@@ -132,14 +131,10 @@ function validatePluginToken(token: string | null): string | null {
  */
 function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction) {
   const token = req.headers.authorization?.replace('Bearer ', '') || req.body?.authToken;
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
-      req.userId = decoded.userId;
-      req.userEmail = decoded.email;
-    } catch (_e) {
-      // Invalid token — continue without auth
-    }
+  const userId = getUserIdFromToken(token);
+  if (userId) {
+    req.userId = userId;
+    // Note: email is not extracted by getUserIdFromToken for minimal token validation
   }
   next();
 }
@@ -236,6 +231,8 @@ interface PluginRequest {
   attachments?: Array<{ name: string; mimeType: string; data: string }>; // Base64 data
   mentions?: Array<{ name: string; type: string; id: string }>; // @mentions
   designSystem?: DesignSystemJSON | null; // Imported design system tokens
+  brandGuideline?: any  // BrandGuideline from plugin UI
+  brandGuidelineId?: string; // ID of saved brand guideline to fetch from DB
   thinkMode?: boolean; // Think mode: analyze + ask questions before generating
 }
 
@@ -336,6 +333,8 @@ function buildDesignSystemContext(ds: DesignSystemJSON): string {
 
   return lines.join('\n');
 }
+
+// buildBrandContext is now imported from ../lib/brandContextBuilder.js
 
 function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thinkMode?: boolean): string {
   // Build logo info — support multi-variant logos
@@ -500,13 +499,13 @@ Exemplo de bate-papo:
 ]
 
 ${thinkModeBlock}${chatHistory ? `═══ HISTÓRICO DE CONVERSA ═══\n${chatHistory}\n` : ''}
-${req.designSystem ? buildDesignSystemContext(req.designSystem) + '\n' : ''}
+${req.brandGuideline ? buildBrandContext(req.brandGuideline) + '\n' : (req.designSystem ? buildDesignSystemContext(req.designSystem) + '\n' : '')}
 ═══ CONTEXTO DO ARQUIVO ═══
 
-BRAND GUIDELINES DO USUÁRIO:
+${!req.brandGuideline ? `BRAND GUIDELINES DO USUÁRIO:
 - Logo(s): ${logoInfo}
 - Fonte(s) de marca: ${fontInfo}
-- Cores de marca: ${brandColorsInfo}
+- Cores de marca: ${brandColorsInfo}` : ''}
 
 FRAMES/CONTAINERS SELECIONADOS (use o "id" como "parentNodeId" para criar DENTRO deles):
 ${containersHint}
@@ -545,17 +544,39 @@ CRIAÇÃO — dois modos de especificar o pai:
      "cornerRadius": 12, "clipsContent": true
    }}
 
-2. CREATE_RECTANGLE — Retângulo, divider, background
+   Exemplo com layoutMode NONE + posicionamento absoluto dos filhos:
+   { "type": "CREATE_FRAME", "ref": "canvas", "props": {
+     "name": "Canvas", "width": 800, "height": 600, "layoutMode": "NONE",
+     "fills": [{"type": "SOLID", "color": {"r": 1, "g": 1, "b": 1}}], "clipsContent": true
+   }}
+   Filhos dentro de layoutMode NONE usam x, y para posição absoluta:
+   { "type": "CREATE_FRAME", "ref": "box", "parentRef": "canvas", "props": {
+     "name": "Box", "width": 200, "height": 100, "x": 50, "y": 80,
+     "layoutMode": "NONE", "fills": [{"type": "SOLID", "color": {"r": 0.9, "g": 0.9, "b": 1}}]
+   }}
+
+2. CREATE_RECTANGLE — Retângulo, divider, background, linhas
    { "type": "CREATE_RECTANGLE", "ref": "divider", "parentRef": "card", "props": {
      "name": "Divider", "width": 360, "height": 1,
      "fills": [{"type": "SOLID", "color": {"r": 0.9, "g": 0.9, "b": 0.9}}],
      "layoutSizingHorizontal": "FILL"
    }}
+   Exemplo com posição absoluta + rotação (linha diagonal):
+   { "type": "CREATE_RECTANGLE", "parentRef": "canvas", "props": {
+     "name": "Line", "width": 200, "height": 2, "x": 100, "y": 300, "rotation": -45,
+     "fills": [{"type": "SOLID", "color": {"r": 0.3, "g": 0.3, "b": 0.3}}]
+   }}
 
-3. CREATE_ELLIPSE — Círculo, avatar, dot
+3. CREATE_ELLIPSE — Círculo, avatar, dot, outline
    { "type": "CREATE_ELLIPSE", "ref": "avatar", "parentRef": "header", "props": {
      "name": "Avatar", "width": 40, "height": 40,
      "fills": [{"type": "SOLID", "color": {"r": 0.85, "g": 0.85, "b": 0.9}}]
+   }}
+   Exemplo com stroke, opacity e posição absoluta:
+   { "type": "CREATE_ELLIPSE", "parentRef": "canvas", "props": {
+     "name": "Circle Outline", "width": 120, "height": 120, "x": 340, "y": 240,
+     "fills": [], "strokes": [{"type": "SOLID", "color": {"r": 0.2, "g": 0.5, "b": 1}}],
+     "strokeWeight": 3, "opacity": 0.8
    }}
 
 4. CREATE_TEXT — Texto com tipografia completa
@@ -565,6 +586,13 @@ CRIAÇÃO — dois modos de especificar o pai:
      "fills": [{"type": "SOLID", "color": {"r": 0.07, "g": 0.07, "b": 0.07}}],
      "textAutoResize": "WIDTH_AND_HEIGHT",
      "layoutSizingHorizontal": "FILL"
+   }}
+   Exemplo com posição absoluta + rotação (label vertical):
+   { "type": "CREATE_TEXT", "parentRef": "canvas", "props": {
+     "name": "Y Axis", "content": "Performance", "x": 10, "y": 300, "rotation": 90,
+     "fontFamily": "Inter", "fontStyle": "Regular", "fontSize": 12,
+     "fills": [{"type": "SOLID", "color": {"r": 0.4, "g": 0.4, "b": 0.4}}],
+     "textAutoResize": "WIDTH_AND_HEIGHT"
    }}
 
 5. CREATE_COMPONENT_INSTANCE — Instanciar componente existente
@@ -608,9 +636,15 @@ ESTRUTURA:
 20. DETACH_INSTANCE — { "type": "DETACH_INSTANCE", "nodeId": "..." }
 21. DELETE_NODE — { "type": "DELETE_NODE", "nodeId": "..." }
 
+DUPLICAÇÃO:
+22. CLONE_NODE — ⭐ OBRIGATÓRIO para duplicar/copiar frames e templates. Preserva TUDO (fontes, imagens, estilos).
+    { "type": "CLONE_NODE", "sourceNodeId": "<id>", "ref": "copy",
+      "textOverrides": [{ "name": "Nome do Layer de Texto", "content": "Novo texto aqui" }] }
+    ⚠️ Use "textOverrides" para trocar textos PELO NOME DO LAYER durante o clone. Não precisa saber o ID novo!
+
 ═══ REGRAS DE OURO ═══
 
-1. SEMPRE use auto-layout (layoutMode: "VERTICAL" ou "HORIZONTAL") nos frames container. NUNCA posicione filhos com x/y dentro de auto-layout.
+1. SEMPRE use auto-layout (layoutMode: "VERTICAL" ou "HORIZONTAL") nos frames container. NUNCA posicione filhos com x/y dentro de auto-layout. MAS: quando o parent tem layoutMode: "NONE" (canvas livre, gráficos, diagramas), USE x/y para posicionar os filhos — é o único jeito. Rotation (graus, sentido anti-horário) também está disponível para todos os nós.
 2. Use "ref"/"parentRef" para hierarquia. O frame root tem "ref", filhos referenciam com "parentRef".
 3. Cores são RGB normalizado 0-1. Vermelho = {"r":1,"g":0,"b":0}. Branco = {"r":1,"g":1,"b":1}. Preto = {"r":0,"g":0,"b":0}.
 4. Se o usuário tiver cores de marca, USE-AS com prioridade.
@@ -630,7 +664,7 @@ ESTRUTURA:
     ⚠️ SET_TEXT_CONTENT SEMPRE PRECISA de "content". Para mudar apenas a FONTE de um texto existente, precisa reescrever o conteúdo com a nova fonte.
     Exemplo: Se o texto era "Olá" em Inter Regular, para mudar para Barlow Medium use SET_TEXT_CONTENT com content="Olá" fontFamily="Barlow" fontStyle="Medium".
 18. Para criação: sempre comece com o frame/container root e adicione filhos na ORDEM com parentRef.
-19. FontStyle válidos: "Regular", "Medium", "Semi Bold", "Bold", "Light", "Thin", "Extra Bold", "Black", "Italic".
+19. FontStyle válidos: "Regular", "Medium", "Semi Bold", "Bold", "Light", "Thin", "Extra Bold", "Black", "".
 20. GRADIENTES (FASE 2): Tipos suportados: GRADIENT_LINEAR, GRADIENT_RADIAL, GRADIENT_ANGULAR, GRADIENT_DIAMOND. Cada gradiente PRECISA de "gradientTransform" e "gradientStops". Cores nos stops usam RGBA (0-1).
     Transform padrão horizontal: [[1,0,0],[0,1,0]]. Diagonal 45°: [[0.7,0.7,-0.1],[-0.7,0.7,0.5]]. Vertical: [[0,1,0],[-1,0,1]].
     Exemplo completo: { "type": "SET_FILL", "nodeId": "...", "fills": [{"type": "GRADIENT_LINEAR", "gradientTransform": [[1,0,0],[0,1,0]], "gradientStops": [{"position": 0, "color": {"r": 0.05, "g": 0.05, "b": 0.15, "a": 1}}, {"position": 1, "color": {"r": 0.2, "g": 0.1, "b": 0.4, "a": 1}}]}] }
@@ -644,12 +678,20 @@ ESTRUTURA:
     - Se o user quer mudar APENAS a fonte de um texto existente, você PRECISA saber ou INFERIR qual é o conteúdo atual (ex: "Título", "Descrição")
     - Reescreva com a nova formatação: {"type":"SET_TEXT_CONTENT","nodeId":"...","content":"[conteúdo original ou inferido]","fontFamily":"Nova Fonte","fontStyle":"Novo estilo"}
 
-28. ⭐ DUPLICAÇÃO / CÓPIA — PRESERVAÇÃO TOTAL:
-    Se o usuário pedir para duplicar, copiar, replicar ou clonar um frame/elemento:
-    - Preserve EXATAMENTE todas as propriedades do original: fonte, tamanho de fonte, cor do texto, fills, strokes, opacidade, sombras, cornerRadius, espaçamentos, tamanho, conteúdo de texto.
-    - Altere SOMENTE o que foi explicitamente pedido (ex: "duplica e muda o título para X" → só muda o título).
-    - NÃO mude cor, fonte, texto, tamanho ou qualquer outra propriedade por iniciativa própria, mesmo que julgue ser uma "melhoria".
-    - Em caso de dúvida: não mude nada que não foi pedido.
+28. ⭐⭐⭐ REGRA CRÍTICA — TEMPLATES SÃO INTOCÁVEIS:
+    Frames com "[Template]" no nome são MODELOS SAGRADOS. NUNCA edite-os diretamente!
+
+    ❌ PROIBIDO: SET_TEXT_CONTENT, SET_FILL, RESIZE, DELETE em nodes de templates
+    ✅ OBRIGATÓRIO: CLONE_NODE com textOverrides para trocar textos
+
+    EXEMPLO CORRETO (template com texto "THE ACTION CANNOT WAIT."):
+    [
+      { "type": "CLONE_NODE", "sourceNodeId": "123:456",
+        "textOverrides": [{ "name": "THE ACTION CANNOT WAIT.", "content": "A AÇÃO NÃO PODE ESPERAR." }] }
+    ]
+
+    O textOverrides usa o NOME do layer de texto (que aparece no contexto dos templates).
+    Isso clona o frame E troca o texto em uma única operação, sem tocar no original!
 
 29. ⭐ MÚLTIPLOS FRAMES ROOT — POSICIONAMENTO LADO A LADO:
     ⚠️ ESTA REGRA SÓ SE APLICA a frames que vão diretamente para a PÁGINA (sem "parentRef" nem "parentNodeId").
@@ -793,6 +835,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       attachments = [],
       mentions = [],
       designSystem,
+      brandGuideline: brandGuidelineFromUI,
+      brandGuidelineId,
       thinkMode = false,
     } = req.body as PluginRequest;
 
@@ -808,6 +852,70 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         return res.status(403).json({ error: credits.reason, code: 'NO_CREDITS' });
       }
     }
+
+    // ═══ BRANDED SOCIAL POSTS: Auto-resolve brand guideline ═══
+    let brandGuideline: BrandGuideline | null = brandGuidelineFromUI || null;
+    let brandChoiceContext = '';
+
+    // Try explicit brandGuidelineId first
+    if (brandGuidelineId && !brandGuideline) {
+      try {
+        const savedGuideline = await prisma.brandGuideline.findUnique({
+          where: { id: brandGuidelineId },
+        });
+        if (savedGuideline) {
+          brandGuideline = {
+            id: savedGuideline.id,
+            identity: savedGuideline.identity as any,
+            logos: savedGuideline.logos as any,
+            colors: savedGuideline.colors as any,
+            typography: savedGuideline.typography as any,
+            tags: savedGuideline.tags as any,
+            media: savedGuideline.media as any,
+            tokens: savedGuideline.tokens as any,
+            guidelines: savedGuideline.guidelines as any,
+          };
+          console.log('[Plugin] Loaded brand guideline from DB:', brandGuidelineId);
+        }
+      } catch (bgError) {
+        console.error('[Plugin] Error fetching brand guideline:', bgError);
+      }
+    }
+
+    // If still no brand, try auto-resolve from project linkage
+    if (!brandGuideline && fileId && req.userId) {
+      try {
+        const brandResult = await resolveBrandGuideline(fileId, req.userId, brandGuidelineId);
+        if (brandResult.guideline) {
+          brandGuideline = brandResult.guideline;
+          console.log('[Plugin] Auto-resolved brand guideline from project linkage');
+        } else if (brandResult.needsUserChoice) {
+          brandChoiceContext = buildGuidelineChoiceContext(brandResult.availableGuidelines);
+          console.log('[Plugin] No linked brand, LLM will ask user to choose');
+        }
+      } catch (resolveError) {
+        console.error('[Plugin] Error auto-resolving brand:', resolveError);
+      }
+    }
+
+    // ═══ BRANDED SOCIAL POSTS: Scan templates ═══
+    let templateContext = '';
+    if (fileId && pluginBridge.getSession(fileId)) {
+      try {
+        const templates = await scanTemplates(fileId);
+        templateContext = buildTemplateContext(templates);
+        if (templates.length > 0) {
+          console.log(`[Plugin] Found ${templates.length} templates in file`);
+          console.log(`[Plugin] Template IDs:`, templates.map(t => ({ id: t.id, name: t.name })));
+          console.log(`[Plugin] Template context preview:`, templateContext.slice(0, 500));
+        }
+      } catch (templateError) {
+        console.error('[Plugin] Error scanning templates:', templateError);
+      }
+    }
+
+    // ═══ BRANDED SOCIAL POSTS: Format presets ═══
+    const formatPresetsContext = buildFormatPresetsContext();
 
     // FASE 3: Load or create session for chat memory
     let chatHistory = '';
@@ -848,7 +956,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     const provider = chooseProvider(command, contextSize);
 
     // Build context-aware prompt
-    const systemPrompt = buildSystemPrompt(
+    let systemPrompt = buildSystemPrompt(
       {
         command,
         selectedElements,
@@ -864,10 +972,28 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         attachments,
         mentions,
         designSystem: designSystem || null,
+        brandGuideline: brandGuideline || undefined,
       },
       chatHistory,
       thinkMode
     );
+
+    // ═══ BRANDED SOCIAL POSTS: Inject additional context ═══
+    const additionalContext = [
+      brandChoiceContext,
+      templateContext,
+      formatPresetsContext,
+    ].filter(Boolean).join('\n\n');
+
+    if (additionalContext) {
+      // Insert before "═══ OPERAÇÕES DISPONÍVEIS ═══"
+      const insertPoint = systemPrompt.indexOf('═══ OPERAÇÕES DISPONÍVEIS ═══');
+      if (insertPoint > 0) {
+        systemPrompt = systemPrompt.slice(0, insertPoint) + additionalContext + '\n\n' + systemPrompt.slice(insertPoint);
+      } else {
+        systemPrompt += '\n\n' + additionalContext;
+      }
+    }
 
     const userPrompt = `═══ PEDIDO DO USUÁRIO ═══\n\n"${command}"`;
 
@@ -886,12 +1012,16 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         // Agent status callback — broadcasts search progress to plugin UI via WebSocket
         onStatus: fileId
           ? (message: string) => {
-              pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
-            }
+            pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
+          }
           : undefined,
       });
       operations = result.operations;
       usage = result.usage;
+      console.log(`[Plugin] LLM generated ${operations.length} operations:`, operations.map((o: any) => o.type));
+      if (operations.length > 0) {
+        console.log(`[Plugin] First operation:`, JSON.stringify(operations[0]).slice(0, 300));
+      }
     } catch (aiError) {
       console.error(`[Plugin] ${provider.name} error:`, aiError);
       // Fallback gracefully
@@ -1025,7 +1155,7 @@ router.get('/auth/status', optionalAuth, async (req: AuthRequest, res: Response)
 
     res.json({
       authenticated: true,
-      email: req.userEmail,
+      email: user.email,
       subscriptionTier: user.subscriptionTier || 'free',
       hasActiveSubscription,
       freeGenerationsUsed,

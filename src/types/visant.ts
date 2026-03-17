@@ -12,7 +12,7 @@ export interface VisantElement {
     color?: string;
     fontFamily?: string;
     fontWeight?: string | number;
-    fontStyle?: 'normal' | 'italic' | 'oblique';
+    fontStyle?: 'normal' | '' | 'oblique';
     textAlign?: 'left' | 'center' | 'right';
     textDecoration?: string;
     backgroundColor?: string;

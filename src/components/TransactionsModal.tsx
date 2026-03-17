@@ -3,6 +3,7 @@ import { X, CreditCard } from 'lucide-react';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { subscriptionService, type TransactionRecord } from '../services/subscriptionService';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button'
 
 interface TransactionsModalProps {
   isOpen: boolean;
@@ -106,20 +107,20 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
       <div className="w-full max-w-3xl bg-[#0F0F0F] border border-neutral-800/60 rounded-xl shadow-2xl relative">
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/60">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-neutral-500 font-mono mb-1">
+            <p className="text-xs uppercase text-neutral-500 font-mono mb-1">
               {t('transactions.title')}
             </p>
             <h2 className="text-2xl font-semibold text-neutral-100 font-manrope">
               {t('transactions.subtitle')}
             </h2>
           </div>
-          <button
+          <Button variant="ghost"
             onClick={onClose}
             className="p-2 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60 transition-colors"
             aria-label="Close"
           >
             <X size={18} />
-          </button>
+          </Button>
         </div>
 
         <div className="p-6 max-h-[70vh] overflow-y-auto space-y-4">
@@ -139,7 +140,7 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
           ) : (
             groupedTransactions.map(([date, items]) => (
               <div key={date}>
-                <p className="text-xs uppercase tracking-[0.3em] text-neutral-500 font-mono mb-2">{date}</p>
+                <p className="text-xs uppercase text-neutral-500 font-mono mb-2">{date}</p>
                 <div className="space-y-3">
                   {items.map((transaction) => (
                     <div

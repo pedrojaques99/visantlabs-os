@@ -45,18 +45,53 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 
     const response = await fetch(`${API_BASE}${endpoint}`, options);
 
-    // Handle credit exhaustion gracefully
-    if (response.status === 403) {
-      const data = await response.json();
-      if (data.code === 'NO_CREDITS') {
-        setState('canGenerate', false);
-        eventBus.emit('auth:no-credits', data.error);
-        throw new Error(data.error);
-      }
-    }
-
+    // Try to parse JSON error response for better messages
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      let errorData = null;
+      try {
+        errorData = await response.json();
+      } catch (_e) {
+        // Response is not JSON, will use status text
+      }
+
+      // Handle specific status codes with user-friendly messages
+      if (response.status === 401) {
+        // Token expired or invalid
+        const msg = errorData?.error || 'Sessão expirada. Faça login novamente.';
+        console.warn(`[API] Auth error (401): ${msg}`);
+        eventBus.emit('auth:session-expired', { endpoint, error: msg });
+        throw new Error(msg);
+      }
+
+      if (response.status === 403) {
+        // Forbidden - check for specific codes
+        if (errorData?.code === 'NO_CREDITS') {
+          setState('canGenerate', false);
+          eventBus.emit('auth:no-credits', errorData.error);
+          throw new Error(errorData.error);
+        }
+        const msg = errorData?.error || 'Acesso negado.';
+        throw new Error(msg);
+      }
+
+      if (response.status === 429) {
+        // Rate limited
+        const msg = errorData?.error || 'Muitas tentativas. Aguarde alguns minutos.';
+        console.warn(`[API] Rate limited (429): ${msg}`);
+        eventBus.emit('auth:rate-limited', { endpoint, error: msg });
+        throw new Error(msg);
+      }
+
+      if (response.status >= 500) {
+        // Server error
+        const msg = errorData?.message || 'Erro no servidor. Tente novamente.';
+        console.error(`[API] Server error (${response.status}):`, errorData || response.statusText);
+        throw new Error(msg);
+      }
+
+      // Other client errors (400, 404, etc)
+      const msg = errorData?.error || errorData?.message || `Erro: ${response.statusText}`;
+      throw new Error(msg);
     }
 
     return await response.json();
@@ -64,6 +99,12 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     if (error.name === 'AbortError') {
       console.log(`[API] Request cancelled: ${endpoint}`);
       return null; // Cancelled — not an error
+    }
+    // Network errors (offline, CORS, etc)
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      console.error(`[API] Network error:`, error);
+      eventBus.emit('api:error', { endpoint, method, error: 'Sem conexão com o servidor.' });
+      throw new Error('Sem conexão com o servidor. Verifique sua internet.');
     }
     console.error(`[API] ${method} ${endpoint}:`, error);
     eventBus.emit('api:error', { endpoint, method, error: error.message });
@@ -105,6 +146,7 @@ async function generateDesign(command, context) {
     availableLayers: context.availableLayers || [],
     mentions: context.mentions || [],
     designSystem: state.designSystem || undefined,
+    brandGuideline: state.brandGuideline || undefined,
     attachments: (context.attachments || []).map(att => ({
       name: att.name,
       mimeType: att.mimeType,
@@ -326,11 +368,11 @@ function openExternal(url) {
 
 /**
  * Login with email/password → gets JWT token
- * Reuses existing /api/auth/login endpoint
+ * Reuses existing /api/auth/signin endpoint
  */
 async function authLogin(email, password) {
   try {
-    const result = await apiCall('/auth/login', 'POST', { email, password });
+    const result = await apiCall('/auth/signin', 'POST', { email, password });
     if (result.token) {
       setState('authToken', result.token);
       setState('authEmail', email);
@@ -363,10 +405,26 @@ async function fetchAuthStatus() {
         hasSubscription: data.hasActiveSubscription,
       });
       setState('canGenerate', data.canGenerate);
+    } else if (state.authToken) {
+      // We have a token but server says not authenticated = session expired
+      console.warn('[API] Session expired - clearing auth state');
+      setState('authToken', null);
+      setState('authEmail', null);
+      setState('canGenerate', true);
+      saveAuthToken(''); // Clear from storage
+      eventBus.emit('auth:session-expired', { reason: 'Token inválido ou expirado' });
     }
     return data;
-  } catch (_e) {
-    // Fail silently — BYOK users may not have accounts
+  } catch (error) {
+    // If we have a token but request failed, check if it's auth related
+    if (state.authToken && error.message?.includes('401')) {
+      console.warn('[API] Auth status failed with 401 - session expired');
+      setState('authToken', null);
+      setState('authEmail', null);
+      saveAuthToken('');
+      eventBus.emit('auth:session-expired', { reason: error.message });
+    }
+    // Fail silently for other errors — BYOK users may not have accounts
     return { authenticated: false, canGenerate: true };
   }
 }

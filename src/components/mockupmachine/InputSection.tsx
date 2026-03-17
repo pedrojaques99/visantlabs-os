@@ -10,6 +10,12 @@ import { isSafeUrl } from '@/utils/imageUtils';
 import { cn, sectionTitleClass } from '@/lib/utils';
 import { useMockup } from './MockupContext';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { MicroTitle } from '../ui/MicroTitle';
+import { GlassPanel } from '../ui/GlassPanel';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { BrandGuidelineSelector } from './BrandGuidelineSelector';
+import { Switch } from '@/components/ui/switch';
 
 
 interface InputSectionProps {
@@ -205,53 +211,71 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
   const capacityUsage = Math.round(Math.min(((displayImage ? 1 : 0) + referenceImages.length) / 4 * 100, 100));
 
-  // Reusable Image Card component for consistency
   const ImageCard = ({
     img,
     label,
     onReplace,
     onRemove,
+    onAddRef,
     isAnalyzed = false,
     highlight = false
   }: {
-    img: UploadedImage,
-    label: string,
-    onReplace: () => void,
-    onRemove?: () => void,
-    isAnalyzed?: boolean,
-    highlight?: boolean
+    img: UploadedImage;
+    label: string;
+    onReplace: () => void;
+    onRemove?: () => void;
+    onAddRef?: () => void;
+    isAnalyzed?: boolean;
+    highlight?: boolean;
   }) => (
     <div className={cn(
       "relative flex flex-col p-2.5 rounded-xl border transition-all group w-full animate-in fade-in zoom-in-95 duration-300",
       highlight ? "bg-brand-cyan/[0.03] border-brand-cyan/20 shadow-lg shadow-brand-cyan/5" : "bg-neutral-900/40 border-white/[0.05] hover:border-white/10"
     )}>
       {/* Image Container */}
-      <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-black/40 flex items-center justify-center group/img-container">
+      <div className="relative h-auto max-h-[min(200px,38vh)] w-full rounded-md overflow-hidden flex items-center justify-center group/img-container">
         <img
           src={getImageSrc(img)}
           alt={label}
           loading="lazy"
           decoding="async"
-          className="max-h-full max-w-full h-auto w-auto object-contain transition-transform duration-500 group-hover/img-container:scale-[1.05]"
+          className="max-h-[min(200px,28vh)] w-full h-auto object-contain transition-transform duration-300 group-hover/img-container:scale-[1.02]"
         />
 
         {/* Hover Overlay with Replace Action */}
-        <div className="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover/img-container:opacity-100 transition-all duration-300 backdrop-blur-[2px] p-10">
-          <button
-            type="button"
-            onClick={onReplace}
-            className="flex flex-col items-center gap-2 cursor-pointer p-4 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white"
+        <div className="absolute inset-0 bg-black/20 flex items-center justify-center gap-4 opacity-0 group-hover/img-container:opacity-300 transition-all duration-300 backdrop-blur-[10px] p-3">
+          <Button variant="ghost" type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onReplace();
+            }}
+            className="flex flex-col items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white"
           >
             <div className="p-3 rounded-full bg-white/10 border border-white/20 group-hover:bg-brand-cyan group-hover:text-black transition-all shadow-xl">
               <ArrowLeftRight size={20} />
             </div>
-            <span className="text-[10px] font-mono uppercase tracking-[0.2em] font-bold">{t('mockup.replace') || 'Substituir'}</span>
-          </button>
+            <MicroTitle as="span" className="font-bold text-white">{t('mockup.replace') || 'Substituir'}</MicroTitle>
+          </Button>
+
+          {onAddRef && (
+            <Button variant="ghost" type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddRef();
+              }}
+              className="flex flex-col items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white delay-75"
+            >
+              <div className="p-3 rounded-full bg-white/10 border border-white/20 group-hover:bg-brand-cyan group-hover:text-black transition-all shadow-xl">
+                <Plus size={20} />
+              </div>
+              <MicroTitle as="span" className="font-bold text-white">+ REF</MicroTitle>
+            </Button>
+          )}
         </div>
 
         {/* Status Badge (Top Right) */}
         {isAnalyzed && (
-          <div className="absolute top-2 right-2 flex items-center justify-center bg-brand-cyan text-black p-1 rounded-full shadow-lg border border-brand-cyan/50 z-10 animate-in zoom-in duration-500">
+          <div className="absolute top-2 right-2 flex items-center justify-center bg-brand-cyan text-black p-1 rounded-full shadow-lg border border-brand-cyan/50 z-10 animate-in zoom-in duration-300">
             <CheckCircle2 size={12} strokeWidth={3} />
           </div>
         )}
@@ -261,24 +285,24 @@ export const InputSection: React.FC<InputSectionProps> = ({
       <div className="mt-3 flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className={cn(
-            "text-[11px] font-mono font-bold uppercase tracking-wider truncate mb-0.5",
+            "text-[11px] font-mono font-bold uppercase  truncate mb-0.5",
             highlight ? "text-brand-cyan" : "text-neutral-300"
           )}>
             {label}
           </p>
-          <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter truncate opacity-80">
+          <MicroTitle className="text-[10px] tracking-tighter truncate opacity-80">
             {img.mimeType?.split('/')[1] || 'IMG'} • {img.size ? `${(img.size / 1024).toFixed(0)}KB` : '---'}
-          </p>
+          </MicroTitle>
         </div>
 
         {onRemove && (
-          <button
+          <Button
             onClick={onRemove}
-            className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-neutral-600 hover:text-red-400 group/remove"
+            className="p-1.5 hover:bg-white/5 rounded transition-colors text-neutral-600 hover:text-red-400 group/remove"
             title={t('mockup.removeFileTitle') || "Remover arquivo"}
           >
             <X size={14} className="group-hover/remove:scale-110 transition-transform" />
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -287,37 +311,65 @@ export const InputSection: React.FC<InputSectionProps> = ({
   return (
     <section className={cn("flex flex-col gap-5 w-full", className)}>
       {/* Files Header */}
-      <div className="flex items-center justify-between flex-shrink-0">
+      <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
-          <h2 className={sectionTitleClass(theme === 'dark')}>
-            {t('mockup.files')}
-          </h2>
+          <MicroTitle className="text-brand-cyan uppercase ">
+            {t('mockup.files') || 'ARQUIVOS'}
+          </MicroTitle>
           {hasImage && (
-            <span className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest">
+            <p className="text-[10px] font-manrope text-neutral-500 uppercase">
               {t('mockup.filesLoaded', { count: referenceImages.length + 1 }) || `${referenceImages.length + 1} Arquivo(s) carregados`}
-            </span>
+            </p>
           )}
         </div>
 
         {!isLoadingImage && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {uploadedImage && (
+              <>
+                {/* Brand Guideline Button */}
+                <BrandGuidelineSelector asButton />
+
+                <Button variant="ghost" type="button"
+                  size="sm"
+                  onClick={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
+                  className={cn(
+                    "px-3 h-8 rounded-md transition-all flex items-center gap-2 border",
+                    designType === 'logo'
+                      ? "bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan"
+                      : "bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10"
+                  )}
+                  title={t('mockup.transparentBackground') || 'Isolar Logotipo'}
+                >
+                  <Switch
+                    checked={designType === 'logo'}
+                    onCheckedChange={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
+                    className="scale-[0.6] origin-left pointer-events-none"
+                  />
+                  <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">
+                    {t('mockup.transparentBackground') || 'ISOLAR'}
+                  </MicroTitle>
+                </Button>
+              </>
+            )}
+
             {canAddMoreReferences && (
               <label
                 htmlFor="multiple-image-upload"
-                className="cursor-pointer px-3 py-1.5 bg-neutral-900 border border-white/5 hover:border-brand-cyan/30 hover:bg-brand-cyan/5 rounded-lg transition-all text-neutral-400 hover:text-brand-cyan flex items-center gap-2 group"
+                className="cursor-pointer px-3 h-8 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-all text-neutral-400 hover:text-white flex items-center gap-2"
                 title={t('mockup.addReferenceImage', { count: referenceImages.length })}
               >
-                <Plus size={14} className="group-hover:rotate-90 transition-transform" />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider">Ref</span>
+                <Plus size={12} />
+                <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">REF</MicroTitle>
               </label>
             )}
             {!displayImage && (
               <label
                 htmlFor="image-upload-blank"
-                className="cursor-pointer px-3 py-1.5 bg-brand-cyan/10 border border-brand-cyan/20 rounded-lg transition-all text-brand-cyan hover:bg-brand-cyan hover:text-black flex items-center gap-2 animate-pulse"
+                className="cursor-pointer px-3 h-8 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-md transition-all text-brand-cyan flex items-center gap-2 animate-pulse"
               >
-                <Plus size={14} />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider">Upload</span>
+                <Plus size={12} />
+                <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">UPLOAD</MicroTitle>
               </label>
             )}
           </div>
@@ -337,6 +389,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             img={displayImage}
             label={t('mockup.mainFile')}
             onReplace={() => document.getElementById('image-upload-blank')?.click()}
+            onAddRef={canAddMoreReferences ? () => document.getElementById('multiple-image-upload')?.click() : undefined}
             isAnalyzed={hasAnalyzed}
             highlight={hasAnalyzed}
           />
@@ -360,9 +413,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
       </div>
 
       {/* Hidden Inputs */}
-      <input id="image-upload-blank" type="file" accept="image/*" onChange={handleSingleImageUpload} className="hidden" />
-      <input id="multiple-image-upload" type="file" accept="image/*" multiple onChange={handleMultipleImageUpload} className="hidden" />
-      <input id="replace-reference-upload" type="file" accept="image/*" onChange={handleReferenceReplace} className="hidden" />
+      <Input id="image-upload-blank" type="file" accept="image/*" onChange={handleSingleImageUpload} className="hidden" />
+      <Input id="multiple-image-upload" type="file" accept="image/*" multiple onChange={handleMultipleImageUpload} className="hidden" />
+      <Input id="replace-reference-upload" type="file" accept="image/*" onChange={handleReferenceReplace} className="hidden" />
     </section>
   );
 };

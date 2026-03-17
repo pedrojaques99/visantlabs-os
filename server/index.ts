@@ -53,6 +53,14 @@ const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
   : ['http://localhost:3000', 'http://localhost:3002'];
 
+// Claude/Anthropic domains (always allowed for MCP connectors)
+const claudeOrigins = [
+  'https://claude.ai',
+  'https://www.claude.ai',
+  'https://console.anthropic.com',
+  'https://api.anthropic.com',
+];
+
 // Add common development ports
 const devOrigins = [
   'http://localhost:3000',
@@ -65,7 +73,7 @@ const devOrigins = [
   'http://127.0.0.1:5173',
 ];
 
-const allAllowedOrigins = [...new Set([...allowedOrigins, ...devOrigins])];
+const allAllowedOrigins = [...new Set([...allowedOrigins, ...claudeOrigins, ...devOrigins])];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -76,13 +84,17 @@ app.use(cors({
     if (allAllowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      // In development, allow localhost on any port
+      // In development, allow localhost and ngrok
       if (process.env.NODE_ENV !== 'production') {
-        if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+        if (
+          origin.startsWith('http://localhost:') ||
+          origin.startsWith('http://127.0.0.1:') ||
+          origin.includes('ngrok')
+        ) {
           return callback(null, true);
         }
       }
-      // In production, also allow same-origin requests
+      // In production, allow all (API is protected by auth)
       if (process.env.NODE_ENV === 'production') {
         callback(null, true);
       } else {
@@ -93,7 +105,16 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'Accept',
+    'MCP-Session-Id',
+    'MCP-Protocol-Version',
+  ],
+  exposedHeaders: [
+    'MCP-Session-Id',
+  ],
 }));
 
 // Webhooks need raw body, so we handle them before json parser
@@ -206,6 +227,10 @@ app.use(`${routePrefix}/figma`, figmaRoutes);
 import pluginRoutes, { initPluginWebSocket } from './routes/plugin.js';
 app.use(`${routePrefix}/plugin`, pluginRoutes);
 
+// Import brand guidelines routes
+import brandGuidelinesRoutes from './routes/brand-guidelines.js';
+app.use(`${routePrefix}/brand-guidelines`, brandGuidelinesRoutes);
+
 // Import documentation routes
 import docsRoutes from './routes/docs.js';
 app.use(`${routePrefix}/docs`, docsRoutes);
@@ -219,36 +244,150 @@ app.use(`${routePrefix}/surprise-me`, surpriseMeRoutes);
 import apiKeyRoutes from './routes/apiKeys.js';
 app.use(`${routePrefix}/api-keys`, apiKeyRoutes);
 
-// ═══ Platform MCP Server (HTTP/SSE transport) ═══
+// ═══ Platform MCP Server (Streamable HTTP transport for Claude Connectors) ═══
 import { createPlatformMcpServer, setMcpUserId } from './mcp/platform-mcp.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { authenticateApiKey } from './middleware/apiKeyAuth.js';
 
-const mcpServer = createPlatformMcpServer();
-const mcpTransports = new Map<string, SSEServerTransport>();
+// Legacy SSE transports (backwards compatibility)
+const legacySseTransports = new Map<string, SSEServerTransport>();
+const legacyMcpServer = createPlatformMcpServer();
 
-app.get(`${routePrefix}/mcp`, async (req: any, res) => {
-  // Try to authenticate via API key before connecting
+/**
+ * Validate Origin header to prevent DNS rebinding attacks
+ * Allows: Claude domains, Visant domains, localhost (dev only)
+ */
+function validateMcpOrigin(req: express.Request): boolean {
+  const origin = req.headers.origin;
+
+  // No origin = same-origin request (curl, Postman, server-to-server)
+  if (!origin) return true;
+
+  // Claude/Anthropic domains (always allowed for connectors)
+  const claudeDomains = [
+    'https://claude.ai',
+    'https://www.claude.ai',
+    'https://console.anthropic.com',
+    'https://api.anthropic.com',
+  ];
+
+  // Visant production domains
+  const visantDomains = [
+    'https://visantlabs.com',
+    'https://www.visantlabs.com',
+    'https://vsn-mockup-machine.vercel.app',
+    'https://app.visantlabs.com',
+  ];
+
+  // Parse env vars (may be comma-separated)
+  const envOrigins = [
+    process.env.FRONTEND_URL,
+    process.env.VITE_API_URL,
+    process.env.VITE_FRONTEND_URL,
+  ]
+    .filter(Boolean)
+    .flatMap(url => (url as string).split(',').map(u => u.trim()))
+    .filter(Boolean);
+
+  const allowedOrigins = [...claudeDomains, ...visantDomains, ...envOrigins];
+
+  // Allow localhost/ngrok in development
+  if (process.env.NODE_ENV !== 'production') {
+    if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('ngrok')) {
+      return true;
+    }
+  }
+
+  return allowedOrigins.some(allowed => origin.startsWith(allowed));
+}
+
+/**
+ * Authenticate request and set user context
+ */
+async function authenticateMcpRequest(req: express.Request): Promise<boolean> {
   const authReq = req as any;
   authReq.userId = undefined;
   authReq.userEmail = undefined;
   const isAuth = await authenticateApiKey(authReq);
   setMcpUserId(isAuth ? authReq.userId : null);
+  return isAuth;
+}
 
-  const transport = new SSEServerTransport(`${routePrefix}/mcp/message`, res);
-  mcpTransports.set(transport.sessionId, transport);
-  res.on('close', () => { mcpTransports.delete(transport.sessionId); });
-  await mcpServer.connect(transport);
+// ═══ Streamable HTTP Transport (Claude Connectors compatible) ═══
+// Stateless mode: each request gets fresh server+transport (simpler, scales better)
+
+app.post(`${routePrefix}/mcp`, async (req: express.Request, res: express.Response) => {
+  // Security: Validate Origin
+  if (!validateMcpOrigin(req)) {
+    return res.status(403).json({
+      jsonrpc: '2.0',
+      error: { code: -32600, message: 'Invalid origin' },
+      id: null
+    });
+  }
+
+  // Authenticate
+  await authenticateMcpRequest(req);
+
+  try {
+    // Create fresh server and transport for this request (stateless)
+    const server = createPlatformMcpServer();
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: undefined, // Stateless mode
+    });
+
+    // Clean up on response close
+    res.on('close', () => {
+      transport.close().catch(() => {});
+      server.close().catch(() => {});
+    });
+
+    // Connect and handle
+    await server.connect(transport);
+    await transport.handleRequest(req, res, req.body);
+  } catch (err) {
+    console.error('[MCP] Request error:', err);
+    if (!res.headersSent) {
+      res.status(500).json({
+        jsonrpc: '2.0',
+        error: { code: -32603, message: 'Internal server error' },
+        id: null
+      });
+    }
+  }
 });
 
-app.post(`${routePrefix}/mcp/message`, async (req, res) => {
+// GET returns 405 - we don't support standalone SSE streams in stateless mode
+app.get(`${routePrefix}/mcp`, (req: express.Request, res: express.Response) => {
+  res.setHeader('Allow', 'POST');
+  res.status(405).json({
+    jsonrpc: '2.0',
+    error: { code: -32600, message: 'Use POST to send requests. GET not supported in stateless mode.' },
+    id: null
+  });
+});
+
+// ═══ Legacy SSE Transport (backwards compatibility with old clients) ═══
+app.get(`${routePrefix}/mcp/sse`, async (req: any, res) => {
+  await authenticateMcpRequest(req);
+
+  const transport = new SSEServerTransport(`${routePrefix}/mcp/sse/message`, res);
+  legacySseTransports.set(transport.sessionId, transport);
+  res.on('close', () => { legacySseTransports.delete(transport.sessionId); });
+  await legacyMcpServer.connect(transport);
+});
+
+app.post(`${routePrefix}/mcp/sse/message`, async (req, res) => {
   const sessionId = req.query.sessionId as string;
-  const transport = mcpTransports.get(sessionId);
+  const transport = legacySseTransports.get(sessionId);
   if (!transport) return res.status(404).json({ error: 'Session not found' });
   await transport.handlePostMessage(req, res);
 });
 
-console.log(`✅ Platform MCP server registered at: ${routePrefix}/mcp`);
+console.log(`✅ Platform MCP server registered:
+   • Claude Connectors: POST ${routePrefix}/mcp (Streamable HTTP, stateless)
+   • Legacy clients:    GET  ${routePrefix}/mcp/sse (SSE)`);
 
 // Health check rate limiter
 const healthCheckLimiter = rateLimit({

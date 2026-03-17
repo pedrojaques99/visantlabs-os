@@ -8,6 +8,7 @@ import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { useTranslation } from '@/hooks/useTranslation';
+import { NodeButton } from './shared/node-button'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -91,7 +92,7 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="p-5 min-w-[280px] max-w-[320px]"
+      className="min-w-[280px] max-w-[320px]"
     >
       {/* Image Input Handle */}
       <LabeledHandle
@@ -104,98 +105,97 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
       />
 
       {/* Header */}
-      <NodeHeader icon={Compass} title={t('canvasNodes.directorNode.title') || 'Director'} />
-
-      {/* Connected Image Preview */}
-      <div className="mt-4 mb-3">
-        {connectedImage ? (
-          <div className="relative rounded-lg overflow-hidden border border-neutral-700/50 bg-neutral-900/50">
-            <img
-              src={
-                connectedImage.startsWith('data:') 
-                  ? connectedImage 
-                  : connectedImage.startsWith('http://') || connectedImage.startsWith('https://')
-                    ? connectedImage
-                    : `data:image/png;base64,${connectedImage}`
-              }
-              alt="Connected"
-              className="w-full h-32 object-cover"
-            />
-            <div className="absolute top-2 right-2 bg-neutral-950/60 rounded-full p-1">
-              <Check size={12} className="text-green-400" />
-            </div>
+      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
+            <Compass size={16} className="text-brand-cyan" />
           </div>
-        ) : (
-          <div className="w-full h-24 rounded-lg border border-dashed border-neutral-700/50 bg-neutral-900/30 flex flex-col items-center justify-center gap-2">
-            <ImageIcon size={16} className="text-neutral-600" />
-            <span className="text-[10px] font-mono text-neutral-500">
-              {t('canvasNodes.directorNode.noImage') || 'No image connected'}
-            </span>
-          </div>
-        )}
+          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
+            {t('canvasNodes.directorNode.title') || 'Director'}
+          </h3>
+        </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="space-y-2">
-        {/* Open Side Panel Button */}
-        <button
-          onClick={handleOpenSidePanel}
-          disabled={!connectedImage}
-          className={cn(
-            'w-full px-3 py-2.5 rounded-lg border transition-all duration-200',
-            'flex items-center justify-center gap-2',
-            'text-xs font-mono uppercase tracking-wide',
-            connectedImage
-              ? 'bg-brand-cyan/10 border-[brand-cyan]/30 node-text-accent hover:bg-brand-cyan/20 hover:border-[brand-cyan]/50'
-              : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-500 cursor-not-allowed',
-            'node-interactive'
+      <div className="p-4 flex flex-col gap-[var(--node-gap)]">
+        {/* Connected Image Preview */}
+        <div className="">
+          {connectedImage ? (
+            <div className="relative rounded-md overflow-hidden border border-neutral-700/50 bg-neutral-900/50 shadow-sm">
+              <img
+                src={
+                  connectedImage.startsWith('data:')
+                    ? connectedImage
+                    : connectedImage.startsWith('http://') || connectedImage.startsWith('https://')
+                      ? connectedImage
+                      : `data:image/png;base64,${connectedImage}`
+                }
+                alt="Connected"
+                className="w-full h-32 object-cover"
+              />
+              <div className="absolute top-2 right-2 bg-neutral-950/60 rounded-full p-1 border border-neutral-700/30 shadow-md">
+                <Check size={12} className="text-brand-cyan" />
+              </div>
+            </div>
+          ) : (
+            <div className="w-full h-24 rounded-md border border-dashed border-neutral-700/50 bg-neutral-900/30 flex flex-col items-center justify-center gap-2 opacity-70">
+              <ImageIcon size={16} className="text-neutral-600" />
+              <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+                {t('canvasNodes.directorNode.noImage') || 'No image'}
+              </span>
+            </div>
           )}
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          <PanelRight size={14} />
-          <span>{t('canvasNodes.directorNode.openDirector') || 'Open Director'}</span>
-        </button>
+        </div>
 
-        {/* Generate Prompt Button (only shown when analyzed and has selections) */}
-        {hasAnalyzed && (
-          <button
-            onClick={handleGeneratePrompt}
-            disabled={!hasSelections || isGeneratingPrompt}
-            className={cn(
-              'w-full px-3 py-2.5 rounded-lg border transition-all duration-200',
-              'flex items-center justify-center gap-2',
-              'text-xs font-mono uppercase tracking-wide font-semibold',
-              (!hasSelections || isGeneratingPrompt)
-                ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-500 cursor-not-allowed'
-                : 'bg-brand-cyan text-black border-brand-cyan hover:bg-brand-cyan/90',
-              'node-interactive'
-            )}
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-2">
+          {/* Open Side Panel Button */}
+          <NodeButton
+            variant="primary"
+            size="full"
+            onClick={handleOpenSidePanel}
+            disabled={!connectedImage}
+            className="shadow-sm backdrop-blur-sm nodrag"
             onMouseDown={(e) => e.stopPropagation()}
           >
-            {isGeneratingPrompt ? (
-              <>
-                <GlitchLoader size={14} color="currentColor" />
-                <span>{t('canvasNodes.directorNode.generating') || 'Generating...'}</span>
-              </>
-            ) : (
-              <>
-                <Dices size={14} />
-                <span>{t('canvasNodes.directorNode.generatePrompt') || 'Generate Prompt'}</span>
-              </>
-            )}
-          </button>
+            <PanelRight size={14} className="mr-2" />
+            <span>{t('canvasNodes.directorNode.openDirector') || 'Open Director'}</span>
+          </NodeButton>
+
+          {/* Generate Prompt Button (only shown when analyzed and has selections) */}
+          {hasAnalyzed && (
+            <NodeButton
+              variant="primary"
+              size="full"
+              onClick={handleGeneratePrompt}
+              disabled={!hasSelections || isGeneratingPrompt}
+              className="shadow-sm backdrop-blur-sm nodrag"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              {isGeneratingPrompt ? (
+                <>
+                  <GlitchLoader size={14} className="mr-2" color="currentColor" />
+                  <span>{t('canvasNodes.directorNode.generating') || 'Generating...'}</span>
+                </>
+              ) : (
+                <>
+                  <Dices size={14} className="mr-2" />
+                  <span>{t('canvasNodes.directorNode.generatePrompt') || 'Generate Prompt'}</span>
+                </>
+              )}
+            </NodeButton>
+          )}
+        </div>
+
+        {/* Generated Prompt Preview (if exists) */}
+        {generatedPrompt && (
+          <div className="p-3 rounded-md border border-neutral-700/20 bg-neutral-900/40 backdrop-blur-sm shadow-sm">
+            <div className="text-[10px] font-mono text-neutral-500 mb-2 uppercase tracking-widest font-bold">
+              {t('canvasNodes.directorNode.generatedPrompt') || 'Generated Prompt'}
+            </div>
+            <p className="text-xs text-neutral-200 line-clamp-4 leading-relaxed">{generatedPrompt}</p>
+          </div>
         )}
       </div>
-
-      {/* Generated Prompt Preview (if exists) */}
-      {generatedPrompt && (
-        <div className="mt-3 p-2 rounded-lg border border-neutral-800/50 bg-neutral-900/5">
-          <div className="text-[10px] font-mono text-neutral-500 mb-1">
-            {t('canvasNodes.directorNode.generatedPrompt') || 'Generated Prompt'}
-          </div>
-          <p className="text-xs node-text-primary line-clamp-3">{generatedPrompt}</p>
-        </div>
-      )}
     </NodeContainer>
   );
 }, (prevProps, nextProps) => {
@@ -204,16 +204,16 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
   // Re-render if important props change
   if (prevData.connectedImage !== nextData.connectedImage ||
-      prevData.isAnalyzing !== nextData.isAnalyzing ||
-      prevData.hasAnalyzed !== nextData.hasAnalyzed ||
-      prevData.isGeneratingPrompt !== nextData.isGeneratingPrompt ||
-      prevData.generatedPrompt !== nextData.generatedPrompt ||
-      prevData.selectedBrandingTags?.length !== nextData.selectedBrandingTags?.length ||
-      prevData.selectedCategoryTags?.length !== nextData.selectedCategoryTags?.length ||
-      prevData.onOpenSidePanel !== nextData.onOpenSidePanel ||
-      prevData.onGeneratePrompt !== nextData.onGeneratePrompt ||
-      prevProps.selected !== nextProps.selected ||
-      prevProps.dragging !== nextProps.dragging) {
+    prevData.isAnalyzing !== nextData.isAnalyzing ||
+    prevData.hasAnalyzed !== nextData.hasAnalyzed ||
+    prevData.isGeneratingPrompt !== nextData.isGeneratingPrompt ||
+    prevData.generatedPrompt !== nextData.generatedPrompt ||
+    prevData.selectedBrandingTags?.length !== nextData.selectedBrandingTags?.length ||
+    prevData.selectedCategoryTags?.length !== nextData.selectedCategoryTags?.length ||
+    prevData.onOpenSidePanel !== nextData.onOpenSidePanel ||
+    prevData.onGeneratePrompt !== nextData.onGeneratePrompt ||
+    prevProps.selected !== nextProps.selected ||
+    prevProps.dragging !== nextProps.dragging) {
     return false; // Re-render
   }
 

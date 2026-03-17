@@ -119,8 +119,8 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       : "w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-xl text-neutral-200 text-sm font-mono z-[100]";
 
     const focusStyles = variant === 'node'
-      ? "focus:outline-none focus:border-[brand-cyan]/50 z-[100]"
-      : "focus:outline-none focus:border-[brand-cyan]/70 focus:ring-2 focus:ring-[brand-cyan]/20 z-[100]";
+      ? "focus:outline-none focus:border-brand-cyan/50 z-[100]"
+      : "focus:outline-none focus:border-brand-cyan/70 focus:ring-1 focus:ring-brand-cyan/20 z-[100]";
 
     return (
       <div ref={containerRef} className={cn("relative w-full", isOpen && "z-[99999]")}>

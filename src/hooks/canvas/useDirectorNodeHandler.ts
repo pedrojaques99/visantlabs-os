@@ -7,6 +7,8 @@ import { generateNodeId } from '@/utils/canvas/canvasNodeUtils';
 import { isLocalDevelopment } from '@/utils/env';
 import { normalizeImageToBase64, detectMimeType } from '@/services/reactFlowService';
 import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
+import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBrandContext';
+import type { BrandGuideline } from '@/lib/figma-types';
 
 interface UseDirectorNodeHandlerParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -20,6 +22,7 @@ interface UseDirectorNodeHandlerParams {
   setEdges: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void;
   addToHistory?: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void;
   handlersRef: React.MutableRefObject<any>;
+  linkedGuideline?: BrandGuideline | null;
 }
 
 export const useDirectorNodeHandler = ({
@@ -30,6 +33,7 @@ export const useDirectorNodeHandler = ({
   setEdges,
   addToHistory,
   handlersRef,
+  linkedGuideline,
 }: UseDirectorNodeHandlerParams) => {
 
   /**
@@ -250,6 +254,7 @@ export const useDirectorNodeHandler = ({
       }
 
       // Generate smart prompt
+      // Note: materialTags are included in effectTags for the API call
       const result = await aiApi.generateSmartPrompt({
         baseImage: imageData,
         designType: directorData.selectedDesignType || directorData.suggestedDesignType || 'logo',
@@ -258,19 +263,25 @@ export const useDirectorNodeHandler = ({
         locationTags,
         angleTags,
         lightingTags,
-        effectTags,
-        materialTags,
+        effectTags: [...effectTags, ...materialTags],
         selectedColors: directorData.selectedColors || [],
         aspectRatio: DEFAULT_ASPECT_RATIO,
         generateText: false,
         withHuman: false,
         enhanceTexture: false,
+        removeText: false,
         negativePrompt: '',
         additionalPrompt: '',
         instructions: '',
       });
 
-      const generatedPrompt = result.prompt;
+      let generatedPrompt = result.prompt;
+
+      // Apply brand guideline context to the generated prompt
+      const { tokens: directorBrandTokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
+      if (directorBrandTokens) {
+        generatedPrompt = buildEnhancement(generatedPrompt, directorBrandTokens);
+      }
 
       if (isLocalDevelopment()) {
         console.log('[DirectorNode] Generated prompt:', generatedPrompt);
@@ -359,7 +370,7 @@ export const useDirectorNodeHandler = ({
       const errorMessage = error?.message || 'Failed to generate prompt';
       toast.error(errorMessage);
     }
-  }, [nodesRef, edgesRef, updateNodeData, setNodes, setEdges, addToHistory, handlersRef]);
+  }, [nodesRef, edgesRef, updateNodeData, setNodes, setEdges, addToHistory, handlersRef, linkedGuideline]);
 
   /**
    * Update Director node data

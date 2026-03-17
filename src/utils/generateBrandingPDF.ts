@@ -5,7 +5,7 @@ import { getStepContent } from './brandingHelpers';
 interface TextSegment {
   text: string;
   isBold: boolean;
-  isItalic: boolean;
+  is: boolean;
 }
 
 /**
@@ -18,7 +18,7 @@ const stripColorTags = (text: string): string => {
 
 /**
  * Parse markdown text into segments with formatting information
- * Handles **bold**, *italic*, and nested formatting
+ * Handles **bold**, **, and nested formatting
  */
 const parseMarkdownSegments = (text: string): TextSegment[] => {
   if (!text) return [];
@@ -28,40 +28,40 @@ const parseMarkdownSegments = (text: string): TextSegment[] => {
   let currentText = '';
 
   while (i < text.length) {
-    // Check for bold: **text** (takes priority over italic)
+    // Check for bold: **text** (takes priority over )
     if (text.substring(i, i + 2) === '**') {
       // Save any accumulated plain text
       if (currentText) {
-        segments.push({ text: currentText, isBold: false, isItalic: false });
+        segments.push({ text: currentText, isBold: false, is: false });
         currentText = '';
       }
 
       const closingBold = text.indexOf('**', i + 2);
       if (closingBold !== -1) {
         const boldContent = text.substring(i + 2, closingBold);
-        // Recursively parse bold content for italic inside
+        // Recursively parse bold content for  inside
         const boldSegments = parseMarkdownSegments(boldContent);
         boldSegments.forEach(seg => {
-          segments.push({ text: seg.text, isBold: true, isItalic: seg.isItalic });
+          segments.push({ text: seg.text, isBold: true, is: seg.is });
         });
         i = closingBold + 2;
         continue;
       }
     }
 
-    // Check for italic: *text* (but not ** which is bold)
+    // Check for : *text* (but not ** which is bold)
     if (text[i] === '*' && text[i + 1] !== '*') {
       // Save any accumulated plain text
       if (currentText) {
-        segments.push({ text: currentText, isBold: false, isItalic: false });
+        segments.push({ text: currentText, isBold: false, is: false });
         currentText = '';
       }
 
-      const closingItalic = text.indexOf('*', i + 1);
-      if (closingItalic !== -1) {
-        const italicContent = text.substring(i + 1, closingItalic);
-        segments.push({ text: italicContent, isBold: false, isItalic: true });
-        i = closingItalic + 1;
+      const closing = text.indexOf('*', i + 1);
+      if (closing !== -1) {
+        const Content = text.substring(i + 1, closing);
+        segments.push({ text: Content, isBold: false, is: true });
+        i = closing + 1;
         continue;
       }
     }
@@ -73,7 +73,7 @@ const parseMarkdownSegments = (text: string): TextSegment[] => {
 
   // Add remaining plain text
   if (currentText) {
-    segments.push({ text: currentText, isBold: false, isItalic: false });
+    segments.push({ text: currentText, isBold: false, is: false });
   }
 
   return segments;
@@ -117,7 +117,7 @@ const extractBulletContent = (line: string): string => {
 
 /**
  * Add formatted text with markdown support to PDF
- * Processes markdown formatting (bold, italic) and bullets
+ * Processes markdown formatting (bold, ) and bullets
  */
 const addFormattedText = (
   doc: jsPDF,
@@ -162,12 +162,12 @@ const addFormattedText = (
         doc.setTextColor(0, 0, 0);
 
         // Set font style
-        if (segment.isBold && segment.isItalic) {
-          doc.setFont(undefined, 'bolditalic');
+        if (segment.isBold && segment.is) {
+          doc.setFont(undefined, 'bold');
         } else if (segment.isBold) {
           doc.setFont(undefined, 'bold');
-        } else if (segment.isItalic) {
-          doc.setFont(undefined, 'italic');
+        } else if (segment.is) {
+          doc.setFont(undefined, '');
         } else {
           doc.setFont(undefined, 'normal');
         }
@@ -206,12 +206,12 @@ const addFormattedText = (
       doc.setTextColor(0, 0, 0);
 
       // Set font style
-      if (segment.isBold && segment.isItalic) {
-        doc.setFont(undefined, 'bolditalic');
+      if (segment.isBold && segment.is) {
+        doc.setFont(undefined, 'bold');
       } else if (segment.isBold) {
         doc.setFont(undefined, 'bold');
-      } else if (segment.isItalic) {
-        doc.setFont(undefined, 'italic');
+      } else if (segment.is) {
+        doc.setFont(undefined, '');
       } else {
         doc.setFont(undefined, 'normal');
       }

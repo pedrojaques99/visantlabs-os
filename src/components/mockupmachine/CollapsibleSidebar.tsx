@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Menu, ChevronUp, Search } from 'lucide-react';
 import { BackButton } from '@/components/ui/BackButton';
 import { SearchBar } from '@/components/ui/SearchBar';
+import { Button } from '@/components/ui/button'
 
 interface CollapsibleSidebarProps {
   isCollapsed: boolean;
@@ -79,14 +80,13 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
   };
   if (isCollapsed) {
     return (
-      <button
-        onClick={onToggleCollapse}
-        className="w-full bg-neutral-950/30 backdrop-blur-sm border border-neutral-800/40 rounded-md px-3 py-2 opacity-70 hover:opacity-100 transition-opacity flex items-center gap-2 justify-center"
+      <Button variant="ghost" onClick={onToggleCollapse}
+        className="w-full bg-neutral-950/30 backdrop-blur-sm border border-neutral-800/40 rounded-md px-3 py-2 opacity-70 hover:opacity-300 transition-opacity flex items-center gap-2 justify-center"
         title="Show filters"
       >
         <Menu size={16} className="text-neutral-500 flex-shrink-0" />
         <span className="text-xs font-mono text-neutral-500 uppercase truncate">{title}</span>
-      </button>
+      </Button>
     );
   }
 
@@ -119,23 +119,21 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                   autoFocus
                 />
               ) : (
-                <button
-                  onClick={onToggleSearch}
+                <Button variant="ghost" onClick={onToggleSearch}
                   className="p-1.5 text-neutral-500 hover:text-brand-cyan transition-colors"
                   title="Search"
                 >
                   <Search size={14} />
-                </button>
+                </Button>
               )}
             </>
           )}
-          <button
-            onClick={onToggleCollapse}
+          <Button variant="ghost" onClick={onToggleCollapse}
             className="p-1 text-neutral-500 hover:text-neutral-400 transition-colors flex-shrink-0"
             title="Collapse"
           >
             <ChevronUp size={14} />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -149,18 +147,16 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
         >
-          <button
-            onClick={(e) => handleTagClick(null, e)}
+          <Button variant="ghost" onClick={(e) => handleTagClick(null, e)}
             className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${filterTag === null
               ? 'text-brand-cyan border-[brand-cyan]/30 bg-brand-cyan/10'
               : 'text-neutral-500 border-neutral-700/20 hover:border-neutral-600/30 hover:bg-neutral-800/30'
               }`}
           >
             All
-          </button>
+          </Button>
           {allTags.map((tag) => (
-            <button
-              key={tag}
+            <Button variant="ghost" key={tag}
               onClick={(e) => handleTagClick(tag, e)}
               className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${filterTag === tag
                 ? 'text-brand-cyan border-[brand-cyan]/30 bg-brand-cyan/10'
@@ -168,7 +164,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                 }`}
             >
               {translateTag(tag)}
-            </button>
+            </Button>
           ))}
         </div>
       )}

@@ -20,6 +20,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../components/ui/BreadcrumbWithBack";
+import { GlassPanel } from '../components/ui/GlassPanel';
+import { Button } from '@/components/ui/button'
 
 export const MyOutputsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -362,7 +364,6 @@ export const MyOutputsPage: React.FC = () => {
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 relative overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 z-0 pointer-events-none">
-          <GridDotsBackground />
         </div>
 
         {/* Header with Controls and Sidebar */}
@@ -413,29 +414,27 @@ export const MyOutputsPage: React.FC = () => {
           {/* Floating Column Control */}
           {filteredMockups.length > 0 && !isMobile && (
             <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
-              <div className="flex items-center gap-1 bg-neutral-950/50 backdrop-blur-md border border-neutral-800/60 rounded-md p-1.5 shadow-lg">
-                <button
-                  onClick={() => handleColumnsChange(columns - 1)}
+              <GlassPanel padding="sm" className="flex-row items-center gap-1 bg-neutral-950/50">
+                <Button variant="ghost" onClick={() => handleColumnsChange(columns - 1)}
                   disabled={columns <= 1}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Decrease columns"
                 >
                   <Minus size={14} />
-                </button>
+                </Button>
                 <div className="px-2.5">
                   <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
                     {columns}
                   </span>
                 </div>
-                <button
-                  onClick={() => handleColumnsChange(columns + 1)}
+                <Button variant="ghost" onClick={() => handleColumnsChange(columns + 1)}
                   disabled={columns >= 6}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Increase columns"
                 >
                   <Plus size={14} />
-                </button>
-              </div>
+                </Button>
+              </GlassPanel>
             </div>
           )}
           {filteredMockups.length === 0 ? (
@@ -457,9 +456,9 @@ export const MyOutputsPage: React.FC = () => {
                 if (!imageUrl) return null;
 
                 return (
-                  <div
+                  <GlassPanel
                     key={mockup._id}
-                    className="group relative bg-neutral-950/30 backdrop-blur-sm border border-neutral-800/60 rounded-md overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
+                    className="group relative overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
                   >
                     {/* Image */}
                     <div
@@ -473,23 +472,22 @@ export const MyOutputsPage: React.FC = () => {
                         loading="lazy"
                       />
                       {/* Overlay on hover */}
-                      <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-300 transition-opacity">
                         {isAuthenticated && mockup._id && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(mockup._id);
-                            }}
+                          <Button variant="ghost" onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(mockup._id);
+                          }}
                             disabled={deletingId === mockup._id}
                             className="absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-red-500/30 rounded text-xs font-mono text-red-400 hover:text-red-300 hover:border-red-400/50 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer z-10"
                             aria-label="Delete output"
                           >
                             <Trash2 size={14} />
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>
-                  </div>
+                  </GlassPanel>
                 );
               })}
             </div>

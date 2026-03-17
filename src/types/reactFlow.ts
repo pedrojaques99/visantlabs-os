@@ -12,6 +12,7 @@ export interface BaseNodeData {
   onDeleteNode?: (nodeId: string) => void;
   onDuplicate?: (nodeId: string) => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
+  isBrandActive?: boolean;
   /** Warning message for oversized/large content that can't be saved */
   oversizedWarning?: string;
   [key: string]: unknown;

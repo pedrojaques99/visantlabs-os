@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { CheckCircle, Pickaxe, ArrowRight } from 'lucide-react';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
+import { PremiumButton } from '../components/ui/PremiumButton';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { subscriptionService } from '../services/subscriptionService';
@@ -111,7 +112,6 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
   return (
     <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
       <div className="fixed inset-0 z-0">
-        <GridDotsBackground />
       </div>
       <div className="max-w-2xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         <div className="text-center mb-12">
@@ -206,13 +206,13 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
         )}
 
         <div className="text-center">
-          <button
+          <PremiumButton
             onClick={handleGetStarted}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-colors cursor-pointer"
+            className="max-w-sm mx-auto h-12"
+            icon={ArrowRight}
           >
-            <span>{t('thankYou.getStarted')}</span>
-            <ArrowRight size={16} />
-          </button>
+            {t('thankYou.getStarted')}
+          </PremiumButton>
         </div>
 
         <div className="mt-12 text-center">

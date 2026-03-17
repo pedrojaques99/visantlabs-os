@@ -131,7 +131,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
       <div>
         <div
           className={cn(
-            "flex flex-wrap gap-2 cursor-pointer transition-all duration-500 relative"
+            "flex flex-wrap gap-2 cursor-pointer transition-all duration-300 relative"
           )}
         >
           {tagsToDisplay.map(tag => {
@@ -159,7 +159,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
                       : isSuggested
                         ? 'bg-brand-cyan/5 text-neutral-800 border-brand-cyan/30 shadow-sm shadow-brand-cyan/5'
                         : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900',
-                  isDisabled && 'opacity-40 cursor-not-allowed'
+                  isDisabled && 'opacity-300 cursor-not-allowed'
                 )}
               >
                 {translateTag(tag)}

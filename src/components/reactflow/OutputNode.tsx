@@ -1,119 +1,91 @@
-import React, { useRef, useState, useCallback, memo, useEffect } from 'react';
-import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer, useViewport } from '@xyflow/react';
-import { Edit } from 'lucide-react';
+import React, { useRef, useState, useCallback, memo, useEffect, useMemo } from 'react';
+import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer } from '@xyflow/react';
+import { Maximize2 } from 'lucide-react';
 import type { OutputNodeData, FlowNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
-import { isSafeUrl } from '@/utils/imageUtils';
-import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { mockupApi } from '@/services/mockupApi';
 import { aiApi } from '@/services/aiApi';
 import { normalizeImageToBase64 } from '@/services/reactFlowService';
 import { toast } from 'sonner';
 import { NodeHandles } from './shared/NodeHandles';
-import { NodeLabel } from './shared/NodeLabel';
-import { NodePlaceholder } from './shared/NodePlaceholder';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeImageContainer } from './shared/NodeImageContainer';
+import { NodePlaceholder } from './shared/NodePlaceholder';
 import { NodeActionBar } from './shared/NodeActionBar';
 import { ImageNodeActionButtons } from './shared/ImageNodeActionButtons';
+import { isSafeUrl } from '@/utils/imageUtils';
 import { useNodeDownload } from './shared/useNodeDownload';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useMockupLike } from '@/hooks/useMockupLike';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { MockupPresetModal } from '../MockupPresetModal';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { useMediaSource } from '@/hooks/canvas/useMediaSource';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
   const nodes = useNodes();
   const edges = useEdges();
-  const { setNodes, getNode, getZoom } = useReactFlow();
+  const { getNode, getZoom } = useReactFlow();
   const nodeData = data as OutputNodeData;
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [savedMockupId, setSavedMockupId] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [isVideo, setIsVideo] = useState(false);
+  const [isLiked, setIsLiked] = useState(nodeData.isLiked || false);
+  const [savedMockupId, setSavedMockupId] = useState<string | null>(nodeData.savedMockupId || null);
   const [isDescribing, setIsDescribing] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showBrandKitModal, setShowBrandKitModal] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const previousImageUrlRef = useRef<string | null>(null);
-  const previousVideoUrlRef = useRef<string | null>(null);
   const loadingStartTimeRef = useRef<number | null>(null);
-  const { handleDownload, isDownloading } = useNodeDownload(imageUrl || videoUrl, 'output-media');
 
-  // Extract values from nodeData to avoid object recreation issues in dependencies
-  const resultImageUrl = nodeData.resultImageUrl;
-  const resultImageBase64 = nodeData.resultImageBase64;
-  const resultVideoUrl = nodeData.resultVideoUrl;
-  const resultVideoBase64 = nodeData.resultVideoBase64;
-  const savedMockupIdFromData = nodeData.savedMockupId;
-  const isLikedFromData = nodeData.isLiked;
   const isLoading = nodeData.isLoading || false;
 
-  // Sync state with nodeData
-  useEffect(() => {
-    if (savedMockupIdFromData !== undefined) {
-      setSavedMockupId(savedMockupIdFromData);
-    }
-    if (isLikedFromData !== undefined) {
-      setIsLiked(isLikedFromData);
-    }
-  }, [savedMockupIdFromData, isLikedFromData]);
-
-  // Timer for loading state
+  // Track elapsed time during loading
   useEffect(() => {
     if (isLoading) {
-      // Start timer when loading begins
-      if (loadingStartTimeRef.current === null) {
-        loadingStartTimeRef.current = Date.now();
-        setElapsedTime(0);
-      }
-
-      // Update timer every second
+      loadingStartTimeRef.current = Date.now();
       const interval = setInterval(() => {
-        if (loadingStartTimeRef.current !== null) {
-          const elapsed = Math.floor((Date.now() - loadingStartTimeRef.current) / 1000);
-          setElapsedTime(elapsed);
+        if (loadingStartTimeRef.current) {
+          setElapsedTime(Math.floor((Date.now() - loadingStartTimeRef.current) / 1000));
         }
       }, 1000);
-
-      return () => {
-        clearInterval(interval);
-      };
+      return () => clearInterval(interval);
     } else {
-      // Reset timer when loading ends
       loadingStartTimeRef.current = null;
       setElapsedTime(0);
     }
   }, [isLoading]);
 
-  // Lock node deletion while generating (TEMPORARILY REMOVED)
-  /*
-  useEffect(() => {
-    setNodes((nds) =>
-      nds.map((node) => {
-        if (node.id === id) {
-          const shouldBeDeletable = !isLoading;
-          const isDeletable = node.deletable ?? true;
+  // Use centralized media source hook - replaces 130+ lines of useEffect
+  const ownResult = useMemo(() => ({
+    imageUrl: nodeData.resultImageUrl,
+    imageBase64: nodeData.resultImageBase64,
+    videoUrl: nodeData.resultVideoUrl,
+    videoBase64: nodeData.resultVideoBase64,
+  }), [nodeData.resultImageUrl, nodeData.resultImageBase64, nodeData.resultVideoUrl, nodeData.resultVideoBase64]);
 
-          if (isDeletable !== shouldBeDeletable) {
-            return {
-              ...node,
-              deletable: shouldBeDeletable,
-            };
-          }
-        }
-        return node;
-      })
-    );
-  }, [isLoading, id, setNodes]);
-  */
+  const mediaSource = useMediaSource({
+    nodeId: id,
+    nodes: nodes as any,
+    edges,
+    ownResult,
+  });
+
+  const mediaUrl = mediaSource.url;
+  const isVideo = mediaSource.isVideo;
+  const { handleDownload, isDownloading } = useNodeDownload(mediaUrl, 'output-media');
+
+  // Sync state with nodeData
+  useEffect(() => {
+    if (nodeData.savedMockupId !== undefined) {
+      setSavedMockupId(nodeData.savedMockupId);
+    }
+    if (nodeData.isLiked !== undefined) {
+      setIsLiked(nodeData.isLiked);
+    }
+  }, [nodeData.savedMockupId, nodeData.isLiked]);
 
   // Use centralized like hook
   const { toggleLike: handleToggleLike } = useMockupLike({
@@ -128,145 +100,11 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     translationKeyPrefix: 'canvas',
   });
 
-  // Get image from connected source node
-  useEffect(() => {
-    if (!nodes || !edges) return;
-
-    // PRIORITY 1: Use result from THIS node if available (OutputNode's own memory)
-    // This ensures that once an output is generated, it stays fixed and doesn't change when PromptNode updates
-    if (resultImageUrl || resultImageBase64) {
-      const newImageUrl = resultImageUrl || (resultImageBase64 ? `data:image/png;base64,${resultImageBase64}` : null);
-      if (newImageUrl !== previousImageUrlRef.current) {
-        previousImageUrlRef.current = newImageUrl;
-        setImageUrl(newImageUrl);
-        // Reset video state if we have an image result
-        setVideoUrl(null);
-        setIsVideo(false);
-      }
-      return;
-    }
-
-    // PRIORITY 2: If no result yet, look for connected source node (Preview/Loading state)
-
-    // Find edge connecting to this node
-    const incomingEdge = edges.find(e => e.target === id);
-    if (!incomingEdge) {
-      // No edge and no result -> clear
-      if (previousImageUrlRef.current !== null) {
-        previousImageUrlRef.current = null;
-        setImageUrl(null);
-      }
-      return;
-    }
-
-    // Find source node
-    const sourceNode = nodes.find(n => n.id === incomingEdge.source);
-    if (!sourceNode) {
-      // Source node missing -> keep current state or clear? Better clear if strictly following state.
-      // But to avoid flicker, maybe do nothing? Let's clear to be safe state-wise.
-      if (previousImageUrlRef.current !== null) {
-        previousImageUrlRef.current = null;
-        setImageUrl(null);
-      }
-      return;
-    }
-
-    // Get image from source node based on type
-    let sourceImageUrl: string | null = null;
-    const sourceData = sourceNode.data as FlowNodeData;
-
-    if (sourceData.type === 'merge') {
-      sourceImageUrl = (sourceData as any).resultImageUrl ||
-        ((sourceData as any).resultImageBase64 ? `data:image/png;base64,${(sourceData as any).resultImageBase64}` : null);
-    } else if (sourceData.type === 'edit') {
-      sourceImageUrl = (sourceData as any).resultImageUrl ||
-        ((sourceData as any).resultImageBase64 ? `data:image/png;base64,${(sourceData as any).resultImageBase64}` : null);
-    } else if (sourceData.type === 'upscale') {
-      sourceImageUrl = (sourceData as any).resultImageUrl ||
-        ((sourceData as any).resultImageBase64 ? `data:image/png;base64,${(sourceData as any).resultImageBase64}` : null);
-    } else if (sourceData.type === 'mockup') {
-      sourceImageUrl = (sourceData as any).resultImageUrl ||
-        ((sourceData as any).resultImageBase64 ? `data:image/png;base64,${(sourceData as any).resultImageBase64}` : null);
-    } else if (sourceData.type === 'prompt') {
-      sourceImageUrl = (sourceData as any).resultImageUrl ||
-        ((sourceData as any).resultImageBase64 ? `data:image/png;base64,${(sourceData as any).resultImageBase64}` : null);
-    } else if (sourceData.type === 'video') {
-      // Check for video from video node (generated)
-      const videoUrl = (sourceData as any).resultVideoUrl;
-      const videoBase64 = (sourceData as any).resultVideoBase64;
-      if (videoUrl) {
-        sourceImageUrl = videoUrl;
-      } else if (videoBase64) {
-        sourceImageUrl = `data:video/mp4;base64,${videoBase64}`;
-      }
-    } else if (sourceData.type === 'videoInput') {
-      // Check for video from video input node (uploaded)
-      const uploadedVideoUrl = (sourceData as any).uploadedVideoUrl;
-      const uploadedVideo = (sourceData as any).uploadedVideo;
-      if (uploadedVideoUrl) {
-        sourceImageUrl = uploadedVideoUrl;
-      } else if (uploadedVideo) {
-        // uploadedVideo might be a data URL or base64
-        if (typeof uploadedVideo === 'string' && uploadedVideo.startsWith('data:')) {
-          sourceImageUrl = uploadedVideo;
-        } else {
-          sourceImageUrl = `data:video/mp4;base64,${uploadedVideo}`;
-        }
-      }
-    } else if (sourceData.type === 'output') {
-      // Check for video first, then image
-      const outputVideoUrl = (sourceData as any).resultVideoUrl;
-      const outputVideoBase64 = (sourceData as any).resultVideoBase64;
-      if (outputVideoUrl) {
-        sourceImageUrl = outputVideoUrl;
-      } else if (outputVideoBase64) {
-        sourceImageUrl = `data:video/mp4;base64,${outputVideoBase64}`;
-      } else {
-        sourceImageUrl = (sourceData as any).resultImageUrl ||
-          ((sourceData as any).resultImageBase64 ? `data:image/png;base64,${(sourceData as any).resultImageBase64}` : null);
-      }
-    }
-
-    // Check if we have video data
-    const hasVideo = !!(resultVideoUrl || resultVideoBase64 ||
-      (sourceData?.type === 'video' && ((sourceData as any).resultVideoUrl || (sourceData as any).resultVideoBase64)) ||
-      (sourceData?.type === 'videoInput' && ((sourceData as any).uploadedVideoUrl || (sourceData as any).uploadedVideo)) ||
-      (sourceData?.type === 'output' && ((sourceData as any).resultVideoUrl || (sourceData as any).resultVideoBase64)));
-
-    if (hasVideo) {
-      // Check if resultVideoBase64 is already a data URL (starts with "data:")
-      const videoBase64Url = resultVideoBase64
-        ? (typeof resultVideoBase64 === 'string' && resultVideoBase64.startsWith('data:')
-          ? resultVideoBase64
-          : `data:video/mp4;base64,${resultVideoBase64}`)
-        : null;
-
-      const newVideoUrl = resultVideoUrl || videoBase64Url || sourceImageUrl;
-
-
-      if (newVideoUrl && newVideoUrl !== previousVideoUrlRef.current) {
-        previousVideoUrlRef.current = newVideoUrl;
-        setVideoUrl(newVideoUrl);
-        setImageUrl(null);
-        setIsVideo(true);
-      }
-    } else {
-      const newImageUrl = sourceImageUrl; // Only use source if we didn't have a result (handled at top)
-
-      if (newImageUrl !== previousImageUrlRef.current) {
-        previousImageUrlRef.current = newImageUrl;
-        setImageUrl(newImageUrl);
-        setVideoUrl(null);
-        setIsVideo(false);
-      }
-    }
-  }, [nodes, edges, id, resultImageUrl, resultImageBase64, resultVideoUrl, resultVideoBase64]);
-
   const handleSave = useCallback(async () => {
-    if (!imageUrl || isSaving) return;
+    if (!mediaUrl || isSaving) return;
 
-    // Only save if imageUrl is from R2 (not a data URL)
-    if (typeof imageUrl === 'string' && imageUrl.startsWith('data:')) {
+    // Only save if mediaUrl is from R2 (not a data URL)
+    if (typeof mediaUrl === 'string' && mediaUrl.startsWith('data:')) {
       toast.error(t('canvasNodes.outputNode.pleaseUseImageFromR2'), { duration: 3000 });
       return;
     }
@@ -280,7 +118,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     setIsSaving(true);
     try {
       const savedMockup = await mockupApi.save({
-        imageUrl: imageUrl,
+        imageUrl: mediaUrl,
         prompt: 'Canvas output image',
         designType: 'other',
         tags: [],
@@ -303,21 +141,21 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
       toast.success(t('canvasNodes.outputNode.imageSavedToFavorites'), { duration: 3000 });
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to save image', { duration: 3000 });
+      toast.error(error?.message || t('common.failedToSaveImage'), { duration: 3000 });
       console.error('Failed to save:', error);
     } finally {
       setIsSaving(false);
     }
-  }, [imageUrl, isSaving, savedMockupId, handleToggleLike]);
+  }, [mediaUrl, isSaving, savedMockupId, handleToggleLike]);
 
   const handleView = useCallback(() => {
-    if (imageUrl && nodeData.onView) {
-      nodeData.onView(imageUrl);
+    if (mediaUrl && nodeData.onView) {
+      nodeData.onView(mediaUrl);
     }
-  }, [imageUrl, nodeData]);
+  }, [mediaUrl, nodeData]);
 
   const handleDescribe = useCallback(async () => {
-    if (!imageUrl || isDescribing) return;
+    if (!mediaUrl || isDescribing) return;
 
     // Get image base64 from URL or use base64 fallback
     let imageInput: string | { base64: string; mimeType: string };
@@ -325,9 +163,9 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     // Check for base64 fallback first (from resultImageBase64)
     const base64Fallback = nodeData.resultImageBase64;
 
-    if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('data:')) {
+    if (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.startsWith('data:')) {
       // Already a data URL, use directly
-      imageInput = imageUrl;
+      imageInput = mediaUrl;
     } else if (base64Fallback && typeof base64Fallback === 'string') {
       // Use base64 fallback if available (avoids fetch)
       const cleanBase64 = base64Fallback.startsWith('data:')
@@ -335,11 +173,11 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         : base64Fallback;
       // Try to detect mimeType from URL or default to png
       let mimeType = 'image/png';
-      if (imageUrl.includes('.jpg') || imageUrl.includes('.jpeg')) {
+      if (mediaUrl.includes('.jpg') || mediaUrl.includes('.jpeg')) {
         mimeType = 'image/jpeg';
-      } else if (imageUrl.includes('.webp')) {
+      } else if (mediaUrl.includes('.webp')) {
         mimeType = 'image/webp';
-      } else if (imageUrl.includes('.gif')) {
+      } else if (mediaUrl.includes('.gif')) {
         mimeType = 'image/gif';
       }
       imageInput = {
@@ -349,14 +187,14 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     } else {
       // Convert URL to base64 using utility function (with base64 fallback if available)
       try {
-        const base64 = await normalizeImageToBase64(imageUrl, base64Fallback);
+        const base64 = await normalizeImageToBase64(mediaUrl, base64Fallback);
         // Try to detect mimeType from URL or default to png
         let mimeType = 'image/png';
-        if (imageUrl.includes('.jpg') || imageUrl.includes('.jpeg')) {
+        if (mediaUrl.includes('.jpg') || mediaUrl.includes('.jpeg')) {
           mimeType = 'image/jpeg';
-        } else if (imageUrl.includes('.webp')) {
+        } else if (mediaUrl.includes('.webp')) {
           mimeType = 'image/webp';
-        } else if (imageUrl.includes('.gif')) {
+        } else if (mediaUrl.includes('.gif')) {
           mimeType = 'image/gif';
         }
         imageInput = {
@@ -364,7 +202,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           mimeType: mimeType,
         };
       } catch (error: any) {
-        toast.error(error?.message || 'Failed to load image for analysis', { duration: 3000 });
+        toast.error(error?.message || t('canvas.failedToLoadImageForAnalysis'), { duration: 3000 });
         console.error('Failed to convert image to base64:', error);
         return;
       }
@@ -398,7 +236,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           toast.success(t('canvasNodes.outputNode.imageDescriptionGenerated'), { duration: 2000 });
         } else {
           // Fallback if node not found
-          toast.error('Failed to find node position');
+          toast.error(t('canvas.sourceNodeNotFound'));
         }
       } else {
         // Fallback to internal update if addTextNode not available
@@ -416,7 +254,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       }
     } catch (error: any) {
       console.error('Failed to describe image:', error);
-      toast.error(error?.message || 'Failed to generate description', { duration: 3000 });
+      toast.error(error?.message || t('canvas.failedToGenerateDescription'), { duration: 3000 });
 
       // Clear loading state on error
       setIsDescribing(false);
@@ -424,7 +262,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         nodeData.onUpdateData(String(id), { isDescribing: false });
       }
     }
-  }, [imageUrl, isDescribing, nodeData, id]);
+  }, [mediaUrl, isDescribing, nodeData, id]);
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((_: any, params: { width: number; height: number; x: number; y: number }) => {
@@ -457,7 +295,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
   }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
 
-  const hasMedia = !!(imageUrl || videoUrl);
+  const hasMedia = !!mediaUrl;
 
   return (
     <NodeContainer
@@ -490,10 +328,10 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       <NodeHandles />
 
       <NodeImageContainer className="flex items-center justify-center" style={{ width: '100%', height: '100%', flex: '1 1 0%', minHeight: 0 }}>
-        {isVideo && videoUrl ? (
+        {isVideo && mediaUrl ? (
           <div className="relative flex items-center justify-center group/video" style={{ width: '100%', height: '100%' }}>
             <video
-              src={videoUrl}
+              src={mediaUrl}
               controls
               className={cn(
                 'object-contain rounded-md node-image',
@@ -530,10 +368,10 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               </div>
             )}
           </div>
-        ) : imageUrl ? (
+        ) : mediaUrl ? (
           <div className="relative flex items-center justify-center group/image" style={{ width: '100%', height: '100%' }}>
             <img
-              src={imageUrl && (isSafeUrl(imageUrl) || imageUrl.startsWith('http') || imageUrl.startsWith('blob:') || imageUrl.startsWith('data:')) ? imageUrl : ''}
+              src={mediaUrl && (isSafeUrl(mediaUrl) || mediaUrl.startsWith('http') || mediaUrl.startsWith('blob:') || mediaUrl.startsWith('data:')) ? mediaUrl : ''}
               alt="Output"
               className={cn(
                 'object-contain rounded-md node-image',
@@ -577,13 +415,13 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           <NodePlaceholder
             isLoading={isLoading}
             emptyMessage={t('canvasNodes.outputNode.noOutput')}
-            emptySubmessage="Connect a node to see result"
+            emptySubmessage={t('canvasNodes.outputNode.connectNodeToSeeResult')}
             elapsedTime={isLoading ? elapsedTime : 0}
           />
         )}
       </NodeImageContainer>
 
-      {!dragging && (imageUrl || videoUrl) && (
+      {!dragging && mediaUrl && (
         <NodeActionBar selected={selected} getZoom={getZoom}>
           <ImageNodeActionButtons
             onView={handleView}
@@ -594,14 +432,14 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             onDelete={() => setShowDeleteModal(true)}
             showDelete={!!(nodeData.onDelete && savedMockupId)}
             onBrandKit={() => setShowBrandKitModal(true)}
-            showBrandKit={!!(nodeData.onBrandKit && (imageUrl || videoUrl))}
+            showBrandKit={!!(nodeData.onBrandKit && mediaUrl)}
             onSave={() => handleSave()}
             isLiked={isLiked}
             isSaving={isSaving}
             showLike={true}
             onDescribe={handleDescribe}
             isDescribing={isDescribing}
-            describeDisabled={!imageUrl}
+            describeDisabled={!mediaUrl}
             showDescribe={true}
             translationKeyPrefix="canvasNodes.outputNode"
             t={t}

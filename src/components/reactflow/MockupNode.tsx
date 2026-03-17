@@ -16,19 +16,27 @@ import { NodeHandles } from './shared/NodeHandles';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeLabel } from './shared/node-label';
-import { AspectRatioSelector } from './shared/AspectRatioSelector';
-import { ResolutionSelector } from './shared/ResolutionSelector';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel } from '@/constants/geminiModels';
-import { Textarea } from '@/components/ui/textarea';
+import { NodeHeader } from './shared/node-header';
 import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { applyPresetDataToNodes } from '@/lib/presetImportUtils';
+import { NodeButton } from './shared/node-button';
+import { ModelSelector } from './shared/ModelSelector';
+import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
+import { Input } from '@/components/ui/input'
+import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
+import { useNodes } from '@xyflow/react';
+import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 
 const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
+  const { linkedGuidelineId } = useCanvasHeader();
   const { setNodes } = useReactFlow();
+  const nodes = useNodes();
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [selectedPresetId, setSelectedPresetId] = useState<MockupPresetType | string>(
     (data.selectedPreset as MockupPresetType | string) || 'cap'
@@ -43,8 +51,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
   const [model, setModel] = useState<GeminiModel>(data.model || DEFAULT_MODEL);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(data.aspectRatio || DEFAULT_ASPECT_RATIO);
   const [resolution, setResolution] = useState<Resolution>(data.resolution || '1K');
+  const [isBrandActive, setIsBrandActive] = useState<boolean>(data.isBrandActive !== undefined ? data.isBrandActive : (!!(data.connectedLogo || data.connectedIdentity || data.connectedTextDirection)));
   const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [isColorSectionOpen, setIsColorSectionOpen] = useState(false);
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const userMockups = (data as any).userMockups as Mockup[] | undefined;
 
@@ -89,10 +99,6 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         try {
           const allPresets = await getAllPresetsAsync();
           setLoadedPresets(allPresets);
-          console.log('[MockupNode] Reloaded presets after modal close:', {
-            count: allPresets.length,
-            ids: allPresets.map(p => p.id).slice(0, 10),
-          });
         } catch (error) {
           console.error('Failed to reload presets:', error);
           // Keep existing loaded presets if reload fails
@@ -138,33 +144,28 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     }
   }, [data.selectedPreset]);
 
-  // Sync colors, withHuman, and customPrompt with data
+  // Consolidate syncing node data into local state
   useEffect(() => {
-    if (data.selectedColors !== undefined) {
-      setSelectedColors(data.selectedColors);
-    }
-    if (data.colorInput !== undefined) {
-      setColorInput(data.colorInput);
-    }
-    if (data.isValidColor !== undefined) {
-      setIsValidColor(data.isValidColor);
-    }
-    if (data.withHuman !== undefined) {
-      setWithHuman(data.withHuman);
-    }
-    if (data.customPrompt !== undefined) {
-      setCustomPrompt(data.customPrompt);
-    }
-    if (data.model) {
-      setModel(data.model);
-    }
-    if (data.aspectRatio) {
-      setAspectRatio(data.aspectRatio);
-    }
-    if (data.resolution) {
-      setResolution(data.resolution);
-    }
-  }, [data.selectedColors, data.colorInput, data.isValidColor, data.withHuman, data.customPrompt, data.model, data.aspectRatio, data.resolution]);
+    if (data.selectedColors !== undefined) setSelectedColors(data.selectedColors);
+    if (data.colorInput !== undefined) setColorInput(data.colorInput);
+    if (data.isValidColor !== undefined) setIsValidColor(data.isValidColor);
+    if (data.withHuman !== undefined) setWithHuman(data.withHuman);
+    if (data.customPrompt !== undefined) setCustomPrompt(data.customPrompt);
+    if (data.model) setModel(data.model);
+    if (data.aspectRatio) setAspectRatio(data.aspectRatio);
+    if (data.resolution) setResolution(data.resolution);
+    if (data.isBrandActive !== undefined) setIsBrandActive(data.isBrandActive);
+  }, [
+    data.selectedColors,
+    data.colorInput,
+    data.isValidColor,
+    data.withHuman,
+    data.customPrompt,
+    data.model,
+    data.aspectRatio,
+    data.resolution,
+    data.isBrandActive
+  ]);
 
 
   const { getNodes } = useReactFlow();
@@ -260,6 +261,44 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     }
   }, [isPromptOpen, customPrompt]);
 
+  const handleAddToBoard = (url: string, type: 'image' | 'logo') => {
+    const newNodeId = `image-${Date.now()}`;
+    const currentNode = nodes.find(n => n.id === id);
+    const x = currentNode ? currentNode.position.x + 450 : 0;
+    const y = currentNode ? currentNode.position.y : 0;
+
+    setNodes((nds) => nds.concat({
+      id: newNodeId,
+      type: 'image',
+      position: { x, y },
+      data: { 
+        mockup: {
+          _id: `brand-${Date.now()}`,
+          imageUrl: url,
+          prompt: `Brand ${type}`,
+          designType: 'other',
+          tags: ['brand'],
+          brandingTags: [],
+          aspectRatio: '1:1'
+        },
+        label: type === 'logo' ? 'Brand Logo' : 'Brand Asset',
+        onUpdateData: data.onUpdateData,
+        onDelete: data.onDelete,
+        onResize: data.onResize
+      } as any
+    }));
+  };
+
+  const handleSelectAsset = (url: string, type: 'image' | 'logo') => {
+    if (data.onUpdateData) {
+      if (type === 'logo') {
+        data.onUpdateData(id, { connectedLogo: url });
+      } else {
+        data.onUpdateData(id, { connectedImage: url });
+      }
+    }
+  };
+
   const handleGenerate = async () => {
     if (!data.onGenerate) {
       return;
@@ -267,7 +306,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
     // HIERARCHY: Logo (priority 1) as main focus, Identity (priority 2) as context/colors/vibe
     // Use logo first, fallback to legacy connectedImage if no logo
-    const imageToUse = connectedLogo || data.connectedImage;
+    const imageToUse = (isBrandActive && connectedLogo) || data.connectedImage;
 
     if (!imageToUse) {
       console.warn('[MockupNode] No logo (required) or connected image available');
@@ -275,25 +314,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       return;
     }
 
-    // Combine text direction from BrandCore with custom prompt
-    const finalPrompt = connectedTextDirection
+    // Combine text direction from BrandCore with custom prompt if active
+    const finalPrompt = (isBrandActive && connectedTextDirection)
       ? (customPrompt ? `${connectedTextDirection}\n\n${customPrompt}` : connectedTextDirection)
       : customPrompt;
-
-    console.log('[MockupNode] Generating with:', {
-      nodeId: id,
-      presetId: selectedPresetId,
-      hasLogo: !!connectedLogo,
-      hasIdentity: !!connectedIdentity,
-      hasLegacyImage: !!data.connectedImage,
-      imageToUse: imageToUse === connectedLogo ? 'LOGO (primary)' : 'LEGACY_IMAGE',
-      hasTextDirection: !!connectedTextDirection,
-      imageType: imageToUse?.startsWith('http') ? 'URL' : imageToUse?.startsWith('data:') ? 'dataURL' : 'base64',
-      colorsCount: selectedColors.length,
-      withHuman,
-      hasCustomPrompt: !!customPrompt,
-      hasFinalPrompt: !!finalPrompt,
-    });
 
     const isAdvanced = isAdvancedModel(model);
     const finalResolution = isAdvanced ? resolution : undefined;
@@ -318,7 +342,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       dragging={dragging}
       warning={data.oversizedWarning}
       onFitToContent={handleFitToContent}
-      className="p-5"
+      className="min-w-[320px]"
       style={{
         height: 'auto'
       }}
@@ -352,18 +376,23 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       />
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-3">
-        <CategoryIcon size={16} className={cn(categoryConfig.color)} />
-        <h3 className="text-xs font-semibold text-neutral-300 font-mono">{categoryTitle}</h3>
-      </div>
+      <NodeHeader 
+        icon={categoryConfig.icon} 
+        title={categoryTitle} 
+        isBrandActive={isBrandActive}
+        onToggleBrand={(active) => {
+          setIsBrandActive(active);
+          if (data.onUpdateData) data.onUpdateData(id, { isBrandActive: active });
+        }}
+        onOpenMediaLibrary={() => setShowMediaLibrary(true)}
+      />
 
       {/* Preset Selector - Button to open modal */}
-      <div className="mb-2">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsPresetModalOpen(true);
-          }}
+      <div className="node-margin">
+        <NodeButton variant="ghost" onClick={(e) => {
+          e.stopPropagation();
+          setIsPresetModalOpen(true);
+        }}
           onMouseDown={(e) => {
             e.stopPropagation();
           }}
@@ -416,15 +445,14 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           </div>
           {/* Click indicator */}
           <ChevronDown size={14} className="text-neutral-400 flex-shrink-0" />
-        </button>
+        </NodeButton>
       </div>
 
 
 
       {/* Connected Images from BrandCore or legacy image node */}
       {/* HIERARCHY: Logo (priority 1) as primary focus, Identity (priority 2) as context/colors/vibe */}
-      {hasBrandCoreConnection ? (
-        <div className="mb-3 space-y-3">
+        <div className={cn("node-margin space-y-[var(--node-gap)] transition-all duration-300", !isBrandActive && "opacity-30 grayscale pointer-events-none")}>
           {connectedLogo && (
             <ConnectedImagesDisplay
               images={[connectedLogo]}
@@ -455,14 +483,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               <div className="text-xs text-neutral-400 line-clamp-3">{connectedTextDirection}</div>
             </div>
           )}
-          {data.connectedStrategyData && (
-            <div className="p-2 rounded border border-[brand-cyan]/20 bg-brand-cyan/3">
-              <div className="text-xs font-mono text-brand-cyan/80 mb-1">{t('canvasNodes.mockupNode.strategyDataFromBrandCore')}</div>
-              <div className="text-[10px] text-neutral-500">{t('canvasNodes.mockupNode.available')}</div>
-            </div>
-          )}
         </div>
-      ) : hasConnectedImage ? (
+
+      {hasConnectedImage && !isBrandActive && (
         <ConnectedImagesDisplay
           images={[data.connectedImage]}
           label={t('canvasNodes.mockupNode.inputImage')}
@@ -473,26 +496,25 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             }
           }}
         />
-      ) : null}
+      )}
 
       {/* Prompt Editor Toggle */}
       <div className="mb-2">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            const newIsOpen = !isPromptOpen;
-            setIsPromptOpen(newIsOpen);
-            // If opening and no custom prompt exists, initialize with base prompt or text direction
-            if (newIsOpen && !customPrompt) {
-              const initialPrompt = connectedTextDirection || basePrompt;
-              if (initialPrompt) {
-                setCustomPrompt(initialPrompt);
-                if (data.onUpdateData) {
-                  data.onUpdateData(id, { customPrompt: initialPrompt });
-                }
+        <NodeButton variant="ghost" onClick={(e) => {
+          e.stopPropagation();
+          const newIsOpen = !isPromptOpen;
+          setIsPromptOpen(newIsOpen);
+          // If opening and no custom prompt exists, initialize with base prompt or text direction
+          if (newIsOpen && !customPrompt) {
+            const initialPrompt = connectedTextDirection || basePrompt;
+            if (initialPrompt) {
+              setCustomPrompt(initialPrompt);
+              if (data.onUpdateData) {
+                data.onUpdateData(id, { customPrompt: initialPrompt });
               }
             }
-          }}
+          }
+        }}
           onMouseDown={(e) => e.stopPropagation()}
           disabled={isLoading}
           className={cn(
@@ -516,7 +538,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               isPromptOpen && 'rotate-90'
             )}
           />
-        </button>
+        </NodeButton>
       </div>
 
       {/* Prompt Editor Textarea */}
@@ -543,11 +565,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Color & Human Section - Collapsable */}
       <div className="mb-2">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsColorSectionOpen(!isColorSectionOpen);
-          }}
+        <NodeButton variant="ghost" onClick={(e) => {
+          e.stopPropagation();
+          setIsColorSectionOpen(!isColorSectionOpen);
+        }}
           onMouseDown={(e) => e.stopPropagation()}
           disabled={isLoading}
           className={cn(
@@ -573,171 +594,59 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               isColorSectionOpen && 'rotate-90'
             )}
           />
-        </button>
+        </NodeButton>
 
         {isColorSectionOpen && (
           <div className="mt-3 space-y-3">
-            {/* Model Selector */}
-            <div>
-              <NodeLabel className="mb-1.5 text-[10px]">
-                {t('canvasNodes.promptNode.model')}
-              </NodeLabel>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const newModel: GeminiModel = GEMINI_MODELS.FLASH;
-                    setModel(newModel);
+            <ModelSelector
+              selectedModel={model}
+              onModelChange={(newModel) => {
+                setModel(newModel);
+                if (data.onUpdateData) {
+                  data.onUpdateData(id, { model: newModel });
+                }
+              }}
+              resolution={resolution}
+              disabled={isLoading}
+              onSyncResolution={(res) => {
+                setResolution(res);
+                if (data.onUpdateData) data.onUpdateData(id, { resolution: res });
+              }}
+              onClearAdvancedConfig={() => {
+                if (data.onUpdateData) {
+                  data.onUpdateData(id, {
+                    resolution: undefined,
+                    aspectRatio: undefined
+                  });
+                }
+              }}
+            />
 
-                    if (data.onUpdateData) {
-                      data.onUpdateData(id, {
-                        model: newModel,
-                        resolution: undefined,
-                        aspectRatio: undefined
-                      });
-                    }
-                  }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  disabled={isLoading}
-                  className={cn(
-                    'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
-                    model === GEMINI_MODELS.FLASH
-                      ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                      : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
-                    isLoading && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  <span className="text-2xl">⛏️</span>
-                  <span className="font-semibold text-sm">HD</span>
-                  <span className="text-[10px] text-neutral-500 mt-0.5">
-                    {getCreditsRequired(GEMINI_MODELS.FLASH)} {t('canvasNodes.promptNode.credits')}
-                  </span>
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const newModel: GeminiModel = GEMINI_MODELS.NB2;
-                    setModel(newModel);
-
-                    if (data.onUpdateData) {
-                      const updates: Partial<MockupNodeData> = { model: newModel };
-                      if (!data.resolution) {
-                        updates.resolution = '1K';
-                        setResolution('1K');
-                      }
-                      if (!data.aspectRatio) {
-                        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
-                        setAspectRatio(DEFAULT_ASPECT_RATIO);
-                      }
-                      data.onUpdateData(id, updates);
-                    }
-                  }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  disabled={isLoading}
-                  className={cn(
-                    'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
-                    model === GEMINI_MODELS.NB2
-                      ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                      : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
-                    isLoading && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  <span className="text-2xl">🍌</span>
-                  <span className="font-semibold text-sm">NB2</span>
-                  <span className="text-[10px] text-neutral-500 mt-0.5">
-                    {getCreditsRequired(GEMINI_MODELS.NB2, resolution)} {t('canvasNodes.promptNode.credits')}
-                  </span>
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const newModel: GeminiModel = GEMINI_MODELS.PRO;
-                    setModel(newModel);
-
-                    if (data.onUpdateData) {
-                      const updates: Partial<MockupNodeData> = { model: newModel };
-                      if (!data.resolution) {
-                        updates.resolution = '4K';
-                        setResolution('4K');
-                      }
-                      if (!data.aspectRatio) {
-                        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
-                        setAspectRatio(DEFAULT_ASPECT_RATIO);
-                      }
-                      data.onUpdateData(id, updates);
-                    }
-                  }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  disabled={isLoading}
-                  className={cn(
-                    'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
-                    model === GEMINI_MODELS.PRO
-                      ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                      : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
-                    isLoading && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  <span className="text-2xl">⛏️💎</span>
-                  <span className="font-semibold text-sm">4K Pro</span>
-                  <span className="text-[10px] text-neutral-500 mt-0.5">
-                    {getCreditsRequired(GEMINI_MODELS.PRO, resolution)} {t('canvasNodes.promptNode.credits')}
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            {/* Advanced Model Settings (NB2 + Pro) */}
-            {isAdvancedModel(model) && (
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <NodeLabel className="mb-1.5 text-[10px]">
-                    {t('canvasNodes.promptNode.aspectRatio')}
-                  </NodeLabel>
-                  <div onMouseDown={(e) => e.stopPropagation()}>
-                    <AspectRatioSelector
-                      value={aspectRatio}
-                      onChange={(ratio) => {
-                        setAspectRatio(ratio);
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { aspectRatio: ratio });
-                        }
-                      }}
-                      disabled={isLoading}
-                      compact
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <NodeLabel className="mb-1.5 text-[10px]">
-                    {t('canvasNodes.promptNode.resolution')}
-                  </NodeLabel>
-                  <div onMouseDown={(e) => e.stopPropagation()}>
-                    <ResolutionSelector
-                      value={resolution}
-                      onChange={(res) => {
-                        setResolution(res);
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { resolution: res });
-                        }
-                      }}
-                      model={model}
-                      disabled={isLoading}
-                      compact
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+            <AdvancedModelSettings
+              model={model}
+              aspectRatio={aspectRatio}
+              resolution={resolution}
+              onAspectRatioChange={(ratio) => {
+                setAspectRatio(ratio);
+                if (data.onUpdateData) data.onUpdateData(id, { aspectRatio: ratio });
+              }}
+              onResolutionChange={(res) => {
+                setResolution(res);
+                if (data.onUpdateData) data.onUpdateData(id, { resolution: res });
+              }}
+              onModelChange={(newModel) => {
+                setModel(newModel);
+                if (data.onUpdateData) data.onUpdateData(id, { model: newModel });
+              }}
+              isLoading={isLoading}
+            />
 
             {/* Color Picker */}
             <div>
               <h4 className="text-xs font-mono mb-1.5 text-neutral-500">{t('canvasNodes.mockupNode.colorPalette')}</h4>
               <div className="flex gap-3">
                 <div className="flex-grow relative flex items-center">
-                  <input
+                  <Input
                     type="text"
                     value={colorInput}
                     onChange={handleColorInputChange}
@@ -761,21 +670,16 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     ></span>
                   )}
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAddColor();
-                  }}
+                <NodeButton variant="ghost" size="xs" onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddColor();
+                }}
                   onMouseDown={(e) => e.stopPropagation()}
                   disabled={isLoading || !isValidColor}
-                  className={cn(
-                    'px-2 rounded-md border text-xs font-mono transition-colors node-interactive',
-                    'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:bg-neutral-700/50 hover:text-neutral-300',
-                    (isLoading || !isValidColor) && 'opacity-50 cursor-not-allowed'
-                  )}
+                  className="nodrag nopan"
                 >
                   {t('canvasNodes.mockupNode.add')}
-                </button>
+                </NodeButton>
               </div>
               {selectedColors.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-1.5 min-h-[24px]">
@@ -786,16 +690,15 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                         style={{ backgroundColor: color }}
                       ></span>
                       <span className="font-mono text-[10px]">{color}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveColor(color);
-                        }}
+                      <NodeButton variant="ghost" size="xs" onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveColor(color);
+                      }}
                         onMouseDown={(e) => e.stopPropagation()}
-                        className="rounded-md text-neutral-500 hover:text-white transition-colors node-interactive"
+                        className="p-1 min-w-0 h-auto"
                       >
                         <X size={10} />
-                      </button>
+                      </NodeButton>
                     </div>
                   ))}
                 </div>
@@ -833,7 +736,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       </div>
 
       {/* Generate Button */}
-      <button
+      <NodeButton
+        variant="primary"
+        size="full"
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -844,7 +749,6 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         }}
         disabled={isLoading || !hasConnectedImage}
         className={cn(
-          'w-full px-2 py-1.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive',
           (isLoading || !hasConnectedImage) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
         )}
         title={!hasConnectedImage ? t('canvasNodes.mockupNode.connectBrandCoreHint') : undefined}
@@ -860,19 +764,18 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             {t('canvasNodes.mockupNode.generateMockup')}
           </>
         )}
-      </button>
+      </NodeButton>
 
 
 
       {/* Add Mockup Button */}
       <div className="mt-2 pt-2 border-t border-neutral-700/30 flex justify-center">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (data.onAddMockupNode) {
-              data.onAddMockupNode();
-            }
-          }}
+        <NodeButton variant="ghost" size="xs" onClick={(e) => {
+          e.stopPropagation();
+          if (data.onAddMockupNode) {
+            data.onAddMockupNode();
+          }
+        }}
           onMouseDown={(e) => {
             e.stopPropagation();
           }}
@@ -886,7 +789,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           title={t('canvasNodes.mockupNode.addAnotherMockupNode')}
         >
           <Plus size={12} />
-        </button>
+        </NodeButton>
       </div>
 
       {/* Preset Selection Modal */}
@@ -900,6 +803,13 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         }}
         userMockups={userMockups || []}
         isLoading={isLoading}
+      />
+      <BrandMediaLibraryModal
+        isOpen={showMediaLibrary}
+        onClose={() => setShowMediaLibrary(false)}
+        onSelectAsset={handleSelectAsset}
+        onAddToBoard={handleAddToBoard}
+        guidelineId={linkedGuidelineId}
       />
     </NodeContainer>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
-import { type NodeProps, type Node, useReactFlow, NodeResizer, Position } from '@xyflow/react';
+import { type NodeProps, type Node, useReactFlow, NodeResizer, Position, useNodes } from '@xyflow/react';
 import { Clapperboard, Video as VideoIcon, Image as ImageIcon, Settings, ChevronRight } from 'lucide-react';
 import type { VideoNodeData, GenerateVideoParams } from '@/types/reactFlow';
 import { VeoModel, GenerationMode, Resolution, AspectRatio } from '@/types/types';
@@ -18,10 +18,17 @@ import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { NodeButton } from './shared/node-button';
+import { Input } from '@/components/ui/input';
+import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
+import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
+import { toast } from 'sonner';
 
 const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
+  const { linkedGuidelineId } = useCanvasHeader();
   const { setNodes } = useReactFlow();
+  const nodes = useNodes();
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
 
   // State initialization
@@ -34,6 +41,8 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
   const [duration, setDuration] = useState<string>(data.duration || '5s');
   const [isLooping, setIsLooping] = useState<boolean>(data.isLooping || false);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+  const [isBrandActive, setIsBrandActive] = useState<boolean>(data.isBrandActive ?? true);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -135,18 +144,75 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
   const isLoading = data.isLoading || false;
   const creditsRequired = 20; // Hardcoded for now as per current logic
 
+  // Media Library handlers
+  const handleAddToBoard = (url: string, type: 'image' | 'logo') => {
+    const newNodeId = `image-${Date.now()}`;
+    const currentNode = nodes.find(n => n.id === id);
+    const x = currentNode ? currentNode.position.x + 450 : 0;
+    const y = currentNode ? currentNode.position.y : 0;
+
+    setNodes((nds) => nds.concat({
+      id: newNodeId,
+      type: 'image',
+      position: { x, y },
+      data: {
+        mockup: {
+          _id: `brand-${Date.now()}`,
+          imageUrl: url,
+          prompt: `Brand ${type}`,
+          designType: 'other',
+          tags: ['brand'],
+          brandingTags: [],
+          aspectRatio: '1:1'
+        },
+        label: type === 'logo' ? 'Brand Logo' : 'Brand Asset',
+        onUpdateData: data.onUpdateData,
+        onDelete: data.onDelete,
+        onResize: data.onResize
+      } as any
+    }));
+  };
+
+  const handleSelectAsset = (url: string, type: 'image' | 'logo') => {
+    const updates: Partial<VideoNodeData> = {};
+    let slotFound = false;
+
+    if (!data.connectedImage1) {
+      updates.connectedImage1 = url;
+      slotFound = true;
+    } else if (!data.connectedImage2) {
+      updates.connectedImage2 = url;
+      slotFound = true;
+    } else if (!data.connectedImage3) {
+      updates.connectedImage3 = url;
+      slotFound = true;
+    } else if (!data.connectedImage4) {
+      updates.connectedImage4 = url;
+      slotFound = true;
+    }
+
+    if (slotFound) {
+      if (data.onUpdateData) {
+        data.onUpdateData(id, updates);
+      }
+    } else {
+      toast.warning("All reference slots are full. Added to board instead.");
+      handleAddToBoard(url, type);
+    }
+  };
+
   const getInputLabel = (index: number) => {
     if (mode === GenerationMode.FRAMES_TO_VIDEO) {
-      if (index === 1) return t('Start Frame');
-      if (index === 2) return t('End Frame');
+      if (index === 1) return t('canvasNodes.videoNode.startFrame') || 'Start Frame';
+      if (index === 2) return t('canvasNodes.videoNode.endFrame') || 'End Frame';
     }
     if (mode === GenerationMode.EXTEND_VIDEO) {
-      if (index === 1) return t('Input Video');
+      if (index === 1) return t('canvasNodes.videoNode.inputVideo') || 'Input Video';
     }
     if (mode === GenerationMode.REFERENCES) {
-      return `${t('Reference')} ${index}`;
+      return `${t('canvasNodes.videoNode.reference') || 'Reference'} ${index}`;
     }
-    return `${t('Input')} ${index}`;
+    return `${t('canvasNodes.videoNode.input') || 'Input'} ${index}`;
   };
 
   // Connected Images Visualization
@@ -168,7 +234,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="p-0 min-w-[320px] max-w-[400px] overflow-visible"
+      className="min-w-[320px] max-w-[400px] overflow-visible"
     >
       {selected && !dragging && (
         <NodeResizer
@@ -182,7 +248,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
       )}
 
       {/* Handles */}
-      <LabeledHandle type="target" position={Position.Left} id="text-input" label={t('Prompt')} handleType="text" style={{ top: '60px' }} />
+      <LabeledHandle type="target" position={Position.Left} id="text-input" label={t('canvasNodes.videoNode.prompt') || 'Prompt'} handleType="text" style={{ top: '60px' }} />
 
       {mode !== GenerationMode.TEXT_TO_VIDEO && (
         <LabeledHandle
@@ -207,13 +273,23 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
       {/* Header */}
       <div className="p-4 border-b border-neutral-800">
-        <NodeHeader icon={Clapperboard} title="Veo Video" className="mb-0" />
+        <NodeHeader
+          icon={Clapperboard}
+          title="Veo Video"
+          className="mb-0"
+          isBrandActive={isBrandActive}
+          onToggleBrand={(active) => {
+            setIsBrandActive(active);
+            if (data.onUpdateData) data.onUpdateData(id, { isBrandActive: active } as any);
+          }}
+          onOpenMediaLibrary={() => setShowMediaLibrary(true)}
+        />
       </div>
 
       <div className="p-4 space-y-4 relative z-50">
         {/* Mode Selector */}
         <div className="relative z-50">
-          <NodeLabel>{t('Generation Mode')}</NodeLabel>
+          <NodeLabel>{t('canvasNodes.videoNode.generationMode') || 'Generation Mode'}</NodeLabel>
           <Select
             value={mode}
             onChange={(v) => {
@@ -222,10 +298,10 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
               updateData({ mode: newMode });
             }}
             options={[
-              { value: GenerationMode.TEXT_TO_VIDEO, label: t('Text to Video') },
-              { value: GenerationMode.FRAMES_TO_VIDEO, label: t('Frames to Video') },
-              { value: GenerationMode.EXTEND_VIDEO, label: t('Extend Video') },
-              { value: GenerationMode.REFERENCES, label: t('References') },
+              { value: GenerationMode.TEXT_TO_VIDEO, label: t('canvasNodes.videoNode.textToVideo') || 'Text to Video' },
+              { value: GenerationMode.FRAMES_TO_VIDEO, label: t('canvasNodes.videoNode.framesToVideo') || 'Frames to Video' },
+              { value: GenerationMode.EXTEND_VIDEO, label: t('canvasNodes.videoNode.extendVideo') || 'Extend Video' },
+              { value: GenerationMode.REFERENCES, label: t('canvasNodes.videoNode.references') || 'References' },
             ]}
             variant="node"
             disabled={isLoading}
@@ -238,11 +314,11 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
         {/* Prompt Input */}
         <div>
-          <NodeLabel>{t('Prompt')}</NodeLabel>
+          <NodeLabel>{t('canvasNodes.videoNode.prompt') || 'Prompt'}</NodeLabel>
           {data.connectedText && (
             <div className="mb-1.5 text-[10px] font-mono text-brand-cyan/70 flex items-center gap-1">
               <span>•</span>
-              <span>{t('Connected to TextNode')}</span>
+              <span>{t('canvasNodes.videoNode.connectedToTextNode') || 'Connected to TextNode'}</span>
             </div>
           )}
           <PromptInput
@@ -252,7 +328,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
               debouncedUpdateData({ prompt: v });
             }}
             onSubmit={handleGenerate}
-            placeholder={t('Describe your video...')}
+            placeholder={t('canvasNodes.videoNode.describeVideo') || 'Describe your video...'}
             disabled={isLoading}
             textareaRef={textareaRef}
             className="min-h-[80px]"
@@ -263,7 +339,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
         {connectedImages.length > 0 && (
           <ConnectedImagesDisplay
             images={connectedImages}
-            label={t('Connected Inputs')}
+            label={t('canvasNodes.videoNode.connectedInputs') || 'Connected Inputs'}
             showLabel
           />
         )}
@@ -271,25 +347,24 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
         {data.connectedVideo && (
           <div className="bg-neutral-900/50 border border-neutral-800 rounded p-2 flex items-center gap-2">
             <VideoIcon size={14} className="text-brand-cyan" />
-            <span className="text-xs text-neutral-400">{t('Video Input Connected')}</span>
+            <span className="text-xs text-neutral-400">{t('canvasNodes.videoNode.videoInputConnected') || 'Video Input Connected'}</span>
           </div>
         )}
 
         {/* Advanced Settings */}
         <div className="border border-neutral-800 rounded-md bg-neutral-900/30">
-          <button
-            onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-            className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors w-full p-2 hover:bg-neutral-800/50"
+          <NodeButton variant="ghost" size="sm" onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+            className="text-xs font-mono text-neutral-400 hover:text-neutral-200 w-full p-2 hover:bg-neutral-800/50"
           >
             <Settings size={12} />
-            <span>{t('Advanced Settings')}</span>
+            <span>{t('canvasNodes.videoNode.advancedSettings') || 'Advanced Settings'}</span>
             <ChevronRight size={12} className={cn("transition-transform ml-auto", isAdvancedOpen && "rotate-90")} />
-          </button>
+          </NodeButton>
 
           {isAdvancedOpen && (
             <div className="p-3 space-y-3 border-t border-neutral-800 bg-neutral-900/50">
               <div>
-                <NodeLabel>{t('Model')}</NodeLabel>
+                <NodeLabel>{t('canvasNodes.videoNode.model') || 'Model'}</NodeLabel>
                 <Select
                   value={model}
                   onChange={(v) => { setModel(v); updateData({ model: v }); }}
@@ -305,7 +380,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <NodeLabel>{t('Aspect Ratio')}</NodeLabel>
+                  <NodeLabel>{t('canvasNodes.videoNode.aspectRatio') || 'Aspect Ratio'}</NodeLabel>
                   <AspectRatioSelector
                     value={aspectRatio}
                     onChange={(r) => { setAspectRatio(r); updateData({ aspectRatio: r }); }}
@@ -314,19 +389,20 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
                   />
                 </div>
                 <div>
-                  <NodeLabel>{t('Resolution')}</NodeLabel>
+                  <NodeLabel>{t('canvasNodes.videoNode.resolution') || 'Resolution'}</NodeLabel>
                   <ResolutionSelector
                     value={resolution}
                     onChange={(r) => { setResolution(r); updateData({ resolution: r }); }}
                     model={model as any}
                     disabled={isLoading}
                     compact
+                    allowVideo={true}
                   />
                 </div>
               </div>
 
               <div>
-                <NodeLabel>{t('Duration')}</NodeLabel>
+                <NodeLabel>{t('canvasNodes.videoNode.duration') || 'Duration'}</NodeLabel>
                 <Select
                   value={duration}
                   onChange={(v) => { setDuration(v); updateData({ duration: v }); }}
@@ -341,7 +417,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
               </div>
 
               <div className="flex items-center justify-between py-1">
-                <NodeLabel className="mb-0">{t('Loop Video')}</NodeLabel>
+                <NodeLabel className="mb-0">{t('canvasNodes.videoNode.loopVideo') || 'Loop Video'}</NodeLabel>
                 <Switch
                   checked={isLooping}
                   onCheckedChange={(c) => { setIsLooping(c); updateData({ isLooping: c }); }}
@@ -350,10 +426,10 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
               </div>
 
               <div>
-                <NodeLabel>{t('Negative Prompt')}</NodeLabel>
-                <input
+                <NodeLabel>{t('canvasNodes.videoNode.negativePrompt') || 'Negative Prompt'}</NodeLabel>
+                <Input
                   className="w-full bg-neutral-900 border border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-[brand-cyan] outline-none placeholder:text-neutral-600"
-                  placeholder={t('What to avoid...')}
+                  placeholder={t('canvasNodes.videoNode.whatToAvoid') || 'What to avoid...'}
                   value={negativePrompt}
                   onChange={(e) => {
                     setNegativePrompt(e.target.value);
@@ -367,34 +443,32 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
         </div>
 
         {/* Generate Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleGenerate();
-          }}
-          disabled={isLoading || (!prompt && !data.connectedText && !data.connectedImage1)} // Basic validation
-          className={cn(
-            'w-full px-3 py-2.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-2 group',
-            (isLoading || (!prompt && !data.connectedText && !data.connectedImage1)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-          )}
+        <NodeButton onClick={(e) => {
+          e.stopPropagation();
+          handleGenerate();
+        }}
+          disabled={isLoading || (!prompt && !data.connectedText && !data.connectedImage1)}
+          variant="primary"
+          size="full"
+          className="py-2.5"
         >
           {isLoading ? (
             <>
               <GlitchLoader size={16} color="brand-cyan" />
-              <span>{t('Generating...')}</span>
+              <span>{t('canvasNodes.videoNode.generating') || 'Generating...'}</span>
             </>
           ) : (
             <>
-              <VideoIcon size={16} className="group-hover:scale-110 transition-transform" />
-              <span>{t('Generate Video')}</span>
+              <VideoIcon size={16} />
+              <span>{t('canvasNodes.videoNode.generateVideo') || 'Generate Video'}</span>
               <span className="text-brand-cyan/50 ml-1">({creditsRequired})</span>
             </>
           )}
-        </button>
+        </NodeButton>
 
         {/* Result Preview */}
         {(data.resultVideoUrl || data.resultVideoBase64) && !isLoading && (
-          <div className="mt-4 rounded-lg overflow-hidden border border-neutral-700 bg-black relative group shadow-lg">
+          <div className="mt-4 rounded-md overflow-hidden border border-neutral-700 bg-black relative group shadow-lg">
             <video
               src={data.resultVideoUrl || (data.resultVideoBase64 ? `data:video/mp4;base64,${data.resultVideoBase64}` : undefined)}
               className="w-full h-auto max-h-[200px] object-contain"
@@ -420,9 +494,17 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
       <LabeledHandle
         type="source"
         position={Position.Right}
-        label={t('Video')}
+        label={t('canvasNodes.videoNode.video') || 'Video'}
         handleType="video"
         style={{ top: '50%' }}
+      />
+
+      <BrandMediaLibraryModal
+        isOpen={showMediaLibrary}
+        onClose={() => setShowMediaLibrary(false)}
+        onSelectAsset={handleSelectAsset}
+        onAddToBoard={handleAddToBoard}
+        guidelineId={linkedGuidelineId}
       />
     </NodeContainer>
   );

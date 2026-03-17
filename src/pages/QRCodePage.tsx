@@ -4,6 +4,7 @@ import { Download, QrCode } from 'lucide-react';
 import { useLayout } from '@/hooks/useLayout';
 import { FormInput } from '../components/ui/form-input';
 import { Button } from '../components/ui/button';
+import { Select } from '../components/ui/select';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 
 type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
@@ -69,7 +70,7 @@ export const QRCodePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0C0C0C] text-zinc-300 pt-12 md:pt-14 relative overflow-hidden">
       <div className="fixed inset-0 z-0">
-        <GridDotsBackground />
+
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 py-8">
@@ -125,16 +126,17 @@ export const QRCodePage: React.FC = () => {
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
                   Error Correction Level
                 </label>
-                <select
+                <Select
                   value={errorCorrectionLevel}
-                  onChange={(e) => setErrorCorrectionLevel(e.target.value as ErrorCorrectionLevel)}
-                  className="w-full px-4 py-3 bg-neutral-950/70 border border-zinc-800 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-brand-cyan/70 transition-all duration-300"
-                >
-                  <option value="L">L - Low (~7%)</option>
-                  <option value="M">M - Medium (~15%)</option>
-                  <option value="Q">Q - Quartile (~25%)</option>
-                  <option value="H">H - High (~30%)</option>
-                </select>
+                  onChange={(value) => setErrorCorrectionLevel(value as ErrorCorrectionLevel)}
+                  options={[
+                    { value: 'L', label: 'L - Low (~7%)' },
+                    { value: 'M', label: 'M - Medium (~15%)' },
+                    { value: 'Q', label: 'Q - Quartile (~25%)' },
+                    { value: 'H', label: 'H - High (~30%)' },
+                  ]}
+                  placeholder="Select error correction level"
+                />
               </div>
 
               {/* Colors */}
@@ -200,7 +202,7 @@ export const QRCodePage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="text-center text-zinc-500">
-                    <QrCode className="w-24 h-24 mx-auto mb-4 opacity-20" />
+                    <QrCode className="w-24 h-24 mx-auto mb-4 opacity-40" />
                     <p className="font-mono text-sm">Enter text to generate QR code</p>
                   </div>
                 )}
@@ -208,7 +210,7 @@ export const QRCodePage: React.FC = () => {
 
               {hasText && (
                 <div className="mt-6 flex justify-center">
-                  <Button
+                  <Button variant="brand"
                     onClick={handleDownload}
                     className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-semibold px-6 py-3 rounded-md flex items-center gap-2"
                   >

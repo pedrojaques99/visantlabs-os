@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { X, AlertTriangle, CreditCard } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button'
 
 interface StorageLimitModalProps {
   isOpen: boolean;
@@ -65,29 +66,29 @@ export const StorageLimitModal: React.FC<StorageLimitModalProps> = ({
               Faça upgrade para Premium para ter mais espaço e continuar fazendo upload de imagens.
             </p>
           </div>
-          <button
+          <Button variant="ghost"
             onClick={onClose}
             className="flex-shrink-0 text-neutral-500 hover:text-neutral-300 transition-colors"
             aria-label="Close"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         <div className="flex items-center justify-end gap-3 mt-6">
-          <button
+          <Button variant="ghost"
             onClick={onClose}
             className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
           >
             Fechar
-          </button>
-          <button
+          </Button>
+          <Button variant="brand"
             onClick={handleUpgrade}
             className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 hover:border-brand-cyan/50 rounded-md transition-all"
           >
             <CreditCard size={14} />
             <span>Fazer Upgrade</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

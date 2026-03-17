@@ -80,7 +80,7 @@ import { collectR2UrlsForDeletion } from '@/hooks/canvas/utils/r2UploadHelpers';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useCanvasDrawing } from '@/hooks/canvas/useCanvasDrawing';
 import { useDirectorNodeHandler } from '@/hooks/canvas/useDirectorNodeHandler';
-import type { UploadedImage } from '../types/types';
+import type { UploadedImage, TimerRef } from '../types/types';
 
 import { SaveWorkflowDialog } from '../components/SaveWorkflowDialog';
 import { workflowApi } from '../services/workflowApi';
@@ -91,6 +91,7 @@ import { isLocalDevelopment } from '@/utils/env';
 import { ExportPanel } from '../components/ui/ExportPanel';
 import type { CommunityPrompt } from '../types/communityPrompts';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { Input } from '@/components/ui/input'
 
 
 // Node types
@@ -226,7 +227,7 @@ export const CanvasPage: React.FC = () => {
 
   const [showSaveWorkflow, setShowSaveWorkflow] = useState(false);
   const [showMultiExportModal, setShowMultiExportModal] = useState(false);
-  
+
   // Storage Limit Modal State
   const [storageLimitModal, setStorageLimitModal] = useState<{
     isOpen: boolean;
@@ -610,10 +611,12 @@ export const CanvasPage: React.FC = () => {
     isCollaborative,
     canEdit,
     canView,
+    linkedGuidelineId,
     setShareId,
     setIsCollaborative,
     setCanEdit,
     setCanView,
+    setLinkedGuidelineId,
   } = useCanvasProject(
     isAuthenticated,
     nodes,
@@ -901,7 +904,30 @@ export const CanvasPage: React.FC = () => {
     setOthersCountInContext(othersCount);
   }, [othersCount, setOthersCountInContext]);
 
+  // Sync linked guideline ID to context
+  const setLinkedGuidelineIdInContext = canvasHeader.setLinkedGuidelineId;
+  useEffect(() => {
+    setLinkedGuidelineIdInContext(linkedGuidelineId || null);
+  }, [linkedGuidelineId, setLinkedGuidelineIdInContext]);
 
+  // Handle linked guideline change from header
+  const handleLinkedGuidelineChange = useCallback(async (id: string | null) => {
+    setLinkedGuidelineId(id);
+    // Save immediately when guideline changes
+    if (projectId && saveImmediately) {
+      try {
+        await saveImmediately();
+      } catch (error) {
+        console.error('Failed to save linked guideline:', error);
+      }
+    }
+  }, [setLinkedGuidelineId, projectId, saveImmediately]);
+
+  // Set up handler in context
+  const setOnLinkedGuidelineChangeInContext = canvasHeader.setOnLinkedGuidelineChange;
+  useEffect(() => {
+    setOnLinkedGuidelineChangeInContext(() => handleLinkedGuidelineChange);
+  }, [handleLinkedGuidelineChange, setOnLinkedGuidelineChangeInContext]);
 
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [projectModalNodeId, setProjectModalNodeId] = useState<string | null>(null);
@@ -1015,6 +1041,7 @@ export const CanvasPage: React.FC = () => {
     setEdges,
     addToHistory,
     handlersRef,
+    linkedGuideline: canvasHeader.linkedGuideline,
   });
 
   // Canvas tool state
@@ -1151,7 +1178,8 @@ export const CanvasPage: React.FC = () => {
     nodesRef,
     updateNodeData,
     saveImmediately,
-    projectId
+    projectId,
+    canvasHeader.linkedGuideline
   );
 
   const {
@@ -2852,17 +2880,17 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'director') {
           const directorData = n.data as DirectorNodeData;
-          
+
           // Sync connected image using helper
           const newConnectedImage = syncConnectedImage(n.id, edges, nds);
           const currentConnectedImage = directorData.connectedImage || undefined;
           const connectedImageChanged = currentConnectedImage !== newConnectedImage;
-          
+
           // Find source image node ID for auto-connect
           const sourceEdge = edges.find(e => e.target === n.id && e.targetHandle === 'image-input');
           const sourceImageNodeId = sourceEdge?.source;
           const sourceNodeChanged = directorData.sourceImageNodeId !== sourceImageNodeId;
-          
+
           const needsUpdate = !directorData.onAnalyze ||
             !directorData.onGeneratePrompt ||
             !directorData.onUpdateData ||
@@ -3460,37 +3488,37 @@ export const CanvasPage: React.FC = () => {
 
   // Auto-analyze Director nodes when image is connected
   const autoAnalyzeRef = useRef<Set<string>>(new Set());
-  
+
   useEffect(() => {
     const directorNodes = nodes.filter(n => n.type === 'director');
-    const timeoutIds: NodeJS.Timeout[] = [];
-    
+    const timeoutIds: TimerRef[] = [];
+
     directorNodes.forEach(node => {
       const directorData = node.data as DirectorNodeData;
       const hasImage = !!directorData.connectedImage;
       const notAnalyzing = !directorData.isAnalyzing;
       const notAnalyzed = !directorData.hasAnalyzed;
       const alreadyTriggered = autoAnalyzeRef.current.has(node.id);
-      
+
       // Auto-analyze if image is connected and hasn't been analyzed yet
       if (hasImage && notAnalyzing && notAnalyzed && !alreadyTriggered && handleDirectorAnalyze) {
         // Mark as triggered to prevent duplicate calls
         autoAnalyzeRef.current.add(node.id);
-        
+
         // Small delay to ensure node data is fully updated
         const timeoutId = setTimeout(() => {
           handleDirectorAnalyze(node.id);
         }, 200);
-        
+
         timeoutIds.push(timeoutId);
       }
-      
+
       // Remove from ref if image is disconnected or already analyzed
       if ((!hasImage || directorData.hasAnalyzed) && alreadyTriggered) {
         autoAnalyzeRef.current.delete(node.id);
       }
     });
-    
+
     return () => {
       timeoutIds.forEach(id => clearTimeout(id));
     };
@@ -3616,7 +3644,6 @@ export const CanvasPage: React.FC = () => {
         style={{ backgroundColor: backgroundColor, minHeight: '100vh' }}
       >
         <div className="fixed inset-0 z-0" style={{ position: 'relative', opacity: 1, scale: 5 }}>
-          <GridDotsBackground />
         </div>
 
         {/* Main Canvas Container with Sidebar Layout - Starts below header (65px) */}
@@ -4011,7 +4038,7 @@ export const CanvasPage: React.FC = () => {
         )}
 
         {/* JSON Import — hidden file input */}
-        <input
+        <Input
           ref={importJsonInputRef}
           type="file"
           accept=".json"

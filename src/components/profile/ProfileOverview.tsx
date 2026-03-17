@@ -7,6 +7,9 @@ import { type SubscriptionStatus } from '@/services/subscriptionService';
 import { referralService, type ReferralStats } from '@/services/referralService';
 import { toast } from 'sonner';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { MicroTitle } from '@/components/ui/MicroTitle';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface ProfileOverviewProps {
     user: UserType;
@@ -118,11 +121,11 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
     };
 
     return (
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in duration-500">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in duration-300">
             {/* Container 1: Profile Info - Top Left */}
             <section className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
                 <div className="flex flex-col items-center gap-4">
-                    <input
+                    <Input
                         ref={fileInputRef}
                         type="file"
                         accept="image/*"
@@ -147,7 +150,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         ) : (
                             <User size={48} className="text-neutral-700" />
                         )}
-                        <span className="absolute bottom-2 right-2 bg-brand-cyan text-black rounded-lg p-1.5 shadow-lg shadow-brand-cyan/20 group-hover:bg-brand-cyan/90 transition-all hover:scale-110">
+                        <span className="absolute bottom-2 right-2 bg-brand-cyan text-black rounded-md p-1.5 shadow-lg shadow-brand-cyan/20 group-hover:bg-brand-cyan/90 transition-all hover:scale-110">
                             <Camera size={14} />
                         </span>
                     </div>
@@ -160,7 +163,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-3 mt-2">
-                    <button
+                    <Button variant="ghost"
                         onClick={onEditProfile}
                         className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
                     >
@@ -168,8 +171,8 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                             <UserCog size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
                             <span>{t('profile.edit') || 'Editar perfil'}</span>
                         </div>
-                        <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
-                    </button>
+                        <ArrowRight size={14} className="opacity-0 group-hover:opacity-300 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                    </Button>
 
                     {user && (user.id || user.email) && (
                         <Link
@@ -180,7 +183,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                 <ExternalLink size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
                                 <span>{t('profile.viewPublicProfile') || 'Ver Perfil Público'}</span>
                             </div>
-                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-300 -translate-x-2 group-hover:translate-x-0 transition-all" />
                         </Link>
                     )}
 
@@ -193,7 +196,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                 <Heart size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
                                 <span>{t('profile.myMockups') || 'Meus Mockups'}</span>
                             </div>
-                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-300 -translate-x-2 group-hover:translate-x-0 transition-all" />
                         </Link>
                         <Link
                             to="/community"
@@ -203,7 +206,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                 <Users size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
                                 <span>{t('communityPresets.title') || 'Presets da Comunidade'}</span>
                             </div>
-                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-300 -translate-x-2 group-hover:translate-x-0 transition-all" />
                         </Link>
                     </div>
                 </div>
@@ -212,13 +215,13 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             {/* Container 2: Credits & Stats - Top Right */}
             <section className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
                 <div className="flex items-center gap-3 border-b border-neutral-800/50 pb-4">
-                    <div className="p-2 bg-brand-cyan/10 rounded-lg">
+                    <div className="p-2 bg-brand-cyan/10 rounded-md">
                         <CreditCard size={20} className="text-brand-cyan" />
                     </div>
                     <div>
-                        <h3 className="text-base font-semibold text-neutral-100 font-redhatmono">
+                        <MicroTitle as="h3" className="text-base font-semibold text-neutral-100 font-redhatmono">
                             {t('credits.title') || 'CRÉDITOS'}
-                        </h3>
+                        </MicroTitle>
                     </div>
                 </div>
 
@@ -228,17 +231,17 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                             <div className="bg-neutral-900/40 border border-neutral-800 rounded-xl p-5 relative overflow-hidden group">
                                 {/* Buy Credits Button in Top Right */}
                                 <div className="absolute top-4 right-4 z-20">
-                                    <button
+                                    <Button variant="brand"
                                         onClick={onBuyCredits}
-                                        className="p-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/20 hover:border-brand-cyan/40 text-brand-cyan rounded-lg transition-all flex items-center gap-2 group-hover:scale-105"
+                                        className="p-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/20 hover:border-brand-cyan/40 text-brand-cyan rounded-md transition-all flex items-center gap-2 group-hover:scale-105"
                                         title={t('credits.buyCredits') || "Comprar Créditos"}
                                     >
                                         <Plus size={16} />
-                                    </button>
+                                    </Button>
                                 </div>
-                                <p className="text-xs text-neutral-500 font-mono mb-1 uppercase tracking-wider">
+                                <MicroTitle as="p" className="mb-1">
                                     {t('credits.available') || 'DISPONÍVEIS'}
-                                </p>
+                                </MicroTitle>
                                 <div className="flex items-baseline gap-2">
                                     <p className="text-4xl font-bold text-white font-mono tracking-tight">
                                         {totalCreditsAvailable}
@@ -249,7 +252,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="bg-neutral-900/30 border border-neutral-800 rounded-xl p-3">
-                                    <p className="text-[10px] text-neutral-500 font-mono uppercase mb-1">{t('profile.totalCreditsUsed') || 'USADOS'}</p>
+                                    <MicroTitle as="p" className="mb-1">{t('profile.totalCreditsUsed') || 'USADOS'}</MicroTitle>
                                     <p className="text-lg font-bold text-neutral-300 font-mono">{subscriptionStatus.creditsUsed ?? 0}</p>
                                 </div>
                                 {/* Storage Usage - Compact */}
@@ -262,7 +265,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                         <div className="flex items-center justify-between gap-1 mb-1">
                                             <div className="flex items-center gap-1.5">
                                                 <HardDrive size={10} className="text-neutral-500" />
-                                                <p className="text-[10px] text-neutral-500 font-mono uppercase">{t('credits.storage') || 'STORAGE'}</p>
+                                                <MicroTitle as="p">{t('credits.storage') || 'STORAGE'}</MicroTitle>
                                             </div>
                                             <p className="text-[10px] text-brand-cyan font-mono">{storageUsage.percentage.toFixed(0)}%</p>
                                         </div>
@@ -276,7 +279,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
 
                             {subscriptionStatus.creditsResetDate && (
                                 <div className="text-center pt-2">
-                                    <p className="text-[10px] text-neutral-600 font-mono uppercase tracking-widest">
+                                    <MicroTitle as="p" className="text-neutral-600 tracking-widest text-center">
                                         {subscriptionStatus.hasActiveSubscription
                                             ? t('credits.renews', {
                                                 date: formatFriendlyDate(subscriptionStatus.creditsResetDate),
@@ -284,27 +287,27 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                             : t('credits.resets', {
                                                 date: formatFriendlyDate(subscriptionStatus.creditsResetDate),
                                             })}
-                                    </p>
+                                    </MicroTitle>
                                 </div>
                             )}
                         </div>
 
                         <div className="flex flex-col gap-3 pt-2">
-                            <button
+                            <Button variant="ghost"
                                 onClick={onViewTransactions}
                                 className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition text-center font-medium"
                             >
                                 {t('profile.viewAllTransactions') || 'Transações'}
-                            </button>
+                            </Button>
                             {hasActiveSubscription && subscriptionStatus?.subscriptionStatus !== 'free' && (
-                                <button
+                                <Button variant="ghost"
                                     onClick={onManageSubscription}
                                     className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition text-center flex items-center justify-center gap-2 font-medium"
                                     title={t('profile.manageSubscription') || 'Gerenciar Assinatura'}
                                 >
                                     <CreditCard size={14} />
                                     {t('profile.manageSubscription') || 'Gerenciar'}
-                                </button>
+                                </Button>
                             )}
                         </div>
                     </>
@@ -320,13 +323,13 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             {/* Container 3: Referral Program - Bottom Span */}
             <section className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
                 <div className="flex items-center gap-3 border-b border-neutral-800/50 pb-4">
-                    <div className="p-2 bg-brand-cyan/10 rounded-lg">
+                    <div className="p-2 bg-brand-cyan/10 rounded-md">
                         <Share2 size={20} className="text-brand-cyan" />
                     </div>
                     <div>
-                        <h3 className="text-base font-semibold text-neutral-100 font-redhatmono">
+                        <MicroTitle as="h3" className="text-base font-semibold text-neutral-100 font-redhatmono">
                             {t('referral.title') || 'INDICAÇÃO'}
-                        </h3>
+                        </MicroTitle>
                     </div>
                 </div>
 
@@ -339,24 +342,24 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                 </p>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] text-neutral-600 font-mono uppercase block tracking-widest">
+                                    <MicroTitle as="label" className="block text-neutral-600">
                                         {t('referral.yourLink') || 'SEU LINK DE INDICAÇÃO'}
-                                    </label>
+                                    </MicroTitle>
                                     <div className="flex gap-2">
                                         <div className="relative flex-1 group">
-                                            <input
+                                            <Input
                                                 type="text"
                                                 value={referralLink}
                                                 readOnly
-                                                className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-800 rounded-lg text-neutral-400 group-hover:text-neutral-200 font-mono text-xs focus:outline-none focus:border-brand-cyan/30 transition pr-10"
+                                                className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-800 rounded-md text-neutral-400 group-hover:text-neutral-200 font-mono text-xs focus:outline-none focus:border-brand-cyan/30 transition pr-10"
                                             />
-                                            <button
+                                            <Button variant="brand"
                                                 onClick={handleCopyReferralLink}
                                                 disabled={!referralStats.referralCode}
                                                 className="absolute right-1 top-1 p-1 bg-neutral-800 hover:bg-brand-cyan/20 text-neutral-400 hover:text-brand-cyan rounded-md transition-colors"
                                             >
                                                 {isLoadingReferral ? <GlitchLoader size={12} /> : <Copy size={12} />}
-                                            </button>
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>
@@ -368,18 +371,18 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                     <p className="text-xl font-bold text-neutral-300 font-mono mb-1">
                                         {referralStats.referredUsersCount || 0}
                                     </p>
-                                    <p className="text-[10px] text-neutral-600 font-mono uppercase tracking-wide">
+                                    <MicroTitle as="p" className="text-neutral-600 tracking-wide">
                                         {t('referral.friendsReferred') || 'AMIGOS INDICADOS'}
-                                    </p>
+                                    </MicroTitle>
                                 </div>
                                 <div className="bg-neutral-900/20 border border-neutral-800/50 rounded-xl p-4 flex flex-col items-center justify-center text-center">
                                     <CreditCard className="text-brand-cyan/50 mb-2" size={20} />
                                     <p className="text-xl font-bold text-brand-cyan font-mono mb-1">
                                         {referralStats.totalCreditsEarned || 0}
                                     </p>
-                                    <p className="text-[10px] text-neutral-600 font-mono uppercase tracking-wide">
+                                    <MicroTitle as="p" className="text-neutral-600 tracking-wide">
                                         {t('referral.totalEarned') || 'TOTAL DE CRÉDITOS GANHOS'}
-                                    </p>
+                                    </MicroTitle>
                                 </div>
                             </div>
                         </div>

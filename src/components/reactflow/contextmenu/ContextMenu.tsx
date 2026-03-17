@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { SearchBar } from '@/components/ui/SearchBar';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
+import { Button } from '@/components/ui/button'
 
 interface ContextMenuProps {
   x: number;
@@ -395,32 +396,59 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   };
 
   const MenuItemButton: React.FC<{ item: MenuItem; index: number }> = ({ item, index }) => (
-    <button
+    <Button variant="ghost"
       onClick={item.onClick}
       className={cn(
-        "w-full px-3 py-2.5 text-left text-sm cursor-pointer",
-        "rounded-md transition-colors duration-150",
-        "flex items-center gap-3",
+        "w-full px-2 py-1.5",
+        "backdrop-blur-md",
+        "border rounded-md",
+        "transition-colors duration-150",
+        "flex items-center gap-2 cursor-pointer",
         item.highlight
-          ? "text-brand-cyan hover:bg-brand-cyan/10"
-          : "text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 hover:border-[brand-cyan]/40"
+          ? "border-[brand-cyan]/40 bg-brand-cyan/10 text-brand-cyan"
+          : "border-neutral-800/40 hover:border-[brand-cyan]/40 hover:bg-neutral-800/50"
       )}
+      style={{
+        backgroundColor: item.highlight
+          ? undefined
+          : 'rgba(0, 0, 0, 0.3)',
+        color: item.highlight ? 'var(--brand-cyan)' : '#a3a3a3', // neutral-400
+      }}
+      onMouseEnter={(e) => {
+        if (!item.highlight) {
+          e.currentTarget.style.color = '#ffffff';
+          e.currentTarget.style.borderColor = 'var(--brand-cyan)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!item.highlight) {
+          e.currentTarget.style.color = '#a3a3a3';
+          e.currentTarget.style.borderColor = 'rgba(38, 38, 38, 0.4)'; // border-neutral-800/40
+        }
+      }}
     >
       <span className={cn(
-        "transition-colors duration-150",
+        "transition-colors duration-150 flex-shrink-0",
         item.highlight ? "text-brand-cyan" : "text-neutral-400"
-      )}>
+      )}
+        style={{ color: 'inherit' }}
+      >
         {item.icon}
       </span>
-      <span className="flex-1 font-medium text-[11px] tracking-wide">{highlightText(item.label, searchQuery)}</span>
-    </button>
+      <span
+        className="text-[11px] font-medium whitespace-nowrap flex-1 text-left tracking-wide"
+        style={{ color: 'inherit' }}
+      >
+        {highlightText(item.label, searchQuery)}
+      </span>
+    </Button>
   );
 
   const categoryOrder = ['Generate', 'Composition', 'Effects', 'Branding'];
 
   const GroupLabel: React.FC<{ title: string }> = ({ title }) => (
     <div className="px-3 py-1.5">
-      <span className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
+      <span className="text-[9px] font-semibold text-neutral-500 uppercase ">
         {title}
       </span>
     </div>
@@ -443,17 +471,16 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       {/* Header with Search */}
       <div className="sticky top-0 bg-neutral-950/70 backdrop-blur-xl border-b border-neutral-800/30 z-10 rounded-t-2xl">
         <div className="px-3 py-2.5 flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">
+          <span className="text-xs font-semibold text-neutral-300 uppercase ">
             Add Node
           </span>
-          <button
-            onClick={onClose}
+          <Button variant="ghost" onClick={onClose}
             className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
             aria-label="Close menu"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <X size={16} />
-          </button>
+          </Button>
         </div>
 
         {/* Search Input */}

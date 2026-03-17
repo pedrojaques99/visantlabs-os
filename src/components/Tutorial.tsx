@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button'
 
 interface TutorialProps {
   isOpen: boolean;
@@ -84,14 +85,14 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
-        <button
+        <Button
           onClick={onClose}
           className={`fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-20 transition-all duration-300 cursor-pointer rounded-md p-2 hover:bg-white/5 backdrop-blur-sm ${theme === 'dark' ? 'text-neutral-400 hover:text-neutral-200' : 'text-neutral-500 hover:text-neutral-700'
             }`}
           aria-label={t('tutorial.close')}
         >
           <X className="size-4 sm:size-5" />
-        </button>
+        </Button>
 
         {/* Tutorial Bento Box Grid */}
         <div className="tutorial-bento-grid mt-6 sm:mt-8 md:mt-10">
@@ -177,7 +178,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
         {/* CTA Button */}
         {onCreateMockup && (
           <div className="mt-6 sm:mt-8 md:mt-10 flex justify-center">
-            <button
+            <Button variant="ghost"
               onClick={() => {
                 onCreateMockup();
                 onClose();
@@ -188,7 +189,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                 }`}
             >
               <span>{t('tutorial.createMockup')}</span>
-            </button>
+            </Button>
           </div>
         )}
       </div>

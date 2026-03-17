@@ -33,6 +33,7 @@ interface SidebarOrchestratorProps {
 
   // Specific UI props
   authenticationRequiredMessage: string;
+  isPromptReady: boolean;
 }
 
 export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
@@ -54,7 +55,8 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   onGenerateSuggestion,
   onAnalyze,
   generateOutputsButtonRef,
-  authenticationRequiredMessage
+  authenticationRequiredMessage,
+  isPromptReady
 }) => {
   const { t } = useTranslation();
   const {
@@ -67,7 +69,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     isGeneratingPrompt,
   } = useMockup();
 
-  const [isDiceAnimating, setIsDiceAnimating] = useState(false);
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(!hasAnalyzed);
 
   // Use analysis overlay hook
@@ -91,28 +92,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     categoriesComplete: selectedTags.length > 0
   });
 
-  const handleSurpriseMe = (autoGenerate: boolean = true) => {
-    setIsDiceAnimating(true);
-
-    // Show "fake" analysis overlay briefly
-    showTemporaryOverlay(300);
-
-    // All Pool Mode logic is now handled in MockupMachinePage.handleSurpriseMe
-    // Just call the external handler which will use the Context pool when Pool Mode is active
-    onSurpriseMe(autoGenerate);
-
-    // Reset animation after it completes
-    setTimeout(() => {
-      setIsDiceAnimating(false);
-    }, 800);
-  };
-
-  // Reset animation when prompt generation starts
-  useEffect(() => {
-    if (isGeneratingPrompt) {
-      setIsDiceAnimating(false);
-    }
-  }, [isGeneratingPrompt]);
 
   return (
     <>
@@ -120,15 +99,15 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
         ref={sidebarRef}
         id="sidebar"
         className={cn(
-          "relative flex-shrink-0 bg-sidebar text-sidebar-foreground overflow-y-auto overflow-x-hidden overscroll-contain min-h-0 z-10 transition-all duration-500",
+          "relative flex-shrink-0 bg-sidebar text-sidebar-foreground overflow-y-auto overflow-x-hidden overscroll-contain min-h-0 z-10 transition-all duration-300",
           "max-h-[calc(100dvh-6rem)] sm:max-h-[calc(100dvh-7rem)] lg:max-h-full",
           "p-3 sm:p-4 md:p-6 lg:p-8",
           "w-full", // Base width
           !hasAnalyzed ? [
-            "rounded-md border",
+            "rounded-md",
             isSurpriseMeMode
-              ? "border-brand-cyan/40 border-dashed shadow-[0_0_25px_rgba(0,210,255,0.08)] animate-pool-border-glow"
-              : "border-sidebar-border/5",
+              ? "border border-brand-cyan/40 border-dashed shadow-[0_0_25px_rgba(0,210,255,0.08)] animate-pool-border-glow"
+              : "border-none shadow-none",
             "max-w-screen-2xl mx-auto", // Full width for Step 1
             "min-w-0"
           ] : [
@@ -136,7 +115,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             "h-full px-4 lg:px-6 py-10",
             isSurpriseMeMode
               ? "border-l border-brand-cyan/70 border-dashed shadow-[-10px_0_30px_rgba(0,210,255,0.05)]"
-              : "border-r border-sidebar-border/10",
+              : "", // Removed border-r border-sidebar-border/10
             "lg:w-auto"
           ]
         )}
@@ -151,17 +130,17 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
               onGenerateClick={onGenerateClick}
               onRegenerate={onRegenerate}
               onSurpriseMe={onSurpriseMe}
-              handleSurpriseMe={handleSurpriseMe}
+              handleSurpriseMe={onSurpriseMe}
               onSuggestPrompts={onSuggestPrompts}
               onGenerateSmartPrompt={onGenerateSmartPrompt}
               onSimplify={onSimplify}
               onGenerateSuggestion={onGenerateSuggestion}
               generateOutputsButtonRef={generateOutputsButtonRef}
-              isDiceAnimating={isDiceAnimating}
               onStartOver={onStartOver}
               onReplaceImage={onReplaceImage}
               onReferenceImagesChange={onReferenceImagesChange}
               authenticationRequiredMessage={authenticationRequiredMessage}
+              isPromptReady={isPromptReady}
             />
           )}
         </div>
@@ -181,12 +160,12 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
       {/* Setup Modal */}
       <SetupModal
         isOpen={isSetupModalOpen}
-        canClose={hasAnalyzed}
+        canClose={true}
         onClose={() => {
-          // Only allow closing if hasAnalyzed is true (setup is complete)
-          if (hasAnalyzed) {
-            setIsSetupModalOpen(false);
+          if (!hasAnalyzed) {
+            onStartOver();
           }
+          setIsSetupModalOpen(false);
         }}
         onImageUpload={onImageUpload}
         onReferenceImagesChange={onReferenceImagesChange}

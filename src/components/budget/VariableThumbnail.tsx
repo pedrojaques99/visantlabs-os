@@ -3,6 +3,7 @@ import { CheckCircle2, Circle } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import type { PdfFieldMapping } from '@/types/types';
+import { Button } from '@/components/ui/button'
 
 interface VariableThumbnailProps {
   fieldId: string;
@@ -68,7 +69,7 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
   };
 
   return (
-    <button
+    <Button variant="ghost"
       ref={setNodeRef}
       style={style}
       {...listeners}
@@ -95,7 +96,7 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
           {getStatusIcon()}
         </div>
       )}
-    </button>
+    </Button>
   );
 };
 

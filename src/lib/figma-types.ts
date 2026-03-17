@@ -41,6 +41,16 @@ export type FigmaEffect = {
 
 export type RGBA = { r: number; g: number; b: number; a: number };
 
+// ── Template Scanning ──
+
+export interface TemplateSpec {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  childCount: number;
+}
+
 // ── Figma Operations (38 types) ──
 
 export type FigmaOperation =
@@ -54,7 +64,13 @@ export type FigmaOperation =
       name: string;
       width: number;
       height: number;
+      x?: number;
+      y?: number;
+      rotation?: number;
+      opacity?: number;
       fills?: FigmaPaint[];
+      strokes?: FigmaPaint[];
+      strokeWeight?: number;
       cornerRadius?: number;
       cornerSmoothing?: number;
       clipsContent?: boolean;
@@ -88,6 +104,9 @@ export type FigmaOperation =
       name: string;
       width: number;
       height: number;
+      x?: number;
+      y?: number;
+      rotation?: number;
       fills?: FigmaPaint[];
       cornerRadius?: number;
       strokes?: FigmaPaint[];
@@ -108,7 +127,13 @@ export type FigmaOperation =
       name: string;
       width: number;
       height: number;
+      x?: number;
+      y?: number;
+      rotation?: number;
       fills?: FigmaPaint[];
+      strokes?: FigmaPaint[];
+      strokeWeight?: number;
+      opacity?: number;
       effects?: FigmaEffect[];
       constraints?: { horizontal: string; vertical: string };
       layoutSizingHorizontal?: 'FIXED' | 'FILL';
@@ -136,6 +161,10 @@ export type FigmaOperation =
       paragraphSpacing?: number;
       fills?: FigmaPaint[];
       textStyleId?: string;
+      x?: number;
+      y?: number;
+      rotation?: number;
+      opacity?: number;
       layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
       layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
     };
@@ -286,7 +315,8 @@ export type FigmaOperation =
   }
   | {
     type: 'MOVE';
-    nodeId: string;
+    nodeId?: string;
+    ref?: string;
     x: number;
     y: number;
   }
@@ -340,6 +370,7 @@ export type FigmaOperation =
       width?: number;
       height?: number;
     };
+    textOverrides?: Array<{ name: string; content: string }>;
   }
   | {
     type: 'DUPLICATE_NODE';
@@ -353,6 +384,7 @@ export type FigmaOperation =
       width?: number;
       height?: number;
     };
+    textOverrides?: Array<{ name: string; content: string }>;
   }
   | {
     type: 'REORDER_CHILD';
@@ -429,6 +461,27 @@ export type FigmaOperation =
 
 // ── Serialized context ──
 
+export type SerializedFill = {
+  type: string;
+  color?: { r: number; g: number; b: number };
+  opacity?: number;
+  imageHash?: string | null;
+  scaleMode?: string;
+};
+
+export type SerializedStroke = {
+  type: string;
+  color?: { r: number; g: number; b: number };
+  opacity?: number;
+};
+
+export type SerializedEffect = {
+  type: string;
+  radius?: number;
+  color?: { r: number; g: number; b: number; a: number };
+  offset?: { x: number; y: number };
+};
+
 export type SerializedNode = {
   id: string;
   type: string;
@@ -448,11 +501,11 @@ export type SerializedNode = {
   counterAxisAlignItems?: string;
   childCount?: number;
   // Appearance
-  fills?: Array<{ type: string; color?: { r: number; g: number; b: number }; opacity?: number }>;
-  strokes?: Array<{ type: string; color?: { r: number; g: number; b: number }; opacity?: number }>;
+  fills?: SerializedFill[];
+  strokes?: SerializedStroke[];
   strokeWeight?: number;
   cornerRadius?: number;
-  effects?: Array<{ type: string; radius?: number; color?: { r: number; g: number; b: number; a: number }; offset?: { x: number; y: number } }>;
+  effects?: SerializedEffect[];
   opacity?: number;
   constraints?: { horizontal: string; vertical: string };
   // Layout sizing (for children of auto-layout)
@@ -461,6 +514,11 @@ export type SerializedNode = {
   // Text
   characters?: string;
   fontSize?: number;
+  fontFamily?: string;
+  fontStyle?: string;
+  textAlignHorizontal?: string;
+  textAlignVertical?: string;
+  textAutoResize?: string;
   // Component
   componentKey?: string;
   componentName?: string;
@@ -498,15 +556,111 @@ export type AvailableLayer = {
   type: string;
 };
 
-// ── Brand Guideline preset ──
+// ── Brand Guideline preset (V2) ──
+export interface BrandGuidelineColor {
+  hex: string
+  name: string
+  role?: string
+}
 
-export type BrandGuideline = {
-  id: string;         // uuid / timestamp string
-  name: string;       // e.g. "Creatina Power"
-  logo?: { id: string; name: string; key?: string };
-  font?: { id: string; name: string };
-  colors: Array<{ id: string; name: string; value: string }>;
-};
+export interface BrandGuidelineTypography {
+  family: string
+  style?: string
+  role: string
+  size?: number
+  lineHeight?: number
+}
+export interface BrandArchetype {
+  name: string
+  role?: 'primary' | 'secondary'
+  description: string
+  image?: string
+  examples?: string[]
+}
+
+export interface BrandPersona {
+  name: string
+  age?: number
+  occupation?: string
+  traits?: string[]
+  bio?: string
+  desires?: string[]
+  painPoints?: string[]
+  image?: string
+}
+
+export interface BrandToneOfVoiceValue {
+  title: string
+  description: string
+  example: string
+}
+
+export interface BrandGuideline {
+  id?: string
+  userId?: string
+  name?: string
+  tagline?: string
+  description?: string
+  identity?: {
+    name?: string
+    website?: string
+    instagram?: string
+    linkedin?: string
+    portfolio?: string
+    x?: string
+    tagline?: string
+    description?: string
+  }
+  logos?: Array<{
+    id: string
+    url: string
+    variant: 'primary' | 'dark' | 'light' | 'icon' | 'custom'
+    label?: string
+  }>
+  colors?: BrandGuidelineColor[]
+  typography?: BrandGuidelineTypography[]
+  tags?: Record<string, string[]>
+  media?: Array<{
+    id: string
+    url: string
+    type: 'image' | 'pdf'
+    label?: string
+  }>
+  tokens?: {
+    spacing?: Record<string, number>
+    radius?: Record<string, number>
+    shadows?: Record<string, { x: number; y: number; blur: number; spread: number; color: string; opacity: number }>
+    components?: Record<string, any>
+  }
+  guidelines?: {
+    voice?: string
+    dos?: string[]
+    donts?: string[]
+    imagery?: string
+    accessibility?: string
+  }
+  strategy?: {
+    manifesto?: string
+    positioning?: string[]
+    archetypes?: BrandArchetype[]
+    personas?: BrandPersona[]
+    voiceValues?: BrandToneOfVoiceValue[]
+  }
+  _extraction?: {
+    sources: Array<{ type: 'url' | 'pdf' | 'image' | 'json' | 'manual'; ref?: string; date: string }>
+    completeness: number
+  }
+  extraction?: { // Keep this for backend compatibility if it uses "extraction"
+    sources: Array<{ type: 'url' | 'pdf' | 'image' | 'json' | 'manual'; ref?: string; date: string }>
+    completeness: number
+  }
+  updatedAt?: string
+  orderedBlocks?: string[]
+  activeSections?: string[]
+  // Public sharing
+  publicSlug?: string
+  isPublic?: boolean
+}
 
 // ── UI → Sandbox messages ──
 
@@ -548,8 +702,13 @@ export type UIMessage =
   // Design System
   | { type: 'GET_DESIGN_SYSTEM' }
   | { type: 'SAVE_DESIGN_SYSTEM'; designSystem: any }
+  // Brand Guidelines V2
+  | { type: 'GET_BRAND_GUIDELINE' }
+  | { type: 'SAVE_BRAND_GUIDELINE'; selectedId: string | null; guideline: string | null }
   // Undo
-  | { type: 'UNDO_LAST_BATCH' };
+  | { type: 'UNDO_LAST_BATCH' }
+  // Template Scanning
+  | { type: 'GET_TEMPLATES'; requestId?: string };
 
 // ── Sandbox → UI messages ──
 
@@ -576,4 +735,9 @@ export type PluginMessage =
   | { type: 'ANTHROPIC_KEY_LOADED'; key: string }
   // Guideline presets
   | { type: 'GUIDELINES_LOADED'; guidelines: BrandGuideline[] }
-  | { type: 'GUIDELINE_SAVED'; guidelines: BrandGuideline[]; savedId: string };
+  | { type: 'GUIDELINE_SAVED'; guidelines: BrandGuideline[]; savedId: string }
+  // Brand Guidelines V2
+  | { type: 'BRAND_GUIDELINE_LOADED'; selectedId: string | null; guideline: string | null }
+  | { type: 'BRAND_GUIDELINE_SAVED' }
+  // Template Scanning
+  | { type: 'TEMPLATES_RESULT'; requestId?: string; templates: TemplateSpec[] };

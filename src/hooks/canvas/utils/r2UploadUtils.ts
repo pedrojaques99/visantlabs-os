@@ -6,10 +6,11 @@
 
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
+import type { TimerRef } from '@/types/types';
 import { canvasApi } from '@/services/canvasApi';
 
 // Mapa para armazenar timeouts de debounce por nodeId
-const uploadDebounceMap = new Map<string, NodeJS.Timeout>();
+const uploadDebounceMap = new Map<string, TimerRef>();
 const pendingUploads = new Map<string, {
   base64Image: string;
   nodeId: string;

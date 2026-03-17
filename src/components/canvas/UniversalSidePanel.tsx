@@ -11,6 +11,7 @@ import { ShaderControlsSidebar } from './ShaderControlsSidebar';
 import { ChatSidebar } from './ChatSidebar';
 import { ExportPanel } from '@/components/ui/ExportPanel';
 import { CommunityPresetsSidebar } from './CommunityPresetsSidebar';
+import { Button } from '@/components/ui/button'
 
 interface UniversalSidePanelProps {
     selectedNodes: Node<FlowNodeData>[];
@@ -166,14 +167,14 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                                 <Share size={16} style={{ color: 'var(--brand-cyan)' }} />
                                 <h3 className="text-sm font-semibold" style={{ color: textColors.primary }}>Export</h3>
                             </div>
-                            <button
+                            <Button variant="ghost"
                                 onClick={overridePanel.onClose}
                                 style={{ color: textColors.muted }}
                                 onMouseEnter={(e) => e.currentTarget.style.color = textColors.primary}
                                 onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
                             >
                                 <X size={16} />
-                            </button>
+                            </Button>
                         </div>
                         <ExportPanel
                             isOpen={true}
@@ -206,7 +207,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
         if (validNodes.length === 0) {
             return (
                 <div className="h-full flex flex-col items-center justify-center p-8 text-center gap-4" style={{ color: textColors.subtle }}>
-                    <Brush size={32} className="opacity-20" />
+                    <Brush size={32} className="opacity-40" />
                     <div className="flex flex-col gap-1">
                         <h3 className="text-sm font-medium" style={{ color: textColors.muted }}>No node selected</h3>
                         <p className="text-xs" style={{ color: textColors.subtle }}>Select a supported node to view its controls</p>
@@ -283,7 +284,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                                 const isActive = node.id === activeTabId;
 
                                 return (
-                                    <button
+                                    <Button variant="ghost"
                                         key={node.id}
                                         onClick={() => setActiveTabId(node.id)}
                                         className={cn(
@@ -315,12 +316,12 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                                     >
                                         <Icon size={14} />
                                         <span className="truncate max-w-[80px]">{node.data.label || conf?.title || 'Node'}</span>
-                                    </button>
+                                    </Button>
                                 );
                             })
                         ) : (
                             <div
-                                className="px-4 text-xs font-medium italic"
+                                className="px-4 text-xs font-medium "
                                 style={{ color: textColors.subtle }}
                             >
                                 Controls
@@ -328,7 +329,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                         )}
                     </div>
                     {/* Close Button */}
-                    <button
+                    <Button variant="ghost"
                         onClick={onClose}
                         className={cn(
                             "p-3 border-l transition-colors h-full rounded-tr-2xl",
@@ -341,7 +342,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                         onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
                     >
                         <X size={16} />
-                    </button>
+                    </Button>
                 </div>
             )}
 
@@ -361,7 +362,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                         <span style={{ color: 'var(--brand-cyan)' }}>❖</span>
                         Community Presets
                     </div>
-                    <button
+                    <Button variant="ghost"
                         onClick={onClose}
                         className={cn(
                             "p-3 border-l transition-colors h-full rounded-tr-2xl",
@@ -374,7 +375,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                         onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
                     >
                         <X size={16} />
-                    </button>
+                    </Button>
                 </div>
             )}
 

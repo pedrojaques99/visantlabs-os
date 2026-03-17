@@ -156,6 +156,46 @@ class PluginBridge {
   }
 
   /**
+   * Send a request to plugin and wait for response
+   * Used for queries like GET_TEMPLATES that expect data back
+   */
+  async request<T = any>(
+    fileId: string,
+    message: { type: string; [key: string]: any }
+  ): Promise<T | null> {
+    const session = this.sessions.get(fileId);
+
+    if (!session || session.ws.readyState !== WebSocket.OPEN) {
+      console.warn(`[PluginBridge] No active session for request: ${fileId}`);
+      return null;
+    }
+
+    const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    return new Promise<T | null>((resolve) => {
+      const timeout = setTimeout(() => {
+        session.pendingAcks.delete(requestId);
+        console.warn(`[PluginBridge] Request timeout: ${message.type}`);
+        resolve(null);
+      }, this.operationTimeout);
+
+      session.pendingAcks.set(requestId, {
+        resolve: (result: any) => resolve(result as T),
+        reject: () => resolve(null),
+        timeout,
+      });
+
+      try {
+        session.ws.send(JSON.stringify({ ...message, requestId }));
+      } catch (err) {
+        clearTimeout(timeout);
+        session.pendingAcks.delete(requestId);
+        resolve(null);
+      }
+    });
+  }
+
+  /**
    * Handle incoming messages from plugin
    */
   onMessage(fileId: string, message: any): void {
@@ -208,6 +248,17 @@ class PluginBridge {
           `[PluginBridge] Selection changed in ${fileId}:`,
           message.nodes?.map((n: any) => n.name).join(', ') || '(empty)',
         );
+        break;
+      }
+
+      case 'TEMPLATES_RESULT': {
+        // Response to GET_TEMPLATES request
+        const pending = session.pendingAcks.get(message.requestId);
+        if (pending) {
+          clearTimeout(pending.timeout);
+          session.pendingAcks.delete(message.requestId);
+          pending.resolve(message.templates || []);
+        }
         break;
       }
 
@@ -284,7 +335,7 @@ class PluginBridge {
   private startHeartbeat(session: PluginSession): void {
     session.heartbeatInterval = setInterval(() => {
       if (session.ws.readyState === WebSocket.OPEN) {
-        session.ws.ping((err) => {
+        session.ws.ping((err: Error | undefined) => {
           if (err) {
             console.error(
               `[PluginBridge] Heartbeat failed for ${session.fileId}:`,

@@ -57,6 +57,10 @@ export function getCreditsRequired(
     }
   }
 
+  if (String(model).startsWith('veo-')) {
+    return 20;
+  }
+
   // Fallback
   return 1;
 }

@@ -1,6 +1,8 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
+import { prisma } from '../db/prisma.js';
+import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -257,13 +259,50 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
     userApiKey = apiKeyResult;
     if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: getGeminiApiKey + getAllAvailableTags done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
 
+    // Load brand guideline context if provided (reusing pattern from mockups.ts)
+    let enrichedUserContext = userContext;
+    if (userContext?.brandGuidelineId) {
+      try {
+        const brandGuideline = await prisma.brandGuideline.findUnique({
+          where: { id: userContext.brandGuidelineId },
+        });
+        if (brandGuideline) {
+          const guidelineData = {
+            id: brandGuideline.id,
+            identity: brandGuideline.identity as any,
+            logos: brandGuideline.logos as any,
+            colors: brandGuideline.colors as any,
+            typography: brandGuideline.typography as any,
+            tags: brandGuideline.tags as any,
+            media: brandGuideline.media as any,
+            tokens: brandGuideline.tokens as any,
+            guidelines: brandGuideline.guidelines as any,
+          };
+          const brandContext = buildBrandContextForImageGen(guidelineData);
+          enrichedUserContext = {
+            ...userContext,
+            brandContext,
+          };
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[dev] analyze-setup: injected brand context', {
+              guidelineId: userContext.brandGuidelineId,
+              brandName: (guidelineData.identity as any)?.name || 'Unknown',
+              contextLength: brandContext.length,
+            });
+          }
+        }
+      } catch (brandError: any) {
+        console.warn('[analyze-setup] Failed to load brand guideline:', brandError.message);
+      }
+    }
+
     if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: calling analyzeMockupSetup');
     const result = await analyzeMockupSetup(
       baseImage as UploadedImage,
       userApiKey,
       availableTags,
       instructions,
-      userContext
+      enrichedUserContext
     );
     if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: analyzeMockupSetup done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
 

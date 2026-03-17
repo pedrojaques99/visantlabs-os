@@ -12,6 +12,8 @@ import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { getAnglePreset } from '@/services/anglePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
 import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
+import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBrandContext';
+import type { BrandGuideline } from '@/lib/figma-types';
 
 interface UseAngleNodeHandlersParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -24,6 +26,7 @@ interface UseAngleNodeHandlersParams {
   addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void;
   refreshSubscriptionStatus: () => Promise<void>;
   canvasId?: string;
+  linkedGuideline?: BrandGuideline | null;
 }
 
 export const useAngleNodeHandlers = ({
@@ -37,6 +40,7 @@ export const useAngleNodeHandlers = ({
   addToHistory,
   refreshSubscriptionStatus,
   canvasId,
+  linkedGuideline,
 }: UseAngleNodeHandlersParams) => {
   const handleAngleNodeDataUpdate = createNodeDataUpdateHandler<AngleNodeData>(updateNodeData, 'angle');
 
@@ -49,6 +53,9 @@ export const useAngleNodeHandlers = ({
 
     const node = nodesRef.current.find(n => n.id === nodeId);
     const angleData = node?.data as AngleNodeData;
+
+    const { tokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
+    const promptOverride = tokens ? buildEnhancement(angle.prompt, tokens) : undefined;
 
     await generateImageWithPreset({
       nodeId,
@@ -69,8 +76,9 @@ export const useAngleNodeHandlers = ({
       canvasId,
       errorMessage: 'Connect an image to generate angle',
       successMessage: 'Image angle generated successfully!',
+      promptOverride,
     });
-  }, [nodesRef, edgesRef, setNodes, setEdges, updateNodeData, updateNodeLoadingState, reactFlowInstance, addToHistory, refreshSubscriptionStatus, canvasId]);
+  }, [nodesRef, edgesRef, setNodes, setEdges, updateNodeData, updateNodeLoadingState, reactFlowInstance, addToHistory, refreshSubscriptionStatus, canvasId, linkedGuideline]);
 
   return {
     handleAngleGenerate,

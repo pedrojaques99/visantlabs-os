@@ -2791,3 +2791,74 @@ label {
     border-radius: 4px;
     font-size: 10px;
 }
+/* Brand Guidelines V2 */
+.bg-list-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; border-radius: 4px; cursor: pointer; }
+.bg-list-item:hover { background: var(--figma-color-bg-hover); }
+.bg-list-name { font-weight: 500; }
+.bg-list-completeness { font-size: 11px; color: var(--figma-color-text-secondary); }
+.bg-color-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+.bg-color-swatch { width: 32px; height: 32px; border-radius: 4px; position: relative; border: 1px solid var(--figma-color-border); }
+.bg-color-swatch .bg-remove-btn { position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--figma-color-bg-danger); color: white; border: none; font-size: 10px; cursor: pointer; display: none; line-height: 14px; padding: 0; }
+.bg-color-swatch:hover .bg-remove-btn { display: block; }
+.bg-typo-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+.bg-typo-item .bg-remove-btn { background: none; border: none; color: var(--figma-color-text-secondary); cursor: pointer; font-size: 14px; }
+.bg-typo-item .bg-remove-btn:hover { color: var(--figma-color-text-danger); }
+.bg-ingest-banner { background: var(--figma-color-bg-secondary); border-radius: 6px; padding: 8px; }
+.bg-tag-pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; background: var(--figma-color-bg-brand-tertiary); color: var(--figma-color-text-brand); margin: 2px; }
+
+.selection-indicator .sel-template-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 5px;
+    background: var(--figma-color-bg-brand-tertiary, #e5f4ff);
+    color: var(--figma-color-text-brand, #0d99ff);
+    border: 1px solid var(--figma-color-border-brand, #0d99ff);
+    border-radius: 4px;
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+
+/* ── Enhanced Login Feedback ── */
+.spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+    vertical-align: middle;
+}
+
+#authLoginBtn.loading .spinner {
+    display: inline-block;
+    margin-right: 8px;
+}
+
+#authLoginBtn.loading .btn-text {
+    opacity: 0.7;
+}
+
+#authLoginStatus {
+    min-height: 16px;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Secondary button spinner */
+button.secondary.loading .spinner {
+    border: 2px solid rgba(0,0,0,0.1);
+    border-top: 2px solid var(--figma-color-bg-brand, #0d99ff);
+}
+

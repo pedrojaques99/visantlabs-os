@@ -16,6 +16,10 @@ import type { UploadedImage } from '../types/types';
 import { toast } from 'sonner';
 import { branding, getYoutubeThumbnail } from '../config/branding';
 import AnimatedTitle from '../components/shared/AnimatedTitle';
+import { PremiumButton } from '../components/ui/PremiumButton';
+import { MicroTitle } from '../components/ui/MicroTitle';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 const SUPPORTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_IMAGE_SIZE_MB = 10;
@@ -385,15 +389,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
       </div>
       <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
         <div className="space-y-4">
-          <h1 className={`text-2xl md:text-3xl font-bold font-mono tracking-wide ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'}`}>
-            Envie seu logo ou layout
+          <h1 className={`text-3xl md:text-4xl font-bold font-redhatmono tracking-tight ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'}`}>
+            {t('welcome.title') || 'MOCKUP MACHINE®'}
           </h1>
-          <h3 className={`text-lg md:text-xl font-mono ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}`}>
-            e veja a mágica acontecer
-          </h3>
+          <MicroTitle className="text-brand-cyan uppercase">
+            {t('welcome.magicHappens') || 'e veja a mágica acontecer'}
+          </MicroTitle>
         </div>
-        <div className="flex flex-col gap-4 justify-center items-center">
-          <input
+        <div className="flex flex-col gap-6 justify-center items-center">
+          <Input
             ref={fileInputRef}
             type="file"
             accept={SUPPORTED_MIME_TYPES.join(',')}
@@ -407,26 +411,30 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
             delay={showPasteTip ? 0 : 300}
             dismissible={showPasteTip}
           >
-            <button
-              onClick={handleUploadClick}
-              disabled={isProcessing || isCheckingAuth || isVerifyingAuth}
-              data-tutorial-target="upload-image"
-              className="inline-flex flex-col items-center gap-1 bg-brand-cyan/80 hover:bg-brand-cyan disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed cursor-pointer text-black font-bold py-5 px-12 rounded-md transition-all duration-300 font-mono shadow-lg shadow-brand-cyan/20"
-            >
-              <div className="flex items-center gap-3">
-                <UploadCloud size={22} className="md:w-8 md:h-8" />
-                <span className="text-sm md:text-base">Enviar imagem</span>
-              </div>
-            </button>
+            <div className="w-full max-w-sm">
+              <PremiumButton
+                onClick={handleUploadClick}
+                disabled={isProcessing || isCheckingAuth || isVerifyingAuth}
+                isLoading={isProcessing}
+                loadingText="UPLOADING..."
+                icon={UploadCloud}
+                className="w-full h-16 text-lg"
+              >
+                {t('welcome.sendImage') || 'Enviar imagem'}
+              </PremiumButton>
+            </div>
           </Tooltip>
-          <span className="text-[10px] md:text-xs font-normal opacity-70 hover:opacity-100">ou ctrl + v para colar</span>
+
+          <MicroTitle as="span" className="text-[10px] md:text-xs opacity-60 hover:opacity-300 transition-opacity">
+            {t('welcome.pasteTipSmall') || 'ou ctrl + v para colar'}
+          </MicroTitle>
 
           {isProcessing && (
-            <div className={`flex items-center gap-2 font-mono text-sm ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
+            <div className={`flex items-center gap-2 font-manrope text-sm ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
               }`}>
               <GlitchLoader size={16} color="var(--brand-cyan)" />
               <span>
-                Loading image...
+                {t('welcome.loadingImage') || 'Loading image...'}
               </span>
             </div>
           )}
@@ -438,8 +446,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
         {showTutorialButton && (
           <div className="fixed z-40 tutorial-button-position group relative">
             {/* Mobile: Simple compact button */}
-            <button
-              onClick={() => setShowTutorialModal(true)}
+            <Button variant="ghost" onClick={() => setShowTutorialModal(true)}
               className={`md:hidden flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg ${theme === 'dark'
                 ? 'bg-neutral-900/90 hover:bg-neutral-800/95 border border-neutral-700/50 hover:border-brand-cyan/30'
                 : 'bg-white/90 hover:bg-white border border-neutral-300 hover:border-brand-cyan/50'
@@ -472,15 +479,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
               >
                 <X size={12} />
               </div>
-            </button>
+            </Button>
 
             {/* Desktop: Full thumbnail preview */}
-            <button
-              onClick={() => setShowTutorialModal(true)}
-              className="hidden md:block w-64 opacity-60 hover:opacity-100 overflow-hidden rounded-md transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md relative"
+            <Button variant="ghost" onClick={() => setShowTutorialModal(true)}
+              className="hidden px-4 py-2 md:block w-72 h-36 opacity-60 hover:opacity-300 overflow-hidden rounded-md transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md relative"
             >
               {/* Thumbnail Container */}
-              <div className="relative aspect-video w-full">
+              <div className="relative aspect-video w-full h-full">
                 {/* YouTube Thumbnail */}
                 <img
                   src={getYoutubeThumbnail('maxresdefault')}
@@ -516,22 +522,21 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
                 <BookOpen size={12} className="text-brand-cyan/90" />
                 <span className="font-mono text-sm font-medium opacity-90">{t('tutorial.title')}</span>
               </div>
-            </button>
+            </Button>
 
             {/* Close Button for Desktop - Subtle - Only visible on hover */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowTutorialButton(false);
-              }}
-              className={`hidden md:flex absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-md items-center justify-center opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 z-50 ${theme === 'dark'
+            <Button variant="ghost" onClick={(e) => {
+              e.stopPropagation();
+              setShowTutorialButton(false);
+            }}
+              className={`hidden md:flex absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-md items-center justify-center opacity-0 group-hover:opacity-300 hover:opacity-300 transition-all duration-200 z-50 ${theme === 'dark'
                 ? 'bg-neutral-950/80 hover:bg-red-500/90 text-neutral-300 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
                 : 'bg-white/80 hover:bg-red-500/90 text-neutral-600 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
                 }`}
               title="Fechar"
             >
               <X size={14} />
-            </button>
+            </Button>
           </div>
         )}
       </div>

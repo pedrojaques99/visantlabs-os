@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { FormInput } from '@/components/ui/form-input';
 import type { BudgetData } from '@/types/types';
+import { Button } from '@/components/ui/button'
 
 interface VariableConfigModalProps {
   isOpen: boolean;
@@ -139,12 +140,12 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
           <h3 className="text-lg font-semibold font-mono text-neutral-200">
             {label}
           </h3>
-          <button
+          <Button variant="ghost"
             onClick={onClose}
             className="text-neutral-400 hover:text-neutral-200 transition-colors"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-4">
@@ -185,19 +186,19 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
 
           {/* Botões */}
           <div className="flex gap-3 pt-2">
-            <button
+            <Button variant="outline"
               onClick={onClose}
               className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 font-mono text-sm transition-colors"
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button variant="brand"
               onClick={handleConfirm}
               disabled={showCustomInput && !customValue.trim()}
               className="flex-1 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-md text-brand-cyan font-mono text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               OK - Posicionar no PDF
-            </button>
+            </Button>
           </div>
         </div>
       </div>

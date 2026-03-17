@@ -61,6 +61,7 @@ model User {
   canvasWorkflows  CanvasWorkflow[]
   customPdfPresets CustomPdfPreset[]
   surpriseMePresets SurpriseMePreset[]
+  brandGuidelines BrandGuideline[]
 
   // Indexes for better query performance
   // Note: @unique on email and username already creates indexes
@@ -235,6 +236,7 @@ model CanvasProject {
   isCollaborative Boolean  @default(false) // Se o projeto está em modo colaborativo
   canEdit         String[] @default([]) // IDs de usuários que podem editar
   canView         String[] @default([]) // IDs de usuários que podem visualizar
+  linkedGuidelineId String? @db.ObjectId // Brand guideline linked to this canvas
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -404,4 +406,47 @@ model ApiKey {
 
   @@index([userId])
   @@map("api_keys")
+}
+
+model BrandGuideline {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+
+  // Identity
+  identity  Json?    // { name?, website?, tagline?, description? }
+
+  // Visual assets
+  logos     Json?    // Array<{ id, url, variant, label? }>
+  colors    Json?    // Array<{ hex, name, role? }>
+  typography Json?   // Array<{ family, style?, role, size?, lineHeight? }>
+
+  // Semantic tags
+  tags      Json?    // Record<string, string[]>
+
+  // Media references
+  media     Json?    // Array<{ id, url, type, label? }>
+
+  // Technical tokens (optional, power users)
+  tokens    Json?    // { spacing?, radius?, shadows?, components? }
+
+  // Editorial guidelines
+  guidelines Json?   // { voice?, dos?, donts?, imagery?, accessibility? }
+
+  // UI preferences
+  activeSections Json?  // string[] — persisted section toggles
+
+  // Extraction metadata
+  extraction Json?   // { sources[], completeness }
+
+  // Public sharing
+  publicSlug String?  @unique
+  isPublic   Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("brand_guidelines")
 }

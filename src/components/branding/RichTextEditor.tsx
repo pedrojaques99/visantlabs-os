@@ -3,13 +3,14 @@ import { Bold, Italic, List, Palette } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import {
   applyBold,
-  applyItalic,
+  apply,
   insertBullet,
   applyTextColor,
   setTextSelection,
 } from '@/utils/markdownFormatter';
 import { Textarea } from '@/components/ui/textarea';
 import { renderMarkdownWithLines } from '@/utils/markdownRenderer';
+import { Button } from '@/components/ui/button';
 
 interface RichTextEditorProps {
   value: string;
@@ -103,7 +104,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   );
 
   const handleBold = () => handleFormat(applyBold);
-  const handleItalic = () => handleFormat(applyItalic);
+  const handle = () => handleFormat(apply);
   const handleBullet = () => handleFormat(insertBullet);
 
   const handleColorSelect = (color: string) => {
@@ -131,7 +132,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         handleBold();
       } else if (e.key === 'i') {
         e.preventDefault();
-        handleItalic();
+        handle();
       }
     }
   };
@@ -143,7 +144,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         ? 'bg-neutral-900 border-neutral-800/60'
         : 'bg-neutral-100 border-neutral-300'
         }`}>
-        <button
+        <Button variant="ghost"
           type="button"
           onClick={handleBold}
           className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
@@ -153,10 +154,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           title="Negrito (Ctrl+B)"
         >
           <Bold className="h-4 w-4" />
-        </button>
-        <button
+        </Button>
+        <Button variant="ghost"
           type="button"
-          onClick={handleItalic}
+          onClick={handle}
           className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
             ? 'hover:bg-neutral-950/70 text-neutral-300'
             : 'hover:bg-neutral-200 text-neutral-700'
@@ -164,8 +165,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           title="Itálico (Ctrl+I)"
         >
           <Italic className="h-4 w-4" />
-        </button>
-        <button
+        </Button>
+        <Button variant="ghost"
           type="button"
           onClick={handleBullet}
           className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
@@ -175,9 +176,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           title="Lista com marcadores"
         >
           <List className="h-4 w-4" />
-        </button>
+        </Button>
         <div className="relative">
-          <button
+          <Button variant="ghost"
             type="button"
             onClick={() => setShowColorPicker(!showColorPicker)}
             className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
@@ -187,7 +188,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             title="Cor do texto"
           >
             <Palette className="h-4 w-4" />
-          </button>
+          </Button>
           {showColorPicker && (
             <>
               <div
@@ -200,7 +201,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 }`}>
                 <div className="grid grid-cols-4 gap-2">
                   {COLOR_PRESETS.map((color) => (
-                    <button
+                    <Button variant="ghost"
                       key={color}
                       type="button"
                       onClick={() => handleColorSelect(color)}

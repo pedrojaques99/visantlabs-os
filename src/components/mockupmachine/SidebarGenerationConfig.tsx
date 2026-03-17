@@ -4,8 +4,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 import { CategoriesSection } from './CategoriesSection';
+import { KeywordsSection } from './KeywordsSection';
 import { RefineSection } from './RefineSection';
-import { OutputConfigSection } from './OutputConfigSection';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
@@ -14,6 +14,8 @@ import { AnalyzedSummaryCard } from './AnalyzedSummaryCard';
 import type { UploadedImage } from '@/types/types';
 import { SurpriseMeControl } from './SurpriseMeControl';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
+import { PresetsControl } from './PresetsControl';
+import { PromptSection } from './PromptSection';
 
 interface SidebarGenerationConfigProps {
     onGenerateClick: () => void;
@@ -25,11 +27,11 @@ interface SidebarGenerationConfigProps {
     onSimplify: () => void;
     onGenerateSuggestion: (suggestion: string) => void;
     generateOutputsButtonRef: React.RefObject<HTMLButtonElement>;
-    isDiceAnimating: boolean;
     onStartOver: () => void;
     onReplaceImage?: (image: UploadedImage) => void;
     onReferenceImagesChange: (images: UploadedImage[]) => void;
     authenticationRequiredMessage: string;
+    isPromptReady: boolean;
 }
 
 export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = ({
@@ -41,10 +43,10 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
     onSimplify,
     onGenerateSuggestion,
     generateOutputsButtonRef,
-    isDiceAnimating,
     onReplaceImage,
     onReferenceImagesChange,
     authenticationRequiredMessage,
+    isPromptReady,
 }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
@@ -71,8 +73,6 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
         isSmartPromptActive,
         setIsSmartPromptActive,
         setIsPromptManuallyEdited,
-        isPromptReady,
-        setIsPromptReady,
         isGeneratingPrompt,
         isLoading,
         hasGenerated,
@@ -214,9 +214,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
             setIsSmartPromptActive(false);
         }
         setIsPromptManuallyEdited(true);
-        if (newValue.trim().length > 0 && isPromptReady) {
-            setIsPromptReady(true);
-        }
+        // isPromptReady is derived - no need to set it manually
     };
 
     const handleSuggestionClick = (suggestion: string) => {
@@ -281,7 +279,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                 )}
             </div>
 
-            <div className="gap-2">
+            <div className="flex flex-col gap-2 mt-4">
 
                 {/* 1. AnalyzedSummaryCard (compact) */}
                 <AnalyzedSummaryCard
@@ -294,159 +292,145 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                     onReferenceImagesChange={onReferenceImagesChange}
                 />
 
-                {/* 2. SurpriseMeSelectedTagsDisplay - ALWAYS visible */}
-                <SurpriseMeSelectedTagsDisplay onRerollAll={() => handleSurpriseMe(false)} isGenerating={isSidebarGenerating} />
+                {/* 2. SurpriseMeSelectedTagsDisplay - ONLY visible in Normal Mode */}
+                {!isSurpriseMeMode && (
+                    <SurpriseMeSelectedTagsDisplay onRerollAll={() => handleSurpriseMe(false)} isGenerating={isSidebarGenerating} />
+                )}
 
-                {/* 3. (Action toolbar is fixed at bottom — see below) */}
+                {/* 2.5 Presets Control */}
+                <PresetsControl />
 
-                {/* 4. OutputConfigSection - ALWAYS visible */}
-                <OutputConfigSection
-                    mockupCount={mockupCount}
-                    onMockupCountChange={setMockupCount}
-                    designType={designType}
-                    selectedModel={selectedModel}
-                    isGenerating={isSidebarGenerating}
-                    resolution={resolution}
-                    onResolutionChange={setResolution}
-                    setSelectedModel={setSelectedModel}
-                    aspectRatio={aspectRatio}
-                    onAspectRatioChange={setAspectRatio}
-                    imageProvider={imageProvider}
-                    setImageProvider={setImageProvider}
+                {/* CategoriesSection - ONLY visible in Pool Mode */}
+                {isSurpriseMeMode && (
+                    <CategoriesSection
+                        suggestedTags={suggestedTags}
+                        availableTags={displayAvailableCategoryTags}
+                        selectedTags={selectedTags}
+                        isGenerating={isSidebarGenerating}
+                        onTagToggle={handleTagToggle}
+                        isAnalyzing={isAnalyzing}
+                        isAllCategoriesOpen={isAllCategoriesOpen}
+                        onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
+                        customInput={customCategoryInput}
+                        onCustomInputChange={setCustomCategoryInput}
+                        onAddCustomTag={handleAddCustomCategoryTag}
+                        onRandomize={handleRandomizeCategories}
+                        isComplete={categoriesComplete}
+                        displaySuggestedTags={displaySuggestedTags}
+                        tagCategories={tagCategories}
+                        mockupPresets={mockupPresets}
+                        isSurpriseMeMode={isSurpriseMeMode}
+                        categoriesPool={surpriseMePool.selectedCategoryTags || []}
+                        onPoolToggle={(tag) => togglePoolTag('selectedCategoryTags', tag, surpriseMePool, setSurpriseMePool)}
+                    />
+                )}
+
+                {/* RefineSection - Only visible in Pool Mode */}
+                {isSurpriseMeMode && (
+                    <RefineSection
+                        isAdvancedOpen={isAdvancedOpen}
+                        onToggleAdvanced={() => setIsAdvancedOpen(!isAdvancedOpen)}
+                        isGenerating={isSidebarGenerating}
+                        advancedOptionsProps={{
+                            selectedLocationTags,
+                            selectedAngleTags,
+                            selectedLightingTags,
+                            selectedEffectTags,
+                            selectedMaterialTags,
+                            selectedColors,
+                            colorInput,
+                            isValidColor,
+                            negativePrompt,
+                            additionalPrompt,
+                            onLocationTagToggle: handleLocationTagToggle,
+                            onAngleTagToggle: handleAngleTagToggle,
+                            onLightingTagToggle: handleLightingTagToggle,
+                            onEffectTagToggle: handleEffectTagToggle,
+                            onMaterialTagToggle: handleMaterialTagToggle,
+                            onColorInputChange: handleColorInputChange,
+                            onAddColor: handleAddColor,
+                            onRemoveColor: handleRemoveColor,
+                            onNegativePromptChange: (e) => setNegativePrompt(e.target.value),
+                            onAdditionalPromptChange: (e) => setAdditionalPrompt(e.target.value),
+                            availableLocationTags: displayLocationTags,
+                            availableAngleTags: displayAngleTags,
+                            availableLightingTags: displayLightingTags,
+                            availableEffectTags: displayEffectTags,
+                            availableMaterialTags: displayMaterialTags,
+                            customLocationInput,
+                            customAngleInput,
+                            customLightingInput,
+                            customEffectInput,
+                            customMaterialInput,
+                            onCustomLocationInputChange: setCustomLocationInput,
+                            onCustomAngleInputChange: setCustomAngleInput,
+                            onCustomLightingInputChange: setCustomLightingInput,
+                            onCustomEffectInputChange: setCustomEffectInput,
+                            onCustomMaterialInputChange: setCustomMaterialInput,
+                            onAddCustomLocationTag: handleAddCustomLocationTag,
+                            onAddCustomAngleTag: handleAddCustomAngleTag,
+                            onAddCustomLightingTag: handleAddCustomLightingTag,
+                            onAddCustomEffectTag: handleAddCustomEffectTag,
+                            onAddCustomMaterialTag: handleAddCustomMaterialTag,
+                            designType,
+                            generateText,
+                            withHuman,
+                            enhanceTexture,
+                            removeText,
+                            onGenerateTextChange: setGenerateText,
+                            onWithHumanChange: setWithHuman,
+                            onEnhanceTextureChange: setEnhanceTexture,
+                            onRemoveTextChange: setRemoveText,
+                            suggestedLocationTags,
+                            suggestedAngleTags,
+                            suggestedLightingTags,
+                            suggestedEffectTags,
+                            suggestedMaterialTags,
+                            suggestedColors: suggestedColorsFromAnalysis,
+                            // Surprise Me Mode props
+                            isSurpriseMeMode,
+                            locationPool: surpriseMePool.selectedLocationTags || [],
+                            anglePool: surpriseMePool.selectedAngleTags || [],
+                            lightingPool: surpriseMePool.selectedLightingTags || [],
+                            effectPool: surpriseMePool.selectedEffectTags || [],
+                            materialPool: surpriseMePool.selectedMaterialTags || [],
+                            onLocationPoolToggle: (tag) => togglePoolTag('selectedLocationTags', tag, surpriseMePool, setSurpriseMePool),
+                            onAnglePoolToggle: (tag) => togglePoolTag('selectedAngleTags', tag, surpriseMePool, setSurpriseMePool),
+                            onLightingPoolToggle: (tag) => togglePoolTag('selectedLightingTags', tag, surpriseMePool, setSurpriseMePool),
+                            onEffectPoolToggle: (tag) => togglePoolTag('selectedEffectTags', tag, surpriseMePool, setSurpriseMePool),
+                            onMaterialPoolToggle: (tag) => togglePoolTag('selectedMaterialTags', tag, surpriseMePool, setSurpriseMePool)
+                        }}
+                    />
+                )}
+
+                {/* 3. Prompt Section */}
+                <PromptSection
+                    promptPreview={promptPreview}
+                    isSidebarGenerating={isSidebarGenerating}
+                    onPromptChange={handlePromptChange}
+                    onPromptUpdate={(value) => {
+                        setPromptPreview(value);
+                        if (isSmartPromptActive) setIsSmartPromptActive(false);
+                        setIsPromptManuallyEdited(true);
+                    }}
+                    promptSuggestions={promptSuggestions}
+                    isGeneratingPrompt={isGeneratingPrompt}
+                    isSuggestingPrompts={isSuggestingPrompts}
+                    isGenerating={isGenerating}
+                    hasGenerated={hasGenerated}
+                    mockups={mockups}
+                    onSuggestPrompts={onSuggestPrompts}
+                    onGenerateSmartPrompt={onGenerateSmartPrompt}
+                    onSimplify={onSimplify}
+                    onRegenerate={onRegenerate}
+                    onSuggestionClick={handleSuggestionClick}
+                    isSmartPromptActive={isSmartPromptActive}
+                    setIsSmartPromptActive={setIsSmartPromptActive}
+                    setIsPromptManuallyEdited={setIsPromptManuallyEdited}
+                    creditsPerGeneration={creditsPerGeneration}
+                    onGenerateSuggestion={onGenerateSuggestion}
+                    isGenerateDisabled={isGenerateDisabled}
                 />
-
-                {/* 5. Advanced Options - Collapsible */}
-                <div className={cn(
-                    "rounded-md border transition-all duration-200 overflow-hidden mt-2",
-                    theme === 'dark' ? 'bg-neutral-900/30 border-neutral-800/50 shadow-md' : 'bg-white/50 border-neutral-200 shadow-md'
-                )}>
-                    <button
-                        onClick={() => setIsAdvancedOptionsOpen(!isAdvancedOptionsOpen)}
-                        className={cn(
-                            "w-full flex justify-between items-center text-left p-3 transition-all duration-200",
-                            theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
-                        )}
-                    >
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <Settings2 size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
-                            <SkeletonText loading={isSidebarGenerating} className="min-w-[100px]">
-                                <span className={cn(
-                                    "text-[12px] font-mono uppercase tracking-widest",
-                                    theme === 'dark' ? "text-neutral-300" : "text-neutral-700"
-                                )}>
-                                    {t('mockup.advancedOptions') || 'Advanced Options'}
-                                </span>
-                            </SkeletonText>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                            {isAdvancedOptionsOpen ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
-                        </div>
-                    </button>
-
-                    {isAdvancedOptionsOpen && (
-                        <div className="p-3 pt-0 animate-fade-in space-y-4">
-                            {/* CategoriesSection */}
-                            <CategoriesSection
-                                suggestedTags={suggestedTags}
-                                availableTags={displayAvailableCategoryTags}
-                                selectedTags={selectedTags}
-                                isGenerating={isSidebarGenerating}
-                                onTagToggle={handleTagToggle}
-                                isAnalyzing={isAnalyzing}
-                                isAllCategoriesOpen={isAllCategoriesOpen}
-                                onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
-                                customInput={customCategoryInput}
-                                onCustomInputChange={setCustomCategoryInput}
-                                onAddCustomTag={handleAddCustomCategoryTag}
-                                onRandomize={handleRandomizeCategories}
-                                isComplete={categoriesComplete}
-                                displaySuggestedTags={displaySuggestedTags}
-                                tagCategories={tagCategories}
-                                mockupPresets={mockupPresets}
-                                isSurpriseMeMode={isSurpriseMeMode}
-                                categoriesPool={surpriseMePool.selectedCategoryTags || []}
-                                onPoolToggle={(tag) => togglePoolTag('selectedCategoryTags', tag, surpriseMePool, setSurpriseMePool)}
-                            />
-
-                            {/* RefineSection */}
-                            <RefineSection
-                                isAdvancedOpen={isAdvancedOpen}
-                                onToggleAdvanced={() => setIsAdvancedOpen(!isAdvancedOpen)}
-                                isGenerating={isSidebarGenerating}
-                                advancedOptionsProps={{
-                                    selectedLocationTags,
-                                    selectedAngleTags,
-                                    selectedLightingTags,
-                                    selectedEffectTags,
-                                    selectedMaterialTags,
-                                    selectedColors,
-                                    colorInput,
-                                    isValidColor,
-                                    negativePrompt,
-                                    additionalPrompt,
-                                    onLocationTagToggle: handleLocationTagToggle,
-                                    onAngleTagToggle: handleAngleTagToggle,
-                                    onLightingTagToggle: handleLightingTagToggle,
-                                    onEffectTagToggle: handleEffectTagToggle,
-                                    onMaterialTagToggle: handleMaterialTagToggle,
-                                    onColorInputChange: handleColorInputChange,
-                                    onAddColor: handleAddColor,
-                                    onRemoveColor: handleRemoveColor,
-                                    onNegativePromptChange: (e) => setNegativePrompt(e.target.value),
-                                    onAdditionalPromptChange: (e) => setAdditionalPrompt(e.target.value),
-                                    availableLocationTags: displayLocationTags,
-                                    availableAngleTags: displayAngleTags,
-                                    availableLightingTags: displayLightingTags,
-                                    availableEffectTags: displayEffectTags,
-                                    availableMaterialTags: displayMaterialTags,
-                                    customLocationInput,
-                                    customAngleInput,
-                                    customLightingInput,
-                                    customEffectInput,
-                                    customMaterialInput,
-                                    onCustomLocationInputChange: setCustomLocationInput,
-                                    onCustomAngleInputChange: setCustomAngleInput,
-                                    onCustomLightingInputChange: setCustomLightingInput,
-                                    onCustomEffectInputChange: setCustomEffectInput,
-                                    onCustomMaterialInputChange: setCustomMaterialInput,
-                                    onAddCustomLocationTag: handleAddCustomLocationTag,
-                                    onAddCustomAngleTag: handleAddCustomAngleTag,
-                                    onAddCustomLightingTag: handleAddCustomLightingTag,
-                                    onAddCustomEffectTag: handleAddCustomEffectTag,
-                                    onAddCustomMaterialTag: handleAddCustomMaterialTag,
-                                    designType,
-                                    generateText,
-                                    withHuman,
-                                    enhanceTexture,
-                                    removeText,
-                                    onGenerateTextChange: setGenerateText,
-                                    onWithHumanChange: setWithHuman,
-                                    onEnhanceTextureChange: setEnhanceTexture,
-                                    onRemoveTextChange: setRemoveText,
-                                    suggestedLocationTags,
-                                    suggestedAngleTags,
-                                    suggestedLightingTags,
-                                    suggestedEffectTags,
-                                    suggestedMaterialTags,
-                                    suggestedColors: suggestedColorsFromAnalysis,
-                                    // Surprise Me Mode props
-                                    isSurpriseMeMode,
-                                    locationPool: surpriseMePool.selectedLocationTags || [],
-                                    anglePool: surpriseMePool.selectedAngleTags || [],
-                                    lightingPool: surpriseMePool.selectedLightingTags || [],
-                                    effectPool: surpriseMePool.selectedEffectTags || [],
-                                    materialPool: surpriseMePool.selectedMaterialTags || [],
-                                    onLocationPoolToggle: (tag) => togglePoolTag('selectedLocationTags', tag, surpriseMePool, setSurpriseMePool),
-                                    onAnglePoolToggle: (tag) => togglePoolTag('selectedAngleTags', tag, surpriseMePool, setSurpriseMePool),
-                                    onLightingPoolToggle: (tag) => togglePoolTag('selectedLightingTags', tag, surpriseMePool, setSurpriseMePool),
-                                    onEffectPoolToggle: (tag) => togglePoolTag('selectedEffectTags', tag, surpriseMePool, setSurpriseMePool),
-                                    onMaterialPoolToggle: (tag) => togglePoolTag('selectedMaterialTags', tag, surpriseMePool, setSurpriseMePool)
-                                }}
-                            />
-
-                        </div>
-                    )}
-                </div>
 
                 {/* 6. Auth alert (conditional) */}
                 {(() => {
@@ -470,65 +454,11 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
             {/* Fixed Bottom Toolbar — Surprise Me + Generate */}
             <div
                 className={cn(
-                    'z-30 animate-fade-in',
-                    'fixed bottom-0 left-0 right-0 px-4 pb-[50px]',
-                    'lg:sticky lg:bottom-0 lg:left-auto lg:right-auto lg:px-0',
-                    'flex items-center justify-center',
-                    theme === 'dark'
-                        ? 'bg-gradient-to-t from-neutral-950 via-neutral-950/95 to-transparent'
-                        : 'bg-gradient-to-t from-white via-white/95 to-transparent'
+                    'z-30 animate-fade-in pointer-events-none',
+                    'sticky bottom-0 left-0 right-0',
+                    'flex flex-col items-center justify-end pb-4 pt-10'
                 )}
             >
-                <SurpriseMeControl
-                    onSurpriseMe={handleSurpriseMe}
-                    isGeneratingPrompt={isGeneratingPrompt}
-                    isDiceAnimating={isDiceAnimating}
-                    isSurpriseMeMode={isSurpriseMeMode}
-                    setIsSurpriseMeMode={setIsSurpriseMeMode}
-                    autoGenerate={autoGenerate}
-                    setAutoGenerate={setAutoGenerate}
-                    selectedModel={selectedModel}
-                    mockupCount={mockupCount}
-                    resolution={resolution}
-                    showBackground={true}
-                    containerClassName="shadow-lg !pb-0 rounded-b-none"
-                    onGeneratePrompt={onGenerateSmartPrompt}
-                    onGenerateOutputs={onGenerateClick}
-                    isGenerateDisabled={isGenerateDisabled}
-                    isGeneratingOutputs={isGenerating}
-                    isPromptReady={isPromptReady}
-                    setSelectedModel={setSelectedModel}
-                    imageProvider={imageProvider}
-                    setImageProvider={setImageProvider}
-                    uploadedImage={uploadedImage}
-                    promptSectionProps={{
-                        promptPreview,
-                        isSidebarGenerating,
-                        onPromptChange: handlePromptChange,
-                        onPromptUpdate: (value) => {
-                            setPromptPreview(value);
-                            if (isSmartPromptActive) setIsSmartPromptActive(false);
-                            setIsPromptManuallyEdited(true);
-                        },
-                        promptSuggestions,
-                        isGeneratingPrompt,
-                        isSuggestingPrompts: isSuggestingPrompts,
-                        isGenerating: isGenerating,
-                        hasGenerated,
-                        mockups,
-                        onSuggestPrompts,
-                        onGenerateSmartPrompt,
-                        onSimplify,
-                        onRegenerate,
-                        onSuggestionClick: handleSuggestionClick,
-                        isSmartPromptActive,
-                        setIsSmartPromptActive,
-                        setIsPromptManuallyEdited,
-                        creditsPerGeneration,
-                        onGenerateSuggestion,
-                        isGenerateDisabled,
-                    }}
-                />
             </div>
         </div>
     );

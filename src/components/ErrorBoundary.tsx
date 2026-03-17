@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { Button } from '@/components/ui/button'
 
 interface Props {
   children: ReactNode;
@@ -254,44 +255,44 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex flex-col sm:flex-row gap-3">
               {isChunkError ? (
                 <>
-                  <button
+                  <Button variant="brand"
                     onClick={this.handleRetryChunk}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.reloadPage || 'Reload Page'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="outline"
                     onClick={this.handleGoHome}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                   >
                     <Home className="h-4 w-4" />
                     {translations.goHome || 'Go Home'}
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
-                  <button
+                  <Button variant="brand"
                     onClick={this.handleReset}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.tryAgain || 'Try Again'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="outline"
                     onClick={this.handleReload}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.reloadPage || 'Reload Page'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="outline"
                     onClick={this.handleGoHome}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                   >
                     <Home className="h-4 w-4" />
                     {translations.goHome || 'Go Home'}
-                  </button>
+                  </Button>
                 </>
               )}
             </div>

@@ -13,6 +13,8 @@ import { getTexturePreset } from '@/services/texturePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
 import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 import { uploadImageToR2Auto } from '@/hooks/canvas/utils/r2UploadUtils';
+import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBrandContext';
+import type { BrandGuideline } from '@/lib/figma-types';
 
 interface UseTextureNodeHandlersParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -25,6 +27,7 @@ interface UseTextureNodeHandlersParams {
   addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void;
   refreshSubscriptionStatus: () => Promise<void>;
   canvasId?: string;
+  linkedGuideline?: BrandGuideline | null;
 }
 
 export const useTextureNodeHandlers = ({
@@ -38,6 +41,7 @@ export const useTextureNodeHandlers = ({
   addToHistory,
   refreshSubscriptionStatus,
   canvasId,
+  linkedGuideline,
 }: UseTextureNodeHandlersParams) => {
   const handleTextureNodeDataUpdate = createNodeDataUpdateHandler<TextureNodeData>(updateNodeData, 'texture');
 
@@ -50,6 +54,9 @@ export const useTextureNodeHandlers = ({
 
     const node = nodesRef.current.find(n => n.id === nodeId);
     const textureData = node?.data as TextureNodeData;
+
+    const { tokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
+    const promptOverride = tokens ? buildEnhancement(preset.prompt, tokens) : undefined;
 
     await generateImageWithPreset({
       nodeId,
@@ -70,6 +77,7 @@ export const useTextureNodeHandlers = ({
       canvasId,
       errorMessage: 'Connect an image to generate texture',
       successMessage: 'Texture applied successfully!',
+      promptOverride,
       onSuccess: async (nodeId: string, resultImageBase64: string) => {
         // Update source node with result so manually connected nodes work
         updateNodeData<TextureNodeData>(nodeId, {
@@ -88,7 +96,7 @@ export const useTextureNodeHandlers = ({
         }
       },
     });
-  }, [nodesRef, edgesRef, setNodes, setEdges, updateNodeData, updateNodeLoadingState, reactFlowInstance, addToHistory, refreshSubscriptionStatus, canvasId]);
+  }, [nodesRef, edgesRef, setNodes, setEdges, updateNodeData, updateNodeLoadingState, reactFlowInstance, addToHistory, refreshSubscriptionStatus, canvasId, linkedGuideline]);
 
   return {
     handleTextureGenerate,

@@ -1,6 +1,6 @@
 import express from 'express';
 import { prisma } from '../db/prisma.js';
-import { isValidEmail } from '../utils/validation.js';
+import { emailSchema, formatZodError } from '../utils/schemas.js';
 import { rateLimit } from 'express-rate-limit';
 
 // API rate limiter - general authenticated endpoints
@@ -18,18 +18,11 @@ const router = express.Router();
 // Join waitlist
 router.post('/', apiRateLimiter, async (req, res) => {
   try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
+    const parsed = emailSchema.safeParse(req.body?.email);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
     }
-
-    // Validate email format (ReDoS-safe validation)
-    if (!isValidEmail(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
-    }
-
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = parsed.data;
 
     // Check if email already exists in waitlist
     const existing = await prisma.waitlist.findUnique({

@@ -3,6 +3,8 @@ import { X, FolderOpen, Plus } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface BrandingProject {
   _id?: string;
@@ -111,18 +113,17 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-800/60">
-          <h2 className="text-lg font-semibold text-neutral-200 font-mono">Select Branding Project</h2>
-          <button
-            onClick={onClose}
+          <h2 className="text-lg font-semibold text-neutral-200 font-mono">{t('canvasNodes.brandingProjectSelectModal.selectBrandingProject') || 'Select Branding Project'}</h2>
+          <Button variant="ghost" onClick={onClose}
             className="p-1.5 rounded hover:bg-neutral-800/50 text-neutral-400 hover:text-neutral-200 transition-colors"
           >
             <X size={18} />
-          </button>
+          </Button>
         </div>
 
         {/* Search */}
         <div className="p-4 border-b border-neutral-800/60">
-          <input
+          <Input
             type="text"
             placeholder={t('canvasNodes.brandingProjectSelectModal.searchProjectsPlaceholder')}
             value={searchQuery}
@@ -138,14 +139,13 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <GlitchLoader size={20} color="brand-cyan" />
-                <span className="ml-2 text-sm text-neutral-400">Loading projects...</span>
+                <span className="ml-2 text-sm text-neutral-400">{t('canvasNodes.brandingProjectSelectModal.loadingProjects') || 'Loading projects...'}</span>
               </div>
             ) : filteredProjects.length > 0 ? (
               filteredProjects.map((project) => {
                 const projectId = project._id || (project as any).id;
                 return (
-                  <button
-                    key={projectId}
+                  <Button variant="ghost" key={projectId}
                     onClick={() => handleSelectProject(project)}
                     className="w-full px-4 py-3 text-left border rounded-md transition-all bg-neutral-900/50 border-neutral-700/30 text-neutral-300 hover:border-[brand-cyan]/50 hover:bg-neutral-800/50 group"
                   >
@@ -153,7 +153,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
                       <FolderOpen size={16} className="text-brand-cyan flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm text-neutral-200 truncate">
-                          {project.name || 'Untitled'}
+                          {project.name || (t('canvasNodes.brandingProjectSelectModal.untitled') || 'Untitled')}
                         </div>
                         {project.prompt && (
                           <div className="text-xs text-neutral-500 mt-1 line-clamp-2">
@@ -167,13 +167,13 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
                         )}
                       </div>
                     </div>
-                  </button>
+                  </Button>
                 );
               })
             ) : (
               <div className="col-span-full text-center py-8">
                 <p className="text-sm text-neutral-500 font-mono">
-                  {searchQuery ? 'No projects found matching your search' : 'No projects found'}
+                  {searchQuery ? (t('canvasNodes.brandingProjectSelectModal.noProjectsFoundMatchingSearch') || 'No projects found matching your search') : (t('canvasNodes.brandingProjectSelectModal.noProjectsFound') || 'No projects found')}
                 </p>
               </div>
             )}
@@ -182,19 +182,17 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
 
         {/* Footer */}
         <div className="p-4 border-t border-neutral-800/60 flex gap-2">
-          <button
-            onClick={handleCreateNew}
+          <Button variant="brand" onClick={handleCreateNew}
             className="flex-1 px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
           >
             <Plus size={16} />
-            Create New Project
-          </button>
-          <button
-            onClick={onClose}
+            {t('canvasNodes.brandingProjectSelectModal.createNewProject') || 'Create New Project'}
+          </Button>
+          <Button variant="ghost" onClick={onClose}
             className="px-4 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 rounded-md text-sm font-mono transition-colors"
           >
-            Cancel
-          </button>
+            {t('canvasNodes.brandingProjectSelectModal.cancel') || 'Cancel'}
+          </Button>
         </div>
       </div>
     </div>

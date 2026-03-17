@@ -26,7 +26,7 @@ import { extractColors } from '@/utils/colorExtraction';
 import { authService } from '@/services/authService';
 
 // ========== IMPORTS - Utils ==========
-import { generateNodeId, getImageFromNode, getConnectedImages, cleanEdgeHandles, getConnectedBrandIdentity } from '@/utils/canvas/canvasNodeUtils';
+import { generateNodeId, getImageFromNode, getConnectedImages, cleanEdgeHandles } from '@/utils/canvas/canvasNodeUtils';
 import { getImageUrl } from '@/utils/imageUtils';
 
 // ========== IMPORTS - UI/UX ==========
@@ -52,6 +52,8 @@ import {
   cleanupFailedNode as cleanupFailedNodeUtil
 } from './utils/nodeGenerationUtils';
 import { uploadImageToR2Auto as uploadImageToR2AutoUtil } from './utils/r2UploadUtils';
+import { getBrandContextForNode, buildEnhancement } from './useBrandContext';
+import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 
 export const useCanvasNodeHandlers = (
   nodes: Node<FlowNodeData>[],
@@ -70,6 +72,9 @@ export const useCanvasNodeHandlers = (
   handleSavePrompt?: (prompt: string) => void
 ) => {
   // ========== CONFIGURAÇÃO INICIAL - Refs e Estado ==========
+
+  // Brand context from canvas header (linked guideline)
+  const { linkedGuideline } = useCanvasHeader();
 
   // Create handlersRef early to avoid circular dependency
   const handlersRef = useRef<any>({});
@@ -488,7 +493,7 @@ export const useCanvasNodeHandlers = (
 
     try {
       const smartPromptResult = await aiApi.generateSmartPrompt({
-        baseImage: editData.uploadedImage || undefined,
+        baseImage: editData.uploadedImage || null,
         designType: editData.designType,
         brandingTags: editData.brandingTags || [],
         categoryTags: editData.tags || [],
@@ -501,8 +506,10 @@ export const useCanvasNodeHandlers = (
         generateText: editData.generateText || false,
         withHuman: editData.withHuman || false,
         enhanceTexture: (editData as any).enhanceTexture === true,
+        removeText: (editData as any).removeText || false,
         negativePrompt: editData.negativePrompt || '',
         additionalPrompt: editData.additionalPrompt || '',
+        instructions: (editData as any).instructions || '',
       });
 
       // Handle both old string format and new object format
@@ -789,85 +796,24 @@ export const useCanvasNodeHandlers = (
       }
     }
 
-    // Check for connected BrandNode and get brand identity
-    const brandIdentity = getConnectedBrandIdentity(nodeId, nodesRef.current, edgesRef.current);
-
-    // Merge brand colors with manually selected colors (brand colors take priority)
-    let finalColors = [...(selectedColors || [])];
-    if (brandIdentity) {
-      const brandColors = [
-        ...brandIdentity.colors.primary,
-        ...brandIdentity.colors.secondary,
-        ...brandIdentity.colors.accent,
-      ];
-      // Add brand colors that aren't already in selectedColors
-      brandColors.forEach(color => {
-        if (!finalColors.includes(color.toUpperCase())) {
-          finalColors.push(color.toUpperCase());
-        }
-      });
-      // Limit to 5 colors total
-      finalColors = finalColors.slice(0, 5);
-    }
-
-    // Build enhanced prompt with colors, brand identity, and human interaction
-    // If customPrompt is provided, use it directly; otherwise build from preset
+    // Build base prompt from custom or preset
     let enhancedPrompt: string;
     if (customPrompt && customPrompt.trim()) {
-      // Use custom prompt as base, but still add colors/human/brand if not already included
       enhancedPrompt = customPrompt.trim();
-
-      // Add brand identity information if available
-      if (brandIdentity) {
-        if (!enhancedPrompt.toLowerCase().includes('brand') && !enhancedPrompt.toLowerCase().includes('identity')) {
-          const brandInfo: string[] = [];
-          if (brandIdentity.personality?.tone) {
-            brandInfo.push(`brand tone: ${brandIdentity.personality.tone}`);
-          }
-          if (brandIdentity.typography?.primary) {
-            brandInfo.push(`typography: ${brandIdentity.typography.primary}`);
-          }
-          if (brandInfo.length > 0) {
-            enhancedPrompt += ` Brand identity: ${brandInfo.join(', ')}.`;
-          }
-        }
-      }
-
-      if (finalColors.length > 0 && !enhancedPrompt.toLowerCase().includes('color')) {
-        enhancedPrompt += ` The scene's color palette should be dominated by or feature accents of: ${finalColors.join(', ')}.`;
-      }
-      if (withHuman && !enhancedPrompt.toLowerCase().includes('human') && !enhancedPrompt.toLowerCase().includes('person')) {
-        const humanAction = Math.random() < 0.5 ? 'looking at' : 'interacting with';
-        enhancedPrompt += ` The scene should include a human person naturally ${humanAction} the mockup product. Ensure the moment feels contextual for the product type.`;
-      }
     } else {
-      // Build from preset prompt
       enhancedPrompt = preset.prompt;
+    }
 
-      // Add brand identity information if available
-      if (brandIdentity) {
-        const brandInfo: string[] = [];
-        if (brandIdentity.personality?.tone) {
-          brandInfo.push(`brand tone: ${brandIdentity.personality.tone}`);
-        }
-        if (brandIdentity.typography?.primary) {
-          brandInfo.push(`typography: ${brandIdentity.typography.primary}`);
-        }
-        if (brandIdentity.composition?.style) {
-          brandInfo.push(`composition style: ${brandIdentity.composition.style}`);
-        }
-        if (brandInfo.length > 0) {
-          enhancedPrompt += ` Brand identity: ${brandInfo.join(', ')}.`;
-        }
-      }
+    // Apply brand guideline context (handles colors, fonts, tone, dos/donts)
+    const { tokens: mockupBrandTokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
+    if (mockupBrandTokens) {
+      enhancedPrompt = buildEnhancement(enhancedPrompt, mockupBrandTokens);
+    }
 
-      if (finalColors.length > 0) {
-        enhancedPrompt += ` The scene's color palette should be dominated by or feature accents of: ${finalColors.join(', ')}.`;
-      }
-      if (withHuman) {
-        const humanAction = Math.random() < 0.5 ? 'looking at' : 'interacting with';
-        enhancedPrompt += ` The scene should include a human person naturally ${humanAction} the mockup product. Ensure the moment feels contextual for the product type.`;
-      }
+    // Add human interaction if requested
+    if (withHuman && !enhancedPrompt.toLowerCase().includes('human') && !enhancedPrompt.toLowerCase().includes('person')) {
+      const humanAction = Math.random() < 0.5 ? 'looking at' : 'interacting with';
+      enhancedPrompt += ` The scene should include a human person naturally ${humanAction} the mockup product. Ensure the moment feels contextual for the product type.`;
     }
 
     let newOutputNodeId: string | null = null;
@@ -966,7 +912,7 @@ export const useCanvasNodeHandlers = (
       updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
       toast.error(error?.message || 'Failed to generate mockup', { duration: 5000 });
     }
-  }, [setNodes, setEdges, addToHistory, uploadImageToR2Auto, updateNodeLoadingState, validateBase64Image, createOutputNodeWithSkeletonForGenerated, updateOutputNodeWithResult, updateOutputNodeWithR2Url, cleanupFailedNode, refreshSubscriptionStatus, edgesRef]);
+  }, [setNodes, setEdges, addToHistory, uploadImageToR2Auto, updateNodeLoadingState, validateBase64Image, createOutputNodeWithSkeletonForGenerated, updateOutputNodeWithResult, updateOutputNodeWithR2Url, cleanupFailedNode, refreshSubscriptionStatus, edgesRef, linkedGuideline]);
 
   // ========== ANGLE NODE HANDLERS ==========
   // Handlers para gerenciar operações de geração de ângulos de imagem
@@ -984,6 +930,7 @@ export const useCanvasNodeHandlers = (
     addToHistory,
     refreshSubscriptionStatus,
     canvasId,
+    linkedGuideline,
   });
 
   // ========== TEXTURE NODE HANDLERS ==========
@@ -1001,6 +948,7 @@ export const useCanvasNodeHandlers = (
     addToHistory,
     refreshSubscriptionStatus,
     canvasId,
+    linkedGuideline,
   });
 
 
@@ -1019,6 +967,7 @@ export const useCanvasNodeHandlers = (
     addToHistory,
     refreshSubscriptionStatus,
     canvasId,
+    linkedGuideline,
   });
 
 
@@ -1037,6 +986,7 @@ export const useCanvasNodeHandlers = (
     addToHistory,
     refreshSubscriptionStatus,
     canvasId,
+    linkedGuideline,
   });
 
   // ========== SHADER NODE HANDLERS ==========
@@ -1518,107 +1468,24 @@ export const useCanvasNodeHandlers = (
         console.log('[handlePromptGenerate] No connected images provided - generating from prompt only');
       }
 
-      // Check for connected BrandNode and enhance prompt with brand identity
-      const brandIdentity = getConnectedBrandIdentity(nodeId, nodesRef.current, edgesRef.current);
+      // Get brand context (edge-connected BrandNode OR linked guideline)
+      const { source, tokens } = getBrandContextForNode(
+        nodeId,
+        nodesRef.current,
+        edgesRef.current,
+        linkedGuideline
+      );
+
+      let enhancedPrompt = tokens ? buildEnhancement(prompt, tokens) : prompt;
+
+      // Add PDF page reference if specified
       const promptData = nodesRef.current.find(n => n.id === nodeId)?.data as PromptNodeData;
       const pdfPageReference = promptData?.pdfPageReference;
-
-      let enhancedPrompt = prompt;
-      const promptLower = prompt.toLowerCase();
-
-      if (brandIdentity) {
-        const brandInfo: string[] = [];
-        const brandContext: string[] = [];
-
-        // Intelligent analysis: check if user mentions specific elements
-        const mentionsColor = promptLower.includes('color') || promptLower.includes('cor') ||
-          promptLower.includes('palette') || promptLower.includes('paleta');
-        const mentionsTypography = promptLower.includes('font') || promptLower.includes('fonte') ||
-          promptLower.includes('typography') || promptLower.includes('tipografia') ||
-          promptLower.includes('text') || promptLower.includes('texto');
-        const mentionsStyle = promptLower.includes('style') || promptLower.includes('estilo') ||
-          promptLower.includes('composition') || promptLower.includes('composição');
-        const mentionsPersonality = promptLower.includes('tone') || promptLower.includes('tom') ||
-          promptLower.includes('feeling') || promptLower.includes('sentimento') ||
-          promptLower.includes('mood') || promptLower.includes('humor');
-
-        // Add colors (always include, but emphasize if mentioned)
-        const allBrandColors = [
-          ...brandIdentity.colors.primary,
-          ...brandIdentity.colors.secondary,
-          ...brandIdentity.colors.accent,
-        ];
-        if (allBrandColors.length > 0) {
-          if (mentionsColor) {
-            brandInfo.push(`Use brand colors: ${allBrandColors.join(', ')}`);
-          } else {
-            brandInfo.push(`Color palette: ${allBrandColors.join(', ')}`);
-          }
-        }
-
-        // Add typography (include if mentioned or if not explicitly excluded)
-        if (brandIdentity.typography?.primary) {
-          if (mentionsTypography) {
-            brandInfo.push(`Use brand typography: ${brandIdentity.typography.primary}`);
-          } else {
-            brandInfo.push(`Typography: ${brandIdentity.typography.primary}`);
-          }
-        }
-
-        // Add personality (include if mentioned)
-        if (mentionsPersonality) {
-          if (brandIdentity.personality?.tone) {
-            brandContext.push(`brand tone: ${brandIdentity.personality.tone}`);
-          }
-          if (brandIdentity.personality?.feeling) {
-            brandContext.push(`brand feeling: ${brandIdentity.personality.feeling}`);
-          }
-        } else {
-          if (brandIdentity.personality?.tone) {
-            brandInfo.push(`Brand tone: ${brandIdentity.personality.tone}`);
-          }
-          if (brandIdentity.personality?.feeling) {
-            brandInfo.push(`Brand feeling: ${brandIdentity.personality.feeling}`);
-          }
-        }
-
-        // Add composition style (include if mentioned)
-        if (brandIdentity.composition?.style) {
-          if (mentionsStyle) {
-            brandInfo.push(`Apply brand composition style: ${brandIdentity.composition.style}`);
-          } else {
-            brandInfo.push(`Composition style: ${brandIdentity.composition.style}`);
-          }
-        }
-
-        // Add visual elements if mentioned
-        if (promptLower.includes('element') || promptLower.includes('elemento') ||
-          promptLower.includes('pattern') || promptLower.includes('padrão')) {
-          if (brandIdentity.visualElements.length > 0) {
-            brandInfo.push(`Visual elements: ${brandIdentity.visualElements.slice(0, 5).join(', ')}`);
-          }
-        }
-
-        // Build enhanced prompt
-        if (brandInfo.length > 0 || brandContext.length > 0) {
-          let brandSection = '';
-          if (brandInfo.length > 0) {
-            brandSection = `Brand identity requirements: ${brandInfo.join('; ')}.`;
-          }
-          if (brandContext.length > 0) {
-            brandSection += (brandSection ? ' ' : '') + `Brand context: ${brandContext.join(', ')}.`;
-          }
-          enhancedPrompt = `${prompt}\n\n${brandSection}`;
-        }
-
-        // Add PDF page reference if specified
-        if (pdfPageReference && pdfPageReference.trim()) {
-          enhancedPrompt += `\n\nRefer to "${pdfPageReference.trim()}" from the brand identity guide PDF for additional guidelines and specifications.`;
-        }
-      } else if (pdfPageReference && pdfPageReference.trim()) {
-        // If no brand identity but PDF reference exists, still add it
+      if (pdfPageReference && pdfPageReference.trim()) {
         enhancedPrompt += `\n\nRefer to "${pdfPageReference.trim()}" from the brand identity guide PDF.`;
       }
+
+      console.log('[handlePromptGenerate] Brand context:', { source, hasEnhancement: enhancedPrompt !== prompt });
 
       const onRetryProgress = (attempt: number, maxRetries: number, delay: number) => {
         const delaySeconds = Math.round(delay / 1000);
@@ -1633,7 +1500,7 @@ export const useCanvasNodeHandlers = (
         model: selectedModel,
         resolution,
         aspectRatio,
-        hasBrandIdentity: !!brandIdentity,
+        brandContextSource: source,
       });
 
       // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
@@ -1701,6 +1568,21 @@ export const useCanvasNodeHandlers = (
 
       cleanupFailedNode(newOutputNodeId);
       updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
+
+      // Check if model responded with text (question/clarification) instead of generating image
+      if (error?.errorData?.isModelQuestion) {
+        const modelMessage = error.errorData.message || 'The AI needs more information to generate the image.';
+        toast(modelMessage, {
+          duration: 8000,
+          icon: '💬',
+          style: {
+            background: 'var(--color-surface-2)',
+            color: 'var(--color-text)',
+            border: '1px solid var(--color-border)',
+          },
+        });
+        return;
+      }
 
       // Show more detailed error message if available
       const errorMessage = error?.errorData?.message || error?.errorData?.error || error?.message || 'Failed to generate image';

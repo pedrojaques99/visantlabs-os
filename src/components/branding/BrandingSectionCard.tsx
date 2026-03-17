@@ -1,11 +1,14 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { X, GripVertical, Minus } from 'lucide-react';
+import { GlassPanel } from '@/components/ui/GlassPanel';
+import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { SectionHeader } from './SectionHeader';
 import { SectionActions } from './SectionActions';
 import { SectionContentRenderer } from './SectionContentRenderer';
 import { getSectionColSpan } from '@/utils/brandingHelpers';
+import { Button } from '@/components/ui/button';
 
 interface BrandingSectionCardProps {
   stepNumber: number;
@@ -142,15 +145,17 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
   );
 
   return (
-    <div
+    <GlassPanel
       ref={cardRef}
-      className={`${colSpan} border rounded-md p-6 md:p-8 transition-all duration-200 group relative animate-fade-in-down ${theme === 'dark' ? 'bg-[#141414]' : 'bg-white'
-        } ${isEditing
-          ? 'border-[brand-cyan]/50 shadow-[0_0_0_1px_rgba(82,221,235,0.1)]'
-          : theme === 'dark'
-            ? 'border-neutral-800/60 hover:border-neutral-700/60'
-            : 'border-neutral-300 hover:border-neutral-400'
-        } ${isDragging ? 'opacity-50' : ''} ${isResizing ? 'cursor-ns-resize' : ''}`}
+      className={cn(
+        colSpan,
+        "p-6 md:p-8 transition-all duration-200 group relative animate-fade-in-down",
+        isEditing
+          ? 'border-brand-cyan/50 shadow-[0_0_0_1px_rgba(82,221,235,0.1)]'
+          : 'border-white/5',
+        isDragging ? 'opacity-50' : '',
+        isResizing ? 'cursor-ns-resize' : ''
+      )}
       style={{
         animation: 'expandSection 0.25s ease-out',
         height: customHeight ? `${customHeight}px` : undefined,
@@ -172,7 +177,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
           <div className="flex items-center gap-2 mb-2">
             {isDraggable && (
               <div
-                className={`transition-colors opacity-60 group-hover:opacity-100 pointer-events-none ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-400' : 'text-neutral-400 hover:text-neutral-500'
+                className={`transition-colors opacity-60 group-hover:opacity-300 pointer-events-none ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-400' : 'text-neutral-400 hover:text-neutral-500'
                   }`}
                 title={t('branding.dragToReorder') || 'Drag to reorder'}
               >
@@ -214,11 +219,10 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
             onFeedback={onFeedback ? (type) => onFeedback(stepNumber, type) : undefined}
           />
           {!isEditing && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleCompact();
-              }}
+            <Button variant="ghost" onClick={(e) => {
+              e.stopPropagation();
+              onToggleCompact();
+            }}
               onMouseDown={(e) => e.stopPropagation()}
               className={`p-1 rounded transition-colors cursor-pointer ${theme === 'dark' ? 'hover:bg-neutral-950/70' : 'hover:bg-neutral-200'
                 }`}
@@ -226,7 +230,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
             >
               <X className={`h-4 w-4 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`} />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -249,7 +253,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
         <div
           ref={resizeRef}
           onMouseDown={handleResizeStart}
-          className={`absolute bottom-0 right-0 w-8 h-8 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-tl-lg ${theme === 'dark' ? 'hover:bg-neutral-950/20' : 'hover:bg-neutral-200'
+          className={`absolute bottom-0 right-0 w-8 h-8 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-300 transition-opacity rounded-tl-lg ${theme === 'dark' ? 'hover:bg-neutral-950/20' : 'hover:bg-neutral-200'
             }`}
           title={t('branding.resize') || 'Resize'}
         >
@@ -257,7 +261,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
             }`} />
         </div>
       )}
-    </div>
+    </GlassPanel>
   );
 };
 

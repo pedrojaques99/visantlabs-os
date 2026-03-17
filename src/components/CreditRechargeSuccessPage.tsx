@@ -7,6 +7,7 @@ import { subscriptionService } from '../services/subscriptionService';
 import { authService } from '../services/authService';
 import type { SubscriptionStatus } from '../services/subscriptionService';
 import { GridDotsBackground } from './ui/GridDotsBackground';
+import { Button } from '@/components/ui/button'
 
 // Hook para animação de contador
 const useCountAnimation = (targetValue: number, duration: number = 800) => {
@@ -77,7 +78,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
       }
     }
 
-    let pollCreditsInterval: NodeJS.Timeout | null = null;
+    let pollCreditsInterval: ReturnType<typeof setInterval> | null = null;
 
     const loadData = async () => {
       // Wait for auth check to complete
@@ -182,7 +183,6 @@ export const CreditRechargeSuccessPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-neutral-300 pt-12 md:pt-14 relative">
       <div className="fixed inset-0 z-0">
-        <GridDotsBackground />
       </div>
       <div className="max-w-2xl mx-auto px-4 py-12 md:py-20 relative z-10">
         <div className="text-center mb-12">
@@ -271,13 +271,12 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         )}
 
         <div className="text-center">
-          <button
-            onClick={handleGetStarted}
+          <Button variant="brand" onClick={handleGetStarted}
             className="inline-flex items-center gap-2 px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-colors"
           >
             <span>{t('creditRechargeSuccess.getStarted')}</span>
             <ArrowRight size={16} />
-          </button>
+          </Button>
         </div>
 
         <div className="mt-12 text-center">

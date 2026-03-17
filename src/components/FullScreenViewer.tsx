@@ -9,6 +9,7 @@ import { BackgroundSelector } from './mockupmachine/BackgroundSelector';
 import { LightingSelector } from './mockupmachine/LightingSelector';
 import { ReImaginePanel } from './ReImaginePanel';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button'
 
 // Get API URL from environment or use current origin for production
 const getApiBaseUrl = () => {
@@ -27,13 +28,13 @@ const isR2Url = (url: string): boolean => {
     'r2.dev',
     'r2.cloudflarestorage.com',
   ];
-  
+
   try {
     const parsedUrl = new URL(url);
     const hostname = parsedUrl.hostname.toLowerCase();
-    
+
     // Check if hostname ends with allowed R2 domains (supports subdomains like pub-xxxxx.r2.dev)
-    return allowedR2Hosts.some(allowedHost => 
+    return allowedR2Hosts.some(allowedHost =>
       hostname === allowedHost || hostname.endsWith('.' + allowedHost)
     );
   } catch {
@@ -276,38 +277,35 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
         className="relative max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] w-full max-h-[90vh] bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl p-6 flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
+        <Button variant="ghost" onClick={onClose}
           className="absolute top-2 right-2 p-1.5 rounded-md text-neutral-400/40 hover:text-neutral-300/80 hover:bg-neutral-950/20 transition-all z-20"
           title="Close (Esc)"
         >
           <X size={16} />
-        </button>
+        </Button>
 
         {/* Navigation Arrows */}
         {hasPrevious && onNavigatePrevious && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onNavigatePrevious();
-            }}
+          <Button variant="ghost" onClick={(e) => {
+            e.stopPropagation();
+            onNavigatePrevious();
+          }}
             className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 text-neutral-400/30 hover:text-neutral-300/70 hover:bg-neutral-950/10 rounded-md transition-all"
             title="Previous (←)"
           >
             <ChevronLeft size={18} />
-          </button>
+          </Button>
         )}
         {hasNext && onNavigateNext && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onNavigateNext();
-            }}
+          <Button variant="ghost" onClick={(e) => {
+            e.stopPropagation();
+            onNavigateNext();
+          }}
             className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 text-neutral-400/30 hover:text-neutral-300/70 hover:bg-neutral-950/10 rounded-md transition-all"
             title="Next (→)"
           >
             <ChevronRight size={18} />
-          </button>
+          </Button>
         )}
 
         <div className="flex-grow flex gap-4 min-h-0 relative">
@@ -335,11 +333,10 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
             {/* Like button - top right corner (only when provided) */}
             {onToggleLike && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleToggleLike();
-                }}
+              <Button variant="ghost" onClick={(e) => {
+                e.stopPropagation();
+                handleToggleLike();
+              }}
                 className={`absolute top-4 right-4 p-2 rounded-md transition-all z-30 backdrop-blur-sm ${localIsLiked
                   ? 'bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30'
                   : 'bg-neutral-950/70 text-neutral-400 hover:bg-neutral-950/60 hover:text-neutral-200'
@@ -348,7 +345,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 aria-label={localIsLiked ? 'Unlike' : 'Like'}
               >
                 <Heart size={18} className={localIsLiked ? 'fill-current' : ''} aria-hidden="true" />
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -405,11 +402,10 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               </div>
             )}
             {onZoomIn && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onZoomIn();
-                }}
+              <Button variant="ghost" onClick={(e) => {
+                e.stopPropagation();
+                onZoomIn();
+              }}
                 disabled={editButtonsDisabled || isLoading}
                 className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
                   ? 'opacity-50 cursor-not-allowed'
@@ -424,14 +420,13 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                     {creditsPerOperation}
                   </span>
                 )}
-              </button>
+              </Button>
             )}
             {onZoomOut && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onZoomOut();
-                }}
+              <Button variant="ghost" onClick={(e) => {
+                e.stopPropagation();
+                onZoomOut();
+              }}
                 disabled={editButtonsDisabled || isLoading}
                 className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
                   ? 'opacity-50 cursor-not-allowed'
@@ -446,14 +441,13 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                     {creditsPerOperation}
                   </span>
                 )}
-              </button>
+              </Button>
             )}
             {onReImagine && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowReImaginePanel(true);
-                }}
+              <Button variant="ghost" onClick={(e) => {
+                e.stopPropagation();
+                setShowReImaginePanel(true);
+              }}
                 disabled={editButtonsDisabled || isLoading}
                 className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-brand-cyan border border-[brand-cyan]/20 hover:border-[brand-cyan]/40 hover:bg-brand-cyan/10 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
                   ? 'opacity-50 cursor-not-allowed'
@@ -468,7 +462,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                     {creditsPerOperation}
                   </span>
                 )}
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -476,8 +470,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
         {/* Open in Editor Button */}
         {!isLoading && hasImage && onOpenInEditor && showActions && (
           <div className="flex-shrink-0">
-            <button
-              onClick={handleOpenInEditor}
+            <Button variant="ghost" onClick={handleOpenInEditor}
               disabled={isConvertingImage}
               className={`flex flex-nowrap items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${isConvertingImage ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
@@ -494,7 +487,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   <span className="text-xs font-medium whitespace-nowrap">Open in Editor</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -513,14 +506,13 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
               {mockup.prompt && (
                 <div>
-                  <button
-                    onClick={() => setShowPrompt(!showPrompt)}
+                  <Button variant="ghost" onClick={() => setShowPrompt(!showPrompt)}
                     className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-brand-cyan transition-colors mb-2"
                   >
                     <FileText size={14} />
                     <span>{showPrompt ? 'Hide' : 'Show'} Prompt</span>
                     {showPrompt ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                  </button>
+                  </Button>
                   {showPrompt && (
                     <p className="text-sm font-mono text-neutral-300 bg-neutral-950/20 p-3 rounded-md border border-neutral-700/30">
                       {mockup.prompt}

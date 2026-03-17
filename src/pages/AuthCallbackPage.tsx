@@ -5,6 +5,7 @@ import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { authService } from '../services/authService';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button'
 
 export const AuthCallbackPage: React.FC = () => {
   const navigate = useNavigate();
@@ -99,25 +100,23 @@ export const AuthCallbackPage: React.FC = () => {
         )}
 
         <div className="flex gap-3">
-          <button
-            onClick={() => navigate('/')}
+          <Button variant="ghost" onClick={() => navigate('/')}
             className="flex-1 bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
           >
             {t('auth.backToHome') || 'Back to Home'}
-          </button>
-          <button
-            onClick={() => {
-              // Open auth modal by navigating to home and triggering auth
-              navigate('/');
-              // Small delay to ensure navigation completes
-              setTimeout(() => {
-                window.dispatchEvent(new CustomEvent('openAuthModal'));
-              }, 100);
-            }}
+          </Button>
+          <Button variant="ghost" onClick={() => {
+            // Open auth modal by navigating to home and triggering auth
+            navigate('/');
+            // Small delay to ensure navigation completes
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('openAuthModal'));
+            }, 100);
+          }}
             className="flex-1 bg-neutral-800/50 hover:bg-neutral-800/70 text-neutral-300 font-semibold py-2.5 px-4 rounded-md border border-neutral-700/50 hover:border-neutral-600/50 transition-all duration-200 text-sm font-mono"
           >
             {t('auth.tryAgain') || 'Try Again'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

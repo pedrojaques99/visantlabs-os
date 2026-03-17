@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Brush, Play, Pause, RotateCcw } from 'lucide-react';
 import type { ShaderNodeData } from '@/types/reactFlow';
+import type { TimerRef } from '@/types/types';
 import { NodeSlider } from '../reactflow/shared/node-slider';
 import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button'
 
 interface ShaderControlsSidebarProps {
   isCollapsed?: boolean;
@@ -75,8 +77,8 @@ export const ShaderControlsSidebar = ({
   // Local state for color pickers (to optimize rendering during drag)
   const [localShadowColor, setLocalShadowColor] = useState<[number, number, number]>(duotoneShadowColor);
   const [localHighlightColor, setLocalHighlightColor] = useState<[number, number, number]>(duotoneHighlightColor);
-  const shadowColorUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const highlightColorUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const shadowColorUpdateTimeoutRef = useRef<TimerRef | null>(null);
+  const highlightColorUpdateTimeoutRef = useRef<TimerRef | null>(null);
   const isDraggingShadowRef = useRef(false);
   const isDraggingHighlightRef = useRef(false);
 
@@ -148,7 +150,7 @@ export const ShaderControlsSidebar = ({
     let lastUpdateTime = Date.now();
     const throttleDelay = 200; // Throttle to 200ms (reduced from 150ms interval)
     let animationFrameId: number | null = null;
-    let intervalId: NodeJS.Timeout | null = null;
+    let intervalId: TimerRef | null = null;
 
     const updateAnimation = () => {
       const currentTime = Date.now();
@@ -219,8 +221,7 @@ export const ShaderControlsSidebar = ({
     >
       {/* Toggle Button - Only visible when expanded */}
       {!isCollapsed && (
-        <button
-          onClick={onToggleCollapse}
+        <Button variant="ghost" onClick={onToggleCollapse}
           className={cn(
             "absolute -left-3 z-50",
             "w-5 h-5 rounded-md",
@@ -237,18 +238,17 @@ export const ShaderControlsSidebar = ({
           title={t('shaderControls.collapse')}
         >
           <ChevronRight size={12} />
-        </button>
+        </Button>
       )}
 
       {isCollapsed ? (
         /* Collapsed State - Icon Only - Entire button is clickable */
-        <button
-          onClick={onToggleCollapse}
+        <Button variant="ghost" onClick={onToggleCollapse}
           className="w-full h-full flex items-center justify-center hover:bg-neutral-800/30 transition-colors duration-200 cursor-pointer"
           title={t('shaderControls.expand')}
         >
           <Brush size={20} className="text-neutral-500 hover:text-neutral-400 transition-colors duration-200" />
-        </button>
+        </Button>
       ) : (
         /* Expanded State - Full Content */
         <div className="w-full h-full flex flex-col overflow-hidden">
@@ -263,7 +263,7 @@ export const ShaderControlsSidebar = ({
               </div>
               {/* Shader Type Select */}
               <div className="space-y-1">
-                <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
+                <label className="text-[9px] font-semibold text-neutral-500 uppercase ">
                   {t('shaderControls.shaderType')}
                 </label>
                 <Select
@@ -288,7 +288,7 @@ export const ShaderControlsSidebar = ({
               {/* Halftone Variant Select (only when halftone is selected) */}
               {shaderType === 'halftone' && (
                 <div className="space-y-1">
-                  <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
+                  <label className="text-[9px] font-semibold text-neutral-500 uppercase ">
                     {t('shaderControls.halftoneVariant')}
                   </label>
                   <Select
@@ -368,12 +368,11 @@ export const ShaderControlsSidebar = ({
                   />
 
                   {/* Invert Checkbox - Subtle Icon Only */}
-                  <button
-                    onClick={() => {
-                      if (onUpdateData) {
-                        onUpdateData(nodeId, { halftoneInvert: halftoneInvert > 0.5 ? 0.0 : 1.0 });
-                      }
-                    }}
+                  <Button variant="ghost" onClick={() => {
+                    if (onUpdateData) {
+                      onUpdateData(nodeId, { halftoneInvert: halftoneInvert > 0.5 ? 0.0 : 1.0 });
+                    }
+                  }}
                     className={cn(
                       "w-full flex items-center justify-center py-1.5 rounded",
                       "border transition-all",
@@ -388,7 +387,7 @@ export const ShaderControlsSidebar = ({
                       "transition-transform duration-200",
                       halftoneInvert > 0.5 && "scale-x-[-1]"
                     )} />
-                  </button>
+                  </Button>
                 </>
               )}
 
@@ -397,15 +396,14 @@ export const ShaderControlsSidebar = ({
                 <>
                   {/* Animation Toggle Button */}
                   <div className="flex items-center justify-between py-1">
-                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.animation')}
                     </label>
-                    <button
-                      onClick={toggleAnimation}
+                    <Button variant="brand" onClick={toggleAnimation}
                       className={cn(
                         "flex items-center gap-2 px-3 py-1.5 rounded",
                         "border transition-all",
-                        "text-xs font-mono uppercase tracking-wider",
+                        "text-xs font-mono uppercase ",
                         isAnimating
                           ? "bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan hover:bg-brand-cyan/30"
                           : "bg-neutral-800/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-700/50 hover:border-neutral-600/50"
@@ -423,7 +421,7 @@ export const ShaderControlsSidebar = ({
                           <span>{t('shaderControls.buttons.play')}</span>
                         </>
                       )}
-                    </button>
+                    </Button>
                   </div>
 
                   <NodeSlider
@@ -502,7 +500,7 @@ export const ShaderControlsSidebar = ({
               {shaderType === 'ascii' && (
                 <>
                   <div className="space-y-1">
-                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.characterSet')}
                     </label>
                     <Select
@@ -567,45 +565,43 @@ export const ShaderControlsSidebar = ({
                   />
 
                   <div className="flex items-center justify-between py-1">
-                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.colored')}
                     </label>
-                    <button
-                      onClick={() => {
-                        if (onUpdateData) {
-                          onUpdateData(nodeId, { asciiColored: asciiColored > 0.5 ? 0.0 : 1.0 });
-                        }
-                      }}
+                    <Button variant="ghost" onClick={() => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { asciiColored: asciiColored > 0.5 ? 0.0 : 1.0 });
+                      }
+                    }}
                       className={cn(
-                        "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase tracking-wider",
+                        "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase ",
                         asciiColored > 0.5
                           ? "bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan"
                           : "bg-neutral-800/50 border-neutral-700/50 text-neutral-400"
                       )}
                     >
                       {asciiColored > 0.5 ? t('shaderControls.buttons.on') : t('shaderControls.buttons.off')}
-                    </button>
+                    </Button>
                   </div>
 
                   <div className="flex items-center justify-between py-1">
-                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.invert')}
                     </label>
-                    <button
-                      onClick={() => {
-                        if (onUpdateData) {
-                          onUpdateData(nodeId, { asciiInvert: asciiInvert > 0.5 ? 0.0 : 1.0 });
-                        }
-                      }}
+                    <Button variant="ghost" onClick={() => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { asciiInvert: asciiInvert > 0.5 ? 0.0 : 1.0 });
+                      }
+                    }}
                       className={cn(
-                        "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase tracking-wider",
+                        "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase ",
                         asciiInvert > 0.5
                           ? "bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan"
                           : "bg-neutral-800/50 border-neutral-700/50 text-neutral-400"
                       )}
                     >
                       {asciiInvert > 0.5 ? t('shaderControls.buttons.on') : t('shaderControls.buttons.off')}
-                    </button>
+                    </Button>
                   </div>
                 </>
               )}
@@ -614,7 +610,7 @@ export const ShaderControlsSidebar = ({
               {shaderType === 'matrixDither' && (
                 <>
                   <div className="space-y-1">
-                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.matrixSize')}
                     </label>
                     <Select
@@ -709,7 +705,7 @@ export const ShaderControlsSidebar = ({
                   />
 
                   <div className="space-y-1">
-                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.palette')}
                     </label>
                     <Select
@@ -737,7 +733,7 @@ export const ShaderControlsSidebar = ({
                 <>
                   {/* Shadow Color Picker */}
                   <div className="space-y-1">
-                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.shadowColor')}
                     </label>
                     <div className="flex items-center gap-2">
@@ -797,7 +793,7 @@ export const ShaderControlsSidebar = ({
 
                   {/* Highlight Color Picker */}
                   <div className="space-y-1">
-                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.highlightColor')}
                     </label>
                     <div className="flex items-center gap-2">

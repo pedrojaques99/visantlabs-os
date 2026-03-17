@@ -6,6 +6,8 @@ import { authService } from '../services/authService';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export const ForgotPasswordPage: React.FC = () => {
   const { t } = useTranslation();
@@ -78,7 +80,7 @@ export const ForgotPasswordPage: React.FC = () => {
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center p-4">
-        <GridDotsBackground />
+
         <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="flex items-center justify-center w-16 h-16 rounded-md bg-green-500/20 mb-4">
@@ -99,7 +101,7 @@ export const ForgotPasswordPage: React.FC = () => {
   if (!token) {
     return (
       <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center p-4">
-        <GridDotsBackground />
+
         <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="flex items-center justify-center w-16 h-16 rounded-md bg-red-500/20 mb-4">
@@ -111,12 +113,12 @@ export const ForgotPasswordPage: React.FC = () => {
             <p className="text-sm text-neutral-400 font-mono mb-4">
               {t('auth.invalidResetLinkMessage') || 'This password reset link is invalid or has expired. Please request a new password reset.'}
             </p>
-            <button
+            <Button variant="ghost"
               onClick={() => navigate('/')}
               className="px-4 py-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black font-semibold rounded-md transition-all duration-200 text-sm font-mono"
             >
               {t('auth.backToHome') || 'Back to Home'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -125,7 +127,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center p-4">
-      <GridDotsBackground />
+
       <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
         <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-md bg-brand-cyan/20">
           <Lock className="w-8 h-8 text-brand-cyan" />
@@ -143,7 +145,7 @@ export const ForgotPasswordPage: React.FC = () => {
             <label className="block text-xs font-mono text-neutral-400 mb-1">
               {t('auth.newPassword') || 'New Password'}
             </label>
-            <input
+            <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -161,7 +163,7 @@ export const ForgotPasswordPage: React.FC = () => {
             <label className="block text-xs font-mono text-neutral-400 mb-1">
               {t('auth.confirmPassword') || 'Confirm Password'}
             </label>
-            <input
+            <Input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -178,7 +180,7 @@ export const ForgotPasswordPage: React.FC = () => {
             </div>
           )}
 
-          <button
+          <Button variant="brand"
             type="submit"
             disabled={isLoading || !password || !confirmPassword}
             className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
@@ -191,7 +193,7 @@ export const ForgotPasswordPage: React.FC = () => {
             ) : (
               t('auth.resetPassword') || 'Reset Password'
             )}
-          </button>
+          </Button>
         </form>
       </div>
     </div>
