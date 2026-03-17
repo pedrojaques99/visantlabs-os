@@ -10,7 +10,14 @@ import { GEMINI_MODELS } from '../constants/geminiModels.js';
  */
 export const PRICING = {
   IMAGE: {
+    // Gemini 2.5 Flash (HD) - fixed resolution
     GEMINI_2_5: 0.039, // gemini-2.5-flash-image
+    // Gemini 3.1 Flash (NB2) - variable resolution
+    NB2_512: 0.045,    // gemini-3.1-flash-image-preview 512px
+    NB2_1K: 0.060,     // gemini-3.1-flash-image-preview 1K
+    NB2_2K: 0.100,     // gemini-3.1-flash-image-preview 2K
+    NB2_4K: 0.151,     // gemini-3.1-flash-image-preview 4K
+    // Gemini 3 Pro - variable resolution
     GEMINI_1K: 0.134,  // gemini-3-pro-image-preview with 1K resolution
     GEMINI_2K: 0.17,   // gemini-3-pro-image-preview with 2K resolution
     GEMINI_4K: 0.24,   // gemini-3-pro-image-preview with 4K resolution
@@ -30,14 +37,32 @@ export function getImagePricing(
   model: GeminiModel | string,
   resolution?: Resolution | string | null
 ): number {
-  // Gemini 2.5 Flash
+  // Gemini 2.5 Flash (HD)
   if (model === GEMINI_MODELS.FLASH) {
     return PRICING.IMAGE.GEMINI_2_5;
   }
 
+  // Gemini 3.1 Flash (NB2) - pricing varies by resolution
+  if (model === GEMINI_MODELS.NB2) {
+    if (resolution === '512px') {
+      return PRICING.IMAGE.NB2_512;
+    }
+    if (resolution === '1K' || resolution === 'HD') {
+      return PRICING.IMAGE.NB2_1K;
+    }
+    if (resolution === '2K') {
+      return PRICING.IMAGE.NB2_2K;
+    }
+    if (resolution === '4K') {
+      return PRICING.IMAGE.NB2_4K;
+    }
+    // Default to 1K if resolution not specified
+    return PRICING.IMAGE.NB2_1K;
+  }
+
   // Gemini 3 Pro - pricing varies by resolution
   if (model === GEMINI_MODELS.PRO) {
-    if (resolution === '1K') {
+    if (resolution === '1K' || resolution === 'HD') {
       return PRICING.IMAGE.GEMINI_1K;
     }
     if (resolution === '2K') {

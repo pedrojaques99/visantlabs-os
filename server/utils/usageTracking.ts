@@ -50,6 +50,7 @@ export function getCreditsRequired(
       case '512px':
         return 1;
       case '1K':
+      case 'HD':
         return 2;
       case '2K':
         return 3;
@@ -63,6 +64,7 @@ export function getCreditsRequired(
   if (model === GEMINI_MODELS.PRO) {
     switch (resolution) {
       case '1K':
+      case 'HD':
         return 3;
       case '2K':
         return 5;

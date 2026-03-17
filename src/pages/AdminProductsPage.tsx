@@ -156,11 +156,11 @@ export const AdminProductsPage: React.FC = () => {
                 { productId: 'credits_50', type: 'credit_package', name: '50 Créditos', credits: 50, priceBRL: 25.90, displayOrder: 1, paymentLinkBRL: 'https://buy.stripe.com/9B6eV65EbdKc3ZYaBk0gw08', stripeProductId: 'prod_TXViJlOBGY0yTa' },
                 { productId: 'credits_100', type: 'credit_package', name: '100 Créditos', credits: 100, priceBRL: 45.90, displayOrder: 2, paymentLinkBRL: 'https://buy.stripe.com/28E00c4A7eOg0NM38S0gw09', stripeProductId: 'prod_TSoesFFm3kKj1E' },
                 { productId: 'credits_500', type: 'credit_package', name: '500 Créditos', credits: 500, priceBRL: 198.00, displayOrder: 3, paymentLinkBRL: 'https://buy.stripe.com/3cI8wI9Ur0Xq9ki5h00gw07', stripeProductId: 'prod_TSoiFWVxxng27m' },
-                // Plans
-                { productId: 'plan_pro', type: 'subscription_plan', name: 'Plano Pro', credits: 150, priceBRL: 49.90, displayOrder: 4, description: '150 créditos/mês, Modo Experimental, Suporte Prioritário, 20GB Storage', metadata: { tier: 'pro', storageLimitGB: 20 } },
-                { productId: 'plan_pro_annual', type: 'subscription_plan', name: 'Plano Pro Anual', credits: 1800, priceBRL: 499.00, displayOrder: 5, description: '1.800 créditos/ano, Modo Experimental, Suporte Prioritário, 20GB Storage', metadata: { tier: 'pro', storageLimitGB: 20, interval: 'year' } },
-                { productId: 'plan_vision', type: 'subscription_plan', name: 'Plano Vision', credits: 400, priceBRL: 89.90, displayOrder: 6, description: '400 créditos/mês, Modo Experimental, Suporte Rápido, 100GB Storage', metadata: { tier: 'vision', storageLimitGB: 100 } },
-                { productId: 'plan_vision_annual', type: 'subscription_plan', name: 'Plano Vision Anual', credits: 4800, priceBRL: 899.00, displayOrder: 7, description: '4.800 créditos/ano, Modo Experimental, Suporte Rápido, 100GB Storage', metadata: { tier: 'vision', storageLimitGB: 100, interval: 'year' } },
+                // Plans (créditos dobrados para validação agressiva - usuários não usam 100%)
+                { productId: 'plan_pro', type: 'subscription_plan', name: 'Plano Pro', credits: 300, priceBRL: 49.90, displayOrder: 4, description: '300 créditos/mês, Modo Experimental, Suporte Prioritário, 20GB Storage', metadata: { tier: 'pro', storageLimitGB: 20 } },
+                { productId: 'plan_pro_annual', type: 'subscription_plan', name: 'Plano Pro Anual', credits: 3600, priceBRL: 499.00, displayOrder: 5, description: '3.600 créditos/ano, Modo Experimental, Suporte Prioritário, 20GB Storage', metadata: { tier: 'pro', storageLimitGB: 20, interval: 'year' } },
+                { productId: 'plan_vision', type: 'subscription_plan', name: 'Plano Vision', credits: 800, priceBRL: 89.90, displayOrder: 6, description: '800 créditos/mês, Modo Experimental, Suporte Rápido, 100GB Storage', metadata: { tier: 'vision', storageLimitGB: 100 } },
+                { productId: 'plan_vision_annual', type: 'subscription_plan', name: 'Plano Vision Anual', credits: 9600, priceBRL: 899.00, displayOrder: 7, description: '9.600 créditos/ano, Modo Experimental, Suporte Rápido, 100GB Storage', metadata: { tier: 'vision', storageLimitGB: 100, interval: 'year' } },
             ];
 
             for (const product of defaultProducts) {
