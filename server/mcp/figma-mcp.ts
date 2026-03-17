@@ -48,7 +48,7 @@ server.setRequestHandler(
     switch (name) {
       case 'get_selection': {
         const { fileId } = args;
-        const session = pluginBridge.getSession(fileId);
+        const session = pluginBridge.getSession(fileId as string);
 
         if (!session) {
           return {
@@ -93,7 +93,7 @@ server.setRequestHandler(
                 ? [
                     {
                       type: 'SOLID',
-                      color: parseHexColor(backgroundColor),
+                      color: parseHexColor(backgroundColor as string),
                     },
                   ]
                 : [],
@@ -115,7 +115,7 @@ server.setRequestHandler(
           };
         }
 
-        const result = await pluginBridge.push(fileId, validation.valid);
+        const result = await pluginBridge.push(fileId as string, validation.valid);
 
         return {
           content: [
@@ -143,7 +143,7 @@ server.setRequestHandler(
                 ? [
                     {
                       type: 'SOLID',
-                      color: parseHexColor(fill),
+                      color: parseHexColor(fill as string),
                     },
                   ]
                 : [],
@@ -165,7 +165,7 @@ server.setRequestHandler(
           };
         }
 
-        const result = await pluginBridge.push(fileId, validation.valid);
+        const result = await pluginBridge.push(fileId as string, validation.valid);
 
         return {
           content: [
@@ -214,7 +214,7 @@ server.setRequestHandler(
           };
         }
 
-        const result = await pluginBridge.push(fileId, validation.valid);
+        const result = await pluginBridge.push(fileId as string, validation.valid);
 
         return {
           content: [
@@ -238,7 +238,7 @@ server.setRequestHandler(
             fills: [
               {
                 type: 'SOLID',
-                color: parseHexColor(fill),
+                color: parseHexColor(fill as string),
               },
             ],
           },
@@ -256,7 +256,7 @@ server.setRequestHandler(
           };
         }
 
-        const result = await pluginBridge.push(fileId, validation.valid);
+        const result = await pluginBridge.push(fileId as string, validation.valid);
 
         return {
           content: [
@@ -293,7 +293,7 @@ server.setRequestHandler(
           };
         }
 
-        const result = await pluginBridge.push(fileId, validation.valid);
+        const result = await pluginBridge.push(fileId as string, validation.valid);
 
         return {
           content: [
@@ -329,7 +329,7 @@ server.setRequestHandler(
           };
         }
 
-        const result = await pluginBridge.push(fileId, validation.valid);
+        const result = await pluginBridge.push(fileId as string, validation.valid);
 
         return {
           content: [
@@ -443,7 +443,7 @@ server.setRequestHandler(
 
             const validation = operationValidator.validateBatch(operations);
             if (validation.invalid.length === 0) {
-              pasteResult = await pluginBridge.push(fileId, validation.valid);
+              pasteResult = await pluginBridge.push(fileId as string, validation.valid);
             } else {
               console.warn('[Figma MCP] SET_IMAGE_FILL validation failed:', validation.invalid);
             }

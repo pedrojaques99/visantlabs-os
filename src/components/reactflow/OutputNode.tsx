@@ -9,9 +9,11 @@ import { normalizeImageToBase64 } from '@/services/reactFlowService';
 import { toast } from 'sonner';
 import { NodeHandles } from './shared/NodeHandles';
 import { NodeContainer } from './shared/NodeContainer';
-import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
+import { NodeImageContainer } from './shared/NodeImageContainer';
+import { NodePlaceholder } from './shared/NodePlaceholder';
 import { NodeActionBar } from './shared/NodeActionBar';
 import { ImageNodeActionButtons } from './shared/ImageNodeActionButtons';
+import { isSafeUrl } from '@/utils/imageUtils';
 import { useNodeDownload } from './shared/useNodeDownload';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useMockupLike } from '@/hooks/useMockupLike';
@@ -35,8 +37,26 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const [isDescribing, setIsDescribing] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showBrandKitModal, setShowBrandKitModal] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const loadingStartTimeRef = useRef<number | null>(null);
 
   const isLoading = nodeData.isLoading || false;
+
+  // Track elapsed time during loading
+  useEffect(() => {
+    if (isLoading) {
+      loadingStartTimeRef.current = Date.now();
+      const interval = setInterval(() => {
+        if (loadingStartTimeRef.current) {
+          setElapsedTime(Math.floor((Date.now() - loadingStartTimeRef.current) / 1000));
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    } else {
+      loadingStartTimeRef.current = null;
+      setElapsedTime(0);
+    }
+  }, [isLoading]);
 
   // Use centralized media source hook - replaces 130+ lines of useEffect
   const ownResult = useMemo(() => ({
@@ -81,10 +101,10 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   });
 
   const handleSave = useCallback(async () => {
-    if (!imageUrl || isSaving) return;
+    if (!mediaUrl || isSaving) return;
 
-    // Only save if imageUrl is from R2 (not a data URL)
-    if (typeof imageUrl === 'string' && imageUrl.startsWith('data:')) {
+    // Only save if mediaUrl is from R2 (not a data URL)
+    if (typeof mediaUrl === 'string' && mediaUrl.startsWith('data:')) {
       toast.error(t('canvasNodes.outputNode.pleaseUseImageFromR2'), { duration: 3000 });
       return;
     }
@@ -98,7 +118,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     setIsSaving(true);
     try {
       const savedMockup = await mockupApi.save({
-        imageUrl: imageUrl,
+        imageUrl: mediaUrl,
         prompt: 'Canvas output image',
         designType: 'other',
         tags: [],
@@ -126,16 +146,16 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     } finally {
       setIsSaving(false);
     }
-  }, [imageUrl, isSaving, savedMockupId, handleToggleLike]);
+  }, [mediaUrl, isSaving, savedMockupId, handleToggleLike]);
 
   const handleView = useCallback(() => {
-    if (imageUrl && nodeData.onView) {
-      nodeData.onView(imageUrl);
+    if (mediaUrl && nodeData.onView) {
+      nodeData.onView(mediaUrl);
     }
-  }, [imageUrl, nodeData]);
+  }, [mediaUrl, nodeData]);
 
   const handleDescribe = useCallback(async () => {
-    if (!imageUrl || isDescribing) return;
+    if (!mediaUrl || isDescribing) return;
 
     // Get image base64 from URL or use base64 fallback
     let imageInput: string | { base64: string; mimeType: string };
@@ -143,9 +163,9 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     // Check for base64 fallback first (from resultImageBase64)
     const base64Fallback = nodeData.resultImageBase64;
 
-    if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('data:')) {
+    if (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.startsWith('data:')) {
       // Already a data URL, use directly
-      imageInput = imageUrl;
+      imageInput = mediaUrl;
     } else if (base64Fallback && typeof base64Fallback === 'string') {
       // Use base64 fallback if available (avoids fetch)
       const cleanBase64 = base64Fallback.startsWith('data:')
@@ -153,11 +173,11 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         : base64Fallback;
       // Try to detect mimeType from URL or default to png
       let mimeType = 'image/png';
-      if (imageUrl.includes('.jpg') || imageUrl.includes('.jpeg')) {
+      if (mediaUrl.includes('.jpg') || mediaUrl.includes('.jpeg')) {
         mimeType = 'image/jpeg';
-      } else if (imageUrl.includes('.webp')) {
+      } else if (mediaUrl.includes('.webp')) {
         mimeType = 'image/webp';
-      } else if (imageUrl.includes('.gif')) {
+      } else if (mediaUrl.includes('.gif')) {
         mimeType = 'image/gif';
       }
       imageInput = {
@@ -167,14 +187,14 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     } else {
       // Convert URL to base64 using utility function (with base64 fallback if available)
       try {
-        const base64 = await normalizeImageToBase64(imageUrl, base64Fallback);
+        const base64 = await normalizeImageToBase64(mediaUrl, base64Fallback);
         // Try to detect mimeType from URL or default to png
         let mimeType = 'image/png';
-        if (imageUrl.includes('.jpg') || imageUrl.includes('.jpeg')) {
+        if (mediaUrl.includes('.jpg') || mediaUrl.includes('.jpeg')) {
           mimeType = 'image/jpeg';
-        } else if (imageUrl.includes('.webp')) {
+        } else if (mediaUrl.includes('.webp')) {
           mimeType = 'image/webp';
-        } else if (imageUrl.includes('.gif')) {
+        } else if (mediaUrl.includes('.gif')) {
           mimeType = 'image/gif';
         }
         imageInput = {
@@ -242,7 +262,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         nodeData.onUpdateData(String(id), { isDescribing: false });
       }
     }
-  }, [imageUrl, isDescribing, nodeData, id]);
+  }, [mediaUrl, isDescribing, nodeData, id]);
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((_: any, params: { width: number; height: number; x: number; y: number }) => {
@@ -275,7 +295,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
   }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
 
-  const hasMedia = !!(imageUrl || videoUrl);
+  const hasMedia = !!mediaUrl;
 
   return (
     <NodeContainer
@@ -320,10 +340,10 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       </div>
 
       <NodeImageContainer className="flex items-center justify-center" style={{ width: '100%', height: '100%', flex: '1 1 0%', minHeight: 0 }}>
-        {isVideo && videoUrl ? (
+        {isVideo && mediaUrl ? (
           <div className="relative flex items-center justify-center group/video" style={{ width: '100%', height: '100%' }}>
             <video
-              src={videoUrl}
+              src={mediaUrl}
               controls
               className={cn(
                 'object-contain rounded-md node-image',
@@ -360,10 +380,10 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               </div>
             )}
           </div>
-        ) : imageUrl ? (
+        ) : mediaUrl ? (
           <div className="relative flex items-center justify-center group/image" style={{ width: '100%', height: '100%' }}>
             <img
-              src={imageUrl && (isSafeUrl(imageUrl) || imageUrl.startsWith('http') || imageUrl.startsWith('blob:') || imageUrl.startsWith('data:')) ? imageUrl : ''}
+              src={mediaUrl && (isSafeUrl(mediaUrl) || mediaUrl.startsWith('http') || mediaUrl.startsWith('blob:') || mediaUrl.startsWith('data:')) ? mediaUrl : ''}
               alt="Output"
               className={cn(
                 'object-contain rounded-md node-image',
@@ -413,7 +433,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         )}
       </NodeImageContainer>
 
-      {!dragging && (imageUrl || videoUrl) && (
+      {!dragging && mediaUrl && (
         <NodeActionBar selected={selected} getZoom={getZoom}>
           <ImageNodeActionButtons
             onView={handleView}
@@ -424,14 +444,14 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             onDelete={() => setShowDeleteModal(true)}
             showDelete={!!(nodeData.onDelete && savedMockupId)}
             onBrandKit={() => setShowBrandKitModal(true)}
-            showBrandKit={!!(nodeData.onBrandKit && (imageUrl || videoUrl))}
+            showBrandKit={!!(nodeData.onBrandKit && mediaUrl)}
             onSave={() => handleSave()}
             isLiked={isLiked}
             isSaving={isSaving}
             showLike={true}
             onDescribe={handleDescribe}
             isDescribing={isDescribing}
-            describeDisabled={!imageUrl}
+            describeDisabled={!mediaUrl}
             showDescribe={true}
             translationKeyPrefix="canvasNodes.outputNode"
             t={t}
