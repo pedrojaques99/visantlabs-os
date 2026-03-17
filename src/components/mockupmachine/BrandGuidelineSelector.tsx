@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
+import { useLayout } from '@/hooks/useLayout';
 import { useMockup } from './MockupContext';
 import { BrandGuidelineWizardModal } from './BrandGuidelineWizardModal';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
@@ -18,7 +19,12 @@ interface BrandGuidelineSelectorProps {
 export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ asButton }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
+    const { user } = useLayout();
     const { selectedBrandGuideline, setSelectedBrandGuideline } = useMockup();
+
+    const isAdmin = user?.isAdmin === true;
+    const isTester = user?.userCategory === 'tester' || user?.username === 'tester';
+    const canSelectBrand = isAdmin || isTester;
 
     const [guidelines, setGuidelines] = useState<BrandGuideline[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -29,6 +35,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const fetchGuidelines = async () => {
+        if (!canSelectBrand) return;
         setIsLoading(true);
         try {
             const data = await brandGuidelineApi.getAll();
@@ -81,6 +88,8 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
     };
 
     const selectedGuidelineObj = guidelines.find(g => g.id === selectedBrandGuideline);
+
+    if (!canSelectBrand) return null;
 
     return (
         <div className={cn(

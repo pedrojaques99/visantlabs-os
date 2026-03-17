@@ -3,6 +3,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
+import { useDynamicSuggestions } from '@/hooks/useDynamicSuggestions';
 import { translateTag } from '@/utils/localeUtils';
 import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -376,6 +377,9 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
     setWithHuman,
     setEnhanceTexture,
     setRemoveText,
+    // For dynamic suggestions
+    hasAnalyzed,
+    isAnalyzing,
   } = useMockup();
 
   const {
@@ -388,6 +392,13 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
     togglePoolTag,
     tagCategories
   } = useMockupTags();
+
+  // Dynamic suggestion refinement based on user selections
+  useDynamicSuggestions({
+    enabled: hasAnalyzed && !isAnalyzing && !isGenerating,
+    debounceMs: 1200, // Wait 1.2s after last selection
+    minTags: 1, // Trigger after at least 1 tag is selected
+  });
 
   // Filter tags
   const sectionData: Record<SectionKey, string[]> = {
