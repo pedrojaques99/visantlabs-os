@@ -89,6 +89,15 @@ export class ModelOverloadedError extends Error {
   }
 }
 
+export class ModelResponseTextError extends Error {
+  modelResponse: string;
+  constructor(modelResponse: string) {
+    super(`MODEL_RESPONSE_TEXT:${modelResponse}`);
+    this.name = 'ModelResponseTextError';
+    this.modelResponse = modelResponse;
+  }
+}
+
 interface RetryOptions {
   maxRetries?: number;
   timeout?: number;
@@ -307,10 +316,20 @@ export const generateMockup = async (
       config: config,
     });
 
+    let textResponse = '';
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         return part.inlineData.data;
       }
+      if (part.text) {
+        textResponse += part.text + ' ';
+      }
+    }
+
+    // Model responded with text instead of image - throw friendly error
+    const trimmedResponse = textResponse.trim();
+    if (trimmedResponse) {
+      throw new ModelResponseTextError(trimmedResponse);
     }
 
     throw new Error("No image was generated in the response.");

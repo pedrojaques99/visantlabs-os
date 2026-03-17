@@ -1569,6 +1569,21 @@ export const useCanvasNodeHandlers = (
       cleanupFailedNode(newOutputNodeId);
       updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
 
+      // Check if model responded with text (question/clarification) instead of generating image
+      if (error?.errorData?.isModelQuestion) {
+        const modelMessage = error.errorData.message || 'The AI needs more information to generate the image.';
+        toast(modelMessage, {
+          duration: 8000,
+          icon: '💬',
+          style: {
+            background: 'var(--color-surface-2)',
+            color: 'var(--color-text)',
+            border: '1px solid var(--color-border)',
+          },
+        });
+        return;
+      }
+
       // Show more detailed error message if available
       const errorMessage = error?.errorData?.message || error?.errorData?.error || error?.message || 'Failed to generate image';
       toast.error(errorMessage, { duration: 5000 });
