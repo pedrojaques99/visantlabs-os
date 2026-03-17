@@ -5,6 +5,8 @@ import { SpeedInsights } from '@vercel/speed-insights/react';
 import App from './App';
 import PluginPage from './pages/PluginPage';
 import { ErrorBoundaryWrapper } from './components/ErrorBoundaryWrapper';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
 import { BotIdProvider } from './components/BotIdProvider';
 import { getCurrentLocale, translate } from './utils/localeUtils';
 
@@ -121,9 +123,11 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <BotIdProvider>
-      <RouterProvider router={router} />
-      <SpeedInsights />
-    </BotIdProvider>
+    <QueryClientProvider client={queryClient}>
+      <BotIdProvider>
+        <RouterProvider router={router} />
+        <SpeedInsights />
+      </BotIdProvider>
+    </QueryClientProvider>
   </React.StrictMode>
 );

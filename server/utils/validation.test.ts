@@ -1,8 +1,4 @@
-/**
- * Tests for validation helpers (ensureString, ensureOptionalBoolean, isValidAspectRatio).
- * Run: npx tsx server/utils/validation.test.ts
- */
-
+import { describe, it, expect } from 'vitest';
 import {
   ensureString,
   ensureOptionalBoolean,
@@ -12,59 +8,134 @@ import {
   isValidObjectId,
 } from './validation.js';
 
-let failed = 0;
+describe('Validation Helpers', () => {
+  describe('ensureString', () => {
+    it('should accept valid string', () => {
+      expect(ensureString('hello')).toBe('hello');
+    });
 
-function ok(cond: boolean, msg: string) {
-  if (!cond) {
-    console.error('FAIL:', msg);
-    failed++;
-  } else {
-    console.log('OK:', msg);
-  }
-}
+    it('should accept empty string', () => {
+      expect(ensureString('')).toBe('');
+    });
 
-// ensureString
-ok(ensureString('hello') === 'hello', 'ensureString accepts valid string');
-ok(ensureString('') === '', 'ensureString accepts empty string');
-ok(ensureString(null) === null, 'ensureString rejects null');
-ok(ensureString(undefined) === null, 'ensureString rejects undefined');
-ok(ensureString(123) === null, 'ensureString rejects number');
-ok(ensureString({ $gt: '' }) === null, 'ensureString rejects object (prevents $set injection)');
-ok(ensureString(['a']) === null, 'ensureString rejects array');
-ok(ensureString('xy', 1) === null, 'ensureString rejects string over maxLen');
-ok(ensureString('x', 2) === 'x', 'ensureString accepts string within maxLen');
+    it('should reject null', () => {
+      expect(ensureString(null)).toBe(null);
+    });
 
-// ensureOptionalBoolean
-ok(ensureOptionalBoolean(true) === true, 'ensureOptionalBoolean accepts true');
-ok(ensureOptionalBoolean(false) === false, 'ensureOptionalBoolean accepts false');
-ok(ensureOptionalBoolean(undefined) === undefined, 'ensureOptionalBoolean returns undefined for undefined');
-ok(ensureOptionalBoolean(null) === undefined, 'ensureOptionalBoolean returns undefined for null');
-ok(ensureOptionalBoolean(1) === undefined, 'ensureOptionalBoolean rejects number');
-ok(ensureOptionalBoolean('true') === undefined, 'ensureOptionalBoolean rejects string');
+    it('should reject undefined', () => {
+      expect(ensureString(undefined)).toBe(null);
+    });
 
-// isValidAspectRatio
-ok(isValidAspectRatio('16:9') === true, 'isValidAspectRatio accepts 16:9');
-ok(isValidAspectRatio('1:1') === true, 'isValidAspectRatio accepts 1:1');
-ok(isValidAspectRatio('invalid') === false, 'isValidAspectRatio rejects invalid');
-ok(isValidAspectRatio('') === false, 'isValidAspectRatio rejects empty');
-ok(isValidAspectRatio({ $gt: '' } as any) === false, 'isValidAspectRatio rejects non-string');
-ok(VALID_ASPECT_RATIOS.includes('16:9'), 'VALID_ASPECT_RATIOS contains 16:9');
+    it('should reject number', () => {
+      expect(ensureString(123)).toBe(null);
+    });
 
-// isSafeId (used in presets)
-ok(isSafeId('abc-123_x') === true, 'isSafeId accepts alphanumeric, hyphen, underscore');
-ok(isSafeId('a') === true, 'isSafeId accepts short id');
-ok(isSafeId('') === false, 'isSafeId rejects empty');
-ok(isSafeId('a; DROP TABLE--') === false, 'isSafeId rejects dangerous chars');
-ok(isSafeId('x'.repeat(101)) === false, 'isSafeId rejects over maxLen');
+    it('should reject object (prevents $set injection)', () => {
+      expect(ensureString({ $gt: '' })).toBe(null);
+    });
 
-// isValidObjectId
-ok(isValidObjectId('507f1f77bcf86cd799439011') === true, 'isValidObjectId accepts 24-char hex');
-ok(isValidObjectId('invalid') === false, 'isValidObjectId rejects non-hex');
-ok(isValidObjectId('123') === false, 'isValidObjectId rejects short string');
-ok(isValidObjectId('') === false, 'isValidObjectId rejects empty');
+    it('should reject array', () => {
+      expect(ensureString(['a'])).toBe(null);
+    });
 
-if (failed > 0) {
-  console.error('\n' + failed + ' test(s) failed');
-  process.exit(1);
-}
-console.log('\nAll validation tests passed.');
+    it('should reject string over maxLen', () => {
+      expect(ensureString('xy', 1)).toBe(null);
+    });
+
+    it('should accept string within maxLen', () => {
+      expect(ensureString('x', 2)).toBe('x');
+    });
+  });
+
+  describe('ensureOptionalBoolean', () => {
+    it('should accept true', () => {
+      expect(ensureOptionalBoolean(true)).toBe(true);
+    });
+
+    it('should accept false', () => {
+      expect(ensureOptionalBoolean(false)).toBe(false);
+    });
+
+    it('should return undefined for undefined', () => {
+      expect(ensureOptionalBoolean(undefined)).toBe(undefined);
+    });
+
+    it('should return undefined for null', () => {
+      expect(ensureOptionalBoolean(null)).toBe(undefined);
+    });
+
+    it('should reject number', () => {
+      expect(ensureOptionalBoolean(1)).toBe(undefined);
+    });
+
+    it('should reject string', () => {
+      expect(ensureOptionalBoolean('true')).toBe(undefined);
+    });
+  });
+
+  describe('isValidAspectRatio', () => {
+    it('should accept 16:9', () => {
+      expect(isValidAspectRatio('16:9')).toBe(true);
+    });
+
+    it('should accept 1:1', () => {
+      expect(isValidAspectRatio('1:1')).toBe(true);
+    });
+
+    it('should reject invalid aspect ratio', () => {
+      expect(isValidAspectRatio('invalid')).toBe(false);
+    });
+
+    it('should reject empty string', () => {
+      expect(isValidAspectRatio('')).toBe(false);
+    });
+
+    it('should reject non-string', () => {
+      expect(isValidAspectRatio({ $gt: '' } as any)).toBe(false);
+    });
+
+    it('should have 16:9 in VALID_ASPECT_RATIOS', () => {
+      expect(VALID_ASPECT_RATIOS).toContain('16:9');
+    });
+  });
+
+  describe('isSafeId', () => {
+    it('should accept alphanumeric, hyphen, underscore', () => {
+      expect(isSafeId('abc-123_x')).toBe(true);
+    });
+
+    it('should accept short id', () => {
+      expect(isSafeId('a')).toBe(true);
+    });
+
+    it('should reject empty id', () => {
+      expect(isSafeId('')).toBe(false);
+    });
+
+    it('should reject dangerous chars', () => {
+      expect(isSafeId('a; DROP TABLE--')).toBe(false);
+    });
+
+    it('should reject id over maxLen', () => {
+      expect(isSafeId('x'.repeat(101))).toBe(false);
+    });
+  });
+
+  describe('isValidObjectId', () => {
+    it('should accept 24-char hex', () => {
+      expect(isValidObjectId('507f1f77bcf86cd799439011')).toBe(true);
+    });
+
+    it('should reject non-hex', () => {
+      expect(isValidObjectId('invalid')).toBe(false);
+    });
+
+    it('should reject short string', () => {
+      expect(isValidObjectId('123')).toBe(false);
+    });
+
+    it('should reject empty string', () => {
+      expect(isValidObjectId('')).toBe(false);
+    });
+  });
+});

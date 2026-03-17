@@ -3,6 +3,7 @@ import { X, Bold, AlignLeft, AlignCenter, AlignRight, Trash2, Type, Check } from
 import { FormInput } from '@/components/ui/form-input';
 import { Select } from '@/components/ui/select';
 import type { PdfFieldMapping } from '@/types/types';
+import { Button } from '@/components/ui/button';
 
 interface FieldPropertiesPanelProps {
   mapping: PdfFieldMapping;
@@ -144,7 +145,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
         <p className="text-xs text-neutral-400 font-mono mb-3">
           {mapping.label || mapping.fieldId}
         </p>
-        <button
+        <Button variant="destructive"
           onClick={onRemove}
           className="w-full px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-red-400"
           title="Remover campo (Delete)"
@@ -152,7 +153,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
         >
           <Trash2 size={16} />
           Remover Campo
-        </button>
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -215,7 +216,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
           <label className="block text-xs text-neutral-400 mb-2 font-mono">
             Estilo
           </label>
-          <button
+          <Button variant="ghost"
             onClick={() => updateLocal({ bold: !isBold })}
             className={`w-full px-3 py-2 rounded-md border transition-colors flex items-center justify-center gap-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${isBold
               ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
@@ -226,7 +227,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
           >
             <Bold size={16} />
             {isBold ? 'Negrito' : 'Normal'}
-          </button>
+          </Button>
         </div>
 
         {/* Cor */}
@@ -258,7 +259,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             Alinhamento
           </label>
           <div className="flex gap-2">
-            <button
+            <Button variant="ghost"
               onClick={() => updateLocal({ align: 'left' })}
               className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${(getValue('align') || 'left') === 'left'
                 ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
@@ -269,8 +270,8 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
               aria-pressed={(getValue('align') || 'left') === 'left'}
             >
               <AlignLeft size={18} className="mx-auto" />
-            </button>
-            <button
+            </Button>
+            <Button variant="ghost"
               onClick={() => updateLocal({ align: 'center' })}
               className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${getValue('align') === 'center'
                 ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
@@ -281,8 +282,8 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
               aria-pressed={getValue('align') === 'center'}
             >
               <AlignCenter size={18} className="mx-auto" />
-            </button>
-            <button
+            </Button>
+            <Button variant="ghost"
               onClick={() => updateLocal({ align: 'right' })}
               className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${getValue('align') === 'right'
                 ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
@@ -293,7 +294,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
               aria-pressed={getValue('align') === 'right'}
             >
               <AlignRight size={18} className="mx-auto" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -360,7 +361,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
       {/* Apply/Dismiss buttons */}
       {hasChanges && (
         <div className="p-4 border-t border-neutral-800 flex gap-2">
-          <button
+          <Button variant="brand"
             onClick={handleApply}
             className="flex-1 px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-md text-brand-cyan font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
             title="Aplicar mudanças"
@@ -368,8 +369,8 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
           >
             <Check size={16} />
             Aplicar
-          </button>
-          <button
+          </Button>
+          <Button variant="outline"
             onClick={handleDismiss}
             className="flex-1 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-neutral-500"
             title="Descartar mudanças"
@@ -377,7 +378,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
           >
             <X size={16} />
             Descartar
-          </button>
+          </Button>
         </div>
       )}
     </div>

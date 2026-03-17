@@ -3,6 +3,7 @@ import { Menu, ChevronUp } from 'lucide-react';
 import { cn } from '../lib/utils';
 import type { PromptCategory } from '../types/communityPrompts';
 import { CATEGORY_CONFIG } from './PresetCard';
+import { Button } from '@/components/ui/button'
 
 interface CommunityPresetsSidebarProps {
   isCollapsed: boolean;
@@ -46,8 +47,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
             const isActive = activeCategory === category;
 
             return (
-              <button
-                key={category}
+              <Button variant="ghost"                 key={category}
                 onClick={() => onCategoryChange(category)}
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 border",
@@ -60,7 +60,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                 <span>
                   {t(`communityPresets.categories.${category}`) || config?.label || category}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -74,8 +74,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
         {allTags.length > 0 && (
           <div className="relative group">
             <div className="flex overflow-x-auto gap-2 pb-1 scrollbar-hide [&::-webkit-scrollbar]:hidden mask-linear-fade items-center">
-              <button
-                onClick={() => handleTagClick(null)}
+              <Button variant="ghost"                 onClick={() => handleTagClick(null)}
                 className={cn(
                   "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
                   filterTag === null
@@ -84,13 +83,12 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                 )}
               >
                 {t('communityPresets.tags.all') || 'All'}
-              </button>
+              </Button>
 
               <div className="w-[1px] h-4 bg-neutral-800 mx-1 flex-shrink-0" />
 
               {allTags.map(({ tag, count }) => (
-                <button
-                  key={tag}
+                <Button variant="ghost"                   key={tag}
                   onClick={() => handleTagClick(tag)}
                   className={cn(
                     "flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all border group/tag",
@@ -108,7 +106,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                   )}>
                     {count}
                   </span>
-                </button>
+                </Button>
               ))}
             </div>
             {/* Gradient Fade for scroll indication - Adjusted for inside container */}

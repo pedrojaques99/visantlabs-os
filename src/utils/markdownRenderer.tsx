@@ -2,11 +2,11 @@ import React from 'react';
 
 /**
  * Parse and render markdown text to React elements
- * Supports: **bold**, *italic*, - bullets, [color:#hex]text[/color]
+ * Supports: **bold**, **, - bullets, [color:#hex]text[/color]
  */
 
 interface ParsedNode {
-  type: 'text' | 'bold' | 'italic' | 'color' | 'bullet';
+  type: 'text' | 'bold' | '' | 'color' | 'bullet';
   content: string;
   color?: string;
 }
@@ -68,7 +68,7 @@ const parseMarkdown = (text: string): ParsedNode[] => {
       }
     }
 
-    // Check for italic: *text* (but not ** which is bold)
+    // Check for : *text* (but not ** which is bold)
     if (text[i] === '*' && text[i + 1] !== '*') {
       // Save any accumulated text
       if (currentText) {
@@ -76,11 +76,11 @@ const parseMarkdown = (text: string): ParsedNode[] => {
         currentText = '';
       }
 
-      const closingItalic = text.indexOf('*', i + 1);
-      if (closingItalic !== -1) {
-        const italicContent = text.substring(i + 1, closingItalic);
-        nodes.push({ type: 'italic', content: italicContent });
-        i = closingItalic + 1;
+      const closing = text.indexOf('*', i + 1);
+      if (closing !== -1) {
+        const Content = text.substring(i + 1, closing);
+        nodes.push({ type: '', content: Content });
+        i = closing + 1;
         continue;
       }
     }
@@ -109,9 +109,9 @@ const renderNode = (node: ParsedNode, key: number): React.ReactNode => {
           {node.content}
         </strong>
       );
-    case 'italic':
+    case '':
       return (
-        <em key={key} className="italic text-neutral-300">
+        <em key={key} className="font- text-neutral-300">
           {node.content}
         </em>
       );

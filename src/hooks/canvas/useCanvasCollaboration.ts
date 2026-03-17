@@ -3,6 +3,7 @@ import { useStorage, useOthers, useMutation, useRoom, useUpdateMyPresence, useSt
 import { LiveList, LiveObject } from '@liveblocks/client';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
+import type { TimerRef } from '@/types/types';
 
 interface UseCanvasCollaborationProps {
   projectId: string | null;
@@ -19,7 +20,7 @@ function debounce<T extends (...args: any[]) => void>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: TimerRef | null = null;
   return (...args: Parameters<T>) => {
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);

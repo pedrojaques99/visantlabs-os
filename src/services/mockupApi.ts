@@ -296,6 +296,7 @@ export const mockupApi = {
     feature?: 'mockupmachine' | 'canvas';
     provider?: 'gemini' | 'seedream'; // Image generation provider
     uniqueId?: string | number; // Optional unique identifier for parallel batch requests (e.g., slot index)
+    brandGuidelineId?: string; // Optional brand guideline ID for context injection
   }): Promise<{ imageBase64?: string; imageUrl?: string; creditsDeducted: number; creditsRemaining: number; isAdmin: boolean }> {
     // Generate unique request ID for tracking
     const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;

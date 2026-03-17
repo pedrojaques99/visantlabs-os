@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { Analytics } from '@vercel/analytics/react';
 import { Header } from './Header';
 import ASCIIFooter from './ASCIIFooter';
@@ -28,6 +29,7 @@ export type LayoutContextValue = {
   onSubscriptionModalOpen: () => void;
   onCreditPackagesModalOpen: () => void;
   setSubscriptionStatus: (status: SubscriptionStatus | null) => void;
+  user: User | null;
   registerUnsavedOutputsHandler: (handler: () => { hasUnsaved: boolean; count: number; onSaveAll?: () => Promise<void> } | null) => void;
   registerResetHandler: (handler: () => void) => void;
 };
@@ -49,7 +51,27 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isRefundOpen, setIsRefundOpen] = useState(false);
   const [isUsagePolicyOpen, setIsUsagePolicyOpen] = useState(false);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
+  const [subscriptionStatus, _setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
+  const subscriptionStatusRef = useRef(subscriptionStatus);
+
+  // Stable setter that only triggers re-render when status actually changes
+  const setSubscriptionStatus = useCallback((status: SubscriptionStatus | null) => {
+    const prev = subscriptionStatusRef.current;
+    if (prev && status &&
+      prev.hasActiveSubscription === status.hasActiveSubscription &&
+      prev.subscriptionStatus === status.subscriptionStatus &&
+      prev.subscriptionTier === status.subscriptionTier &&
+      prev.totalCreditsEarned === status.totalCreditsEarned &&
+      prev.creditsUsed === status.creditsUsed &&
+      prev.creditsRemaining === status.creditsRemaining &&
+      prev.canGenerate === status.canGenerate &&
+      prev.freeGenerationsRemaining === status.freeGenerationsRemaining) {
+      return; // No meaningful change, skip re-render
+    }
+    subscriptionStatusRef.current = status;
+    _setSubscriptionStatus(status);
+  }, []);
+
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [isCreditPackagesModalOpen, setIsCreditPackagesModalOpen] = useState(false);
   const [creditPackagesModalTab, setCreditPackagesModalTab] = useState<'buy' | 'credits'>('buy');
@@ -268,7 +290,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             console.log('📦 Credit purchase detected, polling for credit update...');
 
             // Declare interval variable outside async function for cleanup
-            let pollCreditsStatus: NodeJS.Timeout | null = null;
+            let pollCreditsStatus: ReturnType<typeof setInterval> | null = null;
 
             // Load initial status and get initial credits to compare
             (async () => {
@@ -378,8 +400,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         if (!isMounted) return;
 
         if (user) {
-          setIsAuthenticated(true);
-          setCurrentUser(user);
+          setIsAuthenticated(prev => prev === true ? prev : true);
+          setCurrentUser(prev => {
+            // Only update if user actually changed (avoid re-render on same user)
+            if (prev && prev.id === user.id && prev.email === user.email) return prev;
+            return user;
+          });
         } else {
           // No user returned - check if token still exists
           const token = authService.getToken();
@@ -408,7 +434,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         }
       } finally {
         if (!isMounted) return;
-        setIsCheckingAuth(false);
+        setIsCheckingAuth(prev => prev === false ? prev : false);
       }
     };
 
@@ -467,19 +493,23 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
   }, []);
 
-  const contextValue: LayoutContextValue = {
+  const onSubscriptionModalOpen = useCallback(() => setIsSubscriptionModalOpen(true), []);
+  const onCreditPackagesModalOpen = useCallback(() => {
+    setCreditPackagesModalTab('buy');
+    setIsCreditPackagesModalOpen(true);
+  }, []);
+
+  const contextValue = useMemo<LayoutContextValue>(() => ({
     subscriptionStatus,
     isAuthenticated,
     isCheckingAuth,
-    onSubscriptionModalOpen: () => setIsSubscriptionModalOpen(true),
-    onCreditPackagesModalOpen: () => {
-      setCreditPackagesModalTab('buy');
-      setIsCreditPackagesModalOpen(true);
-    },
+    onSubscriptionModalOpen,
+    onCreditPackagesModalOpen,
     setSubscriptionStatus,
+    user: currentUser,
     registerUnsavedOutputsHandler,
     registerResetHandler,
-  };
+  }), [subscriptionStatus, isAuthenticated, isCheckingAuth, currentUser, onSubscriptionModalOpen, onCreditPackagesModalOpen, setSubscriptionStatus, registerUnsavedOutputsHandler, registerResetHandler]);
 
   return (
     <LayoutContext.Provider value={contextValue}>
@@ -532,7 +562,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <RefundPolicy isOpen={isRefundOpen || location.pathname === '/refund'} onClose={handleCloseRefund} />
         <UsagePolicy isOpen={isUsagePolicyOpen || location.pathname === '/usage-policy'} onClose={handleCloseUsagePolicy} />
 
-        {!location.pathname.startsWith('/canvas/') && (
+        {!location.pathname.startsWith('/canvas/') && !location.pathname.startsWith('/brand/') && location.pathname !== '/' && (
           <Header
             subscriptionStatus={subscriptionStatus}
             onPricingClick={() => navigate('/pricing')}
@@ -578,7 +608,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           initialTab={creditPackagesModalTab}
         />
 
-        {!location.pathname.startsWith('/budget/shared') && (
+        {!location.pathname.startsWith('/budget/shared') && !location.pathname.startsWith('/brand/') && (
           <FloatingSupportButton onClick={() => setIsSupportModalOpen(true)} />
         )}
 
@@ -589,11 +619,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           userEmail={currentUser?.email || ''}
         />
 
-        <div className={location.pathname.startsWith('/canvas/') ? "flex-1 overflow-hidden" : "flex-1 overflow-y-auto"}>
+        <div className={cn(
+          "flex-1",
+          location.pathname.startsWith('/canvas/') ? "overflow-hidden" : ""
+        )}>
           {children}
         </div>
 
-        {!location.pathname.startsWith('/canvas/') && (
+        {!location.pathname.startsWith('/canvas/') && !location.pathname.startsWith('/brand/') && location.pathname !== '/' && (
           <ASCIIFooter
             className={location.pathname === '/' ? 'hidden lg:block' : ''}
             onPrivacyClick={() => {

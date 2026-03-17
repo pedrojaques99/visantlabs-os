@@ -1,22 +1,21 @@
 import React, { useState, useCallback, memo, useEffect, useRef } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { LabeledHandle } from './shared/LabeledHandle';
-import { Dna, ChevronDown, ChevronUp, Copy, Check, UploadCloud, FileText, X } from 'lucide-react';
+import { Dna, ChevronDown, ChevronUp, Copy, Check, UploadCloud, FileText, X, Maximize2 } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { BrandCoreData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
-import { NodeButton } from './shared/node-button';
-import { NodeLabel } from './shared/node-label';
-import { generateVisualPrompt, consolidateStrategies, consolidateStrategiesToText } from '@/services/brandPromptService';
-import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
-import { ImageThumbnail } from '@/components/ui/ImageThumbnail';
-import { fileToBase64 } from '@/utils/fileUtils';
-import { pdfToBase64, validatePdfFile, validatePdfBase64Size } from '@/utils/pdfUtils';
-import { normalizeImageToBase64 } from '@/services/reactFlowService';
+import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/hooks/useTranslation';
+import { NodeButton } from './shared/node-button';
+import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
+import { fileToBase64 } from '@/utils/fileUtils';
+import { pdfToBase64, validatePdfBase64Size, validatePdfFile } from '@/utils/pdfUtils';
+import { normalizeImageToBase64 } from '@/services/reactFlowService';
+import { consolidateStrategiesToText } from '@/services/brandPromptService';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -313,7 +312,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="p-5 min-w-[360px] max-w-[450px]"
+      className="min-w-[360px] max-w-[450px]"
     >
       {/* Input Handles */}
       <LabeledHandle
@@ -352,563 +351,462 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
       />
 
       {/* Header */}
-      <NodeHeader icon={Dna} title={t('canvasNodes.brandCore.title')} />
+      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
+            <Dna size={16} className="text-brand-cyan" />
+          </div>
+          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
+            {t('canvasNodes.brandCore.title') || 'Brand Core'}
+          </h3>
+        </div>
+      </div>
 
-      {/* Inputs Section */}
-      <div className="mb-4">
-        <div className="space-y-3">
+      <div className="p-4 flex flex-col gap-[var(--node-gap)]">
+        {/* Inputs Section */}
+        <div className="space-y-4">
           {/* Logo Input */}
           <div className={cn(
-            "px-2 py-2 rounded border transition-colors",
+            "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
             hasLogo
-              ? "bg-green-500/10 border-green-500/30"
-              : "bg-neutral-900/30 border-neutral-700/20"
+              ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
+              : "bg-neutral-900/40 border-neutral-700/30"
           )}>
-            <div className="flex items-center gap-3 mb-2">
-              <div className={cn(
-                "w-2 h-2 rounded-md",
-                hasLogo ? "bg-green-400" : "bg-neutral-500"
-              )} />
-              <span className="text-xs font-mono text-neutral-400">{t('canvasNodes.brandCore.logo')}</span>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className={cn(
+                  "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]",
+                  hasLogo ? "text-brand-cyan bg-brand-cyan" : "text-neutral-500 bg-neutral-600"
+                )} />
+                <span className="text-[10px] font-mono text-neutral-400 uppercase">{t('canvasNodes.brandCore.logo')}</span>
+              </div>
+              {hasLogo && uploadedLogo && !connectedLogo && (
+                <NodeButton
+                  variant="ghost"
+                  size="xs"
+                  onClick={handleRemoveLogo}
+                  className="h-6 w-6 text-neutral-500 hover:text-red-400 p-0"
+                >
+                  <X size={12} />
+                </NodeButton>
+              )}
             </div>
+
             {hasLogo ? (
-              <div className="mt-2 relative group/logo">
-                <div className="w-16 h-16">
-                  <ImageThumbnail
-                    base64={logoBase64}
-                    index={0}
-                    className="w-full h-full"
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-md overflow-hidden bg-neutral-950/40 border border-neutral-700/50 p-1 flex items-center justify-center shadow-inner">
+                  <img
+                    src={logoBase64.startsWith('data:') ? logoBase64 : `data:image/png;base64,${logoBase64}`}
+                    alt="Logo"
+                    className="max-w-full max-h-full object-contain"
                   />
                 </div>
-                {uploadedLogo && !connectedLogo && (
-                  <button
-                    onClick={handleRemoveLogo}
-                    className="absolute top-1 right-1 p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded opacity-0 group-hover/logo:opacity-100 transition-opacity"
-                    title={t('canvasNodes.brandCore.removeLogo')}
-                  >
-                    <X size={12} />
-                  </button>
-                )}
+                <div className="flex-1">
+                  <div className="text-[10px] font-mono text-brand-cyan/70 uppercase">Connected</div>
+                  <div className="text-[11px] text-neutral-400 line-clamp-1 opacity-60">Property detected</div>
+                </div>
               </div>
             ) : (
-              <>
-                <input
+              <div className="space-y-3">
+                <Input
                   ref={logoInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleLogoFileChange}
                   className="hidden"
                 />
-                <NodeButton onClick={handleLogoUploadClick} className="mt-1">
-                  <UploadCloud size={14} />
+                <NodeButton variant="primary" size="full" onClick={handleLogoUploadClick} className="shadow-sm">
+                  <UploadCloud size={14} className="mr-2" />
                   {t('canvasNodes.brandCore.uploadLogo')}
                 </NodeButton>
-                <div className="text-[10px] text-neutral-500 font-mono mt-1">
+                <div className="text-[9px] text-neutral-600 font-mono text-center uppercase tracking-tighter opacity-70">
                   {t('canvasNodes.brandCore.orConnectLogoOrImageNode')}
                 </div>
-              </>
+              </div>
             )}
           </div>
 
           {/* Identity Input (PDF or Image) */}
           <div className={cn(
-            "px-2 py-2 rounded border transition-colors",
+            "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
             hasIdentity
-              ? "bg-green-500/10 border-green-500/30"
-              : "bg-neutral-900/30 border-neutral-700/20"
+              ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
+              : "bg-neutral-900/40 border-neutral-700/30"
           )}>
-            <div className="flex items-center gap-3 mb-2">
-              <div className={cn(
-                "w-2 h-2 rounded-md",
-                hasIdentity ? "bg-green-400" : "bg-neutral-500"
-              )} />
-              <span className="text-xs font-mono text-neutral-400">{t('canvasNodes.brandCore.identityGuide')}</span>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className={cn(
+                  "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]",
+                  hasIdentity ? "text-brand-cyan bg-brand-cyan" : "text-neutral-500 bg-neutral-600"
+                )} />
+                <span className="text-[10px] font-mono text-neutral-400 uppercase">{t('canvasNodes.brandCore.identityGuide')}</span>
+              </div>
+              {(uploadedIdentity || uploadedIdentityUrl) && !connectedPdf && !connectedImage && (
+                <NodeButton
+                  variant="ghost"
+                  size="xs"
+                  onClick={handleRemoveIdentity}
+                  className="h-6 w-6 text-neutral-500 hover:text-red-400 p-0"
+                >
+                  <X size={12} />
+                </NodeButton>
+              )}
             </div>
+
             {hasIdentity ? (
-              <div className="mt-2 relative group/identity">
-                {connectedPdf ? (
-                  <div className="text-[10px] text-neutral-400 font-mono">
-                    {t('canvasNodes.brandCore.pdfConnected')}
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-md bg-neutral-950/40 border border-neutral-700/50 shadow-inner">
+                  <FileText size={20} className="text-brand-cyan/70" />
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <div className="text-[10px] font-mono text-brand-cyan/70 uppercase">
+                    {identityType?.toUpperCase() || 'FILE'} CONNECTED
                   </div>
-                ) : connectedImage ? (
-                  <ConnectedImagesDisplay
-                    images={[connectedImage]}
-                    label=""
-                    maxThumbnails={1}
-                  />
-                ) : uploadedIdentityUrl && identityType === 'pdf' ? (
-                  <div className="px-3 py-2 bg-neutral-900/50 rounded border border-neutral-700/30 flex items-center gap-3">
-                    <FileText size={16} className="text-brand-cyan" />
-                    <span className="text-xs font-mono text-neutral-400 flex-1">{t('canvasNodes.brandCore.pdfUploadedR2')}</span>
+                  <div className="text-[11px] text-neutral-400 line-clamp-1 opacity-60">
+                    {connectedPdf ? 'Reference document' : connectedImage ? 'Style reference' : 'Local upload'}
                   </div>
-                ) : uploadedIdentity && identityType === 'png' ? (
-                  <div className="w-16 h-16">
-                    <ImageThumbnail
-                      base64={uploadedIdentity}
-                      index={0}
-                      className="w-full h-full"
-                    />
-                  </div>
-                ) : (
-                  <div className="px-3 py-2 bg-neutral-900/50 rounded border border-neutral-700/30 flex items-center gap-3">
-                    <FileText size={16} className="text-brand-cyan" />
-                    <span className="text-xs font-mono text-neutral-400 flex-1">{identityType?.toUpperCase()} uploaded</span>
-                  </div>
-                )}
-                {(uploadedIdentity || uploadedIdentityUrl) && !connectedPdf && !connectedImage && (
-                  <button
-                    onClick={handleRemoveIdentity}
-                    className="absolute top-1 right-1 p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded opacity-0 group-hover/identity:opacity-100 transition-opacity"
-                    title={t('canvasNodes.brandCore.removeIdentityGuide')}
-                  >
-                    <X size={12} />
-                  </button>
-                )}
+                </div>
               </div>
             ) : (
-              <>
-                <input
+              <div className="space-y-3">
+                <Input
                   ref={identityInputRef}
                   type="file"
                   accept="application/pdf,image/png,image/jpeg,image/jpg"
                   onChange={handleIdentityFileChange}
                   className="hidden"
                 />
-                <NodeButton onClick={handleIdentityUploadClick} className="mt-1">
-                  <FileText size={14} />
+                <NodeButton variant="primary" size="full" onClick={handleIdentityUploadClick} className="shadow-sm">
+                  <FileText size={14} className="mr-2" />
                   Upload PDF or PNG
                 </NodeButton>
-                <div className="text-[10px] text-neutral-500 font-mono mt-1">
+                <div className="text-[9px] text-neutral-600 font-mono text-center uppercase tracking-tighter opacity-70">
                   Or connect a PDF Node or Image Node (PNG)
                 </div>
-              </>
+              </div>
             )}
           </div>
 
           {/* Strategy Input */}
           <div className={cn(
-            "px-2 py-2 rounded border transition-colors",
+            "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
             hasStrategies
-              ? "bg-green-500/10 border-green-500/30"
-              : "bg-neutral-900/30 border-neutral-700/20"
+              ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
+              : "bg-neutral-900/40 border-neutral-700/30"
           )}>
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-2 mb-2">
               <div className={cn(
-                "w-2 h-2 rounded-md",
-                hasStrategies ? "bg-green-400" : "bg-neutral-500"
+                "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]",
+                hasStrategies ? "text-brand-cyan bg-brand-cyan" : "text-neutral-500 bg-neutral-600"
               )} />
-              <span className="text-xs font-mono text-neutral-400">Strategy</span>
+              <span className="text-[10px] font-mono text-neutral-400 uppercase">Strategy</span>
             </div>
-            {hasStrategies ? (
-              <div className="text-[10px] text-neutral-400 font-mono mt-1">
-                {connectedStrategies.length} Strategy Node(s) Connected
-              </div>
+            <div className="text-[11px] text-neutral-500 font-mono pl-3.5">
+              {hasStrategies
+                ? `${connectedStrategies.length} Strategy Node(s) Connected`
+                : 'Connect Strategy Node(s) (optional)'}
+            </div>
+          </div>
+        </div>
+
+
+        {/* Analyze Button */}
+        {canAnalyze && (
+          <NodeButton
+            onClick={handleAnalyze}
+            disabled={!canAnalyze}
+            variant="primary"
+            size="full"
+            className="shadow-sm backdrop-blur-sm"
+          >
+            {isAnalyzing ? (
+              <>
+                <GlitchLoader size={14} className="mr-2" color="currentColor" />
+                <span>Analyzing...</span>
+              </>
             ) : (
-              <div className="text-[10px] text-neutral-500 font-mono mt-1">
-                Connect Strategy Node(s) (optional)
+              <>
+                <Dna size={14} className="mr-2" />
+                <span>Analyze Brand Identity</span>
+              </>
+            )}
+          </NodeButton>
+        )}
+
+        {/* Analysis Status */}
+        {isAnalyzing && (
+          <div className="px-3 py-2.5 bg-brand-cyan/10 border border-brand-cyan/20 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-full bg-brand-cyan/20 animate-pulse">
+                <GlitchLoader size={12} color="brand-cyan" />
               </div>
+              <span className="text-[10px] font-mono text-brand-cyan uppercase font-bold">Analysis in progress...</span>
+            </div>
+            {nodeData.onCancelAnalyze && (
+              <NodeButton
+                variant="ghost"
+                size="xs"
+                onClick={() => nodeData.onCancelAnalyze?.(id)}
+                className="h-6 w-6 text-brand-cyan hover:bg-brand-cyan/20 hover:text-brand-cyan"
+              >
+                <X size={14} />
+              </NodeButton>
             )}
           </div>
-        </div>
-      </div>
+        )}
 
-
-      {/* Analyze Button */}
-      {canAnalyze && (
-        <NodeButton
-          onClick={handleAnalyze}
-          disabled={!canAnalyze}
-          variant="primary"
-          className="mb-4"
-        >
-          {isAnalyzing ? (
-            <>
-              <GlitchLoader size={14} />
-              Analyzing...
-            </>
-          ) : (
-            <>
-              <Dna size={14} />
-              Analyze Brand Identity
-            </>
-          )}
-        </NodeButton>
-      )}
-
-      {/* Analysis Status */}
-      {isAnalyzing && (
-        <div className="mb-4 px-3 py-2 bg-brand-cyan/20 border border-[brand-cyan]/30 rounded flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <GlitchLoader size={14} color="brand-cyan" />
-            <span className="text-xs font-mono text-brand-cyan">Analyzing brand identity...</span>
-          </div>
-          {nodeData.onCancelAnalyze && (
-            <button
-              onClick={() => nodeData.onCancelAnalyze?.(id)}
-              className="p-1 hover:bg-brand-cyan/30 rounded transition-colors"
-              title={t('canvasNodes.brandCore.cancelAnalysis')}
+        {/* Brand Identity Display */}
+        {brandIdentity && (
+          <div className="border-t border-neutral-700/30 pt-4">
+            <NodeButton
+              variant="ghost"
+              size="full"
+              onClick={() => setIsExpandedBrandIdentity(!isExpandedBrandIdentity)}
+              className="flex items-center justify-between group/expand px-1"
             >
-              <X size={14} className="text-brand-cyan" />
-            </button>
-          )}
-        </div>
-      )}
+              <span className="text-[10px] font-mono font-bold text-neutral-500 group-hover:text-neutral-300 uppercase transition-colors">Brand Identity</span>
+              <div className="p-1 rounded-full bg-neutral-900/50 group-hover:bg-neutral-800 transition-colors">
+                {isExpandedBrandIdentity ? <ChevronUp size={12} className="text-neutral-400" /> : <ChevronDown size={12} className="text-neutral-400" />}
+              </div>
+            </NodeButton>
 
-      {/* Brand Identity Display */}
-      {brandIdentity && (
-        <div className="border-t border-neutral-700/30 pt-4 mb-4">
-          <button
-            onClick={() => setIsExpandedBrandIdentity(!isExpandedBrandIdentity)}
-            className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2"
-          >
-            <span>Brand Identity</span>
-            {isExpandedBrandIdentity ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
-
-          {isExpandedBrandIdentity && (
-            <div className="space-y-3 text-xs">
-              {/* Logo Details */}
-              {(brandIdentity.logo.colors.length > 0 || brandIdentity.logo.style || brandIdentity.logo.elements.length > 0) && (
-                <div>
-                  <div className="text-neutral-500 font-mono mb-1">Logo</div>
-                  <div className="space-y-3">
-                    {brandIdentity.logo.colors.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {brandIdentity.logo.colors.map((color, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-1 px-2 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30"
-                          >
+            {isExpandedBrandIdentity && (
+              <div className="mt-4 space-y-4 text-[11px] animate-in fade-in slide-in-from-top-1 duration-300">
+                {/* Logo Details */}
+                {(brandIdentity.logo.colors.length > 0 || brandIdentity.logo.style || brandIdentity.logo.elements.length > 0) && (
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Logo DNA</div>
+                    <div className="space-y-3">
+                      {brandIdentity.logo.colors.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {brandIdentity.logo.colors.map((color, idx) => (
                             <div
-                              className="w-2.5 h-2.5 rounded border border-neutral-700/50"
-                              style={{ backgroundColor: color }}
-                            />
-                            <span className="text-neutral-400 font-mono text-[10px]">{color}</span>
+                              key={idx}
+                              className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/40 rounded border border-neutral-700/30 shadow-sm"
+                            >
+                              <div
+                                className="w-2.5 h-2.5 rounded border border-white/10 shadow-sm"
+                                style={{ backgroundColor: color }}
+                              />
+                              <span className="text-neutral-400 font-mono text-[9px] uppercase">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="space-y-1.5 border-t border-neutral-700/20 pt-2 text-neutral-300 leading-relaxed">
+                        {brandIdentity.logo.style && (
+                          <div className="flex gap-2">
+                            <span className="text-neutral-500 uppercase text-[9px] shrink-0 font-mono">Style:</span>
+                            <span>{brandIdentity.logo.style}</span>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                    {brandIdentity.logo.style && (
-                      <div className="text-neutral-400">
-                        <span className="text-neutral-500 text-[10px]">Style: </span>
-                        {brandIdentity.logo.style}
-                      </div>
-                    )}
-                    {brandIdentity.logo.elements.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {brandIdentity.logo.elements.map((element, idx) => (
-                          <span key={idx} className="px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30 text-neutral-400 text-[10px]">
-                            {element}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Brand Colors */}
-              {(brandIdentity.colors.primary.length > 0 || brandIdentity.colors.secondary.length > 0 || brandIdentity.colors.accent.length > 0) && (
-                <div>
-                  <div className="text-neutral-500 font-mono mb-1">Brand Colors</div>
-                  <div className="space-y-1.5">
-                    {brandIdentity.colors.primary.length > 0 && (
-                      <div>
-                        <div className="text-neutral-500 text-[10px] mb-1">Primary</div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {brandIdentity.colors.primary.map((color, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-1 px-2 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30"
-                            >
-                              <div
-                                className="w-2.5 h-2.5 rounded border border-neutral-700/50"
-                                style={{ backgroundColor: color }}
-                              />
-                              <span className="text-neutral-400 font-mono text-[10px]">{color}</span>
+                        )}
+                        {brandIdentity.logo.elements.length > 0 && (
+                          <div className="flex gap-2">
+                            <span className="text-neutral-500 uppercase text-[9px] shrink-0 font-mono">Traits:</span>
+                            <div className="flex flex-wrap gap-1">
+                              {brandIdentity.logo.elements.map((element, idx) => (
+                                <span key={idx} className="after:content-[','] last:after:content-[''] mr-0.5">
+                                  {element}
+                                </span>
+                              ))}
                             </div>
-                          ))}
-                        </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {brandIdentity.colors.secondary.length > 0 && (
-                      <div>
-                        <div className="text-neutral-500 text-[10px] mb-1">Secondary</div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {brandIdentity.colors.secondary.map((color, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-1 px-2 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30"
-                            >
-                              <div
-                                className="w-2.5 h-2.5 rounded border border-neutral-700/50"
-                                style={{ backgroundColor: color }}
-                              />
-                              <span className="text-neutral-400 font-mono text-[10px]">{color}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {brandIdentity.colors.accent.length > 0 && (
-                      <div>
-                        <div className="text-neutral-500 text-[10px] mb-1">Accent</div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {brandIdentity.colors.accent.map((color, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-1 px-2 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30"
-                            >
-                              <div
-                                className="w-2.5 h-2.5 rounded border border-neutral-700/50"
-                                style={{ backgroundColor: color }}
-                              />
-                              <span className="text-neutral-400 font-mono text-[10px]">{color}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Typography */}
-              {(brandIdentity.typography.primary || brandIdentity.typography.weights?.length > 0) && (
-                <div>
-                  <div className="text-neutral-500 font-mono mb-1">Typography</div>
-                  <div className="space-y-1">
-                    {brandIdentity.typography.primary && (
-                      <div className="text-neutral-400">
-                        <span className="text-neutral-500 text-[10px]">Primary: </span>
-                        {brandIdentity.typography.primary}
-                      </div>
-                    )}
-                    {brandIdentity.typography.secondary && (
-                      <div className="text-neutral-400">
-                        <span className="text-neutral-500 text-[10px]">Secondary: </span>
-                        {brandIdentity.typography.secondary}
-                      </div>
-                    )}
-                    {brandIdentity.typography.weights && brandIdentity.typography.weights.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {brandIdentity.typography.weights.map((weight, idx) => (
-                          <span key={idx} className="px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30 text-neutral-400 text-[10px]">
-                            {weight}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                {/* Brand Colors - Simplified but elegant */}
+                {(brandIdentity.colors.primary.length > 0 || brandIdentity.colors.secondary.length > 0 || brandIdentity.colors.accent.length > 0) && (
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Color Palettes</div>
+                    <div className="space-y-3">
+                      {[
+                        { label: 'Primary', palette: brandIdentity.colors.primary },
+                        { label: 'Secondary', palette: brandIdentity.colors.secondary },
+                        { label: 'Accent', palette: brandIdentity.colors.accent }
+                      ].map(({ label, palette }) => palette.length > 0 && (
+                        <div key={label} className="space-y-1.5">
+                          <div className="text-[9px] text-neutral-600 uppercase font-mono">{label}</div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {palette.map((color, idx) => (
+                              <div key={idx} className="group/color relative">
+                                <div
+                                  className="w-6 h-6 rounded border border-white/10 shadow-sm transition-transform group-hover/color:scale-110"
+                                  style={{ backgroundColor: color }}
+                                />
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-neutral-950 text-white text-[8px] font-mono rounded opacity-0 group-hover/color:opacity-300 transition-opacity z-10 whitespace-nowrap border border-neutral-700">
+                                  {color}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Composition */}
-              {(brandIdentity.composition.style || brandIdentity.composition.grid || brandIdentity.composition.spacing) && (
-                <div>
-                  <div className="text-neutral-500 font-mono mb-1">Composition</div>
-                  <div className="space-y-1 text-neutral-400">
-                    {brandIdentity.composition.style && (
-                      <div>
-                        <span className="text-neutral-500 text-[10px]">Style: </span>
-                        {brandIdentity.composition.style}
+                {/* Personality & Tone */}
+                {(brandIdentity.personality.tone || brandIdentity.personality.feeling || brandIdentity.personality.values?.length > 0) && (
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Brand Personality</div>
+                    <div className="space-y-2.5 text-neutral-400">
+                      <div className="grid grid-cols-2 gap-3">
+                        {brandIdentity.personality.tone && (
+                          <div className="space-y-0.5">
+                            <span className="text-neutral-600 uppercase text-[9px] font-mono">Tone</span>
+                            <div className="text-neutral-300 line-clamp-2">{brandIdentity.personality.tone}</div>
+                          </div>
+                        )}
+                        {brandIdentity.personality.feeling && (
+                          <div className="space-y-0.5">
+                            <span className="text-neutral-600 uppercase text-[9px] font-mono">Vibe</span>
+                            <div className="text-neutral-300 line-clamp-2">{brandIdentity.personality.feeling}</div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {brandIdentity.composition.grid && (
-                      <div>
-                        <span className="text-neutral-500 text-[10px]">Grid: </span>
-                        {brandIdentity.composition.grid}
-                      </div>
-                    )}
-                    {brandIdentity.composition.spacing && (
-                      <div>
-                        <span className="text-neutral-500 text-[10px]">Spacing: </span>
-                        {brandIdentity.composition.spacing}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
 
-              {/* Personality */}
-              {(brandIdentity.personality.tone || brandIdentity.personality.feeling || brandIdentity.personality.values?.length > 0) && (
-                <div>
-                  <div className="text-neutral-500 font-mono mb-1">Personality</div>
-                  <div className="space-y-1 text-neutral-400">
-                    {brandIdentity.personality.tone && (
-                      <div>
-                        <span className="text-neutral-500 text-[10px]">Tone: </span>
-                        {brandIdentity.personality.tone}
-                      </div>
-                    )}
-                    {brandIdentity.personality.feeling && (
-                      <div>
-                        <span className="text-neutral-500 text-[10px]">Feeling: </span>
-                        {brandIdentity.personality.feeling}
-                      </div>
-                    )}
-                    {brandIdentity.personality.values && brandIdentity.personality.values.length > 0 && (
-                      <div>
-                        <div className="text-neutral-500 text-[10px] mb-1">Values</div>
-                        <div className="flex flex-wrap gap-1">
+                      {brandIdentity.personality.values && brandIdentity.personality.values.length > 0 && (
+                        <div className="flex flex-wrap gap-1 pt-1.5 border-t border-neutral-700/10">
                           {brandIdentity.personality.values.map((value, idx) => (
-                            <span key={idx} className="px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30 text-neutral-400 text-[10px]">
+                            <span key={idx} className="px-2 py-0.5 bg-neutral-950/40 rounded text-[9px] text-brand-cyan/70 border border-brand-cyan/20 uppercase ">
                               {value}
                             </span>
                           ))}
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Visual Elements */}
-              {brandIdentity.visualElements.length > 0 && (
-                <div>
-                  <div className="text-neutral-500 font-mono mb-1">Visual Elements</div>
-                  <div className="flex flex-wrap gap-1">
-                    {brandIdentity.visualElements.slice(0, 8).map((element, idx) => (
-                      <span key={idx} className="px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30 text-neutral-400 text-[10px]">
-                        {element}
-                      </span>
-                    ))}
-                    {brandIdentity.visualElements.length > 8 && (
-                      <span className="text-neutral-500 text-[10px]">+{brandIdentity.visualElements.length - 8} more</span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Visual Prompts Section */}
-      {visualPrompts && (
-        <div className="border-t border-neutral-700/30 pt-4 mb-4">
-          <button
-            onClick={() => setIsExpandedVisual(!isExpandedVisual)}
-            className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2"
-          >
-            <span>Visual Prompts</span>
-            {isExpandedVisual ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
-
-          {isExpandedVisual && (
-            <div className="space-y-3">
-              {visualPrompts.mockupPrompt && (
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="text-xs text-neutral-500 font-mono">Mockup Prompt</div>
-                    <button
-                      onClick={() => handleCopyPrompt(visualPrompts.mockupPrompt!, 'mockup')}
-                      className="p-1 hover:bg-neutral-800 rounded"
-                    >
-                      {copiedPrompt === 'mockup' ? (
-                        <Check size={12} className="text-green-400" />
-                      ) : (
-                        <Copy size={12} className="text-neutral-400" />
                       )}
-                    </button>
+                    </div>
                   </div>
-                  <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-32 overflow-y-auto">
-                    {visualPrompts.mockupPrompt}
-                  </div>
-                </div>
-              )}
-
-              {visualPrompts.compositionPrompt && (
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="text-xs text-neutral-500 font-mono">Composition Prompt</div>
-                    <button
-                      onClick={() => handleCopyPrompt(visualPrompts.compositionPrompt!, 'composition')}
-                      className="p-1 hover:bg-neutral-800 rounded"
-                    >
-                      {copiedPrompt === 'composition' ? (
-                        <Check size={12} className="text-green-400" />
-                      ) : (
-                        <Copy size={12} className="text-neutral-400" />
-                      )}
-                    </button>
-                  </div>
-                  <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-24 overflow-y-auto">
-                    {visualPrompts.compositionPrompt}
-                  </div>
-                </div>
-              )}
-
-              {visualPrompts.stylePrompt && (
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="text-xs text-neutral-500 font-mono">Style Prompt</div>
-                    <button
-                      onClick={() => handleCopyPrompt(visualPrompts.stylePrompt!, 'style')}
-                      className="p-1 hover:bg-neutral-800 rounded"
-                    >
-                      {copiedPrompt === 'style' ? (
-                        <Check size={12} className="text-green-400" />
-                      ) : (
-                        <Copy size={12} className="text-neutral-400" />
-                      )}
-                    </button>
-                  </div>
-                  <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-24 overflow-y-auto">
-                    {visualPrompts.stylePrompt}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Strategic Prompts Section */}
-      {strategicPrompts?.consolidated && (
-        <div className="border-t border-neutral-700/30 pt-3">
-          <div
-            onClick={() => setIsExpandedStrategic(!isExpandedStrategic)}
-            className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2 cursor-pointer"
-          >
-            <span>Strategic Prompts (Consolidated)</span>
-            {isExpandedStrategic ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                )}
+              </div>
+            )}
           </div>
+        )}
 
-          {isExpandedStrategic && (
-            <div className="space-y-3 text-xs">
-              <div className="flex items-center justify-between mb-1">
-                <div className="text-xs text-neutral-500 font-mono">Consolidated Strategy</div>
-                <button
-                  onClick={(e) => {
+        {/* Visual Prompts Section */}
+        {visualPrompts && (
+          <div className="border-t border-neutral-700/30 pt-4 mb-4">
+            <NodeButton variant="ghost" size="full" onClick={() => setIsExpandedVisual(!isExpandedVisual)}
+              className="flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2 px-3"
+            >
+              <span>Visual Prompts</span>
+              {isExpandedVisual ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </NodeButton>
+
+            {isExpandedVisual && (
+              <div className="space-y-3">
+                {visualPrompts.mockupPrompt && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="text-xs text-neutral-500 font-mono">Mockup Prompt</div>
+                      <NodeButton variant="ghost" size="xs" onClick={() => handleCopyPrompt(visualPrompts.mockupPrompt!, 'mockup')}
+                        className="p-1 hover:bg-neutral-800 rounded"
+                      >
+                        {copiedPrompt === 'mockup' ? (
+                          <Check size={12} className="text-green-400" />
+                        ) : (
+                          <Copy size={12} className="text-neutral-400" />
+                        )}
+                      </NodeButton>
+                    </div>
+                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-32 overflow-y-auto">
+                      {visualPrompts.mockupPrompt}
+                    </div>
+                  </div>
+                )}
+
+                {visualPrompts.compositionPrompt && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="text-xs text-neutral-500 font-mono">Composition Prompt</div>
+                      <NodeButton variant="ghost" size="xs" onClick={() => handleCopyPrompt(visualPrompts.compositionPrompt!, 'composition')}
+                        className="p-1 hover:bg-neutral-800 rounded"
+                      >
+                        {copiedPrompt === 'composition' ? (
+                          <Check size={12} className="text-green-400" />
+                        ) : (
+                          <Copy size={12} className="text-neutral-400" />
+                        )}
+                      </NodeButton>
+                    </div>
+                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-24 overflow-y-auto">
+                      {visualPrompts.compositionPrompt}
+                    </div>
+                  </div>
+                )}
+
+                {visualPrompts.stylePrompt && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="text-xs text-neutral-500 font-mono">Style Prompt</div>
+                      <NodeButton variant="ghost" size="xs" onClick={() => handleCopyPrompt(visualPrompts.stylePrompt!, 'style')}
+                        className="p-1 hover:bg-neutral-800 rounded"
+                      >
+                        {copiedPrompt === 'style' ? (
+                          <Check size={12} className="text-green-400" />
+                        ) : (
+                          <Copy size={12} className="text-neutral-400" />
+                        )}
+                      </NodeButton>
+                    </div>
+                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-24 overflow-y-auto">
+                      {visualPrompts.stylePrompt}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Strategic Prompts Section */}
+        {strategicPrompts?.consolidated && (
+          <div className="border-t border-neutral-700/30 pt-3">
+            <div
+              onClick={() => setIsExpandedStrategic(!isExpandedStrategic)}
+              className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2 cursor-pointer"
+            >
+              <span>Strategic Prompts (Consolidated)</span>
+              {isExpandedStrategic ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </div>
+
+            {isExpandedStrategic && (
+              <div className="space-y-3 text-xs">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="text-xs text-neutral-500 font-mono">Consolidated Strategy</div>
+                  <NodeButton variant="ghost" size="xs" onClick={(e) => {
                     e.stopPropagation();
                     const consolidatedText = consolidateStrategiesToText(strategicPrompts.consolidated);
                     handleCopyPrompt(consolidatedText, 'strategic');
                   }}
-                  className="p-1 hover:bg-neutral-800 rounded"
-                >
-                  {copiedPrompt === 'strategic' ? (
-                    <Check size={12} className="text-green-400" />
-                  ) : (
-                    <Copy size={12} className="text-neutral-400" />
-                  )}
-                </button>
+                    className="p-1 hover:bg-neutral-800 rounded"
+                  >
+                    {copiedPrompt === 'strategic' ? (
+                      <Check size={12} className="text-green-400" />
+                    ) : (
+                      <Copy size={12} className="text-neutral-400" />
+                    )}
+                  </NodeButton>
+                </div>
+                <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-64 overflow-y-auto whitespace-pre-wrap">
+                  {consolidateStrategiesToText(strategicPrompts.consolidated)}
+                </div>
               </div>
-              <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-64 overflow-y-auto whitespace-pre-wrap">
-                {consolidateStrategiesToText(strategicPrompts.consolidated)}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
 
-      {/* Generating Prompts Status */}
-      {isGeneratingPrompts && (
-        <div className="mt-4 px-3 py-2 bg-brand-cyan/20 border border-[brand-cyan]/30 rounded flex items-center gap-3">
-          <GlitchLoader size={14} color="brand-cyan" />
-          <span className="text-xs font-mono text-brand-cyan">Generating prompts...</span>
-        </div>
-      )}
+        {/* Generating Prompts Status */}
+        {isGeneratingPrompts && (
+          <div className="mt-4 px-3 py-2 bg-brand-cyan/20 border border-[brand-cyan]/30 rounded flex items-center gap-3">
+            <GlitchLoader size={14} color="brand-cyan" />
+            <span className="text-xs font-mono text-brand-cyan">Generating prompts...</span>
+          </div>
+        )}
+      </div>
     </NodeContainer>
   );
 });

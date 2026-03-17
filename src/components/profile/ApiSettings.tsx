@@ -7,6 +7,8 @@ import { ConfirmationModal } from '../ConfirmationModal';
 import { ApiKeyPolicyModal } from '../ApiKeyPolicyModal';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export const ApiSettings: React.FC = () => {
     const { t } = useTranslation();
@@ -142,7 +144,7 @@ export const ApiSettings: React.FC = () => {
     }
 
     return (
-        <div className="space-y-6 w-full mx-auto animate-in fade-in duration-500">
+        <div className="space-y-6 w-full mx-auto animate-in fade-in duration-300">
             <Card className="bg-neutral-900 border border-neutral-800/50 rounded-md shadow-xl shadow-black/20">
                 <CardHeader className="pb-4">
                     <div className="flex items-start justify-between">
@@ -170,11 +172,11 @@ export const ApiSettings: React.FC = () => {
                 <CardContent className="space-y-6">
                     {/* Info Box */}
                     <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 space-y-3 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-30 transition-opacity">
                             <Lock size={64} />
                         </div>
                         <div className="flex items-start gap-3 relative z-10">
-                            <div className="p-2 bg-blue-500/10 rounded-lg shrink-0">
+                            <div className="p-2 bg-blue-500/10 rounded-md shrink-0">
                                 <Lock size={16} className="text-blue-400" />
                             </div>
                             <div className="space-y-1">
@@ -196,18 +198,18 @@ export const ApiSettings: React.FC = () => {
                             <label htmlFor="api-key-input" className="text-sm font-semibold text-neutral-300 font-manrope">
                                 {t('configuration.geminiApiKey') || 'Chave da API Gemini'}
                             </label>
-                            <button
+                            <Button variant="ghost"
                                 type="button"
                                 onClick={() => window.open('https://aistudio.google.com/app/apikey', '_blank')}
                                 className="flex items-center gap-1.5 text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono transition-colors group"
                             >
                                 <span>{t('configuration.getApiKey') || 'Obter chave'}</span>
                                 <ExternalLink size={12} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                            </button>
+                            </Button>
                         </div>
 
                         <div className="relative group">
-                            <input
+                            <Input
                                 id="api-key-input"
                                 ref={inputRef}
                                 type={showApiKey ? 'text' : 'password'}
@@ -219,15 +221,15 @@ export const ApiSettings: React.FC = () => {
                                 className="w-full bg-neutral-950/70 px-4 py-3.5 pr-12 rounded-xl border border-neutral-800 focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
                                 autoComplete="off"
                             />
-                            <button
+                            <Button variant="ghost"
                                 type="button"
                                 onClick={() => setShowApiKey(!showApiKey)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 p-1.5 rounded-lg hover:bg-neutral-800/50 transition-all duration-150"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 p-1.5 rounded-md hover:bg-neutral-800/50 transition-all duration-150"
                                 aria-label={showApiKey ? 'Ocultar chave' : 'Mostrar chave'}
                                 tabIndex={-1}
                             >
                                 {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
+                            </Button>
                         </div>
                         {hasKey && !apiKey && (
                             <p className="text-xs text-neutral-500 font-mono pl-1">
@@ -237,30 +239,30 @@ export const ApiSettings: React.FC = () => {
                     </div>
 
                     <div className="flex items-center justify-start pt-2">
-                        <button
+                        <Button variant="ghost"
                             type="button"
                             onClick={() => setShowPolicyModal(true)}
                             className="flex items-center gap-2 text-xs text-neutral-500 hover:text-neutral-400 font-mono transition-colors"
                         >
                             <Lock size={12} />
                             <span>{t('configuration.policyLink') || 'Política de Privacidade e Segurança'}</span>
-                        </button>
+                        </Button>
                     </div>
 
                     {/* Actions */}
                     <div className="flex items-center gap-3 pt-6 border-t border-neutral-800/50">
                         {hasKey && (
-                            <button
+                            <Button variant="ghost"
                                 type="button"
                                 onClick={() => setShowDeleteConfirm(true)}
                                 disabled={isLoading}
                                 className="px-4 py-2.5 bg-neutral-900/50 hover:bg-red-500/10 disabled:bg-neutral-900/30 disabled:text-neutral-600 disabled:cursor-not-allowed text-neutral-400 hover:text-red-400 border border-neutral-800/50 hover:border-red-500/30 font-medium rounded-xl transition-all duration-200 text-xs font-mono"
                             >
                                 {t('configuration.delete') || 'Remover Chave'}
-                            </button>
+                            </Button>
                         )}
                         <div className="flex-1" />
-                        <button
+                        <Button variant="brand"
                             type="button"
                             onClick={handleSave}
                             disabled={isLoading || !apiKey.trim()}
@@ -271,7 +273,7 @@ export const ApiSettings: React.FC = () => {
                             ) : (
                                 t('configuration.save') || 'Salvar Alterações'
                             )}
-                        </button>
+                        </Button>
                     </div>
                     {/* Seedream API Key Section */}
                     <div className="pt-6 border-t border-neutral-800/50 space-y-6">
@@ -295,18 +297,18 @@ export const ApiSettings: React.FC = () => {
                                 <label htmlFor="seedream-key-input" className="text-sm font-semibold text-neutral-300 font-manrope">
                                     {t('configuration.seedreamApiKey') || 'Chave da API Seedream'}
                                 </label>
-                                <button
+                                <Button variant="ghost"
                                     type="button"
                                     onClick={() => window.open('https://www.apifree.ai/console', '_blank')}
                                     className="flex items-center gap-1.5 text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono transition-colors group"
                                 >
                                     <span>{t('configuration.getApiKey') || 'Obter chave'}</span>
                                     <ExternalLink size={12} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                                </button>
+                                </Button>
                             </div>
 
                             <div className="relative group">
-                                <input
+                                <Input
                                     id="seedream-key-input"
                                     type={showSeedreamKey ? 'text' : 'password'}
                                     value={seedreamKey}
@@ -316,15 +318,15 @@ export const ApiSettings: React.FC = () => {
                                     className="w-full bg-neutral-950/70 px-4 py-3.5 pr-12 rounded-xl border border-neutral-800 focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
                                     autoComplete="off"
                                 />
-                                <button
+                                <Button variant="ghost"
                                     type="button"
                                     onClick={() => setShowSeedreamKey(!showSeedreamKey)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 p-1.5 rounded-lg hover:bg-neutral-800/50 transition-all duration-150"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 p-1.5 rounded-md hover:bg-neutral-800/50 transition-all duration-150"
                                     aria-label={showSeedreamKey ? 'Ocultar chave' : 'Mostrar chave'}
                                     tabIndex={-1}
                                 >
                                     {showSeedreamKey ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
+                                </Button>
                             </div>
                             {hasSeedreamKey && !seedreamKey && (
                                 <p className="text-xs text-neutral-500 font-mono pl-1">
@@ -336,17 +338,17 @@ export const ApiSettings: React.FC = () => {
                         {/* Seedream Actions */}
                         <div className="flex items-center gap-3">
                             {hasSeedreamKey && (
-                                <button
+                                <Button variant="ghost"
                                     type="button"
                                     onClick={() => setShowSeedreamDeleteConfirm(true)}
                                     disabled={isLoading}
                                     className="px-4 py-2.5 bg-neutral-900/50 hover:bg-red-500/10 disabled:bg-neutral-900/30 disabled:text-neutral-600 disabled:cursor-not-allowed text-neutral-400 hover:text-red-400 border border-neutral-800/50 hover:border-red-500/30 font-medium rounded-xl transition-all duration-200 text-xs font-mono"
                                 >
                                     {t('configuration.delete') || 'Remover Chave'}
-                                </button>
+                                </Button>
                             )}
                             <div className="flex-1" />
-                            <button
+                            <Button variant="brand"
                                 type="button"
                                 onClick={handleSaveSeedream}
                                 disabled={isLoading || !seedreamKey.trim()}
@@ -357,7 +359,7 @@ export const ApiSettings: React.FC = () => {
                                 ) : (
                                     t('configuration.save') || 'Salvar Alterações'
                                 )}
-                            </button>
+                            </Button>
                         </div>
                     </div>
 

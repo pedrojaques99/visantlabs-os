@@ -6,6 +6,9 @@ import type { AvailableTags } from '../services/tagService.js';
  */
 export interface UserContext {
   selectedBrandingTags?: string[];
+  brandGuidelineId?: string;
+  /** Pre-built brand context string from brandContextBuilder */
+  brandContext?: string;
 }
 
 /**
@@ -48,6 +51,14 @@ export function buildAnalysisPrompt(params: AnalysisPromptParams): string {
 **IMPORTANT:** When suggesting tags, prioritize exact matches from the available tags list above. Only suggest tags not in the list if they are highly relevant and no suitable alternative exists.`
     : '';
 
+  // Build brand context section if provided (from brand guideline)
+  const brandContextSection = userContext?.brandContext
+    ? `\n\n**BRAND GUIDELINE CONTEXT:**
+${userContext.brandContext}
+
+**CONTEXT:** Use this brand information to suggest tags that align with the brand identity, colors, typography, and visual style described above.`
+    : '';
+
   // Build user context section if provided
   const userContextSection = userContext?.selectedBrandingTags && userContext.selectedBrandingTags.length > 0
     ? `\n\n**USER'S CURRENT SELECTIONS:**
@@ -71,7 +82,7 @@ export function buildAnalysisPrompt(params: AnalysisPromptParams): string {
   return `Você é um especialista em mockup, fotografia de produto e design visual.
 
 **SUA TAREFA:**
-Analise a imagem fornecida e sugira as melhores tags para cada categoria para criar um mockup perfeito e profissional.${availableTagsSection}${userContextSection}${instructionsSection}
+Analise a imagem fornecida e sugira as melhores tags para cada categoria para criar um mockup perfeito e profissional.${availableTagsSection}${brandContextSection}${userContextSection}${instructionsSection}
 
 **DIRETRIZES PARA SUGESTÕES:**
 

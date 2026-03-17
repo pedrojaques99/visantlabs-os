@@ -1,4 +1,4 @@
-[Skip to main content](https://developers.figma.com/docs/plugins/api/figma/#__docusaurus_skipToContent_fallback)
+Skip to main content](https://developers.figma.com/docs/plugins/api/figma/#__docusaurus_skipToContent_fallback)
 
 [**Developers**](https://developers.figma.com/)
 

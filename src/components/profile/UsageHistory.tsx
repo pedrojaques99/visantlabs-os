@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button'
 
 interface UsageHistoryProps {
     isAuthenticated: boolean;
@@ -148,7 +149,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
     }, [usageHistory, serverStats]);
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-6 animate-in fade-in duration-300">
             {/* Header */}
             <div className="flex items-center gap-3 mb-2">
                 <FileText size={24} className="text-brand-cyan" />
@@ -201,7 +202,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                         <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between mb-4">
-                                    <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                                    <div className="p-3 bg-brand-cyan/10 rounded-md">
                                         <FileText className="h-6 w-6 text-brand-cyan" />
                                     </div>
                                 </div>
@@ -218,7 +219,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                         <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between mb-4">
-                                    <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                                    <div className="p-3 bg-brand-cyan/10 rounded-md">
                                         <CreditCard className="h-6 w-6 text-brand-cyan" />
                                     </div>
                                 </div>
@@ -235,7 +236,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                         <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between mb-4">
-                                    <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                                    <div className="p-3 bg-brand-cyan/10 rounded-md">
                                         <Image className="h-6 w-6 text-brand-cyan" />
                                     </div>
                                 </div>
@@ -253,7 +254,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                         <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between mb-4">
-                                    <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                                    <div className="p-3 bg-brand-cyan/10 rounded-md">
                                         <ImageIcon className="h-6 w-6 text-brand-cyan" />
                                     </div>
                                 </div>
@@ -273,7 +274,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                         <CardContent className="p-4 md:p-6">
                             <div className="flex flex-wrap gap-2">
                                 {(['all', 'brandingmachine', 'mockupmachine', 'canvas'] as const).map((filter) => (
-                                    <button
+                                    <Button variant="ghost"
                                         key={filter}
                                         onClick={() => setHistoryFilter(filter)}
                                         className={`px-3 py-1.5 rounded-md text-xs font-mono transition ${historyFilter === filter
@@ -285,7 +286,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                                             filter === 'brandingmachine' ? (t('usageHistory.brandingMachine') || 'Branding Machine') :
                                                 filter === 'mockupmachine' ? (t('usageHistory.mockupMachine') || 'Mockup Machine') :
                                                     (t('usageHistory.canvas') || 'Canvas')}
-                                    </button>
+                                    </Button>
                                 ))}
                             </div>
                         </CardContent>
@@ -373,20 +374,20 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                                         {t('usageHistory.showing') || 'Exibindo'} {historyPagination.offset + 1} - {Math.min(historyPagination.offset + historyPagination.limit, historyPagination.total)} {t('usageHistory.of') || 'de'} {historyPagination.total}
                                     </p>
                                     <div className="flex gap-2">
-                                        <button
+                                        <Button variant="ghost"
                                             onClick={() => setHistoryPagination(prev => ({ ...prev, offset: Math.max(0, prev.offset - prev.limit) }))}
                                             disabled={historyPagination.offset === 0}
                                             className="px-3 py-1.5 bg-neutral-950/70 border border-neutral-800 text-neutral-300 rounded-md text-xs font-mono hover:bg-neutral-950/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
                                         >
                                             {t('usageHistory.previous') || 'Anterior'}
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button variant="ghost"
                                             onClick={() => setHistoryPagination(prev => ({ ...prev, offset: prev.offset + prev.limit }))}
                                             disabled={!historyPagination.hasMore}
                                             className="px-3 py-1.5 bg-neutral-950/70 border border-neutral-800 text-neutral-300 rounded-md text-xs font-mono hover:bg-neutral-950/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
                                         >
                                             {t('usageHistory.next') || 'Próximo'}
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             )}

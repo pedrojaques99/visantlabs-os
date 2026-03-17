@@ -7,6 +7,8 @@ import { fileToBase64 } from '@/utils/fileUtils';
 import { cn } from '@/lib/utils';
 import type { UploadedImage } from '@/types/types';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface AnalyzedSummaryCardProps {
     uploadedImage: UploadedImage | null;
@@ -85,31 +87,30 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
             <div className="relative p-4 md:p-5 flex flex-col gap-4">
                 {/* Media Container - Full Width */}
                 <div className="w-full shrink-0">
-                    <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-neutral-900 shadow-inner group">
+                    <div className="relative w-full h-[200px] rounded-md overflow-hidden bg-neutral-900 shadow-inner group">
                         {uploadedImage ? (
                             <>
                                 <img
                                     src={uploadedImage.url || (uploadedImage.base64 && isSafeUrl(`data:${uploadedImage.mimeType};base64,${uploadedImage.base64}`) ? `data:${uploadedImage.mimeType};base64,${uploadedImage.base64}` : '')}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 p-10"
+                                    className="w-full h-full object-cover p-10"
                                     alt="Analyzed Design"
                                 />
                                 {onReplaceImage && (
                                     <>
-                                        <input
+                                        <Input
                                             ref={fileInputRef}
                                             type="file"
                                             accept="image/jpeg,image/png,image/webp,image/gif"
                                             onChange={handleFileSelect}
                                             className="hidden"
                                         />
-                                        <button
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="absolute top-2 right-2 p-2 bg-neutral-950/70 hover:bg-neutral-950/90 backdrop-blur-sm border border-white/10 rounded-md transition-all duration-200 hover:border-brand-cyan/50 group/btn z-20 opacity-0 group-hover:opacity-100"
+                                        <Button variant="ghost" onClick={() => fileInputRef.current?.click()}
+                                            className="absolute top-2 right-2 p-2 bg-neutral-950/70 hover:bg-neutral-950/90 backdrop-blur-sm border border-white/10 rounded-md transition-all duration-200 hover:border-brand-cyan/50 group/btn z-20 opacity-0 group-hover:opacity-300"
                                             title={t('mockup.replaceImage') || 'Replace image'}
                                             aria-label="Replace image"
                                         >
                                             <ArrowLeftRight size={16} className="text-neutral-300 group-hover/btn:text-brand-cyan transition-colors" />
-                                        </button>
+                                        </Button>
                                     </>
                                 )}
                             </>
@@ -128,17 +129,16 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                     <div key={i} className="relative w-12 h-12 rounded-md overflow-hidden border border-white/20 bg-neutral-900 shadow-lg group/ref">
                                         <img
                                             src={img.url || (img.base64 ? `data:${img.mimeType || 'image/png'};base64,${img.base64}` : '')}
-                                            className="w-full h-full object-cover opacity-90 group-hover/ref:opacity-100 transition-opacity"
+                                            className="w-full h-full object-cover opacity-90 group-hover/ref:opacity-300 transition-opacity"
                                             alt={`Ref ${i}`}
                                         />
                                         {onReferenceImagesChange && (
-                                            <button
-                                                onClick={() => handleRemoveReference(i)}
-                                                className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover/ref:opacity-100 transition-all duration-200"
+                                            <Button variant="ghost" onClick={() => handleRemoveReference(i)}
+                                                className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover/ref:opacity-300 transition-all duration-200"
                                                 title={t('mockup.removeImage') || 'Remove image'}
                                             >
                                                 <X size={12} className="text-white" />
-                                            </button>
+                                            </Button>
                                         )}
                                     </div>
                                 ))}
@@ -146,20 +146,19 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                 {/* Add Reference Button - slightly larger, still subtle */}
                                 {onReferenceImagesChange && referenceImages.length < 3 && (
                                     <>
-                                        <input
+                                        <Input
                                             ref={referenceInputRef}
                                             type="file"
                                             accept="image/jpeg,image/png,image/webp,image/gif"
                                             onChange={handleReferenceSelect}
                                             className="hidden"
                                         />
-                                        <button
-                                            onClick={() => referenceInputRef.current?.click()}
-                                            className="w-12 h-12 rounded-md border border-dashed border-white/20 bg-black/30 backdrop-blur-sm hover:bg-black/50 hover:border-brand-cyan/40 flex items-center justify-center transition-all duration-200 group/add opacity-70 hover:opacity-100"
+                                        <Button variant="ghost" onClick={() => referenceInputRef.current?.click()}
+                                            className="w-12 h-12 rounded-md border border-dashed border-white/20 bg-black/30 backdrop-blur-sm hover:bg-black/50 hover:border-brand-cyan/40 flex items-center justify-center transition-all duration-200 group/add opacity-70 hover:opacity-300"
                                             title={t('mockup.addReferenceImage') || 'Add Reference'}
                                         >
                                             <Plus size={14} className="text-white/60 group-hover/add:text-brand-cyan" />
-                                        </button>
+                                        </Button>
                                     </>
                                 )}
                             </div>

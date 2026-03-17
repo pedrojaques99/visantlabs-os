@@ -229,7 +229,7 @@ export const TermsOfService: React.FC<TermsOfServiceProps> = ({ isOpen, onClose 
           </section>
 
           <div className="pt-12 mt-8">
-            <p className="text-sm text-neutral-500 italic">
+            <p className="text-sm text-neutral-500 ">
               {t('terms.sections.agreement')}
             </p>
           </div>

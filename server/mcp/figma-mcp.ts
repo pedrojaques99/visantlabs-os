@@ -6,37 +6,49 @@
  * Run with: npm run mcp:figma
  */
 
-import {
-  Server,
-  Tool,
-} from '@modelcontextprotocol/sdk/server/index.js';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
+
+// Tool interface (not exported from SDK v1.20+)
+interface Tool {
+  name: string;
+  description: string;
+  inputSchema: {
+    type: string;
+    properties: Record<string, unknown>;
+    required?: string[];
+  };
+}
 
 const server = new Server(
   {
     name: 'figma-mcp',
     version: '1.0.0',
+  },
+  {
     capabilities: {
       tools: {},
     },
-  },
-  {
-    capabilities: {},
   }
 );
 
 // ═══ Tool: get_selection ═══
 server.setRequestHandler(
-  { method: 'tools/call' },
-  async (request: any): Promise<{ content: any[] }> => {
-    const { name, arguments: args } = request.params;
+  CallToolRequestSchema,
+  async (request): Promise<{ content: { type: string; text: string }[] }> => {
+    const { name, arguments: rawArgs } = request.params;
+    const args = (rawArgs ?? {}) as Record<string, unknown>;
 
     switch (name) {
       case 'get_selection': {
         const { fileId } = args;
-        const session = pluginBridge.getSession(fileId);
+        const session = pluginBridge.getSession(fileId as string);
 
         if (!session) {
           return {
@@ -81,7 +93,7 @@ server.setRequestHandler(
                 ? [
                     {
                       type: 'SOLID',
-                      color: parseHexColor(backgroundColor),
+                      color: parseHexColor(backgroundColor as string),
                     },
                   ]
                 : [],
@@ -103,7 +115,7 @@ server.setRequestHandler(
           };
         }
 
-        const result = await pluginBridge.push(fileId, validation.valid);
+        const result = await pluginBridge.push(fileId as string, validation.valid);
 
         return {
           content: [
@@ -131,7 +143,7 @@ server.setRequestHandler(
                 ? [
                     {
                       type: 'SOLID',
-                      color: parseHexColor(fill),
+                      color: parseHexColor(fill as string),
                     },
                   ]
                 : [],
@@ -153,7 +165,7 @@ server.setRequestHandler(
           };
         }
 
-        const result = await pluginBridge.push(fileId, validation.valid);
+        const result = await pluginBridge.push(fileId as string, validation.valid);
 
         return {
           content: [
@@ -202,7 +214,7 @@ server.setRequestHandler(
           };
         }
 
-        const result = await pluginBridge.push(fileId, validation.valid);
+        const result = await pluginBridge.push(fileId as string, validation.valid);
 
         return {
           content: [
@@ -226,7 +238,7 @@ server.setRequestHandler(
             fills: [
               {
                 type: 'SOLID',
-                color: parseHexColor(fill),
+                color: parseHexColor(fill as string),
               },
             ],
           },
@@ -244,7 +256,7 @@ server.setRequestHandler(
           };
         }
 
-        const result = await pluginBridge.push(fileId, validation.valid);
+        const result = await pluginBridge.push(fileId as string, validation.valid);
 
         return {
           content: [
@@ -281,7 +293,7 @@ server.setRequestHandler(
           };
         }
 
-        const result = await pluginBridge.push(fileId, validation.valid);
+        const result = await pluginBridge.push(fileId as string, validation.valid);
 
         return {
           content: [
@@ -317,7 +329,7 @@ server.setRequestHandler(
           };
         }
 
-        const result = await pluginBridge.push(fileId, validation.valid);
+        const result = await pluginBridge.push(fileId as string, validation.valid);
 
         return {
           content: [
@@ -431,7 +443,7 @@ server.setRequestHandler(
 
             const validation = operationValidator.validateBatch(operations);
             if (validation.invalid.length === 0) {
-              pasteResult = await pluginBridge.push(fileId, validation.valid);
+              pasteResult = await pluginBridge.push(fileId as string, validation.valid);
             } else {
               console.warn('[Figma MCP] SET_IMAGE_FILL validation failed:', validation.invalid);
             }
@@ -734,7 +746,7 @@ const tools: Tool[] = [
 ];
 
 // Register tools
-server.setRequestHandler({ method: 'tools/list' }, async () => ({
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools,
 }));
 

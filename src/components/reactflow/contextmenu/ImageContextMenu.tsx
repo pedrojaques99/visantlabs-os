@@ -3,6 +3,7 @@ import { Heart, Download, Maximize2, Copy, Wand2, X, Trash2, Copy as CopyIcon, F
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
 import { downloadImage } from '@/utils/imageUtils';
+import { Button } from '@/components/ui/button'
 
 interface ImageContextMenuProps {
   x: number;
@@ -92,30 +93,27 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
       onMouseDown={(e) => e.stopPropagation()}
     >
       <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-2xl">
-        <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">Image Actions</span>
-        <button
-          onClick={onClose}
+        <span className="text-xs font-semibold text-neutral-300 uppercase ">Image Actions</span>
+        <Button variant="ghost" onClick={onClose}
           className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
         >
           <X size={16} />
-        </button>
+        </Button>
       </div>
 
       <div className="p-2">
 
-        <button
-          onClick={() => {
-            onLike();
-            onClose();
-          }}
+        <Button variant="ghost" onClick={() => {
+          onLike();
+          onClose();
+        }}
           className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
           <Heart size={16} className={cn("text-neutral-400", isLiked && "fill-current text-brand-cyan")} />
           <span className="font-medium text-[11px] tracking-wide">{isLiked ? 'Unlike' : 'Like'}</span>
-        </button>
+        </Button>
 
-        <button
-          onClick={handleDownload}
+        <Button variant="ghost" onClick={handleDownload}
           disabled={isDownloading}
           className={cn(
             "w-full px-3 py-2.5 text-left text-sm text-neutral-400 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md",
@@ -124,47 +122,43 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         >
           {isDownloading ? <GlitchLoader size={16} /> : <Download size={16} className="text-neutral-400" />}
           <span className="font-medium text-[11px] tracking-wide">{isDownloading ? 'Downloading...' : 'Download'}</span>
-        </button>
+        </Button>
 
         {onExport && (
-          <button
-            onClick={() => {
-              onExport();
-              onClose();
-            }}
+          <Button variant="ghost" onClick={() => {
+            onExport();
+            onClose();
+          }}
             className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
           >
             <Upload size={16} className="text-neutral-400" />
             <span className="font-medium text-[11px] tracking-wide">Export</span>
-          </button>
+          </Button>
         )}
 
-        <button
-          onClick={handleFullscreen}
+        <Button variant="ghost" onClick={handleFullscreen}
           className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
           <Maximize2 size={16} className="text-neutral-400" />
           <span className="font-medium text-[11px] tracking-wide">Fullscreen</span>
-        </button>
+        </Button>
 
         {imageUrl && (
-          <button
-            onClick={() => {
-              window.open(imageUrl, '_blank', 'noopener,noreferrer');
-              onClose();
-            }}
+          <Button variant="ghost" onClick={() => {
+            window.open(imageUrl, '_blank', 'noopener,noreferrer');
+            onClose();
+          }}
             className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
           >
             <ExternalLink size={16} className="text-neutral-400" />
             <span className="font-medium text-[11px] tracking-wide">Open in New Tab</span>
-          </button>
+          </Button>
         )}
 
-        <button
-          onClick={() => {
-            onCopy();
-            onClose();
-          }}
+        <Button variant="ghost" onClick={() => {
+          onCopy();
+          onClose();
+        }}
           className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
           <Copy size={16} className="text-neutral-400" />
@@ -172,14 +166,13 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             <span className="font-medium text-[11px] tracking-wide">Copy</span>
             <span className="text-[10px] text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded">Ctrl+C</span>
           </div>
-        </button>
+        </Button>
 
         {onCopyPNG && (
-          <button
-            onClick={() => {
-              onCopyPNG();
-              onClose();
-            }}
+          <Button variant="ghost" onClick={() => {
+            onCopyPNG();
+            onClose();
+          }}
             className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
           >
             <CopyIcon size={16} className="text-neutral-400" />
@@ -187,57 +180,53 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
               <span className="font-medium text-[11px] tracking-wide">Copy as PNG</span>
               <span className="text-[10px] text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded">Ctrl+Shift+C</span>
             </div>
-          </button>
+          </Button>
         )}
 
         {onDescribe && (
-          <button
-            onClick={() => {
-              onDescribe();
-              onClose();
-            }}
+          <Button variant="ghost" onClick={() => {
+            onDescribe();
+            onClose();
+          }}
             className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
           >
             <FileText size={16} className="text-neutral-400" />
             <span className="font-medium text-[11px] tracking-wide">Describe Image</span>
-          </button>
+          </Button>
         )}
 
         <div className="h-px bg-neutral-800/30 my-1.5" />
 
-        <button
-          onClick={() => {
-            onEditWithPrompt();
-            onClose();
-          }}
+        <Button variant="ghost" onClick={() => {
+          onEditWithPrompt();
+          onClose();
+        }}
           className="w-full px-3 py-2.5 text-left text-sm text-brand-cyan hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md font-semibold"
         >
           <Wand2 size={16} className="text-brand-cyan" />
           <span className="text-[11px] tracking-wide">Edit with Prompt</span>
-        </button>
+        </Button>
 
         <div className="h-px bg-neutral-800/30 my-1.5" />
 
-        <button
-          onClick={() => {
-            onDuplicate();
-            onClose();
-          }}
+        <Button variant="ghost" onClick={() => {
+          onDuplicate();
+          onClose();
+        }}
           className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
           <CopyIcon size={16} className="text-neutral-400" />
           <span className="font-medium text-[11px] tracking-wide">Duplicate</span>
-        </button>
-        <button
-          onClick={() => {
-            onDelete();
-            onClose();
-          }}
+        </Button>
+        <Button variant="ghost" onClick={() => {
+          onDelete();
+          onClose();
+        }}
           className="w-full px-3 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
           <Trash2 size={16} className="text-red-400" />
           <span className="font-medium text-[11px] tracking-wide">Delete</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

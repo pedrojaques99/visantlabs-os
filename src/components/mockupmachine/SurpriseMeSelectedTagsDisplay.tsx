@@ -1,12 +1,17 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { translateTag } from '@/utils/localeUtils';
-import { Dices, Shuffle, ChevronDown, Check, Plus } from 'lucide-react';
+import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
+import { MockupTagCategory } from '@/services/mockupTagService';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { MicroTitle } from '@/components/ui/MicroTitle'
+import { SuggestedTagsBadges } from './SuggestedTagsBadges';
 
 type SectionKey = 'categories' | 'location' | 'angle' | 'lighting' | 'effects' | 'material';
 
@@ -54,21 +59,25 @@ const filterValidTags = (tags: string[]): string[] => {
 };
 
 interface TagDropdownProps {
-  selectedTag: string | null;
+  selectedTags: string[];
+  isMulti: boolean;
   availableTags: string[];
   onSelect: (tag: string) => void;
   placeholder: string;
   theme: string;
   isGenerating?: boolean;
+  tagCategories?: MockupTagCategory[];
 }
 
 const TagDropdown: React.FC<TagDropdownProps> = ({
-  selectedTag,
+  selectedTags,
+  isMulti,
   availableTags,
   onSelect,
   placeholder,
   theme,
   isGenerating = false,
+  tagCategories = [],
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -94,8 +103,10 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
 
   const handleSelect = (tag: string) => {
     onSelect(tag);
-    setIsOpen(false);
-    setSearchQuery('');
+    if (!isMulti) {
+      setIsOpen(false);
+      setSearchQuery('');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -119,14 +130,69 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
       translateTag(tag).toLowerCase() === searchQuery.toLowerCase()
     );
 
+  // Group tags by category if categories are provided
+  const groupedTags = useMemo(() => {
+    if (!tagCategories || tagCategories.length === 0 || searchQuery.trim()) {
+      return { type: 'flat', tags: filteredTags };
+    }
+
+    const groups: { categoryName: string; tags: string[] }[] = [];
+    const categorizedTags = new Set<string>();
+
+    tagCategories.forEach(cat => {
+      const categoryTags = cat.tags
+        .map(t => t.name)
+        .filter(tagName => availableTags.includes(tagName) && filteredTags.includes(tagName));
+
+      if (categoryTags.length > 0) {
+        groups.push({
+          categoryName: cat.name,
+          tags: categoryTags
+        });
+        categoryTags.forEach(t => categorizedTags.add(t));
+      }
+    });
+
+    const others = filteredTags.filter(tag => !categorizedTags.has(tag));
+    if (others.length > 0) {
+      groups.push({
+        categoryName: 'OTHERS',
+        tags: others
+      });
+    }
+
+    return { type: 'grouped', groups };
+  }, [filteredTags, tagCategories, availableTags, searchQuery]);
+
+  const renderTagButton = (tag: string) => (
+    <Button variant="ghost"
+      key={tag}
+      type="button"
+      onClick={() => handleSelect(tag)}
+      className={cn(
+        "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-[10px] font-mono text-left transition-colors",
+        selectedTags.includes(tag)
+          ? theme === 'dark'
+            ? 'bg-brand-cyan/10 text-brand-cyan'
+            : 'bg-brand-cyan/10 text-brand-cyan'
+          : theme === 'dark'
+            ? 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-300'
+            : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-800'
+      )}
+    >
+      <span className="truncate">{translateTag(tag)}</span>
+      {selectedTags.includes(tag) && <Check size={10} className="shrink-0 text-brand-cyan" />}
+    </Button>
+  );
+
   return (
     <div ref={dropdownRef} className="relative flex-1 min-w-0">
-      <button
+      <Button variant="ghost"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-mono transition-all duration-200 border",
-          selectedTag
+          "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-[10px] font-mono transition-all duration-200 border",
+          selectedTags.length > 0
             ? theme === 'dark'
               ? 'bg-neutral-800/60 text-neutral-400 border-neutral-700/50 hover:border-neutral-600'
               : 'bg-white text-brand-cyan border-brand-cyan/40 hover:border-brand-cyan/60'
@@ -139,7 +205,9 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
           {isGenerating ? (
             <span className="inline-block w-16 h-3 rounded animate-pulse bg-neutral-700/50" />
           ) : (
-            selectedTag ? translateTag(selectedTag) : placeholder
+            selectedTags.length > 0
+              ? (selectedTags.length === 1 ? translateTag(selectedTags[0]) : `${translateTag(selectedTags[0])} +${selectedTags.length - 1}`)
+              : placeholder
           )}
         </span>
         <ChevronDown
@@ -149,12 +217,12 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
             isOpen && "rotate-180"
           )}
         />
-      </button>
+      </Button>
 
       {isOpen && (
         <div
           className={cn(
-            "absolute z-50 mt-1 w-full rounded-lg border shadow-lg animate-fade-in overflow-hidden",
+            "absolute z-50 mt-1 w-full rounded-md border shadow-lg animate-fade-in overflow-hidden",
             theme === 'dark'
               ? 'bg-neutral-900 border-neutral-700/50'
               : 'bg-white border-neutral-200'
@@ -165,7 +233,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
             "p-1.5 border-b",
             theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-200'
           )}>
-            <input
+            <Input
               ref={inputRef}
               type="text"
               value={searchQuery}
@@ -185,7 +253,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
           <div className="max-h-40 overflow-y-auto">
             {/* Custom tag option */}
             {showCustomOption && (
-              <button
+              <Button variant="ghost"
                 type="button"
                 onClick={() => handleSelect(searchQuery.trim())}
                 className={cn(
@@ -197,30 +265,25 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
               >
                 <Plus size={10} className="shrink-0" />
                 <span className="truncate">Adicionar "{searchQuery.trim()}"</span>
-              </button>
+              </Button>
             )}
 
-            {/* Filtered tags */}
-            {filteredTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => handleSelect(tag)}
-                className={cn(
-                  "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-[10px] font-mono text-left transition-colors",
-                  tag === selectedTag
-                    ? theme === 'dark'
-                      ? 'bg-brand-cyan/10 text-brand-cyan'
-                      : 'bg-brand-cyan/10 text-brand-cyan'
-                    : theme === 'dark'
-                      ? 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-300'
-                      : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-800'
-                )}
-              >
-                <span className="truncate">{translateTag(tag)}</span>
-                {tag === selectedTag && <Check size={10} className="shrink-0 text-brand-cyan" />}
-              </button>
-            ))}
+            {/* Tags List */}
+            {groupedTags.type === 'grouped' ? (
+              groupedTags.groups.map((group, idx) => (
+                <div key={group.categoryName} className={cn(idx > 0 && "mt-1")}>
+                  <div className={cn(
+                    "px-2.5 py-1 text-[8px] font-bold font-mono uppercase tracking-widest",
+                    theme === 'dark' ? 'text-neutral-600 bg-black/20' : 'text-neutral-400 bg-neutral-50'
+                  )}>
+                    {group.categoryName}
+                  </div>
+                  {group.tags.map(tag => renderTagButton(tag))}
+                </div>
+              ))
+            ) : (
+              filteredTags.map((tag) => renderTagButton(tag))
+            )}
 
             {/* Empty state */}
             {filteredTags.length === 0 && !showCustomOption && (
@@ -293,6 +356,15 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
     withHuman,
     enhanceTexture,
     removeText,
+    surpriseMePool,
+    setSurpriseMePool,
+    // Suggested tags from AI analysis
+    suggestedTags: suggestedCategoryTags,
+    suggestedLocationTags,
+    suggestedAngleTags,
+    suggestedLightingTags,
+    suggestedEffectTags,
+    suggestedMaterialTags,
     // Setters
     setSelectedTags,
     setSelectedLocationTags,
@@ -313,16 +385,18 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
     availableLightingTags,
     availableEffectTags,
     availableMaterialTags,
+    togglePoolTag,
+    tagCategories
   } = useMockupTags();
 
   // Filter tags
   const sectionData: Record<SectionKey, string[]> = {
-    categories: filterValidTags(selectedTags),
-    location: filterValidTags(selectedLocationTags),
-    angle: filterValidTags(selectedAngleTags),
-    lighting: filterValidTags(selectedLightingTags),
-    effects: filterValidTags(selectedEffectTags),
-    material: filterValidTags(selectedMaterialTags),
+    categories: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedCategoryTags || []) : selectedTags),
+    location: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedLocationTags || []) : selectedLocationTags),
+    angle: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedAngleTags || []) : selectedAngleTags),
+    lighting: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedLightingTags || []) : selectedLightingTags),
+    effects: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedEffectTags || []) : selectedEffectTags),
+    material: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedMaterialTags || []) : selectedMaterialTags),
   };
 
   const availableTagsMap: Record<SectionKey, string[]> = {
@@ -332,6 +406,16 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
     lighting: availableLightingTags,
     effects: availableEffectTags,
     material: availableMaterialTags,
+  };
+
+  // AI suggested tags map (from analysis)
+  const suggestedTagsMap: Record<SectionKey, string[]> = {
+    categories: suggestedCategoryTags || [],
+    location: suggestedLocationTags || [],
+    angle: suggestedAngleTags || [],
+    lighting: suggestedLightingTags || [],
+    effects: suggestedEffectTags || [],
+    material: suggestedMaterialTags || [],
   };
 
   const settersMap: Record<SectionKey, (tags: string[]) => void> = {
@@ -383,9 +467,21 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
   ]);
 
   const handleTagSelect = (sectionKey: SectionKey, tag: string) => {
-    const setter = settersMap[sectionKey];
-    if (setter) {
-      setter([tag]);
+    if (isSurpriseMeMode) {
+      const poolKeyMap: Record<SectionKey, keyof typeof surpriseMePool> = {
+        categories: 'selectedCategoryTags',
+        location: 'selectedLocationTags',
+        angle: 'selectedAngleTags',
+        lighting: 'selectedLightingTags',
+        effects: 'selectedEffectTags',
+        material: 'selectedMaterialTags'
+      };
+      togglePoolTag(poolKeyMap[sectionKey], tag, surpriseMePool, setSurpriseMePool);
+    } else {
+      const setter = settersMap[sectionKey];
+      if (setter) {
+        setter([tag]);
+      }
     }
   };
 
@@ -396,11 +492,11 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
         isSurpriseMeMode
           ? "py-2"
           : cn(
-              "rounded-xl p-3",
-              theme === 'dark' ? 'bg-neutral-900/20' : 'bg-neutral-50/40',
-              "border",
-              theme === 'dark' ? 'border-neutral-800/40' : 'border-neutral-200/60'
-            )
+            "rounded-xl p-3",
+            theme === 'dark' ? 'bg-neutral-900/20' : 'bg-neutral-50/40',
+            "border",
+            theme === 'dark' ? 'border-neutral-800/40' : 'border-neutral-200/60'
+          )
       )}
     >
       <div className="flex items-center gap-2 mb-3">
@@ -417,13 +513,13 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
           </SkeletonText>
         )}
         {isSurpriseMeMode && onRerollAll && (
-          <button
+          <Button variant="ghost"
             onClick={handleRerollAll}
             className="ml-auto p-1.5 rounded-full hover:bg-neutral-800 transition-all duration-200 group/reroll"
             title="Sortear tudo novamente (Shuffle All)"
           >
-            <Shuffle size={14} className="text-neutral-500 group-hover/reroll:text-brand-cyan group-hover/reroll:rotate-180 transition-all duration-500" />
-          </button>
+            <Shuffle size={14} className="text-neutral-500 group-hover/reroll:text-brand-cyan group-hover/reroll:rotate-180 transition-all duration-300" />
+          </Button>
         )}
       </div>
 
@@ -432,27 +528,36 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
         {SECTIONS.map(({ key, labelKey }) => {
           const tags = sectionData[key];
           const availableTags = availableTagsMap[key];
-          const selectedTag = tags.length > 0 ? tags[0] : null;
+          const suggested = suggestedTagsMap[key];
 
           return (
             <div key={key} className="flex flex-col gap-1">
               <SkeletonText loading={isGenerating}>
                 <span
                   className={cn(
-                    "text-[9px] font-mono uppercase tracking-wider",
+                    "text-[9px] font-mono uppercase ",
                     theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                   )}
                 >
                   {t(labelKey)}:
                 </span>
               </SkeletonText>
+              {/* AI Suggested badges */}
+              <SuggestedTagsBadges
+                suggestedTags={suggested}
+                selectedTags={tags}
+                onSelect={(tag) => handleTagSelect(key, tag)}
+                isLoading={isGenerating}
+              />
               <TagDropdown
-                selectedTag={selectedTag}
+                selectedTags={tags}
+                isMulti={isSurpriseMeMode}
                 availableTags={availableTags}
                 onSelect={(tag) => handleTagSelect(key, tag)}
                 placeholder={t('mockup.selectOption') || 'Select...'}
                 theme={theme}
                 isGenerating={isGenerating}
+                tagCategories={key === 'categories' ? tagCategories : undefined}
               />
             </div>
           );

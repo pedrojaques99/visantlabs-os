@@ -4,9 +4,11 @@ import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
 import { cleanEdgeHandles } from '@/utils/canvas/canvasNodeUtils';
 import { canvasApi } from '@/services/canvasApi';
+import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { processNodesForR2Upload } from '@/utils/canvas/processNodesForR2';
 import { toast } from 'sonner';
 import { useCanvasEditingState } from './useCanvasEditingState';
+import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 import { saveCanvasToLocalStorage } from '@/utils/canvas/canvasLocalStorage';
 import { flushAllPendingUploads } from './utils/r2UploadUtils';
 import { isLocalDevelopment } from '@/utils/env';
@@ -35,6 +37,7 @@ export const useCanvasProject = (
   const [isCollaborative, setIsCollaborative] = useState(false);
   const [canEdit, setCanEdit] = useState<string[]>([]);
   const [canView, setCanView] = useState<string[]>([]);
+  const [linkedGuidelineId, setLinkedGuidelineId] = useState<string | null>(null);
   const hasLoadedProject = useRef(false);
   const currentProjectIdRef = useRef<string | undefined>(undefined);
   const saveTimeoutRef = useRef<number | null>(null);
@@ -45,6 +48,8 @@ export const useCanvasProject = (
 
   // Detect editing state to optimize save behavior
   const { isEditing } = useCanvasEditingState({ nodes, edges });
+
+  const { setLinkedGuideline } = useCanvasHeader();
 
   // Check for migration from localStorage if no ID
   useEffect(() => {
@@ -168,6 +173,7 @@ export const useCanvasProject = (
         setIsCollaborative(project.isCollaborative || false);
         setCanEdit(Array.isArray(project.canEdit) ? project.canEdit : []);
         setCanView(Array.isArray(project.canView) ? project.canView : []);
+        setLinkedGuidelineId(project.linkedGuidelineId || null);
 
         // Load drawings if available
         if (setDrawings && project.drawings !== undefined && project.drawings !== null) {
@@ -343,6 +349,21 @@ export const useCanvasProject = (
     };
   }, [id, isAuthenticated, nodes, edges, projectName, drawings, isEditing]);
 
+  // Load brand guideline when linkedGuidelineId changes
+  useEffect(() => {
+    if (!linkedGuidelineId) {
+      setLinkedGuideline(null);
+      return;
+    }
+
+    brandGuidelineApi.getById(linkedGuidelineId)
+      .then(guideline => setLinkedGuideline(guideline))
+      .catch(err => {
+        console.warn('[useCanvasProject] Failed to load linked guideline:', err);
+        setLinkedGuideline(null);
+      });
+  }, [linkedGuidelineId, setLinkedGuideline]);
+
   // Save flow state to backend (debounced, longer delay during editing)
   useEffect(() => {
     if (!id || !isAuthenticated || isSavingRef.current) return;
@@ -376,7 +397,7 @@ export const useCanvasProject = (
         // Only process nodes for R2 when user stops editing
         if (isEditing) {
           // Just save current state (with base64) - R2 processing will happen when editing stops
-          await canvasApi.save(projectName, nodes, cleanedEdges, id, drawings);
+          await canvasApi.save(projectName, nodes, cleanedEdges, id, drawings, linkedGuidelineId);
           // Also update localStorage
           saveCanvasToLocalStorage(id, nodes, edges, projectName, drawings);
           isSavingRef.current = false;
@@ -685,7 +706,7 @@ export const useCanvasProject = (
           // Don't reset warning flag - keep it true so toast only shows once per session
         }
 
-        await canvasApi.save(projectName, nodesToSave, cleanedEdges, id, drawings);
+        await canvasApi.save(projectName, nodesToSave, cleanedEdges, id, drawings, linkedGuidelineId);
         // Also save to localStorage (will clean base64 automatically)
         saveCanvasToLocalStorage(id, nodesToSave, cleanedEdges, projectName, drawings);
       } catch (error: any) {
@@ -724,7 +745,7 @@ export const useCanvasProject = (
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [id, isAuthenticated, nodes, edges, projectName, drawings, isEditing]);
+  }, [id, isAuthenticated, nodes, edges, projectName, drawings, linkedGuidelineId, isEditing]);
 
   // Immediate save function (bypasses debounce) - useful for critical saves
   const saveImmediately = useCallback(async () => {
@@ -788,7 +809,7 @@ export const useCanvasProject = (
         }
       }
 
-      await canvasApi.save(projectName, nodesToSave, cleanedEdges, id, drawings);
+      await canvasApi.save(projectName, nodesToSave, cleanedEdges, id, drawings, linkedGuidelineId);
     } catch (error: any) {
       console.error('Failed to save project immediately:', error);
 
@@ -805,7 +826,7 @@ export const useCanvasProject = (
     } finally {
       isSavingRef.current = false;
     }
-  }, [id, isAuthenticated, nodes, edges, projectName, drawings, setNodes]);
+  }, [id, isAuthenticated, nodes, edges, projectName, drawings, linkedGuidelineId, setNodes]);
 
   return {
     isLoadingProject,
@@ -820,10 +841,12 @@ export const useCanvasProject = (
     isCollaborative,
     canEdit,
     canView,
+    linkedGuidelineId,
     setShareId,
     setIsCollaborative,
     setCanEdit,
     setCanView,
+    setLinkedGuidelineId,
   };
 };
 

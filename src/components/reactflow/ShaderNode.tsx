@@ -16,6 +16,9 @@ import { canvasApi } from '@/services/canvasApi';
 import { toast } from 'sonner';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { NodeButton } from './shared/node-button';
+import { Input } from '@/components/ui/input'
+import { NodeLabel } from './shared/NodeLabel';
 
 const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -495,7 +498,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
       dragging={dragging}
       warning={data.oversizedWarning}
       onFitToContent={handleFitToContent}
-      className="p-6 min-w-[320px] w-full h-full"
+      className="min-w-[320px] w-full h-full"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
@@ -515,29 +518,29 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
       <NodeHandles />
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-3">
+      <div className="flex items-center gap-3 node-margin">
         <Sparkles size={16} className="text-brand-cyan" />
         <h3 className="text-xs font-semibold text-neutral-300 font-mono">Shader Effect</h3>
       </div>
 
       {/* Status/Info - Show manual apply option when ready (only for images, videos auto-process) */}
       {!isLoading && hasConnectedImage && !hasResult && !isVideoInput ? (
-        <div className="w-full px-2 py-1.5 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
+        <div className="w-full px-4 py-3 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
           <ImageIcon size={14} className="text-brand-cyan" />
           Ready to process
         </div>
       ) : null}
 
       {!hasConnectedImage ? (
-        <div className="w-full space-y-2">
-          <div className="w-full px-2 py-1.5 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-50">
+        <div className="w-full space-y-[var(--node-gap-sm)]">
+          <div className="w-full px-4 py-3 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-50">
             <ImageIcon size={14} />
             {t('canvasNodes.shaderNode.connectImage') || 'Connect an image or video'}
           </div>
           <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
             <Upload size={14} />
             {t('canvasNodes.shaderNode.uploadImageOrVideo') || 'Upload Image or Video'}
-            <input
+            <Input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo"
               onChange={handleFileUpload}
@@ -652,328 +655,326 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           {/* Action Icons - appears on hover or when selected */}
           <div className={cn(
             "absolute top-3 right-3 flex gap-1.5 transition-all backdrop-blur-sm z-10",
-            selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            selected ? "opacity-300" : "opacity-0 group-hover:opacity-300"
           )}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (data.onViewFullscreen) {
-                  const paletteNames = ['Monochrome', 'Gameboy', 'CRT Amber', 'CRT Green', 'Sepia'];
-                  const sliders = shaderType === 'halftone' ? [
-                    {
-                      label: 'Dot Size',
-                      value: dotSize,
-                      min: 0.1,
-                      max: 20,
-                      step: 0.1,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { dotSize: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(1),
+            <NodeButton variant="ghost" size="xs" onClick={(e) => {
+              e.stopPropagation();
+              if (data.onViewFullscreen) {
+                const paletteNames = ['Monochrome', 'Gameboy', 'CRT Amber', 'CRT Green', 'Sepia'];
+                const sliders = shaderType === 'halftone' ? [
+                  {
+                    label: 'Dot Size',
+                    value: dotSize,
+                    min: 0.1,
+                    max: 20,
+                    step: 0.1,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { dotSize: value });
+                      }
                     },
-                    {
-                      label: 'Angle',
-                      value: angle,
-                      min: 0,
-                      max: 360,
-                      step: 1,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { angle: value });
-                        }
-                      },
-                      formatValue: (value: number) => `${Math.round(value)}°`,
+                    formatValue: (value: number) => value.toFixed(1),
+                  },
+                  {
+                    label: 'Angle',
+                    value: angle,
+                    min: 0,
+                    max: 360,
+                    step: 1,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { angle: value });
+                      }
                     },
-                    {
-                      label: 'Contrast',
-                      value: contrast,
-                      min: 0,
-                      max: 2,
-                      step: 0.01,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { contrast: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(2),
+                    formatValue: (value: number) => `${Math.round(value)}°`,
+                  },
+                  {
+                    label: 'Contrast',
+                    value: contrast,
+                    min: 0,
+                    max: 2,
+                    step: 0.01,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { contrast: value });
+                      }
                     },
-                    {
-                      label: 'Spacing',
-                      value: spacing,
-                      min: 0.5,
-                      max: 5,
-                      step: 0.1,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { spacing: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(1),
+                    formatValue: (value: number) => value.toFixed(2),
+                  },
+                  {
+                    label: 'Spacing',
+                    value: spacing,
+                    min: 0.5,
+                    max: 5,
+                    step: 0.1,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { spacing: value });
+                      }
                     },
-                  ] : shaderType === 'dither' ? [
-                    {
-                      label: 'Dither Size',
-                      value: ditherSize,
-                      min: 1,
-                      max: 16,
-                      step: 1,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { ditherSize: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(0),
+                    formatValue: (value: number) => value.toFixed(1),
+                  },
+                ] : shaderType === 'dither' ? [
+                  {
+                    label: 'Dither Size',
+                    value: ditherSize,
+                    min: 1,
+                    max: 16,
+                    step: 1,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { ditherSize: value });
+                      }
                     },
-                    {
-                      label: 'Contrast',
-                      value: ditherContrast,
-                      min: 0.1,
-                      max: 3,
-                      step: 0.1,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { ditherContrast: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(1),
+                    formatValue: (value: number) => value.toFixed(0),
+                  },
+                  {
+                    label: 'Contrast',
+                    value: ditherContrast,
+                    min: 0.1,
+                    max: 3,
+                    step: 0.1,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { ditherContrast: value });
+                      }
                     },
-                    {
-                      label: 'Offset',
-                      value: offset,
-                      min: -0.5,
-                      max: 0.5,
-                      step: 0.01,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { offset: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(2),
+                    formatValue: (value: number) => value.toFixed(1),
+                  },
+                  {
+                    label: 'Offset',
+                    value: offset,
+                    min: -0.5,
+                    max: 0.5,
+                    step: 0.01,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { offset: value });
+                      }
                     },
-                    {
-                      label: 'Bit Depth',
-                      value: bitDepth,
-                      min: 1,
-                      max: 8,
-                      step: 1,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { bitDepth: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(0),
+                    formatValue: (value: number) => value.toFixed(2),
+                  },
+                  {
+                    label: 'Bit Depth',
+                    value: bitDepth,
+                    min: 1,
+                    max: 8,
+                    step: 1,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { bitDepth: value });
+                      }
                     },
-                    {
-                      label: 'Palette',
-                      value: palette,
-                      min: 0,
-                      max: 4,
-                      step: 1,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { palette: value });
-                        }
-                      },
-                      formatValue: (value: number) => paletteNames[Math.floor(value)] || 'Monochrome',
+                    formatValue: (value: number) => value.toFixed(0),
+                  },
+                  {
+                    label: 'Palette',
+                    value: palette,
+                    min: 0,
+                    max: 4,
+                    step: 1,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { palette: value });
+                      }
                     },
-                  ] : shaderType === 'matrixDither' ? [
-                    {
-                      label: 'Matrix Size',
-                      value: matrixSize,
-                      min: 2,
-                      max: 8,
-                      step: 1,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { matrixSize: value });
-                        }
-                      },
-                      formatValue: (value: number) => `${value.toFixed(0)}x${value.toFixed(0)}`,
+                    formatValue: (value: number) => paletteNames[Math.floor(value)] || 'Monochrome',
+                  },
+                ] : shaderType === 'matrixDither' ? [
+                  {
+                    label: 'Matrix Size',
+                    value: matrixSize,
+                    min: 2,
+                    max: 8,
+                    step: 1,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { matrixSize: value });
+                      }
                     },
-                    {
-                      label: 'Bias',
-                      value: bias,
-                      min: -1,
-                      max: 1,
-                      step: 0.01,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { bias: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(2),
+                    formatValue: (value: number) => `${value.toFixed(0)}x${value.toFixed(0)}`,
+                  },
+                  {
+                    label: 'Bias',
+                    value: bias,
+                    min: -1,
+                    max: 1,
+                    step: 0.01,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { bias: value });
+                      }
                     },
-                  ] : shaderType === 'ascii' ? [
-                    {
-                      label: 'Character Size',
-                      value: asciiCharSize,
-                      min: 2,
-                      max: 32,
-                      step: 1,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { asciiCharSize: value });
-                        }
-                      },
-                      formatValue: (value: number) => `${value.toFixed(0)}px`,
+                    formatValue: (value: number) => value.toFixed(2),
+                  },
+                ] : shaderType === 'ascii' ? [
+                  {
+                    label: 'Character Size',
+                    value: asciiCharSize,
+                    min: 2,
+                    max: 32,
+                    step: 1,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { asciiCharSize: value });
+                      }
                     },
-                    {
-                      label: 'Contrast',
-                      value: asciiContrast,
-                      min: 0.1,
-                      max: 3,
-                      step: 0.1,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { asciiContrast: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(1),
+                    formatValue: (value: number) => `${value.toFixed(0)}px`,
+                  },
+                  {
+                    label: 'Contrast',
+                    value: asciiContrast,
+                    min: 0.1,
+                    max: 3,
+                    step: 0.1,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { asciiContrast: value });
+                      }
                     },
-                    {
-                      label: 'Brightness',
-                      value: asciiBrightness,
-                      min: -0.5,
-                      max: 0.5,
-                      step: 0.01,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { asciiBrightness: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(2),
+                    formatValue: (value: number) => value.toFixed(1),
+                  },
+                  {
+                    label: 'Brightness',
+                    value: asciiBrightness,
+                    min: -0.5,
+                    max: 0.5,
+                    step: 0.01,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { asciiBrightness: value });
+                      }
                     },
-                  ] : shaderType === 'duotone' ? [
-                    {
-                      label: 'Intensity',
-                      value: duotoneIntensity,
-                      min: 0,
-                      max: 1,
-                      step: 0.01,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { duotoneIntensity: value });
-                        }
-                      },
-                      formatValue: (value: number) => `${Math.round(value * 100)}%`,
+                    formatValue: (value: number) => value.toFixed(2),
+                  },
+                ] : shaderType === 'duotone' ? [
+                  {
+                    label: 'Intensity',
+                    value: duotoneIntensity,
+                    min: 0,
+                    max: 1,
+                    step: 0.01,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { duotoneIntensity: value });
+                      }
                     },
-                    {
-                      label: 'Contrast',
-                      value: duotoneContrast,
-                      min: 0.5,
-                      max: 2,
-                      step: 0.01,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { duotoneContrast: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(2),
+                    formatValue: (value: number) => `${Math.round(value * 100)}%`,
+                  },
+                  {
+                    label: 'Contrast',
+                    value: duotoneContrast,
+                    min: 0.5,
+                    max: 2,
+                    step: 0.01,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { duotoneContrast: value });
+                      }
                     },
-                    {
-                      label: 'Brightness',
-                      value: duotoneBrightness,
-                      min: -0.5,
-                      max: 0.5,
-                      step: 0.01,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { duotoneBrightness: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(2),
+                    formatValue: (value: number) => value.toFixed(2),
+                  },
+                  {
+                    label: 'Brightness',
+                    value: duotoneBrightness,
+                    min: -0.5,
+                    max: 0.5,
+                    step: 0.01,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { duotoneBrightness: value });
+                      }
                     },
-                  ] : [
-                    {
-                      label: 'Tape Wave',
-                      value: tapeWaveIntensity,
-                      min: 0,
-                      max: 2,
-                      step: 0.01,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { tapeWaveIntensity: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(2),
+                    formatValue: (value: number) => value.toFixed(2),
+                  },
+                ] : [
+                  {
+                    label: 'Tape Wave',
+                    value: tapeWaveIntensity,
+                    min: 0,
+                    max: 2,
+                    step: 0.01,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { tapeWaveIntensity: value });
+                      }
                     },
-                    {
-                      label: 'Tape Crease',
-                      value: tapeCreaseIntensity,
-                      min: 0,
-                      max: 2,
-                      step: 0.01,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { tapeCreaseIntensity: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(2),
+                    formatValue: (value: number) => value.toFixed(2),
+                  },
+                  {
+                    label: 'Tape Crease',
+                    value: tapeCreaseIntensity,
+                    min: 0,
+                    max: 2,
+                    step: 0.01,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { tapeCreaseIntensity: value });
+                      }
                     },
-                    {
-                      label: 'Switching Noise',
-                      value: switchingNoiseIntensity,
-                      min: 0,
-                      max: 2,
-                      step: 0.01,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { switchingNoiseIntensity: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(2),
+                    formatValue: (value: number) => value.toFixed(2),
+                  },
+                  {
+                    label: 'Switching Noise',
+                    value: switchingNoiseIntensity,
+                    min: 0,
+                    max: 2,
+                    step: 0.01,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { switchingNoiseIntensity: value });
+                      }
                     },
-                    {
-                      label: 'Bloom',
-                      value: bloomIntensity,
-                      min: 0,
-                      max: 2,
-                      step: 0.01,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { bloomIntensity: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(2),
+                    formatValue: (value: number) => value.toFixed(2),
+                  },
+                  {
+                    label: 'Bloom',
+                    value: bloomIntensity,
+                    min: 0,
+                    max: 2,
+                    step: 0.01,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { bloomIntensity: value });
+                      }
                     },
-                    {
-                      label: 'AC Beat',
-                      value: acBeatIntensity,
-                      min: 0,
-                      max: 2,
-                      step: 0.01,
-                      onChange: (value: number) => {
-                        if (data.onUpdateData) {
-                          data.onUpdateData(id, { acBeatIntensity: value });
-                        }
-                      },
-                      formatValue: (value: number) => value.toFixed(2),
+                    formatValue: (value: number) => value.toFixed(2),
+                  },
+                  {
+                    label: 'AC Beat',
+                    value: acBeatIntensity,
+                    min: 0,
+                    max: 2,
+                    step: 0.01,
+                    onChange: (value: number) => {
+                      if (data.onUpdateData) {
+                        data.onUpdateData(id, { acBeatIntensity: value });
+                      }
                     },
-                  ];
+                    formatValue: (value: number) => value.toFixed(2),
+                  },
+                ];
 
-                  data.onViewFullscreen(
-                    resultImageUrl,
-                    data.resultImageBase64,
-                    sliders
-                  );
-                }
-              }}
+                data.onViewFullscreen(
+                  resultImageUrl,
+                  data.resultImageBase64,
+                  sliders
+                );
+              }
+            }}
               onMouseDown={(e) => e.stopPropagation()}
               className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border border-neutral-700/50 hover:border-neutral-600/70 transition-all"
               title={t('common.viewFullscreen')}
             >
               <Maximize2 size={14} strokeWidth={2} />
-            </button>
-            <button
-              onClick={handleDownload}
+            </NodeButton>
+            <NodeButton variant="ghost" size="xs" onClick={handleDownload}
               onMouseDown={(e) => e.stopPropagation()}
               className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border border-neutral-700/50 hover:border-neutral-600/70 transition-all"
               title={hasVideoResult ? t('common.downloadVideo') : t('common.downloadImage')}
             >
               <Download size={14} strokeWidth={2} />
-            </button>
+            </NodeButton>
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
-import { Handle, Position, type NodeProps, useReactFlow, NodeResizer } from '@xyflow/react';
+import React, { useState, useEffect, memo, useRef, useCallback, useMemo } from 'react';
+import { Handle, Position, type NodeProps, useReactFlow, NodeResizer, useNodes } from '@xyflow/react';
 import { Pickaxe, Image as ImageIcon, Wand2, Save, BookOpen } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { PromptNodeData } from '@/types/reactFlow';
@@ -14,8 +14,6 @@ import { NodeInput } from './shared/node-input';
 import { NodeLabel } from './shared/node-label';
 import { NodeHeader } from './shared/node-header';
 import { LabeledHandle } from './shared/LabeledHandle';
-import { AspectRatioSelector } from './shared/AspectRatioSelector';
-import { ResolutionSelector } from './shared/ResolutionSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
@@ -23,11 +21,18 @@ import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { PromptContextMenu } from './contextmenu/PromptContextMenu';
 import { MockupPresetModal } from '@/components/MockupPresetModal';
 import { getPresetByIdSync } from '@/services/unifiedPresetService';
-
+import { NodeButton } from './shared/node-button';
+import { ModelSelector } from './shared/ModelSelector';
+import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
+import { toast } from 'sonner';
+import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
+import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
+  const { linkedGuidelineId } = useCanvasHeader();
+  const nodes = useNodes();
   const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as PromptNodeData;
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
@@ -40,6 +45,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const [connectedImage3, setConnectedImage3] = useState<string | undefined>(nodeData.connectedImage3);
   const [connectedImage4, setConnectedImage4] = useState<string | undefined>(nodeData.connectedImage4);
   const [pdfPageReference, setPdfPageReference] = useState<string>(nodeData.pdfPageReference || '');
+  const [isBrandActive, setIsBrandActive] = useState<boolean>(nodeData.isBrandActive !== undefined ? nodeData.isBrandActive : (!!(nodeData.connectedLogo || nodeData.connectedIdentity || nodeData.connectedTextDirection)));
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -56,7 +63,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
     setIsPresetModalOpen(false);
   };
-
 
   // BrandCore connection data
   const connectedLogo = nodeData.connectedLogo;
@@ -93,56 +99,39 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
   const hasConnectedImages = allConnectedImages.some(img => !!img) || hasBrandCoreConnection;
 
-  // Sync prompt and model with data
-  // If connectedText exists, use it for real-time sync from TextNode
+  // Sync all node data into local state in a consolidated effect
   useEffect(() => {
     if (hasTextNodeConnection && connectedText !== undefined) {
-      // Real-time sync from connected TextNode
       setPrompt(connectedText);
     } else if (nodeData.prompt !== undefined) {
-      // Manual prompt or disconnected state
       setPrompt(nodeData.prompt);
     }
-  }, [nodeData.prompt, connectedText, hasTextNodeConnection]);
 
-  useEffect(() => {
-    if (nodeData.model) {
-      setModel(nodeData.model);
-    }
-  }, [nodeData.model]);
+    if (nodeData.model) setModel(nodeData.model);
+    if (nodeData.aspectRatio) setAspectRatio(nodeData.aspectRatio);
+    if (nodeData.resolution) setResolution(nodeData.resolution);
+    if (nodeData.pdfPageReference !== undefined) setPdfPageReference(nodeData.pdfPageReference || '');
 
-  useEffect(() => {
-    if (nodeData.aspectRatio) {
-      setAspectRatio(nodeData.aspectRatio);
-    }
-  }, [nodeData.aspectRatio]);
-
-  useEffect(() => {
-    if (nodeData.resolution) {
-      setResolution(nodeData.resolution);
-    }
-  }, [nodeData.resolution]);
-
-  // Sync connected images with data - force re-render when images change
-  useEffect(() => {
+    // Track connected images for manual UI refreshes if needed
     setConnectedImage1(nodeData.connectedImage1);
-  }, [nodeData.connectedImage1]);
-
-  useEffect(() => {
     setConnectedImage2(nodeData.connectedImage2);
-  }, [nodeData.connectedImage2]);
-
-  useEffect(() => {
     setConnectedImage3(nodeData.connectedImage3);
-  }, [nodeData.connectedImage3]);
-
-  useEffect(() => {
     setConnectedImage4(nodeData.connectedImage4);
-  }, [nodeData.connectedImage4]);
-
-  useEffect(() => {
-    setPdfPageReference(nodeData.pdfPageReference || '');
-  }, [nodeData.pdfPageReference]);
+    if (nodeData.isBrandActive !== undefined) setIsBrandActive(nodeData.isBrandActive);
+  }, [
+    nodeData.prompt,
+    nodeData.model,
+    nodeData.aspectRatio,
+    nodeData.resolution,
+    nodeData.pdfPageReference,
+    nodeData.connectedImage1,
+    nodeData.connectedImage2,
+    nodeData.connectedImage3,
+    nodeData.connectedImage4,
+    nodeData.isBrandActive,
+    connectedText,
+    hasTextNodeConnection
+  ]);
 
   // Sync BrandCore connection data
   useEffect(() => {
@@ -155,6 +144,67 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       nodeData.onUpdateData(id, updates);
     }
   }, 500);
+
+  const handleAddToBoard = (url: string, type: 'image' | 'logo') => {
+    const newNodeId = `image-${Date.now()}`;
+    // Position it slightly to the right of the current node
+    const currentNode = nodes.find(n => n.id === id);
+    const x = currentNode ? currentNode.position.x + 450 : 0;
+    const y = currentNode ? currentNode.position.y : 0;
+
+    setNodes((nds) => nds.concat({
+      id: newNodeId,
+      type: 'image',
+      position: { x, y },
+      data: { 
+        mockup: {
+          _id: `brand-${Date.now()}`,
+          imageUrl: url,
+          prompt: `Brand ${type}`,
+          designType: 'other',
+          tags: ['brand'],
+          brandingTags: [],
+          aspectRatio: '1:1'
+        },
+        label: type === 'logo' ? 'Brand Logo' : 'Brand Asset',
+        onUpdateData: nodeData.onUpdateData,
+        onDelete: nodeData.onDelete,
+        onResize: nodeData.onResize
+      } as any
+    }));
+  };
+
+  const handleSelectAsset = (url: string, type: 'image' | 'logo') => {
+    const updates: Partial<PromptNodeData> = {};
+    let slotFound = false;
+
+    if (!connectedImage1) {
+      updates.connectedImage1 = url;
+      slotFound = true;
+    } else if (!connectedImage2) {
+      updates.connectedImage2 = url;
+      slotFound = true;
+    } else if (isAdvanced && !connectedImage3 && maxHandles >= 3) {
+      updates.connectedImage3 = url;
+      slotFound = true;
+    } else if (isAdvanced && !connectedImage4 && maxHandles >= 4) {
+      updates.connectedImage4 = url;
+      slotFound = true;
+    }
+
+    if (slotFound) {
+      if (nodeData.onUpdateData) {
+        nodeData.onUpdateData(id, updates);
+      }
+    } else {
+      toast.warning("All available reference slots are full. Added to board instead.");
+      handleAddToBoard(url, type);
+    }
+  };
+
+  const handleOpenMediaLibrary = () => {
+    setShowMediaLibrary(true);
+  };
 
   const handlePromptChange = (value: string) => {
     setPrompt(value);
@@ -184,12 +234,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     const maxImages = getMaxHandles(model);
 
     // Add Logo first (primary focus)
-    if (nodeData.connectedLogo) {
+    if (isBrandActive && nodeData.connectedLogo) {
       connectedImages.push(nodeData.connectedLogo);
     }
 
     // Add Identity second (context/colors/vibe)
-    if (nodeData.connectedIdentity) {
+    if (isBrandActive && nodeData.connectedIdentity) {
       connectedImages.push(nodeData.connectedIdentity);
     }
 
@@ -213,24 +263,10 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     // Limit to max images for the model
     const limitedImages = connectedImages.slice(0, maxImages);
 
-    // Combine text direction with prompt if available
-    const finalPrompt = nodeData.connectedTextDirection
+    // Combine text direction with prompt if available and active
+    const finalPrompt = (isBrandActive && nodeData.connectedTextDirection)
       ? (prompt ? `${nodeData.connectedTextDirection}\n\n${prompt}` : nodeData.connectedTextDirection)
       : prompt;
-
-    console.log('[PromptNode] Generating with:', {
-      prompt: finalPrompt.trim(),
-      model,
-      connectedImagesCount: limitedImages.length,
-      maxImages,
-      hasLogo: !!nodeData.connectedLogo,
-      hasIdentity: !!nodeData.connectedIdentity,
-      hasTextDirection: !!nodeData.connectedTextDirection,
-      hasImage1: !!nodeData.connectedImage1,
-      hasImage2: !!nodeData.connectedImage2,
-      hasImage3: !!nodeData.connectedImage3,
-      hasImage4: !!nodeData.connectedImage4,
-    });
 
     await nodeData.onGenerate(id, finalPrompt.trim(), limitedImages.length > 0 ? limitedImages : undefined, model);
   };
@@ -319,101 +355,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     debouncedUpdateData({ pdfPageReference: value || undefined });
   };
 
-  // Centralized model selection handler — avoids duplicating conditional logic across buttons
-  const handleModelChange = useCallback((newModel: GeminiModel) => {
-    setModel(newModel);
-    if (!nodeData.onUpdateData) return;
-
-    const updates: Partial<PromptNodeData> = { model: newModel };
-
-    if (newModel === GEMINI_MODELS.FLASH) {
-      updates.resolution = undefined;
-      updates.aspectRatio = undefined;
-    } else {
-      if (!nodeData.aspectRatio) {
-        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
-        setAspectRatio(DEFAULT_ASPECT_RATIO);
-      }
-      if (!nodeData.resolution) {
-        const defaultRes = newModel === GEMINI_MODELS.NB2 ? '1K' : '4K';
-        updates.resolution = defaultRes as Resolution;
-        setResolution(defaultRes as Resolution);
-      }
-    }
-
-    nodeData.onUpdateData(id, updates);
-  }, [id, nodeData, setModel, setAspectRatio, setResolution]);
-
-  // Unified HD/NB2/1K/2K/4K resolution handler
-  const handleResolutionClick = (res: 'HD' | 'NB2' | Resolution) => {
-    const previousModel = model;
-    const wasAdvancedModel = isAdvancedModelFn(previousModel);
-
-    if (res === 'HD') {
-      setModel(GEMINI_MODELS.FLASH);
-
-      if (!nodeData.onUpdateData) return;
-
-      const updates: Partial<PromptNodeData> = {
-        model: GEMINI_MODELS.FLASH,
-        resolution: undefined,
-        aspectRatio: undefined
-      };
-
-      // If switching from advanced model to Flash, clear images 3 and 4
-      if (wasAdvancedModel) {
-        updates.connectedImage3 = undefined;
-        updates.connectedImage4 = undefined;
-
-        if (nodeData.onRemoveEdge) {
-          if (connectedImage3) nodeData.onRemoveEdge(id, 'input-3');
-          if (connectedImage4) nodeData.onRemoveEdge(id, 'input-4');
-        }
-
-        setConnectedImage3(undefined);
-        setConnectedImage4(undefined);
-      }
-
-      nodeData.onUpdateData(id, updates);
-    } else if (res === 'NB2') {
-      setModel(GEMINI_MODELS.NB2);
-      setResolution('1K');
-
-      if (!nodeData.onUpdateData) return;
-
-      const updates: Partial<PromptNodeData> = {
-        model: GEMINI_MODELS.NB2,
-        resolution: '1K'
-      };
-
-      if (!nodeData.aspectRatio) {
-        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
-        setAspectRatio(DEFAULT_ASPECT_RATIO);
-      }
-
-      nodeData.onUpdateData(id, updates);
-    } else {
-      setModel(GEMINI_MODELS.PRO);
-      setResolution(res);
-
-      if (!nodeData.onUpdateData) return;
-
-      const updates: Partial<PromptNodeData> = {
-        model: GEMINI_MODELS.PRO,
-        resolution: res
-      };
-
-      if (!nodeData.aspectRatio) {
-        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
-        setAspectRatio(DEFAULT_ASPECT_RATIO);
-      }
-
-      nodeData.onUpdateData(id, updates);
-    }
-  };
-
-  const currentActiveResolution = isAdvanced ? resolution : 'HD';
-
   // Debounced fit-to-content: update node size when container content changes
   const debouncedFitToContent = useDebouncedCallback(() => {
     const el = containerRef.current;
@@ -469,7 +410,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       dragging={dragging}
       warning={nodeData.oversizedWarning}
       onFitToContent={handleFitToContent}
-      className="p-5 min-w-[320px]"
+      className="min-w-[400px]"
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -544,7 +485,16 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       )}
 
       {/* Header */}
-      <NodeHeader icon={Pickaxe} title={t('canvasNodes.promptNode.title')} />
+      <NodeHeader 
+        icon={Pickaxe} 
+        title={t('canvasNodes.promptNode.title')} 
+        isBrandActive={isBrandActive}
+        onToggleBrand={(active) => {
+          setIsBrandActive(active);
+          if (nodeData.onUpdateData) nodeData.onUpdateData(id, { isBrandActive: active });
+        }}
+        onOpenMediaLibrary={handleOpenMediaLibrary}
+      />
 
       {/* Connected Images Thumbnails - unified component */}
       <ConnectedImagesDisplay
@@ -558,8 +508,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
       {/* BrandCore Connection Display */}
       {/* HIERARCHY: Logo (priority 1) as primary focus, Identity (priority 2) as context/colors/vibe */}
-      {hasBrandCoreConnection && (
-        <div className="mb-3 space-y-2">
+        <div className={cn("mb-3 space-y-2 transition-all duration-300", !isBrandActive && "opacity-30 grayscale pointer-events-none")}>
           {connectedLogo && (
             <ConnectedImagesDisplay
               images={[connectedLogo]}
@@ -581,7 +530,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             </div>
           )}
         </div>
-      )}
 
       {/* Brand Identity Panel (legacy support) */}
       {nodeData.connectedBrandIdentity && (
@@ -611,7 +559,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       )}
 
       {/* Prompt Input */}
-      <div className="mb-3">
+      <div className="node-margin">
         {hasTextNodeConnection && (
           <div className="mb-1.5 text-[10px] font-mono text-brand-cyan/70 flex items-center gap-1">
             <span>•</span>
@@ -622,29 +570,22 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         {/* Prompt Functions Toolbar */}
         <div className="flex items-center justify-between mb-1.5 px-0.5">
           <div className="flex items-center gap-1.5">
-            <button
-              type="button"
+            <NodeButton variant="ghost" size="xs" type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 setIsPresetModalOpen(true);
               }}
               disabled={isLoading}
-              className={cn(
-                'flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono transition-all',
-                'bg-neutral-800/50 border-neutral-700/50 hover:bg-neutral-700/50 hover:border-neutral-500',
-                'text-neutral-400 hover:text-neutral-200',
-                'node-interactive'
-              )}
+              className="nodrag nopan"
               title={t('canvasNodes.promptNode.loadPreset') || 'Load Preset'}
               onMouseDown={(e) => e.stopPropagation()}
             >
               <BookOpen size={14} />
-            </button>
+            </NodeButton>
           </div>
 
-          <button
-            type="button"
+          <NodeButton variant="ghost" size="xs" type="button"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -653,18 +594,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               }
             }}
             disabled={isLoading || !prompt.trim()}
-            className={cn(
-              'flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono transition-all',
-              'bg-neutral-800/50 border-neutral-700/50 hover:bg-neutral-700/50 hover:border-neutral-500',
-              'text-neutral-400 hover:text-neutral-200',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              'node-interactive'
-            )}
+            className="nodrag nopan"
             title={t('canvasNodes.promptNode.savePrompt') || 'Save Prompt'}
             onMouseDown={(e) => e.stopPropagation()}
           >
             <Save size={14} />
-          </button>
+          </NodeButton>
         </div>
 
         <div className="relative">
@@ -679,8 +614,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           />
           {/* Prompt Suggestion Button */}
           {!hasTextNodeConnection && prompt.trim() && (
-            <button
-              type="button"
+            <NodeButton variant="ghost" size="xs" type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -689,13 +623,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 }
               }}
               disabled={isLoading || isSuggestingPrompts || !prompt.trim()}
-              className={cn(
-                'absolute top-2 right-2 p-1.5 rounded border transition-all',
-                'bg-neutral-800/50 hover:bg-neutral-700/50 border-neutral-700/50 hover:border-neutral-500',
-                'text-neutral-400 hover:text-neutral-200',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-                'node-interactive'
-              )}
+              className="absolute top-2 right-2 nodrag nopan"
               title={t('canvasNodes.promptNode.suggestPrompts')}
               onMouseDown={(e) => e.stopPropagation()}
             >
@@ -704,7 +632,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               ) : (
                 <Wand2 size={14} />
               )}
-            </button>
+            </NodeButton>
           )}
         </div>
 
@@ -715,8 +643,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               {t('canvasNodes.promptNode.aiSuggestions') || t('canvasNodes.promptNode.suggestions')}
             </div>
             {promptSuggestions.map((suggestion, index) => (
-              <button
-                key={index}
+              <NodeButton variant="ghost" size="xs" key={index}
                 onClick={(e) => {
                   e.stopPropagation();
                   setPrompt(suggestion);
@@ -726,118 +653,76 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                     nodeData.onUpdateData(id, { promptSuggestions: [] });
                   }
                 }}
-                className={cn(
-                  'w-full text-left p-1.5 text-[11px] font-mono rounded border transition-all',
-                  'bg-neutral-800/30 hover:bg-neutral-800/50 border-neutral-700/30 hover:border-neutral-500',
-                  'text-neutral-300 hover:text-neutral-100',
-                  'node-interactive'
-                )}
+                className="w-full text-left font-mono"
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {suggestion}
-              </button>
+              </NodeButton>
             ))}
           </div>
         )}
       </div>
 
       {/* Settings Section - Compact */}
-      <div className="mb-3 space-y-2.5">
-        {/* Model Selector */}
-        <div>
-          <NodeLabel className="mb-1.5 text-[10px]">
-            {t('canvasNodes.promptNode.model')}
-          </NodeLabel>
-          <div className="grid grid-cols-3 gap-2">
-            {([
-              { geminiModel: GEMINI_MODELS.FLASH, label: 'HD', emoji: '⛏️', credits: getCreditsRequired(GEMINI_MODELS.FLASH) },
-              { geminiModel: GEMINI_MODELS.NB2, label: 'NB2', emoji: '🍌', credits: getCreditsRequired(GEMINI_MODELS.NB2, resolution) },
-              { geminiModel: GEMINI_MODELS.PRO, label: '4K Pro', emoji: '⛏️💎', credits: getCreditsRequired(GEMINI_MODELS.PRO, resolution) },
-            ] as const).map(({ geminiModel, label, emoji, credits }) => (
-              <button
-                key={geminiModel}
-                onClick={(e) => { e.stopPropagation(); handleModelChange(geminiModel); }}
-                onMouseDown={(e) => e.stopPropagation()}
-                disabled={isLoading}
-                className={cn(
-                  'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
-                  model === geminiModel
-                    ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                    : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
-                  isLoading && 'opacity-50 cursor-not-allowed'
-                )}
-              >
-                <span className="text-2xl">{emoji}</span>
-                <span className="font-semibold text-sm">{label}</span>
-                <span className="text-[10px] text-neutral-500 mt-0.5">
-                  {credits} {t('canvasNodes.promptNode.credits')}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className="node-margin space-y-[var(--node-gap)]">
+        <ModelSelector
+          selectedModel={model}
+          onModelChange={(newModel) => {
+            setModel(newModel);
+            if (nodeData.onUpdateData) {
+              nodeData.onUpdateData(id, { model: newModel });
+            }
+          }}
+          resolution={resolution}
+          disabled={isLoading}
+          onSyncResolution={(res) => {
+            setResolution(res);
+            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { resolution: res });
+          }}
+          onClearAdvancedConfig={() => {
+            if (nodeData.onUpdateData) {
+              nodeData.onUpdateData(id, {
+                resolution: undefined,
+                aspectRatio: undefined,
+                connectedImage3: undefined,
+                connectedImage4: undefined
+              });
+            }
+          }}
+        />
 
-        {/* Advanced Settings (Aspect Ratio & Resolution) - For advanced models (NB2 + Pro) */}
-        {isAdvanced && (
-          <div className="grid grid-cols-2 gap-2.5">
-            <div>
-              <NodeLabel className="mb-1.5 text-[10px]">
-                {t('canvasNodes.promptNode.aspectRatio')}
-              </NodeLabel>
-              <div onMouseDown={(e) => e.stopPropagation()}>
-                <AspectRatioSelector
-                  value={aspectRatio}
-                  onChange={(ratio) => {
-                    setAspectRatio(ratio);
-                    if (nodeData.onUpdateData) {
-                      nodeData.onUpdateData(id, { aspectRatio: ratio });
-                    }
-                  }}
-                  disabled={isLoading}
-                  compact
-                />
-              </div>
-            </div>
-
-            <div>
-              <NodeLabel className="mb-1.5 text-[10px]">
-                {t('canvasNodes.promptNode.resolution')}
-              </NodeLabel>
-              <div onMouseDown={(e) => e.stopPropagation()}>
-                <ResolutionSelector
-                  value={resolution}
-                  onChange={(res) => {
-                    setResolution(res);
-                    if (nodeData.onUpdateData) {
-                      nodeData.onUpdateData(id, { resolution: res });
-                    }
-                  }}
-                  model={model}
-                  disabled={isLoading}
-                  compact
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
+        <AdvancedModelSettings
+          model={model}
+          aspectRatio={aspectRatio}
+          resolution={resolution}
+          onAspectRatioChange={(ratio) => {
+            setAspectRatio(ratio);
+            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { aspectRatio: ratio });
+          }}
+          onResolutionChange={(res) => {
+            setResolution(res);
+            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { resolution: res });
+          }}
+          onModelChange={(newModel) => {
+            setModel(newModel);
+            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { model: newModel });
+          }}
+          isLoading={isLoading}
+          allowVideo={true}
+        />
       </div>
 
       {/* Generate Image Button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          handleGenerate();
-        }}
+      <NodeButton variant="primary" size="full" onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        handleGenerate();
+      }}
         onMouseDown={(e) => {
           e.stopPropagation();
         }}
         disabled={isLoading || !prompt.trim()}
-        className={cn(
-          'w-full px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive',
-          (isLoading || !prompt.trim()) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
-        )}
+        className="node-interactive"
       >
         {isLoading ? (
           <>
@@ -848,12 +733,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           <>
             <ImageIcon size={14} />
             <span>{t('canvasNodes.promptNode.generateImage')}</span>
-            <span className="text-brand-cyan/70">
+            <span className="text-brand-cyan/70 ml-2">
               ({creditsRequired} {t('canvasNodes.promptNode.credits')})
             </span>
           </>
         )}
-      </button>
+      </NodeButton>
 
       {/* Output Handle */}
       <LabeledHandle
@@ -888,6 +773,14 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         onClose={() => setIsPresetModalOpen(false)}
         onSelectPreset={handlePresetSelect}
       />
+
+      <BrandMediaLibraryModal
+        isOpen={showMediaLibrary}
+        onClose={() => setShowMediaLibrary(false)}
+        onSelectAsset={handleSelectAsset}
+        onAddToBoard={handleAddToBoard}
+        guidelineId={linkedGuidelineId}
+      />
     </NodeContainer >
   );
 }, (prevProps, nextProps) => {
@@ -908,37 +801,27 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   // Normalize BrandCore connection data for comparison
   const prevLogo = prevData.connectedLogo ?? undefined;
   const nextLogo = nextData.connectedLogo ?? undefined;
-  const prevIdentity = prevData.connectedIdentity ?? undefined;
-  const nextIdentity = nextData.connectedIdentity ?? undefined;
-  const prevTextDirection = prevData.connectedTextDirection ?? undefined;
-  const nextTextDirection = nextData.connectedTextDirection ?? undefined;
+  const prevId = prevData.connectedIdentity ?? undefined;
+  const nextId = nextData.connectedIdentity ?? undefined;
+  const prevText = prevData.connectedTextDirection ?? undefined;
+  const nextText = nextData.connectedTextDirection ?? undefined;
 
-  // Always re-render if connected images change (including to/from undefined)
-  // This ensures thumbnails are removed when edges are disconnected
-  if (prevImage1 !== nextImage1 ||
-    prevImage2 !== nextImage2 ||
-    prevImage3 !== nextImage3 ||
-    prevImage4 !== nextImage4 ||
-    prevLogo !== nextLogo ||
-    prevIdentity !== nextIdentity ||
-    prevTextDirection !== nextTextDirection) {
-    return false; // Re-render
-  }
-
-  // Re-render if other important props change
-  if (prevData.isLoading !== nextData.isLoading ||
-    prevData.prompt !== nextData.prompt ||
-    prevData.model !== nextData.model ||
-    prevData.aspectRatio !== nextData.aspectRatio ||
-    prevData.resolution !== nextData.resolution ||
-    prevData.isSuggestingPrompts !== nextData.isSuggestingPrompts ||
-    prevData.promptSuggestions !== nextData.promptSuggestions ||
-    prevProps.selected !== nextProps.selected ||
-    prevProps.dragging !== nextProps.dragging) {
-    return false; // Re-render
-  }
-
-  // Don't re-render if nothing important changed
-  return true; // Skip re-render
+  return (
+    prevProps.selected === nextProps.selected &&
+    prevData.prompt === nextData.prompt &&
+    prevData.isLoading === nextData.isLoading &&
+    prevData.model === nextData.model &&
+    prevData.aspectRatio === nextData.aspectRatio &&
+    prevData.resolution === nextData.resolution &&
+    prevData.isSuggestingPrompts === nextData.isSuggestingPrompts &&
+    prevData.connectedText === nextData.connectedText &&
+    prevData.isBrandActive === nextData.isBrandActive &&
+    prevImage1 === nextImage1 &&
+    prevImage2 === nextImage2 &&
+    prevImage3 === nextImage3 &&
+    prevImage4 === nextImage4 &&
+    prevLogo === nextLogo &&
+    prevId === nextId &&
+    prevText === nextText
+  );
 });
-

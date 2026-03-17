@@ -171,7 +171,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
               <GlitchLoader size={24} color="brand-cyan" />
               <div className="text-left min-w-0">
                 <p className="text-md font-semibold text-neutral-400">{t('upload.processingImage')}</p>
-                <p className="text-xs font-mono tracking-wider text-neutral-500">{t('upload.pleaseWait')}</p>
+                <p className="text-xs font-mono  text-neutral-500">{t('upload.pleaseWait')}</p>
               </div>
             </>
           )}
@@ -180,7 +180,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
               <UploadCloud size={32} className="text-brand-cyan/80 transition-colors flex-shrink-0" />
               <div className="text-left min-w-0">
                 <p className="text-md font-semibold text-neutral-300">{t('upload.dropImageHere')}</p>
-                <p className="text-xs font-mono tracking-wider text-neutral-500">{t('upload.releaseToUpload')}</p>
+                <p className="text-xs font-mono  text-neutral-500">{t('upload.releaseToUpload')}</p>
               </div>
             </>
           )}
@@ -189,7 +189,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
               <UploadCloud size={32} className="text-neutral-600 group-hover:text-brand-cyan/80 transition-colors flex-shrink-0" />
               <div className="text-left min-w-0">
                 <p className="text-md font-semibold text-neutral-400">{t('upload.clickToUpload')}</p>
-                <p className="text-xs font-mono tracking-wider text-neutral-500">{t('upload.supportedFormats')}</p>
+                <p className="text-xs font-mono  text-neutral-500">{t('upload.supportedFormats')}</p>
               </div>
             </>
           )}

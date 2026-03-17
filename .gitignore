@@ -48,11 +48,14 @@ GOOGLE_OAUTH_SETUP.md
 .augment/
 .firecrawl/
 .github/skills/ (a menos que sejam GitHub Actions específicas)
-docs/
-plugin/docs/
+/docs/
+/plugin/docs/
 plugin/Visant Copilot _Beta_/
 plugin/.agent/
 plugin/.firecrawl/
+
+#Scripts
+scripts/
 
 # Node
 node_modules/

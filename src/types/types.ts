@@ -205,3 +205,6 @@ export interface CustomPdfPreset {
   createdAt: string;
   updatedAt: string;
 }
+
+// Timer type helper - works in both browser (number) and Node (Timeout)
+export type TimerRef = ReturnType<typeof setTimeout>;

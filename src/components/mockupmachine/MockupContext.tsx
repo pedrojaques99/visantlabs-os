@@ -10,6 +10,7 @@ interface MockupContextState {
     resolution: Resolution;
     aspectRatio: AspectRatio;
     imageProvider: ImageProvider;
+    selectedBrandGuideline: string | null;
 
     // Generation State
     mockups: (string | null)[];
@@ -52,7 +53,7 @@ interface MockupContextState {
     additionalPrompt: string;
     isSmartPromptActive: boolean;
     isPromptManuallyEdited: boolean;
-    isPromptReady: boolean;
+    // isPromptReady is now derived in MockupMachinePage via useMemo
     promptSuggestions: string[];
     isSuggestingPrompts: boolean;
 
@@ -87,6 +88,7 @@ interface MockupContextActions {
     setResolution: Dispatch<SetStateAction<Resolution>>;
     setAspectRatio: Dispatch<SetStateAction<AspectRatio>>;
     setImageProvider: Dispatch<SetStateAction<ImageProvider>>;
+    setSelectedBrandGuideline: Dispatch<SetStateAction<string | null>>;
     setMockups: Dispatch<SetStateAction<(string | null)[]>>;
     setIsLoading: Dispatch<SetStateAction<boolean[]>>;
     setHasGenerated: Dispatch<SetStateAction<boolean>>;
@@ -121,7 +123,6 @@ interface MockupContextActions {
     setAdditionalPrompt: Dispatch<SetStateAction<string>>;
     setIsSmartPromptActive: Dispatch<SetStateAction<boolean>>;
     setIsPromptManuallyEdited: Dispatch<SetStateAction<boolean>>;
-    setIsPromptReady: Dispatch<SetStateAction<boolean>>;
     setPromptSuggestions: Dispatch<SetStateAction<string[]>>;
     setIsSuggestingPrompts: Dispatch<SetStateAction<boolean>>;
     setCustomBrandingInput: Dispatch<SetStateAction<string>>;
@@ -144,7 +145,7 @@ interface MockupContextActions {
 
 export type MockupContextValue = MockupContextState & MockupContextActions;
 
-const MockupContext = createContext<MockupContextValue | undefined>(undefined);
+export const MockupContext = createContext<MockupContextValue | undefined>(undefined);
 
 const initialMockupCount = 2;
 
@@ -155,6 +156,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [selectedModel, setSelectedModel] = useState<GeminiModel | null>(null);
     const [resolution, setResolution] = useState<Resolution>('1K');
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
+    const [selectedBrandGuideline, setSelectedBrandGuideline] = useState<string | null>(null);
 
     // Image provider state with localStorage persistence
     const [imageProvider, setImageProviderState] = useState<ImageProvider>(() => {
@@ -214,7 +216,6 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [additionalPrompt, setAdditionalPrompt] = useState('');
     const [isSmartPromptActive, setIsSmartPromptActive] = useState(false);
     const [isPromptManuallyEdited, setIsPromptManuallyEdited] = useState(false);
-    const [isPromptReady, setIsPromptReady] = useState(false);
     const [promptSuggestions, setPromptSuggestions] = useState<string[]>([]);
     const [isSuggestingPrompts, setIsSuggestingPrompts] = useState(false);
     const [customBrandingInput, setCustomBrandingInput] = useState('');
@@ -252,6 +253,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setUploadedImage(null);
         setReferenceImages([]);
         setDesignType('layout');
+        setSelectedBrandGuideline(null);
         setSelectedTags([]);
         setSelectedBrandingTags([]);
         setSelectedLocationTags([]);
@@ -265,7 +267,6 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setAdditionalPrompt('');
         setIsSmartPromptActive(false);
         setIsPromptManuallyEdited(false);
-        setIsPromptReady(false);
         setCustomBrandingInput('');
         setCustomCategoryInput('');
         setMockups(Array(mockupCount).fill(null));
@@ -310,6 +311,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         resolution, setResolution,
         aspectRatio, setAspectRatio,
         imageProvider, setImageProvider,
+        selectedBrandGuideline, setSelectedBrandGuideline,
         mockups, setMockups,
         isLoading, setIsLoading,
         hasGenerated, setHasGenerated,
@@ -344,7 +346,6 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         additionalPrompt, setAdditionalPrompt,
         isSmartPromptActive, setIsSmartPromptActive,
         isPromptManuallyEdited, setIsPromptManuallyEdited,
-        isPromptReady, setIsPromptReady,
         promptSuggestions, setPromptSuggestions,
         isSuggestingPrompts, setIsSuggestingPrompts,
         customBrandingInput, setCustomBrandingInput,
@@ -366,7 +367,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         clearAllTags
     }), [
         uploadedImage, referenceImages, designType,
-        selectedModel, resolution, aspectRatio, imageProvider, mockups, isLoading, hasGenerated,
+        selectedModel, resolution, aspectRatio, imageProvider, selectedBrandGuideline, mockups, isLoading, hasGenerated,
         isAnalyzing, isGeneratingPrompt, selectedTags, selectedBrandingTags,
         selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags,
         selectedMaterialTags, selectedColors, suggestedTags,
@@ -375,7 +376,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         suggestedColors, isAdvancedOpen,
         isAllCategoriesOpen, generateText, withHuman, enhanceTexture, removeText, promptPreview,
         negativePrompt, additionalPrompt, isSmartPromptActive, isPromptManuallyEdited,
-        isPromptReady, promptSuggestions, isSuggestingPrompts, customBrandingInput,
+        promptSuggestions, isSuggestingPrompts, customBrandingInput,
         customCategoryInput, customLocationInput, customAngleInput, customLightingInput,
         customEffectInput, customMaterialInput, colorInput, isValidColor,
         fullScreenImageIndex, mockupCount, isSurpriseMeModeState, surpriseMePool,

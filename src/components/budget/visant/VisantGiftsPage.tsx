@@ -4,6 +4,8 @@ import { InlineEditor } from '../InlineEditor';
 import { budgetApi } from '@/services/budgetApi';
 import { Upload } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface VisantGiftsPageProps {
   data: BudgetData;
@@ -196,7 +198,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
         )}
         {editable && (
           <>
-            <input
+            <Input
               ref={(el) => { fileInputRefs.current[giftIndex] = el; }}
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
@@ -204,10 +206,10 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
               style={{ display: 'none' }}
               disabled={isUploading}
             />
-            <button
+            <Button variant="ghost"
               onClick={() => fileInputRefs.current[giftIndex]?.click()}
               disabled={isUploading}
-              className="absolute inset-0 flex items-center justify-center bg-neutral-950/50 hover:bg-neutral-950/70 rounded-md transition-opacity opacity-0 hover:opacity-100"
+              className="absolute inset-0 flex items-center justify-center bg-neutral-950/50 hover:bg-neutral-950/70 rounded-md transition-opacity opacity-0 hover:opacity-300"
               style={{ cursor: isUploading ? 'wait' : 'pointer' }}
             >
               {isUploading ? (
@@ -215,7 +217,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
               ) : (
                 <Upload size={20} className="text-white" />
               )}
-            </button>
+            </Button>
           </>
         )}
       </div>

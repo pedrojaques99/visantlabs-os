@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
+import type { TimerRef } from '@/types/types';
 
 interface UseCanvasEditingStateParams {
   nodes: Node<FlowNodeData>[];
@@ -19,7 +20,7 @@ export const useCanvasEditingState = ({
 }: UseCanvasEditingStateParams) => {
   const [isEditing, setIsEditing] = useState(false);
   const lastEditTimeRef = useRef<number>(Date.now());
-  const inactivityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const inactivityTimeoutRef = useRef<TimerRef | null>(null);
   const previousNodesRef = useRef<string>('');
   const previousEdgesRef = useRef<string>('');
 

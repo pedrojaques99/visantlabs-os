@@ -5,6 +5,8 @@ import { PillButton } from './ui/pill-button';
 import { authService } from '../services/authService';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -81,12 +83,11 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
           <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
             {t('auth.forgotPassword')}
           </h2>
-          <button
-            onClick={handleClose}
+          <Button variant="ghost" onClick={handleClose}
             className="text-neutral-500 hover:text-neutral-300 transition-colors"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {isSuccess ? (
@@ -125,7 +126,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 <label className="block text-xs font-mono text-neutral-400 mb-1">
                   {t('auth.email')}
                 </label>
-                <input
+                <Input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -141,8 +142,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 </div>
               )}
 
-              <button
-                type="submit"
+              <Button variant="brand" type="submit"
                 disabled={isLoading || !email}
                 className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
               >
@@ -154,7 +154,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 ) : (
                   t('auth.sendResetLink')
                 )}
-              </button>
+              </Button>
             </form>
 
             {onBackToLogin && (

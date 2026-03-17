@@ -140,6 +140,7 @@
 
       <!-- ================= TAB: BRAND ================= -->
       <div id="tab-brand" class="tab-content">
+        <div id="brand-v2-panel"></div>
         <div class="brand-guidelines">
 
           <div class="figma-prop-panel">
@@ -293,13 +294,22 @@
               <span class="figma-prop-title">Conta Visant</span>
             </div>
             <div id="authLoggedOut" style="padding: 8px 12px;">
-              <div style="display: flex; flex-direction: column; gap: 6px;">
-                <input type="email" id="authEmailInput" placeholder="seu@email.com" style="margin-bottom: 0;">
-                <input type="password" id="authPasswordInput" placeholder="Senha" style="margin-bottom: 0;">
-                <button type="button" class="primary" id="authLoginBtn" style="width: 100%;">Entrar</button>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="figma-prop-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                  <span class="figma-prop-label" style="font-size: 10px; font-weight: 600;">E-mail</span>
+                  <input type="email" id="authEmailInput" placeholder="seu@email.com" style="margin-bottom: 0;">
+                </div>
+                <div class="figma-prop-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                  <span class="figma-prop-label" style="font-size: 10px; font-weight: 600;">Senha</span>
+                  <input type="password" id="authPasswordInput" placeholder="Senha" style="margin-bottom: 0;">
+                </div>
+                <button type="button" class="primary" id="authLoginBtn" style="width: 100%; margin-top: 4px;">
+                  <span class="spinner"></span>
+                  <span class="btn-text">Entrar</span>
+                </button>
               </div>
               <div id="authLoginStatus"
-                style="font-size: 10px; margin-top: 6px; color: var(--figma-color-text-secondary, #808080);"></div>
+                style="font-size: 10px; margin-top: 8px; text-align: center; color: var(--figma-color-text-secondary, #808080);"></div>
             </div>
             <div id="authLoggedIn" class="hidden" style="padding: 8px 12px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -425,6 +435,8 @@
   <script src="./modules/mentions.js"></script>
   <script src="./modules/api.js"></script>
   <script src="./modules/designSystem.js"></script>
+  <script src="./modules/brandSync.js"></script>
+  <script src="./modules/brandUI.js"></script>
   <script src="./modules/chat.js"></script>
   <script src="./modules/brand.js"></script>
   <script src="./modules/library.js"></script>

@@ -15,7 +15,7 @@ export const AnalyzingImageOverlay: React.FC<AnalyzingImageOverlayProps> = ({ is
 
     const statusMessages = useMemo(() => {
         const translations = getTranslations(locale);
-        return translations.mockup?.analysisStatusMessages ?? [
+        return (translations.mockup?.analysisStatusMessages as unknown as string[]) ?? [
             'scanning colors and contrast',
             'identifying visual style',
             'detecting categories',

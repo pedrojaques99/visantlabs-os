@@ -196,7 +196,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
             {dismissible && (
               <button
                 onClick={handleDismiss}
-                className={`flex-shrink-0 p-0.5 rounded hover:bg-opacity-20 transition-colors ${theme === 'dark'
+                className={`flex-shrink-0 p-0.5 rounded hover:bg-opacity-40 transition-colors ${theme === 'dark'
                   ? 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700'
                   : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200'
                   }`}

@@ -3,10 +3,12 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { productService, type Product } from '../services/productService';
 import { formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
 import { Card, CardHeader, CardContent } from './ui/card';
-import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
 import { Pickaxe, CheckCircle2, CreditCard } from 'lucide-react';
+import { PremiumButton } from './ui/PremiumButton';
+import { Button } from '@/components/ui/button'
+import { MicroTitle } from '@/components/ui/MicroTitle'
 
 interface SubscriptionPlansGridProps {
     currencyInfo: CurrencyInfo | null;
@@ -43,7 +45,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                             billingCycle === 'monthly' ? "left-1 w-[calc(50%-4px)]" : "left-[50%] w-[calc(50%-4px)]"
                         )}
                     />
-                    <button
+                    <Button variant="ghost"
                         onClick={() => setBillingCycle('monthly')}
                         className={cn(
                             "relative z-10 px-6 py-2 text-sm font-medium rounded-full transition-colors duration-200 min-w-[100px]",
@@ -51,8 +53,8 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                         )}
                     >
                         {t('pricing.monthly') || 'Mensal'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="ghost"
                         onClick={() => setBillingCycle('yearly')}
                         className={cn(
                             "relative z-10 px-6 py-2 text-sm font-medium rounded-full transition-colors duration-200 min-w-[100px] flex items-center justify-center gap-2",
@@ -61,12 +63,12 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                     >
                         {t('pricing.yearly') || 'Anual'}
                         <span className={cn(
-                            "text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                            "text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase ",
                             billingCycle === 'yearly' ? "bg-neutral-950/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
                         )}>
                             {t('pricing.yearlyDiscount') || '-16%'}
                         </span>
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -85,7 +87,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                                 key={plan.id}
                                 className="bg-neutral-900/40 border-neutral-800/50 hover:border-brand-cyan/30 transition-all duration-300 flex flex-col group relative overflow-hidden"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 pointer-events-none" />
 
                                 <CardHeader className="text-center pb-2 relative z-10">
                                     {plan.displayOrder === 1 && (
@@ -112,7 +114,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                                                 {billingCycle === 'yearly' ? (t('pricing.perYear') || '/ano') : t('pricing.perMonth')}
                                             </span>
                                         </div>
-                                        <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 font-mono mt-2 uppercase tracking-wider">
+                                        <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 font-mono mt-2 uppercase ">
                                             <Pickaxe size={12} className="text-brand-cyan/60" />
                                             <span>{plan.credits} {t('pricing.creditsLabel')}</span>
                                         </div>
@@ -138,24 +140,23 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                                     </div>
 
                                     <div className="mt-auto pt-4">
-                                        <Button
+                                        <PremiumButton
                                             onClick={() => {
                                                 const link = currencyInfo?.currency === 'USD' ? plan.paymentLinkUSD : plan.paymentLinkBRL;
                                                 if (link) window.location.href = link;
                                             }}
-                                            className="w-full bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold h-11 rounded-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                                            size="lg"
+                                            className="w-full h-11"
+                                            icon={CreditCard}
                                         >
-                                            <CreditCard className="mr-2 h-4 w-4" />
                                             {t('pricing.subscribe')}
-                                        </Button>
+                                        </PremiumButton>
                                     </div>
                                 </CardContent>
                             </Card>
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-20 text-neutral-600 font-mono italic">
+                    <div className="text-center py-20 text-neutral-600 font-mono ">
                         {t('pricing.noPlansFound') || 'Nenhum plano disponível no momento.'}
                     </div>
                 );

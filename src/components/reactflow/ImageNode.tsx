@@ -25,6 +25,8 @@ import { NodeButton } from './shared/node-button';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 
+import { Input } from '@/components/ui/input'
+
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FIT_WIDTH = 1200;
 const GENERATING_TYPES = ['merge', 'edit', 'upscale', 'mockup', 'prompt'];
@@ -37,7 +39,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as ImageNodeData;
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
-  
+
   const mockup = nodeData?.mockup ?? ({} as Mockup);
   const imageUrl = getImageUrl(mockup);
   const isSaved = !!mockup._id;
@@ -114,8 +116,8 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
     if (!currentHeight || heightDiff > 5) {
       const newHeight = Math.max(150, Math.min(2000, expectedHeight));
-      setNodes((nds) => nds.map((n) => 
-        n.id === id && n.type === 'image' 
+      setNodes((nds) => nds.map((n) =>
+        n.id === id && n.type === 'image'
           ? { ...n, style: { ...n.style, width: currentWidth, height: newHeight } }
           : n
       ));
@@ -208,8 +210,8 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           const base64 = await normalizeImageToBase64(imageUrl, base64Fallback);
           const mimeType = imageUrl.includes('.jpg') || imageUrl.includes('.jpeg') ? 'image/jpeg'
             : imageUrl.includes('.webp') ? 'image/webp'
-            : imageUrl.includes('.gif') ? 'image/gif'
-            : 'image/png';
+              : imageUrl.includes('.gif') ? 'image/gif'
+                : 'image/png';
           imageInput = { base64, mimeType };
         } catch (error: any) {
           toast.error(error?.message || t('canvas.failedToLoadImageForAnalysis'), { duration: 3000 });
@@ -224,15 +226,15 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     try {
       const generatedDescription = await aiApi.describeImage(imageInput);
       const currentNode = nodes.find(n => n.id === id);
-      
+
       if (!currentNode) {
         toast.error(t('canvasNodes.imageNode.failedToFindCurrentNode'), { duration: 3000 });
         nodeData.onUpdateData?.(String(id), { isDescribing: false });
         return;
       }
 
-      const currentHeight = currentNode.measured?.height ?? 
-        (currentNode.style?.height as number) ?? 
+      const currentHeight = currentNode.measured?.height ??
+        (currentNode.style?.height as number) ??
         currentNode.height ?? 300;
       const newNodePosition = {
         x: currentNode.position.x,
@@ -296,7 +298,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
     if (file.size > MAX_FILE_SIZE) {
       const sizeMB = (file.size / 1024 / 1024).toFixed(2);
-      const errorMsg = t('upload.imageTooLarge')?.replace('{size}', sizeMB).replace('{max}', '10') 
+      const errorMsg = t('upload.imageTooLarge')?.replace('{size}', sizeMB).replace('{max}', '10')
         || `File size (${sizeMB}MB) exceeds 10MB limit`;
       toast.error(errorMsg, { duration: 5000 });
       return;
@@ -317,13 +319,13 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     }
   }, [nodeData, id, t]);
 
-  const imageContainerStyle = { width: '100%', height: '100%', padding: 0, margin: 0, boxSizing: 'border-box' as const };
+  const imageContainerStyle = { width: '100%', height: '100%', padding: 4, margin: 0, boxSizing: 'border-box' as const };
   const imageStyle = {
     width: '100%',
     height: '100%',
     margin: 0,
-    padding: 0,
-    display: 'block' as const,
+    padding: 20,
+    display: 'flex' as const,
     transformOrigin: 'center',
     boxSizing: 'border-box' as const,
     maxWidth: '100%',
@@ -337,8 +339,8 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       containerRef={containerRef}
       warning={nodeData.oversizedWarning}
       onFitToContent={handleFitToContent}
-      className={cn('group', dragging ? 'node-dragging' : 'node-dragging-static', imageUrl && 'p-0')}
-      style={imageUrl ? { margin: 0, padding: 0, overflow: 'hidden', boxSizing: 'border-box', opacity: 1 } : undefined}
+      className={cn('group', dragging ? 'node-dragging' : 'node-dragging-static')}
+      style={imageUrl ? { margin: 0, padding: 4, overflow: 'visible', boxSizing: 'border-box', opacity: 1 } : undefined}
     >
       {selected && !dragging && (
         <NodeResizer
@@ -356,7 +358,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       <NodeHandles />
 
       <NodeImageContainer
-        className={cn("flex items-center justify-center", imageUrl && "p-0 m-0 !absolute inset-0 z-0")}
+        className={cn("flex items-center justify-center", imageUrl && "p-4 m-4 !absolute inset-0 z-0")}
         style={imageContainerStyle}
       >
         {imageUrl ? (
@@ -383,7 +385,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             emptySubmessage={t('canvasNodes.imageNode.uploadImage')}
             uploadButton={!isGenerating && nodeData.onUpload ? (
               <>
-                <input
+                <Input
                   ref={imageInputRef}
                   type="file"
                   accept="image/*"
@@ -408,28 +410,26 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       {description && (
         <div className={cn(
-          "px-2 py-2 border-t border-neutral-700/30 flex-shrink-0",
+          "px-[var(--node-padding)] py-[var(--node-gap)] border-t border-neutral-700/30 flex-shrink-0",
           imageUrl && "absolute bottom-0 left-0 w-full z-10 bg-neutral-950/60 backdrop-blur-md border-t-0"
         )}>
-          <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center justify-between mb-[var(--node-gap-sm)]">
             <label className="text-xs text-neutral-400 font-mono">{t('canvasNodes.imageNode.description')}</label>
             <div className="flex items-center gap-1">
-              <button
-                onClick={(e) => { e.stopPropagation(); handleCopyDescription(); }}
-                className="p-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan rounded transition-colors backdrop-blur-sm border border-[brand-cyan]/20 hover:border-[brand-cyan]/30"
+              <NodeButton variant="ghost" onClick={(e) => { e.stopPropagation(); handleCopyDescription(); }}
+                className="p-1 !text-brand-cyan !bg-brand-cyan/10 hover:!bg-brand-cyan/20"
                 title={t('canvasNodes.imageNode.copyDescription')}
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <Copy size={10} strokeWidth={2} />
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleClearDescription(); }}
-                className="p-1 bg-neutral-700/20 hover:bg-neutral-700/30 text-neutral-400 rounded transition-colors backdrop-blur-sm border border-neutral-700/20 hover:border-neutral-700/30"
+              </NodeButton>
+              <NodeButton variant="ghost" onClick={(e) => { e.stopPropagation(); handleClearDescription(); }}
+                className="p-1"
                 title={t('canvasNodes.imageNode.clearDescription')}
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <X size={10} strokeWidth={2} />
-              </button>
+              </NodeButton>
             </div>
           </div>
           <Textarea

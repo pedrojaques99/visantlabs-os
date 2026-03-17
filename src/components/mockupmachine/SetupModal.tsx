@@ -38,7 +38,7 @@ export const SetupModal: React.FC<SetupModalProps> = ({
       closeOnBackdropClick={canClose}
       closeOnEscape={canClose}
       id="setup-modal"
-      contentClassName="flex flex-col gap-4 bg-neutral-900"
+      contentClassName="flex flex-col bg-neutral-950/40"
     >
       <SidebarSetupSection
         onImageUpload={onImageUpload}
@@ -46,6 +46,7 @@ export const SetupModal: React.FC<SetupModalProps> = ({
         onStartOver={onStartOver}
         onDesignTypeChange={onDesignTypeChange}
         onAnalyze={onAnalyze}
+        onClose={onClose}
       />
     </Modal>
   );

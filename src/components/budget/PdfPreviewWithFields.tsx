@@ -11,6 +11,7 @@ import { CSS } from '@dnd-kit/utilities';
 import type { BudgetData, PdfFieldMapping } from '@/types/types';
 import { FieldSelectionMenu } from './FieldSelectionMenu';
 import { FieldPropertiesPanel } from './FieldPropertiesPanel';
+import { Button } from '@/components/ui/button'
 
 // Configure PDF.js worker - use local worker from public folder
 // This ensures it works in all environments including Cloudflare
@@ -795,33 +796,33 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
         {/* Zoom controls - top right */}
         <div className="sticky top-0 z-40 mb-4 flex justify-end">
           <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-neutral-300/50 rounded-md px-2 py-1.5 shadow-sm">
-            <button
+            <Button variant="ghost"
               onClick={handleZoomOut}
               disabled={zoomLevel <= 0.5}
               className="p-1.5 hover:bg-neutral-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               title="Diminuir zoom"
             >
               <ZoomOut size={16} className="text-neutral-700" />
-            </button>
+            </Button>
             <span className="text-xs font-mono text-neutral-700 px-2 min-w-[3rem] text-center">
               {Math.round(zoomLevel * 100)}%
             </span>
-            <button
+            <Button variant="ghost"
               onClick={handleZoomIn}
               disabled={zoomLevel >= 3.0}
               className="p-1.5 hover:bg-neutral-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               title="Aumentar zoom"
             >
               <ZoomIn size={16} className="text-neutral-700" />
-            </button>
+            </Button>
             <div className="w-px h-4 bg-neutral-300 mx-1" />
-            <button
+            <Button variant="ghost"
               onClick={handleZoomReset}
               className="text-xs font-mono text-neutral-700 px-2 py-1 hover:bg-neutral-200/50 rounded transition-colors"
               title="Resetar zoom"
             >
               Reset
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -833,13 +834,13 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                 <MapPin size={16} />
                 Posição selecionada! Clique em um campo preenchido do formulário para adicioná-lo aqui.
               </p>
-              <button
+              <Button variant="ghost"
                 onClick={() => setPendingFieldPosition(null)}
                 className="p-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 transition-colors"
                 title="Cancelar"
               >
                 <XCircle size={16} />
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -853,7 +854,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                 Clique no PDF para posicionar: {AVAILABLE_FIELDS.find(f => f.id === positioningFieldId)?.label || positioningFieldId}
               </p>
               <div className="flex items-center gap-2">
-                <button
+                <Button variant="ghost"
                   onClick={() => {
                     if (onPositioningModeChange) {
                       onPositioningModeChange(null);
@@ -868,8 +869,8 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                   title="Cancelar"
                 >
                   <XCircle size={16} />
-                </button>
-                <button
+                </Button>
+                <Button variant="ghost"
                   onClick={() => {
                     if (onPositioningModeChange) {
                       onPositioningModeChange(null);
@@ -884,7 +885,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                   title="Aceitar"
                 >
                   <Check size={16} />
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -1386,7 +1387,7 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
     >
       {fieldValue || `[${fieldLabel}]`}
       {editable && isHovered && !isDragging && !isPositioning && onDelete && (
-        <button
+        <Button variant="ghost"
           onClick={(e) => {
             e.stopPropagation();
             onDelete();
@@ -1396,7 +1397,7 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
           aria-label={`Deletar campo ${fieldLabel}`}
         >
           <Trash2 size={12} />
-        </button>
+        </Button>
       )}
     </div>
   );

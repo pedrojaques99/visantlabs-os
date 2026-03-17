@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface ColorPalette {
   name: string;
@@ -93,18 +95,17 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
               }`}
           >
             {isEditing && onContentChange && (
-              <button
-                onClick={() => handleRemovePalette(index)}
+              <Button variant="ghost" onClick={() => handleRemovePalette(index)}
                 className={`absolute top-2 right-2 p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                   }`}
                 title="Remover paleta"
               >
                 <X className="h-4 w-4" />
-              </button>
+              </Button>
             )}
 
             {isEditing && onContentChange ? (
-              <input
+              <Input
                 type="text"
                 value={palette.name}
                 onChange={(e) => handleNameChange(index, e.target.value)}
@@ -134,7 +135,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                         className="w-full aspect-square rounded-md border border-neutral-800/60 cursor-pointer"
                         title={color}
                       />
-                      <input
+                      <Input
                         type="text"
                         value={color.toUpperCase()}
                         onChange={(e) => handleColorChange(index, colorIndex, e.target.value)}
@@ -144,19 +145,17 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                           : 'text-neutral-600 border-neutral-400/50'
                           }`}
                       />
-                      <button
-                        onClick={() => handleRemoveColor(index, colorIndex)}
+                      <Button variant="ghost" onClick={() => handleRemoveColor(index, colorIndex)}
                         className={`w-full p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 text-xs ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                           }`}
                         title="Remover cor"
                       >
                         <X className="h-3 w-3 mx-auto" />
-                      </button>
+                      </Button>
                     </div>
                   ) : (
                     <>
-                      <button
-                        type="button"
+                      <Button variant="ghost" type="button"
                         onClick={() => {
                           if (typeof window !== 'undefined') {
                             window.dispatchEvent(new CustomEvent('mockup:paletteColorSelected', { detail: color }));
@@ -176,8 +175,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                 </div>
               ))}
               {isEditing && onContentChange && (
-                <button
-                  onClick={() => handleAddColor(index)}
+                <Button variant="ghost" onClick={() => handleAddColor(index)}
                   className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
                     ? 'border-neutral-700/50 text-neutral-400'
                     : 'border-neutral-400/50 text-neutral-500'
@@ -185,7 +183,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                   title="Adicionar cor"
                 >
                   <Plus className="h-4 w-4" />
-                </button>
+                </Button>
               )}
             </div>
 
@@ -214,8 +212,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
       </div>
       {/* Open color picker in Mockup Machine refine section */}
       {!isEditing && (
-        <button
-          type="button"
+        <Button variant="ghost" type="button"
           onClick={() => {
             if (typeof window !== 'undefined') {
               window.dispatchEvent(new CustomEvent('mockup:openColorPicker'));
@@ -228,11 +225,10 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
         >
           <span className="w-2 h-2 rounded-full bg-brand-cyan/60" />
           <span>Color Picker</span>
-        </button>
+        </Button>
       )}
       {isEditing && onContentChange && (
-        <button
-          onClick={handleAddPalette}
+        <Button variant="ghost" onClick={handleAddPalette}
           className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
             ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
             : 'bg-neutral-100 border-neutral-300 text-neutral-800'
@@ -240,7 +236,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
         >
           <Plus className="h-4 w-4" />
           Adicionar paleta
-        </button>
+        </Button>
       )}
     </div>
   );

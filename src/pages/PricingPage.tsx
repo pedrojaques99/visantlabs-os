@@ -17,6 +17,9 @@ import { Badge } from '../components/ui/badge';
 import { cn } from '../lib/utils';
 import { authService, type User } from '../services/authService';
 import { SubscriptionPlansGrid } from '../components/SubscriptionPlansGrid';
+import { MicroTitle } from '../components/ui/MicroTitle';
+import { GlassPanel } from '../components/ui/GlassPanel';
+import { PremiumButton } from '../components/ui/PremiumButton';
 
 // Hook para animação de contador
 const useAnimatedCounter = (targetValue: number, duration: number = 500) => {
@@ -231,7 +234,6 @@ export const PricingPage: React.FC = () => {
       />
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
         </div>
         <div className="max-w-5xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
           <div className="mb-4">
@@ -266,26 +268,27 @@ export const PricingPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Tabs Navigation */}
           <div className="flex justify-center mb-12 animate-fade-in-fast">
             <Tabs
               value={activeTab}
               onValueChange={(v: any) => setActiveTab(v)}
               className="w-full max-w-[400px]"
             >
-              <TabsList className="grid w-full grid-cols-2 bg-neutral-900/50 border border-neutral-800 p-1 rounded-xl">
-                <TabsTrigger
-                  value="subscriptions"
-                  className="rounded-lg data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
-                >
-                  {t('pricing.tabs.subscriptions') || 'Assinaturas'}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="credits"
-                  className="rounded-lg data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
-                >
-                  {t('pricing.tabs.credits') || 'Créditos'}
-                </TabsTrigger>
+              <TabsList asChild>
+                <GlassPanel padding="none" className="grid w-full grid-cols-2 p-1 rounded-xl">
+                  <TabsTrigger
+                    value="subscriptions"
+                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
+                  >
+                    {t('pricing.tabs.subscriptions') || 'Assinaturas'}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="credits"
+                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
+                  >
+                    {t('pricing.tabs.credits') || 'Créditos'}
+                  </TabsTrigger>
+                </GlassPanel>
               </TabsList>
             </Tabs>
           </div>
@@ -302,79 +305,74 @@ export const PricingPage: React.FC = () => {
               <TabsContent value="credits" className="mt-0 outline-none">
                 <div className="animate-fade-in-fast">
                   <div className="flex flex-col items-center justify-center py-4">
-                    <Card className="bg-neutral-900/40 border-neutral-800/50 w-full max-w-[500px] shadow-2xl overflow-hidden group relative">
-                      <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <GlassPanel className="w-full max-w-[500px] shadow-2xl overflow-hidden group relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 pointer-events-none" />
 
-                      <CardContent className="p-8 md:p-12">
+                      <CardContent className="p-4 md:p-8">
                         <div className="space-y-8 relative z-10">
                           <div className="text-center">
                             <div className="flex items-center justify-center gap-6 mb-4">
-                              <button
-                                onClick={handlePreviousCredit}
+                              <Button variant="ghost" onClick={handlePreviousCredit}
                                 disabled={selectedCreditIndex === 0}
                                 className={cn(
-                                  "p-2 rounded-lg transition-all active:scale-90",
+                                  "p-2 rounded-md transition-all active:scale-90",
                                   selectedCreditIndex === 0
                                     ? "text-neutral-700 opacity-30 cursor-not-allowed"
                                     : "text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 cursor-pointer"
                                 )}
                               >
                                 <Minus size={24} />
-                              </button>
+                              </Button>
 
                               <div className="text-6xl md:text-7xl font-bold text-brand-cyan font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(82,221,235,0.2)]">
                                 {animatedCredits}
                               </div>
 
-                              <button
-                                onClick={handleNextCredit}
+                              <Button variant="ghost" onClick={handleNextCredit}
                                 disabled={selectedCreditIndex === creditPackages.length - 1}
                                 className={cn(
-                                  "p-2 rounded-lg transition-all active:scale-90",
+                                  "p-2 rounded-md transition-all active:scale-90",
                                   selectedCreditIndex === creditPackages.length - 1
                                     ? "text-neutral-700 opacity-30 cursor-not-allowed"
                                     : "text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 cursor-pointer"
                                 )}
                               >
                                 <Plus size={24} />
-                              </button>
+                              </Button>
                             </div>
 
-                            <div className="flex items-center justify-center gap-2 text-xs text-neutral-500 font-mono uppercase tracking-[0.2em]">
+                            <MicroTitle as="span" className="flex items-center justify-center gap-2 opacity-60">
                               <Pickaxe size={14} className="text-brand-cyan/50" />
                               {t('pricing.creditsLabel')}
-                            </div>
+                            </MicroTitle>
                           </div>
 
                           <div className="pt-8 border-t border-neutral-800/50 text-center">
                             <div className="text-4xl font-bold text-neutral-100 font-mono mb-1">
                               {formatPrice(animatedPrice, currencyInfo?.currency || 'BRL', currencyInfo?.locale || 'pt-BR')}
                             </div>
-                            <div className="text-[10px] text-neutral-500 font-mono uppercase tracking-widest opacity-60">
+                            <MicroTitle as="span" className="opacity-300">
                               {currencyInfo?.currency === 'BRL' ? 'Pagamento Único' : 'One-time payment'}
-                            </div>
+                            </MicroTitle>
                           </div>
 
                           <div className="flex flex-col gap-3 pt-6">
-                            <Button
+                            <PremiumButton
                               onClick={handleBuyCredits}
-                              className="w-full bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold h-12 text-sm uppercase tracking-wider shadow-[0_5px_15px_rgba(82,221,235,0.15)]"
-                              size="lg"
+                              className="w-full h-12 uppercase "
                             >
                               <CreditCard className="mr-2 h-4 w-4" />
                               {t('pricing.buyCredits')}
-                            </Button>
+                            </PremiumButton>
 
                             {currencyInfo?.currency === 'BRL' && (
-                              <Button
+                              <PremiumButton
                                 onClick={handleBuyWithPix}
-                                variant="outline"
-                                className="w-full border-green-500/30 text-green-400 hover:bg-green-500/10 h-12 text-sm uppercase tracking-wider"
-                                size="lg"
+                                className="w-full h-12 uppercase  bg-transparent border-green-500/30 text-green-400 hover:bg-green-500/10 shadow-none"
+                                icon={QrCode}
                               >
-                                <QrCode className="mr-2 h-4 w-4" />
                                 {t('pix.payWithPix')}
-                              </Button>
+                              </PremiumButton>
                             )}
                           </div>
 
@@ -383,13 +381,12 @@ export const PricingPage: React.FC = () => {
                           </p>
                         </div>
                       </CardContent>
-                    </Card>
+                    </GlassPanel>
 
                     {/* Indicators */}
-                    <div className="flex gap-1.5 mt-8 items-center bg-neutral-900/40 p-1.5 rounded-full border border-neutral-800/30">
+                    <GlassPanel padding="sm" className="flex gap-1.5 mt-8 items-center rounded-full">
                       {creditPackages.map((_, index) => (
-                        <button
-                          key={index}
+                        <Button variant="ghost" key={index}
                           onClick={() => setSelectedCreditIndex(index)}
                           className={cn(
                             "h-1.5 rounded-full transition-all duration-300",
@@ -399,7 +396,7 @@ export const PricingPage: React.FC = () => {
                           )}
                         />
                       ))}
-                    </div>
+                    </GlassPanel>
                   </div>
                 </div>
               </TabsContent>

@@ -2,6 +2,9 @@ import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { MockupCard } from './MockupCard';
 import type { AspectRatio } from '@/types/types';
+import { InteractiveASCIICopy } from '@/components/ui/InteractiveASCIICopy';
+import { MicroTitle } from '../ui/MicroTitle';
+import { GlassPanel } from '../ui/GlassPanel';
 
 interface MockupDisplayProps {
   mockups: (string | null)[];
@@ -68,19 +71,17 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
 
   if (!hasContent) {
     return (
-      <div className="relative flex flex-col items-center justify-center h-full w-full min-w-0 text-center p-6 sm:p-8 md:p-12 animate-fade-in">
-        {/* Decorative background - absolute so it doesn't affect flex; parent has relative */}
-        <div className="absolute inset-0 rounded-full blur-[100px] pointer-events-none -z-10" aria-hidden />
+      <div className="relative flex flex-col items-center justify-center h-full w-full min-w-0 text-center p-6 sm:p-8 md:p-12 animate-fade-in overflow-hidden">
 
+        <GlassPanel padding="lg" className="relative z-10 flex flex-col items-center backdrop-blur-md shadow-2xl">
+          <MicroTitle as="h3" className="text-xl md:text-2xl font-bold text-neutral-300 mb-4 drop-shadow-md">
+            {t('mockup.awaitingGeneration')}
+          </MicroTitle>
 
-
-        <h2 className="text-xl md:text-2xl font-bold font-mono uppercase tracking-[0.2em] text-neutral-300 mb-4 z-10">
-          {t('mockup.awaitingGeneration')}
-        </h2>
-
-        <p className="max-w-md text-neutral-500 text-sm md:text-base font-medium leading-relaxed z-10">
-          {t('mockup.awaitingGenerationDescription')}
-        </p>
+          <p className="max-w-md text-neutral-400 text-sm md:text-base font-medium leading-relaxed drop-shadow-md">
+            {t('mockup.awaitingGenerationDescription')}
+          </p>
+        </GlassPanel>
       </div>
     );
   }
@@ -122,8 +123,8 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
   const getGridClasses = () => {
     const gap = "gap-3 sm:gap-4 md:gap-6";
     const cols = isSidebarCollapsed
-      ? "grid-cols-1 sm:grid-cols-1 md:grid-cols-1 xl:grid-cols-1"
-      : "grid-cols-1 sm:grid-cols-1 lg:grid-cols-1 2xl:grid-cols-1";
+      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      : "grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2";
     const maxW = isSidebarCollapsed ? "max-w-[2000px]" : "max-w-[1800px]";
     return `grid w-full mx-auto ${cols} ${gap} ${maxW}`;
   };

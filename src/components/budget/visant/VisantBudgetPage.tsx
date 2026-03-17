@@ -455,7 +455,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                           color: textColor,
                           fontFamily: "'Manrope', sans-serif",
                           fontWeight: '300',
-                          fontStyle: 'italic',
+                          fontStyle: '',
                           textAlign: 'center',
                           lineHeight: '1.56',
                         }}
@@ -468,7 +468,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                             onDataChange?.({ signatures: updatedSignatures });
                           }}
                           editable={editable}
-                          style={{ fontSize: '11px', fontStyle: 'italic', fontWeight: '300' }}
+                          style={{ fontSize: '11px', fontStyle: '', fontWeight: '300' }}
                           saveStatus={saveStatus}
                         />
                       </p>
@@ -505,7 +505,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                         color: textColor,
                         fontFamily: "'Manrope', sans-serif",
                         fontWeight: '300',
-                        fontStyle: 'italic',
+                        fontStyle: '',
                         textAlign: 'center',
                         lineHeight: '1.56',
                       }}

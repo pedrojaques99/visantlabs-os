@@ -1,4 +1,4 @@
-import { type NodeProps, type Node, NodeResizer } from '@xyflow/react';
+import { type NodeProps, type Node, NodeResizer, Position } from '@xyflow/react';
 import { ChevronDown, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ConnectedImagesDisplay } from '../ConnectedImagesDisplay';
@@ -8,6 +8,8 @@ import { NodeContainer } from './NodeContainer';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { ComponentType, memo, useCallback, useEffect, useState } from 'react';
+import { NodeButton } from './node-button';
+import { NodeLabel } from './NodeLabel';
 
 interface PresetItem {
     id: string;
@@ -143,7 +145,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                 selected={selected}
                 dragging={dragging}
                 onFitToContent={handleFitToContent}
-                className="p-5"
+                className="w-full h-full"
                 style={{
                     width: '320px',
                     height: 'auto'
@@ -175,8 +177,8 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                 </div>
 
                 {/* Preset Selector - Button to open modal */}
-                <div className="mb-2">
-                    <button
+                <div className="mb-2 w-full">
+                    <NodeButton variant="ghost" size="full"
                         onClick={(e) => {
                             e.stopPropagation();
                             setIsPresetModalOpen(true);
@@ -205,7 +207,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                             )}
                         </div>
                         <ChevronDown size={14} className="text-neutral-400 flex-shrink-0" />
-                    </button>
+                    </NodeButton>
                 </div>
 
                 {/* Connected Image Thumbnail */}
@@ -224,7 +226,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                 )}
 
                 {/* Generate Button */}
-                <button
+                <NodeButton variant="primary" size="full"
                     onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
@@ -250,7 +252,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                             {t(config.translationKeys.generateButton) || `Generate ${config.title}`}
                         </>
                     )}
-                </button>
+                </NodeButton>
 
                 {/* Result Preview */}
                 {hasResult && (resultImageUrl || resultImageBase64) && (
@@ -280,7 +282,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                     isOpen={isPresetModalOpen}
                     selectedPresetId={selectedPresetId}
                     onClose={() => setIsPresetModalOpen(false)}
-                    onSelectPreset={(presetId) => {
+                    onSelectPreset={(presetId: string) => {
                         handlePresetChange(presetId);
                     }}
                     isLoading={isLoading}

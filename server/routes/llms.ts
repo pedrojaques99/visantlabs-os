@@ -19,19 +19,26 @@ router.get('/llms.txt', (req, res) => {
 
 - **Mockup Generation**: AI-generated product mockups from text prompts and images
 - **Branding Machine**: Complete brand identity generation (logos, colors, typography, guidelines)
+- **Brand Guidelines**: Centralized identity vault to maintain visual consistency across designs
 - **Canvas Editor**: Collaborative design canvas with real-time multiplayer
 - **Budget Machine**: AI-powered project budget estimation and planning
 - **Figma Plugin**: Direct AI generation inside Figma via plugin + MCP server
 - **Community**: Public gallery of user-created mockups and designs
 - **AI Tools**: Image generation, background removal, upscaling, style transfer
 
-## For Agents
+## For Agents (Claude Connectors)
 
-- **MCP Server**: \`POST /api/mcp\` — Model Context Protocol server with 20+ tools
-- **REST API**: Full CRUD API under \`/api/*\` — see /llms-full.txt for complete reference
-- **Authentication**: API key (\`Authorization: Bearer visant_sk_xxx\`) or JWT token
-- **Credits**: Pay-per-use credit system; check balance via \`GET /api/usage/credits\`
-- **Rate Limits**: 60 req/min for API, 10 req/min for AI generation
+**MCP Server**: \`POST /api/mcp\` — 22 tools via Streamable HTTP (MCP 2025-03-26)
+
+Connect on Claude.ai:
+1. Settings → Connectors → Add custom connector
+2. URL: \`https://visantlabs.com/api/mcp\`
+3. Auth (optional): API key \`visant_sk_xxx\`
+
+**REST API**: Full CRUD under \`/api/*\` — see /llms-full.txt
+**Auth**: API key (\`Authorization: Bearer visant_sk_xxx\`) or JWT
+**Credits**: Pay-per-use; check via \`GET /api/usage/credits\`
+**Rate Limits**: 60 req/min API, 10 req/min AI generation
 
 ## Documentation
 
@@ -66,47 +73,78 @@ API keys are generated in the user dashboard under Settings > API Keys.
 - Credit costs vary by operation (mockup ~5 credits, branding ~10 credits, image gen ~2 credits)
 - Free tier includes starter credits on signup
 
-## MCP Server
+## MCP Server (Claude Connectors Compatible)
 
 **Endpoint**: \`POST /api/mcp\`
-**Protocol**: JSON-RPC 2.0 (Model Context Protocol)
+**Protocol**: JSON-RPC 2.0 over Streamable HTTP (MCP 2025-03-26)
 
-### Available Tools (20+)
+### Connect via Claude.ai
 
-**Mockup Tools**:
-- \`generate_mockup\` — Generate a product mockup from prompt
-- \`list_mockups\` — List user's mockups
-- \`get_mockup\` — Get mockup details by ID
-- \`delete_mockup\` — Delete a mockup
+1. Go to **Settings → Connectors → Add custom connector**
+2. Enter URL: \`https://visantlabs.com/api/mcp\`
+3. (Optional) Add API key for authenticated access: \`visant_sk_xxx\`
 
-**Branding Tools**:
-- \`generate_branding\` — Generate complete brand identity
-- \`list_brandings\` — List user's branding projects
-- \`get_branding\` — Get branding details by ID
+### Connect Programmatically
 
-**Canvas Tools**:
-- \`create_canvas\` — Create a new canvas
-- \`list_canvases\` — List user's canvases
-- \`get_canvas\` — Get canvas details by ID
-- \`update_canvas\` — Update canvas content
+\`\`\`bash
+curl -X POST https://visantlabs.com/api/mcp \\
+  -H "Content-Type: application/json" \\
+  -H "Accept: application/json, text/event-stream" \\
+  -H "Authorization: Bearer visant_sk_xxx" \\
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
+\`\`\`
 
-**Budget Tools**:
-- \`generate_budget\` — Generate a project budget
-- \`list_budgets\` — List user's budgets
-- \`get_budget\` — Get budget details by ID
+### Required Headers
 
-**AI Tools**:
-- \`generate_image\` — Generate an image from prompt
-- \`remove_background\` — Remove image background
-- \`upscale_image\` — Upscale image resolution
+| Header | Value | Required |
+|--------|-------|----------|
+| \`Content-Type\` | \`application/json\` | Yes |
+| \`Accept\` | \`application/json, text/event-stream\` | Yes |
+| \`Authorization\` | \`Bearer visant_sk_xxx\` | For authenticated tools |
 
-**Community Tools**:
-- \`list_community_posts\` — Browse public gallery
-- \`get_community_post\` — Get post details
+### Legacy SSE Transport
 
-**Account Tools**:
-- \`get_credits\` — Check credit balance
-- \`get_usage\` — Get usage statistics
+For older clients: \`GET /api/mcp/sse\` (deprecated, use POST /api/mcp)
+
+### Available Tools (22)
+
+**Account** (requires auth):
+- \`account-usage\` — Get credit balance, plan limits, billing info
+- \`account-profile\` — Get user profile (name, email, plan)
+
+**Mockups** (requires auth):
+- \`mockup-list\` — List user's mockups (paginated)
+- \`mockup-get\` — Get mockup by ID
+- \`mockup-presets\` — Browse presets by category
+- \`mockup-generate\` — Generate mockup (1 credit)
+
+**Branding** (requires auth):
+- \`branding-list\` — List branding projects
+- \`branding-get\` — Get branding by ID
+- \`branding-generate\` — Generate brand identity
+
+**Canvas** (requires auth):
+- \`canvas-list\` — List canvas projects
+- \`canvas-get\` — Get canvas by ID
+- \`canvas-create\` — Create new canvas
+
+**Budget** (requires auth):
+- \`budget-list\` — List budget documents
+- \`budget-get\` — Get budget by ID
+- \`budget-create\` — Create budget from template
+
+**AI Utilities** (requires auth):
+- \`ai-improve-prompt\` — Enhance prompt for better results (1 credit)
+- \`ai-describe-image\` — Analyze and describe image (1 credit)
+
+**Brand Guidelines** (requires auth for private):
+- \`brand-guidelines-list\` — List user's brand guidelines
+- \`brand-guidelines-get\` — Get guideline (JSON or LLM-ready prompt)
+- \`brand-guidelines-public\` — Get public guideline by slug (no auth)
+
+**Community** (no auth required):
+- \`community-presets\` — Browse shared mockup presets
+- \`community-profiles\` — Browse public creator profiles
 
 ## REST API Endpoints
 
@@ -140,6 +178,17 @@ API keys are generated in the user dashboard under Settings > API Keys.
 - \`GET /api/canvas/:id\` — Get canvas by ID
 - \`PUT /api/canvas/:id\` — Update canvas
 - \`DELETE /api/canvas/:id\` — Delete canvas
+
+### Brand Guidelines — \`/api/brand-guidelines\`
+- \`GET /api/brand-guidelines\` — List all guidelines
+- \`GET /api/brand-guidelines/:id\` — Get guideline details
+- \`POST /api/brand-guidelines\` — Create new guideline
+- \`PUT /api/brand-guidelines/:id\` — Update guideline
+- \`DELETE /api/brand-guidelines/:id\` — Delete guideline
+- \`GET /api/brand-guidelines/:id/context\` — Get LLM-ready context (text/json)
+- \`POST /api/brand-guidelines/:id/share\` — Enable public sharing
+- \`GET /api/brand-guidelines/public/:slug\` — Public read access
+- \`GET /api/brand-guidelines/public/:slug/context\` — Public LLM context
 
 ### Budget — \`/api/budget\`
 - \`POST /api/budget/generate\` — Generate budget estimate (consumes credits)

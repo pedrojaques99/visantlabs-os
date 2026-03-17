@@ -6,6 +6,10 @@ import { cn } from '@/lib/utils';
 import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { BrandingSection } from '../branding/BrandingSection';
+import { MicroTitle } from '../ui/MicroTitle';
+import { GlassPanel } from '../ui/GlassPanel';
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 
 export const InstructionsIdentityPanel: React.FC = () => {
   const { t } = useTranslation();
@@ -43,15 +47,10 @@ export const InstructionsIdentityPanel: React.FC = () => {
   }, []);
 
   return (
-    <div
-      className={cn(
-        'w-full rounded-xl border transition-all duration-200 overflow-hidden',
-        theme === 'dark'
-          ? 'bg-neutral-900/30 border-white/5'
-          : 'bg-white/50 border-neutral-200'
-      )}
+    <GlassPanel
+      className="group overflow-hidden"
     >
-      <button
+      <Button variant="ghost"
         onClick={() => setIsInstructionsExpanded(!isInstructionsExpanded)}
         className={cn(
           'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
@@ -64,14 +63,9 @@ export const InstructionsIdentityPanel: React.FC = () => {
             className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
           />
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-            <span
-              className={cn(
-                'text-[10px] font-mono uppercase tracking-widest',
-                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-              )}
-            >
+            <MicroTitle as="span">
               {t('mockup.instructions')} / {t('mockup.identity')}
-            </span>
+            </MicroTitle>
             {!isInstructionsExpanded &&
               (instructions || ctxSelectedBrandingTags.length > 0) && (
                 <span className="text-[10px] font-mono truncate max-w-[200px]">
@@ -100,21 +94,16 @@ export const InstructionsIdentityPanel: React.FC = () => {
             <ChevronDown size={16} className="text-neutral-500" />
           )}
         </div>
-      </button>
+      </Button>
 
       {isInstructionsExpanded && (
         <div className="p-3 pt-2 animate-fade-in space-y-3">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span
-                className={cn(
-                  'text-[10px] uppercase font-mono tracking-widest',
-                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                )}
-              >
+              <MicroTitle as="span">
                 {t('mockup.instructions')}
-              </span>
-              <button
+              </MicroTitle>
+              <Button variant="ghost"
                 type="button"
                 onClick={() =>
                   setIsInstructionsTextareaVisible(!isInstructionsTextareaVisible)
@@ -137,15 +126,15 @@ export const InstructionsIdentityPanel: React.FC = () => {
                 }
               >
                 {isInstructionsTextareaVisible ? <X size={12} /> : <Plus size={12} />}
-              </button>
+              </Button>
             </div>
             {isInstructionsTextareaVisible && (
-              <textarea
+              <Textarea
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
                 placeholder={t('mockup.instructionsPlaceholder')}
                 className={cn(
-                  'w-full min-h-[80px] p-3 text-sm font-mono rounded-lg focus:outline-none resize-none shadow-inner animate-fade-in',
+                  'w-full min-h-[80px] p-3 text-sm font-mono rounded-md focus:outline-none resize-none shadow-inner animate-fade-in',
                   theme === 'dark'
                     ? 'bg-black/10 border border-white/10 text-white placeholder:text-neutral-700 focus:border-brand-cyan/50'
                     : 'bg-white border border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:border-brand-cyan/50'
@@ -167,16 +156,11 @@ export const InstructionsIdentityPanel: React.FC = () => {
                   size={12}
                   className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
                 />
-                <span
-                  className={cn(
-                    'text-[10px] uppercase font-mono tracking-widest',
-                    theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  )}
-                >
+                <MicroTitle as="span">
                   {t('mockup.identity')}
-                </span>
+                </MicroTitle>
               </div>
-              <button
+              <Button variant="ghost"
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -192,7 +176,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
                 aria-label={t('mockup.customTagLabel')}
               >
                 <Plus size={12} />
-              </button>
+              </Button>
             </div>
             <div onClick={(e) => e.stopPropagation()}>
               <BrandingSection
@@ -212,7 +196,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </GlassPanel>
   );
 };
 

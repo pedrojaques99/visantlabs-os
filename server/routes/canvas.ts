@@ -930,7 +930,7 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
 // Create new canvas project
 router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
-    const { name, nodes, edges, drawings } = req.body;
+    const { name, nodes, edges, drawings, linkedGuidelineId } = req.body;
 
     if (!req.userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -959,6 +959,7 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
         nodes: processedNodes as any,
         edges: edges as any,
         drawings: drawings !== undefined ? (drawings as any) : null,
+        linkedGuidelineId: linkedGuidelineId || null,
       },
     });
 
@@ -1019,7 +1020,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
       return res.status(400).json({ error: 'Invalid request body' });
     }
 
-    const { name, nodes, edges, drawings } = req.body;
+    const { name, nodes, edges, drawings, linkedGuidelineId } = req.body;
 
     if (!req.userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -1211,6 +1212,9 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     }
     if (drawings !== undefined) {
       updateData.drawings = drawings as any;
+    }
+    if (linkedGuidelineId !== undefined) {
+      updateData.linkedGuidelineId = linkedGuidelineId;
     }
 
     const project = await prisma.canvasProject.update({

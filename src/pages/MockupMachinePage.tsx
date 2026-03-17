@@ -106,7 +106,7 @@ const MockupMachinePageContent: React.FC = () => {
     hasGenerated, setHasGenerated,
     isSmartPromptActive, setIsSmartPromptActive,
     isPromptManuallyEdited, setIsPromptManuallyEdited,
-    isPromptReady, setIsPromptReady,
+    // isPromptReady is now derived locally via useMemo
     isAdvancedOpen, setIsAdvancedOpen,
     isAllCategoriesOpen, setIsAllCategoriesOpen,
     selectedLocationTags, setSelectedLocationTags,
@@ -138,6 +138,7 @@ const MockupMachinePageContent: React.FC = () => {
     surpriseMePool,
     imageProvider,
     setImageProvider,
+    selectedBrandGuideline,
   } = useMockup();
 
   // Custom hooks for common operations (after getting mockupCount from context)
@@ -152,24 +153,21 @@ const MockupMachinePageContent: React.FC = () => {
 
   const promptWasReadyBeforeEditRef = useRef<boolean>(false);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [shouldAutoGenerate, setShouldAutoGenerate] = useState(false);
-  const [autoGenerateSource, setAutoGenerateSource] = useState<'surprise' | 'angles' | 'environments' | 'surprise-prompt-only' | null>(null);
-  const [isAutoGenerateMode, setIsAutoGenerateMode] = useState(false);
+  const [autoMode, setAutoMode] = useState<'idle' | 'prompt-only' | 'prompt-and-generate'>('idle');
   const [savedIndices, setSavedIndices] = useState<Set<number>>(new Set());
   const [mockupLikedStatus, setMockupLikedStatus] = useState<Map<number, boolean>>(new Map()); // Map index -> isLiked
   const [savedMockupIds, setSavedMockupIds] = useState<Map<number, string>>(new Map()); // Map index -> mockup ID
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
-  const [isDiceAnimatingFloating, setIsDiceAnimatingFloating] = useState(false);
-  const [autoGenerateFloating, setAutoGenerateFloating] = useState(true);
+  const [isDiceAnimating, setIsDiceAnimating] = useState(false);
+  const [autoGenerate, setAutoGenerate] = useState(true);
 
   // React to external tag changes (e.g. SurpriseMeSelectedTagsDisplay reroll)
   useEffect(() => {
     const handler = () => {
       // Invalidate current prompt so it regenerates based on new tags
-      setIsPromptReady(false);
       setPromptPreview('');
-      setShouldAutoGenerate(true);
-      setAutoGenerateSource('surprise-prompt-only');
+      promptTagsSnapshotRef.current = null;
+      setAutoMode('prompt-only');
     };
 
     if (typeof window !== 'undefined') {
@@ -206,10 +204,10 @@ const MockupMachinePageContent: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const analysisTimeoutRef = useRef<number | null>(null);
   const prevBrandingTagsLength = useRef(0);
-  const autoGenerateTimeoutRef = useRef<number | null>(null);
-  const isAutoGeneratingRef = useRef(false);
+  const promptTagsSnapshotRef = useRef<string | null>(null);
   const generateOutputsButtonRef = useRef<HTMLButtonElement>(null);
   const hasRestoredStateRef = useRef(false);
+  const isRestoringRef = useRef(true); // true until first restoration attempt completes
   const generatedSmartPromptRef = useRef<string | null>(null);
 
   // Restore state from localStorage on mount (prioritize edit-mockup if exists)
@@ -232,6 +230,7 @@ const MockupMachinePageContent: React.FC = () => {
           localStorage.removeItem('edit-mockup');
         }
         // Don't restore persisted state if edit-mockup exists
+        isRestoringRef.current = false;
         return;
       }
 
@@ -283,6 +282,9 @@ const MockupMachinePageContent: React.FC = () => {
       if (isLocalDevelopment()) {
         console.warn('Failed to restore mockup state:', error);
       }
+    } finally {
+      // Mark restoration complete so save effect and render don't flash
+      isRestoringRef.current = false;
     }
   }, []); // Only run once on mount
 
@@ -315,7 +317,7 @@ const MockupMachinePageContent: React.FC = () => {
 
     // Reset prompt ready status when model changes (may need regeneration)
     if (promptPreview.trim()) {
-      setIsPromptReady(false);
+      promptTagsSnapshotRef.current = null;
       toast.info(t('messages.modelChanged'), { duration: 3000 });
     }
   }, [selectedModel, subscriptionStatus, promptPreview, onCreditPackagesModalOpen]);
@@ -324,31 +326,16 @@ const MockupMachinePageContent: React.FC = () => {
   // It only affects the number of images for the next generation
 
 
-  // Reset showWelcome when navigating to home route
-  // Only reset if we're actually in imageless mode (not when starting a blank mockup)
-  // Also don't reset if we just uploaded an image (check by ensuring no mockups generated yet)
-  useEffect(() => {
-    // Don't reset to welcome if we have an uploaded image (even if no mockups generated yet)
-    // This prevents the welcome screen from reappearing after image upload
-    // Also don't reset if we have generated mockups (hasGenerated is true or mockups array has non-null values)
-    const hasAnyMockups = mockups.some(m => m !== null);
-    if ((location.pathname === '/' || location.pathname === '/mockupmachine') &&
-      !uploadedImage &&
-      mockups.every(m => m === null) &&
-      isPromptReady &&
-      !hasGenerated &&
-      !hasAnyMockups &&
-      location.pathname !== '/mockupmachine') {
-      setShowWelcome(true);
-    } else if (hasGenerated || hasAnyMockups || location.pathname === '/mockupmachine') {
-      // Explicitly keep welcome screen hidden if we have generated mockups or are on the mockupmachine route
-      setShowWelcome(false);
-    }
-  }, [location.pathname, uploadedImage, mockups, designType, hasGenerated, isPromptReady]);
+  // Note: showWelcome state is kept for handleStartOver/handleImageUpload but
+  // the render decision uses `shouldShowWelcome = !uploadedImage` (line ~2680),
+  // so no effect needed here — the effect was triggering wasteful re-renders.
 
   // Save state to localStorage when mockups are generated (with debounce)
   // Using a longer debounce (1500ms) to prevent excessive saves and localStorage quota issues
   useEffect(() => {
+    // Skip save during state restoration to prevent cascading re-renders
+    if (isRestoringRef.current) return;
+
     // Save if there are generated mockups OR if an image has been uploaded (to persist analysis)
     const hasAnyMockups = mockups.some(m => m !== null);
     if (!hasAnyMockups && !uploadedImage && !hasGenerated) return;
@@ -443,6 +430,34 @@ const MockupMachinePageContent: React.FC = () => {
     suggestedColors,
     instructions,
   ]);
+
+  // Fast hash for tag state comparison (avoids JSON.stringify)
+  const getTagsHash = useCallback(() => {
+    return [
+      selectedTags.length,
+      selectedBrandingTags.length,
+      selectedLocationTags.length,
+      selectedAngleTags.length,
+      selectedLightingTags.length,
+      selectedEffectTags.length,
+      selectedColors.length,
+      designType || '',
+      aspectRatio,
+      generateText ? '1' : '0',
+      withHuman ? '1' : '0',
+    ].join('|');
+  }, [
+    selectedTags.length, selectedBrandingTags.length, selectedLocationTags.length,
+    selectedAngleTags.length, selectedLightingTags.length, selectedEffectTags.length,
+    selectedColors.length, designType, aspectRatio, generateText, withHuman
+  ]);
+
+  // Derived: prompt is ready if we have a prompt and tags haven't changed since generation
+  const isPromptReady = useMemo(() => {
+    if (!promptPreview.trim()) return false;
+    if (!promptTagsSnapshotRef.current) return false;
+    return promptTagsSnapshotRef.current === getTagsHash();
+  }, [promptPreview, getTagsHash]);
 
   const buildPrompt = useCallback(() => {
     const baseQuality = "A photorealistic, super-detailed";
@@ -600,9 +615,9 @@ const MockupMachinePageContent: React.FC = () => {
 
       setPromptPreview(finalPrompt);
       generatedSmartPromptRef.current = finalPrompt; // Store for use in auto-generate
+      promptTagsSnapshotRef.current = getTagsHash(); // Save snapshot for isPromptReady derivation
       setIsSmartPromptActive(true);
       setIsPromptManuallyEdited(false);
-      setIsPromptReady(true);
       // Track that prompt is ready so manual edits can still allow direct generation
       promptWasReadyBeforeEditRef.current = true;
 
@@ -656,28 +671,8 @@ const MockupMachinePageContent: React.FC = () => {
     buildPrompt,
     t,
     isGeneratingPrompt,
-    referenceImages
-  ]);
-
-  useEffect(() => {
-    // Tags changed - reset prompt ready state and track that it was reset
-    setIsPromptReady(false);
-    promptWasReadyBeforeEditRef.current = false;
-  }, [
-    JSON.stringify(selectedTags),
-    JSON.stringify(selectedBrandingTags),
-    designType,
-    uploadedImage?.base64 ? 'hasImage' : 'noImage',
-    JSON.stringify(selectedLocationTags),
-    JSON.stringify(selectedAngleTags),
-    JSON.stringify(selectedLightingTags),
-    JSON.stringify(selectedEffectTags),
-    JSON.stringify(selectedColors),
-    aspectRatio,
-    generateText,
-    withHuman,
-    enhanceTexture,
-    instructions
+    referenceImages,
+    getTagsHash
   ]);
 
 
@@ -717,7 +712,7 @@ const MockupMachinePageContent: React.FC = () => {
     setPromptSuggestions([]);
     setPromptPreview('');
     setIsPromptManuallyEdited(false);
-    setIsPromptReady(false);
+    promptTagsSnapshotRef.current = null;
     setMockups(Array(mockupCount).fill(null));
     setIsLoading(Array(mockupCount).fill(false));
     setReferenceImages([]);
@@ -776,9 +771,16 @@ const MockupMachinePageContent: React.FC = () => {
         }
       }
 
-      const userContext = selectedBrandingTags.length > 0 ? { selectedBrandingTags } : undefined;
+      const userContext = {
+        ...(selectedBrandingTags.length > 0 && { selectedBrandingTags }),
+        ...(selectedBrandGuideline && { brandGuidelineId: selectedBrandGuideline }),
+      };
       if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup start', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-      const analysis = await aiApi.analyzeSetup(imageToAnalyze, instructions, userContext);
+      const analysis = await aiApi.analyzeSetup(
+        imageToAnalyze,
+        instructions,
+        Object.keys(userContext).length > 0 ? userContext : undefined
+      );
       if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
 
       setSuggestedBrandingTags(analysis.branding);
@@ -858,10 +860,19 @@ const MockupMachinePageContent: React.FC = () => {
     setUploadedImage(image);
 
     // Upload to temp R2 to save storage
+    // Preload the URL before swapping to prevent image flicker
     if (image.base64 && !image.url) {
       mockupApi.uploadTempImage(image.base64, image.mimeType)
         .then(url => {
-          setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+          const img = new Image();
+          img.onload = () => {
+            setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+          };
+          img.onerror = () => {
+            // Keep base64 if URL fails to load
+            setUploadedImage(prev => prev ? ({ ...prev, url }) : null);
+          };
+          img.src = url;
         })
         .catch(err => {
           if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
@@ -870,8 +881,6 @@ const MockupMachinePageContent: React.FC = () => {
 
     setSelectedModel(null);
     setResolution('1K');
-    // Por último, esconde welcome screen para garantir que fique false
-    setShowWelcome(false);
 
     // Navega para a rota /mockupmachine
     navigate('/mockupmachine');
@@ -911,10 +920,18 @@ const MockupMachinePageContent: React.FC = () => {
     setUploadedImage(validImage);
 
     // Upload to temp R2 to save storage
+    // Preload the URL before swapping to prevent image flicker
     if (base64String && !image.url) {
       mockupApi.uploadTempImage(base64String, mimeType)
         .then(url => {
-          setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+          const img = new Image();
+          img.onload = () => {
+            setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+          };
+          img.onerror = () => {
+            setUploadedImage(prev => prev ? ({ ...prev, url }) : null);
+          };
+          img.src = url;
         })
         .catch(err => {
           if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
@@ -977,8 +994,8 @@ const MockupMachinePageContent: React.FC = () => {
     }
 
     setTimeout(() => {
-      setShouldAutoGenerate(true);
-      setAutoGenerateSource('angles');
+      promptTagsSnapshotRef.current = null;
+      setAutoMode('prompt-and-generate');
     }, 300);
   }, [selectedTags.length, selectedAngleTags]);
 
@@ -1002,8 +1019,8 @@ const MockupMachinePageContent: React.FC = () => {
     }
 
     setTimeout(() => {
-      setShouldAutoGenerate(true);
-      setAutoGenerateSource('environments');
+      promptTagsSnapshotRef.current = null;
+      setAutoMode('prompt-and-generate');
     }, 300);
   }, [selectedTags.length, selectedLocationTags]);
 
@@ -1077,11 +1094,8 @@ const MockupMachinePageContent: React.FC = () => {
       setIsSmartPromptActive(false);
     }
     setIsPromptManuallyEdited(true);
-    // If prompt is manually edited and was ready before (tags haven't changed), keep it ready
-    // This allows direct generation after manual editing if tags haven't changed
-    if (newValue.trim().length > 0 && promptWasReadyBeforeEditRef.current) {
-      setIsPromptReady(true);
-    }
+    // isPromptReady is derived - if tags haven't changed since last prompt generation,
+    // it will remain true even after manual edits
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -1293,6 +1307,7 @@ const MockupMachinePageContent: React.FC = () => {
           feature: 'mockupmachine',
           uniqueId: index, // Use slot index to differentiate parallel batch requests
           provider: imageProvider,
+          brandGuidelineId: selectedBrandGuideline || undefined, // Auto-inject brand context
         });
 
         // Image successfully generated - set it in state (prefer URL; if only base64, try client-side upload)
@@ -1494,7 +1509,7 @@ const MockupMachinePageContent: React.FC = () => {
         }
       }
     }
-  }, [uploadedImage, selectedTags, selectedBrandingTags, promptPreview, hasGenerated, designType, mockupCount, subscriptionStatus, aspectRatio, selectedModel, resolution, validateCredits, onSubscriptionModalOpen, setSubscriptionStatus, mockups, referenceImages, t]);
+  }, [uploadedImage, selectedTags, selectedBrandingTags, promptPreview, hasGenerated, designType, mockupCount, subscriptionStatus, aspectRatio, selectedModel, resolution, validateCredits, onSubscriptionModalOpen, setSubscriptionStatus, mockups, referenceImages, t, imageProvider, selectedBrandGuideline]);
 
   const handleSurpriseMe = useCallback(async (autoGenerate: boolean = false) => {
     // Ensure model is selected (default to gemini-2.5-flash-image if not set)
@@ -1769,7 +1784,7 @@ const MockupMachinePageContent: React.FC = () => {
 
     // Reset prompt and manual edit state so auto-generation can proceed
     setPromptPreview('');
-    setIsPromptReady(false);
+    promptTagsSnapshotRef.current = null;
     setIsPromptManuallyEdited(false);
 
     setIsAllCategoriesOpen(true);
@@ -1782,26 +1797,20 @@ const MockupMachinePageContent: React.FC = () => {
     // Always generate prompt automatically
     // The autoGenerate checkbox only controls if outputs are also generated automatically
     setTimeout(() => {
-      setShouldAutoGenerate(true);
-      if (autoGenerate) {
-        // Auto-generate mode: Set tags -> Auto Generate Prompt -> Auto Generate Output
-        setAutoGenerateSource('surprise');
-      } else {
-        // Prompt-only mode: Set tags -> Auto Generate Prompt -> Wait for user
-        setAutoGenerateSource('surprise-prompt-only');
-      }
+      promptTagsSnapshotRef.current = null;
+      setAutoMode(autoGenerate ? 'prompt-and-generate' : 'prompt-only');
     }, 2000); // Increased delay to allow users to see selected tags
   }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups, isSurpriseMeMode, surpriseMePool]);
 
   const handleSurpriseMeWithDice = useCallback((autoGen: boolean) => {
-    setIsDiceAnimatingFloating(true);
+    setIsDiceAnimating(true);
     showTemporaryOverlay(300);
     handleSurpriseMe(autoGen);
-    setTimeout(() => setIsDiceAnimatingFloating(false), 800);
+    setTimeout(() => setIsDiceAnimating(false), 800);
   }, [handleSurpriseMe, showTemporaryOverlay]);
 
   useEffect(() => {
-    if (isGeneratingPrompt) setIsDiceAnimatingFloating(false);
+    if (isGeneratingPrompt) setIsDiceAnimating(false);
   }, [isGeneratingPrompt]);
 
   const handleSaveAllUnsaved = useCallback(async () => {
@@ -2545,55 +2554,25 @@ Generate the new mockup image with the requested changes applied.`;
   // const isGenerating = isLoading.some(Boolean); // Removed to allow concurrent operations
   const isGenerating = false; // Always allow interactions that support queuing
 
+  // Unified auto-generate effect: handles both prompt generation and image generation
   useEffect(() => {
-    if (autoGenerateTimeoutRef.current) {
-      clearTimeout(autoGenerateTimeoutRef.current);
-      autoGenerateTimeoutRef.current = null;
+    if (autoMode === 'idle' || isGeneratingPrompt) return;
+
+    const canAutoGenerate = !!designType && (uploadedImage || referenceImages.length > 0);
+    if (!canAutoGenerate) {
+      setAutoMode('idle');
+      return;
     }
 
-    // Allow auto-generate only if design type is selected and setup is valid
-    const hasRefImagesForAuto = referenceImages.length > 0;
-    const canAutoGenerate = !!designType && (uploadedImage || hasRefImagesForAuto);
+    const shouldGenerateImages = autoMode === 'prompt-and-generate';
+    setAutoMode('idle'); // Reset immediately to prevent re-triggers
 
-    if (shouldAutoGenerate && !isGeneratingPrompt && !promptPreview.trim() && !isAutoGeneratingRef.current) {
-      if (canAutoGenerate) {
-        isAutoGeneratingRef.current = true;
-        handleGenerateSmartPrompt().finally(() => {
-          isAutoGeneratingRef.current = false;
-        });
-        setShouldAutoGenerate(false);
-        // Only clear source if it's NOT 'surprise' - surprise needs to persist to trigger image generation
-        if (autoGenerateSource !== 'surprise') {
-          setAutoGenerateSource(null);
-        }
-      } else {
-        setShouldAutoGenerate(false);
-        setAutoGenerateSource(null);
+    handleGenerateSmartPrompt().then(() => {
+      if (shouldGenerateImages) {
+        runGeneration(undefined, undefined, true);
       }
-    }
-
-    return () => {
-      if (autoGenerateTimeoutRef.current) {
-        clearTimeout(autoGenerateTimeoutRef.current);
-        autoGenerateTimeoutRef.current = null;
-      }
-    };
-  }, [shouldAutoGenerate, isGeneratingPrompt, promptPreview, handleGenerateSmartPrompt, selectedTags.length, designType, referenceImages.length, autoGenerateSource]);
-
-  // Effect to handle final image generation for Surprise Me flow
-  useEffect(() => {
-    // Only trigger if:
-    // 1. Source is 'surprise'
-    // 2. Prompt is ready (generated)
-    // 3. Not currently generating prompt (allow concurrent image generation)
-    if (autoGenerateSource === 'surprise' && isPromptReady && !isGeneratingPrompt) {
-      // Clear source first to prevent potential loops (although dependence on isPromptReady helps)
-      setAutoGenerateSource(null);
-
-      // Trigger generation
-      runGeneration(undefined, undefined, true);
-    }
-  }, [autoGenerateSource, isPromptReady, isGeneratingPrompt, runGeneration]);
+    });
+  }, [autoMode, isGeneratingPrompt, designType, uploadedImage, referenceImages.length, handleGenerateSmartPrompt, runGeneration]);
 
   const displayBrandingTags = [...new Set([...AVAILABLE_BRANDING_TAGS, ...selectedBrandingTags])];
   const displaySuggestedTags = [...new Set([...suggestedTags, ...selectedTags])];
@@ -2699,32 +2678,26 @@ Generate the new mockup image with the requested changes applied.`;
           onImageUpload={handleImageUpload}
         />
       ) : (
-        <div className="h-full w-full pt-12 md:pt-14 overflow-hidden bg-background">
-          <a
-            href="#mockup-main-content"
-            className="absolute -top-12 left-4 z-[100] px-4 py-2 bg-brand-cyan text-black font-mono text-sm rounded-md transition-top duration-200 focus:top-4 focus:outline-none focus:ring-2 focus:ring-brand-cyan/50"
-          >
-            {t('mockup.skipToContent') || 'Skip to main content'}
-          </a>
+        <div className="h-full w-full pt-12 md:pt-14 bg-background">
           <div className={cn(
-            "flex h-full transition-all duration-500",
+            "flex h-full transition-all duration-300",
             isSetupMode ? "flex-col items-center justify-center p-4 md:p-8" : "flex-row"
           )}>
 
             {/* Sidebar Orchestrator Container */}
             <div className={cn(
-              "z-30 transition-all duration-500 ease-in-out",
+              "z-30 transition-all duration-300 ease-in-out",
               isSetupMode ? "w-full" : [
                 "fixed inset-0 lg:relative lg:inset-auto",
                 isSidebarVisibleMobile ? "flex items-center justify-center bg-background/95 backdrop-blur-md" : "hidden lg:flex lg:items-center lg:justify-center",
-                isSidebarCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none" : "lg:w-auto lg:opacity-100"
+                isSidebarCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none" : "lg:w-auto lg:opacity-300"
               ]
             )}>
               <SidebarOrchestrator
                 sidebarWidth={sidebarWidth}
                 sidebarRef={sidebarRef}
                 onSidebarWidthChange={setSidebarWidth}
-                onSurpriseMe={handleSurpriseMe}
+                onSurpriseMe={handleSurpriseMeWithDice}
                 onImageUpload={handleImageUpload}
                 onReplaceImage={handleReplaceImage}
                 onReferenceImagesChange={setReferenceImages}
@@ -2739,22 +2712,20 @@ Generate the new mockup image with the requested changes applied.`;
                 onAnalyze={handleAnalyzeButtonClick}
                 generateOutputsButtonRef={generateOutputsButtonRef}
                 authenticationRequiredMessage={t('messages.authenticationRequired')}
+                isPromptReady={isPromptReady}
               />
             </div>
 
             {/* Dashboard Main Area */}
             {isDashboardMode && (
               <main id="mockup-main-content" className={cn(
-                "flex-1 min-w-0 h-full relative overflow-hidden transition-all duration-500",
-                "p-2 md:p-6 lg:p-8 custom-scrollbar",
+                "flex-1 min-w-0 h-full relative overflow-hidden transition-all duration-300 flex flex-col",
                 isSidebarCollapsed && "lg:pl-16 shadow-[inset_20px_0_30px_-20px_rgba(0,0,0,0.3)]"
               )}>
 
                 {/* Desktop Sidebar Toggle - PanelLeftOpen when collapsed (expand), X when expanded (close) */}
                 <div className="hidden lg:block absolute left-4 top-6 z-40">
-                  <Button
-                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                    variant="ghost"
+                  <Button variant="ghost" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     size="icon"
                     className="w-10 h-10 rounded-xl bg-neutral-900/50 backdrop-blur-md border border-white/5 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan shadow-xl transition-all group"
                     title={isSidebarCollapsed ? (t('mockup.openSidebar') || 'Abrir barra lateral') : (t('mockup.closeSidebar') || 'Fechar barra lateral')}
@@ -2762,32 +2733,15 @@ Generate the new mockup image with the requested changes applied.`;
                     {isSidebarCollapsed ? (
                       <PanelLeftOpen className="h-5 w-5 group-hover:scale-110 transition-transform" />
                     ) : (
-                      <X className="h-5 w-5 transition-transform duration-500" />
+                      <X className="h-5 w-5 transition-transform duration-300" />
                     )}
                   </Button>
                 </div>
 
-                {/* Mobile Sidebar Toggle - only when floating bar is hidden (bar has its own expand btn) */}
-                {!isSidebarVisibleMobile && !((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed) && (
-                  <div className="lg:hidden fixed bottom-6 left-4 z-50">
-                    <Button
-                      onClick={() => setIsSidebarVisibleMobile(true)}
-                      variant="default"
-                      size="icon"
-                      className="w-12 h-12 rounded-full bg-brand-cyan text-black shadow-2xl shadow-brand-cyan/20 hover:scale-110 active:scale-95 transition-all"
-                      title={t('mockup.openSidebar') || 'Abrir barra lateral'}
-                    >
-                      <PanelLeftOpen className="h-6 w-6" />
-                    </Button>
-                  </div>
-                )}
-
                 {/* Top Action Bar (Mobile Only - Closes Sidebar) */}
                 {isSidebarVisibleMobile && (
                   <div className="lg:hidden fixed top-6 right-6 z-50 mt-[30px]">
-                    <Button
-                      onClick={() => setIsSidebarVisibleMobile(false)}
-                      variant="outline"
+                    <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(false)}
                       size="icon"
                       className="w-10 h-10 rounded-full bg-neutral-900 shadow-xl border-white/10"
                     >
@@ -2796,34 +2750,84 @@ Generate the new mockup image with the requested changes applied.`;
                   </div>
                 )}
 
-                {/* Content Rendering */}
-                <div className="h-full w-full min-w-0 animate-fade-in-up overflow-hidden">
-                  <MockupDisplay
-                    mockups={mockups}
-                    isLoading={isLoading}
-                    isSidebarCollapsed={isSidebarCollapsed}
-                    onRedraw={handleRedrawClick}
-                    onView={handleOpenFullScreen}
-                    onNewAngle={handleNewAngleFromOutput}
-                    onNewBackground={handleNewBackgroundFromOutput}
-                    onReImagine={handleReImagineFromOutput}
-                    onSave={handleSaveMockup}
-                    savedIndices={savedIndices}
-                    savedMockupIds={savedMockupIds}
-                    onToggleLike={handleToggleLike}
-                    likedIndices={mockupLikedStatus}
-                    onRemove={handleRemoveMockup}
-                    prompt={promptPreview}
-                    designType={designType || undefined}
-                    tags={selectedTags}
-                    brandingTags={selectedBrandingTags}
-                    aspectRatio={aspectRatio as '16:9' | '4:3' | '1:1'}
-                    editButtonsDisabled={isEditOperationDisabled}
-                    creditsPerOperation={creditsNeededForEdit}
-                  />
+                <div className="flex-1 min-h-0 w-full relative p-2 md:p-6 lg:p-8">
+                  {/* Content Rendering */}
+                  <div className="h-full w-full min-w-0 animate-fade-in-up overflow-hidden">
+                    <MockupDisplay
+                      mockups={mockups}
+                      isLoading={isLoading}
+                      isSidebarCollapsed={isSidebarCollapsed}
+                      onRedraw={handleRedrawClick}
+                      onView={handleOpenFullScreen}
+                      onNewAngle={handleNewAngleFromOutput}
+                      onNewBackground={handleNewBackgroundFromOutput}
+                      onReImagine={handleReImagineFromOutput}
+                      onSave={handleSaveMockup}
+                      savedIndices={savedIndices}
+                      savedMockupIds={savedMockupIds}
+                      onToggleLike={handleToggleLike}
+                      likedIndices={mockupLikedStatus}
+                      onRemove={handleRemoveMockup}
+                      prompt={promptPreview}
+                      designType={designType || undefined}
+                      tags={selectedTags}
+                      brandingTags={selectedBrandingTags}
+                      aspectRatio={aspectRatio as '16:9' | '4:3' | '1:1'}
+                      editButtonsDisabled={isEditOperationDisabled}
+                      creditsPerOperation={creditsNeededForEdit}
+                    />
+                  </div>
                 </div>
               </main>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Global Floating Control Bar (Dashboard Mode) */}
+      {isDashboardMode && (hasAnalyzed || shouldShowGenerateButton) && (
+        <div className="fixed bottom-10 left-0 right-0 z-[100] px-4 pointer-events-none flex justify-center">
+          <div className="pointer-events-auto flex items-center gap-3 animate-in fade-in slide-in-from-bottom-8 duration-500">
+            {/* Mobile Sidebar Shortcut */}
+            {!isSidebarVisibleMobile && (
+              <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(true)}
+                size="icon"
+                className="lg:hidden shrink-0 w-12 h-12 rounded-2xl border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl hover:bg-neutral-800 hover:border-brand-cyan/40 text-neutral-400 hover:text-brand-cyan transition-all group"
+                title={t('mockup.openSidebar') || 'Abrir barra lateral'}
+              >
+                <PanelLeftOpen className="h-6 w-6 group-hover:scale-110 transition-all" />
+              </Button>
+            )}
+
+            <div className="w-auto max-w-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl relative">
+              <SurpriseMeControl
+                onSurpriseMe={handleSurpriseMeWithDice}
+                isGeneratingPrompt={isGeneratingPrompt}
+                isDiceAnimating={isDiceAnimating}
+                isSurpriseMeMode={isSurpriseMeMode}
+                setIsSurpriseMeMode={setIsSurpriseMeMode}
+                autoGenerate={autoGenerate}
+                setAutoGenerate={setAutoGenerate}
+                selectedModel={selectedModel}
+                mockupCount={mockupCount}
+                resolution={resolution}
+                showBackground={true}
+                onGeneratePrompt={handleGenerateSmartPrompt}
+                onGenerateOutputs={handleGenerateClick}
+                isGenerateDisabled={isGenerateDisabled}
+                isGeneratingOutputs={isLoading.some(Boolean)}
+                isPromptReady={isPromptReady}
+                setSelectedModel={setSelectedModel}
+                imageProvider={imageProvider}
+                setImageProvider={setImageProvider}
+                uploadedImage={uploadedImage}
+                setMockupCount={setMockupCount}
+                setResolution={setResolution}
+                aspectRatio={aspectRatio}
+                setAspectRatio={setAspectRatio}
+                showGenerateButtons={true}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -2859,48 +2863,6 @@ Generate the new mockup image with the requested changes applied.`;
         />
       )}
 
-      {/* Floating SurpriseMeControl (mobile only, when sidebar hidden) */}
-      {!isSidebarVisibleMobile && ((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed) && (
-        <div className="fixed bottom-0 right-0 left-0 z-[60] lg:hidden animate-in fade-in slide-in-from-bottom-4 duration-300 bg-background px-4 md:px-6">
-          <div className="flex items-center gap-2 w-full">
-            <Button
-              onClick={() => setIsSidebarVisibleMobile(true)}
-              variant="outline"
-              size="icon"
-              className="shrink-0 w-10 h-10 rounded-xl border-white/10 bg-neutral-900/80 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan"
-              title={t('mockup.openSidebar') || 'Abrir barra lateral'}
-            >
-              <PanelLeftOpen className="h-5 w-5" />
-            </Button>
-            <div className="flex-1 min-w-0">
-              <SurpriseMeControl
-                onSurpriseMe={handleSurpriseMeWithDice}
-                isGeneratingPrompt={isGeneratingPrompt}
-                isDiceAnimating={isDiceAnimatingFloating}
-                isSurpriseMeMode={isSurpriseMeMode}
-                setIsSurpriseMeMode={setIsSurpriseMeMode}
-                autoGenerate={autoGenerateFloating}
-                setAutoGenerate={setAutoGenerateFloating}
-                selectedModel={selectedModel}
-                setSelectedModel={setSelectedModel}
-                imageProvider={imageProvider}
-                setImageProvider={setImageProvider}
-                mockupCount={mockupCount}
-                resolution={resolution}
-                showBackground
-                containerClassName="shadow-lg !pb-0 rounded-b-none"
-                onGeneratePrompt={handleGenerateSmartPrompt}
-                onGenerateOutputs={handleGenerateClick}
-                isGenerateDisabled={isGenerateDisabled}
-                isGeneratingOutputs={isLoading.some(Boolean)}
-                isPromptReady={isPromptReady}
-                showGenerateButtons
-                uploadedImage={uploadedImage}
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Confirmation & Settings Modals */}
       {showUnsavedDialog && unsavedDialogConfig && (

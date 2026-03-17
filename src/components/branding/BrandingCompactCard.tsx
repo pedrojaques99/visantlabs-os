@@ -1,6 +1,8 @@
 import React from 'react';
 import { useTheme } from '@/hooks/useTheme';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
+import { GlassPanel } from '@/components/ui/GlassPanel';
+import { cn } from '@/lib/utils';
 
 interface BrandingCompactCardProps {
   stepId: number;
@@ -19,12 +21,14 @@ export const BrandingCompactCard: React.FC<BrandingCompactCardProps> = ({
 }) => {
   const { theme } = useTheme();
   return (
-    <div
+    <GlassPanel
       onClick={onClick}
-      className={`aspect-square border rounded-xl p-3 md:p-4 hover:border-[brand-cyan]/50 transition-all duration-200 cursor-pointer group relative animate-fade-in-down flex flex-col items-center justify-center w-1/2 md:max-w-[150px] ${theme === 'dark'
-        ? 'bg-[#141414] border-neutral-800/60'
-        : 'bg-white border-neutral-300'
-        }`}
+      className={cn(
+        "aspect-square hover:border-brand-cyan/50 transition-all duration-200 cursor-pointer group relative animate-fade-in-down flex flex-col items-center justify-center w-1/2 md:max-w-[150px]",
+        "border-white/5",
+        isGenerating && "opacity-50"
+      )}
+      padding="sm"
     >
       <div className="text-2xl md:text-3xl mb-2 transition-transform duration-200">
         {emoji}
@@ -39,7 +43,7 @@ export const BrandingCompactCard: React.FC<BrandingCompactCardProps> = ({
           <SkeletonLoader height="1rem" className="w-3/4" />
         </div>
       )}
-    </div>
+    </GlassPanel>
   );
 };
 

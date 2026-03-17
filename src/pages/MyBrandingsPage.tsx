@@ -15,9 +15,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../components/ui/BreadcrumbWithBack";
+import { GlassPanel } from '../components/ui/GlassPanel';
+import { PremiumButton } from '../components/ui/PremiumButton';
 import { toast } from 'sonner';
 import { FileText, Calendar, Eye, Trash2, FilePenLine } from 'lucide-react';
 import { SEO } from '../components/SEO';
+import { Button } from '@/components/ui/button'
 
 export const MyBrandingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -105,7 +108,6 @@ export const MyBrandingsPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
         </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="space-y-4">
@@ -130,7 +132,6 @@ export const MyBrandingsPage: React.FC = () => {
       />
       <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
-          <GridDotsBackground />
         </div>
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
           {/* Breadcrumb with Back Button */}
@@ -167,13 +168,12 @@ export const MyBrandingsPage: React.FC = () => {
                   : `${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`}
               </p>
             </div>
-            <button
-              onClick={() => navigate('/branding-machine')}
+            <Button variant="ghost" onClick={() => navigate('/branding-machine')}
               className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer flex-shrink-0"
             >
               <FilePenLine className="h-4 w-4" />
               {t('branding.myBrandings.createNew') || 'Create New'}
-            </button>
+            </Button>
           </div>
 
           {/* Projects Grid */}
@@ -186,20 +186,21 @@ export const MyBrandingsPage: React.FC = () => {
               <p className="text-sm text-neutral-600 font-mono mb-6">
                 {t('branding.myBrandings.emptyDescription') || 'Create your first branding project to see it here.'}
               </p>
-              <button
+              <PremiumButton
                 onClick={() => navigate('/branding-machine')}
-                className="px-6 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
+                className="max-w-xs h-12"
+                icon={FilePenLine}
               >
-                <FilePenLine className="h-4 w-4" />
                 {t('branding.myBrandings.createFirst') || 'Create Your First Project'}
-              </button>
+              </PremiumButton>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {projects.map((project) => (
-                <div
+                <GlassPanel
                   key={project._id}
-                  className="bg-[#141414] border border-neutral-800/60 rounded-md p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer"
+                  padding="none"
+                  className="p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer bg-[#141414]"
                   onClick={() => handleView(project)}
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -222,25 +223,23 @@ export const MyBrandingsPage: React.FC = () => {
                   </p>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleView(project);
-                      }}
+                    <Button variant="ghost" onClick={(e) => {
+                      e.stopPropagation();
+                      handleView(project);
+                    }}
                       className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Eye className="h-4 w-4" />
                       {t('branding.myBrandings.view') || 'View'}
-                    </button>
-                    <button
-                      onClick={(e) => handleDeleteClick(project._id, e)}
+                    </Button>
+                    <Button variant="ghost" onClick={(e) => handleDeleteClick(project._id, e)}
                       disabled={deletingId === project._id}
                       className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
+                    </Button>
                   </div>
-                </div>
+                </GlassPanel>
               ))}
             </div>
           )}

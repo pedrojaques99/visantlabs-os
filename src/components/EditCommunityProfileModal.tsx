@@ -8,6 +8,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
+import { MicroTitle } from './ui/MicroTitle';
 
 export interface EditCommunityProfileModalProps {
   isOpen: boolean;
@@ -191,18 +192,18 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
           <h2 className="text-xl font-semibold text-neutral-200 font-manrope tracking-tight">
             Edit Community Profile
           </h2>
-          <button
+          <Button variant="ghost"
             onClick={onClose}
-            className="p-2 text-neutral-500 hover:text-white transition-all hover:bg-neutral-800/50 rounded-lg"
+            className="p-2 text-neutral-500 hover:text-white transition-all hover:bg-neutral-800/50 rounded-md"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Content */}
         <div className="p-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-sm text-red-400 font-mono flex items-center gap-2">
+            <div className="bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono flex items-center gap-2">
               <span className="shrink-0">⚠</span>
               <span>{error}</span>
             </div>
@@ -210,23 +211,23 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Cover Image */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
+            <MicroTitle as="label" className="ml-1 uppercase">
               Cover Image
-            </label>
+            </MicroTitle>
             <div className="relative w-full h-40 rounded-xl overflow-hidden bg-neutral-900/50 border border-neutral-800/60 group">
               {coverImageUrl ? (
                 <img
                   src={coverImageUrl}
                   alt="Cover"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                   <ImageIcon size={32} className="text-neutral-700" strokeWidth={1} />
-                  <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-tight">No cover image</span>
+                  <MicroTitle className="text-[10px] text-neutral-600 tracking-tight">No cover image</MicroTitle>
                 </div>
               )}
-              <input
+              <Input
                 ref={coverFileInputRef}
                 type="file"
                 accept="image/*"
@@ -234,20 +235,20 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                 disabled={isUploadingCover}
                 className="hidden"
               />
-              <button
+              <Button variant="ghost"
                 onClick={handleCoverClick}
                 disabled={isUploadingCover}
-                className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm disabled:opacity-50"
+                className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 opacity-0 group-hover:opacity-300 transition-all duration-300 backdrop-blur-sm disabled:opacity-50"
               >
                 {isUploadingCover ? (
                   <GlitchLoader size={24} />
                 ) : (
                   <div className="flex flex-col items-center gap-2">
                     <Camera size={24} className="text-neutral-300" />
-                    <span className="text-[10px] font-mono text-neutral-300 uppercase tracking-widest">Change Cover</span>
+                    <MicroTitle className="text-[10px] text-neutral-300">Change Cover</MicroTitle>
                   </div>
                 )}
-              </button>
+              </Button>
             </div>
             <div className="flex items-center gap-2 ml-1">
               <Badge variant="outline" className="text-[9px] uppercase tracking-tighter py-0">16:9 Aspect</Badge>
@@ -257,9 +258,9 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Username */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
+            <MicroTitle as="label" className="ml-1 uppercase">
               Username
-            </label>
+            </MicroTitle>
             <Input
               type="text"
               value={username}
@@ -274,9 +275,9 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Bio */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
+            <MicroTitle as="label" className="ml-1 uppercase">
               Bio
-            </label>
+            </MicroTitle>
             <Textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -287,16 +288,16 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Social Links */}
           <div className="space-y-6">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
+            <MicroTitle as="label" className="ml-1 uppercase">
               Social Media Links
-            </label>
+            </MicroTitle>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] text-neutral-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
-                  <Instagram size={14} className="text-pink-500" />
+                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                  <Instagram size={14} className="text-pink-500 uppercase" />
                   Instagram
-                </label>
+                </MicroTitle>
                 <Input
                   type="url"
                   value={instagram}
@@ -307,10 +308,10 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-neutral-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
-                  <Youtube size={14} className="text-red-500" />
+                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                  <Youtube size={14} className="text-red-500 uppercase" />
                   YouTube
-                </label>
+                </MicroTitle>
                 <Input
                   type="url"
                   value={youtube}
@@ -321,10 +322,10 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-neutral-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
-                  <Twitter size={14} className="text-blue-400" />
+                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                  <Twitter size={14} className="text-blue-400 uppercase" />
                   X (Twitter)
-                </label>
+                </MicroTitle>
                 <Input
                   type="url"
                   value={x}
@@ -335,10 +336,10 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-neutral-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
-                  <Globe size={14} className="text-brand-cyan" />
+                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                  <Globe size={14} className="text-brand-cyan uppercase" />
                   Website
-                </label>
+                </MicroTitle>
                 <Input
                   type="url"
                   value={website}

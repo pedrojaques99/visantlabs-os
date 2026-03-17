@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData, ImageNodeData, OutputNodeData } from '@/types/reactFlow';
 import type { DrawingStroke } from './useCanvasDrawing';
+import type { TimerRef } from '@/types/types';
 import { toast } from 'sonner';
 import { canvasApi } from '@/services/canvasApi';
 import { getImageUrl } from '@/utils/imageUtils';
@@ -26,8 +27,8 @@ export const useCanvasKeyboard = (
   addPromptNode?: (customPosition?: { x: number; y: number }) => string | undefined,
   addUpscaleNode?: (customPosition?: { x: number; y: number }) => string | undefined
 ) => {
-  const logTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const lifecycleLogTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const logTimeoutRef = useRef<TimerRef | undefined>(undefined);
+  const lifecycleLogTimeoutRef = useRef<TimerRef | undefined>(undefined);
   const lastLifecycleLogRef = useRef<string>('');
 
   // Debounced lifecycle logger
