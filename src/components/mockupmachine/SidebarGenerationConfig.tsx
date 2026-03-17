@@ -31,6 +31,7 @@ interface SidebarGenerationConfigProps {
     onReplaceImage?: (image: UploadedImage) => void;
     onReferenceImagesChange: (images: UploadedImage[]) => void;
     authenticationRequiredMessage: string;
+    isPromptReady: boolean;
 }
 
 export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = ({
@@ -45,6 +46,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
     onReplaceImage,
     onReferenceImagesChange,
     authenticationRequiredMessage,
+    isPromptReady,
 }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
@@ -71,8 +73,6 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
         isSmartPromptActive,
         setIsSmartPromptActive,
         setIsPromptManuallyEdited,
-        isPromptReady,
-        setIsPromptReady,
         isGeneratingPrompt,
         isLoading,
         hasGenerated,
@@ -214,9 +214,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
             setIsSmartPromptActive(false);
         }
         setIsPromptManuallyEdited(true);
-        if (newValue.trim().length > 0 && isPromptReady) {
-            setIsPromptReady(true);
-        }
+        // isPromptReady is derived - no need to set it manually
     };
 
     const handleSuggestionClick = (suggestion: string) => {

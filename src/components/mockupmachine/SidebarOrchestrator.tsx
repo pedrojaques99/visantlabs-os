@@ -33,6 +33,7 @@ interface SidebarOrchestratorProps {
 
   // Specific UI props
   authenticationRequiredMessage: string;
+  isPromptReady: boolean;
 }
 
 export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
@@ -54,7 +55,8 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   onGenerateSuggestion,
   onAnalyze,
   generateOutputsButtonRef,
-  authenticationRequiredMessage
+  authenticationRequiredMessage,
+  isPromptReady
 }) => {
   const { t } = useTranslation();
   const {
@@ -138,6 +140,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
               onReplaceImage={onReplaceImage}
               onReferenceImagesChange={onReferenceImagesChange}
               authenticationRequiredMessage={authenticationRequiredMessage}
+              isPromptReady={isPromptReady}
             />
           )}
         </div>

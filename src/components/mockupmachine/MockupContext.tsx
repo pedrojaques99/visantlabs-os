@@ -53,7 +53,7 @@ interface MockupContextState {
     additionalPrompt: string;
     isSmartPromptActive: boolean;
     isPromptManuallyEdited: boolean;
-    isPromptReady: boolean;
+    // isPromptReady is now derived in MockupMachinePage via useMemo
     promptSuggestions: string[];
     isSuggestingPrompts: boolean;
 
@@ -123,7 +123,6 @@ interface MockupContextActions {
     setAdditionalPrompt: Dispatch<SetStateAction<string>>;
     setIsSmartPromptActive: Dispatch<SetStateAction<boolean>>;
     setIsPromptManuallyEdited: Dispatch<SetStateAction<boolean>>;
-    setIsPromptReady: Dispatch<SetStateAction<boolean>>;
     setPromptSuggestions: Dispatch<SetStateAction<string[]>>;
     setIsSuggestingPrompts: Dispatch<SetStateAction<boolean>>;
     setCustomBrandingInput: Dispatch<SetStateAction<string>>;
@@ -217,7 +216,6 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [additionalPrompt, setAdditionalPrompt] = useState('');
     const [isSmartPromptActive, setIsSmartPromptActive] = useState(false);
     const [isPromptManuallyEdited, setIsPromptManuallyEdited] = useState(false);
-    const [isPromptReady, setIsPromptReady] = useState(false);
     const [promptSuggestions, setPromptSuggestions] = useState<string[]>([]);
     const [isSuggestingPrompts, setIsSuggestingPrompts] = useState(false);
     const [customBrandingInput, setCustomBrandingInput] = useState('');
@@ -269,7 +267,6 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setAdditionalPrompt('');
         setIsSmartPromptActive(false);
         setIsPromptManuallyEdited(false);
-        setIsPromptReady(false);
         setCustomBrandingInput('');
         setCustomCategoryInput('');
         setMockups(Array(mockupCount).fill(null));
@@ -349,7 +346,6 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         additionalPrompt, setAdditionalPrompt,
         isSmartPromptActive, setIsSmartPromptActive,
         isPromptManuallyEdited, setIsPromptManuallyEdited,
-        isPromptReady, setIsPromptReady,
         promptSuggestions, setPromptSuggestions,
         isSuggestingPrompts, setIsSuggestingPrompts,
         customBrandingInput, setCustomBrandingInput,
@@ -380,7 +376,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         suggestedColors, isAdvancedOpen,
         isAllCategoriesOpen, generateText, withHuman, enhanceTexture, removeText, promptPreview,
         negativePrompt, additionalPrompt, isSmartPromptActive, isPromptManuallyEdited,
-        isPromptReady, promptSuggestions, isSuggestingPrompts, customBrandingInput,
+        promptSuggestions, isSuggestingPrompts, customBrandingInput,
         customCategoryInput, customLocationInput, customAngleInput, customLightingInput,
         customEffectInput, customMaterialInput, colorInput, isValidColor,
         fullScreenImageIndex, mockupCount, isSurpriseMeModeState, surpriseMePool,

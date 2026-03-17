@@ -106,7 +106,7 @@ const MockupMachinePageContent: React.FC = () => {
     hasGenerated, setHasGenerated,
     isSmartPromptActive, setIsSmartPromptActive,
     isPromptManuallyEdited, setIsPromptManuallyEdited,
-    isPromptReady, setIsPromptReady,
+    // isPromptReady is now derived locally via useMemo
     isAdvancedOpen, setIsAdvancedOpen,
     isAllCategoriesOpen, setIsAllCategoriesOpen,
     selectedLocationTags, setSelectedLocationTags,
@@ -153,9 +153,7 @@ const MockupMachinePageContent: React.FC = () => {
 
   const promptWasReadyBeforeEditRef = useRef<boolean>(false);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [shouldAutoGenerate, setShouldAutoGenerate] = useState(false);
-  const [autoGenerateSource, setAutoGenerateSource] = useState<'surprise' | 'angles' | 'environments' | 'surprise-prompt-only' | null>(null);
-  const [isAutoGenerateMode, setIsAutoGenerateMode] = useState(false);
+  const [autoMode, setAutoMode] = useState<'idle' | 'prompt-only' | 'prompt-and-generate'>('idle');
   const [savedIndices, setSavedIndices] = useState<Set<number>>(new Set());
   const [mockupLikedStatus, setMockupLikedStatus] = useState<Map<number, boolean>>(new Map()); // Map index -> isLiked
   const [savedMockupIds, setSavedMockupIds] = useState<Map<number, string>>(new Map()); // Map index -> mockup ID
@@ -167,10 +165,9 @@ const MockupMachinePageContent: React.FC = () => {
   useEffect(() => {
     const handler = () => {
       // Invalidate current prompt so it regenerates based on new tags
-      setIsPromptReady(false);
       setPromptPreview('');
-      setShouldAutoGenerate(true);
-      setAutoGenerateSource('surprise-prompt-only');
+      promptTagsSnapshotRef.current = null;
+      setAutoMode('prompt-only');
     };
 
     if (typeof window !== 'undefined') {
@@ -207,8 +204,7 @@ const MockupMachinePageContent: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const analysisTimeoutRef = useRef<number | null>(null);
   const prevBrandingTagsLength = useRef(0);
-  const autoGenerateTimeoutRef = useRef<number | null>(null);
-  const isAutoGeneratingRef = useRef(false);
+  const promptTagsSnapshotRef = useRef<string | null>(null);
   const generateOutputsButtonRef = useRef<HTMLButtonElement>(null);
   const hasRestoredStateRef = useRef(false);
   const isRestoringRef = useRef(true); // true until first restoration attempt completes
@@ -321,7 +317,7 @@ const MockupMachinePageContent: React.FC = () => {
 
     // Reset prompt ready status when model changes (may need regeneration)
     if (promptPreview.trim()) {
-      setIsPromptReady(false);
+      promptTagsSnapshotRef.current = null;
       toast.info(t('messages.modelChanged'), { duration: 3000 });
     }
   }, [selectedModel, subscriptionStatus, promptPreview, onCreditPackagesModalOpen]);
@@ -434,6 +430,34 @@ const MockupMachinePageContent: React.FC = () => {
     suggestedColors,
     instructions,
   ]);
+
+  // Fast hash for tag state comparison (avoids JSON.stringify)
+  const getTagsHash = useCallback(() => {
+    return [
+      selectedTags.length,
+      selectedBrandingTags.length,
+      selectedLocationTags.length,
+      selectedAngleTags.length,
+      selectedLightingTags.length,
+      selectedEffectTags.length,
+      selectedColors.length,
+      designType || '',
+      aspectRatio,
+      generateText ? '1' : '0',
+      withHuman ? '1' : '0',
+    ].join('|');
+  }, [
+    selectedTags.length, selectedBrandingTags.length, selectedLocationTags.length,
+    selectedAngleTags.length, selectedLightingTags.length, selectedEffectTags.length,
+    selectedColors.length, designType, aspectRatio, generateText, withHuman
+  ]);
+
+  // Derived: prompt is ready if we have a prompt and tags haven't changed since generation
+  const isPromptReady = useMemo(() => {
+    if (!promptPreview.trim()) return false;
+    if (!promptTagsSnapshotRef.current) return false;
+    return promptTagsSnapshotRef.current === getTagsHash();
+  }, [promptPreview, getTagsHash]);
 
   const buildPrompt = useCallback(() => {
     const baseQuality = "A photorealistic, super-detailed";
@@ -591,9 +615,9 @@ const MockupMachinePageContent: React.FC = () => {
 
       setPromptPreview(finalPrompt);
       generatedSmartPromptRef.current = finalPrompt; // Store for use in auto-generate
+      promptTagsSnapshotRef.current = getTagsHash(); // Save snapshot for isPromptReady derivation
       setIsSmartPromptActive(true);
       setIsPromptManuallyEdited(false);
-      setIsPromptReady(true);
       // Track that prompt is ready so manual edits can still allow direct generation
       promptWasReadyBeforeEditRef.current = true;
 
@@ -647,28 +671,8 @@ const MockupMachinePageContent: React.FC = () => {
     buildPrompt,
     t,
     isGeneratingPrompt,
-    referenceImages
-  ]);
-
-  useEffect(() => {
-    // Tags changed - reset prompt ready state and track that it was reset
-    setIsPromptReady(false);
-    promptWasReadyBeforeEditRef.current = false;
-  }, [
-    JSON.stringify(selectedTags),
-    JSON.stringify(selectedBrandingTags),
-    designType,
-    uploadedImage?.base64 ? 'hasImage' : 'noImage',
-    JSON.stringify(selectedLocationTags),
-    JSON.stringify(selectedAngleTags),
-    JSON.stringify(selectedLightingTags),
-    JSON.stringify(selectedEffectTags),
-    JSON.stringify(selectedColors),
-    aspectRatio,
-    generateText,
-    withHuman,
-    enhanceTexture,
-    instructions
+    referenceImages,
+    getTagsHash
   ]);
 
 
@@ -708,7 +712,7 @@ const MockupMachinePageContent: React.FC = () => {
     setPromptSuggestions([]);
     setPromptPreview('');
     setIsPromptManuallyEdited(false);
-    setIsPromptReady(false);
+    promptTagsSnapshotRef.current = null;
     setMockups(Array(mockupCount).fill(null));
     setIsLoading(Array(mockupCount).fill(false));
     setReferenceImages([]);
@@ -990,8 +994,8 @@ const MockupMachinePageContent: React.FC = () => {
     }
 
     setTimeout(() => {
-      setShouldAutoGenerate(true);
-      setAutoGenerateSource('angles');
+      promptTagsSnapshotRef.current = null;
+      setAutoMode('prompt-and-generate');
     }, 300);
   }, [selectedTags.length, selectedAngleTags]);
 
@@ -1015,8 +1019,8 @@ const MockupMachinePageContent: React.FC = () => {
     }
 
     setTimeout(() => {
-      setShouldAutoGenerate(true);
-      setAutoGenerateSource('environments');
+      promptTagsSnapshotRef.current = null;
+      setAutoMode('prompt-and-generate');
     }, 300);
   }, [selectedTags.length, selectedLocationTags]);
 
@@ -1090,11 +1094,8 @@ const MockupMachinePageContent: React.FC = () => {
       setIsSmartPromptActive(false);
     }
     setIsPromptManuallyEdited(true);
-    // If prompt is manually edited and was ready before (tags haven't changed), keep it ready
-    // This allows direct generation after manual editing if tags haven't changed
-    if (newValue.trim().length > 0 && promptWasReadyBeforeEditRef.current) {
-      setIsPromptReady(true);
-    }
+    // isPromptReady is derived - if tags haven't changed since last prompt generation,
+    // it will remain true even after manual edits
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -1783,7 +1784,7 @@ const MockupMachinePageContent: React.FC = () => {
 
     // Reset prompt and manual edit state so auto-generation can proceed
     setPromptPreview('');
-    setIsPromptReady(false);
+    promptTagsSnapshotRef.current = null;
     setIsPromptManuallyEdited(false);
 
     setIsAllCategoriesOpen(true);
@@ -1796,14 +1797,8 @@ const MockupMachinePageContent: React.FC = () => {
     // Always generate prompt automatically
     // The autoGenerate checkbox only controls if outputs are also generated automatically
     setTimeout(() => {
-      setShouldAutoGenerate(true);
-      if (autoGenerate) {
-        // Auto-generate mode: Set tags -> Auto Generate Prompt -> Auto Generate Output
-        setAutoGenerateSource('surprise');
-      } else {
-        // Prompt-only mode: Set tags -> Auto Generate Prompt -> Wait for user
-        setAutoGenerateSource('surprise-prompt-only');
-      }
+      promptTagsSnapshotRef.current = null;
+      setAutoMode(autoGenerate ? 'prompt-and-generate' : 'prompt-only');
     }, 2000); // Increased delay to allow users to see selected tags
   }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups, isSurpriseMeMode, surpriseMePool]);
 
@@ -2559,55 +2554,25 @@ Generate the new mockup image with the requested changes applied.`;
   // const isGenerating = isLoading.some(Boolean); // Removed to allow concurrent operations
   const isGenerating = false; // Always allow interactions that support queuing
 
+  // Unified auto-generate effect: handles both prompt generation and image generation
   useEffect(() => {
-    if (autoGenerateTimeoutRef.current) {
-      clearTimeout(autoGenerateTimeoutRef.current);
-      autoGenerateTimeoutRef.current = null;
+    if (autoMode === 'idle' || isGeneratingPrompt) return;
+
+    const canAutoGenerate = !!designType && (uploadedImage || referenceImages.length > 0);
+    if (!canAutoGenerate) {
+      setAutoMode('idle');
+      return;
     }
 
-    // Allow auto-generate only if design type is selected and setup is valid
-    const hasRefImagesForAuto = referenceImages.length > 0;
-    const canAutoGenerate = !!designType && (uploadedImage || hasRefImagesForAuto);
+    const shouldGenerateImages = autoMode === 'prompt-and-generate';
+    setAutoMode('idle'); // Reset immediately to prevent re-triggers
 
-    if (shouldAutoGenerate && !isGeneratingPrompt && !promptPreview.trim() && !isAutoGeneratingRef.current) {
-      if (canAutoGenerate) {
-        isAutoGeneratingRef.current = true;
-        handleGenerateSmartPrompt().finally(() => {
-          isAutoGeneratingRef.current = false;
-        });
-        setShouldAutoGenerate(false);
-        // Only clear source if it's NOT 'surprise' - surprise needs to persist to trigger image generation
-        if (autoGenerateSource !== 'surprise') {
-          setAutoGenerateSource(null);
-        }
-      } else {
-        setShouldAutoGenerate(false);
-        setAutoGenerateSource(null);
+    handleGenerateSmartPrompt().then(() => {
+      if (shouldGenerateImages) {
+        runGeneration(undefined, undefined, true);
       }
-    }
-
-    return () => {
-      if (autoGenerateTimeoutRef.current) {
-        clearTimeout(autoGenerateTimeoutRef.current);
-        autoGenerateTimeoutRef.current = null;
-      }
-    };
-  }, [shouldAutoGenerate, isGeneratingPrompt, promptPreview, handleGenerateSmartPrompt, selectedTags.length, designType, referenceImages.length, autoGenerateSource]);
-
-  // Effect to handle final image generation for Surprise Me flow
-  useEffect(() => {
-    // Only trigger if:
-    // 1. Source is 'surprise'
-    // 2. Prompt is ready (generated)
-    // 3. Not currently generating prompt (allow concurrent image generation)
-    if (autoGenerateSource === 'surprise' && isPromptReady && !isGeneratingPrompt) {
-      // Clear source first to prevent potential loops (although dependence on isPromptReady helps)
-      setAutoGenerateSource(null);
-
-      // Trigger generation
-      runGeneration(undefined, undefined, true);
-    }
-  }, [autoGenerateSource, isPromptReady, isGeneratingPrompt, runGeneration]);
+    });
+  }, [autoMode, isGeneratingPrompt, designType, uploadedImage, referenceImages.length, handleGenerateSmartPrompt, runGeneration]);
 
   const displayBrandingTags = [...new Set([...AVAILABLE_BRANDING_TAGS, ...selectedBrandingTags])];
   const displaySuggestedTags = [...new Set([...suggestedTags, ...selectedTags])];
@@ -2747,6 +2712,7 @@ Generate the new mockup image with the requested changes applied.`;
                 onAnalyze={handleAnalyzeButtonClick}
                 generateOutputsButtonRef={generateOutputsButtonRef}
                 authenticationRequiredMessage={t('messages.authenticationRequired')}
+                isPromptReady={isPromptReady}
               />
             </div>
 
