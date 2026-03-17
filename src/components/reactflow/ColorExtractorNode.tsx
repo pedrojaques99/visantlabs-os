@@ -64,29 +64,29 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
     if (!file || !nodeData.onUpload) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file', { duration: 3000 });
+      toast.error(t('canvasNodes.imageNode.pleaseSelectImageFile'), { duration: 3000 });
       return;
     }
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024;
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('File size exceeds 10MB limit', { duration: 5000 });
+      toast.error(t('canvasNodes.imageNode.fileSizeExceedsLimitMessage'), { duration: 5000 });
       return;
     }
 
     try {
       const imageData = await fileToBase64(file);
       nodeData.onUpload(id, imageData.base64);
-      toast.success('Image uploaded successfully!', { duration: 2000 });
+      toast.success(t('canvasNodes.imageNode.imageSavedSuccessfully'), { duration: 2000 });
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to process image', { duration: 5000 });
+      toast.error(error?.message || t('canvas.failedToProcessImage'), { duration: 5000 });
       console.error('Failed to process image:', error);
     }
   };
 
   const handleExtract = useCallback(async (isRegeneration = false) => {
     if (!nodeData.onExtract || !imageBase64) {
-      toast.error('Please upload or connect an image first', { duration: 3000 });
+      toast.error(t('canvasNodes.directorNode.connectImageFirst'), { duration: 3000 });
       return;
     }
 
@@ -96,7 +96,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
       try {
         imageForExtraction = await normalizeImageToBase64(imageBase64);
       } catch (error: any) {
-        toast.error('Failed to load image', { duration: 3000 });
+        toast.error(t('canvas.failedToLoadImage'), { duration: 3000 });
         return;
       }
     }
@@ -113,7 +113,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
   const handleCopyColor = useCallback(async (color: string) => {
     try {
       await navigator.clipboard.writeText(color);
-      toast.success(`Copied ${color} to clipboard`, { duration: 2000 });
+      toast.success(t('canvasNodes.chatNode.messageCopied'), { duration: 2000 });
     } catch (error) {
       console.error('Failed to copy color:', error);
     }
@@ -186,7 +186,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         type="target"
         position={Position.Left}
         id="image-input"
-        label="Image"
+        label={t('canvasNodes.imageNode.imageInput')}
         handleType="image"
         style={{ top: '90px' }}
       />
@@ -197,18 +197,18 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         className="node-handle"
       />
 
-      <NodeHeader icon={Palette} title="Color Extractor" />
+      <NodeHeader icon={Palette} title={t('canvasNodes.colorExtractorNode.title') || "Color Extractor"} />
 
       <div className="mb-4">
         <NodeLabel>
-          Image {connectedImage && <span className="text-[10px] text-neutral-500">(connected)</span>}
+          {t('canvasNodes.imageNode.imageInput')} {connectedImage && <span className="text-[10px] text-neutral-500">({t('common.connected')})</span>}
         </NodeLabel>
         {imageUrl ? (
           <div className="relative">
             <div className="relative w-full h-auto min-h-[128px] bg-neutral-900/50 rounded border border-neutral-700/30 overflow-hidden">
               <img
                 src={imageUrl}
-                alt="Image to extract colors from"
+                alt={t('canvasNodes.colorExtractorNode.imageToExtractFrom') || "Image to extract colors from"}
                 className="w-full h-full object-contain p-2"
                 onLoad={(e) => {
                   const img = e.target as HTMLImageElement;
@@ -235,7 +235,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
             />
             <NodeButton onClick={handleUploadClick} className="w-full">
               <UploadCloud size={14} />
-              Upload Image
+              {t('canvasNodes.imageNode.uploadImage')}
             </NodeButton>
           </>
         )}
@@ -250,12 +250,12 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         {isExtracting ? (
           <>
             <GlitchLoader size={14} />
-            Extracting {glitchText}
+            {t('canvasNodes.colorExtractorNode.extracting')} {glitchText}
           </>
         ) : (
           <>
             <Palette size={14} />
-            Extract Colors
+            {t('canvasNodes.colorExtractorNode.extractColors')}
           </>
         )}
       </NodeButton>
@@ -263,7 +263,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
       {extractedColors.length > 0 && (
         <div className="border-t border-neutral-700/30 pt-4 space-y-3">
           <div className="flex items-center justify-between">
-            <NodeLabel className="mb-0">Extracted Colors ({extractedColors.length})</NodeLabel>
+            <NodeLabel className="mb-0">{t('canvasNodes.colorExtractorNode.extractedColors')} ({extractedColors.length})</NodeLabel>
             <NodeButton
               onClick={() => handleExtract(true)}
               disabled={!canExtract}
@@ -272,7 +272,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
               className="px-2"
             >
               <RefreshCw size={12} />
-              Regenerate All
+              {t('canvasNodes.colorExtractorNode.regenerateAll')}
             </NodeButton>
           </div>
 
@@ -282,7 +282,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
                 key={`${color}-${index}`}
                 className="flex items-center gap-2 p-2 bg-neutral-900/50 rounded border border-neutral-700/30 hover:border-[brand-cyan]/50 transition-colors group/color cursor-pointer hover:bg-neutral-800/50 relative"
                 onClick={() => handleCopyColor(color)}
-                title="Click to copy hex code"
+                title={t('canvasNodes.colorExtractorNode.clickToCopy') || "Click to copy hex code"}
               >
                 <div
                   className="w-8 h-8 rounded border border-neutral-700/50 flex-shrink-0"
@@ -326,7 +326,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
               handleRemoveImage();
             }}
             className="bg-red-500/20 hover:bg-red-500/30 text-red-400 backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
-            title="Remove image"
+            title={t('canvasNodes.imageNode.removeImage')}
             onMouseDown={(e) => e.stopPropagation()}
           >
             <X size={12} strokeWidth={2} />

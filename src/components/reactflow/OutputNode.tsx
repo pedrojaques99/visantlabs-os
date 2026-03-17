@@ -141,7 +141,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
       toast.success(t('canvasNodes.outputNode.imageSavedToFavorites'), { duration: 3000 });
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to save image', { duration: 3000 });
+      toast.error(error?.message || t('common.failedToSaveImage'), { duration: 3000 });
       console.error('Failed to save:', error);
     } finally {
       setIsSaving(false);
@@ -202,7 +202,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           mimeType: mimeType,
         };
       } catch (error: any) {
-        toast.error(error?.message || 'Failed to load image for analysis', { duration: 3000 });
+        toast.error(error?.message || t('canvas.failedToLoadImageForAnalysis'), { duration: 3000 });
         console.error('Failed to convert image to base64:', error);
         return;
       }
@@ -236,7 +236,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           toast.success(t('canvasNodes.outputNode.imageDescriptionGenerated'), { duration: 2000 });
         } else {
           // Fallback if node not found
-          toast.error('Failed to find node position');
+          toast.error(t('canvas.sourceNodeNotFound'));
         }
       } else {
         // Fallback to internal update if addTextNode not available
@@ -254,7 +254,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       }
     } catch (error: any) {
       console.error('Failed to describe image:', error);
-      toast.error(error?.message || 'Failed to generate description', { duration: 3000 });
+      toast.error(error?.message || t('canvas.failedToGenerateDescription'), { duration: 3000 });
 
       // Clear loading state on error
       setIsDescribing(false);
@@ -326,18 +326,6 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         />
       )}
       <NodeHandles />
-
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
-            <Maximize2 size={16} className="text-brand-cyan" />
-          </div>
-          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
-            {t('canvasNodes.outputNode.title') || 'Output'}
-          </h3>
-        </div>
-      </div>
 
       <NodeImageContainer className="flex items-center justify-center" style={{ width: '100%', height: '100%', flex: '1 1 0%', minHeight: 0 }}>
         {isVideo && mediaUrl ? (
@@ -427,7 +415,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           <NodePlaceholder
             isLoading={isLoading}
             emptyMessage={t('canvasNodes.outputNode.noOutput')}
-            emptySubmessage="Connect a node to see result"
+            emptySubmessage={t('canvasNodes.outputNode.connectNodeToSeeResult')}
             elapsedTime={isLoading ? elapsedTime : 0}
           />
         )}

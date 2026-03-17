@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { identitySchema } from '@/schemas/brandGuideline.schema';
@@ -75,6 +76,8 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
     { key: 'linkedin', icon: <Linkedin size={14} />, label: 'LinkedIn', value: guideline.identity?.linkedin },
     { key: 'x', icon: <Twitter size={14} />, label: 'X (Twitter)', value: guideline.identity?.x },
   ].filter(link => link.value);
+
+  const primaryLogo = guideline.logos?.find(l => l.variant === 'primary') || guideline.logos?.[0];
 
   return (
     <SectionBlock
@@ -170,36 +173,52 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
           </div>
         ) : (
           <div className="space-y-6 py-4 px-2">
-            <div className="relative">
-              <div className="space-y-2">
-                <h2 className="text-4xl md:text-5xl font-semibold text-white leading-none tracking-tight">
-                  {guideline.identity?.name || guideline.name || 'Company'}
-                </h2>
+            <div className="flex flex-col md:flex-row md:items-start gap-8">
+              {primaryLogo && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center p-4 rounded-3xl bg-neutral-900/50 border border-white/5 shadow-2xl relative group/logo overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-brand-cyan/5 opacity-0 group-hover/logo:opacity-100 transition-opacity" />
+                  <img
+                    src={primaryLogo.url}
+                    alt="Brand Logo"
+                    className="max-w-full max-h-full object-contain filter drop-shadow-lg relative z-10"
+                  />
+                </motion.div>
+              )}
+              <div className="relative flex-1">
+                <div className="space-y-2">
+                  <h2 className="text-4xl md:text-5xl font-semibold text-white leading-none tracking-tight">
+                    {guideline.identity?.name || guideline.name || 'Company'}
+                  </h2>
 
-                <div className="flex flex-wrap items-center gap-4 pt-1">
-                  {(guideline.identity?.tagline || guideline.tagline) && (
-                    <p className="text-[10px] font-mono text-brand-cyan uppercase opacity-80">
-                      {guideline.identity?.tagline || guideline.tagline}
-                    </p>
-                  )}
+                  <div className="flex flex-wrap items-center gap-4 pt-1">
+                    {(guideline.identity?.tagline || guideline.tagline) && (
+                      <p className="text-[10px] font-mono text-brand-cyan uppercase opacity-80">
+                        {guideline.identity?.tagline || guideline.tagline}
+                      </p>
+                    )}
 
-                  {socialLinks.length > 0 && (
-                    <div className="flex items-center gap-3">
-                      <div className="h-3 w-[1px] bg-white/10 mx-1" />
-                      {socialLinks.map((link) => (
-                        <a
-                          key={link.key}
-                          href={link.value?.startsWith('http') ? link.value : `https://${link.value}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-neutral-500 hover:text-white transition-colors p-1 hover:bg-white/5 rounded-md"
-                          title={link.label}
-                        >
-                          {link.icon}
-                        </a>
-                      ))}
-                    </div>
-                  )}
+                    {socialLinks.length > 0 && (
+                      <div className="flex items-center gap-3">
+                        <div className="h-3 w-[1px] bg-white/10 mx-1" />
+                        {socialLinks.map((link) => (
+                          <a
+                            key={link.key}
+                            href={link.value?.startsWith('http') ? link.value : `https://${link.value}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-neutral-500 hover:text-white transition-colors p-1 hover:bg-white/5 rounded-md"
+                            title={link.label}
+                          >
+                            {link.icon}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

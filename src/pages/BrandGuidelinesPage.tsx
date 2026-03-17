@@ -269,14 +269,6 @@ export const BrandGuidelinesPage: React.FC = () => {
                                         <span className="hidden sm:inline text-[10px] uppercase font-bold tracking-widest">Share</span>
                                     </Button>
                                 )}
-                                <Button
-                                    variant="outline"
-                                    onClick={() => handleOpenWizard()}
-                                    className="h-9 px-6 gap-2 bg-brand-cyan/10 border-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan hover:text-black transition-all shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.1)]"
-                                >
-                                    <Plus size={14} />
-                                    <span className="text-[10px] uppercase font-bold tracking-widest">New Guideline</span>
-                                </Button>
                             </div>
                         </div>
 

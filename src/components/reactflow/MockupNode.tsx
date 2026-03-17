@@ -18,8 +18,9 @@ import { NodeContainer } from './shared/NodeContainer';
 import { NodeLabel } from './shared/node-label';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel } from '@/constants/geminiModels';
-import { Textarea } from '@/components/ui/textarea';
+import { NodeHeader } from './shared/node-header';
 import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { applyPresetDataToNodes } from '@/lib/presetImportUtils';
@@ -27,10 +28,15 @@ import { NodeButton } from './shared/node-button';
 import { ModelSelector } from './shared/ModelSelector';
 import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
 import { Input } from '@/components/ui/input'
+import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
+import { useNodes } from '@xyflow/react';
+import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 
 const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
+  const { linkedGuidelineId } = useCanvasHeader();
   const { setNodes } = useReactFlow();
+  const nodes = useNodes();
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [selectedPresetId, setSelectedPresetId] = useState<MockupPresetType | string>(
     (data.selectedPreset as MockupPresetType | string) || 'cap'
@@ -45,8 +51,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
   const [model, setModel] = useState<GeminiModel>(data.model || DEFAULT_MODEL);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(data.aspectRatio || DEFAULT_ASPECT_RATIO);
   const [resolution, setResolution] = useState<Resolution>(data.resolution || '1K');
+  const [isBrandActive, setIsBrandActive] = useState<boolean>(data.isBrandActive !== undefined ? data.isBrandActive : (!!(data.connectedLogo || data.connectedIdentity || data.connectedTextDirection)));
   const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [isColorSectionOpen, setIsColorSectionOpen] = useState(false);
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const userMockups = (data as any).userMockups as Mockup[] | undefined;
 
@@ -146,6 +154,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     if (data.model) setModel(data.model);
     if (data.aspectRatio) setAspectRatio(data.aspectRatio);
     if (data.resolution) setResolution(data.resolution);
+    if (data.isBrandActive !== undefined) setIsBrandActive(data.isBrandActive);
   }, [
     data.selectedColors,
     data.colorInput,
@@ -154,7 +163,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     data.customPrompt,
     data.model,
     data.aspectRatio,
-    data.resolution
+    data.resolution,
+    data.isBrandActive
   ]);
 
 
@@ -251,6 +261,44 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     }
   }, [isPromptOpen, customPrompt]);
 
+  const handleAddToBoard = (url: string, type: 'image' | 'logo') => {
+    const newNodeId = `image-${Date.now()}`;
+    const currentNode = nodes.find(n => n.id === id);
+    const x = currentNode ? currentNode.position.x + 450 : 0;
+    const y = currentNode ? currentNode.position.y : 0;
+
+    setNodes((nds) => nds.concat({
+      id: newNodeId,
+      type: 'image',
+      position: { x, y },
+      data: { 
+        mockup: {
+          _id: `brand-${Date.now()}`,
+          imageUrl: url,
+          prompt: `Brand ${type}`,
+          designType: 'other',
+          tags: ['brand'],
+          brandingTags: [],
+          aspectRatio: '1:1'
+        },
+        label: type === 'logo' ? 'Brand Logo' : 'Brand Asset',
+        onUpdateData: data.onUpdateData,
+        onDelete: data.onDelete,
+        onResize: data.onResize
+      } as any
+    }));
+  };
+
+  const handleSelectAsset = (url: string, type: 'image' | 'logo') => {
+    if (data.onUpdateData) {
+      if (type === 'logo') {
+        data.onUpdateData(id, { connectedLogo: url });
+      } else {
+        data.onUpdateData(id, { connectedImage: url });
+      }
+    }
+  };
+
   const handleGenerate = async () => {
     if (!data.onGenerate) {
       return;
@@ -258,7 +306,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
     // HIERARCHY: Logo (priority 1) as main focus, Identity (priority 2) as context/colors/vibe
     // Use logo first, fallback to legacy connectedImage if no logo
-    const imageToUse = connectedLogo || data.connectedImage;
+    const imageToUse = (isBrandActive && connectedLogo) || data.connectedImage;
 
     if (!imageToUse) {
       console.warn('[MockupNode] No logo (required) or connected image available');
@@ -266,8 +314,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       return;
     }
 
-    // Combine text direction from BrandCore with custom prompt
-    const finalPrompt = connectedTextDirection
+    // Combine text direction from BrandCore with custom prompt if active
+    const finalPrompt = (isBrandActive && connectedTextDirection)
       ? (customPrompt ? `${connectedTextDirection}\n\n${customPrompt}` : connectedTextDirection)
       : customPrompt;
 
@@ -328,10 +376,16 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       />
 
       {/* Header */}
-      <div className="flex items-center gap-3 node-margin">
-        <CategoryIcon size={16} className={cn(categoryConfig.color)} />
-        <h3 className="text-xs font-semibold text-neutral-300 font-mono">{categoryTitle}</h3>
-      </div>
+      <NodeHeader 
+        icon={categoryConfig.icon} 
+        title={categoryTitle} 
+        isBrandActive={isBrandActive}
+        onToggleBrand={(active) => {
+          setIsBrandActive(active);
+          if (data.onUpdateData) data.onUpdateData(id, { isBrandActive: active });
+        }}
+        onOpenMediaLibrary={() => setShowMediaLibrary(true)}
+      />
 
       {/* Preset Selector - Button to open modal */}
       <div className="node-margin">
@@ -398,8 +452,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Connected Images from BrandCore or legacy image node */}
       {/* HIERARCHY: Logo (priority 1) as primary focus, Identity (priority 2) as context/colors/vibe */}
-      {hasBrandCoreConnection ? (
-        <div className="node-margin space-y-[var(--node-gap)]">
+        <div className={cn("node-margin space-y-[var(--node-gap)] transition-all duration-300", !isBrandActive && "opacity-30 grayscale pointer-events-none")}>
           {connectedLogo && (
             <ConnectedImagesDisplay
               images={[connectedLogo]}
@@ -430,14 +483,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               <div className="text-xs text-neutral-400 line-clamp-3">{connectedTextDirection}</div>
             </div>
           )}
-          {data.connectedStrategyData && (
-            <div className="p-2 rounded border border-[brand-cyan]/20 bg-brand-cyan/3">
-              <div className="text-xs font-mono text-brand-cyan/80 mb-1">{t('canvasNodes.mockupNode.strategyDataFromBrandCore')}</div>
-              <div className="text-[10px] text-neutral-500">{t('canvasNodes.mockupNode.available')}</div>
-            </div>
-          )}
         </div>
-      ) : hasConnectedImage ? (
+
+      {hasConnectedImage && !isBrandActive && (
         <ConnectedImagesDisplay
           images={[data.connectedImage]}
           label={t('canvasNodes.mockupNode.inputImage')}
@@ -448,7 +496,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             }
           }}
         />
-      ) : null}
+      )}
 
       {/* Prompt Editor Toggle */}
       <div className="mb-2">
@@ -585,6 +633,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               onResolutionChange={(res) => {
                 setResolution(res);
                 if (data.onUpdateData) data.onUpdateData(id, { resolution: res });
+              }}
+              onModelChange={(newModel) => {
+                setModel(newModel);
+                if (data.onUpdateData) data.onUpdateData(id, { model: newModel });
               }}
               isLoading={isLoading}
             />
@@ -751,6 +803,13 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         }}
         userMockups={userMockups || []}
         isLoading={isLoading}
+      />
+      <BrandMediaLibraryModal
+        isOpen={showMediaLibrary}
+        onClose={() => setShowMediaLibrary(false)}
+        onSelectAsset={handleSelectAsset}
+        onAddToBoard={handleAddToBoard}
+        guidelineId={linkedGuidelineId}
       />
     </NodeContainer>
   );

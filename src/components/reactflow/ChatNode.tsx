@@ -269,10 +269,10 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
     return (
         <NodeContainer selected={isSelected} dragging={isDragging} className="h-full overflow-hidden">
-            <LabeledHandle type="target" position={Position.Left} id="text-input" label="Text" handleType="text" style={{ top: 60 }} />
-            <LabeledHandle type="target" position={Position.Left} id="strategy-input" label="Strategy" handleType="strategy" style={{ top: 100 }} />
+            <LabeledHandle type="target" position={Position.Left} id="text-input" label={t('canvasNodes.chatNode.textContext') || 'Text'} handleType="text" style={{ top: 60 }} />
+            <LabeledHandle type="target" position={Position.Left} id="strategy-input" label={t('canvasNodes.chatNode.strategyData') || 'Strategy'} handleType="strategy" style={{ top: 100 }} />
             {[1, 2, 3, 4].map(idx => (
-                <LabeledHandle key={idx} type="target" position={Position.Left} id={`input-${idx}`} label={`Image ${idx}`} handleType="image" style={{ top: 120 + idx * 60 }} />
+                <LabeledHandle key={idx} type="target" position={Position.Left} id={`input-${idx}`} label={`${t('canvasNodes.chatNode.image')} ${idx}`} handleType="image" style={{ top: 120 + idx * 60 }} />
             ))}
             <Handle type="source" position={Position.Bottom} className="node-handle handle-generic" style={{ left: '50%', marginLeft: -3 }} />
 
@@ -308,10 +308,10 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 {showSystemPromptEditor && (
                     <div className="px-4 py-3 border-b border-neutral-700/30 bg-neutral-900/50 backdrop-blur-sm animate-in slide-in-from-top-1">
                         <div className="flex items-center justify-between mb-2">
-                            <label className="text-[10px] font-mono text-neutral-400 font-semibold uppercase ">System Prompt</label>
+                            <label className="text-[10px] font-mono text-neutral-400 font-semibold uppercase ">{t('canvasNodes.chatNode.systemPrompt') || 'System Prompt'}</label>
                             <div className="flex items-center gap-2">
-                                <NodeButton variant="ghost" size="xs" onClick={handleResetSystemPrompt} className="text-[9px]">Reset</NodeButton>
-                                <NodeButton variant="primary" size="xs" onClick={handleSaveSystemPrompt} className="text-[9px]">Save</NodeButton>
+                                <NodeButton variant="ghost" size="xs" onClick={handleResetSystemPrompt} className="text-[9px]">{t('common.reset') || 'Reset'}</NodeButton>
+                                <NodeButton variant="primary" size="xs" onClick={handleSaveSystemPrompt} className="text-[9px]">{t('common.save') || 'Save'}</NodeButton>
                             </div>
                         </div>
                         <AutoResizeTextarea
@@ -358,11 +358,11 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                     {hasContext && (
                         <div className="flex items-center justify-between pb-3 border-b border-neutral-700/20">
                             <div className="flex gap-2">
-                                <span className="text-[10px] text-brand-cyan flex items-center gap-1 uppercase font-bold tracking-widest"><CheckCircle2 size={10} /> Context</span>
-                                {connectedImages.length > 0 && <span className="text-[10px] bg-brand-cyan/10 text-brand-cyan px-2 rounded-full border border-brand-cyan/20">Images: {connectedImages.length}</span>}
+                                <span className="text-[10px] text-brand-cyan flex items-center gap-1 uppercase font-bold tracking-widest"><CheckCircle2 size={10} /> {t('canvasNodes.chatNode.context') || 'Context'}</span>
+                                {connectedImages.length > 0 && <span className="text-[10px] bg-brand-cyan/10 text-brand-cyan px-2 rounded-full border border-brand-cyan/20">{t('canvasNodes.chatNode.images')}: {connectedImages.length}</span>}
                             </div>
                             <NodeButton variant="primary" size="xs" onClick={handleSuggestMockups} disabled={isLoading}>
-                                <Sparkles size={11} className="mr-1.5" /> Suggest
+                                <Sparkles size={11} className="mr-1.5" /> {t('canvasNodes.chatNode.suggestMockups') || 'Suggest'}
                             </NodeButton>
                         </div>
                     )}
@@ -372,7 +372,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                             onChange={(e) => setInputMessage(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
                             className="bg-neutral-900/40 border-neutral-700/40 flex-1 min-h-[44px]"
-                            placeholder="Ask anything..."
+                            placeholder={t('canvasNodes.chatNode.typeYourMessage') || "Ask anything..."}
                         />
                         <NodeButton variant="primary" size="xs" onClick={handleSend} disabled={!inputMessage.trim() || isLoading} className="h-11 w-11 shrink-0">
                             <Send size={16} />

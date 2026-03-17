@@ -13,8 +13,10 @@ interface AdvancedModelSettingsProps {
   resolution: Resolution;
   onAspectRatioChange: (ratio: AspectRatio) => void;
   onResolutionChange: (res: Resolution) => void;
+  onModelChange?: (model: GeminiModel) => void;
   isLoading?: boolean;
   className?: string;
+  allowVideo?: boolean;
 }
 
 /**
@@ -26,16 +28,21 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
   resolution,
   onAspectRatioChange,
   onResolutionChange,
+  onModelChange,
   isLoading = false,
-  className
+  className,
+  allowVideo = false
 }) => {
   const { t } = useTranslation();
 
-  if (!isAdvancedModel(model)) return null;
+  const isAdvanced = isAdvancedModel(model);
+  const isFlash = model === 'gemini-2.5-flash-image'; // GEMINI_MODELS.FLASH
+
+  if (!isAdvanced && !isFlash) return null;
 
   return (
     <div className={cn("grid grid-cols-2 gap-2.5", className)}>
-      <div>
+      <div className={cn(!isAdvanced && "opacity-50 grayscale pointer-events-none")}>
         <NodeLabel className="mb-1.5 text-[10px]">
           {t('canvasNodes.promptNode.aspectRatio')}
         </NodeLabel>
@@ -43,7 +50,7 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
           <AspectRatioSelector
             value={aspectRatio}
             onChange={onAspectRatioChange}
-            disabled={isLoading}
+            disabled={isLoading || !isAdvanced}
             compact
           />
         </div>
@@ -57,9 +64,11 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
           <ResolutionSelector
             value={resolution}
             onChange={onResolutionChange}
+            onModelChange={onModelChange}
             model={model}
             disabled={isLoading}
             compact
+            allowVideo={allowVideo}
           />
         </div>
       </div>

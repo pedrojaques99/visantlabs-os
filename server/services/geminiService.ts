@@ -274,7 +274,14 @@ export const generateMockup = async (
       throw new Error('Prompt text is required');
     }
 
-    parts.push({ text: promptText });
+    // For text-to-image (no base image), prefix prompt to force image generation
+    // Without this, Gemini may respond with text asking for clarification
+    const hasAnyImage = baseImage || (referenceImages && referenceImages.length > 0);
+    const finalPrompt = hasAnyImage
+      ? promptText
+      : `Generate an image: ${promptText}. Do not ask questions, just generate the image.`;
+
+    parts.push({ text: finalPrompt });
 
     const config: any = {
       responseModalities: [Modality.TEXT, Modality.IMAGE],
