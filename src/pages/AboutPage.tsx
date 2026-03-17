@@ -303,11 +303,10 @@ export const AboutPage: React.FC = () => {
       </div>
 
       {/* Huge VISANT Text - Bottom Layer */}
-      <div className="absolute bottom-[10px] left-0 right-0 overflow-hidden pointer-events-none z-0 flex justify-center items-end opacity-30 select-none">
+      <div className="left-0 right-0 overflow-hidden pointer-events-none z-0 flex justify-center items-end opacity-30 select-none">
         <RepellantText
           className="text-[20vw] md:text-[30vw] font-manrope font-semibold leading-none tracking-tighter text-neutral-600"
           style={{
-            marginBottom: '-2vw',
             whiteSpace: 'nowrap'
           }}
         >

@@ -312,15 +312,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
     <section className={cn("flex flex-col gap-5 w-full", className)}>
       {/* Files Header */}
       <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-1">
-          <MicroTitle className="text-brand-cyan uppercase ">
-            {t('mockup.files') || 'ARQUIVOS'}
+        <div className="flex flex-col gap-10">
+          <MicroTitle className="text-brand-cyan uppercase mr-20">
+            {t('mockup.filesLoaded', { count: referenceImages.length + 1 }) || `${referenceImages.length + 1} Arquivo(s) carregados`}
           </MicroTitle>
-          {hasImage && (
-            <p className="text-[10px] font-manrope text-neutral-500 uppercase">
-              {t('mockup.filesLoaded', { count: referenceImages.length + 1 }) || `${referenceImages.length + 1} Arquivo(s) carregados`}
-            </p>
-          )}
         </div>
 
         {!isLoadingImage && (

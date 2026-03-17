@@ -1112,3 +1112,129 @@ Return JSON with "operations" array only.`;
     }
   }, { model: 'gemini-2.5-flash' });
 };
+
+/**
+ * Lightweight refinement of suggestions based on selected tags.
+ * Uses text-only model (no image) for efficiency.
+ */
+export interface RefineSuggestionsParams {
+  imageDescription?: string;
+  selectedTags: {
+    categories: string[];
+    location: string[];
+    angle: string[];
+    lighting: string[];
+    effects: string[];
+    material: string[];
+  };
+  changedCategory: string;
+  availableTags?: {
+    categories: string[];
+    locations: string[];
+    angles: string[];
+    lighting: string[];
+    effects: string[];
+    materials: string[];
+  };
+}
+
+export interface RefineSuggestionsResult {
+  categories?: string[];
+  locations?: string[];
+  angles?: string[];
+  lighting?: string[];
+  effects?: string[];
+  materials?: string[];
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
+export const refineSuggestions = async (
+  params: RefineSuggestionsParams,
+  userApiKey?: string
+): Promise<RefineSuggestionsResult> => {
+  return withRetry(async () => {
+    const { imageDescription, selectedTags, changedCategory, availableTags } = params;
+
+    // Build context from selected tags
+    const selectedContext = Object.entries(selectedTags)
+      .filter(([_, tags]) => tags.length > 0)
+      .map(([cat, tags]) => `${cat}: ${tags.join(', ')}`)
+      .join('\n');
+
+    // Determine which categories to suggest (exclude the one that changed)
+    const categoriesToSuggest = ['categories', 'location', 'angle', 'lighting', 'effects', 'material']
+      .filter(cat => cat !== changedCategory);
+
+    const prompt = `You are a mockup photography expert. Based on the user's current tag selections, suggest complementary tags for a cohesive mockup scene.
+
+${imageDescription ? `Image context: ${imageDescription}\n` : ''}
+Current selections:
+${selectedContext || 'None yet'}
+
+${availableTags ? `Available tags to choose from:
+- categories: ${availableTags.categories.slice(0, 20).join(', ')}...
+- locations: ${availableTags.locations.slice(0, 15).join(', ')}...
+- angles: ${availableTags.angles.join(', ')}
+- lighting: ${availableTags.lighting.join(', ')}
+- effects: ${availableTags.effects.slice(0, 15).join(', ')}...
+- materials: ${availableTags.materials.slice(0, 15).join(', ')}...` : ''}
+
+Suggest 2-3 complementary tags for each of these categories: ${categoriesToSuggest.join(', ')}.
+Consider visual harmony, common photography/mockup patterns, and practical combinations.
+Return ONLY tags that work well together with the current selections.`;
+
+    // Build response schema dynamically based on categories to suggest
+    const properties: Record<string, any> = {};
+    const categoryMap: Record<string, string> = {
+      'categories': 'categories',
+      'location': 'locations',
+      'angle': 'angles',
+      'lighting': 'lighting',
+      'effects': 'effects',
+      'material': 'materials',
+    };
+
+    for (const cat of categoriesToSuggest) {
+      properties[categoryMap[cat] || cat] = { type: Type.ARRAY, items: { type: Type.STRING } };
+    }
+
+    const response = await getAI(userApiKey).models.generateContent({
+      model: 'gemini-2.0-flash', // Faster model for text-only
+      contents: { parts: [{ text: prompt }] },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties,
+        },
+      },
+    });
+
+    const usageMetadata = (response as any).usageMetadata;
+    const inputTokens = usageMetadata?.promptTokenCount;
+    const outputTokens = usageMetadata?.candidatesTokenCount;
+
+    const jsonString = (response.text || '').trim();
+    if (!jsonString) {
+      return { inputTokens, outputTokens };
+    }
+
+    try {
+      const result = JSON.parse(jsonString);
+      return {
+        categories: result.categories,
+        locations: result.locations,
+        angles: result.angles,
+        lighting: result.lighting,
+        effects: result.effects,
+        materials: result.materials,
+        inputTokens,
+        outputTokens,
+      };
+    } catch (e) {
+      console.error('Failed to parse refineSuggestions JSON:', e);
+      return { inputTokens, outputTokens };
+    }
+  }, { model: 'gemini-2.0-flash' });
+};
