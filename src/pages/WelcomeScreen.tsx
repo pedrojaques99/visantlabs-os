@@ -483,10 +483,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
 
             {/* Desktop: Full thumbnail preview */}
             <Button variant="ghost" onClick={() => setShowTutorialModal(true)}
-              className="hidden md:block w-64 opacity-60 hover:opacity-300 overflow-hidden rounded-md transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md relative"
+              className="hidden px-4 py-2 md:block w-72 h-36 opacity-60 hover:opacity-300 overflow-hidden rounded-md transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md relative"
             >
               {/* Thumbnail Container */}
-              <div className="relative aspect-video w-full">
+              <div className="relative aspect-video w-full h-full">
                 {/* YouTube Thumbnail */}
                 <img
                   src={getYoutubeThumbnail('maxresdefault')}
