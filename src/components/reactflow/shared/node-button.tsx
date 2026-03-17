@@ -15,10 +15,10 @@ const nodeButtonVariants = cva(
         ghost: "bg-transparent hover:bg-neutral-900/40 border-none text-neutral-400 hover:text-neutral-200 shadow-none hover:shadow-none",
       },
       size: {
-        default: "w-fit px-6 py-4",
-        full: "w-full px-6 py-4",
-        sm: "w-fit px-4 py-2.5",
-        xs: "w-fit p-1",
+        default: "w-fit h-fit px-6 py-4",
+        full: "w-full h-fit px-6 py-4",
+        sm: "w-fit h-fit px-4 py-2.5",
+        xs: "w-fit h-fit p-1",
       }
     },
     defaultVariants: {

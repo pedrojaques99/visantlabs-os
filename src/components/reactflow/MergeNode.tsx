@@ -199,12 +199,12 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
             {isGeneratingPrompt ? (
               <>
                 <GlitchLoader size={14} className="mr-2" color="currentColor" />
-                <span>Generating Prompt...</span>
+                <span>{t('canvasNodes.mergeNode.generatingPrompt') || 'Generating Prompt...'}</span>
               </>
             ) : (
               <>
                 <Wand2 size={14} className="mr-2" />
-                <span>Generate Prompt</span>
+                <span>{t('canvasNodes.mergeNode.generatePrompt') || 'Generate Prompt'}</span>
               </>
             )}
           </NodeButton>
@@ -261,7 +261,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
           {isLoading ? (
             <>
               <GlitchLoader size={14} className="mr-2" color="currentColor" />
-              <span>Generating Image...</span>
+              <span>{t('canvasNodes.mergeNode.generatingImage') || 'Generating Image...'}</span>
             </>
           ) : (
             <>

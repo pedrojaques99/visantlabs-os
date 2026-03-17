@@ -1,5 +1,5 @@
-import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
-import { Handle, Position, type NodeProps, useReactFlow, NodeResizer } from '@xyflow/react';
+import React, { useState, useEffect, memo, useRef, useCallback, useMemo } from 'react';
+import { Handle, Position, type NodeProps, useReactFlow, NodeResizer, useNodes } from '@xyflow/react';
 import { Pickaxe, Image as ImageIcon, Wand2, Save, BookOpen } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { PromptNodeData } from '@/types/reactFlow';
@@ -24,11 +24,15 @@ import { getPresetByIdSync } from '@/services/unifiedPresetService';
 import { NodeButton } from './shared/node-button';
 import { ModelSelector } from './shared/ModelSelector';
 import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
-
+import { toast } from 'sonner';
+import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
+import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
+  const { linkedGuidelineId } = useCanvasHeader();
+  const nodes = useNodes();
   const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as PromptNodeData;
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
@@ -41,6 +45,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const [connectedImage3, setConnectedImage3] = useState<string | undefined>(nodeData.connectedImage3);
   const [connectedImage4, setConnectedImage4] = useState<string | undefined>(nodeData.connectedImage4);
   const [pdfPageReference, setPdfPageReference] = useState<string>(nodeData.pdfPageReference || '');
+  const [isBrandActive, setIsBrandActive] = useState<boolean>(nodeData.isBrandActive !== undefined ? nodeData.isBrandActive : (!!(nodeData.connectedLogo || nodeData.connectedIdentity || nodeData.connectedTextDirection)));
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -57,7 +63,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
     setIsPresetModalOpen(false);
   };
-
 
   // BrandCore connection data
   const connectedLogo = nodeData.connectedLogo;
@@ -112,6 +117,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     setConnectedImage2(nodeData.connectedImage2);
     setConnectedImage3(nodeData.connectedImage3);
     setConnectedImage4(nodeData.connectedImage4);
+    if (nodeData.isBrandActive !== undefined) setIsBrandActive(nodeData.isBrandActive);
   }, [
     nodeData.prompt,
     nodeData.model,
@@ -122,6 +128,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     nodeData.connectedImage2,
     nodeData.connectedImage3,
     nodeData.connectedImage4,
+    nodeData.isBrandActive,
     connectedText,
     hasTextNodeConnection
   ]);
@@ -137,6 +144,67 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       nodeData.onUpdateData(id, updates);
     }
   }, 500);
+
+  const handleAddToBoard = (url: string, type: 'image' | 'logo') => {
+    const newNodeId = `image-${Date.now()}`;
+    // Position it slightly to the right of the current node
+    const currentNode = nodes.find(n => n.id === id);
+    const x = currentNode ? currentNode.position.x + 450 : 0;
+    const y = currentNode ? currentNode.position.y : 0;
+
+    setNodes((nds) => nds.concat({
+      id: newNodeId,
+      type: 'image',
+      position: { x, y },
+      data: { 
+        mockup: {
+          _id: `brand-${Date.now()}`,
+          imageUrl: url,
+          prompt: `Brand ${type}`,
+          designType: 'other',
+          tags: ['brand'],
+          brandingTags: [],
+          aspectRatio: '1:1'
+        },
+        label: type === 'logo' ? 'Brand Logo' : 'Brand Asset',
+        onUpdateData: nodeData.onUpdateData,
+        onDelete: nodeData.onDelete,
+        onResize: nodeData.onResize
+      } as any
+    }));
+  };
+
+  const handleSelectAsset = (url: string, type: 'image' | 'logo') => {
+    const updates: Partial<PromptNodeData> = {};
+    let slotFound = false;
+
+    if (!connectedImage1) {
+      updates.connectedImage1 = url;
+      slotFound = true;
+    } else if (!connectedImage2) {
+      updates.connectedImage2 = url;
+      slotFound = true;
+    } else if (isAdvanced && !connectedImage3 && maxHandles >= 3) {
+      updates.connectedImage3 = url;
+      slotFound = true;
+    } else if (isAdvanced && !connectedImage4 && maxHandles >= 4) {
+      updates.connectedImage4 = url;
+      slotFound = true;
+    }
+
+    if (slotFound) {
+      if (nodeData.onUpdateData) {
+        nodeData.onUpdateData(id, updates);
+      }
+    } else {
+      toast.warning("All available reference slots are full. Added to board instead.");
+      handleAddToBoard(url, type);
+    }
+  };
+
+  const handleOpenMediaLibrary = () => {
+    setShowMediaLibrary(true);
+  };
 
   const handlePromptChange = (value: string) => {
     setPrompt(value);
@@ -166,12 +234,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     const maxImages = getMaxHandles(model);
 
     // Add Logo first (primary focus)
-    if (nodeData.connectedLogo) {
+    if (isBrandActive && nodeData.connectedLogo) {
       connectedImages.push(nodeData.connectedLogo);
     }
 
     // Add Identity second (context/colors/vibe)
-    if (nodeData.connectedIdentity) {
+    if (isBrandActive && nodeData.connectedIdentity) {
       connectedImages.push(nodeData.connectedIdentity);
     }
 
@@ -195,8 +263,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     // Limit to max images for the model
     const limitedImages = connectedImages.slice(0, maxImages);
 
-    // Combine text direction with prompt if available
-    const finalPrompt = nodeData.connectedTextDirection
+    // Combine text direction with prompt if available and active
+    const finalPrompt = (isBrandActive && nodeData.connectedTextDirection)
       ? (prompt ? `${nodeData.connectedTextDirection}\n\n${prompt}` : nodeData.connectedTextDirection)
       : prompt;
 
@@ -417,7 +485,16 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       )}
 
       {/* Header */}
-      <NodeHeader icon={Pickaxe} title={t('canvasNodes.promptNode.title')} />
+      <NodeHeader 
+        icon={Pickaxe} 
+        title={t('canvasNodes.promptNode.title')} 
+        isBrandActive={isBrandActive}
+        onToggleBrand={(active) => {
+          setIsBrandActive(active);
+          if (nodeData.onUpdateData) nodeData.onUpdateData(id, { isBrandActive: active });
+        }}
+        onOpenMediaLibrary={handleOpenMediaLibrary}
+      />
 
       {/* Connected Images Thumbnails - unified component */}
       <ConnectedImagesDisplay
@@ -431,8 +508,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
       {/* BrandCore Connection Display */}
       {/* HIERARCHY: Logo (priority 1) as primary focus, Identity (priority 2) as context/colors/vibe */}
-      {hasBrandCoreConnection && (
-        <div className="mb-3 space-y-2">
+        <div className={cn("mb-3 space-y-2 transition-all duration-300", !isBrandActive && "opacity-30 grayscale pointer-events-none")}>
           {connectedLogo && (
             <ConnectedImagesDisplay
               images={[connectedLogo]}
@@ -454,7 +530,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             </div>
           )}
         </div>
-      )}
 
       {/* Brand Identity Panel (legacy support) */}
       {nodeData.connectedBrandIdentity && (
@@ -628,7 +703,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             setResolution(res);
             if (nodeData.onUpdateData) nodeData.onUpdateData(id, { resolution: res });
           }}
+          onModelChange={(newModel) => {
+            setModel(newModel);
+            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { model: newModel });
+          }}
           isLoading={isLoading}
+          allowVideo={true}
         />
       </div>
 
@@ -693,6 +773,14 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         onClose={() => setIsPresetModalOpen(false)}
         onSelectPreset={handlePresetSelect}
       />
+
+      <BrandMediaLibraryModal
+        isOpen={showMediaLibrary}
+        onClose={() => setShowMediaLibrary(false)}
+        onSelectAsset={handleSelectAsset}
+        onAddToBoard={handleAddToBoard}
+        guidelineId={linkedGuidelineId}
+      />
     </NodeContainer >
   );
 }, (prevProps, nextProps) => {
@@ -713,37 +801,27 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   // Normalize BrandCore connection data for comparison
   const prevLogo = prevData.connectedLogo ?? undefined;
   const nextLogo = nextData.connectedLogo ?? undefined;
-  const prevIdentity = prevData.connectedIdentity ?? undefined;
-  const nextIdentity = nextData.connectedIdentity ?? undefined;
-  const prevTextDirection = prevData.connectedTextDirection ?? undefined;
-  const nextTextDirection = nextData.connectedTextDirection ?? undefined;
+  const prevId = prevData.connectedIdentity ?? undefined;
+  const nextId = nextData.connectedIdentity ?? undefined;
+  const prevText = prevData.connectedTextDirection ?? undefined;
+  const nextText = nextData.connectedTextDirection ?? undefined;
 
-  // Always re-render if connected images change (including to/from undefined)
-  // This ensures thumbnails are removed when edges are disconnected
-  if (prevImage1 !== nextImage1 ||
-    prevImage2 !== nextImage2 ||
-    prevImage3 !== nextImage3 ||
-    prevImage4 !== nextImage4 ||
-    prevLogo !== nextLogo ||
-    prevIdentity !== nextIdentity ||
-    prevTextDirection !== nextTextDirection) {
-    return false; // Re-render
-  }
-
-  // Re-render if other important props change
-  if (prevData.isLoading !== nextData.isLoading ||
-    prevData.prompt !== nextData.prompt ||
-    prevData.model !== nextData.model ||
-    prevData.aspectRatio !== nextData.aspectRatio ||
-    prevData.resolution !== nextData.resolution ||
-    prevData.isSuggestingPrompts !== nextData.isSuggestingPrompts ||
-    prevData.promptSuggestions !== nextData.promptSuggestions ||
-    prevProps.selected !== nextProps.selected ||
-    prevProps.dragging !== nextProps.dragging) {
-    return false; // Re-render
-  }
-
-  // Don't re-render if nothing important changed
-  return true; // Skip re-render
+  return (
+    prevProps.selected === nextProps.selected &&
+    prevData.prompt === nextData.prompt &&
+    prevData.isLoading === nextData.isLoading &&
+    prevData.model === nextData.model &&
+    prevData.aspectRatio === nextData.aspectRatio &&
+    prevData.resolution === nextData.resolution &&
+    prevData.isSuggestingPrompts === nextData.isSuggestingPrompts &&
+    prevData.connectedText === nextData.connectedText &&
+    prevData.isBrandActive === nextData.isBrandActive &&
+    prevImage1 === nextImage1 &&
+    prevImage2 === nextImage2 &&
+    prevImage3 === nextImage3 &&
+    prevImage4 === nextImage4 &&
+    prevLogo === nextLogo &&
+    prevId === nextId &&
+    prevText === nextText
+  );
 });
-

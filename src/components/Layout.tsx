@@ -29,6 +29,7 @@ export type LayoutContextValue = {
   onSubscriptionModalOpen: () => void;
   onCreditPackagesModalOpen: () => void;
   setSubscriptionStatus: (status: SubscriptionStatus | null) => void;
+  user: User | null;
   registerUnsavedOutputsHandler: (handler: () => { hasUnsaved: boolean; count: number; onSaveAll?: () => Promise<void> } | null) => void;
   registerResetHandler: (handler: () => void) => void;
 };
@@ -505,9 +506,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     onSubscriptionModalOpen,
     onCreditPackagesModalOpen,
     setSubscriptionStatus,
+    user: currentUser,
     registerUnsavedOutputsHandler,
     registerResetHandler,
-  }), [subscriptionStatus, isAuthenticated, isCheckingAuth, onSubscriptionModalOpen, onCreditPackagesModalOpen, setSubscriptionStatus, registerUnsavedOutputsHandler, registerResetHandler]);
+  }), [subscriptionStatus, isAuthenticated, isCheckingAuth, currentUser, onSubscriptionModalOpen, onCreditPackagesModalOpen, setSubscriptionStatus, registerUnsavedOutputsHandler, registerResetHandler]);
 
   return (
     <LayoutContext.Provider value={contextValue}>

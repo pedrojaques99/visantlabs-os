@@ -53,13 +53,20 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     }
   }, [disabled, selectedModel, onModelChange, resolution, onSyncResolution, onClearAdvancedConfig]);
 
+  // Dynamic model list: Always NB2, and then either HD(FLASH) or PRO
+  // If FLASH is selected, show HD. If PRO is selected or NB2 is selected, show PRO.
+  const modelsToShow = [
+    GEMINI_MODELS.NB2,
+    selectedModel === GEMINI_MODELS.FLASH ? GEMINI_MODELS.FLASH : GEMINI_MODELS.PRO
+  ];
+
   return (
     <div className={cn("space-y-1.5", className)}>
       <NodeLabel className="mb-1.5 text-[10px]">
         {t('canvasNodes.promptNode.model')}
       </NodeLabel>
-      <div className="grid grid-cols-3 gap-2">
-        {IMAGE_MODELS.map((modelId) => {
+      <div className="grid grid-cols-2 gap-2">
+        {modelsToShow.map((modelId) => {
           const config = MODEL_CONFIG[modelId];
           const isSelected = selectedModel === modelId;
           const credits = getCreditsRequired(modelId, isAdvancedModel(modelId) ? (isSelected ? resolution : config.defaultResolution) : undefined);
@@ -75,15 +82,14 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
               onMouseDown={(e) => e.stopPropagation()}
               disabled={disabled}
               className={cn(
-                'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
+                'w-full flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
                 isSelected
                   ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
                   : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
                 disabled && 'opacity-50 cursor-not-allowed'
               )}
             >
-              <span className="text-lg">{config.emoji}</span>
-              <span className="font-semibold text-sm">{config.label}</span>
+              <span className="text-sm">{config.emoji} {config.label}</span>
               <span className="text-[10px] text-neutral-500 mt-0.5">
                 {credits} {t('canvasNodes.promptNode.credits')}
               </span>

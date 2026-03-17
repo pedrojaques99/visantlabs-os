@@ -145,7 +145,7 @@ interface MockupContextActions {
 
 export type MockupContextValue = MockupContextState & MockupContextActions;
 
-const MockupContext = createContext<MockupContextValue | undefined>(undefined);
+export const MockupContext = createContext<MockupContextValue | undefined>(undefined);
 
 const initialMockupCount = 2;
 

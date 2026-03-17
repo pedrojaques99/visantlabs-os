@@ -319,13 +319,13 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     }
   }, [nodeData, id, t]);
 
-  const imageContainerStyle = { width: '100%', height: '100%', padding: 0, margin: 0, boxSizing: 'border-box' as const };
+  const imageContainerStyle = { width: '100%', height: '100%', padding: 4, margin: 0, boxSizing: 'border-box' as const };
   const imageStyle = {
     width: '100%',
     height: '100%',
     margin: 0,
-    padding: 0,
-    display: 'block' as const,
+    padding: 20,
+    display: 'flex' as const,
     transformOrigin: 'center',
     boxSizing: 'border-box' as const,
     maxWidth: '100%',
@@ -340,7 +340,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       warning={nodeData.oversizedWarning}
       onFitToContent={handleFitToContent}
       className={cn('group', dragging ? 'node-dragging' : 'node-dragging-static')}
-      style={imageUrl ? { margin: 0, padding: 0, overflow: 'hidden', boxSizing: 'border-box', opacity: 1 } : undefined}
+      style={imageUrl ? { margin: 0, padding: 4, overflow: 'visible', boxSizing: 'border-box', opacity: 1 } : undefined}
     >
       {selected && !dragging && (
         <NodeResizer
@@ -358,7 +358,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       <NodeHandles />
 
       <NodeImageContainer
-        className={cn("flex items-center justify-center", imageUrl && "p-0 m-0 !absolute inset-0 z-0")}
+        className={cn("flex items-center justify-center", imageUrl && "p-4 m-4 !absolute inset-0 z-0")}
         style={imageContainerStyle}
       >
         {imageUrl ? (
