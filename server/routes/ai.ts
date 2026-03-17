@@ -22,6 +22,7 @@ import {
   analyzeMockupSetup,
   changeObjectInMockup,
   applyThemeToMockup,
+  refineSuggestions,
 } from '../services/geminiService.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { getAllAvailableTags } from '../services/tagService.js';
@@ -226,6 +227,101 @@ router.post('/suggest-categories', apiRateLimiter, authenticate, async (req: Aut
     res.json({ categories: result.categories });
   } catch (error: any) {
     console.error('Error suggesting categories:', error);
+    next(error);
+  }
+});
+
+// Stricter rate limiter for refine-suggestions (1 request per 2 seconds)
+const refineSuggestionsLimiter = rateLimit({
+  windowMs: 2000, // 2 seconds
+  max: 1,
+  message: { error: 'Please wait before refining suggestions again.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
+ * POST /api/ai/refine-suggestions
+ * Lightweight endpoint to refine tag suggestions based on current selections.
+ * Uses text-only model for efficiency (no image re-processing).
+ */
+router.post('/refine-suggestions', refineSuggestionsLimiter, authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const { imageDescription, selectedTags, changedCategory } = req.body;
+
+    // Validate selectedTags structure
+    if (!selectedTags || typeof selectedTags !== 'object') {
+      return res.status(400).json({ error: 'selectedTags is required' });
+    }
+
+    if (!changedCategory || typeof changedCategory !== 'string') {
+      return res.status(400).json({ error: 'changedCategory is required' });
+    }
+
+    // Get user's API key if available
+    let userApiKey: string | undefined;
+    try {
+      userApiKey = await getGeminiApiKey(req.userId!);
+    } catch {
+      // Will use system key
+    }
+
+    // Get available tags for validation
+    const availableTags = await getAllAvailableTags();
+
+    const result = await refineSuggestions({
+      imageDescription,
+      selectedTags: {
+        categories: selectedTags.categories || [],
+        location: selectedTags.location || [],
+        angle: selectedTags.angle || [],
+        lighting: selectedTags.lighting || [],
+        effects: selectedTags.effects || [],
+        material: selectedTags.material || [],
+      },
+      changedCategory,
+      availableTags,
+    }, userApiKey);
+
+    // Track usage asynchronously (lightweight tracking)
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          0,
+          'gemini-2.0-flash',
+          false, // no image
+          100, // estimated prompt length
+          undefined,
+          'branding',
+          'system',
+          result.inputTokens,
+          result.outputTokens
+        );
+        (usageRecord as any).type = 'refine-suggestions';
+        await db.collection('usage_records').insertOne(usageRecord);
+
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
+      } catch (err) {
+        console.error('Error tracking usage for refine-suggestions:', err);
+      }
+    })();
+
+    res.json({
+      categories: result.categories,
+      locations: result.locations,
+      angles: result.angles,
+      lighting: result.lighting,
+      effects: result.effects,
+      materials: result.materials,
+    });
+  } catch (error: any) {
+    console.error('Error refining suggestions:', error);
     next(error);
   }
 });

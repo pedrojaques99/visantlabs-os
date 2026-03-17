@@ -2786,7 +2786,15 @@ Generate the new mockup image with the requested changes applied.`;
 
       {/* Global Floating Control Bar (Dashboard Mode) */}
       {isDashboardMode && (hasAnalyzed || shouldShowGenerateButton) && (
-        <div className="fixed bottom-10 left-0 right-0 z-[100] px-4 pointer-events-none flex justify-center">
+        <div 
+          className={cn(
+            "fixed bottom-10 z-[100] px-4 pointer-events-none flex justify-center transition-all duration-500 ease-in-out",
+            isSidebarCollapsed ? "left-0 right-0" : "left-0 lg:right-0"
+          )}
+          style={{ 
+            left: !isSidebarCollapsed && !isSidebarVisibleMobile ? `${sidebarWidth}px` : '0'
+          }}
+        >
           <div className="pointer-events-auto flex items-center gap-3 animate-in fade-in slide-in-from-bottom-8 duration-500">
             {/* Mobile Sidebar Shortcut */}
             {!isSidebarVisibleMobile && (
