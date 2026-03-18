@@ -767,31 +767,44 @@ export default async (req: any, res: any) => {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    // Check if this is an AbacatePay webhook (has webhookSecret query param or missing stripe-signature)
+    // Check if this is an AbacatePay webhook
     const webhookSecretQuery = req.query?.webhookSecret || req.query?.secret;
+    const webhookSecretHeader = req.headers['x-abacatepay-secret'] || req.headers['x-webhook-secret'];
     const sig = req.headers['stripe-signature'];
 
-    // If webhookSecret is in query params and no stripe-signature, it's AbacatePay
-    if (webhookSecretQuery && !sig) {
+    // If webhookSecret is in query/header and no stripe-signature, it's AbacatePay
+    const abacateSecret = webhookSecretHeader || webhookSecretQuery;
+    if (abacateSecret && !sig) {
+        // CRIT-003: Log deprecation warning for query param usage
+        if (webhookSecretQuery && !webhookSecretHeader) {
+            console.warn('⚠️ DEPRECATED: AbacatePay webhook secret in URL query param. Use X-AbacatePay-Secret header instead.');
+        }
+
         if (isDev) console.log('🔍 Detected AbacatePay webhook, processing...');
         try {
-            // Validate webhook secret if configured
+            // Validate webhook secret - REQUIRED in production (CRIT-002/003 fix)
             const abacateWebhookSecret = process.env.ABACATE_WEBHOOK_SECRET
                 || process.env.ABACATEPAY_WEBHOOK_SECRET
                 || process.env.ABACATEPAY_WEBHHOOK_SECRET; // Support typo variant
 
+            // In production, REQUIRE secret to be configured
+            if (!isDev && !abacateWebhookSecret) {
+                console.error('❌ ABACATEPAY_WEBHOOK_SECRET not configured in production');
+                return res.status(500).json({ error: 'Webhook verification not configured' });
+            }
+
             if (abacateWebhookSecret) {
-                const secretValue = typeof webhookSecretQuery === 'string' ? webhookSecretQuery : (Array.isArray(webhookSecretQuery) ? webhookSecretQuery[0] : String(webhookSecretQuery));
+                const secretValue = typeof abacateSecret === 'string'
+                    ? abacateSecret
+                    : (Array.isArray(abacateSecret) ? abacateSecret[0] : String(abacateSecret));
+
                 if (secretValue !== abacateWebhookSecret) {
-                    console.error('❌ AbacatePay webhook secret validation failed', {
-                        hasSecret: !!webhookSecretQuery,
-                        secretMatch: secretValue === abacateWebhookSecret,
-                    });
+                    console.error('❌ AbacatePay webhook secret validation failed');
                     return res.status(401).json({ error: 'Invalid webhook secret' });
                 }
                 if (isDev) console.log('✅ AbacatePay webhook secret validated');
-            } else {
-                if (isDev) console.warn('⚠️ ABACATEPAY_WEBHOOK_SECRET not configured - webhook validation disabled');
+            } else if (isDev) {
+                console.warn('⚠️ [DEV ONLY] AbacatePay webhook validation skipped');
             }
 
             // Parse body for AbacatePay webhook
@@ -864,22 +877,31 @@ export default async (req: any, res: any) => {
             throw new Error('Empty request body');
         }
 
+        // CRIT-002 fix: In production, REQUIRE signature verification
+        if (!isDev && (!STRIPE_WEBHOOK_SECRET || !stripe)) {
+            console.error('❌ STRIPE_WEBHOOK_SECRET or Stripe client not configured in production');
+            return res.status(500).send('Webhook verification not configured');
+        }
+
         if (STRIPE_WEBHOOK_SECRET && sig && stripe) {
             try {
                 event = stripe.webhooks.constructEvent(bodyBuffer, sig, STRIPE_WEBHOOK_SECRET);
             } catch (err: any) {
-                if (isDev) console.error('❌ Stripe signature verification failed:', err.message);
+                console.error('❌ Stripe signature verification failed:', err.message);
                 return res.status(400).send(`Webhook Error: ${err.message}`);
             }
-        } else {
-            // Manual parsing if signature verification is skipped
-            if (isDev) console.warn('⚠️ Stripe signature verification skipped (running in development without secret)');
+        } else if (isDev) {
+            // Only allow unsigned webhooks in development
+            console.warn('⚠️ [DEV ONLY] Stripe signature verification skipped');
             try {
                 event = JSON.parse(bodyBuffer.toString('utf8'));
             } catch (err: any) {
-                if (isDev) console.error('❌ Failed to parse webhook JSON:', err.message);
+                console.error('❌ Failed to parse webhook JSON:', err.message);
                 return res.status(400).send(`Webhook Error: Failed to parse JSON - ${err.message}`);
             }
+        } else {
+            // Production without signature - reject
+            return res.status(401).send('Missing webhook signature');
         }
     } catch (err: any) {
         if (isDev) console.error('❌ Error processing webhook body:', err.message);

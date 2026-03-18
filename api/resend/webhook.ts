@@ -206,9 +206,21 @@ export default async (req: any, res: any) => {
         });
     }
 
-    // Verify webhook signature if secret is configured
+    // Verify webhook signature - REQUIRED in production (CRIT-002 fix)
     const signature = req.headers['svix-signature'] || req.headers['resend-signature'];
-    if (RESEND_WEBHOOK_SECRET && signature) {
+
+    // In production, FAIL if secret is not configured
+    if (!isDev && !RESEND_WEBHOOK_SECRET) {
+        console.error('❌ RESEND_WEBHOOK_SECRET not configured in production');
+        return res.status(500).json({ error: 'Webhook verification not configured' });
+    }
+
+    if (RESEND_WEBHOOK_SECRET) {
+        if (!signature) {
+            console.error('❌ Missing webhook signature header');
+            return res.status(401).json({ error: 'Missing webhook signature' });
+        }
+
         const isValid = verifyWebhookSignature(
             bodyString,
             signature as string,
@@ -221,8 +233,8 @@ export default async (req: any, res: any) => {
         }
 
         if (isDev) console.log('✅ Webhook signature verified');
-    } else {
-        if (isDev) console.warn('⚠️ Webhook signature verification skipped (no secret or signature header)');
+    } else if (isDev) {
+        console.warn('⚠️ [DEV ONLY] Webhook signature verification skipped');
     }
 
     // Parse webhook event

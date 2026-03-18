@@ -4,8 +4,18 @@ import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { prisma } from '../db/prisma.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
-import { AuthRequest } from '../middleware/auth.js';
+import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { getUserIdFromToken } from '../utils/auth.js';
+import { rateLimit } from 'express-rate-limit';
+
+// Rate limiter for agent commands (strict - 20 req/min)
+const agentCommandLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  message: { error: 'Too many agent commands. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 import { ObjectId } from 'mongodb';
 import WebSocket, { WebSocketServer } from 'ws';
 import type { BrandGuideline } from '../types/brandGuideline.js';
@@ -733,10 +743,15 @@ Prompt: "Cria um card de perfil com avatar, nome e descrição"
 /**
  * POST /api/plugin/agent-command
  * Called by MCP server or external agents to push operations to plugin
+ * SECURITY: Requires authentication + rate limiting (CRIT-001 fix)
  */
-router.post('/agent-command', async (req: Request, res: Response) => {
+router.post('/agent-command', agentCommandLimiter, authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { fileId, operations } = req.body;
+    const userId = req.userId;
+
+    // Log for audit trail
+    console.log(`[Plugin Agent] User ${userId} sending ${operations?.length || 0} operations to file ${fileId}`);
 
     // Validate input
     if (!fileId) {
