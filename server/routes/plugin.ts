@@ -797,19 +797,42 @@ router.post('/agent-command', agentCommandLimiter, authenticate, async (req: Aut
   }
 });
 
-// ============ Debug Endpoint (Development Only) ============
+// ============ Debug Endpoint (Secured) ============
 
 /**
  * GET /api/plugin/debug/sessions
- * Returns active plugin sessions (development only)
+ * Returns active plugin sessions
+ * HIGH-001 fix: Requires explicit flag + authentication
  */
-router.get('/debug/sessions', (req: Request, res: Response) => {
-  if (process.env.NODE_ENV === 'production') {
-    return res.status(403).json({ error: 'Not available in production' });
+router.get('/debug/sessions', authenticate, async (req: AuthRequest, res: Response) => {
+  // Require explicit opt-in via environment variable
+  const debugEnabled = process.env.ENABLE_DEBUG_ENDPOINTS === 'true';
+
+  if (!debugEnabled) {
+    return res.status(403).json({ error: 'Debug endpoints disabled' });
   }
 
-  const sessions = pluginBridge.getSessions();
-  res.json({ sessions, count: sessions.length });
+  // Verify user is admin
+  try {
+    const db = await connectToMongoDB();
+    const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId) });
+
+    if (!user?.isAdmin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const sessions = pluginBridge.getSessions();
+    // Sanitize session data - remove sensitive info
+    const sanitizedSessions = sessions.map((s: any) => ({
+      fileId: s.fileId,
+      connectedAt: s.connectedAt,
+      // Don't expose userId or other PII
+    }));
+
+    res.json({ sessions: sanitizedSessions, count: sessions.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to verify access' });
+  }
 });
 
 // ============ Documentation Route ============
@@ -1200,7 +1223,16 @@ const ALLOWED_IMAGE_DOMAINS = [
   'via.placeholder.com',
 ];
 
-router.get('/proxy-image', async (req: Request, res: Response) => {
+// HIGH-003 fix: Rate limiter for proxy endpoint (anti-abuse)
+const proxyRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30, // 30 requests per minute per IP
+  message: { error: 'Too many proxy requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.get('/proxy-image', proxyRateLimiter, async (req: Request, res: Response) => {
   try {
     const imageUrl = req.query.url as string;
     if (!imageUrl) {
@@ -1238,11 +1270,14 @@ router.get('/proxy-image', async (req: Request, res: Response) => {
     const contentType = response.headers.get('content-type') || 'image/png';
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'public, max-age=3600');
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // MED-004 fix: Use configured frontend URL instead of wildcard
+    const allowedOrigin = process.env.FRONTEND_URL?.split(',')[0] || '*';
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
 
     const buffer = Buffer.from(await response.arrayBuffer());
     res.send(buffer);
   } catch (error: any) {
+    // MED-002 fix: Don't expose internal error details
     console.error('[ProxyImage] Error:', error.message);
     res.status(500).json({ error: 'Failed to fetch image' });
   }
