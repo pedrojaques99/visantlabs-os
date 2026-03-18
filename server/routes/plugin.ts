@@ -19,7 +19,9 @@ const agentCommandLimiter = rateLimit({
 import { ObjectId } from 'mongodb';
 import WebSocket, { WebSocketServer } from 'ws';
 import type { BrandGuideline } from '../types/brandGuideline.js';
-import { buildBrandContext } from '../lib/brandContextBuilder.js';
+import { buildBrandContext, buildEnforcedPrompt } from '../lib/brandContextBuilder.js';
+import { buildTokenRegistry } from '../lib/tokenRegistry.js';
+import { validateOperations, formatCorrections } from '../lib/tokenValidator.js';
 import { resolveBrandGuideline, buildGuidelineChoiceContext } from '../lib/brandResolver.js';
 import { scanTemplates, buildTemplateContext } from '../lib/templateScanner.js';
 import { buildFormatPresetsContext } from '../lib/formatPresets.js';
@@ -993,6 +995,17 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     // FASE 3: Intelligently choose provider based on complexity
     const provider = chooseProvider(command, contextSize);
 
+    // Build token registry from available sources (MongoDB priority, Figma fallback)
+    const tokenRegistry = buildTokenRegistry(
+      brandGuideline || null,
+      designSystem || null
+    );
+
+    // Get enforced prompt with pre-calculated RGB values
+    const enforcedTokenPrompt = (tokenRegistry.colors.size > 0 || tokenRegistry.typography.size > 0)
+      ? '\n' + buildEnforcedPrompt(tokenRegistry) + '\n'
+      : '';
+
     // Build context-aware prompt
     let systemPrompt = buildSystemPrompt(
       {
@@ -1031,6 +1044,14 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       } else {
         systemPrompt += '\n\n' + additionalContext;
       }
+    }
+
+    // Inject enforced token prompt (replaces soft brand context with strict tokens)
+    if (enforcedTokenPrompt) {
+      systemPrompt = systemPrompt.replace(
+        '═══ CONTEXTO DO ARQUIVO ═══',
+        enforcedTokenPrompt + '\n═══ CONTEXTO DO ARQUIVO ═══'
+      );
     }
 
     const userPrompt = `═══ PEDIDO DO USUÁRIO ═══\n\n"${command}"`;
@@ -1089,6 +1110,23 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           op.cornerRadius != null ||
           op.x != null)
     );
+
+    // Token validation: correct values to nearest tokens
+    if (tokenRegistry.colors.size > 0 || tokenRegistry.spacing.size > 0) {
+      const tokenValidation = validateOperations(operations, tokenRegistry);
+      if (!tokenValidation.isValid && tokenValidation.corrections.length > 0) {
+        console.log(`[Plugin] Token corrections applied: ${tokenValidation.corrections.length}`);
+        tokenValidation.corrections.forEach(c => {
+          console.log(`  ${c.field}: ${c.original} -> ${c.corrected} (${c.tokenUsed})`);
+        });
+        // Add notification message
+        tokenValidation.operations.push({
+          type: 'MESSAGE',
+          content: `⚡ Ajustes automáticos:\n${formatCorrections(tokenValidation.corrections)}`,
+        });
+        operations = tokenValidation.operations;
+      }
+    }
 
     console.log(
       `[Plugin API] [${provider.name}] Generated ${operations.length} op(s) for: "${command.substring(0, 60)}"`
