@@ -1,6 +1,41 @@
 
 import type { UploadedImage } from '../types/types';
 
+const MAX_FILE_SIZE_MB = 10;
+const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+type FileType = 'image' | 'pdf' | 'video';
+
+/**
+ * Validate file type and size. Returns error message or null if valid.
+ */
+export const validateFile = (
+  file: File,
+  allowedTypes: FileType | FileType[],
+  maxSizeMB = MAX_FILE_SIZE_MB
+): string | null => {
+  const types = Array.isArray(allowedTypes) ? allowedTypes : [allowedTypes];
+  const maxSize = maxSizeMB * 1024 * 1024;
+
+  const typeChecks: Record<FileType, () => boolean> = {
+    image: () => file.type.startsWith('image/'),
+    pdf: () => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'),
+    video: () => file.type.startsWith('video/'),
+  };
+
+  const isValidType = types.some(t => typeChecks[t]());
+  if (!isValidType) {
+    const typeNames = types.join('/');
+    return `Invalid file type. Expected: ${typeNames}`;
+  }
+
+  if (file.size > maxSize) {
+    return `File exceeds ${maxSizeMB}MB limit`;
+  }
+
+  return null;
+};
+
 /**
  * Format image to 16:9 aspect ratio without cropping
  * Adds padding (letterboxing/pillarboxing) when necessary

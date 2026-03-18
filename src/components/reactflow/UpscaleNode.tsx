@@ -1,5 +1,5 @@
 import React, { memo, useState, useCallback } from 'react';
-import { type NodeProps, type Node } from '@xyflow/react';
+import { type NodeProps, type Node, NodeResizer } from '@xyflow/react';
 import { Maximize2 } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { UpscaleNodeData } from '@/types/reactFlow';
@@ -17,9 +17,11 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { NodeButton } from './shared/node-button'
+import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 
 export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const isLoading = data.isLoading || false;
   const targetResolution = data.targetResolution || '4K';
   const [isSaving, setIsSaving] = useState(false);
@@ -74,16 +76,38 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
     }
   }, [resultImageUrl, isSaving, targetResolution, t]);
 
+  const handleResize = useCallback((width: number, height: number) => {
+    handleResizeWithDebounce(id, width, 'auto', data.onResize);
+  }, [id, data.onResize, handleResizeWithDebounce]);
+
+  const handleFitToContent = useCallback(() => {
+    fitToContent(id, 'auto', 'auto', data.onResize);
+  }, [id, data.onResize, fitToContent]);
+
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
       warning={data.oversizedWarning}
+      onFitToContent={handleFitToContent}
       className="min-w-[240px]"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
     >
+      {selected && !dragging && (
+        <NodeResizer
+          color="brand-cyan"
+          isVisible={selected}
+          minWidth={240}
+          minHeight={200}
+          maxWidth={2000}
+          maxHeight={2000}
+          onResize={(_, { width, height }) => {
+            handleResize(width, height);
+          }}
+        />
+      )}
       <NodeHandles />
 
       {/* Header */}

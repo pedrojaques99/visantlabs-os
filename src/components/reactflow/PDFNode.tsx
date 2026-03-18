@@ -1,5 +1,5 @@
-import React, { useRef, memo, useState, useEffect } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import React, { useRef, memo, useState, useEffect, useCallback } from 'react';
+import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/react';
 import { FileText, UploadCloud } from 'lucide-react';
 import type { PDFNodeData } from '@/types/reactFlow';
 import { pdfToBase64, validatePdfFile } from '@/utils/pdfUtils';
@@ -8,11 +8,13 @@ import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
 import { NodeButton } from './shared/node-button';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { Input } from '@/components/ui/input'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const nodeData = data as PDFNodeData;
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const [PdfThumbnailComponent, setPdfThumbnailComponent] = useState<React.ComponentType<{
@@ -91,12 +93,34 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
     }
   };
 
+  const handleResize = useCallback((width: number, height: number) => {
+    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize);
+  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+
+  const handleFitToContent = useCallback(() => {
+    fitToContent(id, 'auto', 'auto', nodeData.onResize);
+  }, [id, nodeData.onResize, fitToContent]);
+
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="min-w-[240px] max-w-[300px]"
+      onFitToContent={handleFitToContent}
+      className="min-w-[240px]"
     >
+      {selected && !dragging && (
+        <NodeResizer
+          color="brand-cyan"
+          isVisible={selected}
+          minWidth={240}
+          minHeight={200}
+          maxWidth={2000}
+          maxHeight={2000}
+          onResize={(_, { width, height }) => {
+            handleResize(width, height);
+          }}
+        />
+      )}
       {/* Output Handle */}
       <Handle
         type="source"

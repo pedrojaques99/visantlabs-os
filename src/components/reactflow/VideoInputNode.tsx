@@ -93,7 +93,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
   }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
 
   const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-    handleResizeWithDebounce(id, params.width, params.height, nodeData.onResize as any);
+    handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize as any);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   return (

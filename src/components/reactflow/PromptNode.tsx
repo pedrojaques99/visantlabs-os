@@ -1,17 +1,14 @@
-import React, { useState, useEffect, memo, useRef, useCallback, useMemo } from 'react';
-import { Handle, Position, type NodeProps, useReactFlow, NodeResizer, useNodes } from '@xyflow/react';
+import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
+import { Position, type NodeProps, useReactFlow, NodeResizer, useNodes } from '@xyflow/react';
 import { Pickaxe, Image as ImageIcon, Wand2, Save, BookOpen } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { PromptNodeData } from '@/types/reactFlow';
 import type { GeminiModel, AspectRatio, Resolution } from '@/types/types';
 import { cn } from '@/lib/utils';
-import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel as isAdvancedModelFn, getMaxHandles } from '@/constants/geminiModels';
+import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel as isAdvancedModelFn, getMaxHandles } from '@/constants/geminiModels';
 import { PromptInput } from '@/components/PromptInput';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
-import { BrandIdentityPanel } from '@/components/ui/BrandIdentityPanel';
 import { NodeContainer } from './shared/NodeContainer';
-import { NodeInput } from './shared/node-input';
-import { NodeLabel } from './shared/node-label';
 import { NodeHeader } from './shared/node-header';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -44,7 +41,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const [connectedImage2, setConnectedImage2] = useState<string | undefined>(nodeData.connectedImage2);
   const [connectedImage3, setConnectedImage3] = useState<string | undefined>(nodeData.connectedImage3);
   const [connectedImage4, setConnectedImage4] = useState<string | undefined>(nodeData.connectedImage4);
-  const [pdfPageReference, setPdfPageReference] = useState<string>(nodeData.pdfPageReference || '');
   const [isBrandActive, setIsBrandActive] = useState<boolean>(nodeData.isBrandActive !== undefined ? nodeData.isBrandActive : (!!(nodeData.connectedLogo || nodeData.connectedIdentity || nodeData.connectedTextDirection)));
   const [showMediaLibrary, setShowMediaLibrary] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -110,7 +106,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     if (nodeData.model) setModel(nodeData.model);
     if (nodeData.aspectRatio) setAspectRatio(nodeData.aspectRatio);
     if (nodeData.resolution) setResolution(nodeData.resolution);
-    if (nodeData.pdfPageReference !== undefined) setPdfPageReference(nodeData.pdfPageReference || '');
 
     // Track connected images for manual UI refreshes if needed
     setConnectedImage1(nodeData.connectedImage1);
@@ -123,7 +118,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     nodeData.model,
     nodeData.aspectRatio,
     nodeData.resolution,
-    nodeData.pdfPageReference,
     nodeData.connectedImage1,
     nodeData.connectedImage2,
     nodeData.connectedImage3,
@@ -325,36 +319,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
   };
 
-  const handleInsertElement = (text: string) => {
-    const textarea = textareaRef.current;
-
-    if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const newPrompt = prompt.slice(0, start) + ' ' + text + ' ' + prompt.slice(end);
-
-      setPrompt(newPrompt.trim());
-      handlePromptChange(newPrompt.trim());
-
-      // Set cursor position after inserted text
-      setTimeout(() => {
-        const newCursorPos = start + text.length + 2;
-        textarea.setSelectionRange(newCursorPos, newCursorPos);
-        textarea.focus();
-      }, 0);
-    } else {
-      // Fallback: append to end if textarea not available
-      const newPrompt = prompt + (prompt ? ' ' : '') + text;
-      setPrompt(newPrompt);
-      handlePromptChange(newPrompt);
-    }
-  };
-
-  const handlePdfPageReferenceChange = (value: string) => {
-    setPdfPageReference(value);
-    debouncedUpdateData({ pdfPageReference: value || undefined });
-  };
-
   // Debounced fit-to-content: update node size when container content changes
   const debouncedFitToContent = useDebouncedCallback(() => {
     const el = containerRef.current;
@@ -362,7 +326,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     const w = Math.max(el.scrollWidth, el.offsetWidth);
     const h = Math.max(el.scrollHeight, el.offsetHeight);
     if (w > 0 && h > 0) {
-      fitToContent(id, w, h, nodeData.onResize);
+      fitToContent(id, w, 'auto', nodeData.onResize as any, undefined, h);
     }
   }, 150);
 
@@ -378,7 +342,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, height, nodeData.onResize);
+    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   const handleFitToContent = useCallback(() => {
@@ -506,56 +470,21 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         onImageRemove={handleImageRemove}
       />
 
-      {/* BrandCore Connection Display */}
-      {/* HIERARCHY: Logo (priority 1) as primary focus, Identity (priority 2) as context/colors/vibe */}
-        <div className={cn("mb-3 space-y-2 transition-all duration-300", !isBrandActive && "opacity-30 grayscale pointer-events-none")}>
-          {connectedLogo && (
-            <ConnectedImagesDisplay
-              images={[connectedLogo]}
-              label={t('canvasNodes.promptNode.logoFromBrandCore')}
-              showLabel={true}
-            />
-          )}
-          {connectedIdentity && (
-            <ConnectedImagesDisplay
-              images={[connectedIdentity]}
-              label={t('canvasNodes.promptNode.identityFromBrandCore')}
-              showLabel={true}
-            />
-          )}
-          {connectedTextDirection && (
-            <div className="p-2 rounded border border-[brand-cyan]/30 bg-brand-cyan/5">
-              <div className="text-xs font-mono text-brand-cyan mb-1">{t('canvasNodes.promptNode.textDirectionFromBrandCore')}</div>
-              <div className="text-xs text-neutral-400 line-clamp-3">{connectedTextDirection}</div>
-            </div>
-          )}
+      {/* BrandCore Connection Indicator - compact, non-intrusive */}
+      {hasBrandCoreConnection && (
+        <div className={cn(
+          "flex items-center gap-2 px-2 py-1.5 rounded-md border text-[10px] font-mono transition-all duration-200",
+          isBrandActive
+            ? "bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan/80"
+            : "bg-neutral-900/30 border-neutral-700/20 text-neutral-500 opacity-50"
+        )}>
+          <span className="text-[9px] uppercase">{t('canvasNodes.promptNode.brandConnected') || 'Brand'}</span>
+          <div className="flex items-center gap-1.5">
+            {connectedLogo && <span className="px-1 py-0.5 bg-neutral-800/50 rounded text-[9px]">Logo</span>}
+            {connectedIdentity && <span className="px-1 py-0.5 bg-neutral-800/50 rounded text-[9px]">ID</span>}
+            {connectedTextDirection && <span className="px-1 py-0.5 bg-neutral-800/50 rounded text-[9px]">Text</span>}
+          </div>
         </div>
-
-      {/* Brand Identity Panel (legacy support) */}
-      {nodeData.connectedBrandIdentity && (
-        <>
-          <BrandIdentityPanel
-            brandIdentity={nodeData.connectedBrandIdentity}
-            onInsertElement={handleInsertElement}
-          />
-
-          {/* PDF Page Reference Input - Only show if Identity is a PDF */}
-          {nodeData.connectedIdentityType === 'pdf' && (
-            <div className="mb-3">
-              <NodeLabel className="text-[10px] mb-1.5">
-                {t('canvasNodes.promptNode.pdfReference')}
-              </NodeLabel>
-              <NodeInput
-                type="text"
-                value={pdfPageReference}
-                onChange={(e) => handlePdfPageReferenceChange(e.target.value)}
-                placeholder={t('canvasNodes.promptNode.pdfReferencePlaceholder')}
-                onMouseDown={(e) => e.stopPropagation()}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-          )}
-        </>
       )}
 
       {/* Prompt Input */}

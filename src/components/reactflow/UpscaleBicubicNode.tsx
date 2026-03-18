@@ -387,8 +387,8 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-    const { width, height } = params;
-    handleResizeWithDebounce(id, width, height);
+    const { width } = params;
+    handleResizeWithDebounce(id, width, 'auto');
   }, [id, handleResizeWithDebounce]);
 
   const handleDuplicate = () => {

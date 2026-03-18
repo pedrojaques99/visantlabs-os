@@ -52,7 +52,7 @@ function renderResolutionButton(
       disabled={disabled}
       className={cn(
         compact
-          ? 'flex-1 flex items-center justify-center gap-1 py-1.5 px-2 text-xs font-mono transition-all min-w-0'
+          ? 'flex-1 flex items-center justify-center gap-1 h-11 px-2 text-xs font-mono transition-all min-w-0'
           : 'flex flex-col items-center justify-center gap-1 py-2 px-3 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer',
         isSelected
           ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'

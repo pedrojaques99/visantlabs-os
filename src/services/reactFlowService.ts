@@ -433,7 +433,7 @@ export const validateCredits = async (
 /**
  * Validate if user has enough credits for video generation
  */
-export const validateVideoCredits = async (): Promise<boolean> => {
+export const validateVideoCredits = async (model?: string): Promise<boolean> => {
   if (isLocalDevelopment()) {
     return true;
   }
@@ -445,7 +445,7 @@ export const validateVideoCredits = async (): Promise<boolean> => {
       return false;
     }
 
-    const creditsNeeded = getVideoCreditsRequired();
+    const creditsNeeded = getVideoCreditsRequired(model);
     const totalCredits = status.totalCredits || 0;
 
     if (totalCredits < creditsNeeded) {

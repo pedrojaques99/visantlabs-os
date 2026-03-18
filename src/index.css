@@ -1069,27 +1069,58 @@
   background-color: rgba(136, 136, 136, 0.1);
 }
 
-/* ReactFlow resize controls - use brand color */
+/* ReactFlow resize controls - subtle and elegant */
 .react-flow__resize-control {
-  background: var(--brand-cyan, #888888) !important;
-  border-color: var(--brand-cyan, rgba(136, 136, 136, 0.5)) !important;
-  opacity: 0.6;
+  background: transparent !important;
+  border-color: transparent !important;
 }
 
-.react-flow__resize-control:hover {
-  background: var(--brand-cyan, #999999) !important;
-  border-color: var(--brand-cyan, rgba(153, 153, 153, 0.6)) !important;
+.react-flow__resize-control.line {
+  border-color: var(--brand-cyan) !important;
+  border-width: 1px !important;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.react-flow__node.selected .react-flow__resize-control.line {
+  opacity: 0.25;
+}
+
+.react-flow__node:hover .react-flow__resize-control.line {
+  opacity: 0.5;
+}
+
+.react-flow__resize-control.handle {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  border: 1.5px solid var(--brand-cyan) !important;
+  opacity: 0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(0.6);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.react-flow__node:hover .react-flow__resize-control.handle {
   opacity: 0.8;
+  transform: scale(1);
+}
+
+.react-flow__node.selected .react-flow__resize-control.handle {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.react-flow__resize-control.handle:hover {
+  transform: scale(1.3) !important;
+  opacity: 1 !important;
+  box-shadow: 0 0 12px var(--brand-cyan);
 }
 
 .react-flow__resize-control::before,
 .react-flow__resize-control::after {
-  background: var(--brand-cyan, #888888) !important;
-}
-
-.react-flow__resize-control:hover::before,
-.react-flow__resize-control:hover::after {
-  background: var(--brand-cyan, #999999) !important;
+  content: none !important;
 }
 
 .resizing {
@@ -1468,7 +1499,8 @@
 .node-container {
   position: relative;
   padding: var(--node-padding);
-  height: 100%;
+  min-height: 100%;
+  height: auto;
   /* Text color based on contrast - automatically adjusts */
   color: var(--node-text-color, #e5e7eb);
 }
