@@ -136,8 +136,9 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
             }
         }, [id, data.imageWidth, data.imageHeight, data.onResize, fitToContent]);
 
-        const handleResize = useCallback((width: number, height: number) => {
-            handleResizeWithDebounce(id, width, height, data.onResize as any);
+        const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
+            const { width } = params;
+            handleResizeWithDebounce(id, width, 'auto', data.onResize as any);
         }, [id, data.onResize, handleResizeWithDebounce]);
 
         return (
@@ -163,7 +164,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                         maxWidth={2000}
                         maxHeight={2000}
                         keepAspectRatio={hasResult}
-                        onResize={(_, { width, height }) => handleResize(width, height)}
+                        onResize={handleResize}
                     />
                 )}
                 <NodeHandles />

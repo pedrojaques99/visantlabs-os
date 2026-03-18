@@ -41,27 +41,77 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
   isLiked,
 }) => {
   const [isDownloading, setIsDownloading] = React.useState(false);
+  const [menuStyle, setMenuStyle] = React.useState<React.CSSProperties>({
+    left: `${x}px`,
+    top: `${y}px`,
+  });
+  const menuRef = React.useRef<HTMLDivElement>(null);
+
+  // Calculate menu position to avoid being cut off
+  React.useLayoutEffect(() => {
+    if (!menuRef.current) return;
+
+    const windowHeight = window.innerHeight;
+    const windowWidth = window.innerWidth;
+    
+    // Wait for menu to render to get its dimensions
+    const timeoutId = setTimeout(() => {
+      const menuRect = menuRef.current?.getBoundingClientRect();
+      if (!menuRect) return;
+
+      const menuHeight = menuRect.height;
+      const menuWidth = menuRect.width;
+
+      let finalX = x;
+      let finalY = y;
+
+      // Position logic: prefer rendering below x/y, but flip if no space
+      const isBottomHalf = y > windowHeight / 2;
+
+      if (isBottomHalf && y + menuHeight > windowHeight - 8) {
+        // Position above mouse if in bottom half or if it would go off bottom
+        finalY = y - menuHeight - 8;
+        // Ensure menu doesn't go above viewport
+        if (finalY < 8) {
+          finalY = 8;
+        }
+      } else {
+        // Position below mouse
+        finalY = y + 8;
+        // Ensure menu doesn't go below viewport
+        if (finalY + menuHeight > windowHeight - 8) {
+          finalY = windowHeight - menuHeight - 8;
+        }
+      }
+
+      // Adjust horizontal position if menu goes off screen
+      if (finalX + menuWidth > windowWidth - 8) {
+        finalX = windowWidth - menuWidth - 8;
+      }
+      if (finalX < 8) {
+        finalX = 8;
+      }
+
+      setMenuStyle({
+        left: `${finalX}px`,
+        top: `${finalY}px`,
+        maxHeight: `${windowHeight - 16}px`
+      });
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [x, y]);
 
   // Improved download handler - ensures proper download behavior
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
       // If an external onDownload handler is provided, use it primarily
-      // This prevents duplicate downloads when the parent component already handles the download logic
       if (onDownload) {
-        try {
-          await onDownload();
-        } catch (e) {
-          console.error('onDownload callback error:', e);
-        }
-        return; // Exit early to avoid double download
-      }
-
-      // Fallback: Internal download logic if no onDownload handler is provided
-      if (imageUrl) {
+        await onDownload();
+      } else if (imageUrl) {
         await downloadImage(imageUrl);
       }
-
     } catch (error) {
       console.error('Download error:', error);
     } finally {
@@ -82,12 +132,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
 
   return (
     <div
+      ref={menuRef}
       data-context-menu
-      className="fixed z-50 bg-neutral-950/70 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl min-w-[180px] max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent"
-      style={{
-        left: `${x}px`,
-        top: `${y}px`,
-      }}
+      className="fixed z-50 bg-neutral-950/70 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl min-w-[200px] flex flex-col overflow-hidden transition-all duration-200 ease-out"
+      style={menuStyle}
       onClick={(e) => e.stopPropagation()}
       onWheel={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
@@ -101,27 +149,27 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         </Button>
       </div>
 
-      <div className="p-2">
+      <div className="p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent flex-1">
 
         <Button variant="ghost" onClick={() => {
           onLike();
           onClose();
         }}
-          className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+          className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
         >
-          <Heart size={16} className={cn("text-neutral-400", isLiked && "fill-current text-brand-cyan")} />
-          <span className="font-medium text-[11px] tracking-wide">{isLiked ? 'Unlike' : 'Like'}</span>
+          <Heart size={16} className={cn("text-neutral-400 flex-shrink-0", isLiked && "fill-current text-brand-cyan")} />
+          <span className="font-medium text-[11px] tracking-wide flex-1 text-left">{isLiked ? 'Unlike' : 'Like'}</span>
         </Button>
 
         <Button variant="ghost" onClick={handleDownload}
           disabled={isDownloading}
           className={cn(
-            "w-full px-3 py-2.5 text-left text-sm text-neutral-400 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md",
+            "w-full px-2 py-1.5 text-left text-sm text-neutral-400 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md",
             isDownloading ? "cursor-not-allowed opacity-50" : "hover:bg-neutral-800/50 hover:text-neutral-200"
           )}
         >
-          {isDownloading ? <GlitchLoader size={16} /> : <Download size={16} className="text-neutral-400" />}
-          <span className="font-medium text-[11px] tracking-wide">{isDownloading ? 'Downloading...' : 'Download'}</span>
+          {isDownloading ? <GlitchLoader size={16} /> : <Download size={16} className="text-neutral-400 flex-shrink-0" />}
+          <span className="font-medium text-[11px] tracking-wide flex-1 text-left">{isDownloading ? 'Downloading...' : 'Download'}</span>
         </Button>
 
         {onExport && (
@@ -129,18 +177,18 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             onExport();
             onClose();
           }}
-            className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+            className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
           >
-            <Upload size={16} className="text-neutral-400" />
-            <span className="font-medium text-[11px] tracking-wide">Export</span>
+            <Upload size={16} className="text-neutral-400 flex-shrink-0" />
+            <span className="font-medium text-[11px] tracking-wide flex-1 text-left">Export</span>
           </Button>
         )}
 
         <Button variant="ghost" onClick={handleFullscreen}
-          className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+          className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
         >
-          <Maximize2 size={16} className="text-neutral-400" />
-          <span className="font-medium text-[11px] tracking-wide">Fullscreen</span>
+          <Maximize2 size={16} className="text-neutral-400 flex-shrink-0" />
+          <span className="font-medium text-[11px] tracking-wide flex-1 text-left">Fullscreen</span>
         </Button>
 
         {imageUrl && (
@@ -148,10 +196,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             window.open(imageUrl, '_blank', 'noopener,noreferrer');
             onClose();
           }}
-            className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+            className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
           >
-            <ExternalLink size={16} className="text-neutral-400" />
-            <span className="font-medium text-[11px] tracking-wide">Open in New Tab</span>
+            <ExternalLink size={16} className="text-neutral-400 flex-shrink-0" />
+            <span className="font-medium text-[11px] tracking-wide flex-1 text-left">Open in New Tab</span>
           </Button>
         )}
 
@@ -159,12 +207,12 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           onCopy();
           onClose();
         }}
-          className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+          className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
         >
-          <Copy size={16} className="text-neutral-400" />
+          <Copy size={16} className="text-neutral-400 flex-shrink-0" />
           <div className="flex-1 flex items-center justify-between gap-4">
-            <span className="font-medium text-[11px] tracking-wide">Copy</span>
-            <span className="text-[10px] text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded">Ctrl+C</span>
+            <span className="font-medium text-[11px] tracking-wide text-left">Copy</span>
+            <span className="text-[10px] text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded flex-shrink-0">Ctrl+C</span>
           </div>
         </Button>
 
@@ -173,12 +221,12 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             onCopyPNG();
             onClose();
           }}
-            className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+            className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
           >
-            <CopyIcon size={16} className="text-neutral-400" />
+            <CopyIcon size={16} className="text-neutral-400 flex-shrink-0" />
             <div className="flex-1 flex items-center justify-between gap-4">
-              <span className="font-medium text-[11px] tracking-wide">Copy as PNG</span>
-              <span className="text-[10px] text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded">Ctrl+Shift+C</span>
+              <span className="font-medium text-[11px] tracking-wide text-left">Copy as PNG</span>
+              <span className="text-[10px] text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded flex-shrink-0">Ctrl+Shift+C</span>
             </div>
           </Button>
         )}
@@ -188,10 +236,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             onDescribe();
             onClose();
           }}
-            className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+            className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
           >
-            <FileText size={16} className="text-neutral-400" />
-            <span className="font-medium text-[11px] tracking-wide">Describe Image</span>
+            <FileText size={16} className="text-neutral-400 flex-shrink-0" />
+            <span className="font-medium text-[11px] tracking-wide flex-1 text-left">Describe Image</span>
           </Button>
         )}
 
@@ -201,10 +249,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           onEditWithPrompt();
           onClose();
         }}
-          className="w-full px-3 py-2.5 text-left text-sm text-brand-cyan hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md font-semibold"
+          className="w-full px-2 py-1.5 text-left text-sm text-brand-cyan hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md font-semibold"
         >
-          <Wand2 size={16} className="text-brand-cyan" />
-          <span className="text-[11px] tracking-wide">Edit with Prompt</span>
+          <Wand2 size={16} className="text-brand-cyan flex-shrink-0" />
+          <span className="text-[11px] tracking-wide flex-1 text-left">Edit with Prompt</span>
         </Button>
 
         <div className="h-px bg-neutral-800/30 my-1.5" />
@@ -213,19 +261,19 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           onDuplicate();
           onClose();
         }}
-          className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+          className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
         >
-          <CopyIcon size={16} className="text-neutral-400" />
-          <span className="font-medium text-[11px] tracking-wide">Duplicate</span>
+          <CopyIcon size={16} className="text-neutral-400 flex-shrink-0" />
+          <span className="font-medium text-[11px] tracking-wide flex-1 text-left">Duplicate</span>
         </Button>
         <Button variant="ghost" onClick={() => {
           onDelete();
           onClose();
         }}
-          className="w-full px-3 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+          className="w-full px-2 py-1.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
         >
-          <Trash2 size={16} className="text-red-400" />
-          <span className="font-medium text-[11px] tracking-wide">Delete</span>
+          <Trash2 size={16} className="text-red-400 flex-shrink-0" />
+          <span className="font-medium text-[11px] tracking-wide flex-1 text-left">Delete</span>
         </Button>
       </div>
     </div>

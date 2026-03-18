@@ -82,12 +82,13 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
               onMouseDown={(e) => e.stopPropagation()}
               disabled={disabled}
               className={cn(
-                'w-full flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
+                'w-full flex flex-col items-center justify-center gap-1 h-14 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
                 isSelected
                   ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
                   : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
                 disabled && 'opacity-50 cursor-not-allowed'
               )}
+
             >
               <span className="text-sm">{config.emoji} {config.label}</span>
               <span className="text-[10px] text-neutral-500 mt-0.5">

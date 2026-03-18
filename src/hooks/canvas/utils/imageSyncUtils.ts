@@ -4,8 +4,8 @@
  * Utilitários compartilhados para sincronização de imagens com edges
  */
 
-import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, ImageNodeData, OutputNodeData, EditNodeData } from '@/types/reactFlow';
+import type { Node } from '@xyflow/react';
+import type { FlowNodeData, ImageNodeData, OutputNodeData } from '@/types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
 
 /**
@@ -50,37 +50,6 @@ export const getImageUrlFromNode = (
     }
   }
   return undefined;
-};
-
-/**
- * Sync EditNode with connected image
- */
-export const syncEditNodeImage = (
-  node: Node<FlowNodeData>,
-  nodes: Node<FlowNodeData>[],
-  edges: Edge[]
-): Partial<EditNodeData> | null => {
-  if (node.type !== 'edit') return null;
-
-  const editData = node.data as EditNodeData;
-  const connectedEdge = edges.find(e => e.target === node.id);
-  const sourceNode = connectedEdge ? nodes.find(n => n.id === connectedEdge.source) : null;
-  const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'output';
-
-  if (hasConnectedImage && connectedEdge && sourceNode) {
-    const imageBase64 = getImageBase64FromNode(sourceNode);
-
-    if (imageBase64 && (!editData.uploadedImage || editData.uploadedImage.base64 !== imageBase64)) {
-      return {
-        uploadedImage: {
-          base64: imageBase64,
-          mimeType: 'image/png',
-        },
-      };
-    }
-  }
-
-  return null;
 };
 
 

@@ -518,21 +518,160 @@ export const AdminProductsPage: React.FC = () => {
                                     />
                                 </div>
                                 {formData.type === 'subscription_plan' && (
-                                    <div className="space-y-2 md:col-span-2">
-                                        <label className="text-xs font-bold text-neutral-500 uppercase ">Benefícios (um por linha para lista em marcadores)</label>
-                                        <Textarea
-                                            placeholder="Benefício 1&#10;Benefício 2&#10;Benefício 3..."
-                                            value={formData.metadata?.features ? (Array.isArray(formData.metadata.features) ? formData.metadata.features.join('\n') : '') : ''}
-                                            onChange={(e) => setFormData({
-                                                ...formData,
-                                                metadata: {
-                                                    ...formData.metadata,
-                                                    features: e.target.value.split('\n').filter(Boolean)
-                                                }
-                                            })}
-                                            className="bg-neutral-900 border-neutral-800 min-h-[120px] font-manrope"
-                                        />
-                                    </div>
+                                    <>
+                                        <div className="space-y-2 md:col-span-2">
+                                            <label className="text-xs font-bold text-neutral-500 uppercase ">Benefícios (um por linha para lista em marcadores)</label>
+                                            <Textarea
+                                                placeholder="Benefício 1&#10;Benefício 2&#10;Benefício 3..."
+                                                value={formData.metadata?.features ? (Array.isArray(formData.metadata.features) ? formData.metadata.features.join('\n') : '') : ''}
+                                                onChange={(e) => setFormData({
+                                                    ...formData,
+                                                    metadata: {
+                                                        ...formData.metadata,
+                                                        features: e.target.value.split('\n').filter(Boolean)
+                                                    }
+                                                })}
+                                                className="bg-neutral-900 border-neutral-800 min-h-[120px] font-manrope"
+                                            />
+                                        </div>
+
+                                        {/* Unlimited Settings */}
+                                        <div className="md:col-span-2 p-4 bg-neutral-900/50 border border-neutral-800 rounded-lg space-y-4">
+                                            <h4 className="text-sm font-bold text-brand-cyan flex items-center gap-2">
+                                                <span className="text-lg">∞</span> Configuração de Unlimited
+                                            </h4>
+                                            <p className="text-xs text-neutral-500">
+                                                Defina quais modelos/resoluções são ilimitados (não consomem créditos) para este plano.
+                                            </p>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Tier ID</label>
+                                                    <Input
+                                                        placeholder="ex: starter, creator, agency, studio"
+                                                        value={formData.metadata?.tier || ''}
+                                                        onChange={(e) => setFormData({
+                                                            ...formData,
+                                                            metadata: { ...formData.metadata, tier: e.target.value }
+                                                        })}
+                                                        className="bg-neutral-900 border-neutral-800 font-mono text-sm"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Storage (GB)</label>
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="20"
+                                                        value={formData.metadata?.storageLimitGB || ''}
+                                                        onChange={(e) => setFormData({
+                                                            ...formData,
+                                                            metadata: { ...formData.metadata, storageLimitGB: parseInt(e.target.value) || 0 }
+                                                        })}
+                                                        className="bg-neutral-900 border-neutral-800 font-mono text-sm"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <label className="text-xs font-bold text-neutral-500 uppercase">Resoluções Unlimited (NB2)</label>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {['512px', '1K', '2K', '4K'].map((res) => {
+                                                        const unlimitedRes = formData.metadata?.unlimitedResolutions || [];
+                                                        const isChecked = unlimitedRes.includes(res);
+                                                        return (
+                                                            <label
+                                                                key={res}
+                                                                className={cn(
+                                                                    "flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer transition-all",
+                                                                    isChecked
+                                                                        ? "bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan"
+                                                                        : "bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-600"
+                                                                )}
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isChecked}
+                                                                    onChange={(e) => {
+                                                                        const newRes = e.target.checked
+                                                                            ? [...unlimitedRes, res]
+                                                                            : unlimitedRes.filter((r: string) => r !== res);
+                                                                        setFormData({
+                                                                            ...formData,
+                                                                            metadata: { ...formData.metadata, unlimitedResolutions: newRes }
+                                                                        });
+                                                                    }}
+                                                                    className="sr-only"
+                                                                />
+                                                                <span className="text-sm font-mono">{res}</span>
+                                                                {isChecked && <span className="text-xs">∞</span>}
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                                <p className="text-[10px] text-neutral-600">
+                                                    Marque as resoluções que não consomem créditos para assinantes deste plano.
+                                                </p>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <label className="text-xs font-bold text-neutral-500 uppercase">Modelos Unlimited</label>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {[
+                                                        { id: 'nb2', label: 'NB2 (Flash)', model: 'gemini-3.1-flash-image-preview' },
+                                                        { id: 'pro', label: '4K Pro', model: 'gemini-3-pro-image-preview' },
+                                                        { id: 'veo-fast', label: 'Veo Fast', model: 'veo-3.1-fast-generate-preview' },
+                                                    ].map(({ id, label, model }) => {
+                                                        const unlimitedModels = formData.metadata?.unlimitedModels || [];
+                                                        const isChecked = unlimitedModels.includes(model);
+                                                        return (
+                                                            <label
+                                                                key={id}
+                                                                className={cn(
+                                                                    "flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer transition-all",
+                                                                    isChecked
+                                                                        ? "bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan"
+                                                                        : "bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-600"
+                                                                )}
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isChecked}
+                                                                    onChange={(e) => {
+                                                                        const newModels = e.target.checked
+                                                                            ? [...unlimitedModels, model]
+                                                                            : unlimitedModels.filter((m: string) => m !== model);
+                                                                        setFormData({
+                                                                            ...formData,
+                                                                            metadata: { ...formData.metadata, unlimitedModels: newModels }
+                                                                        });
+                                                                    }}
+                                                                    className="sr-only"
+                                                                />
+                                                                <span className="text-sm font-medium">{label}</span>
+                                                                {isChecked && <span className="text-xs">∞</span>}
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-neutral-500 uppercase">Intervalo</label>
+                                                <Select
+                                                    value={formData.metadata?.interval || 'month'}
+                                                    onChange={(val: any) => setFormData({
+                                                        ...formData,
+                                                        metadata: { ...formData.metadata, interval: val }
+                                                    })}
+                                                    options={[
+                                                        { value: 'month', label: 'Mensal' },
+                                                        { value: 'year', label: 'Anual' }
+                                                    ]}
+                                                    className="bg-neutral-900 border-neutral-800 w-48"
+                                                />
+                                            </div>
+                                        </div>
+                                    </>
                                 )}
                             </div>
 

@@ -81,10 +81,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    const onResize = typeof nodeData.onResize === 'function'
-      ? nodeData.onResize as (nodeId: string, width: number, height: number) => void
-      : undefined;
-    handleResizeWithDebounce(id, width, height, onResize);
+    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize as any);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   const handleFitToContent = useCallback(() => {

@@ -402,8 +402,8 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       return res.status(400).json({ error: 'Prompt is required' });
     }
 
-    // Calculate credits required (20 credits per video)
-    creditsToDeduct = getVideoCreditsRequired();
+    // Calculate credits required based on model (30 for fast, 80 for standard)
+    creditsToDeduct = getVideoCreditsRequired(model);
 
     console.log(`${logPrefix} [Credit Calculation] Before deduction`, {
       userId: req.userId,
@@ -465,7 +465,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     }
 
     // Validate model is supported
-    const supportedModels = ['veo-3.1-generate-preview'];
+    const supportedModels = ['veo-3.1-generate-preview', 'veo-3.1-fast-generate-preview'];
     if (!supportedModels.includes(normalizedModel)) {
       if (lockKey) {
         await db.collection('credit_locks').deleteOne({ lockKey, requestId });
@@ -642,7 +642,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
         promptLength: prompt?.length || 0,
         hasInputImage: !!imageBase64,
         timestamp: new Date(),
-        cost: calculateVideoCost(1),
+        cost: calculateVideoCost(1, normalizedModel.includes('fast') ? 'fast' : 'standard'),
         creditsDeducted: actualCreditsDeducted,
         subscriptionStatus: updatedUser.subscriptionStatus || 'free',
         hasActiveSubscription: updatedUser.subscriptionStatus === 'active',

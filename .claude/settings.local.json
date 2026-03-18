@@ -56,7 +56,8 @@
       "Bash(cd:*)",
       "Bash(git:*)",
       "WebFetch(domain:support.claude.com)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "WebFetch(domain:www.freepik.com)"
     ]
   }
 }

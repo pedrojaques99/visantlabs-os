@@ -90,9 +90,17 @@ export function useNodeResize() {
 
   /**
    * Ajusta o tamanho do node para "abraçar" o conteúdo.
+   * Permite passar 'auto' para o estilo do CSS, enquanto ainda informa o tamanho numérico real para o callback.
    */
   const fitToContent = useCallback(
-    (nodeId: string, width: number | 'auto', height: number | 'auto', onResize?: (nodeId: string, width: number, height: number) => void) => {
+    (
+      nodeId: string, 
+      width: number | 'auto', 
+      height: number | 'auto', 
+      onResize?: (nodeId: string, width: number, height: number) => void,
+      measuredWidth?: number,
+      measuredHeight?: number
+    ) => {
       setNodes((nds: Node[]) => {
         return nds.map((n) => {
           if (n.id === nodeId) {
@@ -115,9 +123,14 @@ export function useNodeResize() {
         isResizingRef.current = false;
       }
 
-      // If dimensions are numeric, call onResize callback
-      if (onResize && typeof width === 'number' && typeof height === 'number') {
-        onResize(nodeId, width, height);
+      // If dimensions are numeric (passed as main args or as measured extras), call onResize callback
+      if (onResize) {
+        const finalWidth = typeof width === 'number' ? width : (measuredWidth || 0);
+        const finalHeight = typeof height === 'number' ? height : (measuredHeight || 0);
+        
+        if (finalWidth > 0 || finalHeight > 0) {
+          onResize(nodeId, finalWidth, finalHeight);
+        }
       }
     },
     [setNodes]

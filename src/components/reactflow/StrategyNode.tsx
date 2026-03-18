@@ -949,7 +949,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   }, [sections, expandedSections, hasSectionData, id, nodeData]);
 
   const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, height, nodeData.onResize);
+    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   const handleFitToContent = useCallback(() => {

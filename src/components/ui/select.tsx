@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 export interface SelectOption {
   value: string;
   label: string;
+  icon?: React.ReactNode;
 }
 
 export interface SelectProps {
@@ -28,11 +29,40 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     const buttonRef = React.useRef<HTMLButtonElement>(null);
     const listRef = React.useRef<HTMLUListElement>(null);
 
+    const [renderPosition, setRenderPosition] = React.useState<'bottom' | 'top'>('bottom');
+
     // Merge refs
     React.useImperativeHandle(ref, () => buttonRef.current as HTMLButtonElement);
 
     const selectedOption = options.find(opt => opt.value === value);
     const displayValue = selectedOption?.label || placeholder || 'Select...';
+
+    // Calculate position to avoid being cut off
+    React.useLayoutEffect(() => {
+      if (!isOpen || !containerRef.current) return;
+
+      const checkPosition = () => {
+        const rect = containerRef.current!.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        const dropdownHeight = 240; // max-h-60 is 240px + some margin
+        const spaceBelow = windowHeight - rect.bottom;
+
+        if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+          setRenderPosition('top');
+        } else {
+          setRenderPosition('bottom');
+        }
+      };
+
+      checkPosition();
+      // Also check on resize/scroll
+      window.addEventListener('resize', checkPosition);
+      window.addEventListener('scroll', checkPosition, true);
+      return () => {
+        window.removeEventListener('resize', checkPosition);
+        window.removeEventListener('scroll', checkPosition, true);
+      };
+    }, [isOpen]);
 
     // Close on outside click
     React.useEffect(() => {
@@ -133,7 +163,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             baseStyles,
             focusStyles,
             "transition-all duration-200 appearance-none cursor-pointer",
-            "flex items-center justify-between gap-2",
+            "flex items-center justify-start gap-2",
             "hover:border-neutral-600/50",
             "disabled:cursor-not-allowed disabled:opacity-50",
             isOpen && "border-[brand-cyan]/50",
@@ -145,18 +175,25 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           aria-label={displayValue}
           {...props}
         >
-          <span className={cn(
-            "truncate",
-            !selectedOption && "text-neutral-500"
-          )}>
-            {loading ? (
-              <span className="inline-block w-20 h-4 rounded animate-pulse bg-neutral-700/50" />
-            ) : (
-              displayValue
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {selectedOption?.icon && (
+              <span className="text-neutral-400 flex-shrink-0">
+                {selectedOption.icon}
+              </span>
             )}
-          </span>
+            <span className={cn(
+              "truncate text-left",
+              !selectedOption && "text-neutral-500"
+            )}>
+              {loading ? (
+                <span className="inline-block w-20 h-4 rounded animate-pulse bg-neutral-700/50" />
+              ) : (
+                displayValue
+              )}
+            </span>
+          </div>
           <ChevronDown
-            size={16}
+            size={14}
             className={cn(
               "text-neutral-400 pointer-events-none flex-shrink-0 transition-transform duration-200",
               isOpen && "rotate-180"
@@ -168,9 +205,10 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
         {isOpen && (
           <div
             className={cn(
-              "absolute z-[99999] w-full mt-1",
-              "bg-neutral-800 backdrop-blur-xl",
-              "border border-neutral-700/50 rounded-md",
+              "absolute z-[99999] w-full",
+              renderPosition === 'bottom' ? "mt-1 top-full" : "mb-1 bottom-full",
+              "bg-neutral-950/70 backdrop-blur-xl",
+              "border border-neutral-800/50 rounded-md",
               "shadow-2xl",
               "overflow-hidden",
               "animate-fade-in"
@@ -197,17 +235,27 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                     onClick={() => handleSelect(option.value)}
                     onMouseEnter={() => setFocusedIndex(index)}
                     className={cn(
-                      "px-3 py-2 cursor-pointer",
-                      "text-xs font-mono relative",
+                      "px-2 py-1.5 cursor-pointer",
+                      "text-[11px] font-medium relative",
                       "transition-all duration-150",
-                      "flex items-center justify-between gap-2",
+                      "flex items-center justify-start gap-2",
                       "border-l-2 border-transparent", // Marker for hover
                       isFocused && "bg-neutral-800/60 border-neutral-600", // Focused state
                       isSelected && "bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]", // Selected state
                       !isSelected && !isFocused && "text-neutral-400 hover:bg-neutral-800/40 hover:text-neutral-200 hover:border-neutral-700" // Subtle hover
                     )}
                   >
-                    <span className="truncate">{option.label}</span>
+                    <div className="flex items-center gap-2 flex-1 min-w-0 pointer-events-none">
+                      {option.icon && (
+                        <span className={cn(
+                          "flex-shrink-0 transition-colors duration-150",
+                          isSelected ? "text-brand-cyan" : "text-neutral-400"
+                        )}>
+                          {option.icon}
+                        </span>
+                      )}
+                      <span className="truncate">{option.label}</span>
+                    </div>
                     {isSelected && (
                       <Check size={14} className="text-brand-cyan flex-shrink-0" />
                     )}
