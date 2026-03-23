@@ -460,6 +460,35 @@ export function getElementTextColor(elementBgColor: string, nodeBgColor: string)
  * @param amount - Amount to lighten (0-1, where 0.1 = 10% lighter)
  * @returns Lightened hex color string
  */
+/**
+ * Check WCAG compliance for a given contrast ratio
+ * @param ratio - Contrast ratio (1.0 to 21.0)
+ * @returns Object with compliance levels for normal and large text
+ */
+export function checkWCAGCompliance(ratio: number): {
+  normalAA: boolean;  // >= 4.5:1 for normal text
+  normalAAA: boolean; // >= 7.0:1 for normal text
+  largeAA: boolean;   // >= 3.0:1 for large text (18pt+ or 14pt bold)
+  largeAAA: boolean;  // >= 4.5:1 for large text
+} {
+  return {
+    normalAA: ratio >= 4.5,
+    normalAAA: ratio >= 7.0,
+    largeAA: ratio >= 3.0,
+    largeAAA: ratio >= 4.5,
+  };
+}
+
+/**
+ * Get contrast ratio between two colors (WCAG 2.1) - exported version
+ * @param color1 - First color (hex)
+ * @param color2 - Second color (hex)
+ * @returns Contrast ratio (1.0 to 21.0)
+ */
+export function getContrastRatioPublic(color1: string, color2: string): number {
+  return getContrastRatio(color1, color2);
+}
+
 export function lightenColor(hexColor: string, amount: number = 0.15): string {
   if (!hexColor) {
     return '#0A0A0A'; // Default fallback

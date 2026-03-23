@@ -47,3 +47,17 @@ export function useIngestGuideline() {
     },
   });
 }
+
+export function useDuplicateGuideline() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => brandGuidelineApi.duplicate(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEYS.all });
+      toast.success('Guideline duplicated');
+    },
+    onError: () => {
+      toast.error('Failed to duplicate guideline');
+    },
+  });
+}

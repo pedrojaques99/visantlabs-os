@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Plus,
   FileText,
@@ -19,9 +26,15 @@ import {
   Palette,
   Type,
   Compass,
+  Search,
+  MoreVertical,
+  Copy,
+  Trash2,
+  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { useDuplicateGuideline, useDeleteGuideline } from '@/hooks/queries/useBrandGuidelines';
 
 interface GuidelinesSidebarProps {
   guidelines: BrandGuideline[];
@@ -55,7 +68,34 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [expandedIds, setExpandedIds] = React.useState<string[]>(selectedId ? [selectedId] : []);
+  const [expandedIds, setExpandedIds] = useState<string[]>(selectedId ? [selectedId] : []);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const duplicateMutation = useDuplicateGuideline();
+  const deleteMutation = useDeleteGuideline();
+
+  // Filter guidelines by search query
+  const filteredGuidelines = useMemo(() => {
+    if (!searchQuery.trim()) return guidelines;
+    const term = searchQuery.toLowerCase();
+    return guidelines.filter(g => {
+      const name = (g.identity?.name || g.name || '').toLowerCase();
+      const tagline = (g.identity?.tagline || '').toLowerCase();
+      return name.includes(term) || tagline.includes(term);
+    });
+  }, [guidelines, searchQuery]);
+
+  const handleDuplicate = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    duplicateMutation.mutate(id);
+  };
+
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm('Are you sure you want to delete this guideline?')) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   const toggleExpand = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -78,8 +118,28 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
             DESIGN SYSTEMS
           </h2>
 
+          {/* Search Input */}
+          <div className="relative px-1">
+            <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600" />
+            <Input
+              type="text"
+              placeholder="Search guidelines..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 pl-8 pr-8 text-xs bg-white/[0.02] border-white/5 placeholder:text-neutral-700 focus:border-brand-cyan/30"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400 transition-colors"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+
           <div className="flex flex-col gap-1">
-            {guidelines.map((g) => (
+            {filteredGuidelines.map((g) => (
               <div key={g.id} className="space-y-1">
                 <button
                   onClick={() => onSelect(g)}
@@ -94,10 +154,39 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                   <span className="truncate flex-1 text-left font-medium">
                     {g.identity?.name || g.name || 'Untitled'}
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     {selectedId === g.id && (
                       <div className="w-1 h-1 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(var(--brand-cyan-rgb),0.5)]" />
                     )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <div
+                          role="button"
+                          className="p-1 rounded-sm hover:bg-white/10 transition-colors opacity-0 group-hover/item:opacity-100"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical size={12} className="text-neutral-600" />
+                        </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="min-w-[120px]">
+                        <DropdownMenuItem
+                          onClick={(e) => handleDuplicate(g.id!, e as any)}
+                          className="text-xs gap-2"
+                          disabled={duplicateMutation.isPending}
+                        >
+                          <Copy size={12} />
+                          Duplicate
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={(e) => handleDelete(g.id!, e as any)}
+                          className="text-xs gap-2 text-red-400 focus:text-red-400"
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 size={12} />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     <div
                       role="button"
                       onClick={(e) => toggleExpand(g.id!, e)}
@@ -162,6 +251,21 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                 </AnimatePresence>
               </div>
             ))}
+
+            {/* Empty state when no matches */}
+            {filteredGuidelines.length === 0 && searchQuery && (
+              <div className="px-3 py-6 text-center">
+                <p className="text-[10px] font-mono text-neutral-600">
+                  No guidelines match "{searchQuery}"
+                </p>
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="mt-2 text-[9px] font-mono text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+                >
+                  Clear search
+                </button>
+              </div>
+            )}
 
             <button
               onClick={onCreate}

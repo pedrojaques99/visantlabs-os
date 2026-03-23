@@ -132,6 +132,49 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
   }
 })
 
+// POST /api/brand-guidelines/:id/duplicate — clone a guideline
+router.post('/:id/duplicate', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const original = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+
+    if (!original) return res.status(404).json({ error: 'Not found' })
+
+    // Clone the guideline with a new name
+    const originalIdentity = original.identity as any || {}
+    const clonedIdentity = {
+      ...originalIdentity,
+      name: `${originalIdentity.name || 'Untitled'} (Copy)`,
+    }
+
+    const cloned = await prisma.brandGuideline.create({
+      data: {
+        userId: req.userId,
+        identity: clonedIdentity as any,
+        logos: original.logos as any || undefined,
+        colors: original.colors as any || undefined,
+        typography: original.typography as any || undefined,
+        tags: original.tags as any || undefined,
+        media: original.media as any || undefined,
+        tokens: original.tokens as any || undefined,
+        guidelines: original.guidelines as any || undefined,
+        extraction: { sources: [], completeness: 0 } as any,
+        // Reset public sharing
+        publicSlug: null,
+        isPublic: false,
+      },
+    })
+
+    res.status(201).json({ guideline: { ...cloned, _id: cloned.id } })
+  } catch (error: any) {
+    console.error('Error duplicating brand guideline:', error)
+    res.status(500).json({ error: 'Failed to duplicate brand guideline' })
+  }
+})
+
 // DELETE /api/brand-guidelines/:id
 router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {

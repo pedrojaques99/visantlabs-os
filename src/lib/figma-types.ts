@@ -705,6 +705,8 @@ export type UIMessage =
   // Brand Guidelines V2
   | { type: 'GET_BRAND_GUIDELINE' }
   | { type: 'SAVE_BRAND_GUIDELINE'; selectedId: string | null; guideline: string | null }
+  // Brand Guideline Auto-load (from Canvas)
+  | { type: 'LINK_GUIDELINE'; guidelineId: string; autoLoad?: boolean }
   // Undo
   | { type: 'UNDO_LAST_BATCH' }
   // Template Scanning
@@ -739,5 +741,7 @@ export type PluginMessage =
   // Brand Guidelines V2
   | { type: 'BRAND_GUIDELINE_LOADED'; selectedId: string | null; guideline: string | null }
   | { type: 'BRAND_GUIDELINE_SAVED' }
+  // Brand Guideline selection notification (to Canvas)
+  | { type: 'GUIDELINE_SELECTED'; guidelineId: string }
   // Template Scanning
   | { type: 'TEMPLATES_RESULT'; requestId?: string; templates: TemplateSpec[] };
