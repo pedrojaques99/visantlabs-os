@@ -4,6 +4,7 @@ class BrandSyncModule {
     this._syncTimer = null
     this._fileId = null
     this._selectedId = null // active guideline ID for this Figma file
+    this._isLinkedFromCanvas = false // true when auto-loaded from Canvas
   }
 
   init(fileId) {
@@ -45,14 +46,43 @@ class BrandSyncModule {
   }
 
   /** Select a guideline as active for this Figma file */
-  async select(id) {
+  async select(id, options = {}) {
     this._selectedId = id
+    // Reset linked status unless explicitly set
+    if (!options.fromCanvas) {
+      this._isLinkedFromCanvas = false
+    }
     const guideline = await this.fetchById(id)
     if (guideline) {
       window.setState('brandGuideline', guideline)
+      window.setState('brandGuidelineLinkedFromCanvas', this._isLinkedFromCanvas)
       this._saveToCache(id, guideline)
+      // Notify Canvas about selection (for reverse sync)
+      this._notifyCanvasSelection(id)
     }
     return guideline
+  }
+
+  /** Select a guideline with auto-load from Canvas (sets "Synced with Canvas" indicator) */
+  async selectWithAutoLoad(id) {
+    this._isLinkedFromCanvas = true
+    window.setState('brandGuidelineLinkedFromCanvas', true)
+    return this.select(id, { fromCanvas: true })
+  }
+
+  /** Check if current guideline is linked from Canvas */
+  isLinkedFromCanvas() {
+    return this._isLinkedFromCanvas
+  }
+
+  /** Notify Canvas that a guideline was selected in the plugin */
+  _notifyCanvasSelection(guidelineId) {
+    parent.postMessage({
+      pluginMessage: {
+        type: 'GUIDELINE_SELECTED',
+        guidelineId,
+      }
+    }, '*')
   }
 
   /** Save current brandGuideline state to server (debounced) */
@@ -109,13 +139,24 @@ class BrandSyncModule {
   handleMessage(msg) {
     if (msg.type === 'BRAND_GUIDELINE_LOADED') {
       if (msg.selectedId) this._selectedId = msg.selectedId
-      if (msg.guideline && !window.getState('brandGuideline')) {
-        const parsed = typeof msg.guideline === 'string' ? JSON.parse(msg.guideline) : msg.guideline
-        window.setState('brandGuideline', parsed)
-      }
-      // If we have a selectedId but no cached data, fetch from server
-      if (msg.selectedId && !msg.guideline) {
-        this.select(msg.selectedId)
+      if (msg.selectedId) {
+        // Check if this is an auto-load from Canvas
+        const isAutoLoad = msg.autoLoad === true
+
+        // Use cache immediately for instant display (no loading flash)
+        if (msg.guideline) {
+          const parsed = typeof msg.guideline === 'string' ? JSON.parse(msg.guideline) : msg.guideline
+          window.setState('brandGuideline', parsed)
+        }
+
+        // Always fetch fresh version from server in background
+        // This ensures brand data is up-to-date even if edited in the web app
+        if (isAutoLoad) {
+          // Auto-load from Canvas - set linked indicator
+          this.selectWithAutoLoad(msg.selectedId)
+        } else {
+          this.select(msg.selectedId)
+        }
       }
     }
   }
