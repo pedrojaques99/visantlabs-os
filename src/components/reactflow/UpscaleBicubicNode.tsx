@@ -9,7 +9,7 @@ import { NodeContainer } from './shared/NodeContainer';
 import { NodeActionBar } from './shared/NodeActionBar';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useMockupLike } from '@/hooks/useMockupLike';
-import { fileToBase64 } from '@/utils/fileUtils';
+import { fileToBase64, validateFile } from '@/utils/fileUtils';
 import { isSafeUrl } from '@/utils/imageUtils';
 import { mockupApi } from '@/services/mockupApi';
 import { aiApi } from '@/services/aiApi';
@@ -274,17 +274,9 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file type
-    const supportedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!supportedTypes.includes(file.type)) {
-      toast.error('Unsupported file type. Please use JPG, PNG, WEBP, or GIF.');
-      return;
-    }
-
-    // Check file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast.error('Image too large. Maximum size is 10MB.');
+    const error = validateFile(file, 'image');
+    if (error) {
+      toast.error(error);
       return;
     }
 
@@ -387,8 +379,8 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-    const { width, height } = params;
-    handleResizeWithDebounce(id, width, height);
+    const { width } = params;
+    handleResizeWithDebounce(id, width, 'auto');
   }, [id, handleResizeWithDebounce]);
 
   const handleDuplicate = () => {

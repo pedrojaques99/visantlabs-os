@@ -8,6 +8,8 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { prisma } from '../db/prisma.js';
 import { connectToMongoDB } from '../db/mongodb.js';
+import { improvePrompt, describeImage } from '../services/geminiService.js';
+import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 
 // ═══════════════════════════════════════════
 // Session auth context
@@ -55,19 +57,8 @@ function jsonResponse(data: unknown) {
   };
 }
 
-function placeholderResponse(tool: string, endpoint: string) {
-  return {
-    content: [
-      {
-        type: 'text' as const,
-        text: JSON.stringify({
-          message: 'This tool requires the full platform. Use the REST API endpoint instead.',
-          endpoint,
-        }, null, 2),
-      },
-    ],
-  };
-}
+/** Base URL for internal API calls (reuses existing route logic for credits, validation, etc.) */
+const INTERNAL_API_BASE = process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3001}`;
 
 /**
  * Creates and returns a Platform MCP server with all tools registered.
@@ -218,13 +209,47 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'mockup-generate',
-    'Generate a new mockup image using AI. Costs 1 credit. Returns the generated image URL.',
+    'Generate a new mockup image using AI. Costs credits based on model/resolution. Returns the generated image URL.',
     {
       prompt: z.string().min(1).describe('Description of the mockup to generate.'),
       designType: z.string().optional().describe('Design type hint (e.g. "business-card", "social-media").'),
       aspectRatio: z.string().optional().describe('Aspect ratio (e.g. "16:9", "1:1", "4:3").'),
+      brandGuidelineId: z.string().optional().describe('Brand guideline ID to inject brand context into generation.'),
     },
-    async () => placeholderResponse('mockup-generate', '/api/mockups/generate')
+    async ({ prompt, designType, aspectRatio, brandGuidelineId }) => {
+      if (!currentUserId) return authError();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-mcp-user-id': currentUserId,
+          },
+          body: JSON.stringify({
+            promptText: prompt,
+            designType: designType || 'blank',
+            aspectRatio: aspectRatio || '1:1',
+            feature: 'agent',
+            brandGuidelineId,
+          }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          return jsonResponse({ error: result.error || 'Generation failed', status: response.status });
+        }
+
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({
+          summary: 'Mockup generated successfully.',
+          imageUrl: result.imageUrl || null,
+          hasImage: !!result.imageBase64 || !!result.imageUrl,
+          _meta: quota,
+        });
+      } catch (err: any) {
+        return jsonResponse({ error: err.message });
+      }
+    }
   );
 
   // ═══════════════════════════════════════════
@@ -274,11 +299,37 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'branding-generate',
-    'Generate a complete brand identity (logo, colors, typography) from a text prompt. Costs credits based on complexity.',
+    'Generate a complete brand identity (logo, colors, typography) from a text prompt. Costs credits. Returns brand identity data.',
     {
       prompt: z.string().min(1).describe('Description of the brand to generate (e.g. "modern tech startup called Acme").'),
     },
-    async () => placeholderResponse('branding-generate', '/api/branding/generate')
+    async ({ prompt }) => {
+      if (!currentUserId) return authError();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/branding/generate-step`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-mcp-user-id': currentUserId,
+          },
+          body: JSON.stringify({
+            prompt,
+            step: 'full',
+            feature: 'agent',
+          }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          return jsonResponse({ error: result.error || 'Branding generation failed', status: response.status });
+        }
+
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ ...result, _meta: quota });
+      } catch (err: any) {
+        return jsonResponse({ error: err.message });
+      }
+    }
   );
 
   // ═══════════════════════════════════════════
@@ -393,14 +444,38 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'budget-create',
-    'Create a new budget document from a template with client and project details.',
+    'Create a new budget document with client and project details. Returns the created budget.',
     {
-      template: z.string().optional().describe('Template ID to base the budget on (optional).'),
       clientName: z.string().min(1).describe('Client or company name.'),
       projectDescription: z.string().min(1).describe('Brief description of the project scope.'),
       brandName: z.string().optional().describe('Brand name if different from client name.'),
     },
-    async () => placeholderResponse('budget-create', '/api/budget/create')
+    async ({ clientName, projectDescription, brandName }) => {
+      if (!currentUserId) return authError();
+      try {
+        const budget = await prisma.budgetProject.create({
+          data: {
+            userId: currentUserId,
+            template: 'default',
+            name: `${clientName} - Budget`,
+            clientName,
+            projectDescription,
+            startDate: new Date().toISOString().split('T')[0],
+            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            deliverables: [],
+            links: {},
+            faq: [],
+            brandColors: [],
+            brandName: brandName || clientName,
+            data: { clientName, projectDescription, brandName: brandName || clientName },
+          },
+        });
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ ...budget, _meta: quota });
+      } catch (err: any) {
+        return jsonResponse({ error: err.message });
+      }
+    }
   );
 
   // ═══════════════════════════════════════════
@@ -409,22 +484,53 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'ai-improve-prompt',
-    'Enhance and refine a text prompt using AI to produce better generation results. Costs 1 credit.',
+    'Enhance and refine a text prompt using AI to produce better generation results. Free, no credit cost.',
     {
       prompt: z.string().min(1).describe('The original prompt to improve.'),
-      context: z.string().optional().describe('Additional context to guide the improvement (e.g. "for a mockup", "for branding").'),
     },
-    async () => placeholderResponse('ai-improve-prompt', '/api/ai/improve-prompt')
+    async ({ prompt }) => {
+      if (!currentUserId) return authError();
+      try {
+        let userApiKey: string | undefined;
+        try { userApiKey = await getGeminiApiKey(currentUserId); } catch { /* use system key */ }
+        const result = await improvePrompt(prompt, userApiKey);
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ improvedPrompt: result.improvedPrompt, _meta: quota });
+      } catch (err: any) {
+        return jsonResponse({ error: err.message });
+      }
+    }
   );
 
   server.tool(
     'ai-describe-image',
-    'Analyze an image and return a detailed text description. Provide either a URL or base64-encoded data. Costs 1 credit.',
+    'Analyze an image and return a detailed text description. Provide either a URL or base64-encoded data. Free, no credit cost.',
     {
       imageUrl: z.string().url().optional().describe('Public URL of the image to analyze.'),
       base64: z.string().optional().describe('Base64-encoded image data (include data URI prefix or raw base64).'),
     },
-    async () => placeholderResponse('ai-describe-image', '/api/ai/describe-image')
+    async ({ imageUrl, base64 }) => {
+      if (!currentUserId) return authError();
+      try {
+        if (!imageUrl && !base64) {
+          return jsonResponse({ error: 'Provide either imageUrl or base64.' });
+        }
+
+        let userApiKey: string | undefined;
+        try { userApiKey = await getGeminiApiKey(currentUserId); } catch { /* use system key */ }
+
+        // Build image input
+        const imageInput = base64
+          ? { base64, mimeType: 'image/png' }
+          : imageUrl!;
+
+        const result = await describeImage(imageInput as any, userApiKey);
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ description: result.description, title: result.title, _meta: quota });
+      } catch (err: any) {
+        return jsonResponse({ error: err.message });
+      }
+    }
   );
 
   // ═══════════════════════════════════════════

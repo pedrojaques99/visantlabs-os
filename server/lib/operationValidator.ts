@@ -95,7 +95,7 @@ class OperationValidator {
 
       case 'CREATE_COMPONENT_INSTANCE': {
         if (!op.componentKey) errors.push('CREATE_COMPONENT_INSTANCE requires componentKey');
-        if (!op.props?.name) errors.push('CREATE_COMPONENT_INSTANCE requires props.name');
+        // name is optional and lives on root, not inside props
         break;
       }
 
@@ -235,14 +235,14 @@ class OperationValidator {
       }
 
       case 'COMBINE_AS_VARIANTS': {
-        if (!Array.isArray(op.componentIds) || op.componentIds.length < 2) {
-          errors.push('COMBINE_AS_VARIANTS requires componentIds array with at least 2 items');
+        if (!Array.isArray(op.componentRefs) || op.componentRefs.length < 1) {
+          errors.push('COMBINE_AS_VARIANTS requires componentRefs array with at least 1 item');
         }
         break;
       }
 
       case 'CREATE_SVG': {
-        if (!op.props?.svg) errors.push('CREATE_SVG requires props.svg');
+        if (!op.svgString) errors.push('CREATE_SVG requires svgString');
         break;
       }
 
@@ -263,13 +263,14 @@ class OperationValidator {
 
       case 'CLONE_NODE':
       case 'DUPLICATE_NODE': {
-        if (!op.nodeId) errors.push(`${op.type} requires nodeId`);
+        if (!op.sourceNodeId) errors.push(`${op.type} requires sourceNodeId`);
         // parentRef or parentNodeId is optional (defaults to same parent)
         break;
       }
 
       case 'REORDER_CHILD': {
         if (!op.nodeId) errors.push('REORDER_CHILD requires nodeId');
+        if (!op.parentNodeId) errors.push('REORDER_CHILD requires parentNodeId');
         if (typeof op.index !== 'number')
           errors.push('REORDER_CHILD requires index (number)');
         break;
@@ -277,7 +278,8 @@ class OperationValidator {
 
       case 'SET_CONSTRAINTS': {
         if (!op.nodeId) errors.push('SET_CONSTRAINTS requires nodeId');
-        if (!op.constraints) errors.push('SET_CONSTRAINTS requires constraints');
+        if (!op.horizontal) errors.push('SET_CONSTRAINTS requires horizontal');
+        if (!op.vertical) errors.push('SET_CONSTRAINTS requires vertical');
         break;
       }
 

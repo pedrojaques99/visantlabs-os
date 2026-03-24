@@ -9,8 +9,8 @@ import type { FlowNodeData, OutputNodeData } from '@/types/reactFlow';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { generateNodeId } from '@/utils/canvas/canvasNodeUtils';
 import { cleanEdgeHandles } from '@/utils/canvas/canvasNodeUtils';
-import { validateCredits, normalizeImageToBase64, detectMimeType } from '@/services/reactFlowService';
-import type { GeminiModel, Resolution, UploadedImage } from '@/types/types';
+import { normalizeImageToBase64, detectMimeType } from '@/services/reactFlowService';
+import type { UploadedImage } from '@/types/types';
 
 /**
  * Create OutputNode with skeleton loading for generated images
@@ -56,16 +56,6 @@ export const createOutputNodeWithSkeleton = (
   });
 
   return { node: newOutputNode, edge: newEdge, nodeId: newOutputNodeId };
-};
-
-/**
- * Validate credits before operation
- */
-export const validateAndDeductCredits = async (
-  model: GeminiModel,
-  resolution?: Resolution
-): Promise<boolean> => {
-  return await validateCredits(model, resolution);
 };
 
 /**

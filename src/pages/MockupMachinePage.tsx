@@ -242,34 +242,11 @@ const MockupMachinePageContent: React.FC = () => {
         setUploadedImage(persistedState.uploadedImage);
         setReferenceImages(persistedState.referenceImages);
         setDesignType(persistedState.designType);
-        setSelectedTags(persistedState.selectedTags);
-        setSelectedBrandingTags(persistedState.selectedBrandingTags);
-        setSelectedLocationTags(persistedState.selectedLocationTags);
-        setSelectedAngleTags(persistedState.selectedAngleTags);
-        setSelectedLightingTags(persistedState.selectedLightingTags);
-        setSelectedEffectTags(persistedState.selectedEffectTags);
-        setSelectedColors(persistedState.selectedColors);
-        setPromptPreview(persistedState.promptPreview);
-        setAspectRatio(persistedState.aspectRatio);
         setSelectedModel(persistedState.selectedModel);
-        setResolution(persistedState.resolution);
         setHasGenerated(persistedState.hasGenerated);
         setMockupCount(persistedState.mockupCount);
-        setGenerateText(persistedState.generateText);
-        setWithHuman(persistedState.withHuman);
-        setEnhanceTexture(persistedState.enhanceTexture ?? false);
-        setRemoveText(persistedState.removeText ?? true);
-        setNegativePrompt(persistedState.negativePrompt);
-        setAdditionalPrompt(persistedState.additionalPrompt);
-        setSuggestedTags(persistedState.suggestedTags || []);
-        setSuggestedBrandingTags(persistedState.suggestedBrandingTags || []);
-        setSuggestedLocationTags(persistedState.suggestedLocationTags || []);
-        setSuggestedAngleTags(persistedState.suggestedAngleTags || []);
-        setSuggestedLightingTags(persistedState.suggestedLightingTags || []);
-        setSuggestedEffectTags(persistedState.suggestedEffectTags || []);
-        setSuggestedMaterialTags(persistedState.suggestedMaterialTags || []);
-        setSuggestedColors(persistedState.suggestedColors || []);
-        setInstructions(persistedState.instructions || '');
+        
+        // Let all tag arrays initialize empty. Zumbi State prevented.
 
         // Hide welcome screen and show mockups
         setShowWelcome(false);
@@ -356,35 +333,20 @@ const MockupMachinePageContent: React.FC = () => {
           uploadedImage,
           referenceImages,
           designType,
-          selectedTags,
-          selectedBrandingTags,
-          selectedLocationTags,
-          selectedAngleTags,
-          selectedLightingTags,
-          selectedEffectTags,
-          selectedColors,
-          promptPreview,
-          aspectRatio,
           selectedModel,
-          resolution,
           hasGenerated,
           mockupCount,
-          generateText,
-          withHuman,
-          enhanceTexture,
-          removeText,
-          negativePrompt,
-          additionalPrompt,
-          suggestedTags,
-          suggestedBrandingTags,
-          suggestedLocationTags,
-          suggestedAngleTags,
-          suggestedLightingTags,
-          suggestedEffectTags,
-          suggestedMaterialTags,
-          suggestedColors,
-          instructions,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          
+          // Provide placeholder defaults to satisfy PersistedMockupState type without changing the service signature right now
+          selectedTags: [], selectedBrandingTags: [], selectedLocationTags: [],
+          selectedAngleTags: [], selectedLightingTags: [], selectedEffectTags: [],
+          selectedColors: [], suggestedTags: [], suggestedBrandingTags: [],
+          suggestedLocationTags: [], suggestedAngleTags: [], suggestedLightingTags: [],
+          suggestedEffectTags: [], suggestedMaterialTags: [], suggestedColors: [],
+          promptPreview: '', aspectRatio: '1:1', resolution: '1K',
+          generateText: false, withHuman: false, enhanceTexture: false,
+          removeText: false, negativePrompt: '', additionalPrompt: '', instructions: ''
         });
       } catch (error) {
         // Silently fail - don't break UX if localStorage fails
@@ -2678,7 +2640,7 @@ Generate the new mockup image with the requested changes applied.`;
           onImageUpload={handleImageUpload}
         />
       ) : (
-        <div className="h-full w-full pt-12 md:pt-14 bg-background">
+        <div className="h-full w-full pt-12 md:pt-14 bg-background overflow-hidden">
           <div className={cn(
             "flex h-full transition-all duration-300",
             isSetupMode ? "flex-col items-center justify-center p-4 md:p-8" : "flex-row"
@@ -2690,7 +2652,7 @@ Generate the new mockup image with the requested changes applied.`;
               isSetupMode ? "w-full" : [
                 "fixed inset-0 lg:relative lg:inset-auto",
                 isSidebarVisibleMobile ? "flex items-center justify-center bg-background/95 backdrop-blur-md" : "hidden lg:flex lg:items-center lg:justify-center",
-                isSidebarCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none" : "lg:w-auto lg:opacity-300"
+                isSidebarCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none" : "lg:w-auto lg:opacity-100"
               ]
             )}>
               <SidebarOrchestrator

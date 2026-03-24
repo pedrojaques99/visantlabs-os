@@ -56,7 +56,15 @@
       "Bash(cd:*)",
       "Bash(git:*)",
       "WebFetch(domain:support.claude.com)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "WebFetch(domain:www.freepik.com)",
+      "Bash(find ~/.claude/skills/senior-security -type f -name *.md)",
+      "Bash(find . -name *.bak -o -name *~ -o -name *.swp -o -name .DS_Store)",
+      "Bash(find Z:/Cursor/visantlabs-os -maxdepth 2 -name *.md -path *debug* -o -name *DEBUG*)",
+      "Bash(find /z/Cursor/visantlabs-os/src/components -type f -name \"*.tsx\" -exec wc -l {} +)",
+      "Bash(wc -l /z/Cursor/visantlabs-os/src/pages/*.tsx)",
+      "Bash(xargs wc:*)",
+      "Bash(wc -l /z/Cursor/visantlabs-os/server/mcp/*.ts)"
     ]
   }
 }

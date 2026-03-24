@@ -7,6 +7,7 @@ import { checkSubscription, SubscriptionRequest } from '../middleware/subscripti
 import { generateMockup, RateLimitError, ModelResponseTextError } from '../../src/services/geminiService.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
+import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 import { safeFetch, getErrorMessage } from '../utils/securityValidation.js';
 import { ensureOptionalBoolean, ensureString, isValidObjectId, sanitizeLogValue } from '../utils/validation.js';
@@ -903,7 +904,14 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     // Calculate credits required
     // Always use 1 image per request to prevent multiple credit deductions
     const creditsPerImage = getCreditsRequired(model as GeminiModel, resolution);
-    creditsToDeduct = actualImagesCount * creditsPerImage;
+    let baseCreditsToDeduct = actualImagesCount * creditsPerImage;
+
+    // Check if generation is unlimited based on user's subscription plan
+    const planMetadata = await getUserPlanMetadata(req.userId!);
+    const isUnlimited = isGenerationUnlimited({ model, resolution, planMetadata });
+
+    // If unlimited, set credits to 0
+    creditsToDeduct = isUnlimited ? 0 : baseCreditsToDeduct;
 
     console.log(`${logPrefix} [Credit Calculation] Before deduction`, {
       userId: req.userId,
@@ -912,7 +920,10 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       resolution,
       imagesCount: actualImagesCount,
       creditsPerImage,
+      baseCreditsToDeduct,
+      isUnlimited,
       creditsToDeduct,
+      planTier: planMetadata?.tier || 'none',
       timestamp: new Date().toISOString(),
     });
 
@@ -982,6 +993,21 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
         requestId,
         lockKey,
         creditsToDeduct,
+        timestamp: new Date().toISOString(),
+      });
+      updatedUser = userBeforeDeduction;
+      creditsDeducted = false;
+      actualCreditsDeducted = 0;
+      deductionSource = { fromEarned: 0, fromMonthly: 0 };
+    } else if (creditsToDeduct === 0) {
+      // Unlimited plan - skip credit deduction
+      console.log(`${logPrefix} [CREDIT DEDUCTION] ∞ Unlimited generation - skipping credit deduction`, {
+        userId: req.userId,
+        requestId,
+        lockKey,
+        model,
+        resolution,
+        planTier: planMetadata?.tier || 'none',
         timestamp: new Date().toISOString(),
       });
       updatedUser = userBeforeDeduction;

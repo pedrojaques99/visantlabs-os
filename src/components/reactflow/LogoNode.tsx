@@ -1,9 +1,9 @@
 import React, { useRef, memo, useCallback, useState, useEffect } from 'react';
-import { Handle, Position, NodeResizer, type NodeProps, useReactFlow, useViewport } from '@xyflow/react';
+import { Position, NodeResizer, type NodeProps, useReactFlow, Handle } from '@xyflow/react';
 import { UploadCloud, X } from 'lucide-react';
 import type { LogoNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
-import { fileToBase64 } from '@/utils/fileUtils';
+import { fileToBase64, validateFile } from '@/utils/fileUtils';
 import { toast } from 'sonner';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
@@ -34,36 +34,21 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
   const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (logoInputRef.current) logoInputRef.current.value = '';
     if (!file || !nodeData.onUploadLogo) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error(t('canvasNodes.logoNode.pleaseSelectImageFile'), { duration: 3000 });
-      if (logoInputRef.current) {
-        logoInputRef.current.value = '';
-      }
+    const error = validateFile(file, 'image');
+    if (error) {
+      toast.error(error, { duration: 3000 });
       return;
-    }
-
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error(t('canvasNodes.logoNode.fileSizeExceedsLimit'), { duration: 5000 });
-      if (logoInputRef.current) {
-        logoInputRef.current.value = '';
-      }
-      return;
-    }
-
-    if (logoInputRef.current) {
-      logoInputRef.current.value = '';
     }
 
     try {
       const imageData = await fileToBase64(file);
       nodeData.onUploadLogo(id, imageData.base64);
       toast.success(t('canvasNodes.logoNode.logoUploadedSuccessfully'), { duration: 2000 });
-    } catch (error: any) {
-      toast.error(error?.message || t('canvasNodes.logoNode.failedToProcessLogo'), { duration: 5000 });
-      console.error('Failed to process logo:', error);
+    } catch (err: any) {
+      toast.error(err?.message || t('canvasNodes.logoNode.failedToProcessLogo'), { duration: 5000 });
     }
   };
 
@@ -97,9 +82,8 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     }
   }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
 
-  const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-    const { width, height } = params;
-    handleResizeWithDebounce(id, width, height, nodeData.onResize as any);
+  const handleResize = useCallback((_: any, params: { width: number }) => {
+    handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   const handleDelete = () => {
@@ -110,17 +94,11 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     }
   };
 
-  const handleDuplicate = () => {
-    if (nodeData.onDuplicate) {
-      nodeData.onDuplicate(id);
-    }
-  };
-
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="min-w-[240px] max-w-[300px]"
+      className="min-w-[240px]"
       onFitToContent={handleFitToContent}
     >
       {selected && !dragging && (

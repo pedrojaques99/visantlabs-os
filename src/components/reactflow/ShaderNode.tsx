@@ -11,7 +11,7 @@ import { NodePlaceholder } from './shared/NodePlaceholder';
 import { RealtimeShaderVideo } from './shared/RealtimeShaderVideo';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeDownload } from './shared/useNodeDownload';
-import { fileToBase64, videoToBase64 } from '@/utils/fileUtils';
+import { fileToBase64, videoToBase64, validateFile } from '@/utils/fileUtils';
 import { canvasApi } from '@/services/canvasApi';
 import { toast } from 'sonner';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
@@ -168,35 +168,12 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file type
     const isImage = file.type.startsWith('image/');
     const isVideo = file.type.startsWith('video/');
-    const supportedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    const supportedVideoTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-msvideo'];
 
-    if (!isImage && !isVideo) {
-      toast.error(t('common.unsupportedFileType'));
-      return;
-    }
-
-    if (isImage && !supportedImageTypes.includes(file.type)) {
-      toast.error(t('common.unsupportedImageType'));
-      return;
-    }
-
-    if (isVideo && !supportedVideoTypes.includes(file.type)) {
-      toast.error(t('common.unsupportedVideoType'));
-      return;
-    }
-
-    // Check file size (max 10MB for images, 50MB for videos)
-    const maxImageSize = 10 * 1024 * 1024;
-    const maxVideoSize = 50 * 1024 * 1024;
-    const maxSize = isImage ? maxImageSize : maxVideoSize;
-
-    if (file.size > maxSize) {
-      const maxSizeMB = isImage ? 10 : 50;
-      toast.error(isImage ? t('common.imageTooLarge', { maxSize: maxSizeMB }) : t('common.videoTooLarge', { maxSize: maxSizeMB }));
+    const error = validateFile(file, ['image', 'video'], isImage ? 10 : 50);
+    if (error) {
+      toast.error(error);
       return;
     }
 
@@ -436,8 +413,8 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-    const { width, height } = params;
-    handleResizeWithDebounce(id, width, height);
+    const { width } = params;
+    handleResizeWithDebounce(id, width, 'auto');
   }, [id, handleResizeWithDebounce]);
 
   // Timer for loading state (similar to OutputNode)

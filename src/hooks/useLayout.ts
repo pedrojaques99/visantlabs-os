@@ -3,6 +3,7 @@ import { LayoutContext, type LayoutContextValue } from '../components/Layout';
 
 // Default fallback values when context is not available
 const defaultContextValue: LayoutContextValue = {
+  user: null,
   subscriptionStatus: null,
   isAuthenticated: null,
   isCheckingAuth: true,

@@ -7,13 +7,23 @@ import { prisma } from '../db/prisma.js';
 import { rateLimit } from 'express-rate-limit';
 
 // API rate limiter - general authenticated endpoints
-// Using express-rate-limit for CodeQL recognition
 const apiRateLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
   max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
   message: { error: 'Too many requests. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+});
+
+// HIGH-002 fix: Stricter rate limiter for public profile endpoints (anti-enumeration)
+const publicProfileLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 15, // 15 requests per minute per IP (stricter than general API)
+  message: { error: 'Too many profile requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Skip rate limiting for authenticated users
+  skip: (req) => !!req.headers.authorization,
 });
 
 const router = express.Router();
@@ -60,8 +70,8 @@ function getUserObjectId(userId: string): ObjectId {
   return new ObjectId(userId);
 }
 
-// Get user profile by username or ID
-router.get('/:identifier', apiRateLimiter, async (req, res) => {
+// Get user profile by username or ID (HIGH-002: stricter rate limiting)
+router.get('/:identifier', publicProfileLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
@@ -113,7 +123,7 @@ router.get('/:identifier', apiRateLimiter, async (req, res) => {
 });
 
 // Get user's public mockups
-router.get('/:identifier/mockups', apiRateLimiter, async (req, res) => {
+router.get('/:identifier/mockups', publicProfileLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
@@ -146,7 +156,7 @@ router.get('/:identifier/mockups', apiRateLimiter, async (req, res) => {
 });
 
 // Get user's public presets
-router.get('/:identifier/presets', apiRateLimiter, async (req, res) => {
+router.get('/:identifier/presets', publicProfileLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
@@ -228,7 +238,7 @@ router.get('/:identifier/presets', apiRateLimiter, async (req, res) => {
 });
 
 // Get user's public workflows
-router.get('/:identifier/workflows', apiRateLimiter, async (req, res) => {
+router.get('/:identifier/workflows', publicProfileLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;

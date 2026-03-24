@@ -68,6 +68,8 @@ export interface BrandGuideline {
   guidelines?: BrandGuidelineGuidelines
   extraction?: BrandGuidelineExtraction
   updatedAt?: string
+  // Organization
+  folder?: string
   // Public sharing
   publicSlug?: string
   isPublic?: boolean

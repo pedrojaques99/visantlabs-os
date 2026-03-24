@@ -5,7 +5,7 @@ import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { useDynamicSuggestions } from '@/hooks/useDynamicSuggestions';
 import { translateTag } from '@/utils/localeUtils';
-import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3 } from 'lucide-react';
+import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3, Settings2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { MockupTagCategory } from '@/services/mockupTagService';
@@ -187,7 +187,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
   );
 
   return (
-    <div ref={dropdownRef} className="relative flex-1 min-w-0">
+    <div ref={dropdownRef} className={cn("relative flex-1 min-w-0 transition-all", isOpen && "z-[100]")}>
       <Button variant="ghost"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -223,9 +223,9 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
       {isOpen && (
         <div
           className={cn(
-            "absolute z-50 mt-1 w-full rounded-md border shadow-lg animate-fade-in overflow-hidden",
+            "absolute z-[100] mt-1 w-full rounded-md border shadow-[0_10px_40px_rgba(0,0,0,0.7)] animate-fade-in overflow-hidden backdrop-blur-xl",
             theme === 'dark'
-              ? 'bg-neutral-900 border-neutral-700/50'
+              ? 'bg-neutral-950/98 border-neutral-700/50'
               : 'bg-white border-neutral-200'
           )}
         >
@@ -342,9 +342,20 @@ const ToggleCheckbox: React.FC<ToggleCheckboxProps> = ({ value, onChange, label,
   </div>
 );
 
-export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void; isGenerating?: boolean }> = ({ onRerollAll, isGenerating = false }) => {
+interface SurpriseMeSelectedTagsDisplayProps {
+  onRerollAll?: () => void;
+  isGenerating?: boolean;
+  sidebarWidth?: number;
+}
+
+export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDisplayProps> = ({ 
+  onRerollAll, 
+  isGenerating = false,
+  sidebarWidth = 400
+}) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const [showOptions, setShowOptions] = useState(false);
   const {
     selectedTags,
     selectedLocationTags,
@@ -380,6 +391,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
     // For dynamic suggestions
     hasAnalyzed,
     isAnalyzing,
+    designType,
   } = useMockup();
 
   const {
@@ -526,23 +538,40 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
         {isSurpriseMeMode && onRerollAll && (
           <Button variant="ghost"
             onClick={handleRerollAll}
-            className="ml-auto p-1.5 rounded-full hover:bg-neutral-800 transition-all duration-200 group/reroll"
+            className="ml-auto p-1.5 rounded-full hover:bg-neutral-800 transition-all duration-200 group/reroll active:scale-90"
             title="Sortear tudo novamente (Shuffle All)"
           >
-            <Shuffle size={14} className="text-neutral-500 group-hover/reroll:text-brand-cyan group-hover/reroll:rotate-180 transition-all duration-300" />
+            <Shuffle size={14} className={cn(
+              "text-neutral-500 group-hover/reroll:text-brand-cyan transition-all duration-300",
+              isGenerating ? "animate-diceRoll" : "group-hover/reroll:rotate-180"
+            )} />
           </Button>
         )}
       </div>
 
-      {/* Tag Dropdowns - 2 column grid */}
-      <div className="grid grid-cols-2 gap-2 mb-3">
-        {SECTIONS.map(({ key, labelKey }) => {
+      {/* Tag Dropdowns - Now 1 column for better layout flow */}
+      <div 
+        key={JSON.stringify(sectionData)}
+        className={cn(
+          "gap-3 mb-3 animate-fade-in",
+          sidebarWidth < 450 ? "flex flex-col" : "grid grid-cols-2"
+        )}
+      >
+        {SECTIONS.filter(({ key }) => {
+          // Always show categories and location
+          if (key === 'categories' || key === 'location') return true;
+          // Hide material if not a logo (to match AdvancedOptions logic)
+          if (key === 'material' && designType !== 'logo') return false;
+          // Show the rest for better UX
+          return true;
+        }).map(({ key, labelKey }, index, filteredArr) => {
           const tags = sectionData[key];
           const availableTags = availableTagsMap[key];
           const suggested = suggestedTagsMap[key];
 
+          // We use decreasing z-index so dropdowns overlap subsequent items correctly
           return (
-            <div key={key} className="flex flex-col gap-1">
+            <div key={key} className="flex flex-col gap-1 relative" style={{ zIndex: (filteredArr.length - index) * 10 }}>
               <SkeletonText loading={isGenerating}>
                 <span
                   className={cn(
@@ -575,32 +604,46 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
         })}
       </div>
 
-      {/* Checkboxes - 2x2 grid on mobile */}
-      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
-        <ToggleCheckbox
-          value={generateText}
-          onChange={setGenerateText}
-          label={t('mockup.generateContextualText')}
-          theme={theme}
-        />
-        <ToggleCheckbox
-          value={withHuman}
-          onChange={setWithHuman}
-          label={t('mockup.includeHumanInteraction')}
-          theme={theme}
-        />
-        <ToggleCheckbox
-          value={removeText}
-          onChange={setRemoveText}
-          label={t('mockup.removeText') || 'Remover texto'}
-          theme={theme}
-        />
-        <ToggleCheckbox
-          value={enhanceTexture}
-          onChange={setEnhanceTexture}
-          label={t('mockup.enhanceTexture')}
-          theme={theme}
-        />
+      {/* Checkboxes - hidden behind Advanced Options */}
+      <div className="mt-2 pt-2 border-t border-neutral-800/10">
+        <div 
+          className="flex items-center justify-between cursor-pointer group py-1" 
+          onClick={() => setShowOptions(!showOptions)}
+        >
+          <span className={cn("text-[10px] font-mono flex items-center gap-1.5 transition-colors", theme === 'dark' ? 'text-neutral-500 group-hover:text-neutral-300' : 'text-neutral-500 group-hover:text-neutral-800')}>
+            <Settings2 size={12} /> {t('mockup.advancedOptions') || 'Opções Avançadas'}
+          </span>
+          <ChevronDown size={12} className={cn("text-neutral-500 transition-transform", showOptions && "rotate-180")} />
+        </div>
+        
+        {showOptions && (
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mt-3 animate-fade-in">
+            <ToggleCheckbox
+              value={generateText}
+              onChange={setGenerateText}
+              label={t('mockup.generateContextualText')}
+              theme={theme}
+            />
+            <ToggleCheckbox
+              value={withHuman}
+              onChange={setWithHuman}
+              label={t('mockup.includeHumanInteraction')}
+              theme={theme}
+            />
+            <ToggleCheckbox
+              value={removeText}
+              onChange={setRemoveText}
+              label={t('mockup.removeText') || 'Remover texto'}
+              theme={theme}
+            />
+            <ToggleCheckbox
+              value={enhanceTexture}
+              onChange={setEnhanceTexture}
+              label={t('mockup.enhanceTexture')}
+              theme={theme}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

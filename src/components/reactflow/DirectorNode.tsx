@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
-import { type NodeProps, Position, useReactFlow } from '@xyflow/react';
-import { Compass, PanelRight, Sparkles, Image as ImageIcon, Check, Wand2, Dice1, Dices } from 'lucide-react';
+import { type NodeProps, Position, NodeResizer } from '@xyflow/react';
+import { Compass, PanelRight, Sparkles, Image as ImageIcon, Check, Wand2, Dices } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { DirectorNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -9,12 +9,13 @@ import { NodeHeader } from './shared/node-header';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { NodeButton } from './shared/node-button'
+import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
-  const { setNodes } = useReactFlow();
   const nodeData = data as DirectorNodeData;
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
 
   const rawConnected = nodeData.connectedImage;
   const connectedImage = typeof rawConnected === 'string' && rawConnected.trim().length > 0 ? rawConnected.trim() : undefined;
@@ -61,14 +62,6 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
     (nodeData.selectedColors?.length || 0) > 0
   );
 
-  const handleDelete = useCallback(() => {
-    if (nodeData.onDelete) {
-      nodeData.onDelete(id);
-    } else {
-      setNodes((nodes) => nodes.filter((node) => node.id !== id));
-    }
-  }, [nodeData.onDelete, id, setNodes]);
-
   // Get status for display
   const getStatusLabel = () => {
     if (isGeneratingPrompt) return t('canvasNodes.directorNode.generatingPrompt') || 'Generating...';
@@ -88,12 +81,32 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
     return 'node-text-subtle';
   };
 
+  const handleResize = useCallback((_: any, params: { width: number }) => {
+    handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize);
+  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+
+  const handleFitToContent = useCallback(() => {
+    fitToContent(id, 'auto', 'auto', nodeData.onResize);
+  }, [id, nodeData.onResize, fitToContent]);
+
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="min-w-[280px] max-w-[320px]"
+      onFitToContent={handleFitToContent}
+      className="min-w-[280px]"
     >
+      {selected && !dragging && (
+        <NodeResizer
+          color="brand-cyan"
+          isVisible={selected}
+          minWidth={280}
+          minHeight={200}
+          maxWidth={2000}
+          maxHeight={2000}
+          onResize={handleResize}
+        />
+      )}
       {/* Image Input Handle */}
       <LabeledHandle
         type="target"

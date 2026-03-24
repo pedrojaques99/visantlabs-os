@@ -1129,14 +1129,18 @@ async function applyOperations(ops: FigmaOperation[]) {
             }
 
             if (collection) {
+              // Correct API: createVariable(name, collectionId, resolvedType)
               const variable = (figma.variables as any).createVariable?.(
-                `${collection.id}/${op.name}`,
-                collection.defaultModeId,
-                op.resolvedType,
-                op.value
+                op.name,
+                collection.id,
+                op.resolvedType
               );
-              if (variable && op.ref) createdNodes.set(op.ref, variable as any);
-              if (variable) summaryLines.push(`Variável criada: ${op.name}`);
+              if (variable) {
+                // Set value using the collection's default mode
+                variable.setValueForMode(collection.defaultModeId, op.value);
+                if (op.ref) createdNodes.set(op.ref, variable as any);
+                summaryLines.push(`Variável criada: ${op.name}`);
+              }
             }
           } catch (e) {
             postToUI({ type: 'ERROR', message: `Erro ao criar variável: ${String(e)}` });
@@ -1624,18 +1628,17 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   if (msg.type === 'AGENT_OPS') {
     try {
       const { operations, opId } = msg as any;
-      const createdNodes = await applyOperations(operations);
-      const appliedCount = operations.length;
+      await applyOperations(operations);
 
       // Send ACK back to UI (which forwards to server via WebSocket)
       postToUI({
         type: 'OPERATION_ACK',
         opId,
         success: true,
-        appliedCount,
+        appliedCount: operations.length,
       });
 
-      console.log(`[Agent] Applied ${appliedCount} operations (opId=${opId})`);
+      console.log(`[Agent] Applied ${operations.length} operations (opId=${opId})`);
     } catch (err) {
       const { opId } = msg as any;
       const errorMsg = err instanceof Error ? err.message : String(err);
@@ -1979,5 +1982,20 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     figma.root.setPluginData('brandGuidelineSelectedId', selectedId || '')
     figma.root.setPluginData('brandGuidelineCache', guideline || '')
     postToUI({ type: 'BRAND_GUIDELINE_SAVED' })
+
+  } else if (msg.type === 'LINK_GUIDELINE') {
+    // Auto-load brand guideline from Canvas project
+    const { guidelineId, autoLoad } = msg as { guidelineId: string; autoLoad?: boolean }
+    if (guidelineId) {
+      // Store the linked guideline ID
+      figma.root.setPluginData('brandGuidelineSelectedId', guidelineId)
+      // Notify UI to fetch and activate the guideline
+      postToUI({
+        type: 'BRAND_GUIDELINE_LOADED',
+        selectedId: guidelineId,
+        guideline: null, // UI will fetch fresh from server
+        autoLoad: autoLoad ?? true,
+      })
+    }
   }
 };

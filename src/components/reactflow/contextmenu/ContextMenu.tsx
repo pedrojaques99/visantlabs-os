@@ -144,6 +144,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       setMenuStyle({
         left: `${finalX}px`,
         top: `${finalY}px`,
+        maxHeight: `${windowHeight - 16}px`,
       });
     }, 0);
 

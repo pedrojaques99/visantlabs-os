@@ -1,15 +1,14 @@
 import React, { useState, useRef, useCallback, memo, useEffect } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { Position, type NodeProps, NodeResizer } from '@xyflow/react';
 import { LabeledHandle } from './shared/LabeledHandle';
-import { UploadCloud, FileText, Palette, X, ChevronDown, ChevronUp, Plus, Trash2, Edit2, Check, Maximize2 } from 'lucide-react';
+import { UploadCloud, FileText, Palette, X, ChevronDown, ChevronUp, Plus, Trash2, Edit2, Check } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { BrandNodeData, BrandIdentity } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
-import { fileToBase64 } from '@/utils/fileUtils';
+import { fileToBase64, validateFile } from '@/utils/fileUtils';
 import { pdfToBase64, validatePdfFile } from '@/utils/pdfUtils';
 import { toast } from 'sonner';
 import { normalizeImageToBase64 } from '@/services/reactFlowService';
-import { Image as ImageIcon } from 'lucide-react';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
 import { NodeLabel } from './shared/node-label';
@@ -17,6 +16,8 @@ import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/hooks/useTranslation';
 import { NodeButton } from './shared/node-button';
 import { extractColors } from '@/utils/colorExtraction';
+import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 
 // Component for editing a single color row
 const ColorEditRow = ({
@@ -43,19 +44,15 @@ const ColorEditRow = ({
   };
 
   const handleBlur = () => {
-    // Reset to valid color on blur if invalid
     if (!hexValue.match(/^#[0-9A-Fa-f]{6}$/) && !hexValue.match(/^#[0-9A-Fa-f]{3}$/)) {
       setHexValue(color);
     }
   };
 
   return (
-    <div className="flex items-center gap-2 mb-2">
-      <div className="relative w-8 h-8 rounded border border-neutral-700 overflow-hidden shrink-0">
-        <div
-          className="absolute inset-0"
-          style={{ backgroundColor: color }}
-        />
+    <div className="flex items-center gap-1.5">
+      <div className="relative w-6 h-6 rounded border border-neutral-700/50 overflow-hidden shrink-0">
+        <div className="absolute inset-0" style={{ backgroundColor: color }} />
         <input
           type="color"
           value={color.length === 7 ? color : '#000000'}
@@ -70,16 +67,16 @@ const ColorEditRow = ({
         value={hexValue}
         onChange={handleHexChange}
         onBlur={handleBlur}
-        className="h-8 font-mono text-xs uppercase"
+        className="h-6 font-mono text-[10px] uppercase flex-1"
         placeholder="#000000"
       />
       <NodeButton
         variant="ghost"
         size="xs"
-        className="h-8 w-8 text-neutral-500 hover:text-red-400 shrink-0"
+        className="h-6 w-6 text-neutral-500 hover:text-red-400 p-0 shrink-0"
         onClick={onDelete}
       >
-        <Trash2 size={14} />
+        <Trash2 size={12} />
       </NodeButton>
     </div>
   );
@@ -91,6 +88,8 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const nodeData = data as BrandNodeData;
   const logoInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
 
   // Prioritize connected data over direct uploads
   const connectedLogo = nodeData.connectedLogo;
@@ -115,6 +114,36 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       setIsExpanded(true);
     }
   }, [brandIdentity, isExpanded]);
+
+  // Debounced fit-to-content: update node size when container content changes
+  const debouncedFitToContent = useDebouncedCallback(() => {
+    const el = containerRef.current;
+    if (!el || !nodeData.onResize) return;
+    const w = Math.max(el.scrollWidth, el.offsetWidth);
+    const h = Math.max(el.scrollHeight, el.offsetHeight);
+    if (w > 0 && h > 0) {
+      fitToContent(id, w, 'auto', nodeData.onResize as any, undefined, h);
+    }
+  }, 150);
+
+  // ResizeObserver: auto-fit node when expanded state changes
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => debouncedFitToContent());
+    ro.observe(el);
+    debouncedFitToContent();
+    return () => ro.disconnect();
+  }, [id, debouncedFitToContent]);
+
+  // Handle resize from NodeResizer
+  const handleResize = useCallback((width: number, height: number) => {
+    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize);
+  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+
+  const handleFitToContent = useCallback(() => {
+    fitToContent(id, 'auto', 'auto', nodeData.onResize);
+  }, [id, nodeData.onResize, fitToContent]);
 
   // Format logo URL - handle both base64 strings and data URLs
   const logoImageUrl = logoBase64
@@ -142,92 +171,54 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (logoInputRef.current) logoInputRef.current.value = '';
     if (!file || !nodeData.onUploadLogo) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error(t('canvasNodes.brandNode.pleaseSelectImageFile'), { duration: 3000 });
-      if (logoInputRef.current) {
-        logoInputRef.current.value = '';
-      }
+    const error = validateFile(file, 'image');
+    if (error) {
+      toast.error(error, { duration: 3000 });
       return;
-    }
-
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error(t('canvasNodes.brandNode.fileSizeExceedsLimit'), { duration: 5000 });
-      if (logoInputRef.current) {
-        logoInputRef.current.value = '';
-      }
-      return;
-    }
-
-    if (logoInputRef.current) {
-      logoInputRef.current.value = '';
     }
 
     try {
       const imageData = await fileToBase64(file);
       nodeData.onUploadLogo(id, imageData.base64);
       toast.success(t('canvasNodes.brandNode.logoUploadedSuccessfully'), { duration: 2000 });
-    } catch (error: any) {
-      toast.error(error?.message || t('canvasNodes.logoNode.failedToProcessLogo'), { duration: 5000 });
-      console.error('Failed to process logo:', error);
+    } catch (err: any) {
+      toast.error(err?.message || t('canvasNodes.logoNode.failedToProcessLogo'), { duration: 5000 });
     }
   };
 
   const handleIdentityFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (pdfInputRef.current) pdfInputRef.current.value = '';
     if (!file || !nodeData.onUpdateData) return;
 
-    let fileType: 'pdf' | 'png' | null = null;
-    let base64: string = '';
-    let errorMessage = '';
-
-    // Check if it's a PDF
-    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-      const validation = validatePdfFile(file);
-      if (!validation.isValid) {
-        errorMessage = validation.error || 'Invalid PDF file';
-      } else {
-        fileType = 'pdf';
-        try {
-          base64 = await pdfToBase64(file);
-        } catch (error: any) {
-          errorMessage = error?.message || t('canvasNodes.brandCore.failedToLoadIdentityFile');
-        }
-      }
-    }
-    // Check if it's an image (PNG, JPG, etc.)
-    else if (file.type.startsWith('image/')) {
-      fileType = 'png'; // Use 'png' as the type identifier for all images
-      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-      if (file.size > MAX_FILE_SIZE) {
-        errorMessage = t('canvasNodes.imageNode.fileSizeExceedsLimitMessage');
-      } else {
-        try {
-          const imageData = await fileToBase64(file);
-          base64 = imageData.base64;
-        } catch (error: any) {
-          errorMessage = error?.message || t('canvas.failedToProcessImage');
-        }
-      }
-    } else {
-      errorMessage = t('canvasNodes.brandNode.pleaseUploadPdfOrPngFirst');
-    }
-
-    if (errorMessage || !fileType || !base64) {
-      toast.error(errorMessage || t('canvas.failedToProcessImage'), { duration: 5000 });
-      if (pdfInputRef.current) {
-        pdfInputRef.current.value = '';
-      }
+    const error = validateFile(file, ['image', 'pdf']);
+    if (error) {
+      toast.error(error, { duration: 3000 });
       return;
     }
 
-    if (pdfInputRef.current) {
-      pdfInputRef.current.value = '';
-    }
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 
     try {
+      let base64: string;
+      let fileType: 'pdf' | 'png';
+
+      if (isPdf) {
+        const validation = validatePdfFile(file);
+        if (!validation.isValid) {
+          toast.error(validation.error || 'Invalid PDF', { duration: 3000 });
+          return;
+        }
+        base64 = await pdfToBase64(file);
+        fileType = 'pdf';
+      } else {
+        const imageData = await fileToBase64(file);
+        base64 = imageData.base64;
+        fileType = 'png';
+      }
       // Update node with the uploaded file
       if (nodeData.onUpdateData) {
         if (fileType === 'pdf') {
@@ -384,36 +375,34 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     const isEditing = editingCategory === category;
 
     return (
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-neutral-500 font-mono capitalize text-xs">{title}</div>
-          <div className="flex items-center gap-1">
-            {isEditing ? (
-              <NodeButton
-                variant="ghost"
-                size="xs"
-                className="h-5 w-5 text-green-400 hover:text-green-300"
-                onClick={() => setEditingCategory(null)}
-                title={t('common.done') || "Finish Editing"}
-              >
-                <Check size={12} />
-              </NodeButton>
-            ) : (
-              <NodeButton
-                variant="ghost"
-                size="xs"
-                className="h-5 w-5 text-neutral-500 hover:text-neutral-300"
-                onClick={() => setEditingCategory(category)}
-                title={t('common.edit') || "Edit Colors"}
-              >
-                <Edit2 size={12} />
-              </NodeButton>
-            )}
-          </div>
+      <div className="mb-3 last:mb-0">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-neutral-500 font-mono text-[10px]">{title}</span>
+          {isEditing ? (
+            <NodeButton
+              variant="ghost"
+              size="xs"
+              className="h-5 w-5 text-brand-cyan p-0"
+              onClick={() => setEditingCategory(null)}
+              title={t('common.done') || "Done"}
+            >
+              <Check size={10} />
+            </NodeButton>
+          ) : (
+            <NodeButton
+              variant="ghost"
+              size="xs"
+              className="h-5 w-5 text-neutral-500 hover:text-neutral-300 p-0"
+              onClick={() => setEditingCategory(category)}
+              title={t('common.edit') || "Edit"}
+            >
+              <Edit2 size={10} />
+            </NodeButton>
+          )}
         </div>
 
         {isEditing ? (
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {colors.map((color, idx) => (
               <ColorEditRow
                 key={`${category}-${idx}`}
@@ -425,30 +414,30 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             <NodeButton
               variant="ghost"
               size="xs"
-              className="w-full h-7 text-xs border-dashed border-neutral-700 text-neutral-500 hover:text-neutral-300 hover:border-neutral-500 mt-2"
+              className="w-full h-6 text-[10px] text-neutral-500 hover:text-neutral-300"
               onClick={() => handleColorAdd(category)}
             >
-              <Plus size={12} className="mr-1" /> {t('common.addColor') || "Add Color"}
+              <Plus size={10} className="mr-1" /> {t('common.addColor') || "Add"}
             </NodeButton>
           </div>
         ) : (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {colors.map((color, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-1 px-2 py-1 bg-neutral-900/50 rounded border border-neutral-700/30 cursor-pointer hover:border-neutral-500 transition-colors group/color"
+                className="flex items-center gap-1 px-1.5 py-0.5 bg-neutral-950/50 rounded border border-neutral-700/30 cursor-pointer hover:border-neutral-500 transition-colors"
                 title={t('canvas.clickToEdit') || "Click to edit"}
                 onClick={() => setEditingCategory(category)}
               >
                 <div
-                  className="w-3 h-3 rounded border border-neutral-700/50"
+                  className="w-2.5 h-2.5 rounded-sm border border-neutral-700/50"
                   style={{ backgroundColor: color }}
                 />
-                <span className="text-neutral-400 font-mono text-[10px] group-hover/color:text-neutral-300 transition-colors">{color}</span>
+                <span className="text-neutral-400 font-mono text-[9px]">{color}</span>
               </div>
             ))}
             {colors.length === 0 && (
-              <span className="text-[10px] text-neutral-600 ">{t('common.noResults') || "No colors"}</span>
+              <span className="text-[9px] text-neutral-600">{t('common.noResults') || "None"}</span>
             )}
           </div>
         )}
@@ -458,13 +447,28 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   return (
     <NodeContainer
+      containerRef={containerRef}
       selected={selected}
       dragging={dragging}
-      className="min-w-[320px] max-w-[400px]"
+      onFitToContent={handleFitToContent}
+      className="min-w-[320px]"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
     >
+      {selected && !dragging && (
+        <NodeResizer
+          color="brand-cyan"
+          isVisible={selected}
+          minWidth={320}
+          minHeight={300}
+          maxWidth={2000}
+          maxHeight={4000}
+          onResize={(_, { width, height }) => {
+            handleResize(width, height);
+          }}
+        />
+      )}
       {/* Input Handles */}
       <LabeledHandle
         type="target"
@@ -505,33 +509,18 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
-            <Palette size={16} className="text-brand-cyan" />
-          </div>
-          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
-            {t('canvasNodes.brandNode.title') || 'Brand Engine'}
-          </h3>
-        </div>
-      </div>
+      <NodeHeader
+        icon={Palette}
+        title={t('canvasNodes.brandNode.title') || 'Brand Engine'}
+      />
 
-      <div className="p-4 flex flex-col gap-[var(--node-gap)]">
+      <div className="flex flex-col gap-[var(--node-gap)]">
         {/* Logo Upload Section */}
-        <div className={cn(
-          "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
-          logoImageUrl
-            ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
-            : "bg-neutral-900/40 border-neutral-700/30"
-        )}>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className={cn(
-                "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]",
-                logoImageUrl ? "text-brand-cyan bg-brand-cyan" : "text-neutral-500 bg-neutral-600"
-              )} />
-              <span className="text-[10px] font-mono text-neutral-400 uppercase">{t('canvasNodes.brandNode.logoDna') || "Logo DNA"}</span>
-            </div>
+        <div className="p-3 rounded-md bg-neutral-900/40 border border-neutral-700/20">
+          <div className="flex items-center justify-between mb-2">
+            <NodeLabel className="text-[10px]">
+              {t('canvasNodes.brandNode.logoDna') || "Logo DNA"}
+            </NodeLabel>
             {logoImageUrl && !connectedLogo && (
               <NodeButton
                 variant="ghost"
@@ -545,8 +534,8 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           </div>
 
           {logoImageUrl ? (
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-md overflow-hidden bg-neutral-950/40 border border-neutral-700/50 p-1 flex items-center justify-center shadow-inner">
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-md overflow-hidden bg-neutral-950/50 border border-neutral-700/30 p-1 flex items-center justify-center">
                 <img
                   src={logoImageUrl}
                   alt="Logo"
@@ -554,14 +543,14 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 />
               </div>
               <div className="flex-1">
-                <div className="text-[10px] font-mono text-brand-cyan/70 uppercase">
+                <div className="text-[10px] font-mono text-brand-cyan/70">
                   {connectedLogo ? t('common.connected') : t('common.localSource') || 'Local Source'}
                 </div>
-                <div className="text-[11px] text-neutral-400 opacity-60">{t('common.propertyDetected') || "Property detected"}</div>
+                <div className="text-[10px] text-neutral-500">{t('common.propertyDetected') || "Property detected"}</div>
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <>
               <Input
                 ref={logoInputRef}
                 type="file"
@@ -569,29 +558,20 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 onChange={handleLogoFileChange}
                 className="hidden"
               />
-              <NodeButton variant="primary" size="full" onClick={handleLogoUploadClick} className="shadow-sm">
+              <NodeButton variant="primary" size="full" onClick={handleLogoUploadClick}>
                 <UploadCloud size={14} className="mr-2" />
                 {t('canvasNodes.logoNode.uploadLogo')}
               </NodeButton>
-            </div>
+            </>
           )}
         </div>
 
         {/* Identity Guide Upload Section (PDF or PNG) */}
-        <div className={cn(
-          "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
-          (identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl)
-            ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
-            : "bg-neutral-900/40 border-neutral-700/30"
-        )}>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className={cn(
-                "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]",
-                (identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl) ? "text-brand-cyan bg-brand-cyan" : "text-neutral-500 bg-neutral-600"
-              )} />
-              <span className="text-[10px] font-mono text-neutral-400 uppercase">{t('canvasNodes.brandNode.identity') || "Brand Guidelines"}</span>
-            </div>
+        <div className="p-3 rounded-md bg-neutral-900/40 border border-neutral-700/20">
+          <div className="flex items-center justify-between mb-2">
+            <NodeLabel className="text-[10px]">
+              {t('canvasNodes.brandNode.identity') || "Brand Guidelines"}
+            </NodeLabel>
             {(identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl) && !connectedIdentity && (
               <NodeButton
                 variant="ghost"
@@ -606,20 +586,20 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
           {(identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl) ? (
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-md bg-neutral-950/40 border border-neutral-700/50 shadow-inner">
-                <FileText size={20} className="text-brand-cyan/70" />
+              <div className="p-2.5 rounded-md bg-neutral-950/50 border border-neutral-700/30">
+                <FileText size={18} className="text-brand-cyan/70" />
               </div>
               <div className="flex-1 overflow-hidden">
-                <div className="text-[10px] font-mono text-brand-cyan/70 uppercase">
-                  {t('common.fileFound') || "FILE FOUND"}
+                <div className="text-[10px] font-mono text-brand-cyan/70">
+                  {t('common.fileFound') || "File found"}
                 </div>
-                <div className="text-[11px] text-neutral-400 opacity-60">
+                <div className="text-[10px] text-neutral-500">
                   {connectedIdentity ? t('common.referenceDocument') : t('common.localUpload') || 'Local upload'}
                 </div>
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <>
               <Input
                 ref={pdfInputRef}
                 type="file"
@@ -627,11 +607,11 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 onChange={handleIdentityFileChange}
                 className="hidden"
               />
-              <NodeButton variant="primary" size="full" onClick={handlePdfUploadClick} className="shadow-sm">
+              <NodeButton variant="primary" size="full" onClick={handlePdfUploadClick}>
                 <FileText size={14} className="mr-2" />
                 {t('canvasNodes.brandCore.uploadLogo') || "Upload Guidelines"}
               </NodeButton>
-            </div>
+            </>
           )}
         </div>
 
@@ -641,16 +621,15 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           disabled={!canAnalyze}
           variant="primary"
           size="full"
-          className="shadow-sm backdrop-blur-sm"
         >
           {isAnalyzing ? (
             <>
-              <GlitchLoader size={14} className="mr-2" color="currentColor" />
+              <GlitchLoader size={14} className="mr-1" color="brand-cyan" />
               <span>{t('canvasNodes.directorNode.analyzing') || "Analyzing..."}</span>
             </>
           ) : (
             <>
-              <Palette size={14} className="mr-2" />
+              <Palette size={14} />
               <span>{t('canvasNodes.brandNode.analyze') || "Analyze Brand Engine"}</span>
             </>
           )}
@@ -658,37 +637,35 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
         {/* Brand Identity Display */}
         {brandIdentity && (
-          <div className="border-t border-neutral-700/30 pt-4">
+          <div className="border-t border-neutral-700/20 pt-3">
             <NodeButton
               variant="ghost"
               size="full"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center justify-between group/expand px-1"
+              className="flex items-center justify-between"
             >
-              <span className="text-[10px] font-mono font-bold text-neutral-500 group-hover:text-neutral-300 uppercase transition-colors">{t('canvasNodes.brandNode.extractedIdentity') || "Extracted Identity"}</span>
-              <div className="p-1 rounded-full bg-neutral-900/50 group-hover:bg-neutral-800 transition-colors">
-                {isExpanded ? <ChevronUp size={12} className="text-neutral-400" /> : <ChevronDown size={12} className="text-neutral-400" />}
-              </div>
+              <span className="text-[10px] font-mono text-neutral-500 uppercase">{t('canvasNodes.brandNode.extractedIdentity') || "Extracted Identity"}</span>
+              {isExpanded ? <ChevronUp size={14} className="text-neutral-500" /> : <ChevronDown size={14} className="text-neutral-500" />}
             </NodeButton>
 
             {isExpanded && (
-              <div className="mt-4 space-y-4 text-[11px] animate-in fade-in slide-in-from-top-1 duration-300">
+              <div className="mt-3 space-y-3 text-[11px]">
                 {/* Colors */}
-                <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter font-bold">{t('canvasNodes.brandNode.paletteMatrix') || "Palette Matrix"}</div>
+                <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <NodeLabel className="text-[9px]">{t('canvasNodes.brandNode.paletteMatrix') || "Palette"}</NodeLabel>
                     <NodeButton
                       variant="ghost"
                       size="xs"
-                      className="h-6 text-[9px] px-2 text-brand-cyan/70 hover:bg-brand-cyan/10 border border-brand-cyan/20"
+                      className="h-5 text-[9px] px-1.5 text-brand-cyan/70"
                       onClick={manuallyExtractColors}
                       disabled={!logoBase64}
                     >
-                      {t('canvasNodes.brandNode.refineFromLogo') || "Refine from Logo"}
+                      {t('canvasNodes.brandNode.refineFromLogo') || "Refine"}
                     </NodeButton>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {renderColorCategory('Primary', 'primary', brandIdentity.colors.primary)}
                     {renderColorCategory('Secondary', 'secondary', brandIdentity.colors.secondary)}
                     {renderColorCategory('Accent', 'accent', brandIdentity.colors.accent)}
@@ -697,12 +674,12 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Typography */}
                 {brandIdentity.typography.primary && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
-                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">{t('canvasNodes.brandNode.typography') || "Typography"}</div>
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20">
+                    <NodeLabel className="text-[9px] mb-1.5">{t('canvasNodes.brandNode.typography') || "Typography"}</NodeLabel>
                     <div className="space-y-1">
-                      <div className="text-neutral-300 font-medium">{brandIdentity.typography.primary}</div>
+                      <div className="text-neutral-300 text-[11px]">{brandIdentity.typography.primary}</div>
                       {brandIdentity.typography.secondary && (
-                        <div className="text-neutral-500 text-[9px] ">{brandIdentity.typography.secondary}</div>
+                        <div className="text-neutral-500 text-[10px]">{brandIdentity.typography.secondary}</div>
                       )}
                     </div>
                   </div>
@@ -710,14 +687,14 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Personality */}
                 {(brandIdentity.personality.tone || brandIdentity.personality.feeling) && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
-                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">{t('canvasNodes.brandNode.persona') || "Persona"}</div>
-                    <div className="grid grid-cols-1 gap-2 text-neutral-400 leading-relaxed">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20">
+                    <NodeLabel className="text-[9px] mb-1.5">{t('canvasNodes.brandNode.persona') || "Persona"}</NodeLabel>
+                    <div className="space-y-1.5 text-[11px] text-neutral-400">
                       {brandIdentity.personality.tone && (
-                        <div><span className="text-neutral-600 uppercase text-[8px] font-mono mr-2">{t('canvasNodes.brandNode.tone') || "Tone:"}</span>{brandIdentity.personality.tone}</div>
+                        <div><span className="text-neutral-600 text-[9px] font-mono mr-1.5">{t('canvasNodes.brandNode.tone') || "Tone:"}</span>{brandIdentity.personality.tone}</div>
                       )}
                       {brandIdentity.personality.feeling && (
-                        <div><span className="text-neutral-600 uppercase text-[8px] font-mono mr-2">{t('canvasNodes.brandNode.feeling') || "Feeling:"}</span>{brandIdentity.personality.feeling}</div>
+                        <div><span className="text-neutral-600 text-[9px] font-mono mr-1.5">{t('canvasNodes.brandNode.feeling') || "Feeling:"}</span>{brandIdentity.personality.feeling}</div>
                       )}
                     </div>
                   </div>
@@ -725,16 +702,16 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Visual Elements */}
                 {brandIdentity.visualElements.length > 0 && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
-                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">{t('canvasNodes.brandNode.visualLanguage') || "Visual Language"}</div>
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20">
+                    <NodeLabel className="text-[9px] mb-1.5">{t('canvasNodes.brandNode.visualLanguage') || "Visual Elements"}</NodeLabel>
                     <div className="flex flex-wrap gap-1.5">
                       {brandIdentity.visualElements.slice(0, 8).map((element, idx) => (
-                        <span key={idx} className="px-2 py-0.5 bg-neutral-950/40 rounded text-[9px] text-neutral-400 border border-neutral-700/30 uppercase ">
+                        <span key={idx} className="px-2 py-0.5 bg-neutral-950/50 rounded text-[9px] text-neutral-400 border border-neutral-700/30">
                           {element}
                         </span>
                       ))}
                       {brandIdentity.visualElements.length > 8 && (
-                        <span className="text-neutral-500 text-[8px] font-mono">+{brandIdentity.visualElements.length - 8}</span>
+                        <span className="text-neutral-500 text-[9px]">+{brandIdentity.visualElements.length - 8}</span>
                       )}
                     </div>
                   </div>

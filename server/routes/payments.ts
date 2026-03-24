@@ -469,6 +469,32 @@ router.get('/subscription-status', apiRateLimiter, authenticate, async (req: Aut
     const totalCreditsEarned = user.totalCreditsEarned ?? 0;
     const totalCredits = (totalCreditsEarned ?? 0) + creditsRemaining;
 
+    // Fetch plan metadata if user has active subscription
+    let planMetadata = null;
+    let planName = null;
+
+    if (hasActiveSubscription && subscriptionTier !== 'free') {
+      // Try to find the product by tier in metadata or by matching productId pattern
+      // Find active products of type subscription_plan
+      const products = await prisma.product.findMany({
+        where: {
+          type: 'subscription_plan',
+          isActive: true,
+        },
+      });
+
+      // Match manually to avoid JSON filtering issues on MongoDB
+      const product = products.find(p => 
+        (p.metadata as any)?.tier === subscriptionTier || 
+        p.productId.includes(subscriptionTier)
+      );
+
+      if (product) {
+        planMetadata = product.metadata;
+        planName = product.name;
+      }
+    }
+
     res.json({
       subscriptionStatus,
       subscriptionTier,
@@ -484,6 +510,8 @@ router.get('/subscription-status', apiRateLimiter, authenticate, async (req: Aut
       canGenerate: hasActiveSubscription
         ? totalCredits > 0
         : (freeGenerationsUsed < FREE_GENERATIONS_LIMIT && totalCredits > 0),
+      planMetadata,
+      planName,
     });
   } catch (error) {
     next(error);
@@ -1331,33 +1359,46 @@ router.get('/pix-qrcode/:sessionId', apiRateLimiter, authenticate, async (req: A
 
 // Stripe webhook handler
 router.post('/webhook', webhookRateLimiter, async (req, res) => {
-  // Check if this is an AbacatePay webhook (has webhookSecret query param or missing stripe-signature)
+  const isDev = process.env.NODE_ENV !== 'production';
+
+  // Check if this is an AbacatePay webhook
   const webhookSecretQuery = req.query.webhookSecret || req.query.secret;
+  const webhookSecretHeader = req.headers['x-abacatepay-secret'] || req.headers['x-webhook-secret'];
   const sig = req.headers['stripe-signature'];
 
-  // If webhookSecret is in query params and no stripe-signature, it's AbacatePay
-  if (webhookSecretQuery && !sig) {
-    console.log('🔍 Detected AbacatePay webhook, forwarding to AbacatePay handler');
-    // Forward to AbacatePay webhook handler by changing the route
-    // We'll handle it inline to avoid route conflicts
+  // AbacatePay detection: has secret (header or query) and no stripe-signature
+  const abacateSecret = webhookSecretHeader || webhookSecretQuery;
+  if (abacateSecret && !sig) {
+    // CRIT-003: Log deprecation warning for query param usage
+    if (webhookSecretQuery && !webhookSecretHeader) {
+      console.warn('⚠️ DEPRECATED: AbacatePay webhook secret in URL query param. Use X-AbacatePay-Secret header instead.');
+    }
+
+    console.log('🔍 Detected AbacatePay webhook, processing...');
     try {
-      // Validate webhook secret if configured
+      // Validate webhook secret - REQUIRED in production (CRIT-002/003 fix)
       const abacateWebhookSecret = process.env.ABACATE_WEBHOOK_SECRET
         || process.env.ABACATEPAY_WEBHOOK_SECRET
-        || process.env.ABACATEPAY_WEBHHOOK_SECRET; // Support typo variant
+        || process.env.ABACATEPAY_WEBHHOOK_SECRET;
+
+      // In production, REQUIRE secret to be configured
+      if (!isDev && !abacateWebhookSecret) {
+        console.error('❌ ABACATEPAY_WEBHOOK_SECRET not configured in production');
+        return res.status(500).json({ error: 'Webhook verification not configured' });
+      }
 
       if (abacateWebhookSecret) {
-        const secretValue = typeof webhookSecretQuery === 'string' ? webhookSecretQuery : (Array.isArray(webhookSecretQuery) ? webhookSecretQuery[0] : String(webhookSecretQuery));
+        const secretValue = typeof abacateSecret === 'string'
+          ? abacateSecret
+          : (Array.isArray(abacateSecret) ? abacateSecret[0] : String(abacateSecret));
+
         if (secretValue !== abacateWebhookSecret) {
-          console.error('❌ AbacatePay webhook secret validation failed', {
-            hasSecret: !!webhookSecretQuery,
-            secretMatch: secretValue === abacateWebhookSecret,
-          });
+          console.error('❌ AbacatePay webhook secret validation failed');
           return res.status(401).json({ error: 'Invalid webhook secret' });
         }
         console.log('✅ AbacatePay webhook secret validated');
-      } else {
-        console.warn('⚠️ ABACATEPAY_WEBHOOK_SECRET not configured - webhook validation disabled');
+      } else if (isDev) {
+        console.warn('⚠️ [DEV ONLY] AbacatePay webhook validation skipped');
       }
 
       // Log full body structure for debugging
