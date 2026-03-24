@@ -252,7 +252,8 @@ describe('Encryption Security', () => {
     const { decryptApiKey } = await import('./encryption.js');
 
     expect(() => decryptApiKey('invalid-no-colons')).toThrow();
-    expect(() => decryptApiKey('only:two:parts:extra')).not.toThrow(); // 3+ parts, first 3 used
+    expect(() => decryptApiKey('only:two')).toThrow(); // Not enough parts
+    expect(() => decryptApiKey('a:b:c:d')).toThrow(); // Invalid hex data
   });
 });
 
