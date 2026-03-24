@@ -5,7 +5,8 @@ import { formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
 import { Card, CardHeader, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
-import { Pickaxe, CheckCircle2, CreditCard } from 'lucide-react';
+import { Pickaxe, CheckCircle2, CreditCard, Image, Video } from 'lucide-react';
+import { getCreditsEstimate } from '@/pages/docs/data/pricingData';
 import { PremiumButton } from './ui/PremiumButton';
 import { Button } from '@/components/ui/button'
 import { MicroTitle } from '@/components/ui/MicroTitle'
@@ -118,6 +119,28 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                                             <Pickaxe size={12} className="text-brand-cyan/60" />
                                             <span>{plan.credits} {t('pricing.creditsLabel')}</span>
                                         </div>
+                                        {/* Credit Estimates */}
+                                        {(() => {
+                                            const estimate = getCreditsEstimate(plan.credits || 0);
+                                            return (
+                                                <div className="flex items-center justify-center gap-3 mt-2 text-[10px] text-neutral-500">
+                                                    <div className="flex items-center gap-1">
+                                                        <Image size={10} className="text-brand-cyan/50" />
+                                                        <span>~{estimate.imagesHD} HD</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <Image size={10} className="text-brand-cyan/50" />
+                                                        <span>~{estimate.images4K} 4K</span>
+                                                    </div>
+                                                    {estimate.videosFast > 0 && (
+                                                        <div className="flex items-center gap-1">
+                                                            <Video size={10} className="text-brand-cyan/50" />
+                                                            <span>~{estimate.videosFast} vídeos</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
 
                                     {/* Plan Benefits */}

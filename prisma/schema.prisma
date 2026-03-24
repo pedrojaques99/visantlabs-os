@@ -47,6 +47,8 @@ model User {
   encryptedSeedreamApiKey String? // Encrypted Seedream API key (APIFree.ai)
   storageLimitBytes    Int?      // Custom storage limit in bytes (optional, overrides tier-based limit)
   storageUsedBytes     Int       @default(0) // Current storage used in bytes (calculated from uploads/deletes)
+  storageProductId     String?   // Active storage plan product ID (e.g., 'storage_pro')
+  storageSubscriptionEnd DateTime? // When standalone storage subscription expires (null = lifetime or tier-based)
   canvasSettings       Json?     // User settings for the canvas (colors, grid, etc.)
   totalGenerations     Int       @default(0) // Track total images generated across all apps
   totalTokensUsed      Int       @default(0) // Track total tokens used across all apps

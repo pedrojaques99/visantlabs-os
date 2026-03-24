@@ -48,7 +48,6 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
             className="flex flex-col h-full w-full mx-auto gap-4 md:gap-6"
         >
             <div className="flex-1 min-h-0 flex flex-col gap-4 md:gap-6">
-                <div className="flex flex-col gap-4 md:gap-6 max-w-6xl mx-auto w-full">
                     {/* Upload Section */}
                     <InputSection
                         uploadedImage={uploadedImage}
@@ -62,7 +61,6 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                         onDesignTypeChange={onDesignTypeChange}
                         onScrollToSection={() => { }}
                     />
-                </div>
             </div>
 
             {/* Bottom Action Area - More elegant and proportionate */}

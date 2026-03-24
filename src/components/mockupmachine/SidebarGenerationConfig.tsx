@@ -16,6 +16,8 @@ import { SurpriseMeControl } from './SurpriseMeControl';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { PresetsControl } from './PresetsControl';
 import { PromptSection } from './PromptSection';
+import { MicroTitle } from '../ui/MicroTitle';
+import { Switch } from '@/components/ui/switch';
 
 interface SidebarGenerationConfigProps {
     onGenerateClick: () => void;
@@ -234,8 +236,8 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
 
     return (
         <div className="animate-fade-in justify-center" >
-            {/* Color swatches + Transparent background toggle - moved above card */}
-            <div className="flex items-end justify-between mt-4 gap-3">
+            {/* Design Type + Color swatches - moved above card */}
+            <div className="flex items-center justify-between mt-4">
                 <div className="flex -space-x-1.5 transition-all duration-300">
                     {selectedColors.map((color, i) => (
                         <div
@@ -246,39 +248,27 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                         />
                     ))}
                 </div>
-                {designType && (
-                    <div
-                        className="flex items-center gap-2 cursor-pointer group"
-                        onClick={() => setDesignType(designType === 'logo' ? 'layout' : 'logo')}
-                        role="checkbox"
-                        aria-checked={designType === 'logo'}
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                            if (e.key !== 'Enter' && e.key !== ' ') return;
-                            e.preventDefault();
-                            setDesignType(designType === 'logo' ? 'layout' : 'logo');
-                        }}
-                    >
-                        <div className={cn(
-                            "w-4 h-4 rounded flex items-center justify-center border-2 transition-all duration-200 flex-shrink-0",
-                            designType === 'logo'
-                                ? "bg-brand-cyan border-brand-cyan"
-                                : theme === 'dark'
-                                    ? "bg-neutral-800 border-neutral-600 group-hover:border-neutral-500"
-                                    : "bg-white border-neutral-300 group-hover:border-neutral-400"
-                        )}>
-                            {designType === 'logo' && <Check size={10} className="text-black" strokeWidth={3} />}
-                        </div>
-                        <SkeletonText loading={isSidebarGenerating} className="min-w-[120px]">
-                            <span className={cn(
-                                "text-[11px] font-mono transition-colors select-none",
-                                theme === 'dark' ? "text-neutral-400 group-hover:text-neutral-300" : "text-neutral-600 group-hover:text-neutral-800"
-                            )}>
-                                {t('mockup.transparentBackground') || 'Transparent background'}
-                            </span>
-                        </SkeletonText>
-                    </div>
-                )}
+
+                <div
+                    role="button"
+                    onClick={() => setDesignType(designType === 'logo' ? 'layout' : 'logo')}
+                    className={cn(
+                        "px-2 h-7 rounded-md transition-all flex items-center gap-1.5 border cursor-pointer select-none",
+                        designType === 'logo'
+                            ? "bg-brand-cyan/10 border-brand-cyan/20 text-brand-cyan"
+                            : "bg-white/5 border-white/10 text-neutral-500 hover:text-neutral-400 hover:bg-white/10"
+                    )}
+                    title={t('mockup.transparentBackground') || 'Isolar Logotipo'}
+                >
+                    <Switch
+                        checked={designType === 'logo'}
+                        onCheckedChange={() => setDesignType(designType === 'logo' ? 'layout' : 'logo')}
+                        className="scale-[0.5] origin-left pointer-events-none"
+                    />
+                    <span className="font-bold text-[8px] uppercase tracking-tighter whitespace-nowrap opacity-80">
+                        {t('mockup.transparentBackground') || 'ISOLAR LOGO'}
+                    </span>
+                </div>
             </div>
 
             <div className="flex flex-col gap-2 mt-4">

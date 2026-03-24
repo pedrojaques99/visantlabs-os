@@ -11,6 +11,8 @@ import { useMockup } from './MockupContext';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { Button } from '@/components/ui/button'
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useByokStatus } from '@/hooks/useByokStatus';
+import { ByokCostIndicator } from '@/components/ui/ByokBadge';
 
 interface PromptSectionProps {
   promptPreview: string;
@@ -63,6 +65,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
   const { theme } = useTheme();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const { isByokActive } = useByokStatus();
 
   const {
     selectedTags,
@@ -424,10 +427,11 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                       </Button>
                     </Tooltip>
                     {creditsPerGeneration !== undefined && creditsPerGeneration > 0 && (
-                      <span className={`text-xs font-mono whitespace-nowrap ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-                        }`}>
-                        {creditsPerGeneration} {creditsPerGeneration === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
-                      </span>
+                      <ByokCostIndicator
+                        isByok={isByokActive}
+                        creditsRequired={creditsPerGeneration}
+                        className={theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}
+                      />
                     )}
                   </div>
                 )}

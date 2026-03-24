@@ -174,7 +174,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
             {canInteract && (
                 <div className="absolute inset-0 z-20 pointer-events-none">
                     {/* Top Buttons: Remove & Like - only the buttons block clicks, not the full row */}
-                    <div className="absolute top-3 left-3 right-3 flex justify-between items-start opacity-70 group-hover:opacity-100 transition-all duration-300">
+                    <div className="absolute top-3 left-3 right-3 flex justify-between items-start opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
                         {onRemove && (
                             <Button variant="ghost"
                                 onClick={(e) => { e.stopPropagation(); onRemove(); }}
@@ -198,7 +198,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                         )}
                     </div>
 
-                    <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-90 group-hover:opacity-100 transition-all duration-300">
+                    <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
                         <GlassPanel padding="none" className="flex flex-row items-center gap-0.5 p-1 bg-neutral-950/80 backdrop-blur-xl border-white/10 rounded-lg shadow-2xl pointer-events-auto">
                             <Tooltip content={t('mockup.download') || "Download"} position="top">
                                 <a

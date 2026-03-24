@@ -320,33 +320,29 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
         {!isLoadingImage && (
           <div className="flex items-center gap-3">
-            {uploadedImage && (
-              <>
-                {/* Brand Guideline Button */}
-                <BrandGuidelineSelector asButton />
+            {/* Brand Guideline Button */}
+            {uploadedImage && <BrandGuidelineSelector asButton />}
 
-                <div
-                  role="button"
-                  onClick={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
-                  className={cn(
-                    "px-3 h-8 rounded-md transition-all flex items-center gap-2 border cursor-pointer select-none",
+            <div
+                role="button"
+                onClick={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
+                className={cn(
+                    "px-2 h-7 rounded-md transition-all flex items-center gap-1.5 border cursor-pointer select-none",
                     designType === 'logo'
-                      ? "bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan"
-                      : "bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10"
-                  )}
-                  title={t('mockup.transparentBackground') || 'Isolar Logotipo'}
-                >
-                  <Switch
+                        ? "bg-brand-cyan/10 border-brand-cyan/20 text-brand-cyan"
+                        : "bg-white/5 border-white/10 text-neutral-500 hover:text-neutral-400 hover:bg-white/10"
+                )}
+                title={t('mockup.transparentBackground') || 'Isolar Logotipo'}
+            >
+                <Switch
                     checked={designType === 'logo'}
                     onCheckedChange={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
-                    className="scale-[0.6] origin-left pointer-events-none"
-                  />
-                  <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">
-                    {t('mockup.transparentBackground') || 'ISOLAR'}
-                  </MicroTitle>
-                </div>
-              </>
-            )}
+                    className="scale-[0.5] origin-left pointer-events-none"
+                />
+                <span className="font-bold text-[8px] uppercase tracking-tighter whitespace-nowrap opacity-80">
+                    {t('mockup.transparentBackground') || 'ISOLAR LOGO'}
+                </span>
+            </div>
 
             {canAddMoreReferences && (
               <label

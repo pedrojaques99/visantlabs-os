@@ -6,8 +6,9 @@
 
 import type { OpenAPISpec, MCPSpec } from '../hooks/useDocsData';
 import { PLATFORM_MCP_TOOLS, generateMcpToolsMarkdown } from '../data/platformMcpTools';
+import { generatePricingMarkdown } from '../data/pricingData';
 
-type TabId = 'overview' | 'api' | 'mcp' | 'plugin' | 'figma-nodes' | 'canvas-api' | 'brand-guidelines' | 'agents';
+type TabId = 'overview' | 'api' | 'mcp' | 'plugin' | 'figma-nodes' | 'canvas-api' | 'brand-guidelines' | 'agents' | 'pricing';
 
 export function generateTabMarkdown(
   tab: TabId,
@@ -37,6 +38,9 @@ export function generateTabMarkdown(
 
     case 'plugin':
       return generatePluginMarkdown();
+
+    case 'pricing':
+      return generatePricingMarkdown();
 
     case 'overview':
     default:
