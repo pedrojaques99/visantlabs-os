@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { NodeButton } from './shared/node-button'
 import { Input } from '@/components/ui/input'
+import { validateFile } from '@/utils/fileUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -44,14 +45,9 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
     const file = e.target.files?.[0];
     if (!file || !nodeData.onUploadVideo) return;
 
-    if (!file.type.startsWith('video/')) {
-      toast.error(t('common.pleaseSelectVideoFile'), { duration: 3000 });
-      return;
-    }
-
-    const MAX_FILE_SIZE = 50 * 1024 * 1024;
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error(t('common.videoFileSizeExceeds'), { duration: 5000 });
+    const error = validateFile(file, 'video', 50);
+    if (error) {
+      toast.error(error, { duration: 3000 });
       return;
     }
 
@@ -92,16 +88,17 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
     }
   }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
 
-  const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-    handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize as any);
-  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+  // Resize handler (com debounce - aplica apenas quando soltar o mouse)
+  const handleResize = useCallback((_: any, params: { width: number }) => {
+    handleResizeWithDebounce(id, params.width, 'auto', data.onResize);
+  }, [id, data.onResize, handleResizeWithDebounce]);
 
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="min-w-[320px]"
+      className="min-w-[320px] overflow-visible"
     >
       {selected && !dragging && (
         <NodeResizer

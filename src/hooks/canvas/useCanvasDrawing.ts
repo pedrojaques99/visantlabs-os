@@ -62,7 +62,8 @@ const DEFAULT_STATE: DrawingState = {
 };
 
 export const useCanvasDrawing = (
-  reactFlowInstance: ReactFlowInstance | null
+  reactFlowInstance: ReactFlowInstance | null,
+  setNodes?: (payload: any | ((nodes: any[]) => any[])) => void
 ) => {
   const [drawingState, setDrawingState] = useState<DrawingState>(DEFAULT_STATE);
   const [drawings, setDrawings] = useState<DrawingStroke[]>([]);
@@ -380,11 +381,29 @@ export const useCanvasDrawing = (
   }, []);
 
   // Update drawing bounds (for move and resize)
+  // Update drawing bounds (for move and resize)
   const updateDrawingBounds = useCallback((id: string, bounds: DrawingBounds) => {
     setDrawings((prev) =>
       prev.map((d) =>
         d.id === id
           ? { ...d, bounds }
+          : d
+      )
+    );
+  }, []);
+
+  const moveDrawings = useCallback((ids: Set<string>, delta: { x: number; y: number }) => {
+    setDrawings((prev) =>
+      prev.map((d) =>
+        ids.has(d.id)
+          ? { 
+              ...d, 
+              bounds: { 
+                ...d.bounds, 
+                x: d.bounds.x + delta.x, 
+                y: d.bounds.y + delta.y 
+              } 
+            }
           : d
       )
     );
@@ -487,9 +506,33 @@ export const useCanvasDrawing = (
       }
     });
 
+    // Also select ReactFlow nodes that intersect with the selection box
+    const bounds = {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+    };
+    
+    // Use partial match (true) so nodes partially inside the box are selected
+    const intersectingNodes = reactFlowInstance.getIntersectingNodes?.(bounds, true) || [];
+    const intersectingNodeIds = new Set(intersectingNodes.map((n: any) => n.id));
+
+    // Update ReactFlow nodes selection state directly via the instance or prop
+    const updateNodes = (nodes: any[]) => nodes.map(n => ({
+      ...n,
+      selected: intersectingNodeIds.has(n.id)
+    }));
+
+    if (setNodes) {
+      setNodes(updateNodes);
+    } else {
+      reactFlowInstance.setNodes?.(updateNodes);
+    }
+
     setSelectedDrawingIds(selectedIds);
     setSelectionBox(null);
-  }, [selectionBox, drawings, reactFlowInstance]);
+  }, [selectionBox, drawings, reactFlowInstance, setNodes]);
 
   const setSelectedDrawingId = useCallback((id: string | null) => {
     if (id === null) {
@@ -524,10 +567,12 @@ export const useCanvasDrawing = (
     setDrawings, // Expose setDrawings for history integration
     selectedDrawingIds,
     setSelectedDrawingId,
+    setSelectedDrawingIds,
     deleteDrawing,
     deleteSelectedDrawings,
     clearAllDrawings,
     updateDrawingBounds,
+    moveDrawings,
     selectionBox,
     startSelectionBox,
     updateSelectionBox,

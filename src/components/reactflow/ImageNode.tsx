@@ -22,7 +22,7 @@ import { MockupPresetModal } from '../MockupPresetModal';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useMockupLike } from '@/hooks/useMockupLike';
 import { NodeButton } from './shared/node-button';
-import { fileToBase64 } from '@/utils/fileUtils';
+import { fileToBase64, validateFile } from '@/utils/fileUtils';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 
 import { Input } from '@/components/ui/input'
@@ -135,8 +135,8 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     }
   }, [imageUrl, id, nodeData]);
 
-  const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize);
+  const handleResize = useCallback((_: any, params: { width: number }) => {
+    handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   const handleFitToContent = useCallback(() => {
@@ -291,16 +291,9 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       imageInputRef.current.value = '';
     }
 
-    if (!file.type.startsWith('image/')) {
-      toast.error(t('upload.unsupportedFileType') || 'Please select an image file', { duration: 3000 });
-      return;
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      const sizeMB = (file.size / 1024 / 1024).toFixed(2);
-      const errorMsg = t('upload.imageTooLarge')?.replace('{size}', sizeMB).replace('{max}', '10')
-        || `File size (${sizeMB}MB) exceeds 10MB limit`;
-      toast.error(errorMsg, { duration: 5000 });
+    const error = validateFile(file, 'image');
+    if (error) {
+      toast.error(error, { duration: 5000 });
       return;
     }
 
@@ -351,7 +344,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           maxWidth={2000}
           maxHeight={2000}
           keepAspectRatio={true}
-          onResize={(_, { width, height }) => handleResize(width, height)}
+          onResize={handleResize}
         />
       )}
 

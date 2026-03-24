@@ -475,16 +475,19 @@ router.get('/subscription-status', apiRateLimiter, authenticate, async (req: Aut
 
     if (hasActiveSubscription && subscriptionTier !== 'free') {
       // Try to find the product by tier in metadata or by matching productId pattern
-      const product = await prisma.product.findFirst({
+      // Find active products of type subscription_plan
+      const products = await prisma.product.findMany({
         where: {
           type: 'subscription_plan',
           isActive: true,
-          OR: [
-            { metadata: { path: ['tier'], equals: subscriptionTier } },
-            { productId: { contains: subscriptionTier } },
-          ],
         },
       });
+
+      // Match manually to avoid JSON filtering issues on MongoDB
+      const product = products.find(p => 
+        (p.metadata as any)?.tier === subscriptionTier || 
+        p.productId.includes(subscriptionTier)
+      );
 
       if (product) {
         planMetadata = product.metadata;

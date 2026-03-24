@@ -6,6 +6,7 @@ import { isSafeUrl } from '@/utils/imageUtils';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { cn } from '@/lib/utils';
 import type { UploadedImage } from '@/types/types';
+import { useMockup } from './MockupContext';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +32,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
 }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
+    const { isAnalyzing } = useMockup();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const referenceInputRef = useRef<HTMLInputElement>(null);
 
@@ -92,9 +94,27 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                             <>
                                 <img
                                     src={uploadedImage.url || (uploadedImage.base64 && isSafeUrl(`data:${uploadedImage.mimeType};base64,${uploadedImage.base64}`) ? `data:${uploadedImage.mimeType};base64,${uploadedImage.base64}` : '')}
-                                    className="w-full h-full object-cover p-10"
+                                    className={cn(
+                                        "w-full h-full object-contain p-4 transition-all duration-700",
+                                        isAnalyzing ? "brightness-50 grayscale-[0.5] scale-95" : "brightness-100 grayscale-0 scale-100"
+                                    )}
                                     alt="Analyzed Design"
                                 />
+
+                                {/* Scanning Beam Effect */}
+                                {isAnalyzing && (
+                                    <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-brand-cyan/10 to-transparent animate-scanline h-20 w-full" />
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <div className="px-4 py-2 bg-black/60 backdrop-blur-md rounded-full border border-brand-cyan/30 animate-pulse">
+                                                <span className="text-[10px] font-mono text-brand-cyan tracking-widest uppercase">
+                                                    Analyzing Structure...
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {onReplaceImage && (
                                     <>
                                         <Input
@@ -105,7 +125,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                             className="hidden"
                                         />
                                         <Button variant="ghost" onClick={() => fileInputRef.current?.click()}
-                                            className="absolute top-2 right-2 p-2 bg-neutral-950/70 hover:bg-neutral-950/90 backdrop-blur-sm border border-white/10 rounded-md transition-all duration-200 hover:border-brand-cyan/50 group/btn z-20 opacity-0 group-hover:opacity-300"
+                                            className="absolute top-2 right-2 p-2 bg-neutral-950/70 hover:bg-neutral-950/90 backdrop-blur-sm border border-white/10 rounded-md transition-all duration-200 hover:border-brand-cyan/50 group/btn z-20 opacity-60 group-hover:opacity-100"
                                             title={t('mockup.replaceImage') || 'Replace image'}
                                             aria-label="Replace image"
                                         >
@@ -126,15 +146,15 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                         <div className="absolute bottom-2 left-2 right-2 flex items-end justify-start gap-2 z-10 pointer-events-none">
                             <div className="flex gap-2 pointer-events-auto">
                                 {referenceImages.map((img, i) => (
-                                    <div key={i} className="relative w-12 h-12 rounded-md overflow-hidden border border-white/20 bg-neutral-900 shadow-lg group/ref">
+                                    <div key={i} className="relative w-12 h-12 rounded-md overflow-hidden border border-white/20 bg-neutral-800 shadow-lg group/ref">
                                         <img
                                             src={img.url || (img.base64 ? `data:${img.mimeType || 'image/png'};base64,${img.base64}` : '')}
-                                            className="w-full h-full object-cover opacity-90 group-hover/ref:opacity-300 transition-opacity"
+                                            className="w-full h-full object-contain p-1 opacity-90 group-hover/ref:opacity-300 transition-opacity"
                                             alt={`Ref ${i}`}
                                         />
                                         {onReferenceImagesChange && (
                                             <Button variant="ghost" onClick={() => handleRemoveReference(i)}
-                                                className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover/ref:opacity-300 transition-all duration-200"
+                                                className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-60 group-hover/ref:opacity-100 transition-all duration-200"
                                                 title={t('mockup.removeImage') || 'Remove image'}
                                             >
                                                 <X size={12} className="text-white" />
@@ -154,7 +174,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                             className="hidden"
                                         />
                                         <Button variant="ghost" onClick={() => referenceInputRef.current?.click()}
-                                            className="w-12 h-12 rounded-md border border-dashed border-white/20 bg-black/30 backdrop-blur-sm hover:bg-black/50 hover:border-brand-cyan/40 flex items-center justify-center transition-all duration-200 group/add opacity-70 hover:opacity-300"
+                                            className="w-12 h-12 rounded-md border border-dashed border-white/20 bg-black/30 backdrop-blur-sm hover:bg-black/50 hover:border-brand-cyan/40 flex items-center justify-center transition-all duration-200 group/add opacity-70 hover:opacity-100"
                                             title={t('mockup.addReferenceImage') || 'Add Reference'}
                                         >
                                             <Plus size={14} className="text-white/60 group-hover/add:text-brand-cyan" />

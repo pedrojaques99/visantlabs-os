@@ -1,11 +1,8 @@
 import React, { useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SEO } from '../components/SEO';
-import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Separator } from '../components/ui/separator';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,10 +12,9 @@ import {
   BreadcrumbSeparator,
 } from "../components/ui/breadcrumb";
 import { cn } from '../lib/utils';
-import { ImageOff, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
-import { MicroTitle } from '@/components/ui/MicroTitle'
 
 export const AppsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -45,7 +41,7 @@ export const AppsPage: React.FC = () => {
       link: '/branding-machine',
       badge: t('apps.badge.premium'),
       badgeVariant: 'premium',
-      category: 'branding',
+      category: 'design',
       free: false,
       span: 'lg:col-span-2 lg:row-span-1'
     },
@@ -56,7 +52,7 @@ export const AppsPage: React.FC = () => {
       link: '/brand-guidelines',
       badge: t('apps.badge.premium'),
       badgeVariant: 'premium',
-      category: 'branding',
+      category: 'design',
       free: false,
       span: 'lg:col-span-2 lg:row-span-1'
     },
@@ -67,7 +63,7 @@ export const AppsPage: React.FC = () => {
       link: '/canvas',
       badge: t('apps.badge.premium'),
       badgeVariant: 'premium',
-      category: 'branding',
+      category: 'design',
       free: false,
       span: 'lg:col-span-1 lg:row-span-1'
     },
@@ -78,7 +74,7 @@ export const AppsPage: React.FC = () => {
       link: '/budget-machine',
       badge: t('apps.badge.comingSoon'),
       badgeVariant: 'comingSoon',
-      category: 'branding',
+      category: 'design',
       free: false,
       span: 'lg:col-span-1 lg:row-span-1'
     },
@@ -90,7 +86,7 @@ export const AppsPage: React.FC = () => {
       badge: t('apps.badge.free'),
       badgeVariant: 'free',
       thumbnail: '/tools/color-extractor.png',
-      category: 'branding',
+      category: 'design',
       isExternal: true,
       free: true,
       span: 'lg:col-span-1 lg:row-span-1'
@@ -172,6 +168,21 @@ export const AppsPage: React.FC = () => {
     }
   ], [t]);
 
+  const CATEGORIES = useMemo(() => [
+    { key: 'design', title: t('apps.brandingTools') },
+    { key: 'mockup', title: 'MOCKUP LABS //' },
+    { key: 'effects', title: t('apps.effectsTools') },
+    { key: 'audio', title: t('apps.audioTools') },
+    { key: 'experimental', title: 'EXPERIMENTAL //' }
+  ], [t]);
+
+  const appsByCategory = useMemo(() => {
+    return CATEGORIES.map(cat => ({
+      ...cat,
+      apps: appsData.filter(app => app.category === cat.key)
+    })).filter(cat => cat.apps.length > 0);
+  }, [appsData, CATEGORIES]);
+
   return (
     <>
       <SEO
@@ -179,159 +190,132 @@ export const AppsPage: React.FC = () => {
         description={t('apps.seoDescription')}
         keywords={t('apps.seoKeywords')}
       />
-      <div className="min-h-screen bg-background text-neutral-300 relative overflow-hidden">
-        <div className="fixed inset-0 z-0" />
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-16 relative z-10">
-          <div className="mb-8">
-            <Breadcrumb>
+      <div className="min-h-screen bg-[#050505] text-neutral-300 relative overflow-hidden pb-32 pt-10 md:pt-14">
+        <div className="fixed inset-0 z-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,186,227,0.05),transparent_50%)]" />
+        
+        <div className="max-w-6xl mx-auto px-6 py-12 relative z-10">
+          <div className="mb-16">
+            <Breadcrumb className="mb-8">
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to="/" className="hover:text-brand-cyan transition-colors">{t('apps.home')}</Link>
+                    <Link to="/" className="text-neutral-500 hover:text-brand-cyan transition-colors text-xs font-mono tracking-widest">{t('apps.home')}</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
-                <BreadcrumbSeparator />
+                <BreadcrumbSeparator className="text-neutral-700" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>{t('apps.title')}</BreadcrumbPage>
+                  <BreadcrumbPage className="text-neutral-400 text-xs font-mono tracking-widest uppercase">{t('apps.title')}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-          </div>
 
-          <div className="mb-12">
-            <div className="mb-4">
-              <h1 className="text-3xl md:text-5xl font-bold font-redhatmono text-neutral-200 mb-4 tracking-tight">
-                {t('apps.title')} // <span className="text-brand-cyan opacity-50">LABS</span>
+            <div className="space-y-4">
+              <h1 className="text-4xl md:text-6xl font-bold font-redhatmono text-neutral-100 tracking-tightest leading-none">
+                {t('apps.title')} <span className="text-brand-cyan/40">/</span> LABS
               </h1>
-              <p className="text-neutral-500 font-mono text-sm md:text-base max-w-2xl leading-relaxed">
+              <p className="text-neutral-500 font-mono text-sm max-w-xl leading-relaxed opacity-70">
                 {t('apps.subtitle')}
               </p>
             </div>
-            <Separator className="mt-8 border-neutral-800/40" />
           </div>
 
-          {/* Unified Bento Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr">
-            {appsData.map((app) => {
-              const isProminent = app.span && app.span.includes('lg:col-span-2');
-              const isComingSoon = app.badgeVariant === 'comingSoon';
+          <div className="space-y-24">
+            {appsByCategory.map((category) => (
+              <section key={category.key} className="space-y-8">
+                <div className="flex items-center gap-4">
+                  <h2 className="text-[10px] uppercase font-mono tracking-[0.3em] text-brand-cyan/60 font-bold whitespace-nowrap">
+                    {category.title}
+                  </h2>
+                  <div className="h-[1px] w-full bg-gradient-to-r from-neutral-800/100 to-transparent" />
+                </div>
 
-              return (
-                <Card
-                  key={app.id}
-                  onClick={() => {
-                    if (isComingSoon) return;
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {category.apps.map((app) => {
+                    const isComingSoon = app.badgeVariant === 'comingSoon';
+                    const isPremium = app.badgeVariant === 'premium';
+                    return (
+                      <div
+                        key={app.id}
+                        onClick={() => {
+                          if (isComingSoon) return;
+                          if (isPremium && !hasAccess) {
+                            onSubscriptionModalOpen();
+                            return;
+                          }
+                          if (app.isExternal) {
+                            window.open(app.link, '_blank');
+                          } else {
+                            navigate(app.link);
+                          }
+                        }}
+                        className={cn(
+                          "group relative bg-[#0A0A0A] border border-neutral-800/40 rounded-sm overflow-hidden transition-all duration-300",
+                          !isComingSoon ? "hover:border-brand-cyan/40 hover:bg-[#0D0D0D] cursor-pointer" : "opacity-40 grayscale pointer-events-none"
+                        )}
+                      >
+                        {/* Interactive BG Glow */}
+                        <div className="absolute inset-0 bg-brand-cyan/0 group-hover:bg-brand-cyan/[0.02] transition-colors duration-500" />
+                        
+                        <div className="p-6 relative z-10 space-y-4">
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="space-y-1.5">
+                              <h3 className="text-lg font-bold text-neutral-200 group-hover:text-brand-cyan transition-colors font-manrope">
+                                {app.name}
+                              </h3>
+                              <p className="text-[11px] text-neutral-500 font-mono leading-relaxed line-clamp-2">
+                                {app.desc}
+                              </p>
+                            </div>
+                            
+                            <div className="flex flex-col items-end gap-2 shrink-0">
+                                {isPremium && !hasAccess ? (
+                                    <div className="bg-white/5 border border-white/10 p-1.5 rounded-sm">
+                                        <Badge className="bg-white text-black text-[8px] font-bold px-1.5 py-0 rounded-none tracking-tighter hover:bg-white">
+                                            LOCKED
+                                        </Badge>
+                                    </div>
+                                ) : (
+                                    <div className="p-1 border border-neutral-800/50 rounded-sm group-hover:border-brand-cyan/20 transition-colors">
+                                        <ExternalLink size={10} className="text-neutral-600 group-hover:text-brand-cyan/50" />
+                                    </div>
+                                )}
+                            </div>
+                          </div>
 
-                    if (app.badgeVariant === 'premium' && !hasAccess) {
-                      onSubscriptionModalOpen();
-                      return;
-                    }
-
-                    if (app.isExternal) {
-                      window.open(app.link, '_blank');
-                      return;
-                    }
-                    navigate(app.link);
-                  }}
-                  className={cn(
-                    "group relative overflow-hidden border-neutral-800/40 bg-card/20 flex flex-col transition-all duration-500",
-                    app.span || "col-span-1",
-                    !isComingSoon ? "hover:border-brand-cyan/30 hover:bg-card/40 cursor-pointer" : "opacity-60 cursor-default grayscale"
-                  )}
-                >
-                  <div className={cn("flex flex-col h-full", isProminent ? "flex-col" : "flex-col")}>
-                    {/* Image / Thumbnail Section */}
-                    <div className={cn(
-                      "relative overflow-hidden bg-neutral-900/50 transition-colors shrink-0",
-                      isProminent ? "aspect-video" : "aspect-[16/10] border-b border-neutral-800/50"
-                    )}>
-                      {app.thumbnail ? (
-                        <img
-                          src={app.thumbnail}
-                          alt={app.name}
-                          className="w-full h-full object-cover opacity-50 group-hover:opacity-300 group-hover:scale-105 transition-all duration-700"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-neutral-900/20">
-                          <ImageOff size={isProminent ? 64 : 32} className="text-neutral-800/50 group-hover:text-brand-cyan/20 transition-colors duration-500" />
+                          <div className="pt-2 flex items-center justify-between border-t border-neutral-800/40">
+                            <div className="flex gap-2">
+                              {app.badge && (
+                                <span className={cn(
+                                  "text-[8px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-full border",
+                                  app.badgeVariant === 'featured' && "border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5",
+                                  app.badgeVariant === 'premium' && "border-white/10 text-neutral-400 bg-white/5",
+                                  app.badgeVariant === 'free' && "border-neutral-800 text-neutral-500",
+                                  app.badgeVariant === 'comingSoon' && "border-neutral-900 text-neutral-600"
+                                )}>
+                                  {app.badge}
+                                </span>
+                              )}
+                            </div>
+                            
+                            <span className="text-[9px] font-mono text-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity translate-x-1 group-hover:translate-x-0 transition-transform">
+                              {app.isExternal ? 'LAUNCH EXTERNAL' : 'OPEN LAB'} _
+                            </span>
+                          </div>
                         </div>
-                      )}
 
-                      {/* Gradient Overlays */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-80 group-hover:opacity-300 transition-opacity duration-500" />
-
-                      {/* Badges */}
-                      {app.badge && (
-                        <div className="absolute top-3 right-3 z-20">
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "text-[9px] uppercase font-mono tracking-widest py-1 px-3 bg-black/60 backdrop-blur-md border-neutral-800/80 text-neutral-400 font-bold",
-                              app.badgeVariant === 'featured' && "border-brand-cyan/40 text-brand-cyan bg-brand-cyan/10",
-                              app.badgeVariant === 'premium' && "border-white/20 text-white/80",
-                              app.badgeVariant === 'comingSoon' && "border-neutral-800 text-neutral-500",
-                              app.badgeVariant === 'free' && "border-neutral-700 text-neutral-300"
-                            )}
-                          >
-                            {app.badge}
-                          </Badge>
-                        </div>
-                      )}
-
-                      {/* External Link Icon */}
-                      {app.isExternal && (
-                        <div className="absolute bottom-3 right-3 z-20">
-                          <ExternalLink size={12} className="text-neutral-500 opacity-60 group-hover:opacity-300 group-hover:text-brand-cyan transition-all" />
-                        </div>
-                      )}
-
-                      {/* Premium Overlay */}
-                      {app.badgeVariant === 'premium' && !hasAccess && !isAccessLoading && (
-                        <div className="absolute inset-0 bg-neutral-950/80 opacity-0 group-hover:opacity-300 transition-opacity duration-300 flex items-center justify-center z-30">
-                          <MicroTitle className="bg-brand-cyan text-black px-6 py-2 rounded-full font-bold text-xs transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                            {t('apps.subscribeNow')}
-                          </MicroTitle>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Content Section */}
-                    <CardContent className={cn("p-5 flex flex-col flex-1 gap-2")}>
-                      <div className="space-y-1.5 mt-auto">
-                        <div className="flex items-center gap-2">
-                          <h3 className={cn(
-                            "font-bold text-neutral-100 font-manrope transition-colors leading-tight tracking-tight",
-                            isProminent ? "text-xl md:text-2xl" : "text-base",
-                            "group-hover:text-brand-cyan"
-                          )}>
-                            {app.name}
-                          </h3>
-                        </div>
-                        <p className={cn(
-                          "text-neutral-500 font-mono leading-relaxed",
-                          isProminent ? "text-xs md:text-sm line-clamp-2" : "text-[10px] line-clamp-2"
-                        )}>
-                          {app.desc}
-                        </p>
+                        {/* Hover Line */}
+                        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-brand-cyan scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
                       </div>
-
-                      {isProminent && (
-                        <div className="pt-3 opacity-0 group-hover:opacity-300 transition-opacity duration-300">
-                          <span className="text-brand-cyan font-mono text-[9px] uppercase tracking-widest flex items-center gap-1.5">
-                            <span className="w-1 h-1 bg-brand-cyan rounded-full animate-pulse" />
-                            EXPLORE // ACCESS
-                          </span>
-                        </div>
-                      )}
-                    </CardContent>
-                  </div>
-                </Card>
-              );
-            })}
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
           </div>
         </div>
       </div>
     </>
   );
 };
+
 

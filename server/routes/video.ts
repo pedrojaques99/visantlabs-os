@@ -6,6 +6,7 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { generateVideo } from '../services/videoService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
+import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { uploadCanvasVideo, isR2Configured } from '../services/r2Service.js';
 import { calculateVideoCost } from '../../src/utils/pricing.js';
 import { rateLimit } from 'express-rate-limit';
@@ -403,13 +404,23 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     }
 
     // Calculate credits required based on model (30 for fast, 80 for standard)
-    creditsToDeduct = getVideoCreditsRequired(model);
+    const baseCreditsToDeduct = getVideoCreditsRequired(model);
+
+    // Check if generation is unlimited based on user's subscription plan
+    const planMetadata = await getUserPlanMetadata(req.userId!);
+    const isUnlimited = isGenerationUnlimited({ model, planMetadata });
+
+    // If unlimited, set credits to 0
+    creditsToDeduct = isUnlimited ? 0 : baseCreditsToDeduct;
 
     console.log(`${logPrefix} [Credit Calculation] Before deduction`, {
       userId: req.userId,
       requestId,
       model,
+      baseCreditsToDeduct,
+      isUnlimited,
       creditsToDeduct,
+      planTier: planMetadata?.tier || 'none',
       timestamp: new Date().toISOString(),
     });
 
@@ -426,6 +437,19 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
         userId: req.userId,
         requestId,
         creditsToDeduct,
+      });
+      updatedUser = userBeforeDeduction;
+      creditsDeducted = false;
+      actualCreditsDeducted = 0;
+      deductionSource = { fromEarned: 0, fromMonthly: 0 };
+    } else if (creditsToDeduct === 0) {
+      // Unlimited plan - skip credit deduction
+      console.log(`${logPrefix} [CREDIT DEDUCTION] ∞ Unlimited generation - skipping credit deduction`, {
+        userId: req.userId,
+        requestId,
+        model,
+        planTier: planMetadata?.tier || 'none',
+        timestamp: new Date().toISOString(),
       });
       updatedUser = userBeforeDeduction;
       creditsDeducted = false;

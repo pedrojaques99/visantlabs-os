@@ -76,8 +76,8 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
     }
   }, [resultImageUrl, isSaving, targetResolution, t]);
 
-  const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, 'auto', data.onResize);
+  const handleResize = useCallback((_: any, params: { width: number }) => {
+    handleResizeWithDebounce(id, params.width, 'auto', data.onResize);
   }, [id, data.onResize, handleResizeWithDebounce]);
 
   const handleFitToContent = useCallback(() => {
@@ -103,9 +103,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
           minHeight={200}
           maxWidth={2000}
           maxHeight={2000}
-          onResize={(_, { width, height }) => {
-            handleResize(width, height);
-          }}
+          onResize={handleResize}
         />
       )}
       <NodeHandles />

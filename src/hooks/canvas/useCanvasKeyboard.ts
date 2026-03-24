@@ -25,7 +25,10 @@ export const useCanvasKeyboard = (
   onDuplicateNodes?: (nodeIds: string[]) => void,
   addMockupNode?: (customPosition?: { x: number; y: number }) => string | undefined,
   addPromptNode?: (customPosition?: { x: number; y: number }) => string | undefined,
-  addUpscaleNode?: (customPosition?: { x: number; y: number }) => string | undefined
+  addUpscaleNode?: (customPosition?: { x: number; y: number }) => string | undefined,
+  deleteSelectedDrawings?: () => void,
+  selectedDrawingIds?: Set<string>,
+  setSelectedDrawingIds?: (ids: Set<string>) => void
 ) => {
   const logTimeoutRef = useRef<TimerRef | undefined>(undefined);
   const lifecycleLogTimeoutRef = useRef<TimerRef | undefined>(undefined);
@@ -134,52 +137,51 @@ export const useCanvasKeyboard = (
       // Delete key
       if (event.key === 'Delete' || event.key === 'Backspace') {
         const selectedNodes = nodes.filter(n => n.selected);
-        if (selectedNodes.length > 0) {
+        const hasSelectedDrawings = selectedDrawingIds && selectedDrawingIds.size > 0;
+        
+        if (selectedNodes.length > 0 || hasSelectedDrawings) {
           event.preventDefault();
-
           addToHistory(nodes, edges, drawings);
 
-          // Delete images/videos from R2 for all node types before removing them
-          // Use Promise.allSettled to handle all deletions without blocking
-          // Skip deletion for liked images (preserve them for MyOutputsPage)
-          Promise.allSettled(
-            selectedNodes.map(async (node) => {
-              // Check if the node is liked (should be preserved in R2 for MyOutputsPage)
-              const nodeData = node.data as any;
-              const isLiked = nodeData.isLiked === true || nodeData.mockup?.isLiked === true;
+          // Delete drawings if requested
+          if (deleteSelectedDrawings) {
+            deleteSelectedDrawings();
+          }
 
-              // Coletar todas as URLs do R2 que precisam ser deletadas
-              const urlsToDelete = collectR2UrlsForDeletion(node, isLiked);
+          // Delete nodes if any selected
+          if (selectedNodes.length > 0) {
+            // Delete images/videos from R2 for all node types before removing them
+            Promise.allSettled(
+              selectedNodes.map(async (node) => {
+                const nodeData = node.data as any;
+                const isLiked = nodeData.isLiked === true || nodeData.mockup?.isLiked === true;
+                const urlsToDelete = collectR2UrlsForDeletion(node, isLiked);
 
-              // Deletar todas as URLs do R2
-              if (urlsToDelete.length > 0) {
-                await Promise.allSettled(
-                  urlsToDelete.map(url => canvasApi.deleteImageFromR2(url))
-                ).catch((error) => {
-                  // Error already logged in deleteImageFromR2, continue with deletion
-                  console.error('Failed to delete files from R2:', error);
-                });
-              }
-            })
-          ).catch(() => {
-            // Ignore errors, continue with node deletion
-          });
+                if (urlsToDelete.length > 0) {
+                  await Promise.allSettled(
+                    urlsToDelete.map(url => canvasApi.deleteImageFromR2(url))
+                  ).catch((error) => {
+                    console.error('Failed to delete files from R2:', error);
+                  });
+                }
+              })
+            ).catch(() => {});
 
-          const nodeIdsToRemove = new Set(selectedNodes.map(n => n.id));
+            const nodeIdsToRemove = new Set(selectedNodes.map(n => n.id));
+            const newNodes = nodes.filter(n => !nodeIdsToRemove.has(n.id));
+            const newEdges = edges.filter(e =>
+              !nodeIdsToRemove.has(e.source) && !nodeIdsToRemove.has(e.target)
+            );
 
-          const newNodes = nodes.filter(n => !nodeIdsToRemove.has(n.id));
-          const newEdges = edges.filter(e =>
-            !nodeIdsToRemove.has(e.source) && !nodeIdsToRemove.has(e.target)
-          );
+            setNodes(newNodes);
+            setEdges(newEdges);
 
-          setNodes(newNodes);
-          setEdges(newEdges);
+            setTimeout(() => {
+              addToHistory(newNodes, newEdges, drawings);
+            }, 0);
 
-          setTimeout(() => {
-            addToHistory(newNodes, newEdges, drawings);
-          }, 0);
-
-          toast.success(`Removed ${selectedNodes.length} node${selectedNodes.length > 1 ? 's' : ''}`, { duration: 2000 });
+            toast.success(`Removed ${selectedNodes.length} node${selectedNodes.length > 1 ? 's' : ''}`, { duration: 2000 });
+          }
         }
       }
 
@@ -236,20 +238,32 @@ export const useCanvasKeyboard = (
         }
       }
 
-      // Ctrl+A / Cmd+A - Select all nodes
+      // Ctrl+A / Cmd+A - Select all nodes and drawings
       if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
         event.preventDefault();
 
-        const allSelected = nodes.every(n => n.selected);
+        const allNodesSelected = nodes.length > 0 && nodes.every(n => n.selected);
+        const allDrawingsSelected = drawings && drawings.length > 0 
+          ? drawings.every(d => selectedDrawingIds?.has(d.id)) 
+          : true;
 
-        // Toggle: if all selected, deselect all; otherwise select all
+        const shouldDeselect = allNodesSelected && (drawings && drawings.length > 0 ? allDrawingsSelected : true);
+
+        // Toggle: if everything selected, deselect all; otherwise select everything
         setNodes((nds) =>
           nds.map((node) => ({
             ...node,
-            selected: !allSelected,
+            selected: !shouldDeselect,
           }))
         );
 
+        if (drawings && setSelectedDrawingIds) {
+          if (shouldDeselect) {
+            setSelectedDrawingIds(new Set());
+          } else {
+            setSelectedDrawingIds(new Set(drawings.map(d => d.id)));
+          }
+        }
         return;
       }
 
@@ -560,7 +574,7 @@ export const useCanvasKeyboard = (
       }
       window.removeEventListener('keydown', handleKeyDown, { capture: true });
     };
-  }, [nodes, edges, setNodes, setEdges, handleUndo, handleRedo, addToHistory, drawings, setContextMenu, handlersRef, reactFlowInstance, reactFlowWrapper, onDuplicateNodes, addMockupNode, addPromptNode, addUpscaleNode]);
+  }, [nodes, edges, setNodes, setEdges, handleUndo, handleRedo, addToHistory, drawings, setContextMenu, handlersRef, reactFlowInstance, reactFlowWrapper, onDuplicateNodes, addMockupNode, addPromptNode, addUpscaleNode, deleteSelectedDrawings, selectedDrawingIds, setSelectedDrawingIds]);
 };
 
 

@@ -1,8 +1,8 @@
 import React, { memo, useCallback } from 'react';
-import { type NodeProps, Position, NodeResizer, type Node } from '@xyflow/react';
+import { type NodeProps, Position, NodeResizer } from '@xyflow/react';
 import { Compass, PanelRight, Sparkles, Image as ImageIcon, Check, Wand2, Dices } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import type { DirectorNodeData, UpscaleNodeData } from '@/types/reactFlow';
+import type { DirectorNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
@@ -81,8 +81,8 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
     return 'node-text-subtle';
   };
 
-  const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize);
+  const handleResize = useCallback((_: any, params: { width: number }) => {
+    handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   const handleFitToContent = useCallback(() => {
@@ -104,9 +104,7 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
           minHeight={200}
           maxWidth={2000}
           maxHeight={2000}
-          onResize={(_, { width, height }) => {
-            handleResize(width, height);
-          }}
+          onResize={handleResize}
         />
       )}
       {/* Image Input Handle */}

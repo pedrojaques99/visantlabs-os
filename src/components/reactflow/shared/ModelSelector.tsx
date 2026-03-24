@@ -1,6 +1,8 @@
 import React, { useCallback } from 'react';
 import { GEMINI_MODELS, IMAGE_MODELS, MODEL_CONFIG, isAdvancedModel, getModelConfig } from '@/constants/geminiModels';
 import { getCreditsRequired } from '@/utils/creditCalculator';
+import { isGenerationUnlimited } from '@/utils/unlimitedChecker';
+import { useLayout } from '@/hooks/useLayout';
 import { cn } from '@/lib/utils';
 import { NodeButton } from './node-button';
 import { NodeLabel } from './node-label';
@@ -33,6 +35,8 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   onClearAdvancedConfig
 }) => {
   const { t } = useTranslation();
+  const { subscriptionStatus } = useLayout();
+  const planMetadata = subscriptionStatus?.planMetadata;
 
   const handleModelClick = useCallback((newModel: GeminiModel) => {
     if (disabled || newModel === selectedModel) return;
@@ -69,7 +73,13 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         {modelsToShow.map((modelId) => {
           const config = MODEL_CONFIG[modelId];
           const isSelected = selectedModel === modelId;
-          const credits = getCreditsRequired(modelId, isAdvancedModel(modelId) ? (isSelected ? resolution : config.defaultResolution) : undefined);
+          const effectiveResolution = isAdvancedModel(modelId) ? (isSelected ? resolution : config.defaultResolution) : undefined;
+          const credits = getCreditsRequired(modelId, effectiveResolution);
+          const isUnlimited = isGenerationUnlimited({
+            model: modelId,
+            resolution: effectiveResolution,
+            planMetadata
+          });
 
           return (
             <NodeButton
@@ -91,9 +101,15 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 
             >
               <span className="text-sm">{config.emoji} {config.label}</span>
-              <span className="text-[10px] text-neutral-500 mt-0.5">
-                {credits} {t('canvasNodes.promptNode.credits')}
-              </span>
+              {isUnlimited ? (
+                <span className="text-[10px] text-brand-cyan font-bold mt-0.5">
+                  ∞ UNLIMITED
+                </span>
+              ) : (
+                <span className="text-[10px] text-neutral-500 mt-0.5">
+                  {credits} {t('canvasNodes.promptNode.credits')}
+                </span>
+              )}
             </NodeButton>
           );
         })}
