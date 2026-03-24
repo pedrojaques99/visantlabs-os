@@ -4,6 +4,16 @@ import { LiveList, LiveObject } from '@liveblocks/client';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
 import type { TimerRef } from '@/types/types';
+import { toast } from 'sonner';
+
+export interface PresenceEnhancedHandlers {
+  /** Wraps onNodesChange with presence conflict detection */
+  handleNodesChangeWithPresence: (changes: any[]) => void;
+  /** Wraps onNodeDragStart - call original after */
+  handleNodeDragStart: () => void;
+  /** Wraps onNodeDragStop - clears presence */
+  handleNodeDragStop: () => void;
+}
 
 interface UseCanvasCollaborationProps {
   projectId: string | null;
@@ -41,6 +51,10 @@ export const useCanvasCollaboration = ({
   const lastSavedNodesRef = useRef<Node<FlowNodeData>[]>([]);
   const lastSavedEdgesRef = useRef<Edge[]>([]);
   const lastSyncedNodesRef = useRef<Node<FlowNodeData>[]>([]);
+
+  // Presence tracking for drag operations
+  const draggingNodeIdRef = useRef<string | null>(null);
+  const lastPresenceUpdateRef = useRef<{ nodeId: string; x: number; y: number } | null>(null);
 
   // Get room instance (must be used inside RoomProvider)
   const room = useRoom();
@@ -187,6 +201,20 @@ export const useCanvasCollaboration = ({
       others: [],
       isConnected: false,
       roomId: null,
+      updateNodePositionInPresence: () => {},
+      clearNodePositionInPresence: () => {},
+      isNodeBeingMovedByOthers: () => ({ isMoving: false }),
+      getNodesBeingMovedByOthers: () => [],
+      createPresenceEnhancedHandlers: (
+        _nodes: Node<FlowNodeData>[],
+        originalOnNodesChange: (changes: any[]) => void,
+        originalOnNodeDragStart: () => void,
+        originalOnNodeDragStop: () => void,
+      ) => ({
+        handleNodesChangeWithPresence: originalOnNodesChange,
+        handleNodeDragStart: originalOnNodeDragStart,
+        handleNodeDragStop: originalOnNodeDragStop,
+      }),
     };
   }
 
@@ -554,6 +582,115 @@ export const useCanvasCollaboration = ({
     return movingNodes;
   }, [isCollaborative, others]);
 
+  // Create presence-enhanced handlers for drag operations
+  const createPresenceEnhancedHandlers = useCallback(
+    (
+      nodes: Node<FlowNodeData>[],
+      originalOnNodesChange: (changes: any[]) => void,
+      originalOnNodeDragStart: () => void,
+      originalOnNodeDragStop: () => void,
+      t: (key: string, params?: any) => string
+    ): PresenceEnhancedHandlers => {
+      const handleNodesChangeWithPresence = (changes: any[]) => {
+        // Detect drag start: if we see a position change and no node is currently being dragged
+        if (!draggingNodeIdRef.current) {
+          const positionChange = changes.find((change: any) => change.type === 'position' && change.position);
+          if (positionChange) {
+            const nodeId = positionChange.id;
+            const node = nodes.find((n) => n.id === nodeId);
+
+            if (node) {
+              // Check if another user is already moving this node
+              const conflict = isNodeBeingMovedByOthers(nodeId);
+              if (conflict.isMoving) {
+                // Prevent drag by reverting the position change
+                const moveMessage = conflict.userName
+                  ? t('canvas.nodeBeingMovedBy', { userName: conflict.userName })
+                  : t('canvas.nodeBeingMovedByAnother');
+                toast.error(moveMessage, { duration: 2000 });
+                // Revert the position change
+                const revertChange = {
+                  ...positionChange,
+                  position: node.position,
+                };
+                const revertedChanges = changes.map((c: any) =>
+                  (c.id === nodeId && c.type === 'position' ? revertChange : c)
+                );
+                originalOnNodesChange(revertedChanges);
+                return;
+              }
+
+              // Mark that we're dragging this node
+              draggingNodeIdRef.current = nodeId;
+              updateNodePositionInPresence(nodeId, node.position.x, node.position.y);
+              lastPresenceUpdateRef.current = { nodeId, x: node.position.x, y: node.position.y };
+            }
+          }
+        }
+
+        // Apply changes
+        originalOnNodesChange(changes);
+
+        // Throttled presence updates during drag
+        if (draggingNodeIdRef.current) {
+          const positionChange = changes.find(
+            (change: any) =>
+              change.type === 'position' &&
+              change.id === draggingNodeIdRef.current &&
+              change.position
+          );
+
+          if (positionChange?.position) {
+            const { x, y } = positionChange.position;
+            const lastUpdate = lastPresenceUpdateRef.current;
+
+            // Only update if position changed significantly (more than 5px)
+            if (
+              !lastUpdate ||
+              lastUpdate.nodeId !== draggingNodeIdRef.current ||
+              Math.abs(lastUpdate.x - x) > 5 ||
+              Math.abs(lastUpdate.y - y) > 5
+            ) {
+              updateNodePositionInPresence(draggingNodeIdRef.current, x, y);
+              lastPresenceUpdateRef.current = { nodeId: draggingNodeIdRef.current, x, y };
+            }
+          }
+        }
+      };
+
+      const handleNodeDragStart = () => {
+        originalOnNodeDragStart();
+      };
+
+      const handleNodeDragStop = () => {
+        if (draggingNodeIdRef.current) {
+          clearNodePositionInPresence();
+          draggingNodeIdRef.current = null;
+          lastPresenceUpdateRef.current = null;
+        }
+        originalOnNodeDragStop();
+      };
+
+      return {
+        handleNodesChangeWithPresence,
+        handleNodeDragStart,
+        handleNodeDragStop,
+      };
+    },
+    [isNodeBeingMovedByOthers, updateNodePositionInPresence, clearNodePositionInPresence]
+  );
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (draggingNodeIdRef.current) {
+        clearNodePositionInPresence();
+        draggingNodeIdRef.current = null;
+        lastPresenceUpdateRef.current = null;
+      }
+    };
+  }, [clearNodePositionInPresence]);
+
   return {
     others: others || [],
     isConnected: status === 'connected',
@@ -562,5 +699,6 @@ export const useCanvasCollaboration = ({
     clearNodePositionInPresence,
     isNodeBeingMovedByOthers,
     getNodesBeingMovedByOthers,
+    createPresenceEnhancedHandlers,
   };
 };
