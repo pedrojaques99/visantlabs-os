@@ -56,7 +56,7 @@ interface Product {
 
 interface ProductFormData {
     productId: string;
-    type: 'credit_package' | 'subscription_plan';
+    type: 'credit_package' | 'subscription_plan' | 'storage_plan';
     name: string;
     description: string;
     credits: number;
@@ -514,7 +514,8 @@ export const AdminProductsPage: React.FC = () => {
                                         onChange={(val: any) => setFormData({ ...formData, type: val })}
                                         options={[
                                             { value: 'credit_package', label: 'Pacote de Créditos' },
-                                            { value: 'subscription_plan', label: 'Plano de Assinatura' }
+                                            { value: 'subscription_plan', label: 'Plano de Assinatura' },
+                                            { value: 'storage_plan', label: 'Plano de Storage' }
                                         ]}
                                         className="bg-neutral-900 border-neutral-800"
                                     />

@@ -499,20 +499,21 @@ const MockupMachinePageContent: React.FC = () => {
     setPromptSuggestions([]);
 
     // Check if user has their own API key and notify them
-    try {
-      const { hasGeminiApiKey } = await import('../services/userSettingsService');
-      const userHasApiKey = await hasGeminiApiKey();
-      if (userHasApiKey) {
-        toast.info('API do usuário está sendo usada', {
-          duration: 3000,
-        });
+    import('../services/userSettingsService').then(async ({ hasGeminiApiKey }) => {
+      try {
+        const userHasApiKey = await hasGeminiApiKey();
+        if (userHasApiKey) {
+          toast.info('API do usuário está sendo usada', {
+            duration: 3000,
+          });
+        }
+      } catch (error) {
+        // Silently fail - don't block generation if key check fails
+        if (isLocalDevelopment()) {
+          console.warn('Failed to check user API key:', error);
+        }
       }
-    } catch (error) {
-      // Silently fail - don't block generation if key check fails
-      if (isLocalDevelopment()) {
-        console.warn('Failed to check user API key:', error);
-      }
-    }
+    });
 
     try {
       // Image compression removed as requested by user
@@ -585,8 +586,11 @@ const MockupMachinePageContent: React.FC = () => {
 
       toast.success(t('messages.promptGeneratedSuccessfully'), { duration: 4000 });
 
-      // Scroll to generate outputs button after toast appears
+      // Optimized: Use a much smaller delay or skip if autoGenerate is ON
+      const scrollDelay = autoGenerate ? 0 : 400;
       setTimeout(() => {
+        if (autoGenerate) return; // Skip scrolling if we're naturally going to see results
+
         if (generateOutputsButtonRef.current && sidebarRef.current) {
           const buttonRect = generateOutputsButtonRef.current.getBoundingClientRect();
           const sidebarRect = sidebarRef.current.getBoundingClientRect();
@@ -599,7 +603,7 @@ const MockupMachinePageContent: React.FC = () => {
         } else {
           generateOutputsButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      }, 800);
+      }, scrollDelay);
     } catch (err) {
       const errorInfo = formatMockupError(err, t);
       if (isLocalDevelopment()) {
@@ -1217,11 +1221,17 @@ const MockupMachinePageContent: React.FC = () => {
     const canProceed = await validateCredits({ model: modelToUse, resolution: resolutionToUse });
     if (!canProceed) return;
 
-    const promptToUse = promptOverride || promptPreview;
+    // Prioritize promptOverride, then latest generated prompt from ref, then state preview
+    const promptToUse = promptOverride || generatedSmartPromptRef.current || promptPreview;
+    
     // Allow generation if: has reference images OR (has design type AND has uploaded image) AND has prompt
     const hasReferenceImages = referenceImages.length > 0;
-    const hasValidSetup = hasReferenceImages || (designType && uploadedImage);
+    const hasValidSetup = hasReferenceImages || (designType && uploadedImage && designType !== 'blank');
+    
     if (!hasValidSetup || !promptToUse.trim()) {
+      if (isLocalDevelopment()) {
+        console.warn('[runGeneration] Validation failed:', { hasValidSetup, promptLength: promptToUse.trim().length, designType, hasUploadedImage: !!uploadedImage, hasReferenceImages });
+      }
       toast.error(t('messages.completeSteps'), { duration: 5000 });
       return;
     }
@@ -1758,10 +1768,11 @@ const MockupMachinePageContent: React.FC = () => {
 
     // Always generate prompt automatically
     // The autoGenerate checkbox only controls if outputs are also generated automatically
+    // Optimized: Minimal delay to trigger auto generation flows
     setTimeout(() => {
       promptTagsSnapshotRef.current = null;
       setAutoMode(autoGenerate ? 'prompt-and-generate' : 'prompt-only');
-    }, 2000); // Increased delay to allow users to see selected tags
+    }, 100);
   }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups, isSurpriseMeMode, surpriseMePool]);
 
   const handleSurpriseMeWithDice = useCallback((autoGen: boolean) => {
@@ -1898,31 +1909,38 @@ const MockupMachinePageContent: React.FC = () => {
     const hasValidSetupForPrompt = !!designType && (uploadedImage || hasReferenceImagesForPrompt);
 
     if (!isPromptReady && !hasPrompt) {
-      // No prompt exists and not ready - require valid setup
       if (!hasValidSetupForPrompt || designType === 'blank') {
         toast.error(t('messages.selectDesignTypeFirst'), { duration: 5000 });
         return;
       }
       await handleGenerateSmartPrompt();
+      
+      // Auto-trigger generation if mode is active
+      if (autoGenerate) {
+        const hasExistingOutputs = mockups.some(m => m !== null);
+        await runGeneration(undefined, generatedSmartPromptRef.current || undefined, hasExistingOutputs);
+        setIsSidebarVisibleMobile(false);
+      }
     } else if (!isPromptReady && hasPrompt) {
-      // Prompt exists but tags changed (isPromptReady is false due to useEffect)
-      // Force user to regenerate prompt to ensure it matches current tags
       if (!hasValidSetupForPrompt || designType === 'blank') {
         toast.error(t('messages.selectDesignTypeFirst'), { duration: 5000 });
         return;
       }
       toast.info(t('messages.tagsChanged'), { duration: 4000 });
       await handleGenerateSmartPrompt();
+
+      // Auto-trigger generation if mode is active
+      if (autoGenerate) {
+        const hasExistingOutputs = mockups.some(m => m !== null);
+        await runGeneration(undefined, generatedSmartPromptRef.current || undefined, hasExistingOutputs);
+        setIsSidebarVisibleMobile(false);
+      }
     } else {
-      // Prompt is ready (isPromptReady is true) - generate outputs directly
-      // This means tags haven't changed since last prompt generation
-      // If there are already generated outputs, append new ones instead of replacing
+      // Prompt is ready - generate outputs directly
       const hasExistingOutputs = mockups.some(m => m !== null);
 
-      // Scroll to top to show MockupDisplay
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        // Also scroll the main content area if it exists
         const mainElement = document.querySelector('main');
         if (mainElement) {
           mainElement.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1930,8 +1948,6 @@ const MockupMachinePageContent: React.FC = () => {
       }, 100);
 
       await runGeneration(undefined, undefined, hasExistingOutputs);
-      // setIsPromptReady(false); // Kept ready so "Generate Results" stays active or can be hidden logic-side
-      // Hide sidebar on mobile after generation
       setIsSidebarVisibleMobile(false);
     }
   }, [promptPreview, selectedTags, designType, referenceImages, handleGenerateSmartPrompt, runGeneration, mockups, savedIndices, handleSaveAllUnsaved, requireAuth, t]);
@@ -2531,7 +2547,9 @@ Generate the new mockup image with the requested changes applied.`;
 
     handleGenerateSmartPrompt().then(() => {
       if (shouldGenerateImages) {
-        runGeneration(undefined, undefined, true);
+        // Use the ref value to ensure we use the prompt just generated, avoiding stale state issues
+        const promptToUse = generatedSmartPromptRef.current || undefined;
+        runGeneration(undefined, promptToUse, true);
       }
     });
   }, [autoMode, isGeneratingPrompt, designType, uploadedImage, referenceImages.length, handleGenerateSmartPrompt, runGeneration]);
