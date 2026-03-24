@@ -8,6 +8,7 @@ import { authService } from '../services/authService';
 import type { SubscriptionStatus } from '../services/subscriptionService';
 import { GridDotsBackground } from './ui/GridDotsBackground';
 import { Button } from '@/components/ui/button'
+import { trackPurchase } from '@/utils/analytics';
 
 // Hook para animação de contador
 const useCountAnimation = (targetValue: number, duration: number = 800) => {
@@ -110,18 +111,27 @@ export const CreditRechargeSuccessPage: React.FC = () => {
                 const status = await subscriptionService.getSubscriptionStatus();
                 const currentCredits = status.totalCreditsEarned ?? 0;
 
-                // If credits increased, payment was successful
-                if (currentCredits > startingCredits) {
-                  console.log('✅ Credits updated successfully:', {
-                    initial: startingCredits,
-                    updated: currentCredits,
-                    added: currentCredits - startingCredits,
-                  });
-                  if (pollCreditsInterval) clearInterval(pollCreditsInterval);
-                  setSubscriptionStatus(status);
-                  setIsVerifyingCredits(false);
-                  return;
-                }
+                  // If credits increased, payment was successful
+                  if (currentCredits > startingCredits) {
+                    const added = currentCredits - startingCredits;
+                    console.log('✅ Credits updated successfully:', {
+                      initial: startingCredits,
+                      updated: currentCredits,
+                      added: added,
+                    });
+                    
+                    // Track Purchase in Himetrica
+                    trackPurchase({
+                      product_id: `recharge_${added}_credits`,
+                      price: 0, // In this page we don't have the price, but we track the event
+                      credits: added
+                    });
+
+                    if (pollCreditsInterval) clearInterval(pollCreditsInterval);
+                    setSubscriptionStatus(status);
+                    setIsVerifyingCredits(false);
+                    return;
+                  }
 
                 // If we've polled max times, stop polling
                 if (pollCount >= maxPolls) {

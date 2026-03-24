@@ -802,19 +802,120 @@ async function applyOperations(ops: FigmaOperation[]) {
               node.textStyleId = op.styleId;
             }
           } else if (op.styleType === 'EFFECT' && 'effectStyleId' in node) {
-            if (typeof node.setEffectStyleIdAsync === 'function') {
-              await node.setEffectStyleIdAsync(op.styleId);
+            if (typeof (node as any).setEffectStyleIdAsync === 'function') {
+              await (node as any).setEffectStyleIdAsync(op.styleId);
             } else {
-              node.effectStyleId = op.styleId;
+              (node as any).effectStyleId = op.styleId;
             }
           } else if (op.styleType === 'GRID' && 'gridStyleId' in node) {
-            if (typeof node.setGridStyleIdAsync === 'function') {
-              await node.setGridStyleIdAsync(op.styleId);
+            if (typeof (node as any).setGridStyleIdAsync === 'function') {
+              await (node as any).setGridStyleIdAsync(op.styleId);
             } else {
-              node.gridStyleId = op.styleId;
+              (node as any).gridStyleId = op.styleId;
             }
           }
         }
+      }
+
+      // ═══ HIGH-FIDELITY MCP OPS ═══
+      else if (op.type === 'GET_DESIGN_CONTEXT') {
+        const nodeId = op.nodeId;
+        const depth = op.depth || 5;
+        let node: SceneNode | null = null;
+        if (nodeId) node = (await figma.getNodeByIdAsync(nodeId)) as SceneNode;
+        if (!node && figma.currentPage.selection.length > 0) node = figma.currentPage.selection[0];
+
+        const context = node ? await serializeNode(node, 0, depth) : await serializeSelection();
+        postToUI({ type: 'DESIGN_CONTEXT_RESULT', nodeId: node?.id || 'selection', context });
+
+      } else if (op.type === 'GET_VARIABLE_DEFS') {
+        const nodeId = op.nodeId;
+        let nodes: readonly SceneNode[] = [];
+        if (nodeId) {
+          const n = await figma.getNodeByIdAsync(nodeId);
+          if (n) nodes = [n as SceneNode];
+        } else {
+          nodes = figma.currentPage.selection;
+        }
+
+        const variables: any[] = [];
+        const seen = new Set<string>();
+
+        const collectFromNode = async (node: SceneNode) => {
+          if ('boundVariables' in node && node.boundVariables) {
+            for (const field in node.boundVariables) {
+              const vars = (node.boundVariables as any)[field];
+              const varArray = Array.isArray(vars) ? vars : [vars];
+              for (const vRef of varArray) {
+                if (vRef && vRef.id && !seen.has(vRef.id)) {
+                  seen.add(vRef.id);
+                  const v = await figma.variables.getVariableByIdAsync(vRef.id);
+                  if (v) variables.push({ id: v.id, name: v.name, type: v.resolvedType, valuesByMode: v.valuesByMode });
+                }
+              }
+            }
+          }
+          if ('children' in node) {
+            for (const child of (node as any).children) await collectFromNode(child);
+          }
+        };
+
+        for (const n of nodes) await collectFromNode(n);
+        postToUI({ type: 'VARIABLE_DEFS_RESULT', nodeId: nodeId || 'selection', variables });
+
+      } else if (op.type === 'GET_SCREENSHOT') {
+        const nodeId = op.nodeId;
+        let node: SceneNode | null = null;
+        if (nodeId) node = (await figma.getNodeByIdAsync(nodeId)) as SceneNode;
+        if (!node && figma.currentPage.selection.length > 0) node = figma.currentPage.selection[0];
+
+        if (node) {
+          const bytes = await node.exportAsync({ format: 'JPG', constraint: { type: 'SCALE', value: 2 } });
+          const base64 = figma.base64Encode(bytes);
+          postToUI({ type: 'SCREENSHOT_RESULT', nodeId: node.id, base64: `data:image/jpeg;base64,${base64}` });
+        }
+
+      } else if (op.type === 'SEARCH_DESIGN_SYSTEM') {
+        const query = op.query.toLowerCase();
+        const results = { components: [] as any[], styles: [] as any[], variables: [] as any[] };
+
+        // Search components
+        const comps = figma.root.findAllWithCriteria({ types: ['COMPONENT', 'COMPONENT_SET'] });
+        results.components = comps
+          .filter(c => c.name.toLowerCase().includes(query))
+          .slice(0, 20)
+          .map(c => ({ id: c.id, name: c.name, key: (c as any).key }));
+
+        // Search styles
+        const pStyles = await figma.getLocalPaintStylesAsync();
+        const tStyles = await figma.getLocalTextStylesAsync();
+        results.styles = [...pStyles, ...tStyles]
+          .filter(s => s.name.toLowerCase().includes(query))
+          .slice(0, 20)
+          .map(s => ({ id: s.id, name: s.name, type: s.type }));
+
+        // Search variables
+        if (figma.variables) {
+          const vars = await figma.variables.getLocalVariablesAsync();
+          results.variables = vars
+            .filter(v => v.name.toLowerCase().includes(query))
+            .slice(0, 20)
+            .map(v => ({ id: v.id, name: v.name, type: v.resolvedType }));
+        }
+
+        postToUI({ type: 'SEARCH_DS_RESULT', results });
+
+      } else if (op.type === 'GET_CODE_CONNECT_MAP') {
+        const raw = figma.root.getPluginData('codeConnectMap');
+        const mappings = raw ? JSON.parse(raw) : {};
+        postToUI({ type: 'CODE_CONNECT_RESULT', mappings });
+
+      } else if (op.type === 'ADD_CODE_CONNECT_MAP') {
+        const raw = figma.root.getPluginData('codeConnectMap');
+        const mappings = raw ? JSON.parse(raw) : {};
+        mappings[op.nodeId] = { componentName: op.componentName, filePath: op.filePath };
+        figma.root.setPluginData('codeConnectMap', JSON.stringify(mappings));
+        pushSummary(`Mapeado @"${op.componentName}" para code connect`);
 
         // ═══ GROUP_NODES ═══
       } else if (op.type === 'GROUP_NODES') {

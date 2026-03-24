@@ -3,7 +3,7 @@
  * Defines sidebar navigation structure and tab routing
  */
 
-import { Home, Server, Terminal, Puzzle, Layers, Workflow, Sparkles, Bot } from 'lucide-react';
+import { Home, Server, Terminal, Puzzle, Layers, Workflow, Sparkles, Bot, Coins } from 'lucide-react';
 import type { NavigationItem } from '@/components/ui/NavigationSidebar';
 
 export const DOCS_NAVIGATION_ITEMS: NavigationItem[] = [
@@ -11,6 +11,20 @@ export const DOCS_NAVIGATION_ITEMS: NavigationItem[] = [
     id: 'overview',
     label: 'Overview',
     icon: Home,
+  },
+  {
+    id: 'pricing',
+    label: 'Pricing & Credits',
+    icon: Coins,
+    sections: [
+      { id: 'pr-breakdown', label: 'Cost Breakdown' },
+      { id: 'pr-google', label: 'Google API Pricing' },
+      { id: 'pr-credits', label: 'Credit System' },
+      { id: 'pr-packages', label: 'Credit Packages' },
+      { id: 'pr-storage', label: 'Storage Plans' },
+      { id: 'pr-byok', label: 'BYOK Mode' },
+      { id: 'pr-transparency', label: 'Build in Public' },
+    ],
   },
   {
     id: 'api',

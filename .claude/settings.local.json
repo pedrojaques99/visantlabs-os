@@ -64,7 +64,9 @@
       "Bash(find /z/Cursor/visantlabs-os/src/components -type f -name \"*.tsx\" -exec wc -l {} +)",
       "Bash(wc -l /z/Cursor/visantlabs-os/src/pages/*.tsx)",
       "Bash(xargs wc:*)",
-      "Bash(wc -l /z/Cursor/visantlabs-os/server/mcp/*.ts)"
+      "Bash(wc -l /z/Cursor/visantlabs-os/server/mcp/*.ts)",
+      "Bash(npx:*)",
+      "Skill(gsd:new-project)"
     ]
   }
 }

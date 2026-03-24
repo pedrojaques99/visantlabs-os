@@ -775,5 +775,76 @@ router.get('/settings/seedream-api-key', apiRateLimiter, authenticate, async (re
   }
 });
 
+// Get BYOK (Bring Your Own Key) status
+// Returns which API keys are configured and storage info
+// SEC-001: Rate limited to prevent enumeration attacks
+router.get('/settings/byok-status', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        encryptedGeminiApiKey: true,
+        encryptedSeedreamApiKey: true,
+        subscriptionTier: true,
+        storageProductId: true,
+        storageLimitBytes: true,
+        storageUsedBytes: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const hasGeminiKey = !!user.encryptedGeminiApiKey;
+    const hasSeedreamKey = !!user.encryptedSeedreamApiKey;
+    const isByokActive = hasGeminiKey || hasSeedreamKey;
+    const hasStoragePlan = !!user.storageProductId || (user.subscriptionTier !== 'free');
+
+    res.json({
+      byok: {
+        active: isByokActive,
+        gemini: {
+          enabled: hasGeminiKey,
+          benefits: [
+            'No credit deduction for Gemini models',
+            'Pay Google directly at their rates',
+            'Use your own API quota',
+          ],
+        },
+        seedream: {
+          enabled: hasSeedreamKey,
+          benefits: [
+            'Access to Seedream models',
+            'Separate from Gemini quota',
+          ],
+        },
+      },
+      storage: {
+        hasActivePlan: hasStoragePlan,
+        productId: user.storageProductId,
+        tier: user.subscriptionTier,
+        limitBytes: user.storageLimitBytes,
+        usedBytes: user.storageUsedBytes,
+      },
+      recommendation: !hasStoragePlan && isByokActive
+        ? 'You\'re using BYOK mode. Consider purchasing a storage plan for your generated files.'
+        : null,
+    });
+  } catch (error: any) {
+    console.error('Failed to get BYOK status:', error);
+    res.status(500).json({
+      error: 'Failed to get BYOK status',
+      message: error.message,
+    });
+  }
+});
+
 export default router;
 

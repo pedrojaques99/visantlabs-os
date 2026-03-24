@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { CreditCard, Plus, Minus, Pickaxe, QrCode, CheckCircle2 } from 'lucide-react';
+import { CreditCard, Plus, Minus, Pickaxe, QrCode, CheckCircle2, HardDrive, Key, Image, Video } from 'lucide-react';
 import { getUserLocale, formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
 import { getCreditPackageLink, getCreditPackagePrice } from '@/utils/creditPackages';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -20,6 +20,7 @@ import { SubscriptionPlansGrid } from '../components/SubscriptionPlansGrid';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { PremiumButton } from '../components/ui/PremiumButton';
+import { STORAGE_PLANS, getCreditsEstimate } from './docs/data/pricingData';
 
 // Hook para animação de contador
 const useAnimatedCounter = (targetValue: number, duration: number = 500) => {
@@ -87,7 +88,7 @@ export const PricingPage: React.FC = () => {
   const [creditPackages, setCreditPackages] = useState<Product[]>([]);
   const [selectedCreditIndex, setSelectedCreditIndex] = useState(0);
   const [isPixModalOpen, setIsPixModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'subscriptions' | 'credits'>('subscriptions');
+  const [activeTab, setActiveTab] = useState<'subscriptions' | 'credits' | 'storage'>('subscriptions');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -275,18 +276,24 @@ export const PricingPage: React.FC = () => {
               className="w-full max-w-[400px]"
             >
               <TabsList asChild>
-                <GlassPanel padding="none" className="grid w-full grid-cols-2 p-1 rounded-xl">
+                <GlassPanel padding="none" className="grid w-full grid-cols-3 p-1 rounded-xl">
                   <TabsTrigger
                     value="subscriptions"
-                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
+                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan text-sm"
                   >
                     {t('pricing.tabs.subscriptions') || 'Assinaturas'}
                   </TabsTrigger>
                   <TabsTrigger
                     value="credits"
-                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
+                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan text-sm"
                   >
                     {t('pricing.tabs.credits') || 'Créditos'}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="storage"
+                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan text-sm"
+                  >
+                    {t('pricing.tabs.storage') || 'Storage'}
                   </TabsTrigger>
                 </GlassPanel>
               </TabsList>
@@ -354,6 +361,29 @@ export const PricingPage: React.FC = () => {
                             <MicroTitle as="span" className="opacity-300">
                               {currencyInfo?.currency === 'BRL' ? 'Pagamento Único' : 'One-time payment'}
                             </MicroTitle>
+
+                            {/* Credit Estimates */}
+                            {(() => {
+                              const estimate = getCreditsEstimate(creditPackages[selectedCreditIndex]?.credits || 0);
+                              return (
+                                <div className="flex items-center justify-center gap-4 mt-4 text-xs text-neutral-400">
+                                  <div className="flex items-center gap-1.5">
+                                    <Image size={14} className="text-brand-cyan/70" />
+                                    <span>~{estimate.imagesHD} HD</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <Image size={14} className="text-brand-cyan/70" />
+                                    <span>~{estimate.images4K} 4K</span>
+                                  </div>
+                                  {estimate.videosFast > 0 && (
+                                    <div className="flex items-center gap-1.5">
+                                      <Video size={14} className="text-brand-cyan/70" />
+                                      <span>~{estimate.videosFast} vídeos</span>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
 
                           <div className="flex flex-col gap-3 pt-6">
@@ -398,6 +428,94 @@ export const PricingPage: React.FC = () => {
                       ))}
                     </GlassPanel>
                   </div>
+                </div>
+              </TabsContent>
+
+              {/* Storage Plans View */}
+              <TabsContent value="storage" className="mt-0 outline-none">
+                <div className="animate-fade-in-fast">
+                  {/* Storage Info Banner */}
+                  <div className="mb-8 p-4 bg-neutral-900/50 border border-neutral-800 rounded-xl">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-brand-cyan/10 rounded-lg">
+                        <Key size={20} className="text-brand-cyan" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-neutral-200 mb-1">
+                          {t('pricing.storage.byokTitle') || 'Storage para BYOK'}
+                        </h3>
+                        <p className="text-sm text-neutral-400">
+                          {t('pricing.storage.byokDescription') || 'Usando sua própria API key? Seus arquivos ainda precisam de storage. Escolha um plano abaixo.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Storage Plans Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    {STORAGE_PLANS.map((plan, index) => (
+                      <Card
+                        key={plan.id}
+                        className={cn(
+                          "relative overflow-hidden transition-all duration-300 hover:border-brand-cyan/50",
+                          index === 1
+                            ? "bg-gradient-to-b from-brand-cyan/5 to-transparent border-brand-cyan/30"
+                            : "bg-neutral-900/50 border-neutral-800"
+                        )}
+                      >
+                        {index === 1 && (
+                          <div className="absolute top-0 right-0 px-3 py-1 bg-brand-cyan text-black text-xs font-bold rounded-bl-lg">
+                            {t('pricing.popular') || 'Popular'}
+                          </div>
+                        )}
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center gap-2 mb-2">
+                            <HardDrive size={20} className={index === 1 ? "text-brand-cyan" : "text-neutral-400"} />
+                            <CardTitle className="text-lg font-bold text-neutral-200">
+                              {plan.name}
+                            </CardTitle>
+                          </div>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-3xl font-bold text-neutral-100">
+                              {plan.priceBRL === 0 ? t('pricing.free') || 'Grátis' : `R$${plan.priceBRL.toFixed(2)}`}
+                            </span>
+                            {plan.billingCycle === 'monthly' && (
+                              <span className="text-sm text-neutral-500">/mês</span>
+                            )}
+                          </div>
+                          <p className="text-sm text-neutral-400 mt-1">
+                            {plan.storageMB >= 1024
+                              ? `${(plan.storageMB / 1024).toFixed(0)} GB`
+                              : `${plan.storageMB} MB`}
+                          </p>
+                        </CardHeader>
+                        <CardContent className="pt-4 border-t border-neutral-800/50">
+                          <ul className="space-y-2">
+                            {plan.features.map((feature, i) => (
+                              <li key={i} className="flex items-center gap-2 text-sm text-neutral-400">
+                                <CheckCircle2 size={14} className="text-green-500 shrink-0" />
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <Button
+                            variant={index === 1 ? "brand" : "outline"}
+                            className="w-full mt-6"
+                            disabled={plan.priceBRL === 0}
+                          >
+                            {plan.priceBRL === 0
+                              ? (t('pricing.included') || 'Incluído')
+                              : (t('pricing.selectPlan') || 'Selecionar')}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Note about subscription storage */}
+                  <p className="text-center text-sm text-neutral-500 mt-8 max-w-xl mx-auto">
+                    {t('pricing.storage.subscriptionNote') || 'Assinaturas Pro e Vision já incluem storage. Planos de storage são para quem usa BYOK ou precisa de storage adicional.'}
+                  </p>
                 </div>
               </TabsContent>
             </Tabs>

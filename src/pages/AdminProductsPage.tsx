@@ -56,7 +56,7 @@ interface Product {
 
 interface ProductFormData {
     productId: string;
-    type: 'credit_package' | 'subscription_plan';
+    type: 'credit_package' | 'subscription_plan' | 'storage_plan';
     name: string;
     description: string;
     credits: number;
@@ -79,7 +79,7 @@ export const AdminProductsPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [products, setProducts] = useState<Product[]>([]);
-    const [activeTab, setActiveTab] = useState<'credit_package' | 'subscription_plan'>('credit_package');
+    const [activeTab, setActiveTab] = useState<'credit_package' | 'subscription_plan' | 'storage_plan'>('credit_package');
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isCreating, setIsCreating] = useState(false);
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
@@ -161,6 +161,9 @@ export const AdminProductsPage: React.FC = () => {
                 { productId: 'plan_pro_annual', type: 'subscription_plan', name: 'Plano Pro Anual', credits: 3600, priceBRL: 499.00, displayOrder: 5, description: '3.600 créditos/ano, Modo Experimental, Suporte Prioritário, 20GB Storage', metadata: { tier: 'pro', storageLimitGB: 20, interval: 'year' } },
                 { productId: 'plan_vision', type: 'subscription_plan', name: 'Plano Vision', credits: 800, priceBRL: 89.90, displayOrder: 6, description: '800 créditos/mês, Modo Experimental, Suporte Rápido, 100GB Storage', metadata: { tier: 'vision', storageLimitGB: 100 } },
                 { productId: 'plan_vision_annual', type: 'subscription_plan', name: 'Plano Vision Anual', credits: 9600, priceBRL: 899.00, displayOrder: 7, description: '9.600 créditos/ano, Modo Experimental, Suporte Rápido, 100GB Storage', metadata: { tier: 'vision', storageLimitGB: 100, interval: 'year' } },
+                // Storage Plans (standalone, for BYOK users or additional storage)
+                { productId: 'storage_pro', type: 'storage_plan', name: 'Pro Storage', credits: 0, priceBRL: 9.90, displayOrder: 8, description: '5 GB de armazenamento para imagens e vídeos', metadata: { storageLimitGB: 5, billingCycle: 'monthly' } },
+                { productId: 'storage_vision', type: 'storage_plan', name: 'Vision Storage', credits: 0, priceBRL: 29.90, displayOrder: 9, description: '50 GB de armazenamento, ideal para criadores de vídeo', metadata: { storageLimitGB: 50, billingCycle: 'monthly' } },
             ];
 
             for (const product of defaultProducts) {
@@ -371,6 +374,9 @@ export const AdminProductsPage: React.FC = () => {
                                 <TabsTrigger value="subscription_plan" className="data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan">
                                     Assinaturas
                                 </TabsTrigger>
+                                <TabsTrigger value="storage_plan" className="data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan">
+                                    Storage
+                                </TabsTrigger>
                             </TabsList>
 
                             <div className="w-full md:w-64">
@@ -508,7 +514,8 @@ export const AdminProductsPage: React.FC = () => {
                                         onChange={(val: any) => setFormData({ ...formData, type: val })}
                                         options={[
                                             { value: 'credit_package', label: 'Pacote de Créditos' },
-                                            { value: 'subscription_plan', label: 'Plano de Assinatura' }
+                                            { value: 'subscription_plan', label: 'Plano de Assinatura' },
+                                            { value: 'storage_plan', label: 'Plano de Storage' }
                                         ]}
                                         className="bg-neutral-900 border-neutral-800"
                                     />

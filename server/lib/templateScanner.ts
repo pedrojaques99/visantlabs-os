@@ -82,8 +82,8 @@ export function buildTemplateContext(templates: TemplateSpec[]): string {
   }
 
   // Add example with first template if available
-  if (templates.length > 0 && templates[0].textLayers?.length) {
-    const t = templates[0];
+  const t = templates[0];
+  if (t?.textLayers && t.textLayers.length > 0) {
     const txt = t.textLayers[0];
     lines.push('### Exemplo com este arquivo:');
     lines.push('```json');

@@ -38,6 +38,20 @@ const server = new Server(
   }
 );
 
+/**
+ * Help helper to return JSON as text for MCP
+ */
+function jsonResponse(data: any) {
+  return {
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify(data, null, 2),
+      },
+    ],
+  };
+}
+
 // ═══ Tool: get_selection ═══
 server.setRequestHandler(
   CallToolRequestSchema,
@@ -481,6 +495,59 @@ server.setRequestHandler(
         }
       }
 
+      case 'get_design_context': {
+        const { fileId, nodeId, depth } = args;
+        const result = await pluginBridge.push(fileId as string, [
+          { type: 'GET_DESIGN_CONTEXT', nodeId: nodeId as string, depth: depth as number },
+        ]);
+        return jsonResponse(result);
+      }
+
+      case 'get_variable_defs': {
+        const { fileId, nodeId } = args;
+        const result = await pluginBridge.push(fileId as string, [
+          { type: 'GET_VARIABLE_DEFS', nodeId: nodeId as string },
+        ]);
+        return jsonResponse(result);
+      }
+
+      case 'get_screenshot': {
+        const { fileId, nodeId } = args;
+        const result = await pluginBridge.push(fileId as string, [
+          { type: 'GET_SCREENSHOT', nodeId: nodeId as string },
+        ]);
+        return jsonResponse({ base64: result });
+      }
+
+      case 'search_design_system': {
+        const { fileId, query } = args;
+        const result = await pluginBridge.push(fileId as string, [
+          { type: 'SEARCH_DESIGN_SYSTEM', query: query as string },
+        ]);
+        return jsonResponse({ results: result });
+      }
+
+      case 'get_code_connect_map': {
+        const { fileId } = args;
+        const result = await pluginBridge.push(fileId as string, [
+          { type: 'GET_CODE_CONNECT_MAP' },
+        ]);
+        return jsonResponse({ mappings: result });
+      }
+
+      case 'add_code_connect_map': {
+        const { fileId, nodeId, componentName, filePath } = args;
+        const result = await pluginBridge.push(fileId as string, [
+          {
+            type: 'ADD_CODE_CONNECT_MAP',
+            nodeId: nodeId as string,
+            componentName: componentName as string,
+            filePath: filePath as string,
+          },
+        ]);
+        return jsonResponse(result);
+      }
+
       default:
         return {
           content: [
@@ -741,6 +808,80 @@ const tools: Tool[] = [
         },
       },
       required: ['promptText', 'baseImage'],
+    },
+  },
+  {
+    name: 'get_design_context',
+    description: 'Extract recursive node properties from Figma for architecture analysis.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        fileId: { type: 'string', description: 'Figma file ID' },
+        nodeId: { type: 'string', description: 'Optional node ID (defaults to selection)' },
+        depth: { type: 'number', description: 'Max depth to traverse (default: 5)' },
+      },
+      required: ['fileId'],
+    },
+  },
+  {
+    name: 'get_variable_defs',
+    description: 'Find all bound variables and their modes for a node and its children.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        fileId: { type: 'string', description: 'Figma file ID' },
+        nodeId: { type: 'string', description: 'Optional node ID' },
+      },
+      required: ['fileId'],
+    },
+  },
+  {
+    name: 'get_screenshot',
+    description: 'Export a node or selection as a high-quality base64 screenshot.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        fileId: { type: 'string', description: 'Figma file ID' },
+        nodeId: { type: 'string', description: 'Optional node ID' },
+      },
+      required: ['fileId'],
+    },
+  },
+  {
+    name: 'search_design_system',
+    description: 'Search for components, styles, and variables across the file.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        fileId: { type: 'string', description: 'Figma file ID' },
+        query: { type: 'string', description: 'Search term' },
+      },
+      required: ['fileId', 'query'],
+    },
+  },
+  {
+    name: 'get_code_connect_map',
+    description: 'Retrieve mappings between Figma nodes and code components.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        fileId: { type: 'string', description: 'Figma file ID' },
+      },
+      required: ['fileId'],
+    },
+  },
+  {
+    name: 'add_code_connect_map',
+    description: 'Map a Figma component to a code file.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        fileId: { type: 'string', description: 'Figma file ID' },
+        nodeId: { type: 'string', description: 'Figma node ID' },
+        componentName: { type: 'string', description: 'React component name' },
+        filePath: { type: 'string', description: 'Source file path' },
+      },
+      required: ['fileId', 'nodeId', 'componentName', 'filePath'],
     },
   },
 ];

@@ -163,7 +163,8 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         }
         if (isGeneratingPrompt) return t('mockup.generatingPrompt') || 'Gerando prompt...';
         if (isGeneratingOutputs) return t('mockup.generatingOutputs') || 'Gerando resultados...';
-        if (!isPromptReady) return t('mockup.generatePromptFirst') || 'Gere um prompt primeiro.';
+        if (!isPromptReady && !autoGenerate) return t('mockup.generatePromptFirst') || 'Gere um prompt primeiro.';
+        if (!isPromptReady && autoGenerate) return t('mockup.generateAll') || 'Gere o prompt e as imagens em um clique.';
         return t('messages.selectDesignTypeFirst') || t('messages.completeSteps') || t('mockup.insufficientCredits') || 'Conclua o setup ou verifique créditos.';
     };
     const surpriseTooltip = () => {
@@ -318,7 +319,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                             {autoGenerate ? (
                                 /* Unified GENERATE Button (when autoGenerate is true) */
                                 renderButton(
-                                    isPromptReady ? (onGenerateOutputs || (() => { })) : (onGeneratePrompt || (() => { })),
+                                    (isPromptReady || autoGenerate) ? (onGenerateOutputs || (() => { })) : (onGeneratePrompt || (() => { })),
                                     isPromptReady ? outputsDisabled : promptDisabled,
                                     isGeneratingPrompt || isGeneratingOutputs ? (
                                         <GlitchLoader size={16} color={isPromptReady ? "black" : (dark ? "white" : "black")} />
