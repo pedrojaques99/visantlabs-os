@@ -8,6 +8,8 @@ import { useLayout } from '@/hooks/useLayout';
 import { subscriptionService } from '../services/subscriptionService';
 import type { SubscriptionStatus } from '../services/subscriptionService';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { trackPurchase } from '@/utils/analytics';
+import { useRef } from 'react';
 
 interface ThankYouPageProps {
   planName?: string;
@@ -20,6 +22,45 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
   const { isAuthenticated, isCheckingAuth } = useLayout();
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const trackedRef = useRef(false);
+
+  useEffect(() => {
+    // Track purchase in Himetrica
+    if (!trackedRef.current) {
+      if (planName) {
+        // Find price based on plan name (heuristic)
+        const priceMap: Record<string, number> = {
+          'Pro': 9.99,
+          'Vision': 19.99,
+          'Pro Anual': 99.90,
+          'Vision Anual': 199.90,
+        };
+        trackPurchase({
+          product_id: planName.toLowerCase().replace(/\s+/g, '_'),
+          price: priceMap[planName] || 0,
+          credits: planCredits
+        });
+        trackedRef.current = true;
+      } else {
+        const pendingPurchaseJson = localStorage.getItem('credit_purchase_pending');
+        if (pendingPurchaseJson) {
+          try {
+            const pendingPurchase = JSON.parse(pendingPurchaseJson);
+            if (Date.now() - pendingPurchase.timestamp < 3600000) {
+              trackPurchase({
+                product_id: `credits_${pendingPurchase.credits}`,
+                price: pendingPurchase.price || 0,
+                credits: pendingPurchase.credits
+              });
+              trackedRef.current = true;
+            }
+          } catch (e) {
+            console.error('Failed to parse pending purchase in ThankYouPage', e);
+          }
+        }
+      }
+    }
+  }, [planName, planCredits]);
 
   useEffect(() => {
     const loadData = async () => {

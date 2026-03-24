@@ -19,6 +19,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { CanvasHeader } from './canvas/CanvasHeader';
 import { useCanvasHeader } from './canvas/CanvasHeaderContext';
+import { identifyUser } from '@/utils/analytics';
 
 
 // Export context values for child components
@@ -498,6 +499,23 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     setCreditPackagesModalTab('buy');
     setIsCreditPackagesModalOpen(true);
   }, []);
+
+  // Track user identity in Himetrica
+  useEffect(() => {
+    if (currentUser && currentUser.email) {
+      identifyUser({
+        name: currentUser.name || undefined,
+        email: currentUser.email,
+        metadata: {
+          id: currentUser.id,
+          subscriptionTier: subscriptionStatus?.subscriptionTier || 'free',
+          subscriptionStatus: subscriptionStatus?.subscriptionStatus || 'free',
+          creditsRemaining: subscriptionStatus?.creditsRemaining ?? 0,
+          totalCreditsEarned: subscriptionStatus?.totalCreditsEarned ?? 0,
+        }
+      });
+    }
+  }, [currentUser, subscriptionStatus?.subscriptionTier, subscriptionStatus?.subscriptionStatus]);
 
   const contextValue = useMemo<LayoutContextValue>(() => ({
     subscriptionStatus,
