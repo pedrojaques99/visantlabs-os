@@ -438,6 +438,9 @@ model BrandGuideline {
   // Extraction metadata
   extraction Json?   // { sources[], completeness }
 
+  // Organization
+  folder     String?   // User-defined folder for grouping guidelines
+
   // Public sharing
   publicSlug String?  @unique
   isPublic   Boolean  @default(false)
