@@ -12,6 +12,8 @@ import { mergeBrandGuidelines } from '../lib/brand-merge.js'
 import { uploadBrandMedia, deleteImage } from '../services/r2Service.js'
 import { brandSharedService } from '../services/brandSharedService.js'
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js'
+import { checkBrandCompliance, type ComplianceCheckInput } from '../services/complianceService.js'
+import { getGeminiApiKey } from '../utils/geminiApiKey.js'
 
 const router = express.Router()
 
@@ -849,6 +851,50 @@ router.get('/:id/context', apiRateLimiter, authenticate, async (req: AuthRequest
   } catch (error: any) {
     console.error('[Brand Context API] Error:', error)
     res.status(500).json({ error: 'Failed to generate brand context' })
+  }
+})
+
+// POST /api/brand-guidelines/:id/compliance-check — analyze content compliance
+router.post('/:id/compliance-check', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId }
+    })
+
+    if (!guideline) {
+      return res.status(404).json({ error: 'Brand guideline not found' })
+    }
+
+    const { colors, text, image, checkContrast, checkColors, checkTone } = req.body as ComplianceCheckInput
+
+    // Validate input - at least one content type required
+    if (!colors?.length && !text && !image) {
+      return res.status(400).json({
+        error: 'At least one content type required: colors, text, or image'
+      })
+    }
+
+    // Get user's API key for AI analysis
+    let userApiKey: string | undefined
+    try {
+      userApiKey = await getGeminiApiKey(req.userId)
+    } catch {
+      // Will use system key
+    }
+
+    // Run compliance check
+    const result = await checkBrandCompliance(
+      { colors, text, image, checkContrast, checkColors, checkTone },
+      guideline as unknown as BrandGuideline,
+      userApiKey
+    )
+
+    res.json(result)
+  } catch (error: any) {
+    console.error('Error checking brand compliance:', error)
+    res.status(500).json({ error: 'Failed to check brand compliance' })
   }
 })
 
