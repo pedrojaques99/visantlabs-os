@@ -39,8 +39,9 @@ function formatBytes(bytes: number): { value: number; unit: string; formatted: s
 /**
  * Get storage usage for the authenticated user
  * GET /api/storage/usage?sync=true (optional: sync with R2 before returning)
+ * SEC-001: Rate limited to prevent DoS via expensive sync operations
  */
-router.get('/usage', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/usage', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.userId!;
     const shouldSync = req.query.sync === 'true';

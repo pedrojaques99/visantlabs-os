@@ -457,7 +457,14 @@ export type FigmaOperation =
     nodeIds?: string[];
     nodeRefs?: string[];
     name?: string;
-  };
+  }
+  // ═══ HIGH-FIDELITY MCP ═══
+  | { type: 'GET_DESIGN_CONTEXT'; nodeId?: string; depth?: number }
+  | { type: 'GET_VARIABLE_DEFS'; nodeId?: string }
+  | { type: 'GET_SCREENSHOT'; nodeId?: string }
+  | { type: 'SEARCH_DESIGN_SYSTEM'; query: string }
+  | { type: 'GET_CODE_CONNECT_MAP' }
+  | { type: 'ADD_CODE_CONNECT_MAP'; nodeId: string; componentName: string; filePath: string };
 
 // ── Serialized context ──
 
@@ -745,5 +752,11 @@ export type PluginMessage =
   | { type: 'BRAND_GUIDELINE_SAVED' }
   // Brand Guideline selection notification (to Canvas)
   | { type: 'GUIDELINE_SELECTED'; guidelineId: string }
+  // High-Fidelity MCP Results
+  | { type: 'DESIGN_CONTEXT_RESULT'; nodeId: string; context: any }
+  | { type: 'VARIABLE_DEFS_RESULT'; nodeId: string; variables: any }
+  | { type: 'SCREENSHOT_RESULT'; nodeId: string; base64: string }
+  | { type: 'SEARCH_DS_RESULT'; results: any }
+  | { type: 'CODE_CONNECT_RESULT'; mappings: any }
   // Template Scanning
   | { type: 'TEMPLATES_RESULT'; requestId?: string; templates: TemplateSpec[] };

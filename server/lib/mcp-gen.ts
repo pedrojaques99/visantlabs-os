@@ -37,8 +37,10 @@ interface MCPSpec {
  *
  * Generates a complete Model Context Protocol (MCP) specification
  * documenting all 9 available tools for AI agent integration:
- * - get_selection, create_frame, create_rectangle, create_text,
- * - set_fill, rename_node, delete_node, chat, generate_mockup
+ * - get_design_context, get_variable_defs, get_screenshot, search_design_system,
+ * - get_code_connect_map, add_code_connect_map, get_selection, create_frame,
+ * - create_rectangle, create_text, set_fill, rename_node, delete_node, chat,
+ * - generate_mockup
  *
  * @returns Complete MCP specification object with all 9 tools
  * @throws {SpecGenerationError} If spec generation fails
@@ -50,6 +52,84 @@ interface MCPSpec {
 export function generateMCPSpec(): MCPSpec {
   try {
   const tools: MCPTool[] = [
+    {
+      name: 'get_design_context',
+      description: 'Get rich design context for a Figma selection. Provides structured JSON with layout, typography, and color tokens.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          fileId: { type: 'string', description: 'Figma file ID' },
+          nodeId: { type: 'string', description: 'Optional node ID. If omitted, gets selection.' },
+          depth: { type: 'number', description: 'Depth of serialization (default: 5)' },
+        },
+        required: ['fileId'],
+      },
+      examples: [{
+        name: 'Get design context for selection',
+        input: { fileId: 'abc123def456' },
+      }],
+    },
+    {
+      name: 'get_variable_defs',
+      description: 'Get variable and style definitions used in the selection (colors, spacing, typography).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          fileId: { type: 'string', description: 'Figma file ID' },
+          nodeId: { type: 'string', description: 'Optional node ID.' },
+        },
+        required: ['fileId'],
+      },
+    },
+    {
+      name: 'get_screenshot',
+      description: 'Get a visual reference of the selection.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          fileId: { type: 'string', description: 'Figma file ID' },
+          nodeId: { type: 'string', description: 'Optional node ID.' },
+        },
+        required: ['fileId'],
+      },
+    },
+    {
+      name: 'search_design_system',
+      description: 'Search for components, variables, and styles in your design system.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          fileId: { type: 'string', description: 'Figma file ID' },
+          query: { type: 'string', description: 'Search term (e.g., "button", "primary")' },
+        },
+        required: ['fileId', 'query'],
+      },
+    },
+    {
+      name: 'get_code_connect_map',
+      description: 'Retrieve mapping between Figma nodes and code components.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          fileId: { type: 'string', description: 'Figma file ID' },
+        },
+        required: ['fileId'],
+      },
+    },
+    {
+      name: 'add_code_connect_map',
+      description: 'Create a mapping between a Figma node and a code component.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          fileId: { type: 'string', description: 'Figma file ID' },
+          nodeId: { type: 'string', description: 'Figma node ID' },
+          componentName: { type: 'string', description: 'Name of the component in the codebase' },
+          filePath: { type: 'string', description: 'Path to the component file' },
+        },
+        required: ['fileId', 'nodeId', 'componentName', 'filePath'],
+      },
+    },
     {
       name: 'get_selection',
       description: 'Get currently selected nodes in Figma',

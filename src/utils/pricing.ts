@@ -18,10 +18,10 @@ export const PRICING = {
     NB2_1K: 0.067,     // gemini-3.1-flash-image-preview 1K (official: $0.067)
     NB2_2K: 0.101,     // gemini-3.1-flash-image-preview 2K (official: $0.101)
     NB2_4K: 0.151,     // gemini-3.1-flash-image-preview 4K (official: $0.151)
-    // Gemini 3 Pro - variable resolution (estimated, no official image pricing)
-    GEMINI_1K: 0.134,  // gemini-3-pro-image-preview with 1K resolution
-    GEMINI_2K: 0.17,   // gemini-3-pro-image-preview with 2K resolution
-    GEMINI_4K: 0.24,   // gemini-3-pro-image-preview with 4K resolution
+    // Gemini 3 Pro - variable resolution (official: 1K/2K same price)
+    GEMINI_1K: 0.134,  // gemini-3-pro-image-preview with 1K resolution (official: $0.134)
+    GEMINI_2K: 0.134,  // gemini-3-pro-image-preview with 2K resolution (official: $0.134 - same as 1K)
+    GEMINI_4K: 0.24,   // gemini-3-pro-image-preview with 4K resolution (official: $0.24)
   },
   VIDEO: {
     // Veo 3.1 pricing per second (official docs)

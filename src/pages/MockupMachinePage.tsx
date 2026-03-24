@@ -482,7 +482,7 @@ const MockupMachinePageContent: React.FC = () => {
     }
 
     // Require a design type before generating any prompt
-    if (!designType) {
+    if (!designType || designType === 'blank') {
       toast.error(t('messages.selectDesignTypeFirst') || 'Selecione o tipo (logo ou layout) antes de gerar o prompt.');
       return;
     }
@@ -639,7 +639,7 @@ const MockupMachinePageContent: React.FC = () => {
 
 
   const resetControls = useCallback(() => {
-    setDesignType(null);
+    setDesignType('layout');
     setSelectedModel(null);
     setResolution('1K');
     setMockups(Array(mockupCount).fill(null));
@@ -1899,16 +1899,16 @@ const MockupMachinePageContent: React.FC = () => {
 
     if (!isPromptReady && !hasPrompt) {
       // No prompt exists and not ready - require valid setup
-      if (!hasValidSetupForPrompt) {
-        toast.error(t('messages.selectDesignTypeFirst') || t('messages.completeSteps'), { duration: 5000 });
+      if (!hasValidSetupForPrompt || designType === 'blank') {
+        toast.error(t('messages.selectDesignTypeFirst'), { duration: 5000 });
         return;
       }
       await handleGenerateSmartPrompt();
     } else if (!isPromptReady && hasPrompt) {
       // Prompt exists but tags changed (isPromptReady is false due to useEffect)
       // Force user to regenerate prompt to ensure it matches current tags
-      if (!hasValidSetupForPrompt) {
-        toast.error(t('messages.selectDesignTypeFirst') || t('messages.completeSteps'), { duration: 5000 });
+      if (!hasValidSetupForPrompt || designType === 'blank') {
+        toast.error(t('messages.selectDesignTypeFirst'), { duration: 5000 });
         return;
       }
       toast.info(t('messages.tagsChanged'), { duration: 4000 });
@@ -2740,67 +2740,64 @@ Generate the new mockup image with the requested changes applied.`;
                     />
                   </div>
                 </div>
+
+                {/* Global Floating Control Bar (Inside Main to respect Footer) */}
+                {isDashboardMode && (hasAnalyzed || shouldShowGenerateButton) && (
+                  <div 
+                    className={cn(
+                      "absolute bottom-10 inset-x-0 z-[100] px-4 pointer-events-none flex justify-center transition-all duration-500 ease-in-out"
+                    )}
+                  >
+                    <div className="pointer-events-auto flex items-center gap-3 animate-in fade-in slide-in-from-bottom-8 duration-500">
+                      {/* Mobile Sidebar Shortcut */}
+                      {!isSidebarVisibleMobile && (
+                        <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(true)}
+                          size="icon"
+                          className="lg:hidden shrink-0 w-12 h-12 rounded-2xl border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl hover:bg-neutral-800 hover:border-brand-cyan/40 text-neutral-400 hover:text-brand-cyan transition-all group"
+                          title={t('mockup.openSidebar') || 'Abrir barra lateral'}
+                        >
+                          <PanelLeftOpen className="h-6 w-6 group-hover:scale-110 transition-all" />
+                        </Button>
+                      )}
+
+                      <div className="w-auto max-w-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl relative">
+                        <SurpriseMeControl
+                          onSurpriseMe={handleSurpriseMeWithDice}
+                          isGeneratingPrompt={isGeneratingPrompt}
+                          isDiceAnimating={isDiceAnimating}
+                          isSurpriseMeMode={isSurpriseMeMode}
+                          setIsSurpriseMeMode={setIsSurpriseMeMode}
+                          autoGenerate={autoGenerate}
+                          setAutoGenerate={setAutoGenerate}
+                          selectedModel={selectedModel}
+                          mockupCount={mockupCount}
+                          resolution={resolution}
+                          showBackground={true}
+                          onGeneratePrompt={handleGenerateSmartPrompt}
+                          onGenerateOutputs={handleGenerateClick}
+                          isGenerateDisabled={isGenerateDisabled}
+                          isGeneratingOutputs={isLoading.some(Boolean)}
+                          isPromptReady={isPromptReady}
+                          setSelectedModel={setSelectedModel}
+                          imageProvider={imageProvider}
+                          setImageProvider={setImageProvider}
+                          uploadedImage={uploadedImage}
+                          setMockupCount={setMockupCount}
+                          setResolution={setResolution}
+                          aspectRatio={aspectRatio}
+                          setAspectRatio={setAspectRatio}
+                          showGenerateButtons={true}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </main>
             )}
           </div>
         </div>
       )}
 
-      {/* Global Floating Control Bar (Dashboard Mode) */}
-      {isDashboardMode && (hasAnalyzed || shouldShowGenerateButton) && (
-        <div 
-          className={cn(
-            "fixed bottom-10 z-[100] px-4 pointer-events-none flex justify-center transition-all duration-500 ease-in-out",
-            isSidebarCollapsed ? "left-0 right-0" : "left-0 lg:right-0"
-          )}
-          style={{ 
-            left: !isSidebarCollapsed && !isSidebarVisibleMobile ? `${sidebarWidth}px` : '0'
-          }}
-        >
-          <div className="pointer-events-auto flex items-center gap-3 animate-in fade-in slide-in-from-bottom-8 duration-500">
-            {/* Mobile Sidebar Shortcut */}
-            {!isSidebarVisibleMobile && (
-              <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(true)}
-                size="icon"
-                className="lg:hidden shrink-0 w-12 h-12 rounded-2xl border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl hover:bg-neutral-800 hover:border-brand-cyan/40 text-neutral-400 hover:text-brand-cyan transition-all group"
-                title={t('mockup.openSidebar') || 'Abrir barra lateral'}
-              >
-                <PanelLeftOpen className="h-6 w-6 group-hover:scale-110 transition-all" />
-              </Button>
-            )}
-
-            <div className="w-auto max-w-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl relative">
-              <SurpriseMeControl
-                onSurpriseMe={handleSurpriseMeWithDice}
-                isGeneratingPrompt={isGeneratingPrompt}
-                isDiceAnimating={isDiceAnimating}
-                isSurpriseMeMode={isSurpriseMeMode}
-                setIsSurpriseMeMode={setIsSurpriseMeMode}
-                autoGenerate={autoGenerate}
-                setAutoGenerate={setAutoGenerate}
-                selectedModel={selectedModel}
-                mockupCount={mockupCount}
-                resolution={resolution}
-                showBackground={true}
-                onGeneratePrompt={handleGenerateSmartPrompt}
-                onGenerateOutputs={handleGenerateClick}
-                isGenerateDisabled={isGenerateDisabled}
-                isGeneratingOutputs={isLoading.some(Boolean)}
-                isPromptReady={isPromptReady}
-                setSelectedModel={setSelectedModel}
-                imageProvider={imageProvider}
-                setImageProvider={setImageProvider}
-                uploadedImage={uploadedImage}
-                setMockupCount={setMockupCount}
-                setResolution={setResolution}
-                aspectRatio={aspectRatio}
-                setAspectRatio={setAspectRatio}
-                showGenerateButtons={true}
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Overlays / Modals / Portals */}
       {fullScreenImageIndex !== null && (

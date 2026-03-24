@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Book, Server, Puzzle, Terminal, Code, Sparkles, Layers, Workflow, Copy, Check, FileText, Bot } from 'lucide-react';
+import { Book, Server, Puzzle, Terminal, Code, Sparkles, Layers, Workflow, Copy, Check, FileText, Bot, Coins } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { BreadcrumbWithBack } from '../components/ui/BreadcrumbWithBack';
 import {
@@ -26,6 +26,8 @@ import {
   buildNavigationWithMcpTools,
   generateTabMarkdown,
   PLATFORM_MCP_TOOLS,
+  CREDIT_COSTS,
+  CREDIT_PACKAGES,
 } from './docs/index';
 
 export const DocsPage: React.FC = () => {
@@ -401,6 +403,16 @@ export const DocsPage: React.FC = () => {
                         </CardHeader>
                         <CardContent>
                           <p className="text-muted-foreground text-sm">Programmatically create, edit, and manipulate canvas nodes and projects — for LLM agents and external tools.</p>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('pricing')}>
+                        <CardHeader>
+                          <Coins className="w-8 h-8 text-brand-cyan mb-2" />
+                          <CardTitle>Pricing & Credits</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-muted-foreground text-sm">Transparent pricing based on official Google API costs. See what you can create with each credit package.</p>
                         </CardContent>
                       </Card>
                     </div>
@@ -1988,6 +2000,191 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                 </div>
                               </div>
                             ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="pricing" className="space-y-8 mt-0">
+                    <Card className="bg-card border border-border">
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <Coins className="h-8 w-8 text-brand-cyan" />
+                          <div>
+                            <CardTitle className="text-2xl">Pricing & Credits</CardTitle>
+                            <CardDescription>Transparent pricing based on official Google API costs</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div id="pr-google" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">Official Google API Pricing</h3>
+                          <p className="text-muted-foreground text-sm mb-4">
+                            Our credit costs are derived from <a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:underline">Google's official pricing</a>. Updated March 2026.
+                          </p>
+
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Image Generation</h4>
+                          <div className="overflow-x-auto mb-4">
+                            <table className="w-full text-sm border border-border rounded-md">
+                              <thead className="bg-secondary/60">
+                                <tr>
+                                  <th className="text-left p-2 font-medium">Model</th>
+                                  <th className="text-left p-2 font-medium">Resolution</th>
+                                  <th className="text-right p-2 font-medium">Google Price</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr className="border-t border-border"><td className="p-2">Gemini 2.5 Flash Image</td><td className="p-2">~1K</td><td className="p-2 text-right font-redhatmono">$0.039</td></tr>
+                                <tr className="border-t border-border"><td className="p-2">Gemini 3.1 Flash Image</td><td className="p-2">512px</td><td className="p-2 text-right font-redhatmono">$0.045</td></tr>
+                                <tr className="border-t border-border"><td className="p-2">Gemini 3.1 Flash Image</td><td className="p-2">1K</td><td className="p-2 text-right font-redhatmono">$0.067</td></tr>
+                                <tr className="border-t border-border"><td className="p-2">Gemini 3.1 Flash Image</td><td className="p-2">2K</td><td className="p-2 text-right font-redhatmono">$0.101</td></tr>
+                                <tr className="border-t border-border"><td className="p-2">Gemini 3.1 Flash Image</td><td className="p-2">4K</td><td className="p-2 text-right font-redhatmono">$0.151</td></tr>
+                                <tr className="border-t border-border"><td className="p-2">Gemini 3 Pro Image</td><td className="p-2">1K/2K</td><td className="p-2 text-right font-redhatmono">$0.134</td></tr>
+                                <tr className="border-t border-border"><td className="p-2">Gemini 3 Pro Image</td><td className="p-2">4K</td><td className="p-2 text-right font-redhatmono">$0.24</td></tr>
+                              </tbody>
+                            </table>
+                          </div>
+
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Video Generation (Veo 3.1)</h4>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm border border-border rounded-md">
+                              <thead className="bg-secondary/60">
+                                <tr>
+                                  <th className="text-left p-2 font-medium">Model</th>
+                                  <th className="text-left p-2 font-medium">Resolution</th>
+                                  <th className="text-right p-2 font-medium">Per Second</th>
+                                  <th className="text-right p-2 font-medium">8 sec video</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr className="border-t border-border"><td className="p-2">Veo 3.1 Fast</td><td className="p-2">720p/1080p</td><td className="p-2 text-right font-redhatmono">$0.15</td><td className="p-2 text-right font-redhatmono">$1.20</td></tr>
+                                <tr className="border-t border-border"><td className="p-2">Veo 3.1 Standard</td><td className="p-2">720p/1080p</td><td className="p-2 text-right font-redhatmono">$0.40</td><td className="p-2 text-right font-redhatmono">$3.20</td></tr>
+                                <tr className="border-t border-border"><td className="p-2">Veo 3.1 Fast</td><td className="p-2">4K</td><td className="p-2 text-right font-redhatmono">$0.35</td><td className="p-2 text-right font-redhatmono">$2.80</td></tr>
+                                <tr className="border-t border-border"><td className="p-2">Veo 3.1 Standard</td><td className="p-2">4K</td><td className="p-2 text-right font-redhatmono">$0.60</td><td className="p-2 text-right font-redhatmono">$4.80</td></tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div id="pr-credits" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">Visant Credit System</h3>
+                          <p className="text-muted-foreground text-sm mb-4">
+                            Credits are our universal currency. Each operation has a fixed credit cost.
+                          </p>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <h4 className="text-sm font-semibold text-foreground mb-2">Image Generation</h4>
+                              <div className="space-y-1.5 text-sm">
+                                {CREDIT_COSTS.filter(c => c.category === 'image').map((cost, i) => (
+                                  <div key={i} className="flex justify-between items-center bg-secondary/40 border border-border rounded px-3 py-1.5">
+                                    <span className="text-muted-foreground">{cost.model} {cost.resolution}</span>
+                                    <Badge variant="secondary" className="font-redhatmono">{cost.creditsRequired} cr</Badge>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold text-foreground mb-2">Video Generation</h4>
+                              <div className="space-y-1.5 text-sm">
+                                {CREDIT_COSTS.filter(c => c.category === 'video').map((cost, i) => (
+                                  <div key={i} className="flex justify-between items-center bg-secondary/40 border border-border rounded px-3 py-1.5">
+                                    <span className="text-muted-foreground">{cost.model} {cost.resolution}</span>
+                                    <Badge variant="secondary" className="font-redhatmono">{cost.creditsRequired} cr</Badge>
+                                  </div>
+                                ))}
+                              </div>
+                              <h4 className="text-sm font-semibold text-foreground mt-4 mb-2">Other Operations</h4>
+                              <div className="space-y-1.5 text-sm">
+                                <div className="flex justify-between items-center bg-secondary/40 border border-border rounded px-3 py-1.5">
+                                  <span className="text-muted-foreground">AI Chat (4 messages)</span>
+                                  <Badge variant="secondary" className="font-redhatmono">1 cr</Badge>
+                                </div>
+                                <div className="flex justify-between items-center bg-secondary/40 border border-border rounded px-3 py-1.5">
+                                  <span className="text-muted-foreground">Brand Analysis (complete)</span>
+                                  <Badge variant="secondary" className="font-redhatmono">10 cr</Badge>
+                                </div>
+                                <div className="flex justify-between items-center bg-secondary/40 border border-border rounded px-3 py-1.5">
+                                  <span className="text-muted-foreground">Read operations (list, get)</span>
+                                  <Badge variant="outline" className="text-green-500 border-green-500/30">Free</Badge>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div id="pr-packages" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">Credit Packages</h3>
+                          <p className="text-muted-foreground text-sm mb-4">What can you create with each package?</p>
+
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm border border-border rounded-md">
+                              <thead className="bg-secondary/60">
+                                <tr>
+                                  <th className="text-left p-3 font-medium">Package</th>
+                                  <th className="text-right p-3 font-medium">Price (BRL)</th>
+                                  <th className="text-center p-3 font-medium">Images HD</th>
+                                  <th className="text-center p-3 font-medium">Images 4K</th>
+                                  <th className="text-center p-3 font-medium">Videos Fast</th>
+                                  <th className="text-center p-3 font-medium">Videos Std</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {CREDIT_PACKAGES.map((pkg, i) => (
+                                  <tr key={i} className="border-t border-border">
+                                    <td className="p-3 font-medium text-brand-cyan">{pkg.credits} credits</td>
+                                    <td className="p-3 text-right font-redhatmono">R${pkg.priceBRL.toFixed(2)}</td>
+                                    <td className="p-3 text-center">~{pkg.imagesHD}</td>
+                                    <td className="p-3 text-center">~{pkg.images4K}</td>
+                                    <td className="p-3 text-center">~{pkg.videosFast}</td>
+                                    <td className="p-3 text-center">~{pkg.videosStandard}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">*Estimates based on default models and resolutions. Actual usage may vary.</p>
+                        </div>
+
+                        <Separator />
+
+                        <div id="pr-byok" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">BYOK (Bring Your Own Key)</h3>
+                          <div className="bg-brand-cyan/10 border border-brand-cyan/30 rounded-md p-4">
+                            <p className="text-sm text-foreground mb-2"><strong>Coming Soon:</strong> Use your own Google AI API key for unlimited generations.</p>
+                            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                              <li>Pay Google directly at their published rates</li>
+                              <li>No credit limits on your Visant account</li>
+                              <li>Full control over your API usage and billing</li>
+                            </ul>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div id="pr-transparency" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">Build in Public</h3>
+                          <p className="text-muted-foreground text-sm mb-3">
+                            Transparency is a core value. This pricing data is:
+                          </p>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-start gap-2 bg-secondary/40 border border-border rounded-md p-3">
+                              <span className="text-brand-cyan">1.</span>
+                              <span className="text-muted-foreground"><strong className="text-foreground">Derived from official sources</strong> — Google's published API pricing</span>
+                            </div>
+                            <div className="flex items-start gap-2 bg-secondary/40 border border-border rounded-md p-3">
+                              <span className="text-brand-cyan">2.</span>
+                              <span className="text-muted-foreground"><strong className="text-foreground">Open in our codebase</strong> — <code className="font-redhatmono bg-secondary px-1 rounded text-xs">src/utils/pricing.ts</code>, <code className="font-redhatmono bg-secondary px-1 rounded text-xs">src/utils/creditCalculator.ts</code></span>
+                            </div>
+                            <div className="flex items-start gap-2 bg-secondary/40 border border-border rounded-md p-3">
+                              <span className="text-brand-cyan">3.</span>
+                              <span className="text-muted-foreground"><strong className="text-foreground">Updated when Google updates</strong> — We track official pricing changes</span>
+                            </div>
                           </div>
                         </div>
                       </CardContent>
