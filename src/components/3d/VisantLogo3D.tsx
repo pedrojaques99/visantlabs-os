@@ -57,16 +57,47 @@ const LogoMesh = ({ scale = 2.8, isMobile = false }: { scale?: number, isMobile?
     return <primitive ref={meshRef} object={scene} scale={scale} position={[0, 0, 0]} />;
 };
 
-// Dynamic Mouse Light
-const MouseLight = () => {
-    const lightRef = useRef<THREE.PointLight>(null);
+// Reimagined Mouse Light - Cinematic Dual Highlights
+const MouseLight = ({ isMobile = false }: { isMobile?: boolean }) => {
+    const mainLightRef = useRef<THREE.PointLight>(null);
+    const secondaryLightRef = useRef<THREE.PointLight>(null);
+    
     useFrame((state) => {
-        if (lightRef.current) {
-            lightRef.current.position.x = state.mouse.x * 1;
-            lightRef.current.position.y = state.mouse.y * 1;
+        // Main cyan light follows mouse closely
+        if (mainLightRef.current) {
+            mainLightRef.current.position.x = THREE.MathUtils.lerp(mainLightRef.current.position.x, state.mouse.x * 6, isMobile ? 0.05 : 0.1);
+            mainLightRef.current.position.y = THREE.MathUtils.lerp(mainLightRef.current.position.y, state.mouse.y * 6, isMobile ? 0.05 : 0.1);
+            mainLightRef.current.position.z = 5;
+        }
+        
+        // Secondary white light follows mouse with a lag for more dynamic reflections
+        if (secondaryLightRef.current) {
+            secondaryLightRef.current.position.x = THREE.MathUtils.lerp(secondaryLightRef.current.position.x, state.mouse.x * -4, 0.03);
+            secondaryLightRef.current.position.y = THREE.MathUtils.lerp(secondaryLightRef.current.position.y, state.mouse.y * -4, 0.03);
+            secondaryLightRef.current.position.z = 2;
         }
     });
-    return <pointLight ref={lightRef} intensity={10} color="#52ddeb" distance={10} />;
+
+    return (
+        <>
+            <pointLight 
+                ref={mainLightRef} 
+                intensity={isMobile ? 20 : 40} 
+                color="#52ddeb" 
+                distance={15} 
+                decay={2} 
+            />
+            {!isMobile && (
+                <pointLight 
+                    ref={secondaryLightRef} 
+                    intensity={15} 
+                    color="#ffffff" 
+                    distance={10} 
+                    decay={1} 
+                />
+            )}
+        </>
+    );
 };
 
 export const VisantLogo3D: React.FC = () => {
