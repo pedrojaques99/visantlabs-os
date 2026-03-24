@@ -253,11 +253,33 @@ class PluginBridge {
 
       case 'TEMPLATES_RESULT': {
         // Response to GET_TEMPLATES request
-        const pending = session.pendingAcks.get(message.requestId);
+        const pending = session.pendingAcks.get(message.requestId || message.opId);
         if (pending) {
           clearTimeout(pending.timeout);
-          session.pendingAcks.delete(message.requestId);
-          pending.resolve(message.templates || []);
+          session.pendingAcks.delete(message.requestId || message.opId);
+          pending.resolve(message.templates || message.context || message.variables || message.base64 || message.results || message.mappings || []);
+        }
+        break;
+      }
+
+      case 'DESIGN_CONTEXT_RESULT':
+      case 'VARIABLE_DEFS_RESULT':
+      case 'SCREENSHOT_RESULT':
+      case 'SEARCH_DS_RESULT':
+      case 'CODE_CONNECT_RESULT': {
+        const pending = session.pendingAcks.get(message.opId || message.requestId);
+        if (pending) {
+          clearTimeout(pending.timeout);
+          session.pendingAcks.delete(message.opId || message.requestId);
+          // Return the specific data field based on the message type
+          let result = message;
+          if (type === 'DESIGN_CONTEXT_RESULT') result = message.context;
+          else if (type === 'VARIABLE_DEFS_RESULT') result = message.variables;
+          else if (type === 'SCREENSHOT_RESULT') result = message.base64;
+          else if (type === 'SEARCH_DS_RESULT') result = message.results;
+          else if (type === 'CODE_CONNECT_RESULT') result = message.mappings;
+          
+          pending.resolve(result);
         }
         break;
       }
