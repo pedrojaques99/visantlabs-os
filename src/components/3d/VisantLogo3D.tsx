@@ -1,6 +1,6 @@
 import React, { Suspense, useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Float, Environment, ContactShadows, PresentationControls } from '@react-three/drei';
+import { useGLTF, Float, Environment, ContactShadows, PresentationControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Minimal 3D Logo Mesh
@@ -8,18 +8,9 @@ const LogoMesh = ({ scale = 2.8, isMobile = false }: { scale?: number, isMobile?
     const { scene } = useGLTF('/models/visant-3d-simple-2.glb');
     const meshRef = useRef<THREE.Group>(null);
 
-    useFrame((state) => {
-        if (meshRef.current) {
-            // Very slow continuous rotation
-            meshRef.current.rotation.y += 0.001;
-
-            // Mouse Parallax (only subtle, not to fight with drag)
-            const targetX = -state.mouse.y * 0.05;
-            const targetY = state.mouse.x * 0.05;
-            meshRef.current.rotation.x = THREE.MathUtils.lerp(meshRef.current.rotation.x, targetX, 0.02);
-            meshRef.current.rotation.z = THREE.MathUtils.lerp(meshRef.current.rotation.z, -targetY * 0.2, 0.02);
-        }
-    });
+    // Rotation and interaction are now handled by PresentationControls and Float
+    // to avoid conflicts with manual useFrame updates
+    useFrame(() => {});
 
     useEffect(() => {
         if (scene) {
@@ -117,13 +108,16 @@ export const VisantLogo3D: React.FC = () => {
             gl={{ antialias: !isMobile, alpha: true, powerPreference: 'high-performance' }}
         >
             <Suspense fallback={
-                <div className="text-white font-mono text-[10px] uppercase tracking-[0.2em] opacity-30 animate-pulse flex flex-col items-center gap-2">
-                    <div className="w-4 h-[1px] bg-white/50" />
-                    LOADING SYSTEM
-                </div>
+                <Html center>
+                    <div className="text-white font-mono text-[10px] uppercase tracking-[0.2em] opacity-30 animate-pulse flex flex-col items-center gap-2 whitespace-nowrap">
+                        <div className="w-4 h-[1px] bg-white/50" />
+                        LOADING SYSTEM
+                    </div>
+                </Html>
             }>
                 <ambientLight intensity={isMobile ? 1.5 : 1} />
-                <MouseLight />
+                <spotLight position={[10, 10, 10]} angle={0.2} penumbra={1} intensity={isMobile ? 50 : 100} color="#ffffff" castShadow={!isMobile} />
+                <MouseLight isMobile={isMobile} />
                 {!isMobile && <Environment preset="city" />}
 
                 <PresentationControls
