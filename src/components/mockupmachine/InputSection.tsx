@@ -325,11 +325,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 {/* Brand Guideline Button */}
                 <BrandGuidelineSelector asButton />
 
-                <Button variant="ghost" type="button"
-                  size="sm"
+                <div
+                  role="button"
                   onClick={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
                   className={cn(
-                    "px-3 h-8 rounded-md transition-all flex items-center gap-2 border",
+                    "px-3 h-8 rounded-md transition-all flex items-center gap-2 border cursor-pointer select-none",
                     designType === 'logo'
                       ? "bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan"
                       : "bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10"
@@ -344,7 +344,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                   <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">
                     {t('mockup.transparentBackground') || 'ISOLAR'}
                   </MicroTitle>
-                </Button>
+                </div>
               </>
             )}
 

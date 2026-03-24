@@ -21,6 +21,8 @@ interface DrawingLayerProps {
   onUpdateDrawingText?: (id: string, text: string) => void;
   onStopEditingText?: () => void;
   onUpdateDrawingBounds?: (id: string, bounds: { x: number; y: number; width: number; height: number }) => void;
+  onMoveDrawings?: (ids: Set<string>, delta: { x: number; y: number }) => void;
+  onInteractionEnd?: () => void;
   reactFlowInstance?: any;
   // Shape preview props
   drawingType?: 'freehand' | 'text' | 'shape';
@@ -53,30 +55,38 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
   reactFlowInstance,
   drawingType = 'freehand',
   shapePreview = null,
+  onMoveDrawings,
+  onInteractionEnd,
 }) => {
   const [draggingId, setDraggingId] = React.useState<string | null>(null);
   const [dragOffset, setDragOffset] = React.useState<{ x: number; y: number } | null>(null);
   const [resizingId, setResizingId] = React.useState<string | null>(null);
   const [resizeStart, setResizeStart] = React.useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [resizeHandle, setResizeHandle] = React.useState<string | null>(null);
+  const [lastFlowPos, setLastFlowPos] = React.useState<{ x: number; y: number } | null>(null);
 
   // Drag handlers for text
-  const handleTextMouseDown = React.useCallback((e: React.MouseEvent, drawing: DrawingStroke) => {
+  const handleDrawingMouseDown = React.useCallback((e: React.MouseEvent, drawing: DrawingStroke) => {
     if (editingDrawingId === drawing.id) return; // Don't drag while editing
 
     e.stopPropagation();
     const target = e.target as HTMLElement;
     if (target.closest('.resize-handle')) return; // Don't start drag on resize handle
 
-    const startX = (e.clientX - viewport.x) / viewport.zoom;
-    const startY = (e.clientY - viewport.y) / viewport.zoom;
+    // If not already selected, select only this one (standard behavior)
+    // If already selected, we will drag all selected items
+    if (!selectedDrawingIds.has(drawing.id)) {
+      onDrawingClick(drawing.id);
+    }
+
+    const flowPos = reactFlowInstance?.screenToFlowPosition({
+      x: e.clientX,
+      y: e.clientY,
+    }) || { x: (e.clientX - viewport.x) / viewport.zoom, y: (e.clientY - viewport.y) / viewport.zoom };
 
     setDraggingId(drawing.id);
-    setDragOffset({
-      x: startX - drawing.bounds.x,
-      y: startY - drawing.bounds.y,
-    });
-  }, [editingDrawingId, viewport]);
+    setLastFlowPos(flowPos);
+  }, [editingDrawingId, viewport, selectedDrawingIds, onDrawingClick, reactFlowInstance]);
 
   // Resize handlers
   const handleResizeMouseDown = React.useCallback((e: React.MouseEvent, drawing: DrawingStroke, handle: string) => {
@@ -96,22 +106,19 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
     if (!draggingId && !resizingId) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!reactFlowInstance || !onUpdateDrawingBounds) return;
-
-      const flowPos = reactFlowInstance.screenToFlowPosition({
+      const flowPos = reactFlowInstance?.screenToFlowPosition({
         x: e.clientX,
         y: e.clientY,
-      });
+      }) || { x: (e.clientX - viewport.x) / viewport.zoom, y: (e.clientY - viewport.y) / viewport.zoom };
 
-      if (draggingId && dragOffset) {
-        const newBounds = {
-          x: flowPos.x - dragOffset.x,
-          y: flowPos.y - dragOffset.y,
-          width: drawings.find(d => d.id === draggingId)?.bounds.width || 200,
-          height: drawings.find(d => d.id === draggingId)?.bounds.height || 60,
+      if (draggingId && lastFlowPos && onMoveDrawings) {
+        const delta = {
+          x: flowPos.x - lastFlowPos.x,
+          y: flowPos.y - lastFlowPos.y
         };
-        onUpdateDrawingBounds(draggingId, newBounds);
-      } else if (resizingId && resizeStart && resizeHandle) {
+        onMoveDrawings(selectedDrawingIds, delta);
+        setLastFlowPos(flowPos);
+      } else if (resizingId && resizeStart && resizeHandle && onUpdateDrawingBounds) {
         const drawing = drawings.find(d => d.id === resizingId);
         if (!drawing) return;
 
@@ -145,11 +152,15 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
     };
 
     const handleMouseUp = () => {
+      if (draggingId || resizingId) {
+        onInteractionEnd?.();
+      }
       setDraggingId(null);
       setDragOffset(null);
       setResizingId(null);
       setResizeStart(null);
       setResizeHandle(null);
+      setLastFlowPos(null);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -159,7 +170,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [draggingId, dragOffset, resizingId, resizeStart, resizeHandle, drawings, reactFlowInstance, onUpdateDrawingBounds]);
+  }, [draggingId, lastFlowPos, resizingId, resizeStart, resizeHandle, drawings, reactFlowInstance, onUpdateDrawingBounds, onMoveDrawings, selectedDrawingIds, onInteractionEnd]);
 
   return (
     <svg
@@ -184,8 +195,9 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                   strokeWidth={drawing.size}
                   className={cn(
                     'pointer-events-auto cursor-pointer transition-opacity',
-                    selectedDrawingIds.has(drawing.id) ? 'opacity-80' : 'opacity-300'
+                    selectedDrawingIds.has(drawing.id) ? 'opacity-80' : 'opacity-100'
                   )}
+                  onMouseDown={(e) => handleDrawingMouseDown(e, drawing)}
                   onClick={(e) => {
                     e.stopPropagation();
                     onDrawingClick(drawing.id);
@@ -229,7 +241,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                   style={{ cursor: isEditing ? 'text' : isDragging ? 'grabbing' : 'grab' }}
                   onMouseDown={(e) => {
                     if (!isEditing) {
-                      handleTextMouseDown(e, drawing);
+                      handleDrawingMouseDown(e, drawing);
                     }
                   }}
                   onClick={(e) => {
@@ -330,6 +342,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                     strokeWidth={shapeStrokeWidth}
                     rx={4}
                     className="pointer-events-auto cursor-pointer"
+                    onMouseDown={(e) => handleDrawingMouseDown(e, drawing)}
                     onClick={(e) => {
                       e.stopPropagation();
                       onDrawingClick(drawing.id);
@@ -345,6 +358,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                     stroke={shapeStrokeColor}
                     strokeWidth={shapeStrokeWidth}
                     className="pointer-events-auto cursor-pointer"
+                    onMouseDown={(e) => handleDrawingMouseDown(e, drawing)}
                     onClick={(e) => {
                       e.stopPropagation();
                       onDrawingClick(drawing.id);
@@ -360,6 +374,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                     stroke={shapeStrokeColor}
                     strokeWidth={shapeStrokeWidth}
                     className="pointer-events-auto cursor-pointer"
+                    onMouseDown={(e) => handleDrawingMouseDown(e, drawing)}
                     onClick={(e) => {
                       e.stopPropagation();
                       onDrawingClick(drawing.id);
@@ -413,6 +428,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                         strokeWidth={shapeStrokeWidth}
                         markerEnd={`url(#arrowhead-layer-${drawing.id})`}
                         className="pointer-events-auto cursor-pointer"
+                        onMouseDown={(e) => handleDrawingMouseDown(e, drawing)}
                         onClick={(e) => {
                           e.stopPropagation();
                           onDrawingClick(drawing.id);

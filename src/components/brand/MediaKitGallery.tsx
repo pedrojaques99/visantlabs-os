@@ -288,7 +288,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                         <img
                                             src={item.url}
                                             alt={item.label || 'Media'}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-contain p-2"
                                             loading="lazy"
                                         />
                                     ) : (

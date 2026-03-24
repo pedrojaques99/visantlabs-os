@@ -32,6 +32,7 @@ interface SidebarGenerationConfigProps {
     onReferenceImagesChange: (images: UploadedImage[]) => void;
     authenticationRequiredMessage: string;
     isPromptReady: boolean;
+    sidebarWidth?: number;
 }
 
 export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = ({
@@ -47,6 +48,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
     onReferenceImagesChange,
     authenticationRequiredMessage,
     isPromptReady,
+    sidebarWidth = 400,
 }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
@@ -282,155 +284,172 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
             <div className="flex flex-col gap-2 mt-4">
 
                 {/* 1. AnalyzedSummaryCard (compact) */}
-                <AnalyzedSummaryCard
-                    uploadedImage={uploadedImage}
-                    isGenerating={isSidebarGenerating}
-                    referenceImages={referenceImages}
-                    selectedBrandingTags={selectedBrandingTags}
-                    onStartOver={resetAll}
-                    onReplaceImage={onReplaceImage}
-                    onReferenceImagesChange={onReferenceImagesChange}
-                />
+                <div className="animate-fade-in-up stagger-1">
+                    <AnalyzedSummaryCard
+                        uploadedImage={uploadedImage}
+                        isGenerating={isSidebarGenerating}
+                        referenceImages={referenceImages}
+                        selectedBrandingTags={selectedBrandingTags}
+                        onStartOver={resetAll}
+                        onReplaceImage={onReplaceImage}
+                        onReferenceImagesChange={onReferenceImagesChange}
+                    />
+                </div>
 
                 {/* 2. SurpriseMeSelectedTagsDisplay - ONLY visible in Normal Mode */}
                 {!isSurpriseMeMode && (
-                    <SurpriseMeSelectedTagsDisplay onRerollAll={() => handleSurpriseMe(false)} isGenerating={isSidebarGenerating} />
+                    <div className="animate-fade-in-up stagger-2 relative z-[60]">
+                        <SurpriseMeSelectedTagsDisplay 
+                            onRerollAll={() => handleSurpriseMe(false)} 
+                            isGenerating={isSidebarGenerating} 
+                            sidebarWidth={sidebarWidth}
+                        />
+                    </div>
                 )}
 
                 {/* 2.5 Presets Control */}
-                <PresetsControl />
+                <div className="animate-fade-in-up stagger-3 relative z-10">
+                    <PresetsControl />
+                </div>
 
                 {/* CategoriesSection - ONLY visible in Pool Mode */}
                 {isSurpriseMeMode && (
-                    <CategoriesSection
-                        suggestedTags={suggestedTags}
-                        availableTags={displayAvailableCategoryTags}
-                        selectedTags={selectedTags}
-                        isGenerating={isSidebarGenerating}
-                        onTagToggle={handleTagToggle}
-                        isAnalyzing={isAnalyzing}
-                        isAllCategoriesOpen={isAllCategoriesOpen}
-                        onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
-                        customInput={customCategoryInput}
-                        onCustomInputChange={setCustomCategoryInput}
-                        onAddCustomTag={handleAddCustomCategoryTag}
-                        onRandomize={handleRandomizeCategories}
-                        isComplete={categoriesComplete}
-                        displaySuggestedTags={displaySuggestedTags}
-                        tagCategories={tagCategories}
-                        mockupPresets={mockupPresets}
-                        isSurpriseMeMode={isSurpriseMeMode}
-                        categoriesPool={surpriseMePool.selectedCategoryTags || []}
-                        onPoolToggle={(tag) => togglePoolTag('selectedCategoryTags', tag, surpriseMePool, setSurpriseMePool)}
-                    />
+                    <div className="animate-fade-in-up stagger-2">
+                        <CategoriesSection
+                            suggestedTags={suggestedTags}
+                            availableTags={displayAvailableCategoryTags}
+                            selectedTags={selectedTags}
+                            isGenerating={isSidebarGenerating}
+                            onTagToggle={handleTagToggle}
+                            isAnalyzing={isAnalyzing}
+                            isAllCategoriesOpen={isAllCategoriesOpen}
+                            onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
+                            customInput={customCategoryInput}
+                            onCustomInputChange={setCustomCategoryInput}
+                            onAddCustomTag={handleAddCustomCategoryTag}
+                            onRandomize={handleRandomizeCategories}
+                            isComplete={categoriesComplete}
+                            displaySuggestedTags={displaySuggestedTags}
+                            tagCategories={tagCategories}
+                            mockupPresets={mockupPresets}
+                            isSurpriseMeMode={isSurpriseMeMode}
+                            categoriesPool={surpriseMePool.selectedCategoryTags || []}
+                            onPoolToggle={(tag) => togglePoolTag('selectedCategoryTags', tag, surpriseMePool, setSurpriseMePool)}
+                        />
+                    </div>
                 )}
 
                 {/* RefineSection - Only visible in Pool Mode */}
                 {isSurpriseMeMode && (
-                    <RefineSection
-                        isAdvancedOpen={isAdvancedOpen}
-                        onToggleAdvanced={() => setIsAdvancedOpen(!isAdvancedOpen)}
-                        isGenerating={isSidebarGenerating}
-                        advancedOptionsProps={{
-                            selectedLocationTags,
-                            selectedAngleTags,
-                            selectedLightingTags,
-                            selectedEffectTags,
-                            selectedMaterialTags,
-                            selectedColors,
-                            colorInput,
-                            isValidColor,
-                            negativePrompt,
-                            additionalPrompt,
-                            onLocationTagToggle: handleLocationTagToggle,
-                            onAngleTagToggle: handleAngleTagToggle,
-                            onLightingTagToggle: handleLightingTagToggle,
-                            onEffectTagToggle: handleEffectTagToggle,
-                            onMaterialTagToggle: handleMaterialTagToggle,
-                            onColorInputChange: handleColorInputChange,
-                            onAddColor: handleAddColor,
-                            onRemoveColor: handleRemoveColor,
-                            onNegativePromptChange: (e) => setNegativePrompt(e.target.value),
-                            onAdditionalPromptChange: (e) => setAdditionalPrompt(e.target.value),
-                            availableLocationTags: displayLocationTags,
-                            availableAngleTags: displayAngleTags,
-                            availableLightingTags: displayLightingTags,
-                            availableEffectTags: displayEffectTags,
-                            availableMaterialTags: displayMaterialTags,
-                            customLocationInput,
-                            customAngleInput,
-                            customLightingInput,
-                            customEffectInput,
-                            customMaterialInput,
-                            onCustomLocationInputChange: setCustomLocationInput,
-                            onCustomAngleInputChange: setCustomAngleInput,
-                            onCustomLightingInputChange: setCustomLightingInput,
-                            onCustomEffectInputChange: setCustomEffectInput,
-                            onCustomMaterialInputChange: setCustomMaterialInput,
-                            onAddCustomLocationTag: handleAddCustomLocationTag,
-                            onAddCustomAngleTag: handleAddCustomAngleTag,
-                            onAddCustomLightingTag: handleAddCustomLightingTag,
-                            onAddCustomEffectTag: handleAddCustomEffectTag,
-                            onAddCustomMaterialTag: handleAddCustomMaterialTag,
-                            designType,
-                            generateText,
-                            withHuman,
-                            enhanceTexture,
-                            removeText,
-                            onGenerateTextChange: setGenerateText,
-                            onWithHumanChange: setWithHuman,
-                            onEnhanceTextureChange: setEnhanceTexture,
-                            onRemoveTextChange: setRemoveText,
-                            suggestedLocationTags,
-                            suggestedAngleTags,
-                            suggestedLightingTags,
-                            suggestedEffectTags,
-                            suggestedMaterialTags,
-                            suggestedColors: suggestedColorsFromAnalysis,
-                            // Surprise Me Mode props
-                            isSurpriseMeMode,
-                            locationPool: surpriseMePool.selectedLocationTags || [],
-                            anglePool: surpriseMePool.selectedAngleTags || [],
-                            lightingPool: surpriseMePool.selectedLightingTags || [],
-                            effectPool: surpriseMePool.selectedEffectTags || [],
-                            materialPool: surpriseMePool.selectedMaterialTags || [],
-                            onLocationPoolToggle: (tag) => togglePoolTag('selectedLocationTags', tag, surpriseMePool, setSurpriseMePool),
-                            onAnglePoolToggle: (tag) => togglePoolTag('selectedAngleTags', tag, surpriseMePool, setSurpriseMePool),
-                            onLightingPoolToggle: (tag) => togglePoolTag('selectedLightingTags', tag, surpriseMePool, setSurpriseMePool),
-                            onEffectPoolToggle: (tag) => togglePoolTag('selectedEffectTags', tag, surpriseMePool, setSurpriseMePool),
-                            onMaterialPoolToggle: (tag) => togglePoolTag('selectedMaterialTags', tag, surpriseMePool, setSurpriseMePool)
-                        }}
-                    />
+                    <div className="animate-fade-in-up stagger-3">
+                        <RefineSection
+                            isAdvancedOpen={isAdvancedOpen}
+                            onToggleAdvanced={() => setIsAdvancedOpen(!isAdvancedOpen)}
+                            isGenerating={isSidebarGenerating}
+                            advancedOptionsProps={{
+                                selectedLocationTags,
+                                selectedAngleTags,
+                                selectedLightingTags,
+                                selectedEffectTags,
+                                selectedMaterialTags,
+                                selectedColors,
+                                colorInput,
+                                isValidColor,
+                                negativePrompt,
+                                additionalPrompt,
+                                onLocationTagToggle: handleLocationTagToggle,
+                                onAngleTagToggle: handleAngleTagToggle,
+                                onLightingTagToggle: handleLightingTagToggle,
+                                onEffectTagToggle: handleEffectTagToggle,
+                                onMaterialTagToggle: handleMaterialTagToggle,
+                                onColorInputChange: handleColorInputChange,
+                                onAddColor: handleAddColor,
+                                onRemoveColor: handleRemoveColor,
+                                onNegativePromptChange: (e) => setNegativePrompt(e.target.value),
+                                onAdditionalPromptChange: (e) => setAdditionalPrompt(e.target.value),
+                                availableLocationTags: displayLocationTags,
+                                availableAngleTags: displayAngleTags,
+                                availableLightingTags: displayLightingTags,
+                                availableEffectTags: displayEffectTags,
+                                availableMaterialTags: displayMaterialTags,
+                                customLocationInput,
+                                customAngleInput,
+                                customLightingInput,
+                                customEffectInput,
+                                customMaterialInput,
+                                onCustomLocationInputChange: setCustomLocationInput,
+                                onCustomAngleInputChange: setCustomAngleInput,
+                                onCustomLightingInputChange: setCustomLightingInput,
+                                onCustomEffectInputChange: setCustomEffectInput,
+                                onCustomMaterialInputChange: setCustomMaterialInput,
+                                onAddCustomLocationTag: handleAddCustomLocationTag,
+                                onAddCustomAngleTag: handleAddCustomAngleTag,
+                                onAddCustomLightingTag: handleAddCustomLightingTag,
+                                onAddCustomEffectTag: handleAddCustomEffectTag,
+                                onAddCustomMaterialTag: handleAddCustomMaterialTag,
+                                designType,
+                                generateText,
+                                withHuman,
+                                enhanceTexture,
+                                removeText,
+                                onGenerateTextChange: setGenerateText,
+                                onWithHumanChange: setWithHuman,
+                                onEnhanceTextureChange: setEnhanceTexture,
+                                onRemoveTextChange: setRemoveText,
+                                suggestedLocationTags,
+                                suggestedAngleTags,
+                                suggestedLightingTags,
+                                suggestedEffectTags,
+                                suggestedMaterialTags,
+                                suggestedColors: suggestedColorsFromAnalysis,
+                                // Surprise Me Mode props
+                                isSurpriseMeMode,
+                                locationPool: surpriseMePool.selectedLocationTags || [],
+                                anglePool: surpriseMePool.selectedAngleTags || [],
+                                lightingPool: surpriseMePool.selectedLightingTags || [],
+                                effectPool: surpriseMePool.selectedEffectTags || [],
+                                materialPool: surpriseMePool.selectedMaterialTags || [],
+                                onLocationPoolToggle: (tag) => togglePoolTag('selectedLocationTags', tag, surpriseMePool, setSurpriseMePool),
+                                onAnglePoolToggle: (tag) => togglePoolTag('selectedAngleTags', tag, surpriseMePool, setSurpriseMePool),
+                                onLightingPoolToggle: (tag) => togglePoolTag('selectedLightingTags', tag, surpriseMePool, setSurpriseMePool),
+                                onEffectPoolToggle: (tag) => togglePoolTag('selectedEffectTags', tag, surpriseMePool, setSurpriseMePool),
+                                onMaterialPoolToggle: (tag) => togglePoolTag('selectedMaterialTags', tag, surpriseMePool, setSurpriseMePool)
+                            }}
+                        />
+                    </div>
                 )}
 
                 {/* 3. Prompt Section */}
-                <PromptSection
-                    promptPreview={promptPreview}
-                    isSidebarGenerating={isSidebarGenerating}
-                    onPromptChange={handlePromptChange}
-                    onPromptUpdate={(value) => {
-                        setPromptPreview(value);
-                        if (isSmartPromptActive) setIsSmartPromptActive(false);
-                        setIsPromptManuallyEdited(true);
-                    }}
-                    promptSuggestions={promptSuggestions}
-                    isGeneratingPrompt={isGeneratingPrompt}
-                    isSuggestingPrompts={isSuggestingPrompts}
-                    isGenerating={isGenerating}
-                    hasGenerated={hasGenerated}
-                    mockups={mockups}
-                    onSuggestPrompts={onSuggestPrompts}
-                    onGenerateSmartPrompt={onGenerateSmartPrompt}
-                    onSimplify={onSimplify}
-                    onRegenerate={onRegenerate}
-                    onSuggestionClick={handleSuggestionClick}
-                    isSmartPromptActive={isSmartPromptActive}
-                    setIsSmartPromptActive={setIsSmartPromptActive}
-                    setIsPromptManuallyEdited={setIsPromptManuallyEdited}
-                    creditsPerGeneration={creditsPerGeneration}
-                    onGenerateSuggestion={onGenerateSuggestion}
-                    isGenerateDisabled={isGenerateDisabled}
-                />
+                <div className="animate-fade-in-up stagger-4">
+                    <PromptSection
+                        promptPreview={promptPreview}
+                        isSidebarGenerating={isSidebarGenerating}
+                        onPromptChange={handlePromptChange}
+                        onPromptUpdate={(value) => {
+                            setPromptPreview(value);
+                            if (isSmartPromptActive) setIsSmartPromptActive(false);
+                            setIsPromptManuallyEdited(true);
+                        }}
+                        promptSuggestions={promptSuggestions}
+                        isGeneratingPrompt={isGeneratingPrompt}
+                        isSuggestingPrompts={isSuggestingPrompts}
+                        isGenerating={isGenerating}
+                        hasGenerated={hasGenerated}
+                        mockups={mockups}
+                        onSuggestPrompts={onSuggestPrompts}
+                        onGenerateSmartPrompt={onGenerateSmartPrompt}
+                        onSimplify={onSimplify}
+                        onRegenerate={onRegenerate}
+                        onSuggestionClick={handleSuggestionClick}
+                        isSmartPromptActive={isSmartPromptActive}
+                        setIsSmartPromptActive={setIsSmartPromptActive}
+                        setIsPromptManuallyEdited={setIsPromptManuallyEdited}
+                        creditsPerGeneration={creditsPerGeneration}
+                        onGenerateSuggestion={onGenerateSuggestion}
+                        isGenerateDisabled={isGenerateDisabled}
+                        isPromptReady={isPromptReady}
+                    />
+                </div>
 
                 {/* 6. Auth alert (conditional) */}
                 {(() => {
@@ -448,17 +467,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                 })()}
 
                 {/* Spacer so fixed toolbar doesn't cover content */}
-                <div className="h-40 flex-shrink-0" aria-hidden="true" />
-            </div>
-
-            {/* Fixed Bottom Toolbar — Surprise Me + Generate */}
-            <div
-                className={cn(
-                    'z-30 animate-fade-in pointer-events-none',
-                    'sticky bottom-0 left-0 right-0',
-                    'flex flex-col items-center justify-end pb-4 pt-10'
-                )}
-            >
+                <div className="h-20 flex-shrink-0" aria-hidden="true" />
             </div>
         </div>
     );

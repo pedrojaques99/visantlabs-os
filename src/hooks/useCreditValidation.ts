@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useLayout } from './useLayout';
 import { getCreditsRequired } from '@/utils/creditCalculator';
+import { isGenerationUnlimited } from '@/utils/unlimitedChecker';
 import { toast } from 'sonner';
 import { useTranslation } from './useTranslation';
 import { isLocalDevelopment } from '@/utils/env';
@@ -73,15 +74,6 @@ export const useCreditValidation = (
     }
   ): Promise<boolean> => {
     const { creditsNeeded, model, resolution } = options || {};
-    
-    // Calculate credits needed
-    let actualCreditsNeeded = creditsNeeded;
-    if (actualCreditsNeeded === undefined && model) {
-      const creditsPerImage = getCreditsRequired(model, resolution);
-      actualCreditsNeeded = mockupCount * creditsPerImage;
-    } else if (actualCreditsNeeded === undefined) {
-      actualCreditsNeeded = 1;
-    }
 
     // Skip validation in local development
     if (isLocalDevelopment()) {
@@ -94,6 +86,29 @@ export const useCreditValidation = (
       return false;
     }
 
+    // Check if generation is unlimited based on user's plan
+    const planMetadata = subscriptionStatus?.planMetadata;
+    if (model && planMetadata) {
+      const isUnlimited = isGenerationUnlimited({
+        model,
+        resolution,
+        planMetadata,
+      });
+      if (isUnlimited) {
+        // Unlimited generation - skip credit validation
+        return true;
+      }
+    }
+
+    // Calculate credits needed
+    let actualCreditsNeeded = creditsNeeded;
+    if (actualCreditsNeeded === undefined && model) {
+      const creditsPerImage = getCreditsRequired(model, resolution);
+      actualCreditsNeeded = mockupCount * creditsPerImage;
+    } else if (actualCreditsNeeded === undefined) {
+      actualCreditsNeeded = 1;
+    }
+
     // Check credits
     if (subscriptionStatus) {
       // totalCredits already includes both earned credits (purchased) and monthly credits remaining
@@ -103,10 +118,10 @@ export const useCreditValidation = (
 
       // Only show error if user has no credits available
       if (remaining < actualCreditsNeeded) {
-        const resetDate = subscriptionStatus.creditsResetDate 
-          ? new Date(subscriptionStatus.creditsResetDate).toLocaleDateString() 
+        const resetDate = subscriptionStatus.creditsResetDate
+          ? new Date(subscriptionStatus.creditsResetDate).toLocaleDateString()
           : t('messages.yourNextBillingCycle');
-        
+
         const message = subscriptionStatus.hasActiveSubscription
           ? t('messages.needCreditsSubscription', {
             creditsNeeded: actualCreditsNeeded,
@@ -129,9 +144,9 @@ export const useCreditValidation = (
       }
     } else {
       // If no subscription status available, assume user has no credits
-      toast.error(t('messages.needCredits', { 
-        creditsNeeded: actualCreditsNeeded, 
-        plural: actualCreditsNeeded > 1 ? 's' : '' 
+      toast.error(t('messages.needCredits', {
+        creditsNeeded: actualCreditsNeeded,
+        plural: actualCreditsNeeded > 1 ? 's' : ''
       }), { duration: 5000 });
       // Open credit packages modal first (default for users without credits)
       onCreditPackagesModalOpen?.();
@@ -141,8 +156,37 @@ export const useCreditValidation = (
     return true;
   }, [subscriptionStatus, mockupCount, isAuthenticated, t, onCreditPackagesModalOpen]);
 
+  /**
+   * Check if a generation is unlimited based on user's plan
+   */
+  const checkIfUnlimited = useCallback((
+    model: string,
+    resolution?: Resolution
+  ): boolean => {
+    const planMetadata = subscriptionStatus?.planMetadata;
+    if (!planMetadata) return false;
+
+    return isGenerationUnlimited({ model, resolution, planMetadata });
+  }, [subscriptionStatus?.planMetadata]);
+
+  /**
+   * Get effective credits (0 if unlimited, otherwise calculated amount)
+   */
+  const getEffectiveCreditsNeeded = useCallback((
+    model: GeminiModel,
+    resolution?: Resolution
+  ): number => {
+    if (checkIfUnlimited(model, resolution)) {
+      return 0;
+    }
+    return getCreditsRequired(model, resolution);
+  }, [checkIfUnlimited]);
+
   return {
     hasEnoughCredits,
     validateCredits,
+    checkIfUnlimited,
+    getEffectiveCreditsNeeded,
+    planMetadata: subscriptionStatus?.planMetadata,
   };
 };

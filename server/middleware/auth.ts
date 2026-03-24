@@ -17,6 +17,16 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
+    // Internal MCP calls: trust x-mcp-user-id header from localhost only
+    const mcpUserId = req.headers['x-mcp-user-id'] as string | undefined;
+    if (mcpUserId) {
+      const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1' || req.ip === '127.0.0.1' || req.ip === '::1';
+      if (isLocal) {
+        req.userId = mcpUserId;
+        return next();
+      }
+    }
+
     // Try API key auth first
     const isApiKey = await authenticateApiKey(req);
     if (isApiKey) return next();

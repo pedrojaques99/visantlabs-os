@@ -695,6 +695,18 @@
   animation: fade-in-up 0.5s ease-out forwards;
 }
 
+/* Staggered Reveal Utils */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+.reveal-hidden {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
 .shimmer-glow {
   background: linear-gradient(to right,
       transparent 0%,

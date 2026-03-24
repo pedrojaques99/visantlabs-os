@@ -213,7 +213,7 @@
       "description": "Crie estratégias completas de branding",
       "name": "Branding Machine"
     },
-    "brandingTools": "BRANDING TOOLS //",
+    "brandingTools": "DESIGN TOOLS //",
     "budgetMachine": {
       "description": "Crie e gerencie orçamentos profissionais",
       "name": "Budget Machine"
@@ -2308,6 +2308,9 @@
       "pensando como um designer gráfico sênior",
       "refinando prompt"
     ],
+    "outOfSyncTooltip": "O prompt e as tags selecionadas estão dessincronizados. Clique para regenerar o prompt inteligente.",
+    "promptSynced": "Sincronizado",
+    "promptOutOfSync": "Desatualizado",
     "redrawTooltip": "Re-desenhar (Gerar uma nova variação)",
     "referenceAreaLabel": "REFERÊNCIA",
     "referenceImageAlt": "Imagem de referência",

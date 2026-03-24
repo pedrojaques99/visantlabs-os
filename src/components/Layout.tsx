@@ -621,7 +621,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         <div className={cn(
           "flex-1",
-          location.pathname.startsWith('/canvas/') ? "overflow-hidden" : ""
+          location.pathname.startsWith('/canvas/') || location.pathname.startsWith('/mockupmachine') ? "overflow-hidden" : ""
         )}>
           {children}
         </div>

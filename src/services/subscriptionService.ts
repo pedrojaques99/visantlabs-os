@@ -46,6 +46,15 @@ const fetchWithTimeout = async (url: string, options: RequestInit, timeout: numb
   }
 };
 
+export interface PlanMetadata {
+  tier?: string;
+  unlimitedResolutions?: string[];
+  unlimitedModels?: string[];
+  storageLimitGB?: number;
+  interval?: 'month' | 'year';
+  features?: string[];
+}
+
 export interface SubscriptionStatus {
   subscriptionStatus: 'free' | 'active' | 'canceled' | 'past_due';
   subscriptionTier: 'free' | 'premium' | 'pro';
@@ -59,6 +68,9 @@ export interface SubscriptionStatus {
   canGenerate: boolean;
   totalCreditsEarned: number;
   totalCredits: number;
+  // Plan metadata for unlimited features
+  planMetadata?: PlanMetadata | null;
+  planName?: string;
 }
 
 export interface UsageInfo {

@@ -1,5 +1,5 @@
 import React, { useRef, memo, useCallback, useState, useEffect } from 'react';
-import { Position, NodeResizer, type NodeProps, useReactFlow } from '@xyflow/react';
+import { Position, NodeResizer, type NodeProps, useReactFlow, Handle } from '@xyflow/react';
 import { UploadCloud, X } from 'lucide-react';
 import type { LogoNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -82,8 +82,8 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     }
   }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
 
-  const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize as any);
+  const handleResize = useCallback((_: any, params: { width: number }) => {
+    handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   const handleDelete = () => {
@@ -98,7 +98,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="min-w-[240px] max-w-[300px]"
+      className="min-w-[240px]"
       onFitToContent={handleFitToContent}
     >
       {selected && !dragging && (
@@ -110,7 +110,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           maxWidth={1000}
           maxHeight={1000}
           keepAspectRatio={!!logoImageUrl}
-          onResize={(_, { width, height }) => handleResize(width, height)}
+          onResize={handleResize}
         />
       )}
 

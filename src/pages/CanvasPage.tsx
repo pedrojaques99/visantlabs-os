@@ -1388,7 +1388,10 @@ export const CanvasPage: React.FC = () => {
     handleDuplicateNodes,
     addMockupNode,
     addPromptNode,
-    addUpscaleNode
+    addUpscaleNode,
+    drawing.deleteSelectedDrawings,
+    drawing.selectedDrawingIds,
+    drawing.setSelectedDrawingIds
   );
 
   usePasteImage(handlePasteImage, isAuthenticated === true);
@@ -3793,8 +3796,13 @@ export const CanvasPage: React.FC = () => {
                   drawing.createTextDrawing?.(position);
                 }}
                 onUpdateDrawingBounds={(id, bounds) => {
-                  addToHistory(nodes, edges, drawing.drawings);
                   drawing.updateDrawingBounds?.(id, bounds);
+                }}
+                onMoveDrawings={(ids, delta) => {
+                  drawing.moveDrawings?.(ids, delta);
+                }}
+                onInteractionEnd={() => {
+                  addToHistory(nodes, edges, drawing.drawings);
                 }}
                 shapePreview={
                   drawing.drawingState.drawingType === 'shape' &&

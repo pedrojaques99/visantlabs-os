@@ -115,8 +115,8 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
   };
 
   // Resize handler (com debounce - aplica apenas quando soltar o mouse)
-  const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, 'auto', data.onResize);
+  const handleResize = useCallback((_: any, params: { width: number }) => {
+    handleResizeWithDebounce(id, params.width, 'auto', data.onResize);
   }, [id, data.onResize, handleResizeWithDebounce]);
 
   const handleFitToContent = useCallback(() => {
@@ -234,7 +234,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="min-w-[320px] max-w-[400px] overflow-visible"
+      className="min-w-[320px] overflow-visible"
     >
       {selected && !dragging && (
         <NodeResizer
@@ -243,7 +243,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
           minWidth={320}
           minHeight={300}
           keepAspectRatio={true}
-          onResize={(_, { width, height }) => handleResize(width, height)}
+          onResize={handleResize}
         />
       )}
 

@@ -2,7 +2,7 @@ import React, { useRef, memo, useState, useEffect, useCallback } from 'react';
 import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/react';
 import { FileText, UploadCloud } from 'lucide-react';
 import type { PDFNodeData } from '@/types/reactFlow';
-import { pdfToBase64, validatePdfFile } from '@/utils/pdfUtils';
+import { pdfToBase64 } from '@/utils/pdfUtils';
 import { toast } from 'sonner';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
@@ -10,6 +10,7 @@ import { NodeButton } from './shared/node-button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { Input } from '@/components/ui/input'
+import { validateFile } from '@/utils/fileUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -46,18 +47,9 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
     const file = e.target.files?.[0];
     if (!file || !nodeData.onUploadPdf) return;
 
-    // Check if it's a PDF
-    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-      toast.error(t('canvasNodes.pdfNode.pleaseSelectPdfFile'), { duration: 3000 });
-      if (pdfInputRef.current) {
-        pdfInputRef.current.value = '';
-      }
-      return;
-    }
-
-    const validation = validatePdfFile(file);
-    if (!validation.isValid) {
-      toast.error(validation.error || 'Invalid PDF file', { duration: 5000 });
+    const error = validateFile(file, 'pdf');
+    if (error) {
+      toast.error(error, { duration: 5000 });
       if (pdfInputRef.current) {
         pdfInputRef.current.value = '';
       }
@@ -93,8 +85,8 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
     }
   };
 
-  const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize);
+  const handleResize = useCallback((_: any, params: { width: number }) => {
+    handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   const handleFitToContent = useCallback(() => {
@@ -116,9 +108,7 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
           minHeight={200}
           maxWidth={2000}
           maxHeight={2000}
-          onResize={(_, { width, height }) => {
-            handleResize(width, height);
-          }}
+          onResize={handleResize}
         />
       )}
       {/* Output Handle */}
