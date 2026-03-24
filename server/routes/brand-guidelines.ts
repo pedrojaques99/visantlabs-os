@@ -12,6 +12,9 @@ import { mergeBrandGuidelines } from '../lib/brand-merge.js'
 import { uploadBrandMedia, deleteImage } from '../services/r2Service.js'
 import { brandSharedService } from '../services/brandSharedService.js'
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js'
+import { checkBrandCompliance, type ComplianceCheckInput } from '../services/complianceService.js'
+import { getGeminiApiKey } from '../utils/geminiApiKey.js'
+import { calculateChangedFields, createSnapshot, generateChangeNote, generateDiff, formatVersionListItem } from '../lib/versionUtils.js'
 
 const router = express.Router()
 
@@ -92,7 +95,7 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
   }
 })
 
-// PUT /api/brand-guidelines/:id — partial update
+// PUT /api/brand-guidelines/:id — partial update with version tracking
 router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
@@ -104,13 +107,38 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     if (!existing) return res.status(404).json({ error: 'Not found' })
 
     const update: Partial<BrandGuideline> = req.body
+    const { changeNote } = req.body // Optional user-provided change note
     const merged: any = {}
-    const fields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections'] as const
+    const fields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections', 'folder'] as const
 
     for (const field of fields) {
       if (update[field] !== undefined) {
         merged[field] = update[field]
       }
+    }
+
+    // Calculate changed fields for version tracking
+    const changedFields = calculateChangedFields(existing as any, merged)
+
+    // Only save version if something actually changed
+    if (changedFields.length > 0) {
+      const currentVersion = (existing as any).currentVersion || 1
+      const snapshot = createSnapshot(existing as any)
+
+      // Save current state as a version before updating
+      await prisma.brandGuidelineVersion.create({
+        data: {
+          guidelineId: existing.id,
+          snapshot: snapshot as any,
+          versionNumber: currentVersion,
+          changeNote: changeNote || generateChangeNote(changedFields),
+          changedFields,
+          createdBy: req.userId,
+        },
+      })
+
+      // Increment version number
+      merged.currentVersion = currentVersion + 1
     }
 
     // Recalculate completeness
@@ -129,6 +157,49 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
   } catch (error: any) {
     console.error('Error updating brand guideline:', error)
     res.status(500).json({ error: 'Failed to update brand guideline' })
+  }
+})
+
+// POST /api/brand-guidelines/:id/duplicate — clone a guideline
+router.post('/:id/duplicate', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const original = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+
+    if (!original) return res.status(404).json({ error: 'Not found' })
+
+    // Clone the guideline with a new name
+    const originalIdentity = original.identity as any || {}
+    const clonedIdentity = {
+      ...originalIdentity,
+      name: `${originalIdentity.name || 'Untitled'} (Copy)`,
+    }
+
+    const cloned = await prisma.brandGuideline.create({
+      data: {
+        userId: req.userId,
+        identity: clonedIdentity as any,
+        logos: original.logos as any || undefined,
+        colors: original.colors as any || undefined,
+        typography: original.typography as any || undefined,
+        tags: original.tags as any || undefined,
+        media: original.media as any || undefined,
+        tokens: original.tokens as any || undefined,
+        guidelines: original.guidelines as any || undefined,
+        extraction: { sources: [], completeness: 0 } as any,
+        // Reset public sharing
+        publicSlug: null,
+        isPublic: false,
+      },
+    })
+
+    res.status(201).json({ guideline: { ...cloned, _id: cloned.id } })
+  } catch (error: any) {
+    console.error('Error duplicating brand guideline:', error)
+    res.status(500).json({ error: 'Failed to duplicate brand guideline' })
   }
 })
 
@@ -806,6 +877,257 @@ router.get('/:id/context', apiRateLimiter, authenticate, async (req: AuthRequest
   } catch (error: any) {
     console.error('[Brand Context API] Error:', error)
     res.status(500).json({ error: 'Failed to generate brand context' })
+  }
+})
+
+// POST /api/brand-guidelines/:id/compliance-check — analyze content compliance
+router.post('/:id/compliance-check', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId }
+    })
+
+    if (!guideline) {
+      return res.status(404).json({ error: 'Brand guideline not found' })
+    }
+
+    const { colors, text, image, checkContrast, checkColors, checkTone } = req.body as ComplianceCheckInput
+
+    // Validate input - at least one content type required
+    if (!colors?.length && !text && !image) {
+      return res.status(400).json({
+        error: 'At least one content type required: colors, text, or image'
+      })
+    }
+
+    // Get user's API key for AI analysis
+    let userApiKey: string | undefined
+    try {
+      userApiKey = await getGeminiApiKey(req.userId)
+    } catch {
+      // Will use system key
+    }
+
+    // Run compliance check
+    const result = await checkBrandCompliance(
+      { colors, text, image, checkContrast, checkColors, checkTone },
+      guideline as unknown as BrandGuideline,
+      userApiKey
+    )
+
+    res.json(result)
+  } catch (error: any) {
+    console.error('Error checking brand compliance:', error)
+    res.status(500).json({ error: 'Failed to check brand compliance' })
+  }
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Version History Endpoints
+// ─────────────────────────────────────────────────────────────────────────────
+
+// GET /api/brand-guidelines/:id/versions — list version history
+router.get('/:id/versions', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true, currentVersion: true },
+    })
+
+    if (!guideline) return res.status(404).json({ error: 'Not found' })
+
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100)
+    const offset = parseInt(req.query.offset as string) || 0
+
+    const versions = await prisma.brandGuidelineVersion.findMany({
+      where: { guidelineId: guideline.id },
+      orderBy: { versionNumber: 'desc' },
+      take: limit,
+      skip: offset,
+      select: {
+        versionNumber: true,
+        changeNote: true,
+        changedFields: true,
+        createdAt: true,
+        createdBy: true,
+      },
+    })
+
+    const total = await prisma.brandGuidelineVersion.count({
+      where: { guidelineId: guideline.id },
+    })
+
+    const currentVersion = (guideline as any).currentVersion || 1
+
+    res.json({
+      versions: versions.map((v) =>
+        formatVersionListItem(v, v.versionNumber === currentVersion - 1)
+      ),
+      total,
+      currentVersion,
+    })
+  } catch (error: any) {
+    console.error('Error listing versions:', error)
+    res.status(500).json({ error: 'Failed to list versions' })
+  }
+})
+
+// GET /api/brand-guidelines/:id/versions/:versionNumber — get specific version
+router.get('/:id/versions/:versionNumber', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true },
+    })
+
+    if (!guideline) return res.status(404).json({ error: 'Guideline not found' })
+
+    const versionNumber = parseInt(req.params.versionNumber)
+    if (isNaN(versionNumber)) {
+      return res.status(400).json({ error: 'Invalid version number' })
+    }
+
+    const version = await prisma.brandGuidelineVersion.findFirst({
+      where: { guidelineId: guideline.id, versionNumber },
+    })
+
+    if (!version) return res.status(404).json({ error: 'Version not found' })
+
+    res.json({
+      version: {
+        versionNumber: version.versionNumber,
+        snapshot: version.snapshot,
+        changeNote: version.changeNote,
+        changedFields: version.changedFields,
+        createdAt: version.createdAt.toISOString(),
+        createdBy: version.createdBy,
+      },
+    })
+  } catch (error: any) {
+    console.error('Error getting version:', error)
+    res.status(500).json({ error: 'Failed to get version' })
+  }
+})
+
+// GET /api/brand-guidelines/:id/versions/:v1/compare/:v2 — compare two versions
+router.get('/:id/versions/:v1/compare/:v2', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true },
+    })
+
+    if (!guideline) return res.status(404).json({ error: 'Guideline not found' })
+
+    const v1 = parseInt(req.params.v1)
+    const v2 = parseInt(req.params.v2)
+
+    if (isNaN(v1) || isNaN(v2)) {
+      return res.status(400).json({ error: 'Invalid version numbers' })
+    }
+
+    const [version1, version2] = await Promise.all([
+      prisma.brandGuidelineVersion.findFirst({
+        where: { guidelineId: guideline.id, versionNumber: v1 },
+      }),
+      prisma.brandGuidelineVersion.findFirst({
+        where: { guidelineId: guideline.id, versionNumber: v2 },
+      }),
+    ])
+
+    if (!version1 || !version2) {
+      return res.status(404).json({ error: 'One or both versions not found' })
+    }
+
+    const diff = generateDiff(
+      version1.snapshot as Record<string, unknown>,
+      version2.snapshot as Record<string, unknown>
+    )
+
+    res.json({
+      from: { versionNumber: v1, createdAt: version1.createdAt.toISOString() },
+      to: { versionNumber: v2, createdAt: version2.createdAt.toISOString() },
+      diff,
+    })
+  } catch (error: any) {
+    console.error('Error comparing versions:', error)
+    res.status(500).json({ error: 'Failed to compare versions' })
+  }
+})
+
+// POST /api/brand-guidelines/:id/versions/:versionNumber/restore — restore from version
+router.post('/:id/versions/:versionNumber/restore', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const existing = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+
+    if (!existing) return res.status(404).json({ error: 'Guideline not found' })
+
+    const versionNumber = parseInt(req.params.versionNumber)
+    if (isNaN(versionNumber)) {
+      return res.status(400).json({ error: 'Invalid version number' })
+    }
+
+    const version = await prisma.brandGuidelineVersion.findFirst({
+      where: { guidelineId: existing.id, versionNumber },
+    })
+
+    if (!version) return res.status(404).json({ error: 'Version not found' })
+
+    const snapshot = version.snapshot as Record<string, unknown>
+    const currentVersion = (existing as any).currentVersion || 1
+
+    // Save current state as new version before restoring
+    const currentSnapshot = createSnapshot(existing as any)
+    await prisma.brandGuidelineVersion.create({
+      data: {
+        guidelineId: existing.id,
+        snapshot: currentSnapshot as any,
+        versionNumber: currentVersion,
+        changeNote: `Before restore to v${versionNumber}`,
+        changedFields: ['restore'],
+        createdBy: req.userId,
+      },
+    })
+
+    // Restore from version snapshot
+    const restoreData: any = {
+      currentVersion: currentVersion + 1,
+    }
+
+    // Copy snapshot fields
+    const restoreFields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'folder', 'activeSections']
+    for (const field of restoreFields) {
+      if (snapshot[field] !== undefined) {
+        restoreData[field] = snapshot[field]
+      }
+    }
+
+    const guideline = await prisma.brandGuideline.update({
+      where: { id: existing.id },
+      data: restoreData,
+    })
+
+    res.json({
+      guideline: { ...guideline, _id: guideline.id },
+      restoredFrom: versionNumber,
+      newVersion: currentVersion + 1,
+      message: `Restored to version ${versionNumber}. Created as version ${currentVersion + 1}.`,
+    })
+  } catch (error: any) {
+    console.error('Error restoring version:', error)
+    res.status(500).json({ error: 'Failed to restore version' })
   }
 })
 

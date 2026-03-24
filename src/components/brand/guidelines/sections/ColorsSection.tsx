@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,16 +8,17 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { Palette, Plus, Trash2, Copy } from 'lucide-react';
+import { Palette, Plus, Trash2, Copy, ShieldCheck, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { checkWCAGCompliance, getContrastRatioPublic } from '@/utils/colorUtils';
 
 const colorsFormSchema = z.object({ colors: z.array(colorSchema) });
 
@@ -27,13 +28,50 @@ interface ColorsSectionProps {
   span?: string;
 }
 
+interface ContrastPair {
+  fg: string;
+  fgName: string;
+  bg: string;
+  bgName: string;
+  ratio: number;
+  wcagAA: boolean;
+  wcagAAA: boolean;
+  largeAA: boolean;
+}
+
 export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdate, span }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [showWCAG, setShowWCAG] = useState(false);
   const form = useForm({
     resolver: zodResolver(colorsFormSchema),
     defaultValues: { colors: guideline.colors || [] },
   });
   const { fields, append, remove } = useFieldArray({ control: form.control, name: 'colors' });
+
+  // Calculate contrast matrix for WCAG checker
+  const contrastMatrix = useMemo((): ContrastPair[] => {
+    const colors = guideline.colors || [];
+    if (colors.length < 2) return [];
+
+    const pairs: ContrastPair[] = [];
+    for (let i = 0; i < colors.length; i++) {
+      for (let j = i + 1; j < colors.length; j++) {
+        const ratio = getContrastRatioPublic(colors[i].hex, colors[j].hex);
+        const compliance = checkWCAGCompliance(ratio);
+        pairs.push({
+          fg: colors[i].hex,
+          fgName: colors[i].name || `Color ${i + 1}`,
+          bg: colors[j].hex,
+          bgName: colors[j].name || `Color ${j + 1}`,
+          ratio,
+          wcagAA: compliance.normalAA,
+          wcagAAA: compliance.normalAAA,
+          largeAA: compliance.largeAA,
+        });
+      }
+    }
+    return pairs.sort((a, b) => b.ratio - a.ratio);
+  }, [guideline.colors]);
 
   useEffect(() => {
     form.reset({ colors: guideline.colors || [] });
@@ -110,6 +148,20 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       ) : undefined}
       actions={(
         <div className="flex items-center gap-1">
+          {guideline.colors && guideline.colors.length >= 2 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-6 w-6 transition-colors",
+                showWCAG ? "text-brand-cyan" : "text-neutral-500 hover:text-white"
+              )}
+              onClick={() => setShowWCAG(!showWCAG)}
+              title="Check WCAG Compliance"
+            >
+              <ShieldCheck size={12} />
+            </Button>
+          )}
           {guideline.colors && guideline.colors.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -248,6 +300,102 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
           </div>
         )}
       </div>
+      {/* WCAG Contrast Matrix Panel */}
+      <AnimatePresence>
+        {showWCAG && contrastMatrix.length > 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-4 pt-4 border-t border-white/5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck size={12} className="text-brand-cyan" />
+                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider">
+                    WCAG Contrast Matrix
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 text-neutral-600 hover:text-white"
+                  onClick={() => setShowWCAG(false)}
+                >
+                  <X size={10} />
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {contrastMatrix.map((pair, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 p-2 rounded-lg bg-white/[0.02] border border-white/[0.03]"
+                  >
+                    {/* Color swatches */}
+                    <div className="flex items-center gap-1">
+                      <div
+                        className="w-6 h-6 rounded border border-white/10"
+                        style={{ backgroundColor: pair.fg }}
+                        title={pair.fgName}
+                      />
+                      <span className="text-[8px] text-neutral-600">/</span>
+                      <div
+                        className="w-6 h-6 rounded border border-white/10"
+                        style={{ backgroundColor: pair.bg }}
+                        title={pair.bgName}
+                      />
+                    </div>
+
+                    {/* Names */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[9px] font-mono text-neutral-400 truncate">
+                        {pair.fgName} / {pair.bgName}
+                      </p>
+                    </div>
+
+                    {/* Ratio */}
+                    <span className="text-[10px] font-mono text-neutral-300 tabular-nums">
+                      {pair.ratio.toFixed(2)}:1
+                    </span>
+
+                    {/* Badges */}
+                    <div className="flex items-center gap-1">
+                      {pair.wcagAAA ? (
+                        <span className="px-1.5 py-0.5 text-[8px] font-bold rounded bg-green-500/20 text-green-400 border border-green-500/30">
+                          AAA
+                        </span>
+                      ) : pair.wcagAA ? (
+                        <span className="px-1.5 py-0.5 text-[8px] font-bold rounded bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30">
+                          AA
+                        </span>
+                      ) : pair.largeAA ? (
+                        <span className="px-1.5 py-0.5 text-[8px] font-bold rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                          AA Large
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.5 text-[8px] font-bold rounded bg-red-500/20 text-red-400 border border-red-500/30">
+                          Fail
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Legend */}
+              <div className="mt-3 flex flex-wrap gap-3 text-[8px] font-mono text-neutral-600">
+                <span><span className="text-green-400">AAA</span> = 7:1+</span>
+                <span><span className="text-brand-cyan">AA</span> = 4.5:1+</span>
+                <span><span className="text-amber-400">AA Large</span> = 3:1+</span>
+                <span><span className="text-red-400">Fail</span> = &lt;3:1</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </SectionBlock>
   );
 };

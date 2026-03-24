@@ -382,7 +382,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             </div>
 
             {isSelected && !isDragging && (
-                <NodeResizer color="brand-cyan" isVisible={isSelected} minWidth={500} minHeight={600} onResize={(_, { width, height }) => handleResizeWithDebounce(nodeId, width, height, nodeData.onResize)} />
+                <NodeResizer color="brand-cyan" isVisible={isSelected} minWidth={500} minHeight={600} onResize={(_, { width }) => handleResizeWithDebounce(nodeId, width, 'auto', nodeData.onResize)} />
             )}
         </NodeContainer>
     );

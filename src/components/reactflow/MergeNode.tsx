@@ -13,8 +13,7 @@ import { NodeButton } from './shared/node-button';
 import { ModelSelector } from './shared/ModelSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
-import { GEMINI_MODELS, DEFAULT_MODEL, isAdvancedModel } from '@/constants/geminiModels';
-import { isSafeUrl } from '@/utils/imageUtils';
+import { DEFAULT_MODEL, isAdvancedModel } from '@/constants/geminiModels';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 
@@ -88,7 +87,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, height, data.onResize);
+    handleResizeWithDebounce(id, width, 'auto', data.onResize);
   }, [id, data.onResize, handleResizeWithDebounce]);
 
 

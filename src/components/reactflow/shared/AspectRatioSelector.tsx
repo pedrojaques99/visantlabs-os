@@ -39,7 +39,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                 onClick={() => !disabled && onChange(ratio)}
                 disabled={disabled}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-0.5 py-1 px-2 text-xs font-mono transition-all',
+                  'flex flex-col items-center justify-center gap-1 w-12 h-11 text-xs font-mono transition-all px-0',
                   isSelected
                     ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
                     : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400',
@@ -48,9 +48,9 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <div className={cn(
-                  isSquare ? 'w-4 h-4' : isLandscape ? 'w-5 h-3' : 'w-3 h-5',
-                  'border rounded',
-                  isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
+                  isSquare ? 'w-4 h-4' : isLandscape ? 'w-6 h-3.5' : 'w-3.5 h-6',
+                  'border rounded-sm shrink-0',
+                  isSelected ? 'border-[brand-cyan]/60 bg-brand-cyan/20' : 'border-neutral-600/50'
                 )} />
                 <span className="text-[9px] leading-none">{ratio}</span>
               </NodeButton>
@@ -61,7 +61,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             onClick={() => !disabled && setShowOther(!showOther)}
             disabled={disabled}
             className={cn(
-              'flex items-center justify-center py-1 px-2 text-xs font-mono transition-all',
+              'flex items-center justify-center w-10 h-11 text-xs font-mono transition-all',
               isOtherSelected
                 ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
                 : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400',
@@ -72,6 +72,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             <span className="text-[9px] leading-none">...</span>
           </NodeButton>
         </div>
+
 
         {showOther && (
           <div className="pt-1.5 border-t border-neutral-700/30">
@@ -93,7 +94,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     }}
                     disabled={disabled}
                     className={cn(
-                      'flex flex-col items-center justify-center gap-0.5 py-1 px-2 text-xs font-mono transition-all',
+                      'flex flex-col items-center justify-center gap-1 w-12 h-11 text-xs font-mono transition-all px-0',
                       isSelected
                         ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
                         : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400',
@@ -102,15 +103,16 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     onMouseDown={(e) => e.stopPropagation()}
                   >
                     <div className={cn(
-                      isSquare ? 'w-4 h-4' : isLandscape ? 'w-5 h-3' : 'w-3 h-5',
-                      'border rounded',
-                      isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
+                      isSquare ? 'w-4 h-4' : isLandscape ? 'w-6 h-3.5' : 'w-3.5 h-6',
+                      'border rounded-sm shrink-0',
+                      isSelected ? 'border-[brand-cyan]/60 bg-brand-cyan/20' : 'border-neutral-600/50'
                     )} />
                     <span className="text-[9px] leading-none">{ratio}</span>
                   </NodeButton>
                 );
               })}
             </div>
+
           </div>
         )}
       </div>

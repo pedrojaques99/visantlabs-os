@@ -19,14 +19,44 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
   onDelete,
 }) => {
   const { t } = useTranslation();
+  const [menuStyle, setMenuStyle] = React.useState<React.CSSProperties>({
+    left: `${x}px`,
+    top: `${y}px`,
+  });
+  const menuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useLayoutEffect(() => {
+    if (!menuRef.current) return;
+    const windowHeight = window.innerHeight;
+    const windowWidth = window.innerWidth;
+    const timeoutId = setTimeout(() => {
+      const menuRect = menuRef.current?.getBoundingClientRect();
+      if (!menuRect) return;
+      const menuHeight = menuRect.height;
+      const menuWidth = menuRect.width;
+      let finalX = x;
+      let finalY = y;
+      const isBottomHalf = y > windowHeight / 2;
+      if (isBottomHalf && y + menuHeight > windowHeight - 8) {
+        finalY = y - menuHeight - 8;
+        if (finalY < 8) finalY = 8;
+      } else {
+        finalY = y + 8;
+        if (finalY + menuHeight > windowHeight - 8) finalY = windowHeight - menuHeight - 8;
+      }
+      if (finalX + menuWidth > windowWidth - 8) finalX = windowWidth - menuWidth - 8;
+      if (finalX < 8) finalX = 8;
+      setMenuStyle({ left: `${finalX}px`, top: `${finalY}px`, maxHeight: `${windowHeight - 16}px` });
+    }, 0);
+    return () => clearTimeout(timeoutId);
+  }, [x, y]);
+
   return (
     <div
+      ref={menuRef}
       data-context-menu
-      className="fixed z-50 bg-neutral-950/70 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl min-w-[180px] max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent"
-      style={{
-        left: `${x}px`,
-        top: `${y}px`,
-      }}
+      className="fixed z-50 bg-neutral-950/70 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl min-w-[200px] flex flex-col overflow-hidden transition-all duration-200 ease-out"
+      style={menuStyle}
       onClick={(e) => e.stopPropagation()}
       onWheel={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
@@ -41,16 +71,16 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
         </Button>
       </div>
 
-      <div className="p-2">
+      <div className="p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent flex-1">
         <Button variant="ghost"
           onClick={() => {
             onDuplicate();
             onClose();
           }}
-          className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+          className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
         >
-          <CopyIcon size={16} className="text-neutral-400" />
-          <span className="font-medium text-[11px] tracking-wide">{t('canvasNodes.nodeContextMenu.duplicate')}</span>
+          <CopyIcon size={16} className="text-neutral-400 flex-shrink-0" />
+          <span className="font-medium text-[11px] tracking-wide flex-1 text-left">{t('canvasNodes.nodeContextMenu.duplicate')}</span>
         </Button>
 
         <Button variant="ghost"
@@ -58,10 +88,10 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
             onDelete();
             onClose();
           }}
-          className="w-full px-3 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+          className="w-full px-2 py-1.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
         >
-          <Trash2 size={16} className="text-red-400" />
-          <span className="font-medium text-[11px] tracking-wide">{t('canvasNodes.nodeContextMenu.delete')}</span>
+          <Trash2 size={16} className="text-red-400 flex-shrink-0" />
+          <span className="font-medium text-[11px] tracking-wide flex-1 text-left">{t('canvasNodes.nodeContextMenu.delete')}</span>
         </Button>
       </div>
     </div>

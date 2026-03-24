@@ -1,62 +1,21 @@
-import React, { useEffect, useState, Suspense, useRef } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { PremiumButton } from '../components/ui/PremiumButton';
-import { InteractiveASCII } from '../components/ui/InteractiveASCII';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SEO } from '../components/SEO';
-import { ExternalLink, ShieldCheck, ShieldAlert, Terminal, Lock } from 'lucide-react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Float, Environment } from '@react-three/drei';
-import * as THREE from 'three';
-
-// Minimal 3D Logo Component
-const VisantLogoModel = () => {
-    const { scene } = useGLTF('/models/visant-3d-simple-2.glb');
-    const meshRef = useRef<THREE.Group>(null);
-
-    useFrame((state) => {
-        if (meshRef.current) {
-            meshRef.current.rotation.y += 0.01;
-        }
-    });
-
-    useEffect(() => {
-        if (scene) {
-            scene.traverse((child) => {
-                if (child instanceof THREE.Mesh) {
-                    child.material = new THREE.MeshStandardMaterial({
-                        color: '#ffffff',
-                        metalness: 0.8,
-                        roughness: 0.2,
-                        emissive: '#000000',
-                    });
-                }
-            });
-        }
-    }, [scene]);
-
-    return <primitive ref={meshRef} object={scene} scale={2.5} position={[0, 0.5, 0]} />;
-};
+import { ExternalLink, Lock } from 'lucide-react';
+import { VisantLogo3D } from '../components/3d/VisantLogo3D';
 
 export const HomePage: React.FC = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { user } = useLayout();
-    const [currentTime, setCurrentTime] = useState(new Date());
-
-    useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
 
     const isAdmin = user?.isAdmin === true;
     const isTester = user?.userCategory === 'tester' || user?.username === 'tester';
     const showInternalLinks = isAdmin || isTester;
-
-    const systemVersion = "V2.0.4-STABLE";
-    const accessLevel = showInternalLinks ? "LEVEL_02_PRIVILEGED" : "LEVEL_01_PUBLIC";
 
     return (
         <>
@@ -64,48 +23,16 @@ export const HomePage: React.FC = () => {
                 title={t('homepage.seoTitle') || 'MOCKUP MACHINE'}
                 description={t('homepage.seoDescription') || 'Experimental Design Laboratory'}
             />
-            
+
             <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-[10] overflow-hidden">
                 {/* Background layers */}
                 <GridDotsBackground opacity={0.05} spacing={30} color="#ffffff" />
-                
-                <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
-                    <InteractiveASCII 
-                        isDarkMode={true} 
-                        fullHeight={true} 
-                        color="#ffffff" 
-                        characterSpacing={1}
-                        className="opacity-40"
-                    />
-                </div>
-
-                {/* CRT Effect */}
-                <div className="absolute inset-0 pointer-events-none z-50 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.2)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,118,0.06))] bg-[length:100%_2px,3px_100%] animate-scanline" />
-                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] z-10" />
-
-                {/* Status Indicators */}
-                <div className="absolute top-8 left-8 flex items-center gap-3 font-mono text-[9px] text-neutral-400 z-20">
-                    <span className="text-brand-cyan animate-pulse">●</span>
-                    <span className="tracking-[0.3em] font-medium uppercase opacity-80">{accessLevel}</span>
-                </div>
-
-                <div className="absolute top-8 right-8 font-mono text-[9px] text-neutral-400 z-20 opacity-60 tracking-[0.1em]">
-                    {systemVersion}
-                </div>
 
                 {/* Main Content */}
                 <div className="relative z-20 flex flex-col items-center gap-4 px-4 text-center max-w-4xl">
                     {/* Minimal 3D Logo */}
-                    <div className="w-64 h-64 md:w-96 md:h-96 relative flex items-center justify-center -mb-8">
-                        <Canvas camera={{ position: [0, 0, 8], fov: 35 }}>
-                            <Suspense fallback={null}>
-                                <ambientLight intensity={2.5} />
-                                <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={2} />
-                                <Float speed={2} rotationIntensity={0.4} floatIntensity={0.5}>
-                                    <VisantLogoModel />
-                                </Float>
-                            </Suspense>
-                        </Canvas>
+                    <div className="w-80 h-80 md:w-[28rem] md:h-[28rem] relative flex items-center justify-center -mb-12">
+                        <VisantLogo3D />
                     </div>
 
                     <div className="flex flex-col items-center gap-10 w-full max-w-sm">
@@ -114,13 +41,13 @@ export const HomePage: React.FC = () => {
                             className="h-14 px-12 text-sm border-white/20 hover:border-white/40 text-white transition-all bg-white/5 backdrop-blur-sm group"
                             icon={ExternalLink}
                         >
-                            ACCESS ENGINE
+                            MOCKUP MACHINE® (ALPHA)
                         </PremiumButton>
 
                         <div className="flex items-center justify-center gap-10">
                             <button
                                 onClick={() => navigate('/about')}
-                                className="text-neutral-400 hover:text-white font-mono text-[10px] uppercase tracking-widest transition-all duration-300"
+                                className="text-neutral-400 hover:text-white font-mono text-[10px] uppercase tracking-widest transition-all duration-300 cursor-pointer"
                             >
                                 info
                             </button>
@@ -129,19 +56,19 @@ export const HomePage: React.FC = () => {
                                 <div className="flex items-center gap-8">
                                     <button
                                         onClick={() => navigate('/canvas')}
-                                        className="text-neutral-400 hover:text-brand-cyan font-mono text-[10px] uppercase tracking-widest transition-all duration-300"
+                                        className="text-neutral-400 hover:text-brand-cyan font-mono text-[10px] uppercase tracking-widest transition-all duration-300 cursor-pointer"
                                     >
                                         canvas
                                     </button>
                                     <button
                                         onClick={() => navigate('/apps')}
-                                        className="text-neutral-400 hover:text-brand-cyan font-mono text-[10px] uppercase tracking-widest transition-all duration-300"
+                                        className="text-neutral-400 hover:text-brand-cyan font-mono text-[10px] uppercase tracking-widest transition-all duration-300 cursor-pointer"
                                     >
                                         apps
                                     </button>
                                     <button
                                         onClick={() => navigate('/brand-guidelines')}
-                                        className="text-neutral-400 hover:text-brand-cyan font-mono text-[10px] uppercase tracking-widest transition-all duration-300"
+                                        className="text-neutral-400 hover:text-brand-cyan font-mono text-[10px] uppercase tracking-widest transition-all duration-300 cursor-pointer"
                                     >
                                         core
                                     </button>
@@ -159,4 +86,4 @@ export const HomePage: React.FC = () => {
         </>
     );
 };
-;
+

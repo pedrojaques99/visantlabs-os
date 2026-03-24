@@ -9,6 +9,7 @@
  */
 
 import type { BrandGuideline } from '../../src/lib/figma-types.js';
+import type { TokenRegistry } from './tokenRegistry.js';
 
 /**
  * Build a human-readable brand context string from a BrandGuideline.
@@ -126,4 +127,99 @@ export function buildBrandContextForImageGen(bg: BrandGuideline): string {
     includeMedia: false,
     compact: true,
   });
+}
+
+/**
+ * Build enforced prompt with pre-calculated RGB values and strict rules.
+ * Replaces soft brand context with strict token enforcement.
+ */
+export function buildEnforcedPrompt(registry: TokenRegistry): string {
+  const lines: string[] = [];
+
+  lines.push('═══ DESIGN TOKENS (OBRIGATÓRIO) ═══');
+  lines.push('');
+  lines.push('REGRAS ABSOLUTAS:');
+  lines.push('1. Use SOMENTE cores desta lista (já em RGB 0-1)');
+  lines.push('2. Use SOMENTE fontSize/fontFamily desta lista');
+  lines.push('3. Use SOMENTE spacing/radius desta lista');
+  lines.push('4. Valores fora serão corrigidos automaticamente');
+  lines.push('');
+
+  // Colors with RGB
+  if (registry.colors.size > 0) {
+    lines.push('CORES (use em fills/strokes - valores RGB 0-1):');
+    for (const [name, token] of registry.colors) {
+      if (token.rgb) {
+        const rgb = `{ r: ${token.rgb.r.toFixed(3)}, g: ${token.rgb.g.toFixed(3)}, b: ${token.rgb.b.toFixed(3)} }`;
+        const usage = token.usage ? ` <- ${token.usage}` : '';
+        lines.push(`  ${name}: ${rgb}${usage}`);
+      }
+    }
+    lines.push('');
+  }
+
+  // Typography
+  if (registry.typography.size > 0) {
+    lines.push('TIPOGRAFIA:');
+    for (const [name, token] of registry.typography) {
+      const v = token.value;
+      const parts = [`${v.family} ${v.style || 'Regular'}`];
+      if (v.size) parts.push(`${v.size}px`);
+      lines.push(`  ${name}: ${parts.join(' ')}`);
+    }
+    lines.push('');
+  }
+
+  // Spacing
+  if (registry.spacing.size > 0) {
+    const values = Array.from(registry.spacing.values()).map(t => t.value).sort((a: number, b: number) => a - b);
+    lines.push(`SPACING (itemSpacing, padding): ${values.join(' | ')}`);
+    lines.push('');
+  }
+
+  // Radius
+  if (registry.radius.size > 0) {
+    const entries = Array.from(registry.radius.entries()).map(([k, v]) => `${k}=${v.value}`);
+    lines.push(`RADIUS (cornerRadius): ${entries.join(' | ')}`);
+    lines.push('');
+  }
+
+  // Components
+  if (registry.components.size > 0) {
+    lines.push('COMPONENTES:');
+    for (const [name, token] of registry.components) {
+      const v = token.value;
+      const parts: string[] = [];
+      if (v.height) parts.push(`height=${v.height}`);
+      if (v.paddingH) parts.push(`paddingH=${v.paddingH}`);
+      if (v.radius) parts.push(`radius=${v.radius}`);
+      if (v.font) parts.push(`font=${v.font}`);
+      if (v.bg) parts.push(`bg=${v.bg}`);
+      lines.push(`  ${name}: ${parts.join(', ')}`);
+    }
+    lines.push('');
+  }
+
+  // Few-shot example
+  if (registry.colors.size > 0) {
+    const primaryColor = registry.colors.get('primary') || registry.colors.values().next().value;
+    if (primaryColor?.rgb) {
+      lines.push('═══ EXEMPLO CORRETO ═══');
+      lines.push('');
+      lines.push('Botão:');
+      lines.push('{');
+      lines.push('  "type": "CREATE_FRAME",');
+      lines.push('  "props": {');
+      lines.push('    "name": "Button",');
+      lines.push('    "height": 40,');
+      lines.push('    "layoutMode": "HORIZONTAL",');
+      lines.push('    "paddingLeft": 16, "paddingRight": 16,');
+      lines.push(`    "fills": [{ "type": "SOLID", "color": { "r": ${primaryColor.rgb.r.toFixed(3)}, "g": ${primaryColor.rgb.g.toFixed(3)}, "b": ${primaryColor.rgb.b.toFixed(3)} } }],`);
+      lines.push('    "cornerRadius": 8');
+      lines.push('  }');
+      lines.push('}');
+    }
+  }
+
+  return lines.join('\n');
 }

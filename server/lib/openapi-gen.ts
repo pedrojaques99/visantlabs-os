@@ -438,6 +438,104 @@ export function generateOpenAPISpec(
         },
       },
     },
+    // ============ BRAND GUIDELINES - PUBLIC (2) ============
+    {
+      path: '/brand-guidelines/public/{slug}',
+      method: 'GET',
+      summary: 'Get public brand guideline',
+      description: 'Returns full brand guideline data for a public slug. No authentication required.',
+      tags: ['brand-guidelines'],
+      parameters: [
+        {
+          name: 'slug',
+          in: 'path',
+          required: true,
+          schema: { type: 'string', description: 'Public slug of the brand guideline', example: 'acme-corp' },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Brand guideline data',
+          schema: {
+            type: 'object',
+            properties: {
+              guideline: {
+                type: 'object',
+                properties: {
+                  _id: { type: 'string' },
+                  name: { type: 'string' },
+                  isPublic: { type: 'boolean' },
+                  publicSlug: { type: 'string' },
+                  identity: { type: 'object' },
+                  colors: { type: 'object' },
+                  typography: { type: 'object' },
+                  logos: { type: 'array' },
+                  guidelines: { type: 'array' },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: 'Brand guideline not found or not public',
+          schema: { type: 'object' },
+        },
+      },
+    },
+    {
+      path: '/brand-guidelines/public/{slug}/context',
+      method: 'GET',
+      summary: 'Get brand context for LLMs',
+      description: 'Returns LLM-ready formatted brand context. Perfect for AI agents and MCP integrations. No authentication required.',
+      tags: ['brand-guidelines'],
+      parameters: [
+        {
+          name: 'slug',
+          in: 'path',
+          required: true,
+          schema: { type: 'string', description: 'Public slug of the brand guideline', example: 'acme-corp' },
+        },
+        {
+          name: 'format',
+          in: 'query',
+          required: false,
+          schema: { type: 'string', description: 'Output format: full (default) or compact (optimized for image gen)', example: 'compact' },
+        },
+        {
+          name: 'output',
+          in: 'query',
+          required: false,
+          schema: { type: 'string', description: 'Response type: text (default) or json', example: 'json' },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Brand context',
+          schema: {
+            type: 'object',
+            properties: {
+              slug: { type: 'string' },
+              brandName: { type: 'string' },
+              format: { type: 'string' },
+              context: { type: 'string' },
+              data: {
+                type: 'object',
+                properties: {
+                  colors: { type: 'object' },
+                  typography: { type: 'object' },
+                  guidelines: { type: 'array' },
+                  tokens: { type: 'object' },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: 'Brand guideline not found or not public',
+          schema: { type: 'object' },
+        },
+      },
+    },
     // ============ PLUGIN (7) ============
     {
       path: '/plugin',
@@ -576,6 +674,7 @@ export function generateOpenAPISpec(
     tags: [
       { name: 'auth', description: 'Authentication endpoints' },
       { name: 'mockups', description: 'Mockup generation' },
+      { name: 'brand-guidelines', description: 'Brand guidelines API - public endpoints require no auth' },
       { name: 'plugin', description: 'Figma plugin integration' },
       { name: 'canvas', description: 'Canvas management' },
       { name: 'api-keys', description: 'API key management for agent access' },

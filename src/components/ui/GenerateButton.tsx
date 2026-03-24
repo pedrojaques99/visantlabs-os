@@ -17,6 +17,8 @@ interface GenerateButtonProps {
   embed?: boolean;
   buttonRef?: React.RefObject<HTMLButtonElement>;
   creditsRequired?: number;
+  /** When true, shows "∞ UNLIMITED" instead of credits */
+  isUnlimited?: boolean;
   /** Optional message to show when button is disabled */
   disabledReason?: string;
 }
@@ -31,6 +33,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
   embed = false,
   buttonRef,
   creditsRequired,
+  isUnlimited = false,
   disabledReason
 }) => {
   const { t } = useTranslation();
@@ -92,11 +95,15 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
               <span className="hidden sm:inline">{t('mockup.generateOutputs')}</span>
               <span className="sm:hidden">{t('mockup.outputsShort')}</span>
             </div>
-            {creditsRequired !== undefined && creditsRequired > 0 && (
+            {isUnlimited ? (
+              <span className="text-[10px] md:text-xs font-bold text-black/80">
+                ∞ UNLIMITED
+              </span>
+            ) : creditsRequired !== undefined && creditsRequired > 0 ? (
               <span className="text-[10px] md:text-xs font-mono text-black/70">
                 {creditsRequired} {creditsRequired === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
               </span>
-            )}
+            ) : null}
           </div>
         ) : (
           <div className="flex items-center gap-2">
@@ -145,11 +152,15 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
         <div className="flex items-center gap-2">
           <span className="text-base">⛏️</span>
           <span>{t('mockup.generateOutputs')}</span>
-          {creditsRequired !== undefined && creditsRequired > 0 && (
+          {isUnlimited ? (
+            <span className="text-xs font-bold text-black/80">
+              ∞ UNLIMITED
+            </span>
+          ) : creditsRequired !== undefined && creditsRequired > 0 ? (
             <span className="text-xs font-mono text-black/70">
               {creditsRequired} {creditsRequired === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
             </span>
-          )}
+          ) : null}
         </div>
       ) : (
         <div className="flex items-center gap-2">

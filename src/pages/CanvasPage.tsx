@@ -55,10 +55,10 @@ import { useCanvasKeyboard } from '@/hooks/canvas/useCanvasKeyboard';
 import { CanvasToolbar } from '../components/canvas/CanvasNodeToolbar';
 import { useCanvasHeader } from '../components/canvas/CanvasHeaderContext';
 import { CanvasFlow } from '../components/canvas/CanvasFlow';
+import { CollaborativeCanvas } from '../components/canvas/CollaborativeCanvas';
 import { UniversalSidePanel } from '../components/canvas/UniversalSidePanel';
 import { DirectorSidePanel } from '../components/canvas/DirectorSidePanel';
 import { cleanEdgeHandles, mockupArraysEqual, arraysEqual, getConnectedBrandIdentity, generateNodeId, getImageFromSourceNode, syncConnectedImage, getMediaFromNodeForCopy } from '@/utils/canvas/canvasNodeUtils';
-import { SEO } from '../components/SEO';
 import { toast } from 'sonner';
 import type { ReactFlowInstance } from '../types/reactflow-instance';
 import { canvasApi } from '../services/canvasApi';
@@ -406,7 +406,7 @@ export const CanvasPage: React.FC = () => {
 
 
   // Drawing hook - initialize before history so we can pass drawings to it
-  const drawing = useCanvasDrawing(reactFlowInstance);
+  const drawing = useCanvasDrawing(reactFlowInstance, setNodes);
 
   // Hooks - initialize history first so it can be used in handlers
   const { addToHistory, handleUndo, handleRedo } = useCanvasHistory(
@@ -1388,7 +1388,10 @@ export const CanvasPage: React.FC = () => {
     handleDuplicateNodes,
     addMockupNode,
     addPromptNode,
-    addUpscaleNode
+    addUpscaleNode,
+    drawing.deleteSelectedDrawings,
+    drawing.selectedDrawingIds,
+    drawing.setSelectedDrawingIds
   );
 
   usePasteImage(handlePasteImage, isAuthenticated === true);
@@ -3684,19 +3687,9 @@ export const CanvasPage: React.FC = () => {
                   setEdges={setEdges}
                   saveImmediately={saveImmediately}
                   onOthersCountChange={setOthersCount}
-                  backgroundColor={backgroundColor}
-                  gridColor={gridColor}
-                  showGrid={showGrid}
-                  showMinimap={showMinimap}
-                  showControls={showControls}
                   onDropImage={handleDropImage}
                   onDropNode={handleDropNode}
                   onAddColorExtractor={addColorExtractorNode}
-                  experimentalMode={experimentalMode}
-                  edgeStyle={edgeStyle}
-                  edgeStrokeWidth={edgeStrokeWidth}
-                  cursorColor={cursorColor}
-                  brandCyan={brandCyan}
                   isDrawingMode={drawing.drawingState.isDrawingMode}
                   drawingType={drawing.drawingState.drawingType}
                   onDrawingStart={drawing.startDrawing}
@@ -3803,8 +3796,13 @@ export const CanvasPage: React.FC = () => {
                   drawing.createTextDrawing?.(position);
                 }}
                 onUpdateDrawingBounds={(id, bounds) => {
-                  addToHistory(nodes, edges, drawing.drawings);
                   drawing.updateDrawingBounds?.(id, bounds);
+                }}
+                onMoveDrawings={(ids, delta) => {
+                  drawing.moveDrawings?.(ids, delta);
+                }}
+                onInteractionEnd={() => {
+                  addToHistory(nodes, edges, drawing.drawings);
                 }}
                 shapePreview={
                   drawing.drawingState.drawingType === 'shape' &&
@@ -4458,336 +4456,3 @@ export const CanvasPage: React.FC = () => {
     </>
   );
 };
-
-// Collaborative Canvas Component (wrapped in RoomProvider)
-const CollaborativeCanvas: React.FC<{
-  nodes: Node<FlowNodeData>[];
-  edges: Edge[];
-  handleNodesChange: any;
-  onEdgesChange: any;
-  onConnect: any;
-  onConnectStart: any;
-  onConnectEnd: any;
-  onNodeDragStart: any;
-  onNodeDragStop: any;
-  onPaneContextMenu: any;
-  onNodeContextMenu: any;
-  onEdgeClick: any;
-  onEdgeContextMenu: any;
-  nodeTypes: any;
-  setReactFlowInstance: any;
-  reactFlowWrapper: React.RefObject<HTMLDivElement>;
-  projectId: string;
-  isCollaborative: boolean;
-  setNodes: any;
-  setEdges: any;
-  saveImmediately: () => Promise<void>;
-  onOthersCountChange?: (count: number) => void;
-  backgroundColor?: string;
-  gridColor?: string;
-  showGrid?: boolean;
-  showMinimap?: boolean;
-  showControls?: boolean;
-  onDropImage?: (image: UploadedImage, position: { x: number; y: number }) => void;
-  onDropNode?: (nodeType: string, position: { x: number; y: number }) => void;
-  onAddColorExtractor?: (position?: { x: number; y: number }) => void;
-  experimentalMode?: boolean;
-  edgeStyle?: 'solid' | 'dashed';
-  edgeStrokeWidth?: 'normal' | 'thin';
-  cursorColor?: string;
-  brandCyan?: string;
-  isDrawingMode?: boolean;
-  drawingType?: 'freehand' | 'text' | 'shape';
-  onDrawingStart?: (event: React.MouseEvent | React.TouchEvent) => void;
-  onDrawingMove?: (event: React.MouseEvent | React.TouchEvent) => void;
-  onDrawingEnd?: () => void;
-  currentPathData?: string;
-  isDrawing?: boolean;
-  drawings?: any[];
-  selectedDrawingIds?: Set<string>;
-  selectionBox?: {
-    start: { x: number; y: number };
-    end: { x: number; y: number };
-  } | null;
-  activeTool?: string;
-  onSelectionBoxStart?: (position: { x: number; y: number }) => void;
-  onSelectionBoxUpdate?: (position: { x: number; y: number }) => void;
-  onSelectionBoxEnd?: () => void;
-  onDrawingClick?: (id: string) => void;
-  editingDrawingId?: string | null;
-  onStartEditingText?: (id: string) => void;
-  onUpdateDrawingText?: (id: string, text: string) => void;
-  onStopEditingText?: () => void;
-  onCreateTextDrawing?: (position: { x: number; y: number }) => void;
-  onUpdateDrawingBounds?: (id: string, bounds: { x: number; y: number; width: number; height: number }) => void;
-  shapePreview?: {
-    startPosition: { x: number; y: number } | null;
-    currentPosition: { x: number; y: number } | null;
-    shapeType?: 'rectangle' | 'circle' | 'line' | 'arrow';
-    shapeColor?: string;
-    shapeStrokeColor?: string;
-    shapeStrokeWidth?: number;
-    shapeFill?: boolean;
-  } | null;
-}> = ({
-  nodes,
-  edges,
-  handleNodesChange,
-  onEdgesChange,
-  onConnect,
-  onConnectStart,
-  onConnectEnd,
-  onNodeDragStart,
-  onNodeDragStop,
-  onPaneContextMenu,
-  onNodeContextMenu,
-  onEdgeClick,
-  onEdgeContextMenu,
-  nodeTypes,
-  setReactFlowInstance,
-  reactFlowWrapper,
-  projectId,
-  isCollaborative,
-  setNodes,
-  setEdges,
-  saveImmediately,
-  onOthersCountChange,
-  backgroundColor = '#0C0C0C',
-  gridColor = 'rgba(255, 255, 255, 0.1)',
-  showGrid = true,
-  showMinimap = true,
-  showControls = true,
-  onDropImage,
-  onDropNode,
-  onAddColorExtractor,
-  experimentalMode = false,
-  edgeStyle = 'solid',
-  edgeStrokeWidth = 'normal',
-  cursorColor = '#FFFFFF',
-  brandCyan,
-  isDrawingMode = false,
-  drawingType = 'freehand',
-  onDrawingStart,
-  onDrawingMove,
-  onDrawingEnd,
-  currentPathData = '',
-  isDrawing = false,
-  drawings = [],
-  selectedDrawingIds = new Set(),
-  selectionBox = null,
-  activeTool = 'select',
-  onSelectionBoxStart,
-  onSelectionBoxUpdate,
-  onSelectionBoxEnd,
-  onDrawingClick,
-  editingDrawingId = null,
-  onStartEditingText,
-  onUpdateDrawingText,
-  onStopEditingText,
-  onCreateTextDrawing,
-  onUpdateDrawingBounds,
-  shapePreview = null,
-}) => {
-    const { t } = useTranslation();
-    const [reactFlowInstance, setReactFlowInstanceLocal] = React.useState<ReactFlowInstance | null>(null);
-    const draggingNodeIdRef = React.useRef<string | null>(null);
-    const lastPresenceUpdateRef = React.useRef<{ nodeId: string; x: number; y: number } | null>(null);
-
-    // Use collaboration hook inside RoomProvider
-    const {
-      others,
-      updateNodePositionInPresence,
-      clearNodePositionInPresence,
-      isNodeBeingMovedByOthers,
-    } = useCanvasCollaboration({
-      projectId,
-      isCollaborative,
-      nodes,
-      edges,
-      setNodes,
-      setEdges,
-      onSave: saveImmediately,
-    });
-
-    // Update others count
-    React.useEffect(() => {
-      if (onOthersCountChange) {
-        onOthersCountChange(others?.length || 0);
-      }
-    }, [others, onOthersCountChange]);
-
-    const handleInit = (instance: ReactFlowInstance) => {
-      setReactFlowInstanceLocal(instance);
-      setReactFlowInstance(instance);
-    };
-
-    // Enhanced onNodeDragStart with conflict prevention
-    // Note: ReactFlow doesn't pass node in onNodeDragStart, so we'll detect it in onNodesChange
-    const handleNodeDragStart = React.useCallback(() => {
-      // Call original handler - actual node detection happens in handleNodesChangeWithPresence
-      onNodeDragStart();
-    }, [onNodeDragStart]);
-
-    // Enhanced handleNodesChange to update presence during drag
-    const handleNodesChangeWithPresence = React.useCallback((changes: any[]) => {
-      // Detect drag start: if we see a position change and no node is currently being dragged
-      if (!draggingNodeIdRef.current) {
-        const positionChange = changes.find((change) => change.type === 'position' && change.position);
-        if (positionChange) {
-          const nodeId = positionChange.id;
-          const node = nodes.find((n) => n.id === nodeId);
-
-          if (node) {
-            // Check if another user is already moving this node
-            const conflict = isNodeBeingMovedByOthers(nodeId);
-            if (conflict.isMoving) {
-              // Prevent drag by reverting the position change
-              const moveMessage = conflict.userName
-                ? t('canvas.nodeBeingMovedBy', { userName: conflict.userName })
-                : t('canvas.nodeBeingMovedByAnother');
-              toast.error(moveMessage, { duration: 2000 });
-              // Revert the position change by setting it back to the original position
-              const revertChange = {
-                ...positionChange,
-                position: node.position,
-              };
-              const revertedChanges = changes.map((c) => (c.id === nodeId && c.type === 'position' ? revertChange : c));
-              handleNodesChange(revertedChanges);
-              return;
-            }
-
-            // Mark that we're dragging this node
-            draggingNodeIdRef.current = nodeId;
-
-            // Update presence to indicate we're moving this node
-            updateNodePositionInPresence(nodeId, node.position.x, node.position.y);
-            lastPresenceUpdateRef.current = { nodeId, x: node.position.x, y: node.position.y };
-          }
-        }
-      }
-
-      // Apply changes
-      handleNodesChange(changes);
-
-      // Check if any change is a position update during drag
-      if (draggingNodeIdRef.current) {
-        const positionChange = changes.find(
-          (change) =>
-            change.type === 'position' &&
-            change.id === draggingNodeIdRef.current &&
-            change.position
-        );
-
-        if (positionChange && positionChange.position) {
-          const { x, y } = positionChange.position;
-          const lastUpdate = lastPresenceUpdateRef.current;
-
-          // Throttle updates: only update if position changed significantly (more than 5px)
-          if (
-            !lastUpdate ||
-            lastUpdate.nodeId !== draggingNodeIdRef.current ||
-            Math.abs(lastUpdate.x - x) > 5 ||
-            Math.abs(lastUpdate.y - y) > 5
-          ) {
-            updateNodePositionInPresence(draggingNodeIdRef.current, x, y);
-            lastPresenceUpdateRef.current = { nodeId: draggingNodeIdRef.current, x, y };
-          }
-        }
-      }
-    }, [handleNodesChange, updateNodePositionInPresence, isNodeBeingMovedByOthers, nodes, t]);
-
-    // Enhanced onNodeDragStop to clear presence
-    const handleNodeDragStop = React.useCallback(() => {
-      // Clear presence
-      if (draggingNodeIdRef.current) {
-        clearNodePositionInPresence();
-        draggingNodeIdRef.current = null;
-        lastPresenceUpdateRef.current = null;
-      }
-
-      // Call original handler
-      onNodeDragStop();
-    }, [clearNodePositionInPresence, onNodeDragStop]);
-
-    // Cleanup on unmount
-    React.useEffect(() => {
-      return () => {
-        if (draggingNodeIdRef.current) {
-          clearNodePositionInPresence();
-          draggingNodeIdRef.current = null;
-          lastPresenceUpdateRef.current = null;
-        }
-      };
-    }, [clearNodePositionInPresence]);
-
-    return (
-      <>
-        <SEO
-          title={t('canvas.seoTitle')}
-          description={t('canvas.seoDescription')}
-          noindex={true}
-        />
-        <CanvasFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={handleNodesChangeWithPresence}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onConnectStart={onConnectStart}
-          onConnectEnd={onConnectEnd}
-          onNodeDragStart={handleNodeDragStart}
-          onNodeDragStop={handleNodeDragStop}
-          onPaneContextMenu={onPaneContextMenu}
-          onNodeContextMenu={(e, node) => onNodeContextMenu(e, node)}
-          onEdgeClick={onEdgeClick}
-          onEdgeContextMenu={onEdgeContextMenu}
-          onAddColorExtractor={onAddColorExtractor}
-          experimentalMode={experimentalMode}
-          edgeStyle={edgeStyle}
-          edgeStrokeWidth={edgeStrokeWidth}
-          nodeTypes={nodeTypes as any}
-          onInit={handleInit}
-          reactFlowWrapper={reactFlowWrapper}
-          backgroundColor={backgroundColor}
-          gridColor={gridColor}
-          showGrid={showGrid}
-          showMinimap={showMinimap}
-          showControls={showControls}
-          onDropImage={onDropImage}
-          onDropNode={onDropNode}
-          reactFlowInstance={reactFlowInstance}
-          cursorColor={cursorColor}
-          brandCyan={brandCyan || undefined}
-          isDrawingMode={isDrawingMode}
-          drawingType={drawingType}
-          onDrawingStart={onDrawingStart}
-          onDrawingMove={onDrawingMove}
-          onDrawingEnd={onDrawingEnd}
-          currentPathData={currentPathData}
-          isDrawing={isDrawing}
-          drawings={drawings}
-          selectedDrawingIds={selectedDrawingIds}
-          selectionBox={selectionBox}
-          activeTool={activeTool}
-          onSelectionBoxStart={onSelectionBoxStart}
-          onSelectionBoxUpdate={onSelectionBoxUpdate}
-          onSelectionBoxEnd={onSelectionBoxEnd}
-          onDrawingClick={onDrawingClick}
-          editingDrawingId={editingDrawingId}
-          onStartEditingText={onStartEditingText}
-          onUpdateDrawingText={onUpdateDrawingText}
-          onStopEditingText={onStopEditingText}
-          onCreateTextDrawing={onCreateTextDrawing}
-          onUpdateDrawingBounds={onUpdateDrawingBounds}
-          shapePreview={shapePreview}
-        />
-        {reactFlowInstance && reactFlowWrapper.current && (
-          <CollaborativeCursors
-            reactFlowInstance={reactFlowInstance}
-            reactFlowWrapper={reactFlowWrapper}
-            nodes={nodes}
-          />
-        )}
-      </>
-    );
-  };

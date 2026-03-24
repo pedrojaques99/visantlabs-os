@@ -37,7 +37,7 @@ export function getCreditsRequired(
       case '2K':
         return 3;
       case '4K':
-        return 5;
+        return 4; // Official: $0.151 / $0.039 = 3.87 → 4 credits
       default:
         return 2;
     }
@@ -57,8 +57,12 @@ export function getCreditsRequired(
     }
   }
 
+  // Veo video models - pricing based on official docs ($0.15-$0.40/sec)
+  // Intermediate values balancing real cost vs user experience
   if (String(model).startsWith('veo-')) {
-    return 20;
+    const isFast = String(model).includes('fast');
+    // Fast: 15 credits, Standard: 40 credits
+    return isFast ? 15 : 40;
   }
 
   // Fallback
@@ -84,10 +88,13 @@ export function getTotalBrandingCredits(): number {
 
 /**
  * Get credits required for video generation
- * Video generation costs 20 credits per video
+ * Based on official Veo 3.1 pricing ($0.15-$0.40/sec for 8 second videos)
+ * @param model - Veo model identifier
+ * @returns Credits required (15 for fast, 40 for standard)
  */
-export function getVideoCreditsRequired(): number {
-  return 20;
+export function getVideoCreditsRequired(model?: string): number {
+  const isFast = model?.includes('fast') ?? false;
+  return isFast ? 15 : 40;
 }
 
 /**

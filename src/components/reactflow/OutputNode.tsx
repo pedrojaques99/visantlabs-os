@@ -266,8 +266,8 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((_: any, params: { width: number; height: number; x: number; y: number }) => {
-    const { width, height } = params;
-    handleResizeWithDebounce(id, width, height);
+    const { width } = params;
+    handleResizeWithDebounce(id, width, 'auto');
   }, [id, handleResizeWithDebounce]);
 
   const handleDuplicate = () => {

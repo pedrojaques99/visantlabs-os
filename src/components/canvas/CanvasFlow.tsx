@@ -79,6 +79,8 @@ interface CanvasFlowProps {
   onStopEditingText?: () => void;
   onCreateTextDrawing?: (position: { x: number; y: number }) => void;
   onUpdateDrawingBounds?: (id: string, bounds: { x: number; y: number; width: number; height: number }) => void;
+  onMoveDrawings?: (ids: Set<string>, delta: { x: number; y: number }) => void;
+  onInteractionEnd?: () => void;
   // Shape preview props
   shapePreview?: {
     startPosition: { x: number; y: number } | null;
@@ -141,6 +143,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   onStopEditingText,
   onCreateTextDrawing,
   onUpdateDrawingBounds,
+  onMoveDrawings,
+  onInteractionEnd,
   shapePreview = null,
   edgeStyle = 'solid',
   edgeStrokeWidth = 'normal',
@@ -574,14 +578,15 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   const [isSelecting, setIsSelecting] = useState(false);
 
   const handleSelectionMouseDown = useCallback((e: React.MouseEvent) => {
-    // Don't start selection box if connecting or if clicking on a handle
-    if (isConnecting) return;
+    // Don't start selection box if connecting, if space is pressed (panning), or if clicking on a handle/node
+    if (isConnecting || spacePressed) return;
 
     if (!isDrawingMode && activeTool === 'select' && reactFlowInstance && e.button === 0) {
       const target = e.target as HTMLElement;
-      // Check if we're clicking on a handle - if so, don't start selection box
-      if (target.closest('.react-flow__handle')) {
-        return; // Let ReactFlow handle the connection
+      // Check if we're clicking on a handle or node - if so, don't start selection box
+      // ReactFlow handles its own node selection/drag
+      if (target.closest('.react-flow__handle, .react-flow__node')) {
+        return; // Let ReactFlow handle the connection/drag
       }
       // Check if we're clicking on a drawing - if so, don't start selection box
       if (target.closest('path, rect, circle, line, foreignObject')) {
@@ -597,7 +602,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         onSelectionBoxStart?.(position);
       }
     }
-  }, [isDrawingMode, activeTool, reactFlowInstance, onSelectionBoxStart, isConnecting]);
+  }, [isDrawingMode, activeTool, reactFlowInstance, onSelectionBoxStart, isConnecting, spacePressed]);
 
   const handleSelectionMouseMove = useCallback((e: React.MouseEvent) => {
     // Don't update selection box if connecting
@@ -630,7 +635,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   // Drawing handlers
   const handleDrawingMouseDown = useCallback((e: React.MouseEvent) => {
     // Simplified type tool: click to create text directly
-    if (activeTool === 'type' && onCreateTextDrawing && reactFlowInstance && e.button === 0) {
+    // Respect panning with space
+    if (activeTool === 'type' && !spacePressed && onCreateTextDrawing && reactFlowInstance && e.button === 0) {
       const target = e.target as HTMLElement;
       // Don't create text if clicking on existing drawings or nodes
       if (target.closest('path, rect, circle, line, foreignObject, .react-flow__node')) {
@@ -652,7 +658,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     } else if (activeTool !== 'draw' && activeTool !== 'type') {
       handleSelectionMouseDown(e);
     }
-  }, [isDrawingMode, activeTool, onDrawingStart, handleSelectionMouseDown, onCreateTextDrawing, reactFlowInstance]);
+  }, [isDrawingMode, activeTool, onDrawingStart, handleSelectionMouseDown, onCreateTextDrawing, reactFlowInstance, spacePressed]);
 
   const handleDrawingMouseMove = useCallback((e: React.MouseEvent) => {
     if (isDrawingMode && isDrawing && onDrawingMove) {
@@ -1032,6 +1038,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         onUpdateDrawingText={onUpdateDrawingText}
         onStopEditingText={onStopEditingText}
         onUpdateDrawingBounds={onUpdateDrawingBounds}
+        onMoveDrawings={onMoveDrawings}
+        onInteractionEnd={onInteractionEnd}
         reactFlowInstance={reactFlowInstance}
         drawingType={drawingType}
         shapePreview={shapePreview}

@@ -158,30 +158,6 @@ export const uploadImageToR2Debounced = (
 };
 
 /**
- * Force immediate upload for a specific node (bypasses debounce)
- * Useful when user explicitly saves or when editing stops
- */
-export const flushPendingUpload = async (nodeId: string): Promise<void> => {
-  const existingTimeout = uploadDebounceMap.get(nodeId);
-  if (existingTimeout) {
-    clearTimeout(existingTimeout);
-    uploadDebounceMap.delete(nodeId);
-  }
-
-  const pending = pendingUploads.get(nodeId);
-  if (pending) {
-    pendingUploads.delete(nodeId);
-    await uploadImageToR2Auto(
-      pending.base64Image,
-      pending.nodeId,
-      pending.canvasId,
-      pending.setNodes,
-      pending.updateNodeCallback
-    );
-  }
-};
-
-/**
  * Flush all pending uploads (useful when saving or when editing stops)
  */
 export const flushAllPendingUploads = async (): Promise<void> => {

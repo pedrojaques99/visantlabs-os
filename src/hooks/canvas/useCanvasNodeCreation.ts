@@ -868,6 +868,7 @@ export const useCanvasNodeCreation = (
         onDuplicate: handleDuplicate,
         onUpload: handlersRef.current.handleUploadImage,
         onResize: handlersRef.current.handleImageNodeResize,
+        onUpdateData: updateNodeData,
       } as ImageNodeData,
     };
 
@@ -880,7 +881,7 @@ export const useCanvasNodeCreation = (
     });
     toast.success('Image node added! Upload an image to fill it.', { duration: 3000 });
     return newNode.id;
-  }, [reactFlowInstance, handleView, handleEdit, handleDelete, nodes, edges, addToHistory, setNodes, handlersRef]);
+  }, [reactFlowInstance, handleView, handleEdit, handleDelete, nodes, edges, addToHistory, setNodes, handlersRef, updateNodeData]);
 
   const handlePasteImage = useCallback(async (image: UploadedImage) => {
     if (!reactFlowInstance) {
@@ -1056,6 +1057,7 @@ export const useCanvasNodeCreation = (
             onDuplicate: handleDuplicate,
             onUpload: handlersRef.current.handleUploadImage,
             onResize: handlersRef.current.handleImageNodeResize,
+            onUpdateData: updateNodeData,
           } as ImageNodeData,
         };
 
@@ -1223,6 +1225,7 @@ export const useCanvasNodeCreation = (
         onDuplicate: handleDuplicate,
         onUpload: handlersRef.current.handleUploadImage,
         onResize: handlersRef.current.handleImageNodeResize,
+        onUpdateData: updateNodeData,
       } as ImageNodeData,
     };
 
@@ -1245,7 +1248,7 @@ export const useCanvasNodeCreation = (
     }, 100);
 
     toast.success('Image pasted!', { duration: 2000 });
-  }, [reactFlowInstance, handleView, handleEdit, handleDelete, nodes, edges, addToHistory, setNodes, handlersRef, canvasId]);
+  }, [reactFlowInstance, handleView, handleEdit, handleDelete, nodes, edges, addToHistory, setNodes, handlersRef, canvasId, updateNodeData]);
 
   const addOutputNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
     if (!reactFlowInstance) return;

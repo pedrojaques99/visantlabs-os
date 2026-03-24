@@ -4,12 +4,24 @@ import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { prisma } from '../db/prisma.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
-import { AuthRequest } from '../middleware/auth.js';
+import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { getUserIdFromToken } from '../utils/auth.js';
+import { rateLimit } from 'express-rate-limit';
+
+// Rate limiter for agent commands (strict - 20 req/min)
+const agentCommandLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  message: { error: 'Too many agent commands. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 import { ObjectId } from 'mongodb';
 import WebSocket, { WebSocketServer } from 'ws';
 import type { BrandGuideline } from '../types/brandGuideline.js';
-import { buildBrandContext } from '../lib/brandContextBuilder.js';
+import { buildBrandContext, buildEnforcedPrompt } from '../lib/brandContextBuilder.js';
+import { buildTokenRegistry } from '../lib/tokenRegistry.js';
+import { validateOperations, formatCorrections } from '../lib/tokenValidator.js';
 import { resolveBrandGuideline, buildGuidelineChoiceContext } from '../lib/brandResolver.js';
 import { scanTemplates, buildTemplateContext } from '../lib/templateScanner.js';
 import { buildFormatPresetsContext } from '../lib/formatPresets.js';
@@ -733,10 +745,15 @@ Prompt: "Cria um card de perfil com avatar, nome e descrição"
 /**
  * POST /api/plugin/agent-command
  * Called by MCP server or external agents to push operations to plugin
+ * SECURITY: Requires authentication + rate limiting (CRIT-001 fix)
  */
-router.post('/agent-command', async (req: Request, res: Response) => {
+router.post('/agent-command', agentCommandLimiter, authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { fileId, operations } = req.body;
+    const userId = req.userId;
+
+    // Log for audit trail
+    console.log(`[Plugin Agent] User ${userId} sending ${operations?.length || 0} operations to file ${fileId}`);
 
     // Validate input
     if (!fileId) {
@@ -782,19 +799,42 @@ router.post('/agent-command', async (req: Request, res: Response) => {
   }
 });
 
-// ============ Debug Endpoint (Development Only) ============
+// ============ Debug Endpoint (Secured) ============
 
 /**
  * GET /api/plugin/debug/sessions
- * Returns active plugin sessions (development only)
+ * Returns active plugin sessions
+ * HIGH-001 fix: Requires explicit flag + authentication
  */
-router.get('/debug/sessions', (req: Request, res: Response) => {
-  if (process.env.NODE_ENV === 'production') {
-    return res.status(403).json({ error: 'Not available in production' });
+router.get('/debug/sessions', authenticate, async (req: AuthRequest, res: Response) => {
+  // Require explicit opt-in via environment variable
+  const debugEnabled = process.env.ENABLE_DEBUG_ENDPOINTS === 'true';
+
+  if (!debugEnabled) {
+    return res.status(403).json({ error: 'Debug endpoints disabled' });
   }
 
-  const sessions = pluginBridge.getSessions();
-  res.json({ sessions, count: sessions.length });
+  // Verify user is admin
+  try {
+    const db = await connectToMongoDB();
+    const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId) });
+
+    if (!user?.isAdmin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const sessions = pluginBridge.getSessions();
+    // Sanitize session data - remove sensitive info
+    const sanitizedSessions = sessions.map((s: any) => ({
+      fileId: s.fileId,
+      connectedAt: s.connectedAt,
+      // Don't expose userId or other PII
+    }));
+
+    res.json({ sessions: sanitizedSessions, count: sessions.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to verify access' });
+  }
 });
 
 // ============ Documentation Route ============
@@ -955,6 +995,17 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     // FASE 3: Intelligently choose provider based on complexity
     const provider = chooseProvider(command, contextSize);
 
+    // Build token registry from available sources (MongoDB priority, Figma fallback)
+    const tokenRegistry = buildTokenRegistry(
+      brandGuideline || null,
+      designSystem || null
+    );
+
+    // Get enforced prompt with pre-calculated RGB values
+    const enforcedTokenPrompt = (tokenRegistry.colors.size > 0 || tokenRegistry.typography.size > 0)
+      ? '\n' + buildEnforcedPrompt(tokenRegistry) + '\n'
+      : '';
+
     // Build context-aware prompt
     let systemPrompt = buildSystemPrompt(
       {
@@ -993,6 +1044,14 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       } else {
         systemPrompt += '\n\n' + additionalContext;
       }
+    }
+
+    // Inject enforced token prompt (replaces soft brand context with strict tokens)
+    if (enforcedTokenPrompt) {
+      systemPrompt = systemPrompt.replace(
+        '═══ CONTEXTO DO ARQUIVO ═══',
+        enforcedTokenPrompt + '\n═══ CONTEXTO DO ARQUIVO ═══'
+      );
     }
 
     const userPrompt = `═══ PEDIDO DO USUÁRIO ═══\n\n"${command}"`;
@@ -1051,6 +1110,23 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           op.cornerRadius != null ||
           op.x != null)
     );
+
+    // Token validation: correct values to nearest tokens
+    if (tokenRegistry.colors.size > 0 || tokenRegistry.spacing.size > 0) {
+      const tokenValidation = validateOperations(operations, tokenRegistry);
+      if (!tokenValidation.isValid && tokenValidation.corrections.length > 0) {
+        console.log(`[Plugin] Token corrections applied: ${tokenValidation.corrections.length}`);
+        tokenValidation.corrections.forEach(c => {
+          console.log(`  ${c.field}: ${c.original} -> ${c.corrected} (${c.tokenUsed})`);
+        });
+        // Add notification message
+        tokenValidation.operations.push({
+          type: 'MESSAGE',
+          content: `⚡ Ajustes automáticos:\n${formatCorrections(tokenValidation.corrections)}`,
+        });
+        operations = tokenValidation.operations;
+      }
+    }
 
     console.log(
       `[Plugin API] [${provider.name}] Generated ${operations.length} op(s) for: "${command.substring(0, 60)}"`
@@ -1185,7 +1261,16 @@ const ALLOWED_IMAGE_DOMAINS = [
   'via.placeholder.com',
 ];
 
-router.get('/proxy-image', async (req: Request, res: Response) => {
+// HIGH-003 fix: Rate limiter for proxy endpoint (anti-abuse)
+const proxyRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30, // 30 requests per minute per IP
+  message: { error: 'Too many proxy requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.get('/proxy-image', proxyRateLimiter, async (req: Request, res: Response) => {
   try {
     const imageUrl = req.query.url as string;
     if (!imageUrl) {
@@ -1223,11 +1308,14 @@ router.get('/proxy-image', async (req: Request, res: Response) => {
     const contentType = response.headers.get('content-type') || 'image/png';
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'public, max-age=3600');
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // MED-004 fix: Use configured frontend URL instead of wildcard
+    const allowedOrigin = process.env.FRONTEND_URL?.split(',')[0] || '*';
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
 
     const buffer = Buffer.from(await response.arrayBuffer());
     res.send(buffer);
   } catch (error: any) {
+    // MED-002 fix: Don't expose internal error details
     console.error('[ProxyImage] Error:', error.message);
     res.status(500).json({ error: 'Failed to fetch image' });
   }

@@ -92,6 +92,17 @@ export const brandGuidelineApi = {
     if (!response.ok) throw new Error('Failed to delete brand guideline');
   },
 
+  async duplicate(id: string): Promise<BrandGuideline> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/duplicate`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) throw new Error('Failed to duplicate brand guideline');
+    const result = await response.json();
+    return result.guideline;
+  },
+
   async ingest(id: string, payload: { source: string; url?: string; data?: any; filename?: string }): Promise<{ guideline: BrandGuideline; extracted: any }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/ingest`, {
       method: 'POST',
