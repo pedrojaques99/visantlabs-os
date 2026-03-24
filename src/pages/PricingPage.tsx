@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { CreditCard, Plus, Minus, Pickaxe, QrCode, CheckCircle2, HardDrive, Key } from 'lucide-react';
+import { CreditCard, Plus, Minus, Pickaxe, QrCode, CheckCircle2, HardDrive, Key, Image, Video } from 'lucide-react';
 import { getUserLocale, formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
 import { getCreditPackageLink, getCreditPackagePrice } from '@/utils/creditPackages';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -20,7 +20,7 @@ import { SubscriptionPlansGrid } from '../components/SubscriptionPlansGrid';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { PremiumButton } from '../components/ui/PremiumButton';
-import { STORAGE_PLANS } from './docs/data/pricingData';
+import { STORAGE_PLANS, getCreditsEstimate } from './docs/data/pricingData';
 
 // Hook para animação de contador
 const useAnimatedCounter = (targetValue: number, duration: number = 500) => {
@@ -361,6 +361,29 @@ export const PricingPage: React.FC = () => {
                             <MicroTitle as="span" className="opacity-300">
                               {currencyInfo?.currency === 'BRL' ? 'Pagamento Único' : 'One-time payment'}
                             </MicroTitle>
+
+                            {/* Credit Estimates */}
+                            {(() => {
+                              const estimate = getCreditsEstimate(creditPackages[selectedCreditIndex]?.credits || 0);
+                              return (
+                                <div className="flex items-center justify-center gap-4 mt-4 text-xs text-neutral-400">
+                                  <div className="flex items-center gap-1.5">
+                                    <Image size={14} className="text-brand-cyan/70" />
+                                    <span>~{estimate.imagesHD} HD</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <Image size={14} className="text-brand-cyan/70" />
+                                    <span>~{estimate.images4K} 4K</span>
+                                  </div>
+                                  {estimate.videosFast > 0 && (
+                                    <div className="flex items-center gap-1.5">
+                                      <Video size={14} className="text-brand-cyan/70" />
+                                      <span>~{estimate.videosFast} vídeos</span>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
 
                           <div className="flex flex-col gap-3 pt-6">
