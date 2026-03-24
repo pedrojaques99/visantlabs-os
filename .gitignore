@@ -65,3 +65,8 @@ plugin/ui-dev.html
 plugin/manifest.dev.json
 
 *.md
+
+# skills
+.github/skills/
+skills/
+src/skills/
