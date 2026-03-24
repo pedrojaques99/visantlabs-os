@@ -31,10 +31,12 @@ import {
   Copy,
   Trash2,
   X,
+  Folder,
+  FolderOpen,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
-import { useDuplicateGuideline, useDeleteGuideline } from '@/hooks/queries/useBrandGuidelines';
+import { useDuplicateGuideline, useDeleteGuideline, useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
 
 interface GuidelinesSidebarProps {
   guidelines: BrandGuideline[];
@@ -70,20 +72,41 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
   const navigate = useNavigate();
   const [expandedIds, setExpandedIds] = useState<string[]>(selectedId ? [selectedId] : []);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
   const duplicateMutation = useDuplicateGuideline();
   const deleteMutation = useDeleteGuideline();
+  const updateMutation = useUpdateGuideline();
 
-  // Filter guidelines by search query
-  const filteredGuidelines = useMemo(() => {
-    if (!searchQuery.trim()) return guidelines;
-    const term = searchQuery.toLowerCase();
-    return guidelines.filter(g => {
-      const name = (g.identity?.name || g.name || '').toLowerCase();
-      const tagline = (g.identity?.tagline || '').toLowerCase();
-      return name.includes(term) || tagline.includes(term);
+  // Extract unique folders from guidelines
+  const folders = useMemo(() => {
+    const folderSet = new Set<string>();
+    guidelines.forEach(g => {
+      if (g.folder) folderSet.add(g.folder);
     });
-  }, [guidelines, searchQuery]);
+    return Array.from(folderSet).sort();
+  }, [guidelines]);
+
+  // Filter guidelines by search query and folder
+  const filteredGuidelines = useMemo(() => {
+    return guidelines.filter(g => {
+      // Folder filter
+      if (selectedFolder && g.folder !== selectedFolder) return false;
+
+      // Search filter
+      if (searchQuery.trim()) {
+        const term = searchQuery.toLowerCase();
+        const name = (g.identity?.name || g.name || '').toLowerCase();
+        const tagline = (g.identity?.tagline || '').toLowerCase();
+        const folder = (g.folder || '').toLowerCase();
+        if (!name.includes(term) && !tagline.includes(term) && !folder.includes(term)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [guidelines, searchQuery, selectedFolder]);
 
   const handleDuplicate = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -94,6 +117,19 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
     e.stopPropagation();
     if (confirm('Are you sure you want to delete this guideline?')) {
       deleteMutation.mutate(id);
+    }
+  };
+
+  const handleSetFolder = (id: string, currentFolder?: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const folderName = prompt('Enter folder name (leave empty to remove):', currentFolder || '');
+    if (folderName !== null) {
+      updateMutation.mutate(
+        { id, data: { folder: folderName || undefined } },
+        {
+          onSuccess: () => toast.success(folderName ? `Moved to "${folderName}"` : 'Removed from folder'),
+        }
+      );
     }
   };
 
@@ -138,6 +174,40 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
             )}
           </div>
 
+          {/* Folder Filter */}
+          {folders.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 px-1">
+              <button
+                onClick={() => setSelectedFolder(null)}
+                className={cn(
+                  "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono transition-all",
+                  selectedFolder === null
+                    ? "bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30"
+                    : "bg-white/[0.02] text-neutral-500 border border-white/5 hover:text-neutral-300"
+                )}
+              >
+                <FolderOpen size={10} />
+                All
+              </button>
+              {folders.map(folder => (
+                <button
+                  key={folder}
+                  onClick={() => setSelectedFolder(folder)}
+                  className={cn(
+                    "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono transition-all truncate max-w-[120px]",
+                    selectedFolder === folder
+                      ? "bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30"
+                      : "bg-white/[0.02] text-neutral-500 border border-white/5 hover:text-neutral-300"
+                  )}
+                  title={folder}
+                >
+                  <Folder size={10} />
+                  {folder}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="flex flex-col gap-1">
             {filteredGuidelines.map((g) => (
               <div key={g.id} className="space-y-1">
@@ -151,9 +221,17 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                   )}
                 >
                   <FileText size={14} className={cn(selectedId === g.id ? "text-neutral-400" : "text-neutral-700")} />
-                  <span className="truncate flex-1 text-left font-medium">
-                    {g.identity?.name || g.name || 'Untitled'}
-                  </span>
+                  <div className="flex-1 min-w-0 text-left">
+                    <span className="truncate block font-medium">
+                      {g.identity?.name || g.name || 'Untitled'}
+                    </span>
+                    {g.folder && (
+                      <span className="text-[9px] text-neutral-600 flex items-center gap-1 mt-0.5">
+                        <Folder size={8} />
+                        {g.folder}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1">
                     {selectedId === g.id && (
                       <div className="w-1 h-1 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(var(--brand-cyan-rgb),0.5)]" />
@@ -169,6 +247,13 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                         </div>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="min-w-[120px]">
+                        <DropdownMenuItem
+                          onClick={(e) => handleSetFolder(g.id!, g.folder, e as any)}
+                          className="text-xs gap-2"
+                        >
+                          <Folder size={12} />
+                          {g.folder ? 'Change Folder' : 'Set Folder'}
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={(e) => handleDuplicate(g.id!, e as any)}
                           className="text-xs gap-2"

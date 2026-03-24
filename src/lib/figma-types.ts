@@ -657,6 +657,8 @@ export interface BrandGuideline {
   updatedAt?: string
   orderedBlocks?: string[]
   activeSections?: string[]
+  // Organization
+  folder?: string
   // Public sharing
   publicSlug?: string
   isPublic?: boolean
