@@ -885,6 +885,98 @@ router.get('/context', optionalAuth, async (req: AuthRequest, res: Response) => 
   }
 });
 
+/**
+ * Scaffold agent component library with brand colors
+ * POST /api/plugin/scaffold-library
+ */
+router.post('/scaffold-library', optionalAuth, async (req: AuthRequest, res: Response) => {
+  const { fileId, brandGuidelineId } = req.body;
+  const userId = req.userId || '';
+
+  if (!fileId) {
+    return res.status(400).json({ error: 'fileId is required' });
+  }
+
+  try {
+    // Get brand guideline
+    let brand = {
+      name: 'Default',
+      primary: { r: 0.05, g: 0.6, b: 1 }, // #0D99FF
+      background: { r: 1, g: 1, b: 1 },
+      text: { r: 0.1, g: 0.1, b: 0.1 },
+      fontFamily: 'Inter',
+    };
+
+    if (brandGuidelineId) {
+      const guideline = await prisma.brandGuideline.findUnique({
+        where: { id: brandGuidelineId },
+      });
+
+      if (guideline) {
+        const identity = guideline.identity as any;
+        const colors = guideline.colors as any[];
+        const typography = guideline.typography as any[];
+
+        brand.name = identity?.name || 'Brand';
+
+        // Find primary color
+        const primaryColor = colors?.find(c => c.role === 'primary' || c.name?.toLowerCase().includes('primary'));
+        if (primaryColor?.hex) {
+          const hex = primaryColor.hex.replace('#', '');
+          brand.primary = {
+            r: parseInt(hex.slice(0, 2), 16) / 255,
+            g: parseInt(hex.slice(2, 4), 16) / 255,
+            b: parseInt(hex.slice(4, 6), 16) / 255,
+          };
+        }
+
+        // Find background color
+        const bgColor = colors?.find(c => c.role === 'background' || c.name?.toLowerCase().includes('background'));
+        if (bgColor?.hex) {
+          const hex = bgColor.hex.replace('#', '');
+          brand.background = {
+            r: parseInt(hex.slice(0, 2), 16) / 255,
+            g: parseInt(hex.slice(2, 4), 16) / 255,
+            b: parseInt(hex.slice(4, 6), 16) / 255,
+          };
+        }
+
+        // Find text color
+        const textColor = colors?.find(c => c.role === 'text' || c.name?.toLowerCase().includes('text'));
+        if (textColor?.hex) {
+          const hex = textColor.hex.replace('#', '');
+          brand.text = {
+            r: parseInt(hex.slice(0, 2), 16) / 255,
+            g: parseInt(hex.slice(2, 4), 16) / 255,
+            b: parseInt(hex.slice(4, 6), 16) / 255,
+          };
+        }
+
+        // Find primary font
+        const primaryFont = typography?.find(t => t.role === 'heading' || t.role === 'primary');
+        if (primaryFont?.family) {
+          brand.fontFamily = primaryFont.family;
+        }
+      }
+    }
+
+    // Send scaffold command to plugin
+    const result = await pluginBridge.request(fileId, {
+      type: 'SCAFFOLD_AGENT_LIBRARY',
+      brand,
+    });
+
+    res.json({
+      success: true,
+      message: `Component library created with ${brand.name} brand`,
+      result,
+    });
+  } catch (error) {
+    console.error('[Plugin] Scaffold failed:', error);
+    res.status(500).json({ error: 'Failed to scaffold library' });
+  }
+});
+
 // POST /plugin - Generate design operations from natural language (FASE 3: Multi-model + Chat Memory)
 router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
   try {
