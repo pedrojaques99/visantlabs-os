@@ -25,6 +25,8 @@ import { validateOperations, formatCorrections } from '../lib/tokenValidator.js'
 import { resolveBrandGuideline, buildGuidelineChoiceContext } from '../lib/brandResolver.js';
 import { scanTemplates, buildTemplateContext } from '../lib/templateScanner.js';
 import { buildFormatPresetsContext } from '../lib/formatPresets.js';
+import { scanAgentComponents, buildComponentsContext } from '../lib/componentScanner.js';
+import { resolveContext, buildAgentContextPrompt } from '../lib/contextResolver.js';
 
 const router = express.Router();
 
@@ -853,6 +855,36 @@ router.get('/docs', (req: Request, res: Response) => {
  */
 // ============ Existing HTTP Polling Endpoint ============
 
+/**
+ * Get agent context for a Figma file
+ * GET /api/plugin/context
+ */
+router.get('/context', optionalAuth, async (req: AuthRequest, res: Response) => {
+  const fileId = req.query.fileId as string;
+  const brandGuidelineId = req.query.brandGuidelineId as string | undefined;
+  const userId = req.userId || '';
+
+  if (!fileId) {
+    return res.status(400).json({ error: 'fileId is required' });
+  }
+
+  try {
+    const context = await resolveContext(fileId, userId, brandGuidelineId);
+    const agentPrompt = buildAgentContextPrompt(context);
+
+    res.json({
+      strategy: context.strategy,
+      componentsCount: context.components.length,
+      templatesCount: context.templates.length,
+      hasBrand: !!context.brand,
+      agentPrompt, // The context string to inject into system prompt
+    });
+  } catch (error) {
+    console.error('[Plugin] Context resolution failed:', error);
+    res.status(500).json({ error: 'Failed to resolve context' });
+  }
+});
+
 // POST /plugin - Generate design operations from natural language (FASE 3: Multi-model + Chat Memory)
 router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
   try {
@@ -954,6 +986,20 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       }
     }
 
+    // ═══ AGENT COMPONENTS: Scan for [Component] nodes with @agent: metadata ═══
+    let agentComponentsContext = '';
+    if (fileId && pluginBridge.getSession(fileId)) {
+      try {
+        const agentComponents = await scanAgentComponents(fileId);
+        if (agentComponents.length > 0) {
+          agentComponentsContext = buildComponentsContext(agentComponents);
+          console.log(`[Plugin] Found ${agentComponents.length} agent components in file`);
+        }
+      } catch (componentError) {
+        console.error('[Plugin] Error scanning agent components:', componentError);
+      }
+    }
+
     // ═══ BRANDED SOCIAL POSTS: Format presets ═══
     const formatPresetsContext = buildFormatPresetsContext();
 
@@ -1033,6 +1079,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     const additionalContext = [
       brandChoiceContext,
       templateContext,
+      agentComponentsContext,
       formatPresetsContext,
     ].filter(Boolean).join('\n\n');
 
