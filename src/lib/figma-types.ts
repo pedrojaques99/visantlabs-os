@@ -465,7 +465,20 @@ export type FigmaOperation =
   | { type: 'SEARCH_DESIGN_SYSTEM'; query: string }
   | { type: 'GET_CODE_CONNECT_MAP' }
   | { type: 'ADD_CODE_CONNECT_MAP'; nodeId: string; componentName: string; filePath: string }
-  | { type: 'GET_AGENT_COMPONENTS' };
+  | { type: 'GET_AGENT_COMPONENTS' }
+  // ═══ AGENT LIBRARY SCAFFOLD ═══
+  | {
+    type: 'SCAFFOLD_AGENT_LIBRARY';
+    brand: {
+      name: string;
+      primary: { r: number; g: number; b: number };
+      secondary?: { r: number; g: number; b: number };
+      background: { r: number; g: number; b: number };
+      text: { r: number; g: number; b: number };
+      fontFamily: string;
+      fontStyle?: string;
+    };
+  };
 
 // ── Serialized context ──
 
@@ -763,7 +776,20 @@ export type UIMessage =
   // Template Scanning
   | { type: 'GET_TEMPLATES'; requestId?: string }
   // Agent Components
-  | { type: 'GET_AGENT_COMPONENTS' };
+  | { type: 'GET_AGENT_COMPONENTS' }
+  // Agent Library Scaffold
+  | {
+    type: 'SCAFFOLD_AGENT_LIBRARY';
+    brand: {
+      name: string;
+      primary: { r: number; g: number; b: number };
+      secondary?: { r: number; g: number; b: number };
+      background: { r: number; g: number; b: number };
+      text: { r: number; g: number; b: number };
+      fontFamily: string;
+      fontStyle?: string;
+    };
+  };
 
 // ── Sandbox → UI messages ──
 
@@ -805,4 +831,6 @@ export type PluginMessage =
   // Template Scanning
   | { type: 'TEMPLATES_RESULT'; requestId?: string; templates: TemplateSpec[] }
   // Agent Components
-  | { type: 'AGENT_COMPONENTS_RESULT'; components: any[] };
+  | { type: 'AGENT_COMPONENTS_RESULT'; components: any[] }
+  // Agent Library Scaffold
+  | { type: 'SCAFFOLD_COMPLETE'; message: string; components: Array<{ name: string; key: string }> };
