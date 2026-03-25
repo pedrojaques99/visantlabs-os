@@ -464,7 +464,8 @@ export type FigmaOperation =
   | { type: 'GET_SCREENSHOT'; nodeId?: string }
   | { type: 'SEARCH_DESIGN_SYSTEM'; query: string }
   | { type: 'GET_CODE_CONNECT_MAP' }
-  | { type: 'ADD_CODE_CONNECT_MAP'; nodeId: string; componentName: string; filePath: string };
+  | { type: 'ADD_CODE_CONNECT_MAP'; nodeId: string; componentName: string; filePath: string }
+  | { type: 'GET_AGENT_COMPONENTS' };
 
 // ── Serialized context ──
 
@@ -669,6 +670,47 @@ export interface BrandGuideline {
   // Public sharing
   publicSlug?: string
   isPublic?: boolean
+}
+
+// ── Agent Component System ──
+
+export interface AgentComponentMetadata {
+  intents: string[];      // @agent:intent values
+  slots: string[];        // @agent:slots values
+  formats: string[];      // @agent:format values
+  requires: string[];     // @agent:requires values
+}
+
+export interface AgentComponent {
+  id: string;
+  key: string;
+  name: string;           // "Post/Promotional"
+  category: string;       // "Posts"
+  type: string;           // "Promotional"
+  metadata: AgentComponentMetadata;
+  width: number;
+  height: number;
+  thumbnail?: string;
+}
+
+export interface LayoutIntent {
+  type: 'post' | 'card' | 'header' | 'story' | 'slide' | 'custom';
+  subtype?: string;       // "promotional", "testimonial", etc.
+  content: {
+    title?: string;
+    subtitle?: string;
+    body?: string;
+    cta?: string;
+    discount?: string;
+    image?: string;       // URL or "placeholder"
+  };
+  format?: string;        // "instagram-feed", "linkedin-post", etc.
+}
+
+export interface LayoutResult {
+  operations: FigmaOperation[];
+  strategy: 'reuse_component' | 'clone_template' | 'create_from_scratch';
+  usedAsset?: { type: 'component' | 'template'; id: string; name: string };
 }
 
 // ── UI → Sandbox messages ──
