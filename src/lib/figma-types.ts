@@ -761,7 +761,9 @@ export type UIMessage =
   // Undo
   | { type: 'UNDO_LAST_BATCH' }
   // Template Scanning
-  | { type: 'GET_TEMPLATES'; requestId?: string };
+  | { type: 'GET_TEMPLATES'; requestId?: string }
+  // Agent Components
+  | { type: 'GET_AGENT_COMPONENTS' };
 
 // ── Sandbox → UI messages ──
 
@@ -801,4 +803,6 @@ export type PluginMessage =
   | { type: 'SEARCH_DS_RESULT'; results: any }
   | { type: 'CODE_CONNECT_RESULT'; mappings: any }
   // Template Scanning
-  | { type: 'TEMPLATES_RESULT'; requestId?: string; templates: TemplateSpec[] };
+  | { type: 'TEMPLATES_RESULT'; requestId?: string; templates: TemplateSpec[] }
+  // Agent Components
+  | { type: 'AGENT_COMPONENTS_RESULT'; components: any[] };
