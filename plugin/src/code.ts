@@ -1885,6 +1885,56 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
+  // ── Get agent components ([Agent] pages or [Component] prefix) ──
+  if (msg.type === 'GET_AGENT_COMPONENTS') {
+    const components: any[] = [];
+
+    // First, look for [Agent] pages
+    const agentPages = figma.root.children.filter(
+      page => page.name.toLowerCase().startsWith('[agent]')
+    );
+
+    // Scan agent pages for components
+    for (const page of agentPages) {
+      const pageComps = page.findAllWithCriteria({ types: ['COMPONENT', 'COMPONENT_SET'] });
+      for (const comp of pageComps) {
+        components.push({
+          id: comp.id,
+          key: (comp as ComponentNode).key || comp.id,
+          name: comp.name,
+          description: (comp as ComponentNode).description || '',
+          width: comp.width,
+          height: comp.height,
+        });
+      }
+    }
+
+    // Also scan all pages for [Component] prefixed nodes
+    for (const page of figma.root.children) {
+      if (agentPages.includes(page)) continue; // Already scanned
+
+      const prefixedComps = page.findAllWithCriteria({ types: ['COMPONENT', 'COMPONENT_SET'] })
+        .filter(n => n.name.toLowerCase().startsWith('[component]'));
+
+      for (const comp of prefixedComps) {
+        // Avoid duplicates
+        if (!components.some(c => c.id === comp.id)) {
+          components.push({
+            id: comp.id,
+            key: (comp as ComponentNode).key || comp.id,
+            name: comp.name,
+            description: (comp as ComponentNode).description || '',
+            width: comp.width,
+            height: comp.height,
+          });
+        }
+      }
+    }
+
+    postToUI({ type: 'AGENT_COMPONENTS_RESULT', components });
+    return;
+  }
+
   // ── Select and zoom to a node by ID (clickable node chips in chat) ──
   if (msg.type === 'SELECT_AND_ZOOM') {
     try {
