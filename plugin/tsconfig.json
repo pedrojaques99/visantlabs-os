@@ -4,6 +4,8 @@
     "lib": ["ES2020"],
     "strict": true,
     "downlevelIteration": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
     "typeRoots": [
       "./node_modules/@types",
       "./node_modules/@figma"

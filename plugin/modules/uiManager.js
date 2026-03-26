@@ -18,7 +18,47 @@ class UIManager {
     this.setupEventListeners();
     this.setupStateListeners();
     this.setupSandboxListeners();
-    this.initWebSocket();
+    
+    // Initial fetch for session and state
+    this.init();
+  }
+
+  /**
+   * Initialize plugin state and restore session
+   */
+  init() {
+    loadAuthToken();
+    loadApiKey();
+    loadAnthropicKey();
+    getContext();
+    loadGuidelines();
+    loadDesignSystem();
+    
+    // Request local brand config
+    parent.postMessage({ pluginMessage: { type: 'GET_LOCAL_BRAND_CONFIG' } }, '*');
+  }
+
+  handleUserInfo(user) {
+    if (!user) return;
+    setState('currentUser', user);
+    this.renderUserAvatar(user);
+  }
+
+  renderUserAvatar(user) {
+    const avatarEl = document.getElementById('userAvatar');
+    if (!avatarEl) return;
+
+    if (user.photoUrl) {
+      avatarEl.innerHTML = `<img src="${user.photoUrl}" alt="${user.name}">`;
+      avatarEl.classList.add('has-photo');
+    } else {
+      // Initials fallback
+      const initials = (user.name || 'U').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      avatarEl.textContent = initials;
+      avatarEl.classList.remove('has-photo');
+    }
+
+    avatarEl.title = `Conectado como ${user.name}`;
   }
 
   setupEventListeners() {
@@ -70,8 +110,13 @@ class UIManager {
       this.closeSettings();
     });
 
-    // Clear chat button
+    // Clear chat button (settings)
     document.getElementById('clearChatBtn')?.addEventListener('click', () => {
+      chatModule.clearHistory();
+    });
+
+    // Clear session button (header)
+    document.getElementById('clearSessionBtn')?.addEventListener('click', () => {
       chatModule.clearHistory();
     });
 
@@ -134,6 +179,7 @@ class UIManager {
     document.getElementById('authLoginBtn')?.addEventListener('click', async () => {
       const email = document.getElementById('authEmailInput')?.value || '';
       const password = document.getElementById('authPasswordInput')?.value || '';
+      const rememberMe = document.getElementById('authRememberMe')?.checked ?? true;
       const status = document.getElementById('authLoginStatus');
       const btn = document.getElementById('authLoginBtn');
       
@@ -152,7 +198,7 @@ class UIManager {
       if (status) status.textContent = 'Autenticando...';
 
       try {
-        const result = await authLogin(email, password);
+        const result = await authLogin(email, password, rememberMe);
         if (!result.success) {
           if (status) {
             status.innerHTML = `<span style="color: var(--figma-color-text-danger);">❌ ${result.error}</span>`;
@@ -204,15 +250,17 @@ class UIManager {
         statusEl.textContent = `❌ ${message || 'Erro ao fazer login'}`;
       }
     });
-
-    // Load saved auth token on initialization
-    loadAuthToken();
   }
 
   setupStateListeners() {
     // Selection changes
     watchState('selectionDetails', () => {
       this.updateSelectionIndicator();
+    });
+
+    // Handle user info from state if needed (or direct from message)
+    watchState('currentUser', (user) => {
+      if (user) this.renderUserAvatar(user);
     });
 
     // Context updates
@@ -266,13 +314,29 @@ class UIManager {
           setState('selectionThumb', msg.thumbnail);
           this.updateSelectionIndicator();
           break;
-        case 'SELECTION_AS_LOGO':
+        case 'SELECTION_LOGO_RESULT':
           if (msg.component) {
-            // Default to logoLight when using selection-as-logo
-            setState('logoLight', msg.component);
+            eventBus.emit('selection:logo-result', msg.component);
           } else {
             chatModule.addErrorMessage('⚠️ Selecione um componente ou instância para usar como logo.');
+            eventBus.emit('selection:logo-result', null);
           }
+          break;
+        case 'SELECTION_FONT_RESULT':
+          if (msg.font) {
+            eventBus.emit('selection:font-result', msg.font);
+          } else {
+            chatModule.addErrorMessage('⚠️ Selecione um nó de texto para capturar a fonte.');
+            eventBus.emit('selection:font-result', null);
+          }
+          break;
+        case 'SELECTION_AS_LOGO': // Legacy fallback
+          if (msg.component) {
+            setState('logoLight', msg.component);
+          }
+          break;
+        case 'COMPONENT_CAPTURED':
+          eventBus.emit('selection:component-captured', msg.component);
           break;
         case 'ELEMENTS_FOR_MENTIONS':
           // Pass Figma elements to mentions module for autocomplete
@@ -299,11 +363,17 @@ class UIManager {
         case 'BRAND_GUIDELINE_SAVED':
           if (window.brandSyncModule) window.brandSyncModule.handleMessage(msg)
           break;
+        case 'USER_INFO':
+          this.handleUserInfo(msg.user);
+          break;
         case 'API_KEY_LOADED':
           setState('userApiKey', msg.key || '');
           if (document.getElementById('apiKeyInput')) {
             document.getElementById('apiKeyInput').value = msg.key || '';
           }
+          break;
+        case 'LOCAL_BRAND_LOADED':
+          eventBus.emit('state:local-brand-loaded', msg.config);
           break;
         case 'ANTHROPIC_KEY_LOADED':
           setState('anthropicApiKey', msg.key || '');
@@ -333,6 +403,11 @@ class UIManager {
             chatModule.addAssistantMessage(`✅ ${msg.summary}`, msg.summaryItems);
           }
           this.toggleUndoBtn(!!msg.canUndo);
+          // Clear progress indicator
+          this.hideProgressIndicator();
+          break;
+        case 'OP_PROGRESS':
+          this.updateProgressIndicator(msg);
           break;
         case 'ERROR':
           eventBus.emit('chat:loading', false);
@@ -687,6 +762,63 @@ class UIManager {
     if (btn) {
       btn.classList.toggle('hidden', !canUndo);
     }
+  }
+
+  /**
+   * Update progress indicator for operations
+   */
+  updateProgressIndicator(msg) {
+    let indicator = document.getElementById('opProgressIndicator');
+
+    if (!indicator) {
+      // Create progress indicator in chat area
+      indicator = document.createElement('div');
+      indicator.id = 'opProgressIndicator';
+      indicator.className = 'op-progress-indicator';
+      const chatContainer = document.getElementById('chatContainer');
+      if (chatContainer) {
+        chatContainer.appendChild(indicator);
+      }
+    }
+
+    const statusIcon = msg.status === 'done' ? '✅' : msg.status === 'error' ? '⚠️' : '⏳';
+    const progressPercent = Math.round((msg.current / msg.total) * 100);
+
+    indicator.innerHTML = `
+      <div class="op-progress-bar">
+        <div class="op-progress-fill" style="width: ${progressPercent}%"></div>
+      </div>
+      <div class="op-progress-text">
+        ${statusIcon} ${msg.current}/${msg.total} — ${msg.opType} <span class="op-name">"${this.escapeHtml(msg.opName)}"</span>
+      </div>
+    `;
+    indicator.classList.remove('hidden');
+
+    // Auto-scroll to show progress
+    indicator.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }
+
+  /**
+   * Hide progress indicator
+   */
+  hideProgressIndicator() {
+    const indicator = document.getElementById('opProgressIndicator');
+    if (indicator) {
+      // Keep visible briefly to show completion
+      setTimeout(() => {
+        indicator.classList.add('hidden');
+      }, 1000);
+    }
+  }
+
+  /**
+   * Escape HTML for safe rendering
+   */
+  escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   /**

@@ -22,6 +22,8 @@ const moduleFiles = [
   'mentions.js',
   'api.js',
   'designSystem.js',
+  'brandSync.js',
+  'brandUI.js',
   'chat.js',
   'brand.js',
   'library.js',

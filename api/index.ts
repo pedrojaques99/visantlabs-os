@@ -35,6 +35,7 @@ dotenv.config();
 const isDev = process.env.NODE_ENV !== 'production';
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Vercel)
 
 // CORS configuration - whitelist allowed origins
 const getAllowedOrigins = (): string[] => {

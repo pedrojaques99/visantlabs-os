@@ -335,6 +335,19 @@ export type FigmaOperation =
     fills?: FigmaPaint[];
   }
   | {
+    type: 'SET_TEXT_STYLE';
+    nodeId: string;
+    fontSize?: number;
+    fontFamily?: string;
+    fontStyle?: string;
+    textAutoResize?: 'NONE' | 'WIDTH_AND_HEIGHT' | 'HEIGHT' | 'TRUNCATE';
+    textAlignHorizontal?: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED';
+    textAlignVertical?: 'TOP' | 'CENTER' | 'BOTTOM';
+    lineHeight?: { value: number; unit: 'PIXELS' | 'PERCENT' | 'AUTO' };
+    letterSpacing?: { value: number; unit: 'PIXELS' | 'PERCENT' };
+    fills?: FigmaPaint[];
+  }
+  | {
     type: 'SET_OPACITY';
     nodeId: string;
     opacity: number;
@@ -569,6 +582,8 @@ export type ColorVariable = {
 export type FontVariable = {
   id: string;
   name: string;
+  family?: string;
+  style?: string;
 };
 
 export type AvailableLayer = {
@@ -731,6 +746,7 @@ export interface LayoutResult {
 export type UIMessage =
   | { type: 'GET_CONTEXT' }
   | { type: 'USE_SELECTION_AS_LOGO' }
+  | { type: 'USE_SELECTION_AS_FONT' }
   | { type: 'APPLY_OPERATIONS'; payload: FigmaOperation[] }
   | { type: 'APPLY_OPERATIONS_FROM_API'; operations: FigmaOperation[] }
   | {
@@ -777,6 +793,11 @@ export type UIMessage =
   | { type: 'GET_TEMPLATES'; requestId?: string }
   // Agent Components
   | { type: 'GET_AGENT_COMPONENTS' }
+  // Local Brand Config
+  | { type: 'SAVE_LOCAL_BRAND_CONFIG'; config: any }
+  | { type: 'GET_LOCAL_BRAND_CONFIG' }
+  // Capture component
+  | { type: 'CAPTURE_COMPONENT_SELECTION' }
   // Agent Library Scaffold
   | {
     type: 'SCAFFOLD_AGENT_LIBRARY';
@@ -796,6 +817,7 @@ export type UIMessage =
 export type PluginMessage =
   | { type: 'CONTEXT'; payload: SerializedContext }
   | { type: 'OPERATIONS_DONE'; count?: number; summary?: string }
+  | { type: 'OP_PROGRESS'; current: number; total: number; opType: string; opName: string; status: 'applying' | 'done' | 'error'; error?: string }
   | { type: 'ERROR'; message: string }
   | {
     type: 'CONTEXT_UPDATED';

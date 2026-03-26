@@ -46,6 +46,7 @@ const DocsPage = lazyWithRetry(() => import('./pages/DocsPage').then(m => ({ def
 const ApiKeysPage = lazyWithRetry(() => import('./pages/ApiKeysPage').then(m => ({ default: m.ApiKeysPage })));
 const BrandGuidelinesPage = lazyWithRetry(() => import('./pages/BrandGuidelinesPage').then(m => ({ default: m.BrandGuidelinesPage })));
 const PublicBrandGuideline = lazyWithRetry(() => import('./pages/PublicBrandGuideline').then(m => ({ default: m.PublicBrandGuideline })));
+const BrandingExpertPage = lazyWithRetry(() => import('./pages/BrandingExpertPage').then(m => ({ default: m.BrandingExpertPage })));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
@@ -78,6 +79,7 @@ const App: React.FC = () => {
                 <Route path="/canvas/:id" element={<CanvasPage />} />
                 <Route path="/branding-machine" element={<BrandingMachinePage />} />
                 <Route path="/my-brandings" element={<MyBrandingsPage />} />
+                <Route path="/branding-expert" element={<BrandingExpertPage />} />
                 <Route path="/budget-machine" element={<BudgetMachinePage />} />
                 <Route path="/my-budgets" element={<MyBudgetsPage />} />
                 <Route path="/budget/shared/:shareId" element={<BudgetSharedPage />} />

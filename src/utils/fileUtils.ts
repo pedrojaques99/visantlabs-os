@@ -126,13 +126,18 @@ export const fileToBase64 = async (file: File | Blob): Promise<UploadedImage> =>
       const result = reader.result as string;
       const base64 = result.split(',')[1];
       if (base64) {
-        try {
-          // Automatically format to 16:9
-          const formatted = await formatImageTo16_9(base64, file.type);
-          resolve(formatted);
-        } catch (error) {
-          // If formatting fails, return original
-          console.warn("Failed to format image to 16:9, using original:", error);
+        // If it's an image, attempt formatting to 16:9 for consistent visual processing
+        if (file.type.startsWith('image/')) {
+          try {
+            const formatted = await formatImageTo16_9(base64, file.type);
+            resolve(formatted);
+          } catch (error) {
+            // If formatting fails, return original
+            console.warn("Failed to format image to 16:9, using original:", error);
+            resolve({ base64, mimeType: file.type });
+          }
+        } else {
+          // For non-images (PDF, Video, etc), return raw base64 immediately
           resolve({ base64, mimeType: file.type });
         }
       } else {

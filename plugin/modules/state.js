@@ -9,12 +9,16 @@ const state = {
   selectionThumb: null,
 
   // Brand configuration
-  logoLight: null,
-  logoDark: null,
-  logoAccent: null,
-  fontPrimary: null,
-  fontSecondary: null,
-  selectedColors: new Map(), // id -> { name, value }
+  logos: [
+    { id: 'light', label: 'Light Mode', value: null },
+    { id: 'dark', label: 'Dark Mode', value: null },
+    { id: 'accent', label: 'Accent', value: null }
+  ],
+  typography: [
+    { id: 'primary', label: 'Primary', value: null },
+    { id: 'secondary', label: 'Secondary', value: null }
+  ],
+  selectedColors: new Map(), // id -> { name, value, role }
 
   // Library state
   allComponents: [],
@@ -68,6 +72,16 @@ const state = {
   // Design System (imported from JSON, stored in Figma file)
   designSystem: null, // Parsed design system object or null
   brandGuideline: null, // BrandGuideline v2 (unified, server-synced)
+  designTokens: { spacing: {}, radius: {}, shadows: {} }, // Local tokens (spacing, radius, shadows)
+  linkedGuidelineId: null, // ID of linked brand guideline from API
+  linkedGuideline: null, // Full guideline object from API
+  apiGuidelines: [], // List of guidelines from API
+
+  // UI Components (captured from file)
+  selectedUIComponents: {}, // { button: {...}, card: {...}, ... }
+  customComponentTypes: [], // ['Header', 'Footer', ...]
+  activeComponentCapture: null, // Type being captured
+  availableComponents: [], // Components available in file
 
   // Media attachments
   pendingAttachments: [], // Array of { name, type, mimeType, size, dataUrl }
@@ -138,7 +152,9 @@ function watchState(path, callback) {
  * Helper: Check if brand is configured
  */
 function isBrandConfigured() {
-  return !!state.logoLight || !!state.logoDark || !!state.logoAccent || !!state.fontPrimary || !!state.fontSecondary || state.selectedColors.size > 0;
+  const hasLogo = state.logos.some(l => !!l.value);
+  const hasFont = state.typography.some(t => !!t.value);
+  return hasLogo || hasFont || state.selectedColors.size > 0;
 }
 
 /**
@@ -146,11 +162,12 @@ function isBrandConfigured() {
  */
 function getBrandSummary() {
   const items = [];
-  if (state.logoLight) items.push(`L-Light: ${state.logoLight.name}`);
-  if (state.logoDark) items.push(`L-Dark: ${state.logoDark.name}`);
-  if (state.logoAccent) items.push(`L-Accent: ${state.logoAccent.name}`);
-  if (state.fontPrimary) items.push(`F-Pri: ${state.fontPrimary.name}`);
-  if (state.fontSecondary) items.push(`F-Sec: ${state.fontSecondary.name}`);
+  const configuredLogos = state.logos.filter(l => !!l.value);
+  if (configuredLogos.length > 0) items.push(`Logos: ${configuredLogos.length}`);
+
+  const configuredFonts = state.typography.filter(t => !!t.value);
+  if (configuredFonts.length > 0) items.push(`Fonts: ${configuredFonts.length}`);
+
   if (state.selectedColors.size > 0) items.push(`Colors: ${state.selectedColors.size}`);
-  return items.join(' • ');
+  return items.length > 0 ? items.join(' • ') : 'Brand não configurada';
 }

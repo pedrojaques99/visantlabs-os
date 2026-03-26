@@ -9,12 +9,23 @@ export interface UploadedImage {
 
 import { GEMINI_MODELS } from '../constants/geminiModels';
 
-// Duplicate removed
+// All valid Gemini models (image + text)
 export type GeminiModel =
-  | typeof GEMINI_MODELS.FLASH
+  // Text/chat models
+  | typeof GEMINI_MODELS.PRO_2_0
+  | typeof GEMINI_MODELS.FLASH_2_0
+  | typeof GEMINI_MODELS.PRO_1_5
+  | typeof GEMINI_MODELS.FLASH_1_5
   | typeof GEMINI_MODELS.TEXT
+  // Image generation models
+  | typeof GEMINI_MODELS.IMAGE_FLASH
+  | typeof GEMINI_MODELS.IMAGE_NB2
+  | typeof GEMINI_MODELS.IMAGE_PRO
+  // Backward-compatible aliases
+  | typeof GEMINI_MODELS.FLASH
   | typeof GEMINI_MODELS.NB2
   | typeof GEMINI_MODELS.PRO
+  // Video models
   | 'veo-3.1-generate-preview'
   | 'veo-3.1-fast-generate-preview';
 

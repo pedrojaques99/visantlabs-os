@@ -8,6 +8,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { LinearGradientBackground } from './ui/LinearGradientBackground';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { MicroTitle } from '@/components/ui/MicroTitle'
 import type { TimerRef } from '@/types/types';
 
 interface PixPaymentModalProps {
@@ -294,26 +295,39 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-md p-4">
       <div className="bg-neutral-900 border border-neutral-800/50 rounded-xl p-6 md:p-8 max-w-md w-full mx-4 relative max-h-[90vh] overflow-y-auto">
         <Button variant="ghost" onClick={onClose}
-          className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-10"
+          className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-10 p-1"
           aria-label={t('common.close') || 'Fechar'}
         >
-          <X size={20} />
+          <X size={16} />
         </Button>
 
         <div className="space-y-6">
           <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <QrCode size={24} className="text-brand-cyan" />
-              <h2 className="text-xl md:text-2xl font-semibold font-mono text-neutral-200">
+            <div className="flex flex-col items-center justify-center gap-2 mb-4">
+              <QrCode size={32} className="text-brand-cyan/60 drop-shadow-[0_0_10px_rgba(82,221,235,0.2)]" />
+              <h2 className="text-2xl font-bold tracking-tight text-neutral-100">
                 {t('pix.title') || 'Pagar com PIX'}
               </h2>
             </div>
-            <p className="text-sm md:text-base text-neutral-400 font-mono">
-              {credits} {t('pix.credits') || 'créditos'}
-            </p>
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-4xl font-black text-brand-cyan font-mono tracking-tighter">
+                {credits}
+              </div>
+              <MicroTitle className="text-neutral-500 uppercase tracking-widest">
+                {t('pix.credits') || 'CRÉDITOS'}
+              </MicroTitle>
+              
+              <div className="mt-4 flex items-center gap-2 text-[10px] sm:text-[11px] font-mono text-neutral-600 uppercase tracking-widest border-t border-neutral-800/10 pt-4 w-full justify-center">
+                <span>REPASSE_TRANSPARENTE</span>
+                <span className="w-1 h-1 bg-neutral-800 rounded-full" />
+                <span className="text-brand-cyan/40">
+                  $0.067 Google + $0.013 Visant
+                </span>
+              </div>
+            </div>
           </div>
 
           {error && (
