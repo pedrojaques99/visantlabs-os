@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, CreditCard, Plus, Minus, Pickaxe, QrCode, Info, FileText, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, CreditCard, Plus, Minus, Pickaxe, QrCode, Info, FileText, CheckCircle2, ChevronLeft, ChevronRight, Key, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { getUserLocale, formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
 import { CREDIT_PACKAGES, getCreditPackageLink, getCreditPackagePrice } from '@/utils/creditPackages';
@@ -105,6 +105,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
   const [subscriptionPlans, setSubscriptionPlans] = useState<Product[]>([]);
   const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [showPackageCosts, setShowPackageCosts] = useState(false);
+  const [showStatusCosts, setShowStatusCosts] = useState(false);
 
   // Reset tab when modal opens
   useEffect(() => {
@@ -248,55 +250,30 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm p-4 sm:p-6 md:p-8">
-      <div className="border border-neutral-800/50 rounded-md w-[90%] mx-auto relative max-h-[97%] overflow-y-auto overflow-x-hidden flex flex-col">
-        <div className="relative flex-1 h-full w-full">
-          <LinearGradientBackground className="rounded-md" fullHeight />
-          <div className="relative p-4 sm:p-6 md:p-8 z-10 w-full min-h-full">
-            <Button variant="ghost"
-              onClick={onClose}
-              className="absolute top-4 right-2 sm:top-4 sm:right-4 md:top-4 md:right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-20 p-1"
-            >
-              <X size={16} className="sm:w-4 sm:h-4" />
-            </Button>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-950/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 overflow-hidden" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="w-full max-w-xl md:max-w-2xl bg-neutral-950/50 backdrop-blur-3xl border border-white/5 rounded-2xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] relative max-h-full overflow-hidden flex flex-col animate-scale-in">
+        <LinearGradientBackground className="rounded-2xl" fullHeight />
+        <Button 
+          variant="ghost"
+          onClick={onClose}
+          className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors z-30 p-2 hover:bg-white/5 rounded-full"
+        >
+          <X size={20} />
+        </Button>
+        <div className="relative flex-1 w-full overflow-y-auto overflow-x-hidden">
+          <div className="relative p-6 sm:p-8 md:p-10 z-10 w-full min-h-full">
 
-            <div className="space-y-4 sm:space-y-5 md:space-y-6">
-              <div className="flex items-center justify-between">
+            <div className="space-y-6 sm:space-y-8">
+              <div className="flex items-center justify-between pb-2">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <CreditCard size={16} className="sm:w-4 sm:h-4 text-neutral-500" />
-                  <h2 className="text-xs sm:text-sm font-medium font-mono text-neutral-400">
+                  <MicroTitle className="text-neutral-500 uppercase">
                     {activeTab === 'credits'
                       ? (t('credits.title') || 'CRÉDITOS')
                       : (t('creditsPackages.title') || 'COMPRAR')
                     }
-                  </h2>
+                  </MicroTitle>
                 </div>
-
-                {/* Subtle navigation button */}
-                {activeTab === 'buy' && subscriptionStatus && (
-                  <Button variant="ghost"
-                    onClick={() => {
-                      playClickSound();
-                      setActiveTab('credits');
-                    }}
-                    className="text-xs text-neutral-500 hover:text-neutral-300 font-mono uppercase  transition-colors flex items-center gap-1 px-2 py-1 hover:bg-neutral-800/30 rounded"
-                  >
-                    <span>←</span>
-                    {t('credits.title') || 'Créditos'}
-                  </Button>
-                )}
-                {activeTab === 'credits' && (
-                  <Button variant="ghost"
-                    onClick={() => {
-                      playClickSound();
-                      setActiveTab('buy');
-                    }}
-                    className="text-xs text-neutral-500 hover:text-neutral-300 font-mono uppercase  transition-colors flex items-center gap-1 px-2 py-1 hover:bg-neutral-800/30 rounded"
-                  >
-                    {t('creditsPackages.buy') || 'Comprar'}
-                    <span>→</span>
-                  </Button>
-                )}
               </div>
 
               {/* Tab Content */}
@@ -384,36 +361,78 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   </Button>
                                 </div>
 
-                                <div className="flex items-center justify-center gap-2 text-sm text-neutral-400 font-mono uppercase ">
+                                <MicroTitle className="flex items-center justify-center gap-2 text-neutral-500 uppercase mt-2">
                                   <Pickaxe
-                                    size={14}
-                                    className="md:w-4 md:h-4 text-brand-cyan/70 flex-shrink-0"
+                                    size={12}
+                                    className="text-brand-cyan/50 flex-shrink-0"
                                   />
                                   {t('creditsPackages.credits') || 'Credits'}
+                                </MicroTitle>
+                                <div className="flex flex-col items-center gap-2 mt-1">
+                                  <div className="flex items-center justify-center gap-1.5 ">
+                                    <div className="text-[10px] sm:text-[11px] font-mono text-brand-cyan/50 uppercase tracking-widest">
+                                      ≈ {animatedCredits} {t('pricing.imagesEstimate') || 'Imagens HD'}
+                                    </div>
+                                    <button 
+                                      onClick={() => setShowPackageCosts(!showPackageCosts)}
+                                      className="flex items-center gap-1 text-[9px] text-neutral-600 hover:text-brand-cyan transition-colors cursor-pointer uppercase font-mono tracking-widest pl-2 border-l border-neutral-800 ml-2"
+                                    >
+                                      <span>{showPackageCosts ? 'Ver menos' : 'Ver modelos'}</span>
+                                      {showPackageCosts ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+                                    </button>
+                                  </div>
+
+                                  {/* Expandable Costs Section */}
+                                  {showPackageCosts && (
+                                    <div className="w-full max-w-[300px] mt-2 py-3 px-4 bg-neutral-950/40 rounded-lg border border-neutral-800/30 animate-in fade-in slide-in-from-top-2 duration-300">
+                                      <div className="space-y-2">
+                                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-tight text-neutral-400 border-b border-neutral-800/100 pb-1 mb-2">
+                                          <span>Modelo / Resolução</span>
+                                          <span>Imagens</span>
+                                        </div>
+                                        
+                                        <div className="space-y-1.5">
+                                          {[
+                                            { label: '2.5 Flash / NB2 1K', cost: 1 },
+                                            { label: 'Gemini Pro 1K (HD)', cost: 2 },
+                                            { label: 'Gemini Pro 2K', cost: 3 },
+                                            { label: 'Gemini Pro 3K', cost: 4 },
+                                            { label: 'Gemini Pro 4K', cost: 5 },
+                                            { label: 'Nano Banana 2 2K', cost: 3 },
+                                            { label: 'Nano Banana 2 3K', cost: 4 },
+                                            { label: 'Nano Banana 2 4K', cost: 5 },
+                                          ].map((item, idx) => (
+                                            <div key={idx} className="flex justify-between text-[10px] items-center">
+                                              <span className="text-neutral-500">{item.label}</span>
+                                              <span className="text-brand-cyan font-bold">{Math.floor(currentPackage.credits / item.cost)}</span>
+                                            </div>
+                                          ))}
+
+                                          <div className="flex justify-between text-[10px] items-center pt-1 border-t border-neutral-800/50 mt-1">
+                                            <span className="text-neutral-500">Veo 3 (Vídeo)</span>
+                                            <span className="text-brand-cyan font-bold">{Math.floor(currentPackage.credits / 15)} Vídeos</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 
                               {currencyInfo && price > 0 && (
-                                <div className="pt-4 border-t border-neutral-800/50">
-                                  <div className="flex items-center justify-center gap-2">
-                                    <div className="text-2xl sm:text-3xl font-bold text-neutral-200 font-mono">
+                                <div className="pt-6 border-t border-neutral-800/40">
+                                  <div className="flex flex-col items-center justify-center gap-1">
+                                    <div className="text-3xl sm:text-4xl font-bold text-neutral-100 font-mono tracking-tight">
                                       {formatPrice(animatedPrice, currencyInfo.currency, currencyInfo.locale)}
                                     </div>
-                                    <div className="relative group">
-                                      <Info
-                                        size={14}
-                                        className="text-neutral-500 hover:text-neutral-400 transition-colors cursor-help"
-                                      />
-                                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-neutral-300 bg-neutral-900/95 border border-neutral-700/50 rounded whitespace-nowrap opacity-0 group-hover:opacity-300 transition-opacity pointer-events-none z-10">
-                                        {t('pricing.oneTimePayment') || (currencyInfo.currency === 'BRL' ? 'Pagamento único' : 'One-time payment')}
-                                      </div>
+                                    <div className="flex items-center gap-2 text-[10px] sm:text-[11px] font-mono text-neutral-500 uppercase tracking-widest">
+                                      <span>{t('pricing.oneTimePayment') || 'Pagamento único'}</span>
+                                      <span className="w-1 h-1 bg-neutral-800 rounded-full" />
+                                      <span className="text-brand-cyan/60">
+                                        $0.067 Google + $0.013 Infra
+                                      </span>
                                     </div>
                                   </div>
-                                  {currentPackage.credits > 0 && (
-                                    <div className="text-xs text-neutral-500 font-mono mt-2">
-                                      {formatPrice(price / currentPackage.credits, currencyInfo.currency, currencyInfo.locale)} {currencyInfo.currency === 'BRL' ? 'por crédito' : 'per credit'}
-                                    </div>
-                                  )}
                                 </div>
                               )}
 
@@ -503,26 +522,33 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] text-center shadow-sm relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 pointer-events-none" />
 
-                                {/* Popular Badge */}
-                                {currentPlan.displayOrder === 1 && (
-                                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-10">
-                                    <Badge className="bg-brand-cyan text-black font-bold text-[8px] sm:text-[9px] uppercase tracking-widest px-2 sm:px-3 py-0.5 rounded-full">
-                                      {t('pricing.popular') || 'Popular'}
-                                    </Badge>
-                                  </div>
-                                )}
+                                 {/* Popular Badge */}
+                                 {currentPlan.displayOrder === 1 && (
+                                   <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-10">
+                                     <Badge className="bg-brand-cyan text-black font-bold text-[8px] sm:text-[9px] uppercase tracking-widest px-2 sm:px-3 py-0.5 rounded-full">
+                                       {t('pricing.popular') || 'Popular'}
+                                     </Badge>
+                                   </div>
+                                 )}
 
-                                <div className="relative z-10 space-y-4 sm:space-y-6">
-                                  {/* Plan Name */}
-                                  <div>
-                                    <h3 className="text-xl sm:text-2xl font-bold text-neutral-100 tracking-tight mt-2">
-                                      {currentPlan.name}
-                                    </h3>
-                                  </div>
+                                 <div className="relative z-10 space-y-4 sm:space-y-6">
+                                   {/* Plan Name */}
+                                   <div>
+                                     <div className="flex items-center justify-center gap-2 mb-1">
+                                       <h3 className="text-xl sm:text-2xl font-bold text-neutral-100 tracking-tight">
+                                         {currentPlan.name}
+                                       </h3>
+                                       {currentPlan.metadata?.storageMB && parseInt(currentPlan.metadata.storageMB) >= 5120 && (
+                                         <Badge className="bg-brand-cyan/20 text-brand-cyan border-none text-[8px] px-1.5 py-0">
+                                           BYOK READY
+                                         </Badge>
+                                       )}
+                                     </div>
+                                   </div>
 
                                   {/* Billing Cycle Toggle - Inside card */}
                                   <div className="flex justify-center">
-                                    <div className="bg-neutral-900/50 p-1 rounded-full border border-neutral-800 inline-flex relative w-full max-w-[180px]">
+                                    <div className="bg-neutral-900/40 p-1 rounded-full border border-neutral-800/50 inline-flex relative w-full max-w-[200px]">
                                       <div
                                         className={`absolute inset-y-1 rounded-full bg-brand-cyan transition-all duration-300 ease-out ${billingCycle === 'monthly' ? "left-1 w-[calc(50%-3px)]" : "left-[50%] w-[calc(50%-3px)]"
                                           }`}
@@ -532,45 +558,45 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                           playClickSound();
                                           setBillingCycle('monthly');
                                         }}
-                                        className={`relative z-10 px-4 sm:px-5 py-1 sm:py-1.5 text-sm font-medium rounded-full transition-colors duration-200 flex-1 ${billingCycle === 'monthly' ? "text-black font-bold" : "text-neutral-400 hover:text-neutral-200"
+                                        className={`relative z-10 px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold rounded-full transition-colors duration-200 flex-1 ${billingCycle === 'monthly' ? "text-black" : "text-neutral-500 hover:text-neutral-300"
                                           }`}
                                       >
-                                        {t('pricing.monthly') || 'Mensal'}
+                                        {t('pricing.monthly')}
                                       </Button>
                                       <Button variant="ghost"
                                         onClick={() => {
                                           playClickSound();
                                           setBillingCycle('yearly');
                                         }}
-                                        className={`relative z-10 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-full transition-colors duration-200 flex-1 flex items-center justify-center gap-1 sm:gap-2 ${billingCycle === 'yearly' ? "text-black font-bold" : "text-neutral-400 hover:text-neutral-200"
+                                        className={`relative z-10 px-2 sm:px-3 py-2 text-[10px] sm:text-sm font-bold rounded-full transition-colors duration-200 flex-1 flex items-center justify-center gap-1 sm:gap-2 ${billingCycle === 'yearly' ? "text-black" : "text-neutral-500 hover:text-neutral-300"
                                           }`}
                                       >
-                                        {t('pricing.yearly') || 'Anual'}
-                                        <span className={`text-[7px] sm:text-[8px] px-0.5 sm:px-1 py-0.5 rounded-full font-bold uppercase  ${billingCycle === 'yearly' ? "bg-neutral-950/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
+                                        {t('pricing.yearly')}
+                                        <span className={`text-[8px] px-1 py-0.5 rounded-full font-bold  ${billingCycle === 'yearly' ? "bg-black/10" : "bg-brand-cyan/10 text-brand-cyan"
                                           }`}>
-                                          {t('pricing.yearlyDiscount') || '-16%'}
+                                          -16%
                                         </span>
                                       </Button>
                                     </div>
                                   </div>
 
                                   {/* Price */}
-                                  <div className="text-center">
+                                  <div className="text-center pt-2">
                                     <div className="flex items-baseline justify-center gap-1">
-                                      <span className="text-3xl sm:text-4xl font-bold text-brand-cyan font-mono">
+                                      <span className="text-4xl sm:text-5xl font-black text-brand-cyan font-mono tracking-tighter">
                                         {formatPrice(
                                           currencyInfo?.currency === 'USD' && currentPlan.priceUSD ? currentPlan.priceUSD : currentPlan.priceBRL,
                                           currencyInfo?.currency || 'BRL',
                                           currencyInfo?.locale || 'pt-BR'
                                         )}
                                       </span>
-                                      <span className="text-neutral-500 text-xs sm:text-sm font-mono">
+                                      <span className="text-neutral-500 text-xs font-mono uppercase">
                                         {billingCycle === 'yearly' ? (t('pricing.perYear') || '/ano') : t('pricing.perMonth') || '/mês'}
                                       </span>
                                     </div>
-                                    <MicroTitle className="flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-neutral-400 mt-2 ">
-                                      <Pickaxe size={10} className="sm:w-3 sm:h-3 text-brand-cyan/60" />
-                                      <span>{currentPlan.credits} {t('pricing.creditsLabel') || 'créditos'}</span>
+                                    <MicroTitle className="flex items-center justify-center gap-1.5 text-[10px] text-neutral-500 mt-2 uppercase tracking-widest ">
+                                      <Pickaxe size={10} className="text-brand-cyan/40" />
+                                      <span>{currentPlan.credits} {t('pricing.creditsLabel')}</span>
                                     </MicroTitle>
                                   </div>
 
@@ -685,32 +711,81 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                       <div className="bg-neutral-950/20 backdrop-blur-sm border border-neutral-800/30 rounded-xl p-5 sm:p-6 md:p-8 w-full max-w-[280px] sm:max-w-[420px] text-center shadow-sm mb-6 sm:mb-8 md:mb-10">
                         <div className="space-y-4">
                           <div>
-                            {/* Credits Display */}
-                            <div className="flex items-center justify-center mb-3">
-                              <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-brand-cyan/80 font-mono">
-                                {totalCreditsAvailable}
-                              </div>
-                            </div>
+                             {/* Credits Display */}
+                             <div className="flex items-center justify-center mb-3">
+                               <div className="text-6xl sm:text-7xl md:text-8xl font-black text-brand-cyan drop-shadow-[0_0_15px_rgba(82,221,235,0.3)] font-mono leading-none tracking-tighter">
+                                 {totalCreditsAvailable}
+                               </div>
+                             </div>
 
-                            <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-neutral-400 font-mono uppercase ">
-                              <Pickaxe
-                                size={12}
-                                className="sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-brand-cyan/70 flex-shrink-0"
-                              />
-                              {t('credits.available')}
-                            </div>
-                          </div>
+                             <MicroTitle className="flex items-center justify-center gap-2 text-neutral-500 uppercase tracking-widest">
+                               <Pickaxe
+                                 size={12}
+                                 className="text-brand-cyan/50 flex-shrink-0"
+                               />
+                               {t('credits.available')}
+                             </MicroTitle>
+                             <div className="flex flex-col items-center gap-2 mt-1">
+                               <div className="flex items-center justify-center gap-1.5">
+                                 <div className="text-[10px] sm:text-[11px] font-mono text-brand-cyan/50 uppercase tracking-widest">
+                                   ≈ {totalCreditsAvailable} {t('pricing.imagesEstimate') || 'Imagens HD'}
+                                 </div>
+                                 <button 
+                                   onClick={() => setShowStatusCosts(!showStatusCosts)}
+                                   className="flex items-center gap-1 text-[9px] text-neutral-600 hover:text-brand-cyan transition-colors cursor-pointer uppercase font-mono tracking-widest pl-2 border-l border-neutral-800 ml-2"
+                                 >
+                                   <span>{showStatusCosts ? 'Ver menos' : 'Ver modelos'}</span>
+                                   {showStatusCosts ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+                                 </button>
+                               </div>
 
-                          {/* Reset Date */}
-                          {creditsResetDate && (
-                            <div className="pt-4 border-t border-neutral-800/50">
-                              <div className="text-xs font-mono text-neutral-400 text-center">
-                                {hasActiveSubscription
-                                  ? t('credits.renews', { date: formatDate(creditsResetDate) })
-                                  : t('credits.resets', { date: formatDate(creditsResetDate) })}
-                              </div>
-                            </div>
-                          )}
+                               {/* Expandable Costs Section */}
+                               {showStatusCosts && (
+                                 <div className="w-full max-w-[300px] mt-2 py-3 px-4 bg-neutral-950/40 rounded-lg border border-neutral-800/30 animate-in fade-in slide-in-from-top-2 duration-300">
+                                   <div className="space-y-2">
+                                     <div className="flex justify-between text-[11px] font-bold uppercase tracking-tight text-neutral-400 border-b border-neutral-800/100 pb-1 mb-2">
+                                       <span>Modelo / Resolução</span>
+                                       <span>Imagens</span>
+                                     </div>
+                                     
+                                     <div className="space-y-1.5">
+                                       {[
+                                         { label: '2.5 Flash / NB2 1K', cost: 1 },
+                                         { label: 'Gemini Pro 1K (HD)', cost: 2 },
+                                         { label: 'Gemini Pro 2K', cost: 3 },
+                                         { label: 'Gemini Pro 3K', cost: 4 },
+                                         { label: 'Gemini Pro 4K', cost: 5 },
+                                         { label: 'Nano Banana 2 2K', cost: 3 },
+                                         { label: 'Nano Banana 2 3K', cost: 4 },
+                                         { label: 'Nano Banana 2 4K', cost: 5 },
+                                       ].map((item, idx) => (
+                                         <div key={idx} className="flex justify-between text-[10px] items-center">
+                                           <span className="text-neutral-500">{item.label}</span>
+                                           <span className="text-brand-cyan font-bold">{Math.floor(totalCreditsAvailable / item.cost)}</span>
+                                         </div>
+                                       ))}
+
+                                       <div className="flex justify-between text-[10px] items-center pt-1 border-t border-neutral-800/50 mt-1">
+                                         <span className="text-neutral-500">Veo 3 (Vídeo)</span>
+                                         <span className="text-brand-cyan font-bold">{Math.floor(totalCreditsAvailable / 15)} Vídeos</span>
+                                       </div>
+                                     </div>
+                                   </div>
+                                 </div>
+                               )}
+                             </div>
+                           </div>
+
+                           {/* Reset Date */}
+                           {creditsResetDate && (
+                             <div className="pt-6 border-t border-neutral-800/40">
+                               <div className="text-[10px] sm:text-[11px] font-mono text-neutral-500 uppercase tracking-widest text-center">
+                                 {hasActiveSubscription
+                                   ? t('credits.renews', { date: formatDate(creditsResetDate) })
+                                   : t('credits.resets', { date: formatDate(creditsResetDate) })}
+                               </div>
+                             </div>
+                           )}
 
                           {/* Action Buttons */}
                           <div className="flex flex-col gap-2 mt-4 sm:mt-6">
@@ -766,6 +841,23 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                     </Button>
                   </div>
                 )}
+               </div>
+
+              {/* Modal Community Footer */}
+              <div className="pt-8 mt-4 border-t border-neutral-800/20 flex flex-col sm:flex-row items-center justify-between gap-4 opacity-50 hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-4">
+                  <a href="https://github.com/visantlabs" target="_blank" className="flex items-center gap-2 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan transition-colors">
+                    <Pickaxe size={12} />
+                    <span>OSS CORE</span>
+                  </a>
+                  <a href="https://discord.gg/visant" target="_blank" className="flex items-center gap-2 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan transition-colors">
+                    <Info size={12} />
+                    <span>LABS COMMUNITY</span>
+                  </a>
+                </div>
+                <div className="text-[10px] font-mono text-neutral-600">
+                  © 2026 VISANT LAB® — BUILDING IN PUBLIC
+                </div>
               </div>
             </div>
           </div>

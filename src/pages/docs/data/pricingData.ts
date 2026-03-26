@@ -35,6 +35,7 @@ export interface StoragePlan {
   priceUSD: number;
   billingCycle: 'free' | 'monthly';
   features: string[];
+  isByok?: boolean;
 }
 
 /**
@@ -77,6 +78,7 @@ export const STORAGE_PLANS: StoragePlan[] = [
     priceUSD: 1.80,
     billingCycle: 'monthly',
     features: ['5 GB storage', '~1,250 HD images', 'Ideal for active creators'],
+    isByok: true,
   },
   {
     id: 'storage_vision',
@@ -86,6 +88,7 @@ export const STORAGE_PLANS: StoragePlan[] = [
     priceUSD: 5.45,
     billingCycle: 'monthly',
     features: ['50 GB storage', 'Video storage included', 'Unlimited projects'],
+    isByok: true,
   },
 ];
 

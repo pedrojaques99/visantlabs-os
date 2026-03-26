@@ -2470,7 +2470,26 @@
     "subtitle": "Escolha o plano que funciona para você",
     "tabs": {
       "credits": "Créditos",
-      "subscriptions": "Assinaturas"
+      "subscriptions": "Assinaturas",
+      "storage": "Storage / BYOK"
+    },
+    "transparency": {
+      "title": "Custo Transparente",
+      "googleApi": "API Google (Custo)",
+      "visantInfra": "Infra Visant (Processamento/CDN)",
+      "total": "Total por Geração",
+      "description": "Você paga o preço da infraestrutura do Google + uma pequena taxa de processamento Visant. Transparência total é nosso valor core."
+    },
+    "community": {
+      "buildInPublic": "Build in Public",
+      "github": "Código Aberto no GitHub",
+      "discord": "Comunidade no Discord",
+      "subtitle": "Laboratório de Branding da Visant Labs®"
+    },
+    "imagesEstimate": "Imagens HD",
+    "byok": {
+      "label": "BYOK Pronto",
+      "description": "Ideal para desenvolvedores e power users que preferem usar a própria chave de API."
     },
     "title": "PREÇOS",
     "yearly": "Anual",

@@ -425,14 +425,17 @@ class ChatModule {
       Array.from({ length: 4 }, () => randChar(glitchChars)).join('');
 
     const el = document.createElement('div');
-    el.className = 'chat-msg assistant chat-typing';
+    el.className = 'chat-message assistant chat-typing';
     el.id = 'typingBubble';
-    el.innerHTML = [
-      `<span class="typing-glitch">${randomGlitch()}</span>`,
-      `<span class="typing-word">${words[wordIdx]}</span>`,
-      `<span class="typing-dots-anim">.</span>`,
-      `<span class="typing-timer">0:00</span>`,
-    ].join('');
+    el.innerHTML = `
+      <div class="message-avatar" style="background:transparent;border:none;font-size:16px;">✨</div>
+      <div class="message-body" style="display: flex; align-items: center;">
+        <span class="typing-glitch">${randomGlitch()}</span>
+        <span class="typing-word">${words[wordIdx]}</span>
+        <span class="typing-dots-anim">.</span>
+        <span class="typing-timer" style="margin-left:auto;">0:00</span>
+      </div>
+    `;
     this.chatMessages.appendChild(el);
     this._typingBubble = el;
 
@@ -528,32 +531,28 @@ class ChatModule {
         el.className = 'chat-status-line';
         el.textContent = msg.content;
       } else if (msg.role === 'user') {
-        el.className = 'chat-msg user';
-        el.textContent = msg.content;
-
-        // Render attachments if present
+        el.className = 'chat-message user';
+        
+        let attachHtml = '';
         if (msg.attachments && msg.attachments.length > 0) {
-          const attachDiv = document.createElement('div');
-          attachDiv.style.marginTop = '6px';
-          msg.attachments.forEach(att => {
-            if (att.type === 'image') {
-              const img = document.createElement('img');
-              img.className = 'attachment-img';
-              img.src = att.dataUrl;
-              img.alt = att.name;
-              attachDiv.appendChild(img);
-            } else {
-              const chip = document.createElement('span');
-              chip.className = 'attachment-file-chip';
-              chip.textContent = `📄 ${att.name}`;
-              attachDiv.appendChild(chip);
-            }
-          });
-          el.appendChild(attachDiv);
+          attachHtml = '<div style="margin-top:6px;">' + (
+            msg.attachments.map(att => att.type === 'image' ? 
+            `<img class="attachment-img" src="${att.dataUrl}" alt="${att.name}">` : 
+            `<span class="attachment-file-chip">📄 ${att.name}</span>`
+            ).join('')
+          ) + '</div>';
         }
+        
+        el.innerHTML = `
+          <div class="message-avatar" style="background:transparent;border:none;font-size:14px;">👤</div>
+          <div class="message-body">
+            ${this.escapeHtml(msg.content)}
+            ${attachHtml}
+          </div>
+        `;
       } else {
         // assistant
-        el.className = `chat-msg assistant${msg.isError ? ' error' : ''}`;
+        el.className = `chat-message assistant${msg.isError ? ' error' : ''}`;
         let renderedHtml = this.renderMarkdown(msg.content, msg.summaryItems);
 
         // Collapse long summary lists (>5 lines) with "Mostrar mais" toggle
@@ -567,22 +566,26 @@ class ChatModule {
           }
         }
 
-        el.innerHTML = renderedHtml;
-
+        let footerHtml = '';
         // Store operations data if present
         if (msg.operations && msg.operations.length > 0) {
           this.operationsMap[idx] = msg.operations;
-
-          // Add view data button
-          const footer = document.createElement('div');
-          footer.className = 'msg-footer';
-          footer.innerHTML = `
-            <button class="msg-view-data-btn" data-msg-index="${idx}" title="Ver dados das operações">
-              📋 Ver dados
-            </button>
+          footerHtml = `
+            <div class="msg-footer">
+              <button class="msg-view-data-btn" data-msg-index="${idx}" title="Ver dados das operações">
+                📋 Ver dados
+              </button>
+            </div>
           `;
-          el.appendChild(footer);
         }
+
+        el.innerHTML = `
+          <div class="message-avatar" style="background:transparent;border:none;font-size:16px;">✨</div>
+          <div class="message-body">
+            ${renderedHtml}
+            ${footerHtml}
+          </div>
+        `;
       }
 
       this.chatMessages.appendChild(el);

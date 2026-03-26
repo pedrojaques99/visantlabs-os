@@ -48,7 +48,23 @@ class DesignSystemModule {
     if (removeBtn) {
       removeBtn.addEventListener('click', () => this._remove());
     }
+
+    // Export button
+    const exportBtn = document.getElementById('dsExportBtn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => this._export());
+    }
   }
+
+  _export() {
+    const ds = state.designSystem;
+    if (!ds) {
+      eventBus.emit('chat:error-message', '❌ Nenhum Design System carregado para exportar.');
+      return;
+    }
+    downloadJSON(ds, `${ds.name || 'design-system'}.json`);
+  }
+
 
   // ─── File Import ─────────────────────────────────────────────────────────────
 
