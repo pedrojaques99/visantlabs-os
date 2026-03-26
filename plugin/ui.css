@@ -40,10 +40,12 @@ h2 {
 /* ── Form controls ── */
 select,
 input[type="text"],
+input[type="email"],
 input[type="password"],
 textarea {
     width: 100%;
-    padding: 8px;
+    height: 32px;
+    padding: 0 10px;
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 6px;
     background: var(--figma-color-bg, #ffffff);
@@ -51,7 +53,14 @@ textarea {
     font-size: 11px;
     margin-bottom: 8px;
     font-family: inherit;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    line-height: normal;
+}
+
+textarea {
+    height: auto !important;
+    padding: 8px 10px !important;
+    min-height: 48px;
 }
 
 select:focus,
@@ -90,7 +99,12 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+
+button:active, .figma-icon-btn:active {
+    transform: scale(0.97);
 }
 
 button:hover {
@@ -233,7 +247,7 @@ button.secondary:hover {
 
 .folder-name {
     flex: 1;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     font-weight: 500;
 }
@@ -290,7 +304,7 @@ button.secondary:hover {
 
 .component-name {
     flex: 1;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -379,14 +393,14 @@ button.secondary:hover {
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 8px;
     margin-bottom: 6px;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     background: var(--figma-color-bg, #ffffff);
 }
 
 .brand-row-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     gap: 8px;
     padding: 8px 10px;
     min-height: 40px;
@@ -433,7 +447,7 @@ button.secondary:hover {
     display: flex;
     align-items: center;
     gap: 4px;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     min-width: 0;
     justify-content: flex-end;
 }
@@ -533,7 +547,7 @@ button.secondary:hover {
     color: var(--figma-color-text, #333);
     max-width: 120px;
     white-space: nowrap;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     flex-shrink: 0;
 }
@@ -690,7 +704,7 @@ button.secondary:hover {
 
 .font-list-item .font-sample {
     flex: 1;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -716,7 +730,7 @@ button.secondary:hover {
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 6px;
     margin-bottom: 12px;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
 }
 
 .settings-section-header {
@@ -824,15 +838,55 @@ label {
     display: none;
 }
 
+.hidden {
+    display: none !important;
+}
+
 .app-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     margin-bottom: 8px;
+    justify-content: space-between;
 }
 
 .app-header h2 {
     margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--figma-color-bg-secondary, #f0f0f0);
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--figma-color-text-secondary, #808080);
+    cursor: default;
+    flex-shrink: 0;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-avatar.has-photo {
+    border-color: transparent;
 }
 
 .icon-btn {
@@ -956,6 +1010,51 @@ label {
     user-select: none;
 }
 
+/* ── Operation Progress Indicator ── */
+.op-progress-indicator {
+    background: var(--figma-color-bg-secondary, #f5f5f5);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 8px 0;
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+}
+
+.op-progress-indicator.hidden {
+    display: none;
+}
+
+.op-progress-bar {
+    height: 4px;
+    background: var(--figma-color-bg-tertiary, #e5e5e5);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.op-progress-fill {
+    height: 100%;
+    background: var(--figma-color-bg-brand, #0d99ff);
+    border-radius: 2px;
+    transition: width 0.2s ease-out;
+}
+
+.op-progress-text {
+    font-size: 11px;
+    color: var(--figma-color-text-secondary, #666);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.op-progress-text .op-name {
+    color: var(--figma-color-text, #333);
+    font-weight: 500;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* ── Typing indicator bubble (GlitchLoader-style) ── */
 .chat-typing {
     display: flex;
@@ -981,7 +1080,7 @@ label {
     font-weight: 500;
     color: var(--figma-color-text-secondary, #888);
     white-space: nowrap;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     /* Fixed width so layout doesn't shift during glitch-reveal */
     min-width: 90px;
 }
@@ -1130,7 +1229,7 @@ label {
     color: var(--figma-color-text-secondary, #808080);
     font-size: 10px;
     flex: 1;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -1220,7 +1319,7 @@ label {
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 10px;
     background: var(--figma-color-bg, #ffffff);
-    overflow: hidden;
+    flex-shrink: 0;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -1275,7 +1374,7 @@ label {
 .chat-card-footer {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     padding: 6px 8px 8px;
     gap: 6px;
 }
@@ -1308,6 +1407,13 @@ label {
 .chat-pill.active {
     border-color: var(--figma-color-border-brand, #0d99ff) !important;
     color: var(--figma-color-text-brand, #0d99ff) !important;
+    animation: brand-pulse 2s infinite ease-in-out;
+}
+
+@keyframes brand-pulse {
+    0% { box-shadow: 0 0 0 0 var(--figma-color-bg-brand-tertiary, #e5f4ff); }
+    50% { box-shadow: 0 0 0 3px var(--figma-color-bg-brand-tertiary, #e5f4ff); opacity: 0.9; }
+    100% { box-shadow: 0 0 0 0 var(--figma-color-bg-brand-tertiary, #e5f4ff); }
 }
 
 .credit-pill {
@@ -1431,7 +1537,7 @@ label {
     border-top: 1px solid var(--figma-color-border, #e5e5e5);
     font-size: 10px;
     color: var(--figma-color-text-secondary, #808080);
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
 }
 
 .selection-indicator.hidden {
@@ -1474,7 +1580,7 @@ label {
     font-weight: 600;
     color: var(--figma-color-text, #333333);
     white-space: nowrap;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     font-size: 11px;
     line-height: 14px;
@@ -1494,7 +1600,7 @@ label {
 
 .selection-indicator .sel-multi-list {
     white-space: nowrap;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     max-width: 100%;
 }
@@ -1629,7 +1735,7 @@ label {
 .op-name {
     color: var(--figma-color-text-tertiary, #b3b3b3);
     flex: 1;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -1687,7 +1793,7 @@ label {
     font-weight: 500;
     color: var(--figma-color-text, #333333);
     font-size: 11px;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -1767,7 +1873,7 @@ label {
     font-weight: 500;
     color: var(--figma-color-text, #333333);
     font-size: 11px;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     white-space: nowrap;
     line-height: 1.2;
@@ -1776,7 +1882,7 @@ label {
 .comp-key {
     font-size: 10px;
     color: var(--figma-color-text-tertiary, #b3b3b3);
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-family: 'Monaco', 'Menlo', monospace;
@@ -1825,7 +1931,7 @@ label {
 
 .color-name {
     flex: 1;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 10px;
@@ -1850,9 +1956,36 @@ label {
     transition: color 0.15s, background 0.15s;
 }
 
-.btn-remove:hover {
-    color: var(--figma-color-text-danger, #d82c20) !important;
-    background: var(--figma-color-bg-danger-tertiary, #ffe5e5) !important;
+.brand-prop-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.figma-prop-label-editable {
+    flex: 0 0 80px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--figma-color-text-secondary, #808080);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin-left: -4px;
+    transition: all 0.1s;
+}
+
+.figma-prop-label-editable:hover {
+    background: var(--figma-color-bg-hover, #f5f5f5);
+    border-color: var(--figma-color-border, #e5e5e5);
+}
+
+.figma-prop-label-editable:focus {
+    background: var(--figma-color-bg, #ffffff);
+    border-color: var(--figma-color-border-brand, #0d99ff);
+    color: var(--figma-color-text, #333333);
+    outline: none;
 }
 
 .text-muted {
@@ -1873,6 +2006,36 @@ label {
     display: flex;
     flex-direction: column;
     gap: 2px;
+}
+
+.color-item.clickable {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.color-item.clickable:hover {
+    background: var(--figma-color-bg-brand-tertiary, #e8f4ff);
+}
+
+.color-item.clickable .color-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+    flex-shrink: 0;
+}
+
+.color-item.clickable .color-name {
+    font-size: 11px;
+    color: var(--figma-color-text, #333);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .available-colors-list.hidden {
@@ -1908,6 +2071,13 @@ label {
     gap: 6px;
     margin-bottom: 8px;
     max-width: 100%;
+    animation: message-appear 0.2s cubic-bezier(0, 0.4, 0.4, 1.1);
+    transform-origin: left bottom;
+}
+
+@keyframes message-appear {
+    from { opacity: 0; transform: translateY(8px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .chat-message.user {
@@ -2069,33 +2239,39 @@ label {
    ══════════════════════════════════════════════════ */
 .settings-tabs {
     display: flex;
-    border-bottom: 1px solid var(--figma-color-border, #e5e5e5);
-    margin-bottom: 12px;
+    gap: 4px;
+    background: var(--figma-color-bg-tertiary, #f0f0f0);
+    padding: 3px;
+    border-radius: 8px;
+    margin: 12px;
+    border: none;
 }
 
 .tab-btn {
     flex: 1;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    color: var(--figma-color-text-secondary, #808080);
-    padding: 8px 0;
+    background: transparent !important;
+    border: none !important;
+    color: var(--figma-color-text-secondary, #808080) !important;
+    padding: 0;
     font-size: 11px;
     font-weight: 500;
     cursor: pointer;
-    border-radius: 0;
-    height: auto;
+    border-radius: 6px !important;
+    height: 28px !important;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .tab-btn:hover {
-    color: var(--figma-color-text, #333);
-    background: transparent;
+    color: var(--figma-color-text, #333) !important;
 }
 
 .tab-btn.active {
-    color: var(--figma-color-text-brand, #0d99ff);
-    border-bottom-color: var(--figma-color-border-brand, #0d99ff);
-    background: transparent;
+    background: var(--figma-color-bg, white) !important;
+    color: var(--figma-color-text, #333) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .tab-content {
@@ -2131,15 +2307,21 @@ label {
     border-radius: 8px;
     width: 90%;
     max-width: 320px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
     max-height: 80vh;
+    animation: modal-pop 0.15s cubic-bezier(0, 0, 0.2, 1);
+}
+
+@keyframes modal-pop {
+    from { opacity: 0; transform: scale(0.9) translateY(4px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .modal-header {
     display: flex;
-    justify-content: space-between;
+    gap: 8px;
     align-items: center;
     padding: 10px 12px;
     border-bottom: 1px solid var(--figma-color-border, #e5e5e5);
@@ -2211,7 +2393,7 @@ label {
 .figma-prop-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     height: 32px;
     padding: 0 8px;
 }
@@ -2230,10 +2412,15 @@ label {
     gap: 8px;
     border-radius: 4px;
     margin-bottom: 2px;
+    transition: background 0.1s, transform 0.1s;
 }
 
 .figma-prop-row:hover {
     background: var(--figma-color-bg-hover, #f5f5f5);
+}
+
+.figma-prop-row:active {
+    transform: translateX(2px);
 }
 
 .figma-prop-label {
@@ -2248,7 +2435,7 @@ label {
     font-size: 11px;
     color: var(--figma-color-text, #333333);
     white-space: nowrap;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     display: flex;
     align-items: center;
@@ -2272,21 +2459,28 @@ label {
     color: var(--figma-color-icon, #333333) !important;
     cursor: pointer;
     flex-shrink: 0;
+    transition: all 0.1s ease-in-out;
 }
 
 .figma-icon-btn:hover {
-    background: var(--figma-color-bg-hover, #e5e5e5) !important;
+    background: var(--figma-color-bg-hover, #f5f5f5) !important;
+    color: var(--figma-color-icon, #333) !important;
+}
+
+.figma-icon-btn:active {
+    transform: scale(0.9);
+    background: var(--figma-color-bg-pressed, #e5e5e5) !important;
 }
 
 .brand-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     width: 100%;
 }
 
 .brand-item .brand-label {
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     font-size: 11px;
 }
@@ -2296,6 +2490,43 @@ label {
     height: 20px !important;
     font-size: 10px !important;
     width: auto !important;
+}
+
+/* Save Status Indicator */
+.save-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: transparent;
+    transition: all 0.2s ease;
+    opacity: 0.8;
+}
+
+.save-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10B981; /* Green success */
+    transition: all 0.2s ease;
+}
+
+.save-status-indicator.saving .save-status-dot {
+    background: #F59E0B; /* Orange saving */
+    box-shadow: 0 0 4px #F59E0B;
+    animation: save-pulse 1s infinite alternate;
+}
+
+.save-status-text {
+    font-size: 10px;
+    color: var(--figma-color-text-secondary, #808080);
+    font-weight: 500;
+}
+
+@keyframes save-pulse {
+    from { opacity: 0.5; transform: scale(0.85); }
+    to { opacity: 1; transform: scale(1.1); }
 }
 
 /* ── Mentions Autocomplete ── */
@@ -2363,7 +2594,7 @@ label {
     font-size: 11px;
     font-weight: 500;
     white-space: nowrap;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
 }
 
@@ -2464,7 +2695,7 @@ label {
 
 .attachment-chip-name {
     flex: 1;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     font-size: 10px;
 }
@@ -2561,7 +2792,7 @@ label {
     padding: 2px 6px;
     border-radius: 10px;
     max-width: 120px;
-    overflow: hidden;
+    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
     text-overflow: ellipsis;
     white-space: nowrap;
     vertical-align: middle;
@@ -2675,7 +2906,7 @@ label {
 .settings-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     margin-bottom: 12px;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--figma-color-border, #e5e5e5);
@@ -2792,7 +3023,7 @@ label {
     font-size: 10px;
 }
 /* Brand Guidelines V2 */
-.bg-list-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; border-radius: 4px; cursor: pointer; }
+.bg-list-item { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 4px; cursor: pointer; }
 .bg-list-item:hover { background: var(--figma-color-bg-hover); }
 .bg-list-name { font-weight: 500; }
 .bg-list-completeness { font-size: 11px; color: var(--figma-color-text-secondary); }
@@ -2800,7 +3031,7 @@ label {
 .bg-color-swatch { width: 32px; height: 32px; border-radius: 4px; position: relative; border: 1px solid var(--figma-color-border); }
 .bg-color-swatch .bg-remove-btn { position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--figma-color-bg-danger); color: white; border: none; font-size: 10px; cursor: pointer; display: none; line-height: 14px; padding: 0; }
 .bg-color-swatch:hover .bg-remove-btn { display: block; }
-.bg-typo-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+.bg-typo-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
 .bg-typo-item .bg-remove-btn { background: none; border: none; color: var(--figma-color-text-secondary); cursor: pointer; font-size: 14px; }
 .bg-typo-item .bg-remove-btn:hover { color: var(--figma-color-text-danger); }
 .bg-ingest-banner { background: var(--figma-color-bg-secondary); border-radius: 6px; padding: 8px; }
@@ -2862,3 +3093,510 @@ button.secondary.loading .spinner {
     border-top: 2px solid var(--figma-color-bg-brand, #0d99ff);
 }
 
+
+.brand-item-thumb {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 4px;
+    object-fit: contain;
+    background: var(--figma-color-bg-secondary, #f5f5f5);
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+}
+
+.brand-item-icon {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 4px;
+    background: var(--figma-color-bg-secondary, #f5f5f5);
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--figma-color-text-tertiary, #b3b3b3);
+    font-size: 10px;
+}
+
+.brand-item {
+    gap: 8px !important;
+    justify-content: flex-start !important;
+}
+
+.brand-item .brand-label {
+    flex: 1;
+    white-space: nowrap;
+}
+
+
+.color-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    background: var(--figma-color-bg-secondary, #f5f5f5);
+    border-radius: 8px;
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.color-item-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    background: var(--figma-color-bg, #ffffff);
+    border-radius: 6px;
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+}
+
+.color-add-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    margin-bottom: 8px;
+    background: var(--figma-color-bg-secondary, #f5f5f5);
+    border-radius: 6px;
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+}
+
+.color-add-row.hidden {
+    display: none;
+}
+
+.color-add-row input[type="color"] {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 4px;
+    padding: 0;
+    cursor: pointer;
+    background: none;
+}
+
+.color-add-row input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color-add-row input[type="color"]::-webkit-color-swatch {
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 4px;
+}
+
+.color-swatch-small {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.1);
+    flex-shrink: 0;
+}
+
+.color-info-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.color-name-label {
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--figma-color-text, #333333);
+}
+
+.color-role-select {
+    font-size: 10px;
+    height: 18px;
+    padding: 0 4px;
+    border: none;
+    background: none;
+    color: var(--figma-color-text-secondary, #808080);
+    cursor: pointer;
+    outline: none;
+    width: fit-content;
+    margin-left: -4px;
+    border-radius: 2px;
+    transition: background 0.15s;
+}
+
+.color-role-select:hover {
+    background: var(--figma-color-bg-hover, #f0f0f0);
+    color: var(--figma-color-text, #333333);
+}
+
+.btn-remove-color {
+    opacity: 0.5;
+    transition: opacity 0.2s, color 0.2s;
+}
+
+.btn-remove-color:hover {
+    opacity: 1;
+    color: var(--figma-color-text-danger, #d82c20);
+    background: var(--figma-color-bg-danger-tertiary, #ffe5e5);
+}
+
+/* ═══ BRAND GUIDELINE API SECTION ═══ */
+.brand-api-section {
+    border-bottom: 1px solid var(--figma-color-border, #e5e5e5);
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+}
+
+.brand-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    padding: 4px 0;
+}
+
+.brand-status .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--figma-color-text-secondary, #808080);
+}
+
+.brand-status.linked .status-dot {
+    background: var(--figma-color-text-success, #1bc47d);
+}
+
+.brand-status .status-text {
+    color: var(--figma-color-text-secondary, #808080);
+}
+
+/* ═══ COLLAPSIBLE SECTIONS ═══ */
+.collapsible .collapsible-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.collapsible .collapse-icon {
+    transition: transform 0.2s ease;
+    color: var(--figma-color-text-secondary, #808080);
+}
+
+.collapsible.collapsed .collapse-icon {
+    transform: rotate(-90deg);
+}
+
+.collapsible.collapsed .collapsible-content {
+    display: none;
+}
+
+/* ═══ DESIGN TOKENS SECTION ═══ */
+.token-group {
+    margin-bottom: 10px;
+}
+
+.token-group-label {
+    display: block;
+    font-size: 10px;
+    color: var(--figma-color-text-secondary, #808080);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.token-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.token-row label {
+    font-size: 9px;
+    color: var(--figma-color-text-tertiary, #999);
+    min-width: 18px;
+}
+
+.token-input {
+    width: 40px;
+    height: 22px;
+    padding: 0 4px;
+    font-size: 11px;
+    text-align: center;
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+    border-radius: 4px;
+    background: var(--figma-color-bg, #fff);
+    color: var(--figma-color-text, #333);
+}
+
+.token-input:focus {
+    outline: none;
+    border-color: var(--figma-color-border-brand, #0d99ff);
+}
+
+/* Shadow previews */
+.shadow-preview-row {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.shadow-preview {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: var(--figma-color-bg, #fff);
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+
+.shadow-preview:hover {
+    transform: scale(1.1);
+}
+
+.shadow-preview.sm {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+.shadow-preview.md {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.shadow-preview.lg {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+}
+
+.shadow-preview.active {
+    outline: 2px solid var(--figma-color-border-brand, #0d99ff);
+    outline-offset: 2px;
+}
+
+/* ═══ UI COMPONENTS SECTION ═══ */
+.component-selector-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.component-selector-row .figma-prop-label {
+    min-width: 50px;
+    font-size: 11px;
+}
+
+.component-selector-row .component-select {
+    flex: 1;
+    height: 32px;
+    font-size: 11px;
+    margin-bottom: 0 !important;
+    padding: 0 8px !important;
+    min-width: 0;
+}
+
+.component-selector-row .component-capture-btn {
+    flex-shrink: 0;
+}
+
+.component-value {
+    flex: 1;
+    font-size: 11px;
+    color: var(--figma-color-text-secondary, #666);
+    padding: 4px 8px;
+    background: var(--figma-color-bg-secondary, #f5f5f5);
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.component-value.has-value {
+    color: var(--figma-color-text, #333);
+    background: var(--figma-color-bg-brand-tertiary, #e8f4ff);
+}
+
+.component-remove-btn {
+    flex-shrink: 0;
+    opacity: 0.6;
+}
+
+.component-remove-btn:hover {
+    opacity: 1;
+    color: var(--figma-color-text-danger, #d82c20);
+}
+
+/* ═══ AUTH / ACCOUNT SECTION ═══ */
+#authLoggedOut {
+    padding: 12px;
+}
+
+.auth-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 4px 0;
+}
+
+.auth-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.auth-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--figma-color-text-secondary, #808080);
+}
+
+.auth-input {
+    margin-bottom: 0 !important;
+    height: 32px !important;
+    background: var(--figma-color-bg-secondary, #f5f5f5) !important;
+    border: 1px solid var(--figma-color-border, #e5e5e5) !important;
+    font-size: 11px !important;
+    padding: 0 8px !important;
+    border-radius: 6px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    color: var(--figma-color-text, #333) !important;
+    width: 100% !important;
+    outline: none !important;
+}
+
+/* Specific rule for email to avoid browser overrides that make it white */
+.auth-input[type="email"],
+.auth-input[type="password"] {
+    background-color: var(--figma-color-bg-secondary, #f5f5f5) !important;
+}
+
+.auth-input:focus {
+    background: var(--figma-color-bg, #ffffff) !important;
+    border-color: var(--figma-color-border-brand, #0d99ff) !important;
+    box-shadow: 0 0 0 2px rgba(13, 153, 255, 0.15) !important;
+    outline: none !important;
+}
+
+.auth-login-btn {
+    height: 36px !important;
+    background: #0D99FF !important;
+    background: linear-gradient(180deg, #18A0FB 0%, #0D99FF 100%) !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    letter-spacing: 0.01em;
+    color: white !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    margin-top: 4px;
+    border: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.auth-login-btn:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13, 153, 255, 0.2);
+}
+
+.auth-login-btn:active {
+    transform: translateY(0);
+}
+
+.auth-status {
+    font-size: 10px;
+    margin-top: 8px;
+    text-align: center;
+    color: var(--figma-color-text-secondary, #808080);
+}
+
+.auth-logged-in-card {
+    padding: 12px;
+    background: var(--figma-color-bg-secondary, #f5f5f5);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.auth-user-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.auth-user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.auth-user-email {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--figma-color-text, #333);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.auth-user-tier {
+    font-size: 9px;
+    text-transform: uppercase;
+    background: var(--figma-color-bg-brand-tertiary, #e5f4ff);
+    color: var(--figma-color-text-brand, #0d99ff);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    width: fit-content;
+}
+
+.auth-logout-btn {
+    height: 28px !important;
+    padding: 0 12px !important;
+    font-size: 11px !important;
+    border-radius: 6px !important;
+    background: var(--figma-color-bg-secondary, #f5f5f5) !important;
+    color: var(--figma-color-text-secondary, #808080) !important;
+    border: 1px solid var(--figma-color-border, #e5e5e5) !important;
+    width: auto !important;
+    cursor: pointer;
+}
+
+.auth-logout-btn:hover {
+    background: var(--figma-color-bg-hover, #f0f0f0) !important;
+    color: var(--figma-color-text, #333) !important;
+    border-color: var(--figma-color-border-strong, #ccc) !important;
+}
+
+.auth-credits-info {
+    font-size: 11px;
+    color: var(--figma-color-text-secondary, #808080);
+    padding-top: 8px;
+    border-top: 1px solid var(--figma-color-border, #e5e5e5);
+}
+
+/* Spinner */
+.spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: auth-spin 0.8s linear infinite;
+    margin-right: 8px;
+    display: none;
+}
+
+.loading .spinner {
+    display: inline-block;
+}
+
+@keyframes auth-spin {
+    to { transform: rotate(360deg); }
+}

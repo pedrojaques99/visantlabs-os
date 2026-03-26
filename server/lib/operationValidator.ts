@@ -183,6 +183,17 @@ class OperationValidator {
         break;
       }
 
+      case 'SET_TEXT_STYLE': {
+        if (!op.nodeId) errors.push('SET_TEXT_STYLE requires nodeId');
+        // At least one style property should be present
+        const hasStyle = op.fontSize || op.fontFamily || op.fontStyle ||
+                         op.textAutoResize || op.textAlignHorizontal ||
+                         op.textAlignVertical || op.lineHeight ||
+                         op.letterSpacing || op.fills;
+        if (!hasStyle) errors.push('SET_TEXT_STYLE requires at least one style property');
+        break;
+      }
+
       case 'SET_OPACITY': {
         if (!op.nodeId) errors.push('SET_OPACITY requires nodeId');
         if (typeof op.opacity !== 'number')

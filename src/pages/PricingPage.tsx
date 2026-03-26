@@ -469,11 +469,18 @@ export const PricingPage: React.FC = () => {
                           </div>
                         )}
                         <CardHeader className="pb-2">
-                          <div className="flex items-center gap-2 mb-2">
-                            <HardDrive size={20} className={index === 1 ? "text-brand-cyan" : "text-neutral-400"} />
-                            <CardTitle className="text-lg font-bold text-neutral-200">
-                              {plan.name}
-                            </CardTitle>
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2">
+                              <HardDrive size={20} className={index === 1 ? "text-brand-cyan" : "text-neutral-400"} />
+                              <CardTitle className="text-lg font-bold text-neutral-200">
+                                {plan.name}
+                              </CardTitle>
+                            </div>
+                            {plan.isByok && (
+                              <Badge className="bg-brand-cyan/20 text-brand-cyan border-none text-[9px] px-2 py-0">
+                                BYOK
+                              </Badge>
+                            )}
                           </div>
                           <div className="flex items-baseline gap-1">
                             <span className="text-3xl font-bold text-neutral-100">
@@ -519,6 +526,88 @@ export const PricingPage: React.FC = () => {
                 </div>
               </TabsContent>
             </Tabs>
+          </div>
+        </div>
+
+        {/* Transparency & Community - Expert Mode */}
+        <div className="max-w-4xl mx-auto px-4 pb-24 animate-fade-in-slow">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-neutral-800/30">
+            {/* Transparency Section */}
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <MicroTitle className="text-brand-cyan/70 uppercase">
+                  {t('pricing.transparency.title')}
+                </MicroTitle>
+                <h3 className="text-xl font-bold text-neutral-200">
+                  {t('pricing.transparency.googleApi')} + Infra
+                </h3>
+                <p className="text-sm text-neutral-500 leading-relaxed font-mono">
+                  {t('pricing.transparency.description')}
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-neutral-800/40 text-sm">
+                  <span className="text-neutral-400">Google API (Gemini 3.1)</span>
+                  <span className="text-neutral-200 font-mono">$0.067</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-neutral-800/40 text-sm">
+                  <span className="text-neutral-400">Visant Processing/CDN</span>
+                  <span className="text-neutral-200 font-mono">$0.013</span>
+                </div>
+                <div className="flex justify-between items-center py-2 text-base font-bold text-brand-cyan">
+                  <span>{t('pricing.transparency.total')}</span>
+                  <span className="font-mono">$0.080</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Community Section */}
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <MicroTitle className="text-neutral-500 uppercase">
+                  {t('pricing.community.buildInPublic')}
+                </MicroTitle>
+                <h3 className="text-xl font-bold text-neutral-200">
+                  {t('pricing.community.subtitle')}
+                </h3>
+                <p className="text-sm text-neutral-400">
+                  Somos um laboratório de design e código. Acompanhe a evolução do projeto em tempo real.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <a 
+                  href="https://github.com/visantlabs" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/40 transition-all group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-colors">
+                      <Key size={18} className="text-neutral-400 group-hover:text-brand-cyan" />
+                    </div>
+                    <span className="text-sm font-medium text-neutral-300">{t('pricing.community.github')}</span>
+                  </div>
+                  <Plus size={16} className="text-neutral-600 group-hover:translate-x-1 transition-transform" />
+                </a>
+
+                <a 
+                  href="https://discord.gg/visantlabs" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/40 transition-all group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-colors">
+                      <Plus size={18} className="text-neutral-400 group-hover:text-brand-cyan" />
+                    </div>
+                    <span className="text-sm font-medium text-neutral-300">{t('pricing.community.discord')}</span>
+                  </div>
+                  <Plus size={16} className="text-neutral-600 group-hover:translate-x-1 transition-transform" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 

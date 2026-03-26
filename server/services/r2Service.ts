@@ -160,6 +160,45 @@ export async function uploadProfilePicture(
 }
 
 /**
+ * Upload app thumbnail to R2 storage
+ */
+export async function uploadAppThumbnail(
+    base64Image: string,
+    userId: string,
+    appId: string,
+    subscriptionTier?: string,
+    isAdmin?: boolean
+): Promise<string> {
+    const bucketName = process.env.R2_BUCKET_NAME;
+    const publicUrl = process.env.R2_PUBLIC_URL;
+    if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
+
+    const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
+
+    const timestamp = Date.now();
+    const key = `apps/${appId}/thumbnail-${timestamp}.png`;
+
+    const client = getR2Client();
+
+    try {
+        await client.send(new PutObjectCommand({
+            Bucket: bucketName,
+            Key: key,
+            Body: buffer,
+            ContentType: 'image/png',
+        }));
+
+        await incrementUserStorage(userId, buffer.length);
+        return `${publicUrl}/${key}`;
+    } catch (error: unknown) {
+        throw new Error(`Failed to upload app thumbnail to R2: ${getErrorMessage(error)}`);
+    }
+}
+
+/**
  * Upload brand logo to R2 storage
  */
 export async function uploadBrandLogo(

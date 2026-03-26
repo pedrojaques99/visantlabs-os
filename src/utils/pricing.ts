@@ -44,13 +44,13 @@ export function getImagePricing(
   model: GeminiModel | string,
   resolution?: Resolution | string | null
 ): number {
-  // Gemini 2.5 Flash (HD)
-  if (model === GEMINI_MODELS.FLASH) {
+  // Gemini 2.5 Flash (HD) - FLASH and IMAGE_FLASH are aliases
+  if (model === GEMINI_MODELS.FLASH || model === GEMINI_MODELS.IMAGE_FLASH) {
     return PRICING.IMAGE.GEMINI_2_5;
   }
 
-  // Gemini 3.1 Flash (NB2) - pricing varies by resolution
-  if (model === GEMINI_MODELS.NB2) {
+  // Gemini 3.1 Flash (NB2) - pricing varies by resolution - NB2 and IMAGE_NB2 are aliases
+  if (model === GEMINI_MODELS.NB2 || model === GEMINI_MODELS.IMAGE_NB2) {
     if (resolution === '512px') {
       return PRICING.IMAGE.NB2_512;
     }
@@ -67,8 +67,8 @@ export function getImagePricing(
     return PRICING.IMAGE.NB2_1K;
   }
 
-  // Gemini 3 Pro - pricing varies by resolution
-  if (model === GEMINI_MODELS.PRO) {
+  // Gemini 3 Pro - pricing varies by resolution - PRO and IMAGE_PRO are aliases
+  if (model === GEMINI_MODELS.PRO || model === GEMINI_MODELS.IMAGE_PRO) {
     if (resolution === '1K' || resolution === 'HD') {
       return PRICING.IMAGE.GEMINI_1K;
     }

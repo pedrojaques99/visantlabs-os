@@ -2388,7 +2388,26 @@
     "subtitle": "Choose the plan that works for you",
     "tabs": {
       "credits": "Credits",
-      "subscriptions": "Subscriptions"
+      "subscriptions": "Subscriptions",
+      "storage": "Storage / BYOK"
+    },
+    "transparency": {
+      "title": "Transparent Cost",
+      "googleApi": "Google API (At cost)",
+      "visantInfra": "Visant Infra (Processing/CDN)",
+      "total": "Total per Generation",
+      "description": "You pay Google API cost + a small Visant processing fee. Total transparency is our core value."
+    },
+    "community": {
+      "buildInPublic": "Build in Public",
+      "github": "Open Source on GitHub",
+      "discord": "Join Discord Community",
+      "subtitle": "Branding Laboratory by Visant Labs®"
+    },
+    "imagesEstimate": "HD Images",
+    "byok": {
+      "label": "BYOK Ready",
+      "description": "Ideal for developers and power users who prefer using their own API key."
     },
     "title": "PRICING"
   },

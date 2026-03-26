@@ -8,7 +8,7 @@ import Stripe from 'stripe';
 import dotenv from 'dotenv';
 import { ObjectId } from 'mongodb';
 import { connectToMongoDB, getDb } from '../../server/db/mongodb.js';
-import { getCreditsByAmount, getCreditPackagePrice } from '@/utils/creditPackages.js';
+import { getCreditsByAmount, getCreditPackagePrice } from '../../src/utils/creditPackages.js';
 import { abacatepayService } from '../../server/services/abacatepayService.js';
 
 // Load environment variables

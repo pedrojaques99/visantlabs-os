@@ -25,12 +25,12 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const triggerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number | null>(null);
 
-  const showTooltip = () => {
+  const showTooltip = (instant: boolean = false) => {
     if (isDismissed && dismissible) return;
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    timeoutRef.current = window.setTimeout(() => {
+    const show = () => {
       if (triggerRef.current && tooltipRef.current && !isDismissed) {
         const triggerRect = triggerRef.current.getBoundingClientRect();
         const tooltipRect = tooltipRef.current.getBoundingClientRect();
@@ -56,7 +56,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
             break;
         }
 
-        // Keep tooltip within viewport
         const padding = 8;
         if (top < padding) top = padding;
         if (left < padding) left = padding;
@@ -70,14 +69,24 @@ export const Tooltip: React.FC<TooltipProps> = ({
         setTooltipPosition({ top, left });
         setIsVisible(true);
       }
-    }, delay);
+    };
+
+    if (instant) {
+      show();
+    } else {
+      timeoutRef.current = window.setTimeout(show, delay);
+    }
   };
 
-  const hideTooltip = () => {
+  const hideTooltip = (instant: boolean = false) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    setIsVisible(false);
+    if (instant) {
+      setIsVisible(false);
+    } else {
+      timeoutRef.current = window.setTimeout(() => setIsVisible(false), 150);
+    }
   };
 
   const handleDismiss = () => {
@@ -170,10 +179,14 @@ export const Tooltip: React.FC<TooltipProps> = ({
     <>
       <div
         ref={triggerRef}
-        onMouseEnter={showTooltip}
-        onMouseLeave={hideTooltip}
-        onFocus={showTooltip}
-        onBlur={hideTooltip}
+        onMouseEnter={() => showTooltip(false)}
+        onMouseLeave={() => hideTooltip(false)}
+        onFocus={() => showTooltip(false)}
+        onBlur={() => hideTooltip(false)}
+        onClick={(e) => {
+          e.stopPropagation();
+          isVisible ? hideTooltip(true) : showTooltip(true);
+        }}
         className="inline-block"
       >
         {children}
@@ -181,7 +194,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       {isVisible && !isDismissed && (
         <div
           ref={tooltipRef}
-          className={`fixed z-50 px-2.5 py-1.5 text-xs font-mono backdrop-blur-sm rounded-md shadow-lg pointer-events-auto animate-fade-in ${theme === 'dark'
+          className={`fixed z-[100] px-2.5 py-1.5 text-xs font-mono backdrop-blur-sm rounded-md shadow-lg pointer-events-auto animate-fade-in ${theme === 'dark'
             ? 'text-neutral-300 bg-neutral-900/70 border border-neutral-800/40'
             : 'text-neutral-700 bg-white/70 border border-neutral-200/40'
             }`}
@@ -189,6 +202,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
             top: `${tooltipPosition.top}px`,
             left: `${tooltipPosition.left}px`,
           }}
+          onMouseEnter={() => showTooltip(false)}
+          onMouseLeave={() => hideTooltip(false)}
           role="tooltip"
         >
           <div className="flex items-center gap-2">

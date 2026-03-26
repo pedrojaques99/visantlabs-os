@@ -9,6 +9,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 export interface AuthRequest extends Request {
   userId?: string;
   userEmail?: string;
+  isAdmin?: boolean;
 }
 
 export const authenticate = async (
@@ -61,6 +62,7 @@ export const authenticate = async (
 
     req.userId = decoded.userId;
     req.userEmail = decoded.email;
+    req.isAdmin = !!user.isAdmin;
 
     next();
   } catch (error: any) {

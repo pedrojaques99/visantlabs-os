@@ -13,6 +13,8 @@
     <div class="app-header">
       <h2>Visant Copilot</h2>
       <div class="header-controls">
+        <button class="icon-btn" id="clearSessionBtn" title="Limpar sessão">🗑</button>
+        <div id="userAvatar" class="user-avatar" title="Usuário"></div>
         <button class="icon-btn" id="settingsBtn" title="Configurações">⚙</button>
       </div>
     </div>
@@ -140,48 +142,68 @@
 
       <!-- ================= TAB: BRAND ================= -->
       <div id="tab-brand" class="tab-content">
-        <div id="brand-v2-panel"></div>
+        <!-- brand-v2-panel removed to prevent overlapping HTML UI duplication -->
         <div class="brand-guidelines">
 
           <div class="figma-prop-panel">
+
+            <!-- Brand Guideline (API) Section -->
+            <div class="figma-prop-section brand-api-section">
+              <div class="figma-prop-header">
+                <span class="figma-prop-title">Brand Guideline</span>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                  <div id="saveStatusIndicator" class="save-status-indicator" title="Status de sincronização">
+                    <span class="save-status-dot"></span>
+                    <span class="save-status-text">Sincronizado</span>
+                  </div>
+                  <button class="figma-icon-btn" id="brandGuidelineRefreshBtn" title="Atualizar lista">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M10 6a4 4 0 01-7.5 2M2 6a4 4 0 017.5-2M10 2v2.5H7.5M2 10V7.5h2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <button class="figma-icon-btn" id="brandGuidelineImportBtn" title="Importar Brand JSON">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 8v2a1 1 0 001 1h8a1 1 0 001-1V8M3 7l3-3 3 3M6 11V4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <input type="file" id="brandGuidelineImportInput" accept=".json" style="display:none">
+                  <button class="figma-icon-btn" id="brandGuidelineExportBtn" title="Exportar Brand JSON">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 8v2a1 1 0 001 1h8a1 1 0 001-1V8M3 5l3 3 3-3M6 1v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+
+                  <button class="figma-icon-btn" id="brandGuidelineAddBtn" title="Criar novo guideline">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="figma-prop-row">
+                <select id="brandGuidelineSelect" class="figma-select" style="flex: 1;">
+                  <option value="">— Selecione uma marca —</option>
+                </select>
+              </div>
+              <div id="brandGuidelineStatus" class="brand-status text-muted" style="display: none;">
+                <span class="status-dot"></span>
+                <span class="status-text">Não vinculado</span>
+              </div>
+            </div>
 
             <!-- Logo Section -->
             <div class="figma-prop-section">
               <div class="figma-prop-header">
                 <span class="figma-prop-title">Logo</span>
-              </div>
-
-              <div class="figma-prop-row">
-                <span class="figma-prop-label">Light Mode</span>
-                <div id="logoLightInfo" class="figma-prop-value text-muted">Não selecionado</div>
-                <button class="figma-icon-btn brand-select-btn" data-target="logoLight" title="Escolher Logo Light">
+                <button class="figma-icon-btn" id="logoAddPropBtn" title="Adicionar variante de logo">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
-                      fill="currentColor" />
+                    <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                   </svg>
                 </button>
               </div>
 
-              <div class="figma-prop-row">
-                <span class="figma-prop-label">Dark Mode</span>
-                <div id="logoDarkInfo" class="figma-prop-value text-muted">Não selecionado</div>
-                <button class="figma-icon-btn brand-select-btn" data-target="logoDark" title="Escolher Logo Dark">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
-                      fill="currentColor" />
-                  </svg>
-                </button>
-              </div>
-
-              <div class="figma-prop-row">
-                <span class="figma-prop-label">Accent</span>
-                <div id="logoAccentInfo" class="figma-prop-value text-muted">Não selecionado</div>
-                <button class="figma-icon-btn brand-select-btn" data-target="logoAccent" title="Escolher Logo Accent">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
-                      fill="currentColor" />
-                  </svg>
-                </button>
+              <div id="logoList" class="brand-prop-list">
+                <!-- Dynamic rows generated by brand.js -->
               </div>
             </div>
 
@@ -189,50 +211,125 @@
             <div class="figma-prop-section">
               <div class="figma-prop-header">
                 <span class="figma-prop-title">Colors</span>
-                <button class="figma-icon-btn" id="colorAddBtn" title="Adicionar cores">
+                <button class="figma-icon-btn" id="colorImportBtn" title="Importar cores do arquivo">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M2 1C1.44772 1 1 1.44772 1 2V10C1 10.5523 1.44772 11 2 11H10C10.5523 11 11 10.5523 11 10V4.5L7.5 1H2ZM2 2H7V5H10V10H2V2ZM8 2.5L9.5 4H8V2.5Z" fill="currentColor"/>
+                  </svg>
+                </button>
+                <button class="figma-icon-btn" id="colorAddBtn" title="Adicionar cor manualmente">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
                       fill="currentColor" />
                   </svg>
                 </button>
               </div>
-              <div class="color-grid" id="colorGrid"></div>
+              <!-- Add color row (hidden by default) -->
+              <div id="colorAddRow" class="color-add-row hidden">
+                <input type="color" id="colorPickerInput" value="#6366F1" title="Escolher cor">
+                <input type="text" id="colorNameInput" class="figma-input" placeholder="Nome da cor" style="flex: 1;">
+                <button class="figma-icon-btn" id="colorConfirmBtn" title="Adicionar">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button class="figma-icon-btn" id="colorCancelBtn" title="Cancelar">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
               <div id="availableColorsList" class="available-colors-list hidden"></div>
+              <div class="color-grid" id="colorGrid"></div>
             </div>
 
             <!-- Typography Section -->
             <div class="figma-prop-section">
               <div class="figma-prop-header">
                 <span class="figma-prop-title">Typography</span>
-              </div>
-
-              <div class="figma-prop-row">
-                <span class="figma-prop-label" title="Chamadas e Títulos">Primary</span>
-                <div id="fontPrimaryInfo" class="figma-prop-value text-muted">Não selecionado</div>
-                <button class="figma-icon-btn font-select-btn" data-target="fontPrimary" title="Escolher fonte">
+                <button class="figma-icon-btn" id="fontAddPropBtn" title="Adicionar variante de fonte">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
-                      fill="currentColor" />
+                    <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                   </svg>
                 </button>
               </div>
 
-              <div class="figma-prop-row">
-                <span class="figma-prop-label" title="Textos e Parágrafos">Secondary</span>
-                <div id="fontSecondaryInfo" class="figma-prop-value text-muted">Não selecionado</div>
-                <button class="figma-icon-btn font-select-btn" data-target="fontSecondary" title="Escolher fonte">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
-                      fill="currentColor" />
-                  </svg>
-                </button>
+              <div id="fontPropList" class="brand-prop-list">
+                <!-- Dynamic rows generated by brand.js -->
               </div>
             </div>
 
-            <!-- Guideline Presets Section -->
+            <!-- Design Tokens Section -->
+            <div class="figma-prop-section collapsible" id="designTokensSection">
+              <div class="figma-prop-header collapsible-header" data-target="designTokensContent">
+                <span class="figma-prop-title">Design Tokens</span>
+                <svg class="collapse-icon" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div id="designTokensContent" class="collapsible-content">
+                <!-- Spacing -->
+                <div class="token-group">
+                  <span class="token-group-label">Spacing</span>
+                  <div class="token-row">
+                    <label>xs</label><input type="number" class="token-input" data-token="spacing.xs" value="4" min="0">
+                    <label>sm</label><input type="number" class="token-input" data-token="spacing.sm" value="8" min="0">
+                    <label>md</label><input type="number" class="token-input" data-token="spacing.md" value="16" min="0">
+                    <label>lg</label><input type="number" class="token-input" data-token="spacing.lg" value="24" min="0">
+                    <label>xl</label><input type="number" class="token-input" data-token="spacing.xl" value="32" min="0">
+                  </div>
+                </div>
+                <!-- Radius -->
+                <div class="token-group">
+                  <span class="token-group-label">Radius</span>
+                  <div class="token-row">
+                    <label>sm</label><input type="number" class="token-input" data-token="radius.sm" value="4" min="0">
+                    <label>md</label><input type="number" class="token-input" data-token="radius.md" value="8" min="0">
+                    <label>lg</label><input type="number" class="token-input" data-token="radius.lg" value="16" min="0">
+                    <label>full</label><input type="number" class="token-input" data-token="radius.full" value="9999" min="0">
+                  </div>
+                </div>
+                <!-- Shadows (visual preview) -->
+                <div class="token-group">
+                  <span class="token-group-label">Shadows</span>
+                  <div class="shadow-preview-row">
+                    <div class="shadow-preview sm" data-shadow="sm" title="Shadow SM"></div>
+                    <div class="shadow-preview md" data-shadow="md" title="Shadow MD"></div>
+                    <div class="shadow-preview lg" data-shadow="lg" title="Shadow LG"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- UI Components Section -->
+            <div class="figma-prop-section collapsible" id="uiComponentsSection">
+              <div class="figma-prop-header collapsible-header" data-target="uiComponentsContent">
+                <span class="figma-prop-title">UI Components</span>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                  <button class="figma-icon-btn" id="componentAddBtn" title="Capturar seleção como componente" onclick="event.stopPropagation()">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                  <button class="figma-icon-btn" id="componentLibraryBtn" title="Adicionar da biblioteca" onclick="event.stopPropagation()">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <path d="M2.5 4L5 6.5L7.5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                  <svg class="collapse-icon" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div id="uiComponentsContent" class="collapsible-content">
+                <!-- Dynamic components list -->
+                <div id="componentsGrid"></div>
+              </div>
+            </div>
+
+            <!-- Local Presets Section -->
             <div class="figma-prop-section">
               <div class="figma-prop-header">
-                <span class="figma-prop-title">Presets</span>
+                <span class="figma-prop-title">Local Presets</span>
               </div>
               <div class="figma-prop-row" style="flex-wrap: wrap; gap: 6px;">
                 <select id="guidelineSelect" class="figma-select" style="flex: 1; min-width: 0;">
@@ -258,29 +355,7 @@
           </div>
         </div>
 
-          <!-- ─── Design System ─── -->
-          <div class="figma-prop-section">
-            <div class="figma-prop-header">
-              <span class="figma-prop-title">Design System</span>
-              <span id="dsBadge" class="ds-badge hidden"></span>
-            </div>
-            <div id="dsInfoPanel" class="ds-empty">Nenhum Design System importado.</div>
-            <div class="figma-prop-row" style="gap: 6px; margin-top: 8px;">
-              <input type="file" id="dsImportInput" accept=".json" style="display:none">
-              <button class="figma-btn-secondary" id="dsImportBtn" style="flex:1">
-                Importar JSON
-              </button>
-              <button class="figma-icon-btn" id="dsRemoveBtn" title="Remover Design System" style="flex-shrink:0">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 3h8M4 3V2a1 1 0 011-1h2a1 1 0 011 1v1m1.5 0l-.5 7a1 1 0 01-1 1h-4a1 1 0 01-1-1l-.5-7"
-                    stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
-                </svg>
-              </button>
-            </div>
-            <div class="ds-hint">
-              Importe um <code>.json</code> com tokens de cor, tipografia e espaçamento. O arquivo fica salvo neste arquivo Figma e é compartilhado com o time. <a href="https://www.visantlabs.com/docs#design-system" target="_blank" style="color: var(--figma-color-text-brand);">Ver especificação</a>
-            </div>
-          </div>
+
 
       </div>
 
@@ -293,36 +368,41 @@
             <div class="figma-prop-header">
               <span class="figma-prop-title">Conta Visant</span>
             </div>
-            <div id="authLoggedOut" style="padding: 8px 12px;">
-              <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div class="figma-prop-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
-                  <span class="figma-prop-label" style="font-size: 10px; font-weight: 600;">E-mail</span>
-                  <input type="email" id="authEmailInput" placeholder="seu@email.com" style="margin-bottom: 0;">
+            <div id="authLoggedOut">
+              <div class="auth-container">
+                <div class="auth-field">
+                  <label class="auth-label">E-mail</label>
+                  <input type="email" id="authEmailInput" class="auth-input" placeholder="seu@email.com">
                 </div>
-                <div class="figma-prop-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
-                  <span class="figma-prop-label" style="font-size: 10px; font-weight: 600;">Senha</span>
-                  <input type="password" id="authPasswordInput" placeholder="Senha" style="margin-bottom: 0;">
+                <div class="auth-field">
+                  <label class="auth-label">Senha</label>
+                  <input type="password" id="authPasswordInput" class="auth-input" placeholder="Sua senha">
                 </div>
-                <button type="button" class="primary" id="authLoginBtn" style="width: 100%; margin-top: 4px;">
+                <div class="auth-field" style="flex-direction: row; align-items: center; justify-content: flex-start; margin-top: -4px; margin-bottom: 8px;">
+                  <label class="figma-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; font-weight: normal; color: var(--figma-color-text-secondary, #808080);">
+                    <input type="checkbox" id="authRememberMe" style="margin: 0;" checked>
+                    Lembrar de mim para sempre
+                  </label>
+                </div>
+                <button type="button" id="authLoginBtn" class="auth-login-btn">
                   <span class="spinner"></span>
                   <span class="btn-text">Entrar</span>
                 </button>
               </div>
-              <div id="authLoginStatus"
-                style="font-size: 10px; margin-top: 8px; text-align: center; color: var(--figma-color-text-secondary, #808080);"></div>
+              <div id="authLoginStatus" class="auth-status"></div>
             </div>
-            <div id="authLoggedIn" class="hidden" style="padding: 8px 12px;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                  <div id="authUserEmail" style="font-size: 12px; font-weight: 500;"></div>
-                  <div id="authUserTier" style="font-size: 10px; color: var(--figma-color-text-secondary, #808080);">
+
+            <div id="authLoggedIn" class="hidden">
+              <div class="auth-logged-in-card">
+                <div class="auth-user-info-row">
+                  <div class="auth-user-details">
+                    <div id="authUserEmail" class="auth-user-email"></div>
+                    <div id="authUserTier" class="auth-user-tier"></div>
                   </div>
+                  <button type="button" id="authLogoutBtn" class="auth-logout-btn">Sair</button>
                 </div>
-                <button type="button" class="secondary" id="authLogoutBtn"
-                  style="width: auto; padding: 0 12px;">Sair</button>
+                <div id="authCreditsInfo" class="auth-credits-info"></div>
               </div>
-              <div id="authCreditsInfo"
-                style="font-size: 11px; margin-top: 8px; color: var(--figma-color-text-secondary, #808080);"></div>
             </div>
           </div>
 
@@ -411,6 +491,7 @@
         <button class="figma-icon-btn modal-close" id="closeFontModal" style="font-size: 16px;">×</button>
       </div>
       <div class="modal-body">
+        <input type="text" id="fontSearch" placeholder="Buscar por família ou estilo..." style="margin-bottom: 8px;" />
         <div class="font-list" id="fontList"></div>
       </div>
     </div>
