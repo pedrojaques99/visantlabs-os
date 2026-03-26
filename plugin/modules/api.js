@@ -4,7 +4,19 @@
  */
 
 // Use an absolute URL because Figma plugins run in a data: origin where relative fetch() fails
-const API_BASE = 'http://localhost:3001/api'; // Change to https://www.visantlabs.com/api for production
+let API_BASE = 'https://www.visantlabs.com/api';
+
+// Dynamic detection for development mode (ngrok or localhost)
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  API_BASE = 'http://localhost:3001/api'; // Direct to backend
+} else if (window.location.hostname.includes('ngrok')) {
+  API_BASE = window.location.origin + '/api';
+} else if (window.location.protocol === 'file:' || window.location.protocol === 'data:') {
+  // If loaded directly into Figma but the user is actively running the dev server, we can
+  // explicitly use localhost for dev purposes. When deploying, build with production API_BASE.
+  // We check if we're in development using a Vite/Next hint if it existed, otherwise fallback:
+  API_BASE = 'http://localhost:3001/api'; // <--- Hardcoded for user's local development
+}
 
 // Active request abort controller (one at a time)
 let _abortController = null;
@@ -128,17 +140,11 @@ async function generateDesign(command, context) {
     selectedElements: context.selectedElements || [],
     // Brand: send the primary logo (logoLight) as selectedLogo for backward compat,
     // plus all 3 variants in brandLogos for richer context
-    selectedLogo: state.logoLight || state.logoDark || state.logoAccent || null,
-    brandLogos: {
-      light: state.logoLight || null,
-      dark: state.logoDark || null,
-      accent: state.logoAccent || null,
-    },
-    selectedBrandFont: state.fontPrimary || null,
-    brandFonts: {
-      primary: state.fontPrimary || null,
-      secondary: state.fontSecondary || null,
-    },
+    // Brand: send the first logo as default, plus all variants
+    selectedLogo: (state.logos && state.logos.length > 0) ? state.logos[0].value : null,
+    brandLogos: state.logos,
+    selectedBrandFont: (state.typography && state.typography.length > 0) ? state.typography[0].value : null,
+    brandFonts: state.typography,
     selectedBrandColors: Array.from(state.selectedColors.values()),
     availableComponents: state.allComponents,
     availableColorVariables: state.allColors,
@@ -147,6 +153,8 @@ async function generateDesign(command, context) {
     mentions: context.mentions || [],
     designSystem: state.designSystem || undefined,
     brandGuideline: state.brandGuideline || undefined,
+    designTokens: state.designTokens || undefined,
+    selectedUIComponents: state.selectedUIComponents || undefined,
     attachments: (context.attachments || []).map(att => ({
       name: att.name,
       mimeType: att.mimeType,
@@ -368,15 +376,22 @@ function openExternal(url) {
 
 /**
  * Login with email/password → gets JWT token
- * Reuses existing /api/auth/signin endpoint
+ * Handles the plugin local authentication
  */
-async function authLogin(email, password) {
+async function authLogin(email, password, rememberMe = true) {
   try {
     const result = await apiCall('/auth/signin', 'POST', { email, password });
     if (result.token) {
       setState('authToken', result.token);
       setState('authEmail', email);
-      saveAuthToken(result.token);
+
+      if (rememberMe) {
+        saveAuthToken(result.token);
+      } else {
+        // Clear explicitly so that if they reopen the plugin, they are asked to log in again
+        saveAuthToken('');
+      }
+
       await fetchAuthStatus();
       eventBus.emit('auth:login-success', { email });
       return { success: true };

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { SEO } from '../components/SEO';
@@ -12,17 +12,28 @@ import {
   BreadcrumbSeparator,
 } from "../components/ui/breadcrumb";
 import { cn } from '../lib/utils';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Lock, Sparkles, Zap, Image as ImageIcon, Edit3, Plus, Database } from 'lucide-react';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
+import { motion, AnimatePresence } from 'framer-motion';
+import { appsService, AppConfig } from '@/services/appsService';
+import { AppEditDialog } from '@/components/AppEditDialog';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export const AppsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { hasAccess, isLoading: isAccessLoading } = usePremiumAccess();
-  const { onSubscriptionModalOpen } = useLayout();
+  const { onSubscriptionModalOpen, user } = useLayout();
+  const isAdmin = user?.isAdmin === true;
 
-  const appsData = useMemo(() => [
+  const [apps, setApps] = useState<AppConfig[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingApp, setEditingApp] = useState<AppConfig | undefined>(undefined);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const staticAppsData = useMemo(() => [
     {
       id: 'mockup-machine',
       name: t('apps.mockupMachine.name'),
@@ -30,6 +41,7 @@ export const AppsPage: React.FC = () => {
       link: '/',
       badge: t('apps.badge.featured'),
       badgeVariant: 'featured',
+      thumbnail: '/tools/mockup-machine.png',
       category: 'mockup',
       free: false,
       span: 'lg:col-span-2 lg:row-span-1'
@@ -41,6 +53,7 @@ export const AppsPage: React.FC = () => {
       link: '/branding-machine',
       badge: t('apps.badge.premium'),
       badgeVariant: 'premium',
+      thumbnail: '/tools/branding-machine.png',
       category: 'design',
       free: false,
       span: 'lg:col-span-2 lg:row-span-1'
@@ -52,6 +65,7 @@ export const AppsPage: React.FC = () => {
       link: '/brand-guidelines',
       badge: t('apps.badge.premium'),
       badgeVariant: 'premium',
+      thumbnail: '/tools/brand-guidelines.png',
       category: 'design',
       free: false,
       span: 'lg:col-span-2 lg:row-span-1'
@@ -63,6 +77,7 @@ export const AppsPage: React.FC = () => {
       link: '/canvas',
       badge: t('apps.badge.premium'),
       badgeVariant: 'premium',
+      thumbnail: '/tools/canvas.png',
       category: 'design',
       free: false,
       span: 'lg:col-span-1 lg:row-span-1'
@@ -74,6 +89,7 @@ export const AppsPage: React.FC = () => {
       link: '/budget-machine',
       badge: t('apps.badge.comingSoon'),
       badgeVariant: 'comingSoon',
+      thumbnail: '/tools/budget-machine.png',
       category: 'design',
       free: false,
       span: 'lg:col-span-1 lg:row-span-1'
@@ -168,20 +184,63 @@ export const AppsPage: React.FC = () => {
     }
   ], [t]);
 
+  const fetchApps = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await appsService.getAll();
+      if (data.length === 0 && isAdmin) {
+        // Auto seed if empty and user is admin
+        await appsService.seed(staticAppsData);
+        const seededData = await appsService.getAll();
+        setApps(seededData);
+      } else if (data.length === 0) {
+        // Fallback to static data if not admin and DB is empty
+        setApps(staticAppsData as any);
+      } else {
+        setApps(data);
+      }
+    } catch (error) {
+      console.error('Error fetching apps:', error);
+      setApps(staticAppsData as any);
+      toast.error('Failed to load apps from database, using offline mode');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isAdmin, staticAppsData]);
+
+  useEffect(() => {
+    fetchApps();
+  }, [fetchApps]);
+
   const CATEGORIES = useMemo(() => [
-    { key: 'design', title: t('apps.brandingTools') },
-    { key: 'mockup', title: 'MOCKUP LABS //' },
-    { key: 'effects', title: t('apps.effectsTools') },
-    { key: 'audio', title: t('apps.audioTools') },
-    { key: 'experimental', title: 'EXPERIMENTAL //' }
+    { key: 'design', title: t('apps.brandingTools'), icon: Sparkles },
+    { key: 'mockup', title: 'MOCKUP LABS //', icon: Zap },
+    { key: 'effects', title: t('apps.effectsTools'), icon: ImageIcon },
+    { key: 'audio', title: t('apps.audioTools'), icon: Zap },
+    { key: 'experimental', title: 'EXPERIMENTAL //', icon: Sparkles }
   ], [t]);
 
   const appsByCategory = useMemo(() => {
     return CATEGORIES.map(cat => ({
       ...cat,
-      apps: appsData.filter(app => app.category === cat.key)
+      apps: apps.filter(app => app.category === cat.key)
     })).filter(cat => cat.apps.length > 0);
-  }, [appsData, CATEGORIES]);
+  }, [apps, CATEGORIES]);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants: any = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  };
 
   return (
     <>
@@ -191,131 +250,257 @@ export const AppsPage: React.FC = () => {
         keywords={t('apps.seoKeywords')}
       />
       <div className="min-h-screen bg-[#050505] text-neutral-300 relative overflow-hidden pb-32 pt-10 md:pt-14">
-        <div className="fixed inset-0 z-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,186,227,0.05),transparent_50%)]" />
+        {/* Dynamic Sexy Background */}
+        <div className="fixed inset-0 z-0">
+          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-brand-cyan/10 blur-[120px] rounded-full opacity-20 animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/5 blur-[120px] rounded-full opacity-20" />
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
+        </div>
         
         <div className="max-w-6xl mx-auto px-6 py-12 relative z-10">
-          <div className="mb-16">
-            <Breadcrumb className="mb-8">
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/" className="text-neutral-500 hover:text-brand-cyan transition-colors text-xs font-mono tracking-widest">{t('apps.home')}</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="text-neutral-700" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage className="text-neutral-400 text-xs font-mono tracking-widest uppercase">{t('apps.title')}</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="mb-20 flex justify-between items-end"
+          >
+            <div>
+              <Breadcrumb className="mb-10">
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link to="/" className="text-neutral-500 hover:text-brand-cyan transition-colors text-[10px] font-mono tracking-[0.2em]">{t('apps.home')}</Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="text-neutral-800" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="text-neutral-400 text-[10px] font-mono tracking-[0.2em] uppercase">{t('apps.title')}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
 
-            <div className="space-y-4">
-              <h1 className="text-4xl md:text-6xl font-bold font-redhatmono text-neutral-100 tracking-tightest leading-none">
-                {t('apps.title')} <span className="text-brand-cyan/40">/</span> LABS
-              </h1>
-              <p className="text-neutral-500 font-mono text-sm max-w-xl leading-relaxed opacity-70">
-                {t('apps.subtitle')}
-              </p>
+              <div className="space-y-6">
+                <motion.h1 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="text-5xl md:text-8xl font-black font-redhatmono text-white tracking-tighter leading-[0.9] flex flex-col md:flex-row md:items-baseline gap-2"
+                >
+                  <span>{t('apps.title')}</span> <span className="bg-gradient-to-r from-brand-cyan to-brand-cyan/20 bg-clip-text text-transparent">/ LABS</span>
+                </motion.h1>
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1, delay: 0.4 }}
+                  className="text-neutral-400 font-mono text-sm max-w-xl leading-relaxed border-l border-brand-cyan/30 pl-6 py-1"
+                >
+                  {t('apps.subtitle')}
+                </motion.p>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-24">
+            {isAdmin && (
+              <Button 
+                onClick={() => {
+                  setEditingApp(undefined);
+                  setIsDialogOpen(true);
+                }}
+                className="bg-white/5 hover:bg-white/10 border border-white/10 text-white font-mono text-[10px] tracking-widest gap-2 h-12 px-6 backdrop-blur-sm"
+              >
+                <Plus size={14} className="text-brand-cyan" />
+                ADD NEW APP //
+              </Button>
+            )}
+          </motion.div>
+
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-32"
+          >
             {appsByCategory.map((category) => (
-              <section key={category.key} className="space-y-8">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-[10px] uppercase font-mono tracking-[0.3em] text-brand-cyan/60 font-bold whitespace-nowrap">
-                    {category.title}
-                  </h2>
-                  <div className="h-[1px] w-full bg-gradient-to-r from-neutral-800/100 to-transparent" />
+              <section key={category.key} className="space-y-12">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-full border border-white/10 backdrop-blur-sm">
+                    <category.icon size={12} className="text-brand-cyan" />
+                    <h2 className="text-[10px] uppercase font-mono tracking-[0.3em] text-neutral-300 font-bold whitespace-nowrap">
+                      {category.title}
+                    </h2>
+                  </div>
+                  <div className="h-[1px] flex-grow bg-gradient-to-r from-neutral-800/80 to-transparent" />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   {category.apps.map((app) => {
                     const isComingSoon = app.badgeVariant === 'comingSoon';
                     const isPremium = app.badgeVariant === 'premium';
+                    const description = app.description || (app as any).desc;
+                    const thumbnail = app.thumbnail;
+
                     return (
-                      <div
-                        key={app.id}
-                        onClick={() => {
-                          if (isComingSoon) return;
-                          if (isPremium && !hasAccess) {
-                            onSubscriptionModalOpen();
-                            return;
-                          }
-                          if (app.isExternal) {
-                            window.open(app.link, '_blank');
-                          } else {
-                            navigate(app.link);
-                          }
-                        }}
+                      <motion.div
+                        key={app.id || app.appId}
+                        variants={itemVariants}
                         className={cn(
-                          "group relative bg-[#0A0A0A] border border-neutral-800/40 rounded-sm overflow-hidden transition-all duration-300",
-                          !isComingSoon ? "hover:border-brand-cyan/40 hover:bg-[#0D0D0D] cursor-pointer" : "opacity-40 grayscale pointer-events-none"
+                          "group relative bg-[#0A0A0A] border border-white/5 rounded-2xl overflow-hidden transition-all duration-500",
+                          !isComingSoon ? "hover:border-brand-cyan/30 hover:shadow-[0_0_40px_-15px_rgba(0,186,227,0.2)] cursor-pointer" : "opacity-40 grayscale pointer-events-none"
                         )}
                       >
-                        {/* Interactive BG Glow */}
-                        <div className="absolute inset-0 bg-brand-cyan/0 group-hover:bg-brand-cyan/[0.02] transition-colors duration-500" />
+                        {/* Thumbnail Area */}
+                        <div 
+                          className="aspect-[16/10] relative overflow-hidden bg-neutral-900"
+                          onClick={() => {
+                            if (isComingSoon) return;
+                            if (isPremium && !hasAccess) {
+                              onSubscriptionModalOpen();
+                              return;
+                            }
+                            if (app.isExternal) {
+                              window.open(app.link, '_blank');
+                            } else {
+                              navigate(app.link);
+                            }
+                          }}
+                        >
+                           {thumbnail ? (
+                             <img 
+                               src={thumbnail} 
+                               alt={app.name}
+                               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                             />
+                           ) : (
+                             <div className="w-full h-full flex items-center justify-center text-neutral-800">
+                               <ImageIcon size={40} />
+                             </div>
+                           )}
+                           <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                           
+                           {/* Premium Indicator */}
+                           {isPremium && !hasAccess && (
+                             <div className="absolute top-4 right-4 z-20">
+                                <div className="bg-black/60 backdrop-blur-md border border-white/20 p-2 rounded-full text-brand-cyan shadow-lg animate-bounce-slow">
+                                  <Lock size={14} />
+                                </div>
+                             </div>
+                           )}
+                        </div>
                         
-                        <div className="p-6 relative z-10 space-y-4">
+                        {/* Admin Controls Area */}
+                        {isAdmin && (
+                          <div className="absolute top-4 left-4 z-30 flex gap-2">
+                             <button 
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 setEditingApp(app);
+                                 setIsDialogOpen(true);
+                               }}
+                               className="bg-black/80 backdrop-blur-md border border-white/20 p-2 rounded-full text-brand-cyan hover:scale-110 transition-transform shadow-xl"
+                               title="Edit App"
+                             >
+                               <Edit3 size={12} />
+                             </button>
+                             {app.databaseInfo && (
+                               <div 
+                                 className="bg-brand-cyan/20 backdrop-blur-md border border-brand-cyan/40 px-2 py-1 rounded-full text-brand-cyan flex items-center gap-1.5 shadow-xl"
+                                 title={app.databaseInfo}
+                               >
+                                 <Database size={10} />
+                                 <span className="text-[8px] font-mono font-bold truncate max-w-[80px]">{app.databaseInfo}</span>
+                               </div>
+                             )}
+                          </div>
+                        )}
+
+                        <div 
+                          className="p-6 relative z-10 space-y-4"
+                          onClick={() => {
+                            if (isComingSoon) return;
+                            if (isPremium && !hasAccess) {
+                              onSubscriptionModalOpen();
+                              return;
+                            }
+                            if (app.isExternal) {
+                              window.open(app.link, '_blank');
+                            } else {
+                              navigate(app.link);
+                            }
+                          }}
+                        >
                           <div className="flex justify-between items-start gap-3">
                             <div className="space-y-1.5">
-                              <h3 className="text-lg font-bold text-neutral-200 group-hover:text-brand-cyan transition-colors font-manrope">
+                              <h3 className="text-xl font-bold text-neutral-100 group-hover:text-brand-cyan transition-colors font-manrope tracking-tight">
                                 {app.name}
                               </h3>
-                              <p className="text-[11px] text-neutral-500 font-mono leading-relaxed line-clamp-2">
-                                {app.desc}
+                              <p className="text-[11px] text-neutral-500 font-mono leading-relaxed line-clamp-2 min-h-[32px]">
+                                {description}
                               </p>
-                            </div>
-                            
-                            <div className="flex flex-col items-end gap-2 shrink-0">
-                                {isPremium && !hasAccess ? (
-                                    <div className="bg-white/5 border border-white/10 p-1.5 rounded-sm">
-                                        <Badge className="bg-white text-black text-[8px] font-bold px-1.5 py-0 rounded-none tracking-tighter hover:bg-white">
-                                            LOCKED
-                                        </Badge>
-                                    </div>
-                                ) : (
-                                    <div className="p-1 border border-neutral-800/50 rounded-sm group-hover:border-brand-cyan/20 transition-colors">
-                                        <ExternalLink size={10} className="text-neutral-600 group-hover:text-brand-cyan/50" />
-                                    </div>
-                                )}
                             </div>
                           </div>
 
-                          <div className="pt-2 flex items-center justify-between border-t border-neutral-800/40">
+                          <div className="pt-4 flex items-center justify-between border-t border-white/5">
                             <div className="flex gap-2">
-                              {app.badge && (
-                                <span className={cn(
-                                  "text-[8px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-full border",
-                                  app.badgeVariant === 'featured' && "border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5",
-                                  app.badgeVariant === 'premium' && "border-white/10 text-neutral-400 bg-white/5",
-                                  app.badgeVariant === 'free' && "border-neutral-800 text-neutral-500",
-                                  app.badgeVariant === 'comingSoon' && "border-neutral-900 text-neutral-600"
-                                )}>
-                                  {app.badge}
-                                </span>
-                              )}
+                                {isPremium && !hasAccess ? (
+                                    <span className="text-[8px] uppercase font-bold tracking-[0.2em] px-2 py-1 rounded-sm border border-brand-cyan/50 text-brand-cyan bg-brand-cyan/5 flex items-center gap-1.5">
+                                      <Lock size={8} /> PREMIUM ACCESS
+                                    </span>
+                                ) : app.badge && (
+                                    <span className={cn(
+                                      "text-[8px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-full border",
+                                      app.badgeVariant === 'featured' && "border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5",
+                                      app.badgeVariant === 'premium' && "border-teal-500/30 text-teal-400 bg-teal-500/5",
+                                      app.badgeVariant === 'free' && "border-neutral-800 text-neutral-500",
+                                      app.badgeVariant === 'comingSoon' && "border-neutral-900 text-neutral-600"
+                                    )}>
+                                      {app.badge}
+                                    </span>
+                                )}
                             </div>
                             
-                            <span className="text-[9px] font-mono text-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity translate-x-1 group-hover:translate-x-0 transition-transform">
-                              {app.isExternal ? 'LAUNCH EXTERNAL' : 'OPEN LAB'} _
-                            </span>
+                            <div className="flex items-center gap-1 text-[9px] font-mono text-neutral-600 group-hover:text-brand-cyan transition-colors">
+                              <span className="opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">
+                                {app.isExternal ? 'LAUNCH' : 'ENTER'}
+                              </span>
+                              <ExternalLink size={10} className="translate-x-1 group-hover:translate-x-0 transition-transform" />
+                            </div>
                           </div>
                         </div>
 
-                        {/* Hover Line */}
-                        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-brand-cyan scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
-                      </div>
+                        {/* Hover Gradient Shine */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-brand-cyan/0 via-brand-cyan/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                        
+                        {/* Interactive Line */}
+                        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-brand-cyan origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+                      </motion.div>
                     );
                   })}
                 </div>
               </section>
             ))}
-          </div>
+          </motion.div>
         </div>
+
+        <AppEditDialog 
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+          app={editingApp}
+          onSaved={fetchApps}
+        />
+        
+        {/* Custom animations for bounce */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes bounce-slow {
+            0%, 100% { transform: translateY(-5%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+            50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+          }
+          .animate-bounce-slow {
+            animation: bounce-slow 2s infinite;
+          }
+        `}} />
       </div>
     </>
   );
 };
+
 
 

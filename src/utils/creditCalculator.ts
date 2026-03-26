@@ -10,6 +10,11 @@ export function getCreditsRequired(
   resolution?: Resolution,
   provider?: ImageProvider
 ): number {
+  // Guard against undefined model
+  if (!model) {
+    return 2; // Default fallback
+  }
+
   // Seedream models (via APIFree.ai)
   if (provider === 'seedream' || model.startsWith('seedream')) {
     switch (resolution) {
@@ -22,12 +27,12 @@ export function getCreditsRequired(
     }
   }
 
-  // Gemini models
-  if (model === GEMINI_MODELS.FLASH) {
+  // Gemini image models (FLASH/IMAGE_FLASH, NB2/IMAGE_NB2, PRO/IMAGE_PRO are aliases)
+  if (model === GEMINI_MODELS.FLASH || model === GEMINI_MODELS.IMAGE_FLASH) {
     return 1;
   }
 
-  if (model === GEMINI_MODELS.NB2) {
+  if (model === GEMINI_MODELS.NB2 || model === GEMINI_MODELS.IMAGE_NB2) {
     switch (resolution) {
       case '512px':
         return 1;
@@ -43,7 +48,7 @@ export function getCreditsRequired(
     }
   }
 
-  if (model === GEMINI_MODELS.PRO) {
+  if (model === GEMINI_MODELS.PRO || model === GEMINI_MODELS.IMAGE_PRO) {
     switch (resolution) {
       case '1K':
       case 'HD':

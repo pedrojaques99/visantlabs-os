@@ -4,6 +4,7 @@ import { GlitchLoader } from './ui/GlitchLoader';
 import { subscriptionService, type TransactionRecord } from '../services/subscriptionService';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button'
+import { MicroTitle } from '@/components/ui/MicroTitle'
 
 interface TransactionsModalProps {
   isOpen: boolean;
@@ -103,14 +104,14 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/70 px-4 py-8 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 px-4 py-8 backdrop-blur-md">
       <div className="w-full max-w-3xl bg-[#0F0F0F] border border-neutral-800/60 rounded-xl shadow-2xl relative">
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/60">
           <div>
-            <p className="text-xs uppercase text-neutral-500 font-mono mb-1">
+            <MicroTitle className="text-neutral-500 uppercase mb-1">
               {t('transactions.title')}
-            </p>
-            <h2 className="text-2xl font-semibold text-neutral-100 font-manrope">
+            </MicroTitle>
+            <h2 className="text-2xl font-bold tracking-tight text-neutral-100">
               {t('transactions.subtitle')}
             </h2>
           </div>
@@ -139,8 +140,10 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
             </div>
           ) : (
             groupedTransactions.map(([date, items]) => (
-              <div key={date}>
-                <p className="text-xs uppercase text-neutral-500 font-mono mb-2">{date}</p>
+              <div key={date} className="mb-6 last:mb-0">
+                <MicroTitle className="text-neutral-600 uppercase mb-3 border-b border-neutral-800/20 pb-1">
+                  {date}
+                </MicroTitle>
                 <div className="space-y-3">
                   {items.map((transaction) => (
                     <div

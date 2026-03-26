@@ -34,7 +34,9 @@ import videoRoutes from './routes/video.js';
 import communityRoutes from './routes/community.js';
 import storageRoutes from './routes/storage.js';
 import usersRoutes from './routes/users.js';
+import expertRoutes from './routes/expert.js';
 import llmsRoutes from './routes/llms.js';
+import appRoutes from './routes/apps.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
 import { connectToMongoDB } from './db/mongodb.js';
@@ -194,6 +196,7 @@ app.use(`${routePrefix}/video`, videoRoutes);
 app.use(`${routePrefix}/community`, communityRoutes);
 app.use(`${routePrefix}/storage`, storageRoutes);
 app.use(`${routePrefix}/users`, usersRoutes);
+app.use(`${routePrefix}/apps`, appRoutes);
 console.log(`✅ Video routes registered at: ${routePrefix}/video`);
 console.log(`✅ Community routes registered at: ${routePrefix}/community`);
 console.log(`✅ Images routes registered at: ${routePrefix}/images`);
@@ -243,6 +246,10 @@ app.use(`${routePrefix}/surprise-me`, surpriseMeRoutes);
 // Import API key routes
 import apiKeyRoutes from './routes/apiKeys.js';
 app.use(`${routePrefix}/api-keys`, apiKeyRoutes);
+
+// Import expert routes
+app.use(`${routePrefix}/expert`, expertRoutes);
+console.log(`✅ Expert routes registered at: ${routePrefix}/expert`);
 
 // ═══ Platform MCP Server (Streamable HTTP transport for Claude Connectors) ═══
 import { createPlatformMcpServer, setMcpUserId } from './mcp/platform-mcp.js';

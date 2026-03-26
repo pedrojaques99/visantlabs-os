@@ -66,7 +66,22 @@
       "Bash(xargs wc:*)",
       "Bash(wc -l /z/Cursor/visantlabs-os/server/mcp/*.ts)",
       "Bash(npx:*)",
-      "Skill(gsd:new-project)"
+      "Skill(gsd:new-project)",
+      "Bash(wc -l \"Z:/Cursor/visantlabs-os/plugin/src/handlers/\"*.ts)",
+      "Bash(wc -l \"Z:/Cursor/visantlabs-os/plugin/src/utils/\"*.ts)",
+      "Bash(grep -A 2 '\"\"@google/genai\"\"' package.json)",
+      "mcp__claude_ai_Context7__resolve-library-id",
+      "Bash(curl -s http://localhost:3001/api/health)",
+      "Bash(curl:*)",
+      "Bash(find /z/cursor/visantlabs-os -path */server/routes/*.ts -o -path */server/services/*.ts -o -path */src/services/*.ts)",
+      "mcp__claude_ai_Figma__get_metadata",
+      "Bash(find /z/cursor/visantlabs-os/src /z/cursor/visantlabs-os/server -name *.ts -o -name *.tsx)",
+      "mcp__claude_ai_Linear__list_projects",
+      "mcp__claude_ai_Linear__list_issues",
+      "Bash(jq -r \".[0].text | fromjson | .issues[] | select\\(.status != \"\"Feito!\"\" and .status != \"\"Cancelado\"\"\\) | \"\"\\\\\\(.id\\) | \\\\\\(.status\\) | \\\\\\(.priority.name // \"\"None\"\"\\) | \\\\\\(.title\\)\"\"\")",
+      "mcp__claude_ai_Linear__get_issue",
+      "mcp__claude_ai_Figma__use_figma",
+      "mcp__claude_ai_Figma__get_screenshot"
     ]
   }
 }

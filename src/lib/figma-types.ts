@@ -335,6 +335,19 @@ export type FigmaOperation =
     fills?: FigmaPaint[];
   }
   | {
+    type: 'SET_TEXT_STYLE';
+    nodeId: string;
+    fontSize?: number;
+    fontFamily?: string;
+    fontStyle?: string;
+    textAutoResize?: 'NONE' | 'WIDTH_AND_HEIGHT' | 'HEIGHT' | 'TRUNCATE';
+    textAlignHorizontal?: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED';
+    textAlignVertical?: 'TOP' | 'CENTER' | 'BOTTOM';
+    lineHeight?: { value: number; unit: 'PIXELS' | 'PERCENT' | 'AUTO' };
+    letterSpacing?: { value: number; unit: 'PIXELS' | 'PERCENT' };
+    fills?: FigmaPaint[];
+  }
+  | {
     type: 'SET_OPACITY';
     nodeId: string;
     opacity: number;
@@ -464,7 +477,21 @@ export type FigmaOperation =
   | { type: 'GET_SCREENSHOT'; nodeId?: string }
   | { type: 'SEARCH_DESIGN_SYSTEM'; query: string }
   | { type: 'GET_CODE_CONNECT_MAP' }
-  | { type: 'ADD_CODE_CONNECT_MAP'; nodeId: string; componentName: string; filePath: string };
+  | { type: 'ADD_CODE_CONNECT_MAP'; nodeId: string; componentName: string; filePath: string }
+  | { type: 'GET_AGENT_COMPONENTS' }
+  // ═══ AGENT LIBRARY SCAFFOLD ═══
+  | {
+    type: 'SCAFFOLD_AGENT_LIBRARY';
+    brand: {
+      name: string;
+      primary: { r: number; g: number; b: number };
+      secondary?: { r: number; g: number; b: number };
+      background: { r: number; g: number; b: number };
+      text: { r: number; g: number; b: number };
+      fontFamily: string;
+      fontStyle?: string;
+    };
+  };
 
 // ── Serialized context ──
 
@@ -555,6 +582,8 @@ export type ColorVariable = {
 export type FontVariable = {
   id: string;
   name: string;
+  family?: string;
+  style?: string;
 };
 
 export type AvailableLayer = {
@@ -671,11 +700,53 @@ export interface BrandGuideline {
   isPublic?: boolean
 }
 
+// ── Agent Component System ──
+
+export interface AgentComponentMetadata {
+  intents: string[];      // @agent:intent values
+  slots: string[];        // @agent:slots values
+  formats: string[];      // @agent:format values
+  requires: string[];     // @agent:requires values
+}
+
+export interface AgentComponent {
+  id: string;
+  key: string;
+  name: string;           // "Post/Promotional"
+  category: string;       // "Posts"
+  type: string;           // "Promotional"
+  metadata: AgentComponentMetadata;
+  width: number;
+  height: number;
+  thumbnail?: string;
+}
+
+export interface LayoutIntent {
+  type: 'post' | 'card' | 'header' | 'story' | 'slide' | 'custom';
+  subtype?: string;       // "promotional", "testimonial", etc.
+  content: {
+    title?: string;
+    subtitle?: string;
+    body?: string;
+    cta?: string;
+    discount?: string;
+    image?: string;       // URL or "placeholder"
+  };
+  format?: string;        // "instagram-feed", "linkedin-post", etc.
+}
+
+export interface LayoutResult {
+  operations: FigmaOperation[];
+  strategy: 'reuse_component' | 'clone_template' | 'create_from_scratch';
+  usedAsset?: { type: 'component' | 'template'; id: string; name: string };
+}
+
 // ── UI → Sandbox messages ──
 
 export type UIMessage =
   | { type: 'GET_CONTEXT' }
   | { type: 'USE_SELECTION_AS_LOGO' }
+  | { type: 'USE_SELECTION_AS_FONT' }
   | { type: 'APPLY_OPERATIONS'; payload: FigmaOperation[] }
   | { type: 'APPLY_OPERATIONS_FROM_API'; operations: FigmaOperation[] }
   | {
@@ -719,13 +790,34 @@ export type UIMessage =
   // Undo
   | { type: 'UNDO_LAST_BATCH' }
   // Template Scanning
-  | { type: 'GET_TEMPLATES'; requestId?: string };
+  | { type: 'GET_TEMPLATES'; requestId?: string }
+  // Agent Components
+  | { type: 'GET_AGENT_COMPONENTS' }
+  // Local Brand Config
+  | { type: 'SAVE_LOCAL_BRAND_CONFIG'; config: any }
+  | { type: 'GET_LOCAL_BRAND_CONFIG' }
+  // Capture component
+  | { type: 'CAPTURE_COMPONENT_SELECTION' }
+  // Agent Library Scaffold
+  | {
+    type: 'SCAFFOLD_AGENT_LIBRARY';
+    brand: {
+      name: string;
+      primary: { r: number; g: number; b: number };
+      secondary?: { r: number; g: number; b: number };
+      background: { r: number; g: number; b: number };
+      text: { r: number; g: number; b: number };
+      fontFamily: string;
+      fontStyle?: string;
+    };
+  };
 
 // ── Sandbox → UI messages ──
 
 export type PluginMessage =
   | { type: 'CONTEXT'; payload: SerializedContext }
   | { type: 'OPERATIONS_DONE'; count?: number; summary?: string }
+  | { type: 'OP_PROGRESS'; current: number; total: number; opType: string; opName: string; status: 'applying' | 'done' | 'error'; error?: string }
   | { type: 'ERROR'; message: string }
   | {
     type: 'CONTEXT_UPDATED';
@@ -759,4 +851,8 @@ export type PluginMessage =
   | { type: 'SEARCH_DS_RESULT'; results: any }
   | { type: 'CODE_CONNECT_RESULT'; mappings: any }
   // Template Scanning
-  | { type: 'TEMPLATES_RESULT'; requestId?: string; templates: TemplateSpec[] };
+  | { type: 'TEMPLATES_RESULT'; requestId?: string; templates: TemplateSpec[] }
+  // Agent Components
+  | { type: 'AGENT_COMPONENTS_RESULT'; components: any[] }
+  // Agent Library Scaffold
+  | { type: 'SCAFFOLD_COMPLETE'; message: string; components: Array<{ name: string; key: string }> };

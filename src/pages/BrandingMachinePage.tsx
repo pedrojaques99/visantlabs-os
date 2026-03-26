@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { BrandingWelcomeScreen } from '../components/branding/BrandingWelcomeScreen';
 import { BrandingMoodboard } from '../components/branding/BrandingMoodboard';
+import { BrandingExpertChat } from '../components/branding/BrandingExpertChat';
 import { ConfirmationModal } from '../components/ConfirmationModal';
-import { Target as BowArrow } from 'lucide-react';
+import { Target as BowArrow, Sparkles } from 'lucide-react';
 import { authService } from '../services/authService';
 import { brandingApi } from '../services/brandingApi';
 import { subscriptionService } from '../services/subscriptionService';
@@ -45,6 +46,7 @@ export const BrandingMachinePage: React.FC = () => {
     stepNumber: number;
     missingDeps: number[];
   } | null>(null);
+  const [isExpertChatOpen, setIsExpertChatOpen] = useState(false);
   const loadedProjectIdRef = useRef<string | null>(null);
 
   const STEPS = [
@@ -799,6 +801,17 @@ export const BrandingMachinePage: React.FC = () => {
             </div>
           )}
         </div>
+      )}
+
+      {/* Floating Expert Chat Button */}
+      {currentStep !== 0 && (
+        <button
+          onClick={() => navigate(`/branding-expert${currentProjectId ? `?projectId=${currentProjectId}` : ''}`)}
+          className="fixed bottom-20 right-6 z-40 w-12 h-12 bg-brand-gradient text-white rounded-full shadow-lg hover:shadow-brand-cyan/20 transition-all hover:scale-110 active:scale-95 flex items-center justify-center group"
+          title="Falar com Especialista"
+        >
+          <Sparkles size={20} className="group-hover:rotate-12 transition-transform" />
+        </button>
       )}
     </>
   );

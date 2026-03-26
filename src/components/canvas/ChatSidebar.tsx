@@ -1,22 +1,20 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { ChevronRight, MessageSquare, X, FileText, Image as ImageIcon, CheckCircle2, Target, ChevronDown, ChevronUp, Sparkles, Plus, Wand2, Layers, Paperclip, Copy, Check, Settings2, Send } from 'lucide-react';
-import type { ChatNodeData, FlowNodeType } from '@/types/reactFlow';
+import { MessageSquare, FileText, Image as ImageIcon, CheckCircle2, Target, ChevronDown, ChevronUp, Sparkles, Settings2 } from 'lucide-react';
+import type { ChatNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
 import { ConnectedImagesDisplay } from '../reactflow/ConnectedImagesDisplay';
 import { getMessagesUntilNextCredit } from '@/utils/creditCalculator';
-import { MarkdownRenderer } from '@/utils/markdownRenderer';
-import { parseActionsFromResponse, type DetectedAction } from '@/services/chatService';
 import { toast } from 'sonner';
-import { fileToBase64 } from '@/utils/fileUtils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { GEMINI_MODELS } from '@/constants/geminiModels';
-import { Input } from '@/components/ui/input'
-import { MicroTitle } from '@/components/ui/MicroTitle'
+import { Input } from '@/components/ui/input';
+import { MicroTitle } from '@/components/ui/MicroTitle';
+import { Textarea } from '@/components/ui/textarea';
+import { fileToBase64 } from '@/utils/fileUtils';
 
+import { ChatMessage } from '../shared/chat/ChatMessage';
+import { ChatInput } from '../shared/chat/ChatInput';
 
 interface ChatSidebarProps {
   nodeData: ChatNodeData;
@@ -25,181 +23,6 @@ interface ChatSidebarProps {
   variant?: 'standalone' | 'stacked' | 'embedded';
   sidebarRef?: React.RefObject<HTMLElement>;
 }
-
-// Auto-resize textarea component (reused from ChatNode)
-const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
-  minHeight?: number;
-  maxHeight?: number;
-  onWheel?: (e: React.WheelEvent<HTMLTextAreaElement>) => void;
-}>(({ onChange, minHeight = 40, maxHeight = 400, onWheel, ...props }, ref) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const combinedRef = (node: HTMLTextAreaElement | null) => {
-    textareaRef.current = node;
-    if (typeof ref === 'function') {
-      ref(node);
-    } else if (ref) {
-      ref.current = node;
-    }
-  };
-
-  const adjustHeight = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      const newHeight = Math.max(textarea.scrollHeight, minHeight);
-      textarea.style.height = `${Math.min(newHeight, maxHeight)}px`;
-    }
-  }, [minHeight, maxHeight]);
-
-  useEffect(() => {
-    adjustHeight();
-  }, [props.value, adjustHeight]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    adjustHeight();
-    onChange?.(e);
-  };
-
-  return (
-    <Textarea
-      {...props}
-      ref={combinedRef}
-      onChange={handleChange}
-      onWheel={onWheel}
-      className={cn(props.className, 'overflow-y-auto')}
-      style={{
-        ...props.style,
-        minHeight: `${minHeight}px`,
-        maxHeight: `${maxHeight}px`,
-      }}
-    />
-  );
-});
-
-AutoResizeTextarea.displayName = 'AutoResizeTextarea';
-
-/**
- * Icon mapping for different action types
- */
-const getActionIcon = (type: DetectedAction['type']) => {
-  switch (type) {
-    case 'prompt': return <Wand2 size={10} />;
-    case 'mockup': return <Layers size={10} />;
-    case 'strategy': return <Target size={10} />;
-    case 'text': return <FileText size={10} />;
-    default: return <Plus size={10} />;
-  }
-};
-
-const getActionColor = (type: DetectedAction['type']) => {
-  switch (type) {
-    case 'prompt': return 'text-purple-400 border-purple-400/30 bg-purple-400/10 hover:bg-purple-400/20';
-    case 'mockup': return 'text-brand-cyan border-[brand-cyan]/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
-    case 'strategy': return 'text-amber-400 border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20';
-    case 'text': return 'text-green-400 border-green-400/30 bg-green-400/10 hover:bg-green-400/20';
-    default: return 'text-neutral-400 border-neutral-400/30 bg-neutral-400/10 hover:bg-neutral-400/20';
-  }
-};
-
-/**
- * Component to detect and display actionable suggestions from AI messages
- */
-const ActionDetector = ({
-  content,
-  onAddPrompt,
-  onCreateNode,
-  nodeId,
-  t
-}: {
-  content: string;
-  onAddPrompt?: (nodeId: string, prompt: string) => void;
-  onCreateNode?: (chatNodeId: string, nodeType: FlowNodeType, initialData?: any, connectToChat?: boolean) => string | undefined;
-  nodeId: string;
-  t: any;
-}) => {
-  const actions = useMemo(() => {
-    if (!content) return [];
-
-    // First try to parse structured actions
-    const structuredActions = parseActionsFromResponse(content);
-    if (structuredActions.length > 0) {
-      return structuredActions;
-    }
-
-    // Fallback to legacy detection for backwards compatibility
-    const lines = content.split('\n');
-    const results: DetectedAction[] = [];
-
-    lines.forEach(line => {
-      const match = line.match(/^[-*•\d.]*\s*(?:\*\*)?([^*:]+)(?:\*\*)?:\s*(.+)$/i);
-      if (match) {
-        const title = match[1].trim();
-        const description = match[2].trim();
-        if (title.length > 3 && (
-          title.toLowerCase().includes('mockup') ||
-          description.toLowerCase().includes('mockup') ||
-          (description.length > 30 && title.length < 50)
-        )) {
-          results.push({
-            type: 'prompt',
-            title,
-            description,
-            fullPrompt: `${title}: ${description}`
-          });
-        }
-      }
-    });
-    return results;
-  }, [content]);
-
-  const handleActionClick = useCallback((action: DetectedAction) => {
-    if (action.type === 'prompt' && onAddPrompt) {
-      onAddPrompt(nodeId, action.fullPrompt);
-    } else if (onCreateNode) {
-      const initialData = action.type === 'prompt'
-        ? { prompt: action.fullPrompt }
-        : action.type === 'text'
-          ? { text: action.fullPrompt }
-          : undefined;
-      onCreateNode(nodeId, action.type, initialData, true);
-    }
-  }, [nodeId, onAddPrompt, onCreateNode]);
-
-  if (actions.length === 0) return null;
-
-  return (
-    <div className="pt-3 border-t border-neutral-700/20 space-y-2.5 min-w-0">
-      <MicroTitle className="text-[10px] text-brand-cyan/80 flex items-center gap-1.5 mb-2 min-w-0">
-        <Sparkles size={11} className="animate-pulse text-brand-cyan shrink-0" />
-        <span className=" truncate">
-          {t('canvasNodes.chatNode.detectedActions') || 'Detected Actions'}
-        </span>
-      </MicroTitle>
-      <div className="flex flex-wrap gap-2 min-w-0">
-        {actions.map((action, i) => (
-          <Button variant="ghost"
-            key={i}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleActionClick(action);
-            }}
-            className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1.5 border rounded-md text-[10px] transition-all group animate-in fade-in slide-in-from-bottom-1 duration-300",
-              "backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]",
-              getActionColor(action.type)
-            )}
-            style={{ animationDelay: `${i * 50}ms` }}
-            title={action.description}
-          >
-            {getActionIcon(action.type)}
-            <span className="max-w-[180px] truncate font-medium">{action.title}</span>
-            <Plus size={8} className="opacity-50 group-hover:opacity-300 group-hover:scale-125 transition-all" />
-          </Button>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 /**
  * Chat Sidebar component
@@ -215,7 +38,6 @@ export const ChatSidebar = ({
   const [inputMessage, setInputMessage] = useState('');
   const messagesAreaRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
-  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [showSystemPromptEditor, setShowSystemPromptEditor] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState(nodeData.systemPrompt || '');
   const [expandedStrategy, setExpandedStrategy] = useState(false);
@@ -223,7 +45,6 @@ export const ChatSidebar = ({
   const actualSidebarRef = sidebarRef || internalSidebarRef;
 
   const isLoading = nodeData.isLoading || false;
-  const model = nodeData.model || GEMINI_MODELS.TEXT;
   const userMessageCount = nodeData.userMessageCount || 0;
   const messages = nodeData.messages || [];
 
@@ -255,8 +76,6 @@ export const ChatSidebar = ({
   useEffect(() => {
     setSystemPrompt(nodeData.systemPrompt || '');
   }, [nodeData.systemPrompt]);
-
-
 
   // Get all connected images
   const connectedImages = [
@@ -342,25 +161,6 @@ export const ChatSidebar = ({
     await nodeData.onSendMessage(nodeId, messageToSend, context);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const handleCopyMessage = useCallback(async (messageId: string, content: string) => {
-    try {
-      await navigator.clipboard.writeText(content);
-      setCopiedMessageId(messageId);
-      toast.success(t('canvasNodes.chatNode.messageCopied') || 'Message copied to clipboard', { duration: 2000 });
-      setTimeout(() => setCopiedMessageId(null), 2000);
-    } catch (error) {
-      console.error('Failed to copy message:', error);
-      toast.error(t('canvasNodes.chatNode.copyFailed') || 'Failed to copy message', { duration: 3000 });
-    }
-  }, [t]);
-
   const handleImageRemove = useCallback((index: number) => {
     const handleMap: Record<number, 'input-1' | 'input-2' | 'input-3' | 'input-4'> = {
       0: 'input-1',
@@ -375,9 +175,7 @@ export const ChatSidebar = ({
     nodeData.onRemoveEdge(nodeId, targetHandle);
   }, [nodeId, nodeData]);
 
-  // Handle media attachment
-  const handleAttachMediaClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleAttachMediaClick = useCallback(() => {
     mediaInputRef.current?.click();
   }, []);
 
@@ -425,7 +223,7 @@ export const ChatSidebar = ({
       console.error('Failed to process media:', error);
       toast.error(error?.message || 'Failed to process image', { duration: 5000 });
     }
-  }, [nodeId, nodeData, t]);
+  }, [nodeId, nodeData, t, fileToBase64]);
 
   return (
     <aside
@@ -455,7 +253,6 @@ export const ChatSidebar = ({
             <h3 className="text-sm font-semibold text-neutral-200 font-mono tracking-tight truncate">{t('canvasNodes.chatNode.title')}</h3>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-
             <Button variant="ghost" onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
               className={cn(
                 "p-2 rounded-md border transition-all bg-neutral-900/60 border-neutral-700/40 text-neutral-400 hover:border-neutral-600/60 hover:text-neutral-200 hover:bg-neutral-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95",
@@ -490,28 +287,107 @@ export const ChatSidebar = ({
                 </Button>
               </div>
             </div>
-            <AutoResizeTextarea
+            <Textarea
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
               placeholder={t('canvasNodes.chatNode.systemPromptPlaceholder') || 'Enter custom system prompt to personalize the agent personality. Leave empty to use default.'}
               className="resize-none bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm text-xs font-mono min-h-[120px] max-h-[300px]"
-              minHeight={120}
-              maxHeight={300}
               disabled={isLoading}
             />
-            <MicroTitle className="text-[10px] mt-2 "> {t('canvasNodes.chatNode.systemPromptHint') || 'This prompt defines how the AI assistant behaves. Use it to customize tone, style, and expertise.'} </MicroTitle> </div>)} {/* Credit Indicator */} <div className="px-4 py-2.5 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30 backdrop-blur-sm"> <div className="flex items-center justify-between text-xs mb-2"> <span className="text-neutral-300 font-medium"> {t('canvasNodes.chatNode.messages')}: <span className="text-brand-cyan">{userMessageCount}</span> </span> <span className="text-neutral-400 text-[10px]"> {t('canvasNodes.chatNode.nextCreditIn')} {messagesUntilNextCredit} {messagesUntilNextCredit > 1 ? t('canvasNodes.chatNode.messagesPlural') : t('canvasNodes.chatNode.message')} </span> </div> <div className="h-1.5 bg-neutral-800/40 rounded-full overflow-hidden shadow-inner"> <div className="h-full bg-gradient-to-r from-brand-cyan to-brand-cyan/80 transition-all duration-300 ease-out shadow-sm" style={{ width: `${((userMessageCount % 4) / 4) * 100}%` }} /> </div> </div> {/* Messages Area */} <div ref={messagesAreaRef} className="flex-1 p-4 overflow-y-auto overflow-x-hidden space-y-4 min-h-0 min-w-0 scroll-smooth bg-gradient-to-b from-transparent via-neutral-900/10 to-transparent" onWheel={(e) => e.stopPropagation()} > {messages.length === 0 ? (<div className="text-center text-sm text-muted-foreground py-12"> {hasContext ? (<div className="space-y-3"> <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 mb-2"> <MessageSquare size={20} className="text-brand-cyan/70" /> </div> <p className="text-neutral-300 font-medium">{t('canvasNodes.chatNode.startConversationWithContext')}</p> <p className="text-xs ">{t('canvasNodes.chatNode.chatWillUseImagesAndTexts')}</p> </div>) : (<div className="space-y-3"> <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-neutral-800/50 border border-neutral-700/30 mb-2"> <MessageSquare size={20} className="" /> </div> <p className="text-neutral-300 font-medium">{t('canvasNodes.chatNode.startConversationWithAI')}</p> <p className="text-xs ">{t('canvasNodes.chatNode.connectImagesOrTexts')}</p> </div>)} </div>) : (messages.map((msg) => (<div key={msg.id} className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')} > <Card className={cn("max-w-[85%] min-w-0 p-3.5 rounded-md shadow-sm relative group", msg.role === 'user' ? 'bg-primary text-primary-foreground border-primary/20' : 'bg-muted/80 border-neutral-700/40 backdrop-blur-sm')} > <Button variant="ghost" onClick={(e) => { e.stopPropagation(); handleCopyMessage(msg.id, msg.content); }} className={cn("absolute top-2 right-2 p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-300", "backdrop-blur-sm shadow-sm hover:shadow-md", msg.role === 'user' ? 'bg-primary/20 hover:bg-primary/30 text-primary-foreground/80 hover:text-primary-foreground' : 'bg-neutral-800/60 hover:bg-neutral-700/80 text-neutral-300 hover:text-neutral-100')} title={t('canvasNodes.chatNode.copyMessage') || 'Copy message'} > {copiedMessageId === msg.id ? (<Check size={14} className="text-green-400" />) : (<Copy size={14} />)} </Button> <CardContent className="p-0 min-w-0 select-text"> <div className="text-sm break-words leading-relaxed min-w-0 select-text"> {msg.role === 'assistant' ? (<MarkdownRenderer content={msg.content} preserveLines className="font-sans select-text" />) : (<p className="whitespace-pre-wrap select-text">{msg.content}</p>)} </div> {msg.role === 'assistant' && (nodeData.onAddPromptNode || nodeData.onCreateNode) && (<ActionDetector content={msg.content} nodeId={nodeId} onAddPrompt={nodeData.onAddPromptNode} onCreateNode={nodeData.onCreateNode} t={t} />)} </CardContent> </Card> </div>)))} {isLoading && (<div className="flex justify-start"> <Card className="bg-muted/80 border-neutral-700/40 max-w-[85%] min-w-0 p-3.5 rounded-md backdrop-blur-sm shadow-sm"> <CardContent className="p-0 flex items-center gap-2.5 min-w-0"> <GlitchLoader size={16} color="currentColor" /> <span className="text-sm text-muted-foreground">{t('canvasNodes.chatNode.thinking')}</span> </CardContent> </Card> </div>)} </div> {/* Compact Context Preview at the bottom */} {hasContext && (<div className="px-4 py-3 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm min-w-0"> <div className="flex items-center justify-between gap-4 min-w-0"> <div className="flex items-center gap-3 overflow-x-auto py-0.5 min-w-0 flex-1"> <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 shrink-0  border-r border-neutral-700/40 pr-3 mr-1">
-              <CheckCircle2 size={11} className="text-brand-cyan" />
-              <span className="font-medium">{t('canvasNodes.chatNode.context')}</span>
-            </div>
+            <MicroTitle className="text-[10px] mt-2 "> {t('canvasNodes.chatNode.systemPromptHint') || 'This prompt defines how the AI assistant behaves. Use it to customize tone, style, and expertise.'} </MicroTitle>
+          </div>
+        )}
 
-              {connectedImages.length > 0 && (
-                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-cyan/10 border border-brand-cyan/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
-                  <ImageIcon size={11} className="text-brand-cyan" />
-                  <MicroTitle className="text-[10px] text-brand-cyan font-bold">{connectedImages.length}</MicroTitle> </div>)} {connectedText && (<div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm"> <FileText size={11} className="text-purple-400" /> <span className="text-[10px] text-purple-400 font-bold">{connectedText.length}</span> </div>)} {connectedStrategyData && (<div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm"> <Target size={11} className="text-amber-400" /> <span className="text-[10px] text-amber-400 font-bold">{strategySections.length}</span> </div>)} </div> <div className="flex items-center gap-2 shrink-0"> <Button variant="brand" onClick={handleSuggestMockups} disabled={isLoading} className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/40 rounded-md text-[10px] text-brand-cyan transition-all disabled:opacity-50 tracking-tighter backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
-                  >
-                    <Sparkles size={11} />
-                    <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
-                  </Button>
+        {/* Credit Indicator */}
+        <div className="px-4 py-2.5 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30 backdrop-blur-sm">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="text-neutral-300 font-medium"> {t('canvasNodes.chatNode.messages')}: <span className="text-brand-cyan">{userMessageCount}</span> </span>
+            <span className="text-neutral-400 text-[10px]"> {t('canvasNodes.chatNode.nextCreditIn')} {messagesUntilNextCredit} {messagesUntilNextCredit > 1 ? t('canvasNodes.chatNode.messagesPlural') : t('canvasNodes.chatNode.message')} </span>
+          </div>
+          <div className="h-1.5 bg-neutral-800/40 rounded-full overflow-hidden shadow-inner">
+            <div className="h-full bg-gradient-to-r from-brand-cyan to-brand-cyan/80 transition-all duration-300 ease-out shadow-sm" style={{ width: `${((userMessageCount % 4) / 4) * 100}%` }} />
+          </div>
+        </div>
+
+        {/* Messages Area */}
+        <div ref={messagesAreaRef} className="flex-1 p-4 overflow-y-auto overflow-x-hidden space-y-4 min-h-0 min-w-0 scroll-smooth bg-gradient-to-b from-transparent via-neutral-900/10 to-transparent" onWheel={(e) => e.stopPropagation()} >
+          {messages.length === 0 ? (
+            <div className="text-center text-sm text-muted-foreground py-12">
+              {hasContext ? (
+                <div className="space-y-3">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 mb-2">
+                    <MessageSquare size={20} className="text-brand-cyan/70" />
+                  </div>
+                  <p className="text-neutral-300 font-medium">{t('canvasNodes.chatNode.startConversationWithContext')}</p>
+                  <p className="text-xs ">{t('canvasNodes.chatNode.chatWillUseImagesAndTexts')}</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-neutral-800/50 border border-neutral-700/30 mb-2">
+                    <MessageSquare size={20} className="" />
+                  </div>
+                  <p className="text-neutral-300 font-medium">{t('canvasNodes.chatNode.startConversationWithAI')}</p>
+                  <p className="text-xs ">{t('canvasNodes.chatNode.connectImagesOrTexts')}</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            messages.map((msg) => (
+              <ChatMessage
+                key={msg.id}
+                role={msg.role}
+                content={msg.content}
+                nodeId={nodeId}
+                onAddPrompt={nodeData.onAddPromptNode}
+                onCreateNode={nodeData.onCreateNode}
+                t={t}
+              />
+            ))
+          )}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-muted/80 border-neutral-700/40 max-w-[85%] min-w-0 p-3.5 rounded-md backdrop-blur-sm shadow-sm flex items-center gap-2.5">
+                <GlitchLoader size={16} />
+                <span className="text-sm text-neutral-400">{t('canvasNodes.chatNode.thinking')}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Compact Context Preview at the bottom */}
+        {hasContext && (
+          <div className="px-4 py-3 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm min-w-0">
+            <div className="flex items-center justify-between gap-4 min-w-0">
+              <div className="flex items-center gap-3 overflow-x-auto py-0.5 min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 shrink-0 border-r border-neutral-700/40 pr-3 mr-1">
+                  <CheckCircle2 size={11} className="text-brand-cyan" />
+                  <span className="font-medium">{t('canvasNodes.chatNode.context')}</span>
+                </div>
+
+                {connectedImages.length > 0 && (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-cyan/10 border border-brand-cyan/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                    <ImageIcon size={11} className="text-brand-cyan" />
+                    <MicroTitle className="text-[10px] text-brand-cyan font-bold">{connectedImages.length}</MicroTitle>
+                  </div>
+                )}
+                {connectedText && (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                    <FileText size={11} className="text-purple-400" />
+                    <span className="text-[10px] text-purple-400 font-bold">{connectedText.length}</span>
+                  </div>
+                )}
+                {connectedStrategyData && (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                    <Target size={11} className="text-amber-400" />
+                    <span className="text-[10px] text-amber-400 font-bold">{strategySections.length}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button variant="brand" onClick={handleSuggestMockups} disabled={isLoading} className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/40 rounded-md text-[10px] text-brand-cyan transition-all disabled:opacity-50 tracking-tighter backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95">
+                  <Sparkles size={11} />
+                  <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
+                </Button>
 
                 <Button variant="ghost" onClick={() => setExpandedStrategy(!expandedStrategy)}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 transition-all rounded-md hover:bg-neutral-800/50"
@@ -522,42 +398,42 @@ export const ChatSidebar = ({
               </div>
             </div>
 
-              {/* Expanded Details */}
-              {expandedStrategy && (
-                <div className="mt-3 pt-3 border-t border-neutral-700/20 space-y-3 animate-in slide-in-from-bottom-1 duration-200">
-                  {connectedImages.length > 0 && (
-                    <div className="bg-neutral-900/60 p-2 rounded-md border border-brand-cyan/20 backdrop-blur-sm shadow-sm">
-                      <ConnectedImagesDisplay
-                        images={connectedImages}
-                        label=""
-                        maxThumbnails={4}
-                        onImageRemove={handleImageRemove}
-                        showLabel={false}
-                      />
+            {/* Expanded Details */}
+            {expandedStrategy && (
+              <div className="mt-3 pt-3 border-t border-neutral-700/20 space-y-3 animate-in slide-in-from-bottom-1 duration-200">
+                {connectedImages.length > 0 && (
+                  <div className="bg-neutral-900/60 p-2 rounded-md border border-brand-cyan/20 backdrop-blur-sm shadow-sm">
+                    <ConnectedImagesDisplay
+                      images={connectedImages}
+                      label=""
+                      maxThumbnails={4}
+                      onImageRemove={handleImageRemove}
+                      showLabel={false}
+                    />
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-2">
+                  {connectedText && (
+                    <div className="text-[10px] text-neutral-300 font-mono line-clamp-2 bg-purple-500/10 p-2 rounded-md border border-purple-500/20 backdrop-blur-sm">
+                      <span className="text-purple-400 mr-1.5 uppercase font-semibold">Text:</span>
+                      {connectedText}
                     </div>
                   )}
-
-                  <div className="flex flex-col gap-2">
-                    {connectedText && (
-                      <div className="text-[10px] text-neutral-300 font-mono line-clamp-2 bg-purple-500/10 p-2 rounded-md border border-purple-500/20 backdrop-blur-sm">
-                        <span className="text-purple-400 mr-1.5 uppercase font-semibold">Text:</span>
-                        {connectedText}
-                      </div>
-                    )}
-                    {connectedStrategyData && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {strategySections.map((s, i) => (
-                          <span key={i} className="text-[9px] px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-md font-mono uppercase backdrop-blur-sm shadow-sm">
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  {connectedStrategyData && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {strategySections.map((s, i) => (
+                        <span key={i} className="text-[9px] px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-md font-mono uppercase backdrop-blur-sm shadow-sm">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
             )}
+          </div>
+        )}
 
         {/* Input Area */}
         <div className="p-4 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/40 backdrop-blur-sm relative z-10">
@@ -568,40 +444,17 @@ export const ChatSidebar = ({
             onChange={handleMediaFileChange}
             className="hidden"
           />
-          <div className="flex gap-2.5 min-w-0">
-            {(nodeData.onAttachMedia || nodeData.onCreateNode) && (
-              <Button
-                onClick={handleAttachMediaClick}
-                disabled={isLoading}
-                size="icon"
-                variant="outline"
-                className="self-end shrink-0 border-neutral-700/50 hover:border-brand-cyan/50 hover:bg-brand-cyan/10 text-neutral-400 hover:text-brand-cyan backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all"
-                title={t('canvasNodes.chatNode.attachMedia') || 'Attach Image'}
-              >
-                <Paperclip className="w-4 h-4" />
-              </Button>
-            )}
-            <AutoResizeTextarea
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={hasContext ? t('canvasNodes.chatNode.askAboutContext') : t('canvasNodes.chatNode.typeYourMessage')}
-              className="resize-none bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm min-w-0 flex-1"
-              minHeight={60}
-              maxHeight={200}
-              disabled={isLoading}
-            />
-            <Button variant="brand" onClick={handleSend}
-              disabled={!inputMessage.trim() || isLoading}
-              size="icon"
-              className="self-end shrink-0 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/40 text-brand-cyan hover:text-brand-cyan shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all backdrop-blur-sm"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
+          <ChatInput
+            value={inputMessage}
+            onChange={setInputMessage}
+            onSend={handleSend}
+            isLoading={isLoading}
+            placeholder={hasContext ? t('canvasNodes.chatNode.askAboutContext') : t('canvasNodes.chatNode.typeYourMessage')}
+            showAttach={(nodeData.onAttachMedia || nodeData.onCreateNode) !== undefined}
+            onAttachClick={handleAttachMediaClick}
+          />
         </div>
       </div>
     </aside>
   );
 };
-

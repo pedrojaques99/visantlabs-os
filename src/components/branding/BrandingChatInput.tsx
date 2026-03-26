@@ -2,11 +2,11 @@ import React, { useMemo } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getTotalBrandingCredits } from '@/utils/creditCalculator';
 import { GlassPanel } from '@/components/ui/GlassPanel';
-import { Textarea } from '@/components/ui/textarea';
-import { PremiumButton } from '@/components/ui/PremiumButton';
-import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PremiumButton } from '@/components/ui/PremiumButton';
+import { ChatInput } from '../shared/chat/ChatInput';
+import { cn } from '@/lib/utils';
 
 interface BrandingChatInputProps {
   // Prompt
@@ -53,47 +53,25 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
   return (
     <GlassPanel className="w-full shadow-lg border-white/5" padding="md">
       <div className="space-y-4">
-        {/* Prompt Textarea */}
-        <div className="space-y-2">
-          <Textarea
-            value={promptPreview}
-            onChange={(e) => onPromptChange(e.target.value)}
-            rows={6}
-            className="min-h-[120px] resize-y font-mono text-sm"
-            placeholder={t('branding.promptPlaceholder')}
-          />
-        </div>
+        {/* Chat Input */}
+        <ChatInput
+          value={promptPreview}
+          onChange={onPromptChange}
+          onSend={onGenerateClick}
+          isLoading={isGenerating || isGeneratingPrompt}
+          placeholder={t('branding.promptPlaceholder')}
+          minHeight={120}
+          disabled={isGenerateDisabled}
+        />
 
-        {/* Configurações Compactas */}
-        <div className="space-y-3 pt-2 border-t border-border/5">
-          {/* Créditos Necessários */}
-          {calculatedCredits !== undefined && calculatedCredits > 0 && (
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{t('branding.creditsRequired')}:</span>
-              <Badge variant="secondary">
-                {calculatedCredits} {calculatedCredits === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
-              </Badge>
-            </div>
-          )}
-
-          {/* Botão Generate */}
-          <PremiumButton
-            onClick={onGenerateClick}
-            disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
-            isLoading={isGenerating || isGeneratingPrompt}
-            className="w-full"
-          >
-            {isGeneratingPrompt ? (
-              <span>{t('branding.generatingPrompt')}</span>
-            ) : isGenerating ? (
-              <span>{t('branding.generating')}</span>
-            ) : isPromptReady ? (
-              <span>{t('branding.startAnalysis')}</span>
-            ) : (
-              <span>{t('branding.startAnalysis')}</span>
-            )}
-          </PremiumButton>
-        </div>
+        {/* Credits Badge (if needed) */}
+        {calculatedCredits !== undefined && calculatedCredits > 0 && (
+          <div className="flex items-center justify-end pt-1">
+            <Badge variant="secondary" className="text-[10px] py-0 px-2 h-5">
+              {calculatedCredits} {calculatedCredits === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
+            </Badge>
+          </div>
+        )}
 
         {/* Sugestões de Prompt (se houver) */}
         {promptSuggestions.length > 0 && (

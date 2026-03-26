@@ -57,11 +57,11 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     }
   }, [disabled, selectedModel, onModelChange, resolution, onSyncResolution, onClearAdvancedConfig]);
 
-  // Dynamic model list: Always NB2, and then either HD(FLASH) or PRO
-  // If FLASH is selected, show HD. If PRO is selected or NB2 is selected, show PRO.
+  // Dynamic model list: Always IMAGE_NB2, and then either IMAGE_FLASH or IMAGE_PRO
+  // If IMAGE_FLASH is selected, show it. If IMAGE_PRO is selected or IMAGE_NB2 is selected, show IMAGE_PRO.
   const modelsToShow = [
-    GEMINI_MODELS.NB2,
-    selectedModel === GEMINI_MODELS.FLASH ? GEMINI_MODELS.FLASH : GEMINI_MODELS.PRO
+    GEMINI_MODELS.IMAGE_NB2,
+    selectedModel === GEMINI_MODELS.IMAGE_FLASH ? GEMINI_MODELS.IMAGE_FLASH : GEMINI_MODELS.IMAGE_PRO
   ];
 
   return (
@@ -72,8 +72,9 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       <div className="grid grid-cols-2 gap-2">
         {modelsToShow.map((modelId) => {
           const config = MODEL_CONFIG[modelId];
+          if (!config) return null; // Skip models without config
           const isSelected = selectedModel === modelId;
-          const effectiveResolution = isAdvancedModel(modelId) ? (isSelected ? resolution : config.defaultResolution) : undefined;
+          const effectiveResolution = isAdvancedModel(modelId) ? (isSelected ? resolution : config?.defaultResolution) : undefined;
           const credits = getCreditsRequired(modelId, effectiveResolution);
           const isUnlimited = isGenerationUnlimited({
             model: modelId,
