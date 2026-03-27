@@ -32,17 +32,31 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
   const isLinked = !!guideline.figmaFileUrl;
 
   const handleLink = async () => {
-    if (!figmaUrl.trim() || !guideline.id) return;
+    const trimmedUrl = figmaUrl.trim();
+    if (!trimmedUrl || !guideline.id) return;
 
-    // Basic URL validation
-    if (!figmaUrl.includes('figma.com/')) {
+    // Secure URL validation - parse and validate hostname
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(trimmedUrl);
+    } catch {
+      toast.error('URL inválida. Use uma URL do Figma (figma.com/file/... ou figma.com/design/...)');
+      return;
+    }
+
+    const allowedHosts = ['figma.com', 'www.figma.com'];
+    const isAllowedHost = allowedHosts.includes(parsedUrl.hostname);
+    const path = parsedUrl.pathname || '';
+    const isExpectedPath = path.startsWith('/file/') || path.startsWith('/design/');
+
+    if (!isAllowedHost || !isExpectedPath) {
       toast.error('URL inválida. Use uma URL do Figma (figma.com/file/... ou figma.com/design/...)');
       return;
     }
 
     setIsLinking(true);
     try {
-      const result = await brandGuidelineApi.linkFigmaFile(guideline.id, figmaUrl.trim());
+      const result = await brandGuidelineApi.linkFigmaFile(guideline.id, trimmedUrl);
       onUpdate({
         figmaFileUrl: result.figmaFileUrl,
         figmaFileKey: result.figmaFileKey,
