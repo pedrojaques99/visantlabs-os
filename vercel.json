@@ -40,7 +40,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://*.himetrica.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://www.visantlabs.com https://www.google-analytics.com https://www.googletagmanager.com https://*.google.com https://*.r2.cloudflarestorage.com https://raw.githack.com https://*.himetrica.com; frame-src https://accounts.google.com https://www.visantlabs.com data: blob:; media-src 'self' blob: data:; object-src 'none'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://*.himetrica.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://www.visantlabs.com https://www.google-analytics.com https://www.googletagmanager.com https://*.google.com https://*.r2.cloudflarestorage.com https://raw.githack.com https://raw.githubusercontent.com https://*.himetrica.com; frame-src https://accounts.google.com https://www.visantlabs.com data: blob:; media-src 'self' blob: data:; object-src 'none'"
         }
       ]
     }

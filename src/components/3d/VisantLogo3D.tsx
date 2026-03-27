@@ -118,7 +118,11 @@ export const VisantLogo3D: React.FC = () => {
                 <ambientLight intensity={isMobile ? 1.5 : 1} />
                 <spotLight position={[10, 10, 10]} angle={0.2} penumbra={1} intensity={isMobile ? 50 : 100} color="#ffffff" castShadow={!isMobile} />
                 <MouseLight isMobile={isMobile} />
-                {!isMobile && <Environment preset="city" />}
+                <spotLight position={[-10, 10, 10]} angle={0.2} penumbra={1} intensity={isMobile ? 30 : 60} color="#52ddeb" />
+                {/* To re-enable premium reflections, place potsdamer_platz_1k.hdr in /public/env-maps/ and use:
+                <Environment files="/env-maps/potsdamer_platz_1k.hdr" /> 
+                The preset="city" below is disabled because it tries to fetch from external githack/github CDNs. */}
+                {/* {!isMobile && <Environment preset="city" />} */}
 
                 <PresentationControls
                     global
