@@ -103,7 +103,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
   },
   [GEMINI_MODELS.IMAGE_NB2]: {
     label: 'NB2',
-    emoji: '✨',
+    emoji: '💎',
     maxHandles: 4,
     maxRefImages: 3,
     defaultResolution: '1K',

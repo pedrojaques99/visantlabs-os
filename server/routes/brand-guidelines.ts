@@ -1344,4 +1344,150 @@ router.post('/:id/figma-sync', apiRateLimiter, authenticate, async (req: AuthReq
   }
 })
 
+// ═══ FIGMA REST API ENDPOINTS (without plugin) ═══
+
+import { getFigmaToken } from '../utils/figmaToken.js'
+import { extractDesignTokens, getFileData, parseFigmaUrl } from '../services/figmaRestApi.js'
+
+// GET /api/brand-guidelines/:id/figma-preview — preview what can be extracted from linked file
+router.get('/:id/figma-preview', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+    if (!guideline.figmaFileKey) return res.status(400).json({ error: 'No Figma file linked' })
+
+    const token = await getFigmaToken(req.userId)
+    if (!token) {
+      return res.status(400).json({
+        error: 'Figma token not configured',
+        message: 'Configure seu Figma Personal Access Token nas configurações para usar esta funcionalidade.',
+        needsToken: true,
+      })
+    }
+
+    const tokens = await extractDesignTokens(guideline.figmaFileKey, token)
+
+    res.json({
+      colors: tokens.colors,
+      typography: tokens.typography,
+      components: tokens.components,
+      message: `Found ${tokens.colors.length} colors, ${tokens.typography.length} text styles, ${tokens.components.length} components`,
+    })
+  } catch (error: any) {
+    console.error('[Figma Preview] Error:', error)
+    res.status(500).json({ error: 'Failed to fetch Figma data', message: error.message })
+  }
+})
+
+// POST /api/brand-guidelines/:id/figma-import — import selected data from Figma REST API
+router.post('/:id/figma-import', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+    if (!guideline.figmaFileKey) return res.status(400).json({ error: 'No Figma file linked' })
+
+    const token = await getFigmaToken(req.userId)
+    if (!token) {
+      return res.status(400).json({ error: 'Figma token not configured', needsToken: true })
+    }
+
+    const { importColors, importTypography, selectedLogos } = req.body
+
+    const tokens = await extractDesignTokens(guideline.figmaFileKey, token)
+
+    // Prepare update data
+    const updateData: any = { figmaSyncedAt: new Date() }
+
+    // Import colors if requested
+    if (importColors) {
+      const existingColors = (guideline.colors as any[] || []).filter((c: any) => !c.figmaId)
+      const figmaColors = tokens.colors.map(c => ({ ...c, figmaId: c.hex }))
+      updateData.colors = [...existingColors, ...figmaColors]
+    }
+
+    // Import typography if requested
+    if (importTypography) {
+      const existingTypo = (guideline.typography as any[] || []).filter((t: any) => !t.figmaId)
+      const figmaTypo = tokens.typography.map(t => ({ ...t, figmaId: `${t.family}-${t.role}` }))
+      updateData.typography = [...existingTypo, ...figmaTypo]
+    }
+
+    // Import selected components as logos
+    if (selectedLogos && selectedLogos.length > 0) {
+      const existingLogos = (guideline.logos as any[] || [])
+      const newLogos = tokens.components
+        .filter(c => selectedLogos.includes(c.key))
+        .map(c => ({
+          id: c.key,
+          url: c.thumbnailUrl || '',
+          variant: 'figma',
+          label: c.name,
+          figmaKey: c.key,
+        }))
+      updateData.logos = [...existingLogos, ...newLogos]
+    }
+
+    const updated = await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: updateData,
+    })
+
+    res.json({
+      success: true,
+      imported: {
+        colors: importColors ? tokens.colors.length : 0,
+        typography: importTypography ? tokens.typography.length : 0,
+        logos: selectedLogos?.length || 0,
+      },
+      guideline: { ...updated, _id: updated.id },
+    })
+  } catch (error: any) {
+    console.error('[Figma Import] Error:', error)
+    res.status(500).json({ error: 'Failed to import from Figma', message: error.message })
+  }
+})
+
+// POST /api/brand-guidelines/figma-preview-url — preview any Figma URL (for discovery before linking)
+router.post('/figma-preview-url', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const { figmaUrl } = req.body
+    if (!figmaUrl) return res.status(400).json({ error: 'figmaUrl required' })
+
+    const parsed = parseFigmaUrl(figmaUrl)
+    if (!parsed) return res.status(400).json({ error: 'Invalid Figma URL' })
+
+    const token = await getFigmaToken(req.userId)
+    if (!token) {
+      return res.status(400).json({ error: 'Figma token not configured', needsToken: true })
+    }
+
+    const [fileData, tokens] = await Promise.all([
+      getFileData(parsed.fileKey, token),
+      extractDesignTokens(parsed.fileKey, token),
+    ])
+
+    res.json({
+      fileKey: parsed.fileKey,
+      fileName: fileData.name,
+      lastModified: fileData.lastModified,
+      colors: tokens.colors,
+      typography: tokens.typography,
+      components: tokens.components,
+    })
+  } catch (error: any) {
+    console.error('[Figma Preview URL] Error:', error)
+    res.status(500).json({ error: 'Failed to fetch Figma data', message: error.message })
+  }
+})
+
 export default router

@@ -6,7 +6,7 @@
 
 import type { UIMessage } from '../../src/lib/figma-types';
 import { postToUI } from './utils/postMessage';
-import { serializeSelection, serializePage } from './utils/serialize';
+import { serializeSelection, serializePage, getEnrichedContext } from './utils/serialize';
 import { getAvailableLayers, getElementsForMentions } from './utils/layers';
 import { canUndo, setCanUndo } from './state';
 import {
@@ -204,6 +204,13 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     getAvailableFontFamilies().then((families: any) => {
       postToUI({ type: 'AVAILABLE_FONTS_LOADED', families });
     }).catch(() => {});
+    return;
+  }
+
+  // ── Get enriched context (for AI) ──
+  if (msg.type === 'GET_ENRICHED_CONTEXT') {
+    const context = await getEnrichedContext();
+    postToUI({ type: 'ENRICHED_CONTEXT', payload: context });
     return;
   }
 

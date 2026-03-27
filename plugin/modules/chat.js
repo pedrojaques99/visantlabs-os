@@ -137,21 +137,17 @@ class ChatModule {
 
     // Image Generation Settings Panel
     const genImageSettingsBtn = document.getElementById('genImageSettingsBtn');
-    const genImageSettingsPanel = document.getElementById('genImageSettingsPanel');
-    const genImageSettingsClose = document.getElementById('genImageSettingsClose');
 
-    if (genImageSettingsBtn && genImageSettingsPanel) {
+    if (genImageSettingsBtn) {
       genImageSettingsBtn.addEventListener('click', () => {
-        genImageSettingsPanel.classList.toggle('hidden');
+        if (window.uiManager) {
+          window.uiManager.openConfigSettings();
+          window.uiManager.expandCollapsible('imageGenContent');
+        }
         if (overflowMenu) overflowMenu.classList.add('hidden');
       });
     }
 
-    if (genImageSettingsClose && genImageSettingsPanel) {
-      genImageSettingsClose.addEventListener('click', () => {
-        genImageSettingsPanel.classList.add('hidden');
-      });
-    }
 
     // Frame size selection
     const frameSizeButtons = document.querySelectorAll('.settings-option[data-size]');
@@ -486,7 +482,7 @@ class ChatModule {
     el.className = 'chat-message assistant chat-typing';
     el.id = 'typingBubble';
     el.innerHTML = `
-      <div class="message-avatar" style="background:transparent;border:none;font-size:16px;">✨</div>
+      <div class="message-avatar" style="background:transparent;border:none;font-size:16px;">💎</div>
       <div class="message-body" style="display: flex; align-items: center;">
         <span class="typing-glitch">${randomGlitch()}</span>
         <span class="typing-word">${words[wordIdx]}</span>
@@ -497,10 +493,10 @@ class ChatModule {
     this.chatMessages.appendChild(el);
     this._typingBubble = el;
 
-    const glitchEl  = el.querySelector('.typing-glitch');
-    const wordEl    = el.querySelector('.typing-word');
-    const dotsEl    = el.querySelector('.typing-dots-anim');
-    const timerEl   = el.querySelector('.typing-timer');
+    const glitchEl = el.querySelector('.typing-glitch');
+    const wordEl = el.querySelector('.typing-word');
+    const dotsEl = el.querySelector('.typing-dots-anim');
+    const timerEl = el.querySelector('.typing-timer');
     const start = Date.now();
 
     /**
@@ -590,17 +586,17 @@ class ChatModule {
         el.textContent = msg.content;
       } else if (msg.role === 'user') {
         el.className = 'chat-message user';
-        
+
         let attachHtml = '';
         if (msg.attachments && msg.attachments.length > 0) {
           attachHtml = '<div style="margin-top:6px;">' + (
-            msg.attachments.map(att => att.type === 'image' ? 
-            `<img class="attachment-img" src="${att.dataUrl}" alt="${att.name}">` : 
-            `<span class="attachment-file-chip">📄 ${att.name}</span>`
+            msg.attachments.map(att => att.type === 'image' ?
+              `<img class="attachment-img" src="${att.dataUrl}" alt="${att.name}">` :
+              `<span class="attachment-file-chip">📄 ${att.name}</span>`
             ).join('')
           ) + '</div>';
         }
-        
+
         el.innerHTML = `
           <div class="message-avatar" style="background:transparent;border:none;font-size:14px;">👤</div>
           <div class="message-body">
@@ -638,7 +634,7 @@ class ChatModule {
         }
 
         el.innerHTML = `
-          <div class="message-avatar" style="background:transparent;border:none;font-size:16px;">✨</div>
+          <div class="message-avatar" style="background:transparent;border:none;font-size:16px;">💎</div>
           <div class="message-body">
             ${renderedHtml}
             ${footerHtml}
@@ -1092,7 +1088,7 @@ class ChatModule {
 
       // Add message to chat
       const modelLabel = selectedModel === 'gemini-3-pro-image-preview' ? '3 Pro' : '2.5 Flash';
-      this.addAssistantMessage(`✨ Imagem ${width}×${height} gerada com ${modelLabel} (${resolution})`);
+      this.addAssistantMessage(`💎 Imagem ${width}×${height} gerada com ${modelLabel} (${resolution})`);
 
       // Auto-close settings panel and model selector
       const genImageSettingsPanel = document.getElementById('genImageSettingsPanel');

@@ -1,6 +1,6 @@
 /// <reference types="@figma/plugin-typings" />
 
-import type { SerializedContext, SerializedNode, SerializedFill } from '../../../src/lib/figma-types';
+import type { SerializedContext, SerializedNode, SerializedFill, EnrichedContext } from '../../../src/lib/figma-types';
 
 /**
  * Deep node serialization for context extraction
@@ -177,4 +177,89 @@ export async function serializePage(): Promise<SerializedContext> {
   }
 
   return { nodes, styles };
+}
+
+/**
+ * Get enriched context with templates, pages, and reusable assets
+ */
+export async function getEnrichedContext(): Promise<EnrichedContext> {
+  // Base context from selection
+  const baseContext = await serializeSelection();
+
+  // Get all pages
+  const pages = figma.root.children.map(page => ({
+    id: page.id,
+    name: page.name,
+    frameCount: page.children?.length || 0,
+  }));
+
+  // Find templates (frames with [Template] prefix)
+  const templates: EnrichedContext['templates'] = [];
+  const templateFrames = figma.currentPage.findAll(
+    node => node.type === 'FRAME' && node.name.startsWith('[Template]')
+  ) as FrameNode[];
+
+  for (const t of templateFrames) {
+    const textSlots: string[] = [];
+    const findTextNodes = (node: SceneNode) => {
+      if (node.type === 'TEXT') textSlots.push(node.name);
+      if ('children' in node) {
+        for (const child of (node as FrameNode).children) findTextNodes(child);
+      }
+    };
+    for (const child of t.children) findTextNodes(child);
+
+    templates.push({
+      id: t.id,
+      name: t.name.replace(/^\[Template\]\s*/, ''),
+      width: Math.round(t.width),
+      height: Math.round(t.height),
+      textSlots,
+    });
+  }
+
+  // Find reusable assets (frames/groups with common naming patterns)
+  const reusableAssets: EnrichedContext['reusableAssets'] = [];
+  const assetPatterns = ['fundo', 'background', 'logo', 'sedimentum', 'header', 'footer', 'asset'];
+
+  const potentialAssets = figma.currentPage.findAll(node => {
+    if (node.type !== 'FRAME' && node.type !== 'GROUP' && node.type !== 'COMPONENT') return false;
+    const nameLower = node.name.toLowerCase();
+    return node.name.startsWith('[Asset]') || assetPatterns.some(p => nameLower.includes(p));
+  });
+
+  for (const asset of potentialAssets.slice(0, 20)) {
+    const nameLower = asset.name.toLowerCase();
+    let assetType: 'background' | 'logo' | 'element' | 'component' = 'element';
+    if (nameLower.includes('fundo') || nameLower.includes('background')) assetType = 'background';
+    else if (nameLower.includes('logo')) assetType = 'logo';
+    else if (asset.type === 'COMPONENT') assetType = 'component';
+
+    reusableAssets.push({
+      id: asset.id,
+      name: asset.name,
+      type: assetType,
+      width: Math.round(asset.width),
+      height: Math.round(asset.height),
+    });
+  }
+
+  // Get components from file
+  const components: EnrichedContext['components'] = [];
+  const compNodes = figma.root.findAllWithCriteria({ types: ['COMPONENT', 'COMPONENT_SET'] });
+  for (const comp of compNodes.slice(0, 30)) {
+    components.push({
+      id: comp.id,
+      name: comp.name,
+      key: comp.key,
+    });
+  }
+
+  return {
+    ...baseContext,
+    pages,
+    templates,
+    reusableAssets,
+    components,
+  };
 }
