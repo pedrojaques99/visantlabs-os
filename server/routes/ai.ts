@@ -686,5 +686,140 @@ router.post('/apply-theme', apiRateLimiter, authenticate, async (req: AuthReques
   }
 });
 
+/**
+ * POST /api/ai/generate/stream
+ * Stream AI text generation using Server-Sent Events (SSE).
+ * Provides real-time response for better UX.
+ */
+router.post('/generate/stream', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  const { prompt, systemPrompt, brandGuidelineId } = req.body;
+
+  if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+    return res.status(400).json({ error: 'Prompt is required' });
+  }
+
+  // Set SSE headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+
+  try {
+    // Get user's API key or use system key
+    let userApiKey: string | undefined;
+    try {
+      userApiKey = await getGeminiApiKey(req.userId!);
+    } catch {
+      // Use system key
+    }
+
+    // Build context with brand if provided
+    let fullSystemPrompt = systemPrompt || '';
+    if (brandGuidelineId) {
+      try {
+        const brandGuideline = await prisma.brandGuideline.findUnique({
+          where: { id: brandGuidelineId },
+        });
+        if (brandGuideline) {
+          const guidelineData = {
+            id: brandGuideline.id,
+            identity: brandGuideline.identity as any,
+            logos: brandGuideline.logos as any,
+            colors: brandGuideline.colors as any,
+            typography: brandGuideline.typography as any,
+            tags: brandGuideline.tags as any,
+            media: brandGuideline.media as any,
+            tokens: brandGuideline.tokens as any,
+            guidelines: brandGuideline.guidelines as any,
+          };
+          const brandContext = buildBrandContextForImageGen(guidelineData);
+          fullSystemPrompt = `${brandContext}\n\n${fullSystemPrompt}`;
+        }
+      } catch (err) {
+        console.warn('[stream] Failed to load brand guideline:', err);
+      }
+    }
+
+    // Import Gemini SDK for streaming
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const apiKey = userApiKey || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
+    const genAI = new GoogleGenerativeAI(apiKey.trim());
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+    // Build content with system prompt
+    const contents = [];
+    if (fullSystemPrompt) {
+      contents.push({ role: 'user', parts: [{ text: `System: ${fullSystemPrompt}` }] });
+      contents.push({ role: 'model', parts: [{ text: 'Understood. I will follow these guidelines.' }] });
+    }
+    contents.push({ role: 'user', parts: [{ text: prompt }] });
+
+    // Start streaming
+    const result = await model.generateContentStream({ contents });
+
+    let totalText = '';
+    for await (const chunk of result.stream) {
+      const text = chunk.text();
+      if (text) {
+        totalText += text;
+        // Send SSE event
+        res.write(`data: ${JSON.stringify({ text, done: false })}\n\n`);
+      }
+    }
+
+    // Send completion event
+    res.write(`data: ${JSON.stringify({ text: '', done: true, fullText: totalText })}\n\n`);
+    res.end();
+
+    // Track usage asynchronously
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          0,
+          'gemini-2.0-flash',
+          false,
+          prompt.length,
+          undefined,
+          'branding',
+          'system',
+          Math.ceil(prompt.length / 4), // estimate input tokens
+          Math.ceil(totalText.length / 4) // estimate output tokens
+        );
+        await db.collection('usage_records').insertOne(usageRecord);
+      } catch (err) {
+        console.error('Error tracking usage for stream:', err);
+      }
+    })();
+
+  } catch (error: any) {
+    console.error('Error in streaming generation:', error);
+    // Send error as SSE event
+    res.write(`data: ${JSON.stringify({ error: error.message || 'Stream failed', done: true })}\n\n`);
+    res.end();
+  }
+});
+
+/**
+ * GET /api/ai/metrics
+ * Get AI system metrics (cache hits, circuit breaker status).
+ * Admin only.
+ */
+router.get('/metrics', authenticate, async (req: AuthRequest, res) => {
+  if (!req.isAdmin) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+
+  try {
+    const { getAIMetrics } = await import('../lib/ai-wrapper.js');
+    const metrics = getAIMetrics();
+    res.json(metrics);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
 

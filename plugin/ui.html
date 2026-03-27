@@ -13,9 +13,13 @@
     <div class="app-header">
       <h2>Visant Copilot</h2>
       <div class="header-controls">
-        <button class="icon-btn" id="clearSessionBtn" title="Limpar sessão">🗑</button>
         <div id="userAvatar" class="user-avatar" title="Usuário"></div>
-        <button class="icon-btn" id="settingsBtn" title="Configurações">⚙</button>
+        <button class="icon-btn" id="settingsBtn" title="Configurações">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 9.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M1.5 7h1M12.5 7h-1M7 1.5v1M7 12.5v-1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -28,22 +32,67 @@
     <!-- Figma-style chat card -->
     <div class="chat-card">
       <div class="chat-card-toolbar">
-        <button class="tool-btn" title="Código"
-          style="font-family: monospace; font-size: 11px; font-weight: 700;">&lt;/&gt;</button>
-        <button class="tool-btn" id="attachBtn" title="Anexar arquivo (Imagem, CSV, PDF)">📎
+        <button class="tool-btn" id="codeBtn" title="Ver código">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.5 4.5L12 7L9.5 9.5M4.5 4.5L2 7L4.5 9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        
+        <button class="tool-btn" id="attachBtn" title="Anexar arquivo (Imagem, CSV, PDF)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 4.5V10.5C11 11.8807 9.88071 13 8.5 13C7.11929 13 6 11.8807 6 10.5V3.5C6 2.67157 6.67157 2 7.5 2C8.32843 2 9 2.67157 9 3.5V9.5C9 9.77614 8.77614 10 8.5 10C8.22386 10 8 9.77614 8 9.5V4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
           <span id="attachBadge" class="attachment-badge hidden">0</span>
         </button>
+
+        <div class="toolbar-divider"></div>
+
         <!-- Model selector for image generation -->
         <div id="modelSelector" class="model-selector hidden">
-          <button class="model-btn active" data-model="gemini-2.5-flash-image" title="Flash - Rápido (HD)">⚡
-            Flash</button>
-          <button class="model-btn" data-model="gemini-3-pro-image-preview" title="Pro - Melhor qualidade (4K)">✨
-            Pro</button>
+          <button class="model-btn active" data-model="gemini-2.5-flash-image" title="Flash - Rápido (HD)">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M6 1L2 5.5h3L4 9l4-4.5H5l1-3.5z" fill="currentColor"/>
+            </svg>
+          </button>
+          <button class="model-btn" data-model="gemini-3-pro-image-preview" title="Pro - Melhor qualidade (4K)">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M5 1L6 4l3 1-3 1-1 3-1-3-3-1 3-1 1-3z" fill="currentColor"/>
+            </svg>
+          </button>
         </div>
-        <button class="tool-btn" id="genImageBtn" title="Gerar imagem com IA (auto-detectable)"
-          style="display: none;">🎨</button>
-        <button class="tool-btn" id="genImageSettingsBtn" title="Configurar geração de imagem"
-          style="display: none;">⚙</button>
+
+        <button class="tool-btn" id="genImageBtn" title="Gerar imagem" style="display: none;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8.5 2.5L11.5 5.5M2.5 8.5L5.5 11.5M10.5 3.5L3.5 10.5M2.5 11.5L3.5 10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <div class="toolbar-spacer"></div>
+
+        <div class="overflow-menu-container">
+          <button class="tool-btn" id="toolbarMoreBtn" title="Mais opções">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="7" cy="3.5" r="1.2" fill="currentColor"/>
+              <circle cx="7" cy="7" r="1.2" fill="currentColor"/>
+              <circle cx="7" cy="10.5" r="1.2" fill="currentColor"/>
+            </svg>
+          </button>
+          <div id="toolbarOverflowMenu" class="overflow-menu hidden">
+            <button class="menu-item" id="genImageSettingsBtn">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M6 8a2 2 0 100-4 2 2 0 000 4zM1.5 6h1M10.5 6h-1M6 1.5v1M6 10.5v-1" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+              Configurações de Imagem
+            </button>
+            <button class="menu-item" id="clearSessionBtn">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M2 3h8M4 3V2a1 1 0 011-1h2a1 1 0 011 1v1M3.5 3l.5 7a1 1 0 001 1h2a1 1 0 001-1l.5-7" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+              Limpar Sessão
+            </button>
+          </div>
+        </div>
+        
         <input type="file" id="attachInput" accept="image/*,.csv,.pdf" multiple style="display: none;">
       </div>
 
@@ -109,16 +158,43 @@
       <div id="selectionIndicator" class="selection-indicator hidden"></div>
       <div class="chat-card-footer">
         <div class="chat-card-pills">
-          <button class="chat-pill" id="scanPagePill"
-            title="Pesquisar toda a página (inclui todos os nós no contexto)">🔍 Página</button>
-          <button class="chat-pill" id="thinkPill"
-            title="Modo Think: IA analisa o contexto e tira dúvidas antes de gerar qualquer elemento">🧠 Think</button>
-          <button class="chat-pill" id="brandPill">🎨 Brand</button>
+          <button class="chat-pill" id="scanPagePill" title="Pesquisar toda a página">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <circle cx="4.5" cy="4.5" r="3" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M7 7l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            Página
+          </button>
+          <button class="chat-pill" id="thinkPill" title="Modo Think: IA analisa e tira dúvidas">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M5 2a3 3 0 00-3 3c0 1.5 1 2.5 1.5 3h3c.5-.5 1.5-1.5 1.5-3a3 3 0 00-3-3zM4 9h2" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Think
+          </button>
+          <button class="chat-pill" id="brandPill">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M5 3v4M3 5h4" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Brand
+          </button>
           <span class="credit-pill" id="creditPill" title="Créditos restantes"></span>
         </div>
-        <button class="undo-btn hidden" id="undoBtn" title="Desfazer última operação (↩)">↩</button>
-        <button class="stop-btn hidden" id="stopBtn" title="Parar geração">■</button>
-        <button class="send-btn" id="sendBtn" title="Enviar (Enter)">↑</button>
+        <button class="undo-btn hidden" id="undoBtn" title="Desfazer (↩)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M4 7h6a2 2 0 010 4M4 7l2-2M4 7l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="stop-btn hidden" id="stopBtn" title="Parar geração">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+             <rect x="2" y="2" width="6" height="6" fill="currentColor" rx="1"/>
+          </svg>
+        </button>
+        <button class="send-btn" id="sendBtn" title="Enviar (Enter)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 11V3M7 3L4 6M7 3L10 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -148,118 +224,138 @@
           <div class="figma-prop-panel">
 
             <!-- Brand Guideline (API) Section -->
-            <div class="figma-prop-section brand-api-section">
-              <div class="figma-prop-header">
-                <span class="figma-prop-title">Brand Guideline</span>
+            <div class="figma-prop-section brand-api-section collapsible" id="brandApiSection">
+              <div class="figma-prop-header collapsible-header" data-target="brandApiContent">
+                <span class="figma-prop-title">Brand Hub</span>
                 <div style="display: flex; gap: 4px; align-items: center;">
                   <div id="saveStatusIndicator" class="save-status-indicator" title="Status de sincronização">
                     <span class="save-status-dot"></span>
                     <span class="save-status-text">Sincronizado</span>
                   </div>
-                  <button class="figma-icon-btn" id="brandGuidelineRefreshBtn" title="Atualizar lista">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <button class="figma-icon-btn" id="brandGuidelineRefreshBtn" title="Atualizar lista" onclick="event.stopPropagation()">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                       <path d="M10 6a4 4 0 01-7.5 2M2 6a4 4 0 017.5-2M10 2v2.5H7.5M2 10V7.5h2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                   </button>
-                  <button class="figma-icon-btn" id="brandGuidelineImportBtn" title="Importar Brand JSON">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 8v2a1 1 0 001 1h8a1 1 0 001-1V8M3 7l3-3 3 3M6 11V4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <button class="figma-icon-btn" id="brandGuidelineImportBtn" title="Importar JSON" onclick="event.stopPropagation()">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 8v2a1 1 0 001 1h6a1 1 0 001-1V8M4 7l2-2 2 2M6 11V5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
                     </svg>
                   </button>
                   <input type="file" id="brandGuidelineImportInput" accept=".json" style="display:none">
-                  <button class="figma-icon-btn" id="brandGuidelineExportBtn" title="Exportar Brand JSON">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 8v2a1 1 0 001 1h8a1 1 0 001-1V8M3 5l3 3 3-3M6 1v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <button class="figma-icon-btn" id="brandGuidelineExportBtn" title="Exportar JSON" onclick="event.stopPropagation()">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 8v2a1 1 0 001 1h6a1 1 0 001-1V8M4 6l2 2 2-2M6 1v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
                     </svg>
                   </button>
-
-                  <button class="figma-icon-btn" id="brandGuidelineAddBtn" title="Criar novo guideline">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <button class="figma-icon-btn" id="brandGuidelineAddBtn" title="Novo guideline" onclick="event.stopPropagation()">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                  <svg class="collapse-icon" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div id="brandApiContent" class="collapsible-content">
+                <div class="figma-prop-row" style="gap: 6px; margin-top: 8px;">
+                  <select id="brandGuidelineSelect" class="figma-select" style="flex: 1;">
+                    <option value="">— Selecione uma marca —</option>
+                  </select>
+                  <button class="figma-icon-btn" id="brandGuidelineOpenBtn" title="Abrir no webapp" style="display: none;">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M9 6.5v3a.5.5 0 01-.5.5h-6a.5.5 0 01-.5-.5v-6a.5.5 0 01.5-.5h3M7 2h3v3M5.5 6.5L10 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                   </button>
                 </div>
-              </div>
-              <div class="figma-prop-row" style="gap: 6px;">
-                <select id="brandGuidelineSelect" class="figma-select" style="flex: 1;">
-                  <option value="">— Selecione uma marca —</option>
-                </select>
-                <button class="figma-icon-btn" id="brandGuidelineOpenBtn" title="Abrir no webapp" style="display: none;">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 6.5v3a.5.5 0 01-.5.5h-6a.5.5 0 01-.5-.5v-6a.5.5 0 01.5-.5h3M7 2h3v3M5.5 6.5L10 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
-              </div>
-              <div id="brandGuidelineStatus" class="brand-status text-muted" style="display: none;">
-                <span class="status-dot"></span>
-                <span class="status-text">Não vinculado</span>
+                <div id="brandGuidelineStatus" class="brand-status text-muted">
+                  <span class="status-dot"></span>
+                  <span class="status-text">Não vinculado</span>
+                </div>
               </div>
             </div>
 
             <!-- Logo Section -->
-            <div class="figma-prop-section">
-              <div class="figma-prop-header">
+            <div class="figma-prop-section collapsible" id="logoSection">
+              <div class="figma-prop-header collapsible-header" data-target="logoContent">
                 <span class="figma-prop-title">Logo</span>
-                <button class="figma-icon-btn" id="logoAddPropBtn" title="Adicionar variante de logo">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                  <button class="figma-icon-btn" id="logoAddPropBtn" title="Adicionar variante" onclick="event.stopPropagation()">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                  <svg class="collapse-icon" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
                   </svg>
-                </button>
+                </div>
               </div>
-
-              <div id="logoList" class="brand-prop-list">
-                <!-- Dynamic rows generated by brand.js -->
+              <div id="logoContent" class="collapsible-content hidden">
+                <div id="logoList" class="brand-prop-list" style="margin-top: 8px;">
+                  <!-- Dynamic rows generated by brand.js -->
+                </div>
               </div>
             </div>
 
-            <!-- Colors Section -->
-            <div class="figma-prop-section">
-              <div class="figma-prop-header">
+            <div class="figma-prop-section collapsible" id="colorsSection">
+              <div class="figma-prop-header collapsible-header" data-target="colorsContent">
                 <span class="figma-prop-title">Colors</span>
-                <button class="figma-icon-btn" id="colorImportBtn" title="Importar cores do arquivo">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M2 1C1.44772 1 1 1.44772 1 2V10C1 10.5523 1.44772 11 2 11H10C10.5523 11 11 10.5523 11 10V4.5L7.5 1H2ZM2 2H7V5H10V10H2V2ZM8 2.5L9.5 4H8V2.5Z" fill="currentColor"/>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                  <button class="figma-icon-btn" id="colorImportBtn" title="Importar do arquivo" onclick="event.stopPropagation()">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 2h8a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1zM4 2v1M8 2v1" stroke="currentColor" stroke-width="1.2"/>
+                    </svg>
+                  </button>
+                  <button class="figma-icon-btn" id="colorAddBtn" title="Adicionar cor" onclick="event.stopPropagation()">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                  <svg class="collapse-icon" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
                   </svg>
-                </button>
-                <button class="figma-icon-btn" id="colorAddBtn" title="Adicionar cor manualmente">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
-                      fill="currentColor" />
-                  </svg>
-                </button>
+                </div>
               </div>
-              <!-- Add color row (hidden by default) -->
-              <div id="colorAddRow" class="color-add-row hidden">
-                <input type="color" id="colorPickerInput" value="#6366F1" title="Escolher cor">
-                <input type="text" id="colorNameInput" class="figma-input" placeholder="Nome da cor" style="flex: 1;">
-                <button class="figma-icon-btn" id="colorConfirmBtn" title="Adicionar">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
-                <button class="figma-icon-btn" id="colorCancelBtn" title="Cancelar">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                  </svg>
-                </button>
+              <div id="colorsContent" class="collapsible-content hidden">
+                <div id="colorAddRow" class="color-add-row hidden" style="margin-top: 8px;">
+                  <input type="color" id="colorPickerInput" value="#6366F1" title="Escolher cor">
+                  <input type="text" id="colorNameInput" class="figma-input" placeholder="Nome da cor" style="flex: 1; margin-bottom: 0;">
+                  <button class="figma-icon-btn" id="colorConfirmBtn" title="Adicionar">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <button class="figma-icon-btn" id="colorCancelBtn" title="Cancelar">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+                <div id="availableColorsList" class="available-colors-list hidden"></div>
+                <div class="color-grid" id="colorGrid" style="margin-top: 8px;"></div>
               </div>
-              <div id="availableColorsList" class="available-colors-list hidden"></div>
-              <div class="color-grid" id="colorGrid"></div>
             </div>
 
             <!-- Typography Section -->
-            <div class="figma-prop-section">
-              <div class="figma-prop-header">
+            <div class="figma-prop-section collapsible" id="typographySection">
+              <div class="figma-prop-header collapsible-header" data-target="typographyContent">
                 <span class="figma-prop-title">Typography</span>
-                <button class="figma-icon-btn" id="fontAddPropBtn" title="Adicionar variante de fonte">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                  <button class="figma-icon-btn" id="fontAddPropBtn" title="Adicionar variante" onclick="event.stopPropagation()">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                  <svg class="collapse-icon" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
                   </svg>
-                </button>
+                </div>
               </div>
-
-              <div id="fontPropList" class="brand-prop-list">
-                <!-- Dynamic rows generated by brand.js -->
+              <div id="typographyContent" class="collapsible-content hidden">
+                <div id="fontPropList" class="brand-prop-list" style="margin-top: 8px;">
+                  <!-- Dynamic rows generated by brand.js -->
+                </div>
               </div>
             </div>
 
@@ -496,7 +592,13 @@
         <button class="figma-icon-btn modal-close" id="closeFontModal" style="font-size: 16px;">×</button>
       </div>
       <div class="modal-body">
-        <input type="text" id="fontSearch" placeholder="Buscar por família ou estilo..." style="margin-bottom: 8px;" />
+        <div class="font-tabs">
+          <button class="font-tab active" data-category="all">Tudo</button>
+          <button class="font-tab" data-category="sans">Sans</button>
+          <button class="font-tab" data-category="serif">Serif</button>
+          <button class="font-tab" data-category="mono">Mono</button>
+        </div>
+        <input type="text" id="fontSearch" placeholder="Buscar família..." style="margin-bottom: 8px;" />
         <div class="font-list" id="fontList"></div>
       </div>
     </div>
@@ -514,6 +616,8 @@
     </div>
   </div>
 
+  <div id="toastContainer" class="toast-container"></div>
+  
   <!-- Modular UI System (Load Order is Critical) -->
   <script src="./modules/EventEmitter.js"></script>
   <script src="./modules/state.js"></script>
