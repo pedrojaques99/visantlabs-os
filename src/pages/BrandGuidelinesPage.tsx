@@ -101,7 +101,7 @@ export const BrandGuidelinesPage: React.FC = () => {
 
     // Section visibility
     const [activeSections, setActiveSections] = useState<string[]>([
-        'identity', 'logos', 'colors', 'typography',
+        'identity', 'logos', 'colors', 'typography', 'figma',
     ]);
 
     // Auth guard
@@ -118,7 +118,7 @@ export const BrandGuidelinesPage: React.FC = () => {
         if (g.activeSections && g.activeSections.length > 0) {
             setActiveSections(g.activeSections);
         } else {
-            const sections = ['identity', 'logos', 'colors', 'typography'];
+            const sections = ['identity', 'logos', 'colors', 'typography', 'figma'];
             // Add strategy only if it has content
             if (g.strategy?.manifesto || (g.strategy?.archetypes?.length ?? 0) > 0 || (g.strategy?.personas?.length ?? 0) > 0) {
                 sections.push('strategy');
