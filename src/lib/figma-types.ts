@@ -51,9 +51,17 @@ export interface TemplateSpec {
   childCount: number;
 }
 
-// ── Figma Operations (38 types) ──
+// ── Figma Operations (39 types) ──
 
 export type FigmaOperation =
+  // ═══ PAGE CREATION ═══
+  | {
+    type: 'CREATE_PAGE';
+    ref?: string;
+    props: {
+      name: string;
+    };
+  }
   // ═══ CREATION ═══
   | {
     type: 'CREATE_FRAME';
@@ -66,6 +74,8 @@ export type FigmaOperation =
       height: number;
       x?: number;
       y?: number;
+      autoPosition?: 'right' | 'below' | 'grid';  // Posiciona automaticamente
+      positionGap?: number;  // Gap entre frames (default: 100)
       rotation?: number;
       opacity?: number;
       fills?: FigmaPaint[];
@@ -374,7 +384,9 @@ export type FigmaOperation =
   | {
     type: 'CLONE_NODE';
     ref?: string;
-    sourceNodeId: string;
+    sourceNodeId?: string;        // Clone por ID
+    sourceName?: string;          // OU clone por nome (mais robusto)
+    sourceScope?: 'page' | 'file'; // Onde buscar (default: 'file')
     parentRef?: string;
     parentNodeId?: string;
     overrides?: {
@@ -565,6 +577,34 @@ export type SerializedContext = {
   styles: Record<string, string>;
 };
 
+// Contexto enriquecido para AI (inclui assets reutilizáveis)
+export type EnrichedContext = SerializedContext & {
+  templates?: Array<{
+    id: string;
+    name: string;
+    width: number;
+    height: number;
+    textSlots?: string[];  // nomes dos text layers editáveis
+  }>;
+  reusableAssets?: Array<{
+    id: string;
+    name: string;
+    type: 'background' | 'logo' | 'element' | 'component';
+    width?: number;
+    height?: number;
+  }>;
+  pages?: Array<{
+    id: string;
+    name: string;
+    frameCount: number;
+  }>;
+  components?: Array<{
+    id: string;
+    name: string;
+    key?: string;
+  }>;
+};
+
 export type ComponentInfo = {
   id: string;
   name: string;
@@ -749,6 +789,7 @@ export interface LayoutResult {
 
 export type UIMessage =
   | { type: 'GET_CONTEXT' }
+  | { type: 'GET_ENRICHED_CONTEXT' }
   | { type: 'USE_SELECTION_AS_LOGO' }
   | { type: 'USE_SELECTION_AS_FONT' }
   | { type: 'APPLY_OPERATIONS'; payload: FigmaOperation[] }
@@ -823,6 +864,7 @@ export type UIMessage =
 
 export type PluginMessage =
   | { type: 'CONTEXT'; payload: SerializedContext }
+  | { type: 'ENRICHED_CONTEXT'; payload: EnrichedContext }
   | { type: 'OPERATIONS_DONE'; count?: number; summary?: string }
   | { type: 'OP_PROGRESS'; current: number; total: number; opType: string; opName: string; status: 'applying' | 'done' | 'error'; error?: string }
   | { type: 'ERROR'; message: string }

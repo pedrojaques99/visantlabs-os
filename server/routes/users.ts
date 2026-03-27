@@ -570,6 +570,92 @@ router.get('/settings/gemini-api-key', apiRateLimiter, authenticate, async (req:
   }
 });
 
+// ═══ FIGMA TOKEN ENDPOINTS ═══
+
+// Save/Update Figma Personal Access Token
+router.put('/settings/figma-token', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    const { token } = req.body;
+    if (!token || typeof token !== 'string') {
+      return res.status(400).json({ error: 'Token is required' });
+    }
+
+    const trimmedToken = token.trim();
+    if (trimmedToken.length < 10) {
+      return res.status(400).json({ error: 'Invalid token format' });
+    }
+
+    // Validate token by making a test request to Figma API
+    const testResponse = await fetch('https://api.figma.com/v1/me', {
+      headers: { 'X-Figma-Token': trimmedToken },
+    });
+
+    if (!testResponse.ok) {
+      return res.status(400).json({ error: 'Invalid Figma token. Please check and try again.' });
+    }
+
+    const figmaUser = await testResponse.json();
+
+    // Encrypt and save
+    const { encryptApiKey } = await import('../utils/encryption.js');
+    const encryptedToken = encryptApiKey(trimmedToken);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { encryptedFigmaToken: encryptedToken },
+    });
+
+    res.json({
+      success: true,
+      figmaUser: { id: figmaUser.id, email: figmaUser.email, handle: figmaUser.handle },
+      message: 'Figma token saved successfully',
+    });
+  } catch (error: any) {
+    console.error('Failed to save Figma token:', error);
+    res.status(500).json({ error: 'Failed to save Figma token', message: error.message });
+  }
+});
+
+// Delete Figma Token
+router.delete('/settings/figma-token', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { encryptedFigmaToken: null },
+    });
+
+    res.json({ success: true, message: 'Figma token removed' });
+  } catch (error: any) {
+    console.error('Failed to delete Figma token:', error);
+    res.status(500).json({ error: 'Failed to delete Figma token', message: error.message });
+  }
+});
+
+// Check if user has Figma token
+router.get('/settings/figma-token', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { encryptedFigmaToken: true },
+    });
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json({ hasToken: !!user.encryptedFigmaToken });
+  } catch (error: any) {
+    console.error('Failed to check Figma token:', error);
+    res.status(500).json({ error: 'Failed to check Figma token', message: error.message });
+  }
+});
+
 // Get user canvas settings
 router.get('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
   try {

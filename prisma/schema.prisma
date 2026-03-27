@@ -45,6 +45,7 @@ model User {
   userCategory         String?   // Category for special access (e.g., 'tester')
   encryptedGeminiApiKey String?  // Encrypted Gemini API key for user's own quota
   encryptedSeedreamApiKey String? // Encrypted Seedream API key (APIFree.ai)
+  encryptedFigmaToken   String?  // Encrypted Figma Personal Access Token for REST API
   storageLimitBytes    Int?      // Custom storage limit in bytes (optional, overrides tier-based limit)
   storageUsedBytes     Int       @default(0) // Current storage used in bytes (calculated from uploads/deletes)
   storageProductId     String?   // Active storage plan product ID (e.g., 'storage_pro')

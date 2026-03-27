@@ -880,7 +880,7 @@
       "loadingProjects": "Carregando projetos...",
       "noProjectsFound": "Nenhum projeto encontrado",
       "noProjectsFoundMatchingSearch": "Nenhum projeto encontrado para sua busca",
-      "searchProjectsPlaceholder": "Buscar projetos...",
+      "searchProjects": "Buscar projetos...",
       "selectBrandingProject": "Selecionar Projeto de Marca",
       "untitled": "Sem título"
     },
@@ -1071,7 +1071,6 @@
       "textDirectionFromBrandCore": "Direção de Texto (do BrandCore)",
       "title": "Preset de Mockup"
     },
-
     "nodeContextMenu": {
       "delete": "Excluir",
       "duplicate": "Duplicar",
@@ -1240,6 +1239,40 @@
       "uploadVideo": "Enviar Vídeo",
       "uploadedVideo": "Vídeo Enviado"
     },
+    "videoNode": {
+      "title": "Veo Video",
+      "prompt": "Prompt",
+      "generationMode": "Modo de Geração",
+      "mode": {
+        "text_to_video": "Texto para Vídeo",
+        "frames_to_video": "Frames para Vídeo",
+        "extend_video": "Estender Vídeo",
+        "references": "Referências"
+      },
+      "startFrame": "Frame Inicial",
+      "endFrame": "Frame Final",
+      "inputVideo": "Vídeo de Entrada",
+      "reference": "Referência",
+      "input": "Entrada",
+      "connectedToTextNode": "Conectado ao TextNode",
+      "describeVideo": "Descreva seu vídeo...",
+      "connectedInputs": "Entradas Conectadas",
+      "videoInputConnected": "Vídeo de Entrada Conectado",
+      "advancedSettings": "Configurações Avançadas",
+      "model": "Modelo",
+      "aspectRatio": "Proporção",
+      "resolution": "Resolução",
+      "duration": "Duração",
+      "loopVideo": "Loop de Vídeo",
+      "negativePrompt": "Prompt Negativo",
+      "whatToAvoid": "O que evitar...",
+      "generateVideo": "Gerar Vídeo",
+      "generating": "Gerando...",
+      "video": "Vídeo",
+      "startFrameRequired": "Frame inicial é obrigatório para o modo frames-para-vídeo",
+      "inputVideoRequired": "Vídeo de entrada é obrigatório para o modo estender",
+      "allSlotsFull": "Todos os slots de referência estão cheios. Adicionado ao board."
+    },
     "savePromptModal": {
       "add": "Adicionar",
       "cancel": "Cancelar",
@@ -1263,34 +1296,6 @@
       "tags": "Tags",
       "tagsPlaceholder": "moderno, arquitetura...",
       "title": "Salvar Prompt"
-    },
-    "videoNode": {
-      "advancedSettings": "Configurações Avançadas",
-      "aspectRatio": "Proporção",
-      "connectedInputs": "Entradas Conectadas",
-      "connectedToTextNode": "Conectado ao TextNode",
-      "describeVideo": "Descreva seu vídeo...",
-      "duration": "Duração",
-      "endFrame": "Frame Final",
-      "extendVideo": "Estender Vídeo",
-      "framesToVideo": "Frames para Vídeo",
-      "generateVideo": "Gerar Vídeo",
-      "generating": "Gerando...",
-      "generationMode": "Modo de Geração",
-      "input": "Entrada",
-      "inputVideo": "Vídeo de Entrada",
-      "loopVideo": "Loopar Vídeo",
-      "model": "Modelo",
-      "negativePrompt": "Prompt Negativo",
-      "prompt": "Prompt",
-      "reference": "Referência",
-      "references": "Referências",
-      "resolution": "Resolução",
-      "startFrame": "Frame Inicial",
-      "textToVideo": "Texto para Vídeo",
-      "video": "Vídeo",
-      "videoInputConnected": "Entrada de Vídeo Conectada",
-      "whatToAvoid": "O que evitar..."
     }
   },
   "canvasToolbar": {

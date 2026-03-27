@@ -206,12 +206,12 @@ let report = `# Component Usage Analysis
 | # | Component | Path | Imports |
 |---|-----------|------|---------|
 ${analysis
-  .slice(0, 30)
-  .map(
-    (c, i) =>
-      `| ${fmt(i + 1)} | **${c.name}** | \`${c.relativePath}\` | **${fmt(c.count)}** |`
-  )
-  .join('\n')}
+    .slice(0, 30)
+    .map(
+      (c, i) =>
+        `| ${fmt(i + 1)} | **${c.name}** | \`${c.relativePath}\` | **${fmt(c.count)}** |`
+    )
+    .join('\n')}
 
 ---
 
@@ -220,7 +220,7 @@ ${analysis
 ### 🔥 Very Frequent (31+) — ${categorized.veryFrequent.length}
 ${categorized.veryFrequent.length > 0 ? categorized.veryFrequent.map(c => `- **${c.name}** (${c.count})`).join('\n') : '_None_'}
 
-### ✨ Frequent (11-30) — ${categorized.frequent.length}
+### 💎 Frequent (11-30) — ${categorized.frequent.length}
 ${categorized.frequent.length > 0 ? categorized.frequent.map(c => `- **${c.name}** (${c.count})`).join('\n') : '_None_'}
 
 ### 🟡 Moderate (3-10) — ${categorized.moderate.length}
@@ -236,8 +236,7 @@ ${categorized.orphaned.length > 0 ? `\`\`\`\n${categorized.orphaned.map(c => c.n
 
 ## 💡 Next Steps
 
-${
-  categorized.orphaned.length > 0
+${categorized.orphaned.length > 0
     ? `### Delete ${categorized.orphaned.length} orphaned components
 \`\`\`bash
 # Verify first, then remove
@@ -246,15 +245,14 @@ ${categorized.orphaned.length > 5 ? `# ... and ${categorized.orphaned.length - 5
 \`\`\`
 `
     : ''
-}
+  }
 
-${
-  categorized.rarely.length > 5
+${categorized.rarely.length > 5
     ? `### Consolidate ${categorized.rarely.length} rarely used components
 Consider merging these into your main components system.
 `
     : ''
-}
+  }
 
 `;
 
@@ -268,7 +266,7 @@ console.log(`\n✅ Report saved to: ${mdPath}\n`);
 // Summary
 console.log('📊 Summary:');
 console.log(`  🔥 Very Frequent: ${fmt(categorized.veryFrequent.length)}`);
-console.log(`  ✨ Frequent:      ${fmt(categorized.frequent.length)}`);
+console.log(`  💎 Frequent:      ${fmt(categorized.frequent.length)}`);
 console.log(`  🟡 Moderate:      ${fmt(categorized.moderate.length)}`);
 console.log(`  ⚠️ Rarely:        ${fmt(categorized.rarely.length)}`);
 console.log(`  ❌ Orphaned:      ${fmt(categorized.orphaned.length)}`);

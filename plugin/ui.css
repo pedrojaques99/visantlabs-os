@@ -909,9 +909,57 @@ label {
 }
 
 .app-header h2 {
-    margin-bottom: 0;
-    font-size: 14px;
+    margin: 0;
+    font-size: 13px;
     font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand-logo {
+    width: 22px;
+    height: 22px;
+    background: var(--figma-color-text, #333);
+    color: var(--figma-color-bg, #fff);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 12px;
+}
+
+.credit-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    background: var(--figma-color-bg-secondary, #f0f0f0);
+    color: var(--figma-color-text-secondary, #808080);
+    border-radius: 20px;
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+    display: none;
+    white-space: nowrap;
+}
+
+.credit-badge.visible {
+    display: block;
+}
+
+.credit-badge.low {
+    background: #FFF9E6;
+    color: #856404;
+    border-color: #FFE599;
+}
+
+.credit-badge.empty {
+    background: #FFF0F0;
+    color: #D82C20;
+    border-color: #F8D7DA;
 }
 
 .header-controls {
@@ -1390,7 +1438,42 @@ label {
     display: flex;
     align-items: center;
     gap: 2px;
-    padding: 6px 8px 2px;
+    padding: 6px 8px 4px;
+    min-height: 32px;
+}
+
+.selection-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 8px;
+    height: 22px;
+    background: var(--figma-color-bg-brand-tertiary, #e5f4ff);
+    color: var(--figma-color-text-brand, #0d99ff);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 4px;
+    max-width: 140px;
+    cursor: default;
+    overflow: hidden;
+    white-space: nowrap;
+    animation: slide-in-left 0.2s ease;
+}
+
+@keyframes slide-in-left {
+    from { transform: translateX(-10px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.selection-chip.hidden {
+    display: none;
+}
+
+.selection-chip span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .chat-card-toolbar .tool-btn {
@@ -1586,82 +1669,6 @@ label {
     display: none !important;
 }
 
-/* ── Selection indicator ── */
-.selection-indicator {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    border-top: 1px solid var(--figma-color-border, #e5e5e5);
-    font-size: 10px;
-    color: var(--figma-color-text-secondary, #808080);
-    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
-}
-
-.selection-indicator.hidden {
-    display: none;
-}
-
-.selection-indicator .sel-thumb {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-    border-radius: 4px;
-    object-fit: contain;
-    background: var(--figma-color-bg-secondary, #f5f5f5);
-    border: 1px solid var(--figma-color-border, #e5e5e5);
-}
-
-.selection-indicator .sel-icon {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-    border-radius: 4px;
-    background: var(--figma-color-bg-secondary, #f5f5f5);
-    border: 1px solid var(--figma-color-border, #e5e5e5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    color: var(--figma-color-icon-tertiary, #b3b3b3);
-}
-
-.selection-indicator .sel-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-}
-
-.selection-indicator .sel-name {
-    font-weight: 600;
-    color: var(--figma-color-text, #333333);
-    white-space: nowrap;
-    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
-    text-overflow: ellipsis;
-    font-size: 11px;
-    line-height: 14px;
-}
-
-.selection-indicator .sel-type {
-    font-size: 10px;
-    color: var(--figma-color-text-tertiary, #b3b3b3);
-    line-height: 12px;
-}
-
-.selection-indicator .sel-multi {
-    font-weight: 500;
-    color: var(--figma-color-text, #333333);
-    font-size: 11px;
-}
-
-.selection-indicator .sel-multi-list {
-    white-space: nowrap;
-    flex: 1; overflow: hidden; white-space: nowrap; font-style: normal;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
 
 /* ── Progressive Disclosure Mode Toggle ── */
 .header-controls {
@@ -2457,9 +2464,11 @@ label {
 }
 
 .figma-prop-title {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--figma-color-text, #333333);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--figma-color-text-tertiary, #b3b3b3);
 }
 
 .figma-prop-row {
@@ -2518,6 +2527,18 @@ label {
     cursor: pointer;
     flex-shrink: 0;
     transition: all 0.1s ease-in-out;
+}
+
+/* Hide row actions by default, show on row hover */
+.figma-prop-row .row-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.figma-prop-row:hover .row-actions {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .figma-icon-btn:hover {
@@ -2580,6 +2601,17 @@ label {
     font-size: 10px;
     color: var(--figma-color-text-secondary, #808080);
     font-weight: 500;
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: max-width 0.3s ease, margin 0.3s ease;
+    margin-left: 0;
+}
+
+.save-status-indicator:hover .save-status-text,
+.save-status-indicator.saving .save-status-text {
+    max-width: 100px;
+    margin-left: 4px;
 }
 
 @keyframes save-pulse {
@@ -3188,8 +3220,8 @@ button.secondary.loading .spinner {
 
 
 .color-grid {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
     gap: 8px;
     padding: 8px;
     background: var(--figma-color-bg-secondary, #f5f5f5);
@@ -3200,13 +3232,85 @@ button.secondary.loading .spinner {
 }
 
 .color-item-row {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    background: var(--figma-color-bg, #ffffff);
+    border-radius: 8px;
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+    height: 52px;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.color-item-row:hover {
+    transform: translateY(-2px);
+    border-color: var(--figma-color-border-brand, #0d99ff);
+    z-index: 10;
+}
+
+.color-swatch-medium {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
+.color-role-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    background: var(--figma-color-bg-brand, #0d99ff);
+    color: white;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px;
-    background: var(--figma-color-bg, #ffffff);
-    border-radius: 6px;
-    border: 1px solid var(--figma-color-border, #e5e5e5);
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 800;
+    border: 1.5px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.color-item-row .btn-remove-color {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    background: rgba(255,255,255,0.9);
+    border: none;
+    border-radius: 50%;
+    padding: 2px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.color-item-row:hover .btn-remove-color {
+    opacity: 1;
+}
+
+.color-item-row .color-role-select {
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 8px;
+    text-align: center;
+    color: var(--figma-color-text-tertiary, #808080);
+    padding: 0;
+    opacity: 0.6;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
 }
 
 .color-add-row {
@@ -3751,6 +3855,14 @@ button.secondary.loading .spinner {
     display: flex;
     flex-direction: column;
     animation: menu-in 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.2);
+}
+
+/* Header menus should open DOWN */
+.header-overflow-menu {
+    top: calc(100% + 4px);
+    bottom: auto;
+    width: 160px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
 }
 
 @keyframes menu-in {
