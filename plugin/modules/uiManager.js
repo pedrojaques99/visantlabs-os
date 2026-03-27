@@ -48,17 +48,23 @@ class UIManager {
     const avatarEl = document.getElementById('userAvatar');
     if (!avatarEl) return;
 
-    if (user.photoUrl) {
-      avatarEl.innerHTML = `<img src="${user.photoUrl}" alt="${user.name}">`;
+    // Clear existing content safely
+    avatarEl.textContent = '';
+
+    if (user && user.photoUrl) {
+      const img = document.createElement('img');
+      img.src = user.photoUrl;
+      img.alt = user.name || '';
+      avatarEl.appendChild(img);
       avatarEl.classList.add('has-photo');
     } else {
       // Initials fallback
-      const initials = (user.name || 'U').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      const initials = (user?.name || 'U').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
       avatarEl.textContent = initials;
       avatarEl.classList.remove('has-photo');
     }
 
-    avatarEl.title = `Conectado como ${user.name}`;
+    avatarEl.title = `Conectado como ${user?.name || ''}`;
   }
 
   setupEventListeners() {
@@ -201,14 +207,14 @@ class UIManager {
         const result = await authLogin(email, password, rememberMe);
         if (!result.success) {
           if (status) {
-            status.innerHTML = `<span style="color: var(--figma-color-text-danger);">❌ ${result.error}</span>`;
+            status.innerHTML = `<span style="color: var(--figma-color-text-danger);">❌ ${this.escapeHtml(result.error)}</span>`;
           }
         } else {
           if (status) status.textContent = '';
         }
       } catch (err) {
         if (status) {
-          status.innerHTML = `<span style="color: var(--figma-color-text-danger);">❌ ${err.message}</span>`;
+          status.innerHTML = `<span style="color: var(--figma-color-text-danger);">❌ ${this.escapeHtml(err.message)}</span>`;
         }
       } finally {
         if (btn) {
@@ -538,8 +544,9 @@ class UIManager {
       
       const icon = this.getNodeTypeIcon(sel.type);
       const thumb = state.selectionThumb;
-      const thumbHtml = thumb
-        ? `<img class="sel-thumb" src="${thumb}" alt="">`
+      const safeThumb = thumb ? this.escapeHtml(thumb) : '';
+      const thumbHtml = safeThumb
+        ? `<img class="sel-thumb" src="${safeThumb}" alt="">`
         : `<div class="sel-icon">${icon}</div>`;
 
       this.selectionIndicator.innerHTML = `
@@ -782,14 +789,18 @@ class UIManager {
     }
 
     const statusIcon = msg.status === 'done' ? '✅' : msg.status === 'error' ? '⚠️' : '⏳';
-    const progressPercent = Math.round((msg.current / msg.total) * 100);
+    const safeCurrent = Number(msg.current) || 0;
+    const safeTotal = Number(msg.total) || 0;
+    const progressPercent = safeTotal > 0 ? Math.round((safeCurrent / safeTotal) * 100) : 0;
+    const safeOpType = this.escapeHtml(String(msg.opType ?? ''));
+    const safeOpName = this.escapeHtml(String(msg.opName ?? ''));
 
     indicator.innerHTML = `
       <div class="op-progress-bar">
         <div class="op-progress-fill" style="width: ${progressPercent}%"></div>
       </div>
       <div class="op-progress-text">
-        ${statusIcon} ${msg.current}/${msg.total} — ${msg.opType} <span class="op-name">"${this.escapeHtml(msg.opName)}"</span>
+        ${statusIcon} ${safeCurrent}/${safeTotal} — ${safeOpType} <span class="op-name">"${safeOpName}"</span>
       </div>
     `;
     indicator.classList.remove('hidden');

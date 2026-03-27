@@ -159,6 +159,10 @@ class BrandModule {
       this.createNewGuideline();
     });
 
+    document.getElementById('brandGuidelineOpenBtn')?.addEventListener('click', () => {
+      this.openGuidelineInWebapp();
+    });
+
     // ═══ DESIGN TOKENS ═══
     this.tokenInputs.forEach(input => {
       input.addEventListener('change', (e) => {
@@ -296,6 +300,9 @@ class BrandModule {
           if (this.brandGuidelineSelect) {
             this.brandGuidelineSelect.value = config.linkedGuidelineId;
           }
+          // Show open button
+          const openBtn = document.getElementById('brandGuidelineOpenBtn');
+          if (openBtn) openBtn.style.display = 'flex';
           // Show linked status from cached guideline if available
           const cachedGuideline = state.apiGuidelines?.find(g =>
             (g.id || g._id) === config.linkedGuidelineId
@@ -1127,8 +1134,12 @@ class BrandModule {
 
     // Restore selection if linked
     const linkedId = state.linkedGuidelineId;
+    const openBtn = document.getElementById('brandGuidelineOpenBtn');
     if (linkedId) {
       this.brandGuidelineSelect.value = linkedId;
+      if (openBtn) openBtn.style.display = 'flex';
+    } else {
+      if (openBtn) openBtn.style.display = 'none';
     }
   }
 
@@ -1136,12 +1147,15 @@ class BrandModule {
    * Link a brand guideline from API via brandSyncModule
    */
   async linkBrandGuideline(guidelineId) {
+    const openBtn = document.getElementById('brandGuidelineOpenBtn');
+
     if (!guidelineId) {
       // Unlink
       setState('linkedGuidelineId', null);
       setState('linkedGuideline', null);
       setState('brandGuideline', null);
       this.updateBrandGuidelineStatus(null);
+      if (openBtn) openBtn.style.display = 'none';
       parent.postMessage({ pluginMessage: { type: 'LINK_GUIDELINE', guidelineId: null } }, '*');
       return;
     }
@@ -1158,9 +1172,28 @@ class BrandModule {
       this.applyGuidelineToState(guideline);
       this.updateBrandGuidelineStatus(guideline);
 
+      // Show open button
+      if (openBtn) openBtn.style.display = 'flex';
+
       // Save link to Figma file
       parent.postMessage({ pluginMessage: { type: 'LINK_GUIDELINE', guidelineId, autoLoad: true } }, '*');
     }
+  }
+
+  /**
+   * Open current guideline in webapp
+   */
+  openGuidelineInWebapp() {
+    const guidelineId = state.linkedGuidelineId;
+    if (!guidelineId) {
+      console.warn('[Brand] No guideline selected');
+      return;
+    }
+    // Open in new tab - webapp URL
+    const webappUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? `http://localhost:5173/brand-guidelines?id=${guidelineId}`
+      : `https://www.visantlabs.com/brand-guidelines?id=${guidelineId}`;
+    window.open(webappUrl, '_blank');
   }
 
   /**

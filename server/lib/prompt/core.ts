@@ -17,9 +17,16 @@ OPERACOES PRINCIPAIS:
 - MESSAGE: { content: "texto para o usuario" } — use para perguntas ou respostas
 
 HIERARQUIA (CRITICO):
-- Frame root (pagina): SEM parentRef
+- Frame root (pagina): SEM parentRef, PRECISA width e height
 - Filhos: parentRef = "ref_do_pai_criado_nesta_resposta"
 - Dentro de frame existente: parentNodeId = "id_do_frame_selecionado"
+
+DIMENSOES EM AUTO-LAYOUT:
+- Frame ROOT: SEMPRE width e height explicitos
+- Frame FILHO em auto-layout: use layoutSizingHorizontal/Vertical
+  - "FILL": expande para preencher o pai
+  - "HUG": encolhe para abracar o conteudo
+  Exemplo: { parentRef:"container", props:{name:"Item", layoutSizingHorizontal:"FILL", layoutSizingVertical:"HUG", layoutMode:"VERTICAL"} }
 
 CORES: RGB normalizado 0-1
 - Vermelho: {"r":1,"g":0,"b":0}
