@@ -25,7 +25,11 @@ const state = {
   componentThumbs: {}, // id -> base64 thumbnail
   expandedFolders: new Set(),
   showFolders: false,
-  allFonts: [], // font variables
+
+  // Modal & Selection State
+  activeModalTarget: null, // 'logoLight', 'fontPrimary', etc.
+  activeFontCategory: 'all', // all, sans, serif, mono
+  allFonts: [], // full font list from figma
   allAvailableFonts: [], // all font families
   allColors: [], // all color variables
 
@@ -33,9 +37,6 @@ const state = {
   userApiKey: '',
   anthropicApiKey: '',
   apiCollapsed: true,
-
-  // Tabs & UI
-  activeModalTarget: null, // 'logoLight', 'fontPrimary', etc.
 
   // Brand guidelines
   savedGuidelines: [],

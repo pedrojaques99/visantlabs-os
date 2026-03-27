@@ -14,10 +14,12 @@ class UIManager {
     this.wsReconnectAttempts = 0;
     this.wsMaxReconnectAttempts = 5;
     this.wsReconnectDelay = 5000; // 5 seconds
+    this._toastTimer = null;
 
     this.setupEventListeners();
     this.setupStateListeners();
     this.setupSandboxListeners();
+    this.setupGlobalClickHandlers();
     
     // Initial fetch for session and state
     this.init();
@@ -44,6 +46,26 @@ class UIManager {
     this.renderUserAvatar(user);
   }
 
+  /**
+   * Validate and normalize a potentially user-controlled avatar URL.
+   * Only allow http/https URLs; return null for anything invalid or unsafe.
+   */
+  _getSafeAvatarUrl(urlString) {
+    if (typeof urlString !== 'string' || !urlString.trim()) {
+      return null;
+    }
+    try {
+      const parsed = new URL(urlString, window.location.origin);
+      const protocol = parsed.protocol.toLowerCase();
+      if (protocol === 'https:' || protocol === 'http:') {
+        return parsed.toString();
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   renderUserAvatar(user) {
     const avatarEl = document.getElementById('userAvatar');
     if (!avatarEl) return;
@@ -51,9 +73,11 @@ class UIManager {
     // Clear existing content safely
     avatarEl.textContent = '';
 
-    if (user && user.photoUrl) {
+    const safePhotoUrl = user ? this._getSafeAvatarUrl(user.photoUrl) : null;
+
+    if (user && safePhotoUrl) {
       const img = document.createElement('img');
-      img.src = user.photoUrl;
+      img.src = safePhotoUrl;
       img.alt = user.name || '';
       avatarEl.appendChild(img);
       avatarEl.classList.add('has-photo');
@@ -65,6 +89,68 @@ class UIManager {
     }
 
     avatarEl.title = `Conectado como ${user?.name || ''}`;
+  }
+
+  /**
+   * Show a unified toast notification
+   * @param {string} message 
+   * @param {'success'|'error'|'warning'|'info'} type 
+   * @param {number} duration 
+   */
+  showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    // Figma-style icons
+    let icon = '';
+    if (type === 'success') {
+      icon = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    } else if (type === 'error') {
+      icon = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    } else if (type === 'warning') {
+      icon = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5v5M6 9h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    } else {
+      icon = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M6 4v2.5M6 8h.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
+    }
+
+    toast.innerHTML = `${icon}<span>${message}</span>`;
+    container.appendChild(toast);
+
+    // Auto-remove with animation
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      setTimeout(() => {
+        if (toast.parentNode) toast.remove();
+      }, 300);
+    }, duration);
+  }
+
+  setupGlobalClickHandlers() {
+    // Close overflow menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('toolbarOverflowMenu');
+      const btn = document.getElementById('toolbarMoreBtn');
+      if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    // Handle generic collapsible headers (with animation support)
+    document.addEventListener('click', (e) => {
+      const header = e.target.closest('.collapsible-header');
+      if (header) {
+        const targetId = header.dataset.target;
+        const target = document.getElementById(targetId);
+        if (target) {
+          const isHidden = target.classList.contains('hidden');
+          target.classList.toggle('hidden');
+          header.setAttribute('data-collapsed', !isHidden);
+        }
+      }
+    });
   }
 
   setupEventListeners() {
@@ -133,24 +219,18 @@ class UIManager {
       setState('userApiKey', key);
     });
 
-    // API Section toggle (Gemini)
-    document.getElementById('apiSectionToggle')?.addEventListener('click', () => {
-      const chevron = document.getElementById('apiChevron');
-      const content = document.getElementById('apiContent');
-      if (chevron && content) {
-        chevron.classList.toggle('collapsed');
-        content.classList.toggle('hidden');
-      }
-    });
-
-    // API Section toggle (Anthropic)
-    document.getElementById('anthropicSectionToggle')?.addEventListener('click', () => {
-      const chevron = document.getElementById('anthropicChevron');
-      const content = document.getElementById('anthropicContent');
-      if (chevron && content) {
-        chevron.classList.toggle('collapsed');
-        content.classList.toggle('hidden');
-      }
+    // API Section toggles are now handled by generic setupCollapsibles logic in brand.js
+    // if we added .collapsible-header class to them. 
+    // However, uiManager.js has its own setup. Let's keep it but fix for new structure.
+    document.querySelectorAll('.collapsible-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const section = header.closest('.collapsible');
+        if (section && section.closest('#tab-config')) {
+           section.classList.toggle('collapsed');
+           const content = section.querySelector('.collapsible-content');
+           content?.classList.toggle('hidden');
+        }
+      });
     });
 
     // Save Anthropic key
@@ -163,6 +243,17 @@ class UIManager {
         status.textContent = key ? '✅ Chave salva' : '🗑 Chave removida';
         setTimeout(() => { status.textContent = ''; }, 2000);
       }
+    });
+
+    // Option Tab Action Buttons
+    document.getElementById('openProfileBtn')?.addEventListener('click', () => {
+      window.open('https://www.visantlabs.com/perfil', '_blank');
+    });
+    document.getElementById('buyCreditsBtn')?.addEventListener('click', () => {
+      window.open('https://www.visantlabs.com/pricing', '_blank');
+    });
+    document.getElementById('helpCenterBtn')?.addEventListener('click', () => {
+      window.open('https://www.visantlabs.com/support', '_blank');
     });
 
     // Listen for operations applied
@@ -882,23 +973,43 @@ class UIManager {
     const loggedIn = document.getElementById('authLoggedIn');
     const emailEl = document.getElementById('authUserEmail');
     const tierEl = document.getElementById('authUserTier');
+    const initialsEl = document.getElementById('authUserInitials');
     const creditsEl = document.getElementById('authCreditsInfo');
+    const creditsBar = document.getElementById('authCreditsBar');
     const statusEl = document.getElementById('authLoginStatus');
 
     if (authenticated && state.authEmail) {
       if (loggedOut) loggedOut.classList.add('hidden');
       if (loggedIn) loggedIn.classList.remove('hidden');
       if (emailEl) emailEl.textContent = state.authEmail;
-      if (tierEl) {
-        const tierLabels = { free: 'Free', premium: 'Premium', pro: 'Pro' };
-        tierEl.textContent = tierLabels[state.credits.tier] || state.credits.tier;
+      
+      // Initials
+      if (initialsEl) {
+        const initials = state.authEmail.split('@')[0].substring(0, 1).toUpperCase();
+        initialsEl.textContent = initials;
       }
+
+      if (tierEl) {
+        const tier = state.credits.tier || 'free';
+        const tierLabels = { free: 'Free', premium: 'Premium', pro: 'Pro' };
+        tierEl.textContent = tierLabels[tier] || tier;
+        tierEl.className = `tier-badge ${tier}`;
+      }
+
       if (creditsEl) {
         const c = state.credits;
         if (c.hasSubscription) {
-          creditsEl.textContent = `${c.remaining} créditos restantes de ${c.total}`;
+          creditsEl.textContent = `${c.remaining} / ${c.total}`;
+          if (creditsBar) {
+            const pct = Math.max(0, Math.min(100, (c.remaining / c.total) * 100));
+            creditsBar.style.width = `${pct}%`;
+          }
         } else {
-          creditsEl.textContent = `${c.freeRemaining} gerações grátis restantes`;
+          creditsEl.textContent = `${c.freeRemaining} gerações grátis`;
+          if (creditsBar) {
+            const pct = Math.max(0, Math.min(100, (c.freeRemaining / 10) * 100)); // Default free 10
+            creditsBar.style.width = `${pct}%`;
+          }
         }
       }
       if (statusEl) statusEl.textContent = '';
@@ -940,8 +1051,19 @@ class UIManager {
    * Escape HTML
    */
   escapeHtml(text) {
-    return escapeHtml(text);
+    if (typeof text !== 'string') return '';
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 }
+
+// Global accessor
+window.showToast = (msg, type, duration) => {
+  if (window.uiManager) window.uiManager.showToast(msg, type, duration);
+};
 
 const uiManager = new UIManager();
