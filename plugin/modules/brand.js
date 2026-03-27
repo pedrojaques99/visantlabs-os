@@ -3,6 +3,12 @@
  * Best practice: Isolated brand management logic
  */
 
+// Constants
+const WEBAPP_BASE_URL = {
+  local: 'http://localhost:5173',
+  prod: 'https://www.visantlabs.com'
+};
+
 class BrandModule {
   constructor() {
     // Flags for save management
@@ -42,6 +48,14 @@ class BrandModule {
     this.setupStateListeners();
     this.setupCollapsibles();
     this.loadInitialData();
+  }
+
+  /** Helper to toggle the "Open in webapp" button visibility */
+  _updateOpenBtnVisibility(visible) {
+    const openBtn = document.getElementById('brandGuidelineOpenBtn');
+    if (openBtn) {
+      openBtn.style.display = visible ? 'flex' : 'none';
+    }
   }
 
   setupEventListeners() {
@@ -199,6 +213,18 @@ class BrandModule {
       this.renderFontList();
     });
 
+    // Font category tabs
+    document.querySelectorAll('.font-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        const category = e.target.getAttribute('data-category');
+        setState('activeFontCategory', category);
+        
+        // Update UI active state
+        document.querySelectorAll('.font-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+
     // Listen for library component selection
     eventBus.on('library:component-selected', (component) => {
       const target = state.activeModalTarget;
@@ -221,7 +247,18 @@ class BrandModule {
     document.querySelectorAll('.collapsible-header').forEach(header => {
       header.addEventListener('click', () => {
         const section = header.closest('.collapsible');
-        section?.classList.toggle('collapsed');
+        const isCollapsed = section?.classList.contains('collapsed');
+        
+        // Aggressive Accordion: Close others in the same group
+        if (isCollapsed) {
+          const group = section.closest('.figma-prop-panel') || section.parentElement;
+          group.querySelectorAll('.collapsible').forEach(s => {
+            if (s !== section) s.classList.add('collapsed');
+          });
+          section.classList.remove('collapsed');
+        } else {
+          section?.classList.add('collapsed');
+        }
       });
     });
   }
@@ -229,6 +266,7 @@ class BrandModule {
   setupStateListeners() {
     watchState('logos', () => { this.renderLogos(); this.updateBrandPill(); });
     watchState('typography', () => { this.renderFonts(); this.updateBrandPill(); });
+    watchState('activeFontCategory', () => this.renderFontList());
 
     watchState('selectedColors', () => {
       this.renderColorGrid();
@@ -301,8 +339,7 @@ class BrandModule {
             this.brandGuidelineSelect.value = config.linkedGuidelineId;
           }
           // Show open button
-          const openBtn = document.getElementById('brandGuidelineOpenBtn');
-          if (openBtn) openBtn.style.display = 'flex';
+          this._updateOpenBtnVisibility(true);
           // Show linked status from cached guideline if available
           const cachedGuideline = state.apiGuidelines?.find(g =>
             (g.id || g._id) === config.linkedGuidelineId
@@ -928,39 +965,88 @@ class BrandModule {
     if (!this.fontList) return;
 
     const query = this.fontSearch?.value.toLowerCase() || '';
-    const filteredFonts = state.allFonts.filter(f => 
-      f.name.toLowerCase().includes(query) || 
-      (f.family && f.family.toLowerCase().includes(query)) ||
-      (f.style && f.style.toLowerCase().includes(query))
-    );
+    const category = state.activeFontCategory || 'all';
+
+    const filteredFonts = state.allFonts.filter(f => {
+      // Search query filter
+      const matchesQuery = f.name.toLowerCase().includes(query) || 
+                          (f.family && f.family.toLowerCase().includes(query)) ||
+                          (f.style && f.style.toLowerCase().includes(query));
+      
+      if (!matchesQuery) return false;
+
+      // Category filter
+      if (category === 'all') return true;
+      
+      const family = (f.family || f.name).toLowerCase();
+      if (category === 'sans') return family.includes('sans') || family.includes('inter') || family.includes('roboto') || family.includes('helvetica') || family.includes('arial') || family.includes('open sans') || family.includes('lato');
+      if (category === 'serif') return family.includes('serif') || family.includes('times') || family.includes('georgia') || family.includes('palatino') || family.includes('playfair');
+      if (category === 'mono') return family.includes('mono') || family.includes('code') || family.includes('courier') || family.includes('fira') || family.includes('ubuntu mono');
+      
+      return true;
+    });
 
     if (filteredFonts.length === 0) {
-      if (query) {
-        this.fontList.innerHTML = '<div class="text-muted">Nenhuma fonte corresponde à busca</div>';
+      if (query || category !== 'all') {
+        this.fontList.innerHTML = '<div class="text-muted" style="text-align:center; padding: 20px;">Nenhuma fonte corresponde aos filtros</div>';
       } else {
-        this.fontList.innerHTML = '<div class="text-muted">Nenhuma fonte variável encontrada</div>';
+        this.fontList.innerHTML = '<div class="text-muted" style="text-align:center; padding: 20px;">Carregando fontes do Figma...</div>';
       }
       return;
     }
 
     this.fontList.innerHTML = '';
-    for (const font of filteredFonts) {
-      const div = document.createElement('div');
-      div.className = 'font-item clickable';
-      
-      const familyHtml = font.family ? `<strong>${this.escapeHtml(font.family)}</strong>` : this.escapeHtml(font.name);
-      const styleHtml = font.style ? `<span class="text-muted" style="margin-left: 6px; font-size: 10px;">${this.escapeHtml(font.style)}</span>` : '';
-      
-      div.innerHTML = `${familyHtml}${styleHtml}`;
+    
+    // Group by family for better UX
+    const families = [...new Set(filteredFonts.map(f => f.family || f.name))].slice(0, 100); // Limit to 100 for performance
 
-      div.addEventListener('click', () => {
-        const target = state.activeModalTarget || 'font-0'; // Default to first
-        this.handleFontCaptured(font);
-        document.getElementById('fontModal')?.classList.add('hidden');
-        setState('activeModalTarget', null);
-      });
+    for (const family of families) {
+      const familyFonts = filteredFonts.filter(f => (f.family || f.name) === family);
+      
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'font-group';
+      groupDiv.style.marginBottom = '12px';
 
-      this.fontList.appendChild(div);
+      const label = document.createElement('div');
+      label.className = 'font-family-label';
+      label.style.cssText = 'font-size: 11px; font-weight: 600; color: var(--figma-color-text-secondary); margin-bottom: 4px; padding: 0 4px;';
+      label.textContent = this.escapeHtml(family);
+      groupDiv.appendChild(label);
+
+      const itemsGrid = document.createElement('div');
+      itemsGrid.style.cssText = 'display: grid; grid-template-columns: 1fr; gap: 4px;';
+
+      for (const font of familyFonts) {
+        const div = document.createElement('div');
+        div.className = 'font-item clickable';
+        div.style.cssText = 'display: flex; flex-direction: column; gap: 2px; padding: 8px; border-radius: 6px; border: 1px solid var(--figma-color-border);';
+        
+        const styleName = font.style || 'Regular';
+        
+        // Preview text
+        const preview = document.createElement('div');
+        preview.className = 'font-preview';
+        preview.style.cssText = `font-family: "${font.family || font.name}"; font-size: 14px;`;
+        preview.textContent = 'Abc 123';
+        
+        const info = document.createElement('div');
+        info.style.cssText = 'font-size: 10px; color: var(--figma-color-text-tertiary); display: flex; justify-content: space-between;';
+        info.innerHTML = `<span>${this.escapeHtml(styleName)}</span>`;
+
+        div.appendChild(preview);
+        div.appendChild(info);
+
+        div.addEventListener('click', () => {
+          this.handleFontCaptured(font);
+          document.getElementById('fontModal')?.classList.add('hidden');
+          setState('activeModalTarget', null);
+        });
+
+        itemsGrid.appendChild(div);
+      }
+      
+      groupDiv.appendChild(itemsGrid);
+      this.fontList.appendChild(groupDiv);
     }
   }
 
@@ -1029,6 +1115,8 @@ class BrandModule {
         }
         setState('selectedColors', colors);
       }
+      
+      window.showToast?.(`Marca "${guideline.name}" carregada com sucesso.`, 'success');
     }
   }
 
@@ -1134,28 +1222,23 @@ class BrandModule {
 
     // Restore selection if linked
     const linkedId = state.linkedGuidelineId;
-    const openBtn = document.getElementById('brandGuidelineOpenBtn');
     if (linkedId) {
       this.brandGuidelineSelect.value = linkedId;
-      if (openBtn) openBtn.style.display = 'flex';
-    } else {
-      if (openBtn) openBtn.style.display = 'none';
     }
+    this._updateOpenBtnVisibility(!!linkedId);
   }
 
   /**
    * Link a brand guideline from API via brandSyncModule
    */
   async linkBrandGuideline(guidelineId) {
-    const openBtn = document.getElementById('brandGuidelineOpenBtn');
-
     if (!guidelineId) {
       // Unlink
       setState('linkedGuidelineId', null);
       setState('linkedGuideline', null);
       setState('brandGuideline', null);
       this.updateBrandGuidelineStatus(null);
-      if (openBtn) openBtn.style.display = 'none';
+      this._updateOpenBtnVisibility(false);
       parent.postMessage({ pluginMessage: { type: 'LINK_GUIDELINE', guidelineId: null } }, '*');
       return;
     }
@@ -1171,9 +1254,7 @@ class BrandModule {
       // Auto-populate colors, typography, tokens
       this.applyGuidelineToState(guideline);
       this.updateBrandGuidelineStatus(guideline);
-
-      // Show open button
-      if (openBtn) openBtn.style.display = 'flex';
+      this._updateOpenBtnVisibility(true);
 
       // Save link to Figma file
       parent.postMessage({ pluginMessage: { type: 'LINK_GUIDELINE', guidelineId, autoLoad: true } }, '*');
@@ -1190,10 +1271,9 @@ class BrandModule {
       return;
     }
     // Open in new tab - webapp URL
-    const webappUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? `http://localhost:5173/brand-guidelines?id=${guidelineId}`
-      : `https://www.visantlabs.com/brand-guidelines?id=${guidelineId}`;
-    window.open(webappUrl, '_blank');
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const baseUrl = isLocal ? WEBAPP_BASE_URL.local : WEBAPP_BASE_URL.prod;
+    window.open(`${baseUrl}/brand-guidelines?id=${guidelineId}`, '_blank');
   }
 
   /**

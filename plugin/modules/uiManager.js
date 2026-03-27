@@ -14,10 +14,12 @@ class UIManager {
     this.wsReconnectAttempts = 0;
     this.wsMaxReconnectAttempts = 5;
     this.wsReconnectDelay = 5000; // 5 seconds
+    this._toastTimer = null;
 
     this.setupEventListeners();
     this.setupStateListeners();
     this.setupSandboxListeners();
+    this.setupGlobalClickHandlers();
     
     // Initial fetch for session and state
     this.init();
@@ -44,6 +46,26 @@ class UIManager {
     this.renderUserAvatar(user);
   }
 
+  /**
+   * Validate and normalize a potentially user-controlled avatar URL.
+   * Only allow http/https URLs; return null for anything invalid or unsafe.
+   */
+  _getSafeAvatarUrl(urlString) {
+    if (typeof urlString !== 'string' || !urlString.trim()) {
+      return null;
+    }
+    try {
+      const parsed = new URL(urlString, window.location.origin);
+      const protocol = parsed.protocol.toLowerCase();
+      if (protocol === 'https:' || protocol === 'http:') {
+        return parsed.toString();
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   renderUserAvatar(user) {
     const avatarEl = document.getElementById('userAvatar');
     if (!avatarEl) return;
@@ -51,9 +73,11 @@ class UIManager {
     // Clear existing content safely
     avatarEl.textContent = '';
 
-    if (user && user.photoUrl) {
+    const safePhotoUrl = user ? this._getSafeAvatarUrl(user.photoUrl) : null;
+
+    if (user && safePhotoUrl) {
       const img = document.createElement('img');
-      img.src = user.photoUrl;
+      img.src = safePhotoUrl;
       img.alt = user.name || '';
       avatarEl.appendChild(img);
       avatarEl.classList.add('has-photo');
@@ -65,6 +89,68 @@ class UIManager {
     }
 
     avatarEl.title = `Conectado como ${user?.name || ''}`;
+  }
+
+  /**
+   * Show a unified toast notification
+   * @param {string} message 
+   * @param {'success'|'error'|'warning'|'info'} type 
+   * @param {number} duration 
+   */
+  showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    // Figma-style icons
+    let icon = '';
+    if (type === 'success') {
+      icon = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    } else if (type === 'error') {
+      icon = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    } else if (type === 'warning') {
+      icon = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5v5M6 9h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    } else {
+      icon = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M6 4v2.5M6 8h.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
+    }
+
+    toast.innerHTML = `${icon}<span>${message}</span>`;
+    container.appendChild(toast);
+
+    // Auto-remove with animation
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      setTimeout(() => {
+        if (toast.parentNode) toast.remove();
+      }, 300);
+    }, duration);
+  }
+
+  setupGlobalClickHandlers() {
+    // Close overflow menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('toolbarOverflowMenu');
+      const btn = document.getElementById('toolbarMoreBtn');
+      if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    // Handle generic collapsible headers (with animation support)
+    document.addEventListener('click', (e) => {
+      const header = e.target.closest('.collapsible-header');
+      if (header) {
+        const targetId = header.dataset.target;
+        const target = document.getElementById(targetId);
+        if (target) {
+          const isHidden = target.classList.contains('hidden');
+          target.classList.toggle('hidden');
+          header.setAttribute('data-collapsed', !isHidden);
+        }
+      }
+    });
   }
 
   setupEventListeners() {
@@ -940,8 +1026,19 @@ class UIManager {
    * Escape HTML
    */
   escapeHtml(text) {
-    return escapeHtml(text);
+    if (typeof text !== 'string') return '';
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 }
+
+// Global accessor
+window.showToast = (msg, type, duration) => {
+  if (window.uiManager) window.uiManager.showToast(msg, type, duration);
+};
 
 const uiManager = new UIManager();
