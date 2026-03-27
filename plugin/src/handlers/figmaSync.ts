@@ -206,8 +206,12 @@ export async function pushToFigma(guideline: any): Promise<{ created: number; up
   if (guideline.colors) {
     for (const color of guideline.colors) {
       const name = `Colors/${color.name || 'Unnamed'}`;
-      // Parse hex to RGB
-      const hex = color.hex?.replace('#', '') || '888888';
+      // Parse hex to RGB - skip invalid entries
+      const hex = color.hex?.replace('#', '');
+      if (!hex || !/^[0-9A-Fa-f]{6}$/.test(hex)) {
+        console.warn(`[FigmaSync] Skipping color "${color.name || 'Unnamed'}" - invalid hex value: ${color.hex}`);
+        continue;
+      }
       const r = parseInt(hex.substring(0, 2), 16) / 255;
       const g = parseInt(hex.substring(2, 4), 16) / 255;
       const b = parseInt(hex.substring(4, 6), 16) / 255;
