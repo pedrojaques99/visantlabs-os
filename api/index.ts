@@ -55,6 +55,11 @@ const getAllowedOrigins = (): string[] => {
         });
     }
     
+    // Production origins (fallback)
+    origins.push('https://www.visantlabs.com');
+    origins.push('https://visantlabs.com');
+    origins.push('https://visantlabs-os.vercel.app');
+    
     // Development origins
     if (isDev) {
         origins.push('http://localhost:3000');
