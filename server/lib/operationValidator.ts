@@ -348,6 +348,11 @@ class OperationValidator {
         break;
       }
 
+      case 'CREATE_PAGE': {
+        if (!op.props?.name) errors.push('CREATE_PAGE requires props.name');
+        break;
+      }
+
       default:
         errors.push(`Unknown operation type: ${op.type}`);
     }

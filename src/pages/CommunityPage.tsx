@@ -25,6 +25,27 @@ import type { CanvasWorkflow } from '../services/workflowApi';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
 import { Workflow } from 'lucide-react';
 import { Button } from '@/components/ui/button'
+import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+
+// --- Components ---
+
+const CountUp: React.FC<{ value: number }> = ({ value }) => {
+  const spring = useSpring(0, { mass: 1, stiffness: 100, damping: 30 });
+  const displayValue = useTransform(spring, (current) => Math.round(current));
+
+  useEffect(() => {
+    spring.set(value);
+  }, [value, spring]);
+
+  return <motion.span>{displayValue}</motion.span>;
+};
+
+const BackgroundGlow = () => (
+  <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-brand-cyan/10 blur-[120px] rounded-full animate-pulse" />
+    <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-indigo-500/5 blur-[120px] rounded-full" />
+  </div>
+);
 
 type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | '3d' | 'presets' | 'aesthetics' | 'themes';
 
@@ -317,7 +338,10 @@ export const CommunityPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-x-hidden">
-      <div className="fixed inset-0 z-0">
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-gradient-to-b from-brand-cyan/5 via-transparent to-transparent opacity-50" />
+        <div className="absolute top-[10%] left-[10%] w-[400px] h-[400px] bg-brand-cyan/[0.02] blur-[150px] rounded-full" />
+        <div className="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-indigo-500/[0.01] blur-[150px] rounded-full" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 pt-8 pb-16 md:pb-24 relative z-10">
@@ -338,91 +362,129 @@ export const CommunityPage: React.FC = () => {
         </div>
 
         {/* Hero Section */}
-        <div className="relative mb-16 min-h-[500px] flex items-center overflow-hidden">
-          {/* 3D Object - Free floating, no container */}
-          <div className="absolute inset-0 w-full h-full pointer-events-none">
+        <div className="relative mb-16 min-h-[550px] flex items-center overflow-hidden rounded-3xl border border-white/[0.03] bg-neutral-900/10">
+          <BackgroundGlow />
+          
+          {/* 3D Object - Repositioned for better balance */}
+          <div className="absolute right-0 top-0 w-full md:w-1/2 h-full pointer-events-none z-0">
             <Suspense fallback={null}>
               <ClubLogo3D
                 isMobile={isMobile}
-                color="#1a1a1a"
+                color="#0f0f0f"
                 starColor="#52ddeb"
               />
             </Suspense>
           </div>
 
           {/* Content */}
-          <div className="relative z-10 w-full max-w-6xl mx-auto px-4 py-12">
+          <div className="relative z-10 w-full max-w-6xl mx-auto px-6 md:px-12 py-16">
             <div className="max-w-2xl">
-              {/* Label - More discreet */}
-              <div className="mb-4">
-                <MicroTitle as="span" className="inline-block px-2.5 py-0.5 text-brand-cyan/70 border border-brand-cyan/20 rounded-md bg-brand-cyan/5">
-                  Comunidade Ativa
-                </MicroTitle>
-              </div>
+              {/* Badge - Premium Styling */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6"
+              >
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 backdrop-blur-md">
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
+                  <span className="text-[10px] font-bold font-mono text-brand-cyan uppercase tracking-widest">
+                    Comunidade Ativa
+                  </span>
+                </div>
+              </motion.div>
 
-              {/* Title */}
-              <h1 className="text-4xl md:text-5xl font-semibold text-white mb-3 leading-tight">
+              {/* Title - Elegant & Impactful */}
+              <motion.h1 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-5xl md:text-7xl font-bold text-white mb-4 leading-[1.1] font-manrope tracking-tight"
+              >
                 {t('communityPresets.title')}
-              </h1>
+              </motion.h1>
 
-              {/* Description - More discreet */}
-              <p className="text-neutral-400 text-sm md:text-base mb-8 max-w-xl leading-relaxed">
+              {/* Description - Refined Typography */}
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-neutral-400 text-base md:text-lg mb-10 max-w-lg leading-relaxed font-manrope"
+              >
                 {t('communityPresets.subtitle')}
-              </p>
+              </motion.p>
 
-              {/* Action Buttons - More discreet */}
-              <div className="flex flex-wrap gap-2.5">
+              {/* Action Buttons - Consistent & Premium */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex flex-wrap gap-3"
+              >
                 <PremiumButton
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="flex items-center gap-2 h-10 px-4 text-sm"
+                  className="flex items-center gap-2 h-12 px-6 text-sm min-w-[200px]"
                 >
-                  <Plus size={16} />
+                  <Plus size={18} />
                   <span>Criar um novo prompt</span>
                 </PremiumButton>
-                <Button variant="ghost" onClick={() => navigate('/community/presets')}
-                  className="flex items-center gap-2 px-4 py-2 bg-neutral-800/40 hover:bg-neutral-800/60 text-neutral-300 rounded-md border border-neutral-700/40 text-sm transition-colors"
-                >
-                  <Globe size={16} />
-                  <span>Ver Tudo</span>
-                </Button>
-                <Button variant="ghost" onClick={() => setShowWorkflowLibrary(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-neutral-800/40 hover:bg-neutral-800/60 text-neutral-300 rounded-md border border-neutral-700/40 text-sm transition-colors"
-                >
-                  <FolderOpen size={16} />
-                  <span>{t('workflows.library.title') || 'Biblioteca'}</span>
-                </Button>
-              </div>
-            </div>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => navigate('/community/presets')}
+                    className="h-12 px-5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 backdrop-blur-md transition-all flex items-center gap-2"
+                  >
+                    <Globe size={18} className="text-brand-cyan" />
+                    <span className="font-manrope font-semibold">Explorar Galeria</span>
+                  </Button>
+                  
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setShowWorkflowLibrary(true)}
+                    className="h-12 px-5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 backdrop-blur-md transition-all flex items-center gap-2"
+                  >
+                    <FolderOpen size={18} className="text-neutral-400" />
+                  </Button>
+                </div>
+              </motion.div>
 
-            {/* Global Stats Cards - More discreet */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-12">
-              <GlassPanel padding="sm" className="transition-all hover:border-neutral-700/50">
-                <div className="flex items-center justify-between mb-1.5">
-                  <MicroTitle as="span" className="text-neutral-500">Usuários</MicroTitle>
-                  <TrendingUp size={12} className="text-brand-cyan/60" />
-                </div>
-                <p className="text-2xl font-semibold text-white font-mono">
-                  {isLoading ? '...' : globalCommunityStats.totalUsers}
-                </p>
-              </GlassPanel>
-              <GlassPanel padding="sm" className="transition-all hover:border-neutral-700/50">
-                <div className="flex items-center justify-between mb-1.5">
-                  <MicroTitle as="span" className="text-neutral-500">Presets Criados</MicroTitle>
-                  <Sparkles size={12} className="text-brand-cyan/60" />
-                </div>
-                <p className="text-2xl font-semibold text-white font-mono">
-                  {isLoading ? '...' : globalCommunityStats.totalPresets}
-                </p>
-              </GlassPanel>
-              <GlassPanel padding="sm" className="transition-all hover:border-neutral-700/50">
-                <div className="flex items-center justify-between mb-1.5">
-                  <MicroTitle as="span" className="text-neutral-500">Public Mockups</MicroTitle>
-                  <ImageIcon size={12} className="text-brand-cyan/60" />
-                </div>
-                <p className="text-2xl font-semibold text-white font-mono">
-                  {isLoading ? '...' : globalCommunityStats.totalBlankMockups}
-                </p>
-              </GlassPanel>
+              {/* Stats - Integrated Grid */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-16 max-w-xl"
+              >
+                <GlassPanel padding="sm" className="bg-white/[0.02] border-white/[0.05] hover:border-brand-cyan/30 transition-colors group">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">Membros</span>
+                    <TrendingUp size={14} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
+                  </div>
+                  <p className="text-3xl font-bold text-white font-mono tracking-tighter">
+                    {isLoading ? '...' : (globalCommunityStats.totalUsers === 0 ? '1' : <CountUp value={globalCommunityStats.totalUsers} />)}
+                  </p>
+                </GlassPanel>
+
+                <GlassPanel padding="sm" className="bg-white/[0.02] border-white/[0.05] hover:border-brand-cyan/30 transition-colors group">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">Criações</span>
+                    <Sparkles size={14} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
+                  </div>
+                  <p className="text-3xl font-bold text-white font-mono tracking-tighter">
+                    {isLoading ? '...' : (globalCommunityStats.totalPresets === 0 ? '!' : <CountUp value={globalCommunityStats.totalPresets} />)}
+                  </p>
+                </GlassPanel>
+
+                <GlassPanel padding="sm" className="hidden sm:flex bg-white/[0.02] border-white/[0.05] hover:border-brand-cyan/30 transition-colors group">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">Publicado</span>
+                    <ImageIcon size={14} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
+                  </div>
+                  <p className="text-3xl font-bold text-white font-mono tracking-tighter">
+                    {isLoading ? '...' : (globalCommunityStats.totalBlankMockups === 0 ? '+' : <CountUp value={globalCommunityStats.totalBlankMockups} />)}
+                  </p>
+                </GlassPanel>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -436,10 +498,11 @@ export const CommunityPage: React.FC = () => {
         {!isCheckingAuth && (
           <div className="space-y-24">
             {/* Exploration Categories */}
-            <section className="space-y-8">
+            <section className="space-y-10">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-white font-manrope">Explorar por Categoria</h2>
+                <div className="space-y-1">
+                  <MicroTitle className="text-brand-cyan/60 tracking-[0.2em]">Curadoria</MicroTitle>
+                  <h2 className="text-3xl font-bold text-white font-manrope tracking-tight">Explorar por Categoria</h2>
                 </div>
                 <Link
                   to="/community/presets"
@@ -454,20 +517,22 @@ export const CommunityPage: React.FC = () => {
                 {presetTypes.map((category) => (
                   <GlassPanel
                     key={category.type}
-                    className="group relative rounded-md p-6 flex flex-col h-full hover:border-brand-cyan/40 transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden cursor-pointer"
+                    className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-brand-cyan/40 transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden cursor-pointer bg-white/[0.01]"
                     onClick={() => navigate(`/community/presets?type=${category.type}`)}
                   >
-                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-5 transition-opacity [mask-image:linear-gradient(to_bottom_left,black,transparent)]">
-                      <category.icon size={500} className="text-brand-cyan" />
+                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity [mask-image:linear-gradient(to_bottom_left,black,transparent)] scale-150">
+                      <category.icon size={120} className="text-brand-cyan" />
                     </div>
 
                     <div className="flex items-center justify-between mb-6">
-                      <div className="p-3 bg-neutral-900 rounded-xl group-hover:bg-brand-cyan/10 transition-colors">
+                      <div className="p-3 bg-white/5 rounded-xl group-hover:bg-brand-cyan/10 group-hover:scale-110 transition-all duration-300">
                         <category.icon size={24} className="text-neutral-400 group-hover:text-brand-cyan transition-colors" />
                       </div>
                       <div className="flex flex-col items-end">
-                        <span className="text-2xl font-bold font-mono text-white whitespace-nowrap">{category.count}</span>
-                        <MicroTitle as="span" className="text-neutral-600">Presets</MicroTitle>
+                        <span className="text-2xl font-bold font-mono text-white whitespace-nowrap group-hover:text-brand-cyan transition-colors">
+                          <CountUp value={category.count} />
+                        </span>
+                        <span className="text-[9px] font-bold text-neutral-600 uppercase tracking-widest font-manrope">Presets</span>
                       </div>
                     </div>
 

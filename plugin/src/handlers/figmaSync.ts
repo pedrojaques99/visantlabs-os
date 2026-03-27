@@ -4,7 +4,7 @@
  */
 
 import { rgbToHex } from '../utils/colors';
-import { getAgentComponents } from './operations';
+import { getAgentComponents } from './components';
 
 export interface FigmaSyncData {
   fileKey: string;

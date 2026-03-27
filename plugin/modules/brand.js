@@ -59,10 +59,12 @@ class BrandModule {
   }
 
   setupEventListeners() {
-    // Brand pill click - open settings
+    // Brand pill click - open settings to Brand tab and expand the hub section
     this.brandPill?.addEventListener('click', () => {
-      const settingsBtn = document.getElementById('settingsBtn');
-      if (settingsBtn) settingsBtn.click();
+      if (window.uiManager) {
+        window.uiManager.openBrandSettings();
+        this.expandSection('brandApiSection');
+      }
     });
 
     // Guideline selection
@@ -160,6 +162,12 @@ class BrandModule {
       this.addFontProperty();
     });
 
+    // Brand Hub More Button
+    document.getElementById('brandHubMoreBtn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('brandHubOverflowMenu')?.classList.toggle('hidden');
+    });
+
     // ═══ BRAND GUIDELINE API ═══
     this.brandGuidelineSelect?.addEventListener('change', (e) => {
       this.linkBrandGuideline(e.target.value);
@@ -255,6 +263,34 @@ class BrandModule {
     eventBus?.on('brand:synchronized', () => {
       this.showSynchronized();
     });
+  }
+
+  /**
+   * Expand a specific collapsible section in the Brand tab
+   * @param {string} sectionId 
+   */
+  expandSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+
+    // Aggressive Accordion: Close others in the same group
+    const group = section.closest('.figma-prop-panel') || section.parentElement;
+    group.querySelectorAll('.collapsible').forEach(s => {
+      if (s !== section) s.classList.add('collapsed');
+      else s.classList.remove('collapsed');
+    });
+
+    // Make sure the content isn't hidden by legacy .hidden class if applicable
+    const contentId = section.querySelector('.collapsible-header')?.dataset.target;
+    if (contentId) {
+      const content = document.getElementById(contentId);
+      if (content) content.classList.remove('hidden');
+    }
+    
+    // Smooth scroll into view
+    setTimeout(() => {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   }
 
   // ═══ COLLAPSIBLE SECTIONS ═══
@@ -883,22 +919,24 @@ class BrandModule {
         `<option value="${r.id}" ${color.role === r.id ? 'selected' : ''}>${r.label}</option>`
       ).join('');
 
+      // Get first letter of role for badge
+      const roleChar = color.role ? color.role.charAt(0).toUpperCase() : '';
+      const roleBadge = roleChar ? `<div class="color-role-badge">${roleChar}</div>` : '';
+
       div.innerHTML = `
-        <div class="color-swatch-small" style="background: ${color.value}"></div>
-        <div class="color-info-group">
-          <div class="color-name-label" title="${this.escapeHtml(color.name)}">${this.escapeHtml(color.name)}</div>
-          <select class="color-role-select" data-color-id="${id}">
-            ${roleOptions}
-          </select>
-        </div>
-        <button class="figma-icon-btn btn-remove-color" data-color-id="${id}" title="Remover cor">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2.5 3H3.5V9.5C3.5 9.77614 3.72386 10 4 10H8C8.27614 10 8.5 9.77614 8.5 9.5V3H9.5V2H7V1.5C7 1.22386 6.77614 1 6.5 1H5.5C5.22386 1 5 1.22386 5 1.5V2H2.5V3ZM6 2H5V3H7V2H6ZM4.5 4H5.5V9H4.5V4ZM6.5 4H7.5V9H6.5V4Z" fill="currentColor"/>
+        <div class="color-swatch-medium" style="background: ${color.value}" title="${this.escapeHtml(color.name)}: ${color.value}"></div>
+        ${roleBadge}
+        <select class="color-role-select" data-color-id="${id}">
+          ${roleOptions}
+        </select>
+        <button class="btn-remove-color" data-color-id="${id}" title="Remover cor">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M2.5 2.5L7.5 7.5M7.5 2.5L2.5 7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
           </svg>
         </button>
       `;
 
-      // Handle Role change (watchState auto-saves)
+      // Handle Role change
       div.querySelector('.color-role-select').addEventListener('change', (e) => {
         const newColors = new Map(state.selectedColors);
         const colorData = newColors.get(id);
@@ -908,7 +946,7 @@ class BrandModule {
         }
       });
 
-      // Handle Remove (watchState auto-saves)
+      // Handle Remove
       div.querySelector('.btn-remove-color').addEventListener('click', () => {
         const newColors = new Map(state.selectedColors);
         newColors.delete(id);
@@ -955,17 +993,22 @@ class BrandModule {
     if (!colorList) return;
 
     colorList.innerHTML = '';
+
     for (const color of state.allColors) {
       const div = document.createElement('div');
-      div.className = 'color-item clickable';
-      div.innerHTML = `
-        <div class="color-swatch" style="background: ${color.value}" title="${this.escapeHtml(color.name)}"></div>
-        <div class="color-name">${this.escapeHtml(color.name)}</div>
-      `;
-
+      div.className = 'bg-color-swatch';
+      div.style.backgroundColor = color.value;
+      div.title = `${color.name}: ${color.value}`;
+      
       div.addEventListener('click', () => {
+        const colorId = `lib-${Date.now()}`;
         const newColors = new Map(state.selectedColors);
-        newColors.set(color.id, color);
+        newColors.set(colorId, {
+          id: colorId,
+          name: color.name,
+          value: color.value,
+          role: ''
+        });
         setState('selectedColors', newColors);
       });
 
@@ -1593,3 +1636,4 @@ class BrandModule {
 }
 
 const brandModule = new BrandModule();
+window.brandModule = brandModule;

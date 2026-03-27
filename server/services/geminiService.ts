@@ -7,7 +7,8 @@ dotenv.config({ path: '.env.local' });
  
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../../src/types/types.js';
 import { GEMINI_MODELS, isAdvancedModel, getMaxRefImages } from '../../src/constants/geminiModels.js';
-import type { FigmaOperation, SerializedContext } from '../../src/lib/figma-types.js';
+import type { FigmaOperation, SerializedContext, EnrichedContext } from '../../src/lib/figma-types.js';
+import { preprocessPrompt, type LinearIssue } from '../utils/linearParser.js';
 import { safeFetch } from '../utils/securityValidation.js';
 import { buildGeminiPromptInstructionsTemplate } from '../../src/utils/mockupPromptFormat.js';
 import type { AvailableTags } from './tagService.js';
@@ -1053,34 +1054,149 @@ export interface FigmaOperationsResult {
 
 export const generateFigmaOperations = async (
   prompt: string,
-  context: SerializedContext,
+  context: SerializedContext | EnrichedContext,
   userApiKey?: string
 ): Promise<FigmaOperationsResult> => {
   return withRetry(async () => {
-    const contextStr = JSON.stringify(context, null, 2);
+    // Preprocess prompt (detect and parse Linear issues)
+    const { processedPrompt, linearIssue, isLinearIssue } = preprocessPrompt(prompt);
 
-    const systemPrompt = `You are a Figma plugin assistant. Given a user prompt and the current canvas context (selected nodes, styles), generate a list of Figma operations to apply.
+    // Build context sections
+    const enriched = context as EnrichedContext;
+    const nodesStr = JSON.stringify(context.nodes?.slice(0, 10) || [], null, 2);
 
-Return ONLY valid JSON in this exact format:
-{ "operations": [ ... ] }
+    // Build available assets section
+    let assetsSection = '';
+    if (enriched.reusableAssets?.length) {
+      assetsSection = `\n## AVAILABLE ASSETS (clone by name with sourceName)
+${enriched.reusableAssets.map(a => `- "${a.name}" (${a.type}, ${a.width}x${a.height})`).join('\n')}`;
+    }
 
-Allowed operation types:
-- CREATE_FRAME: { type: "CREATE_FRAME", props: { name, width, height, direction: "HORIZONTAL"|"VERTICAL", gap, padding } }
-- CREATE_TEXT: { type: "CREATE_TEXT", props: { content, styleId?, fontSize?, color?: { r, g, b, a } } }
-- CREATE_COMPONENT: { type: "CREATE_COMPONENT", componentKey, x, y, name }
-- SET_FILL: { type: "SET_FILL", nodeId, color: { r, g, b, a } }
-- APPLY_STYLE: { type: "APPLY_STYLE", nodeId, styleId, styleType: "FILL"|"TEXT"|"EFFECT"|"GRID" }
-- APPLY_VARIABLE: { type: "APPLY_VARIABLE", nodeId, variableId, property }
-- GROUP_NODES: { type: "GROUP_NODES", nodeIds: string[], name }
-- DELETE_NODE: { type: "DELETE_NODE", nodeId }
+    // Build templates section
+    let templatesSection = '';
+    if (enriched.templates?.length) {
+      templatesSection = `\n## AVAILABLE TEMPLATES (clone with textOverrides)
+${enriched.templates.map(t => `- "${t.name}" (${t.width}x${t.height}) - slots: ${t.textSlots?.join(', ') || 'none'}`).join('\n')}`;
+    }
 
-RGBA values: r, g, b, a are 0-1 floats.
-Use node IDs from the context when referencing existing nodes.`;
+    // Build pages section
+    let pagesSection = '';
+    if (enriched.pages?.length) {
+      pagesSection = `\n## EXISTING PAGES
+${enriched.pages.map(p => `- "${p.name}" (${p.frameCount} frames)`).join('\n')}`;
+    }
 
-    const userPrompt = `Canvas context:
-${contextStr}
+    // Build Linear issue section if detected
+    let linearSection = '';
+    if (isLinearIssue && linearIssue) {
+      const dims = linearIssue.formato?.dimensoes?.map(d => `${d.width}x${d.height}`).join(', ') || 'não especificado';
+      const textos = Object.entries(linearIssue.textos || {}).map(([k, v]) => `  - ${k}: "${v.slice(0, 50)}..."`).join('\n');
 
-User prompt: ${prompt}
+      linearSection = `
+## LINEAR ISSUE DETECTED
+- ID: ${linearIssue.identifier}
+- Title: ${linearIssue.title}
+- Cliente: ${linearIssue.cliente || 'não especificado'}
+- Formatos: ${dims}
+${textos ? `- Textos:\n${textos}` : ''}
+- Estilo: ${linearIssue.observacoes?.join(', ') || 'não especificado'}
+
+INSTRUÇÕES PARA ESTA ISSUE:
+1. Criar página com nome "[${linearIssue.identifier}] ${linearIssue.title.slice(0, 50)}"
+2. Criar frames para cada formato - NOME DEVE INCLUIR DIMENSÕES (ex: "Stories 1080x1920", "Feed 1080x1080")
+3. Usar autoPosition: "right" para organizar frames lado a lado
+4. Se houver assets de background disponíveis, clonar com sourceName
+5. Incluir todos os textos especificados na hierarquia correta`;
+    }
+
+    const systemPrompt = `You are a Figma plugin assistant specialized in generating organized design layouts.
+
+Return ONLY valid JSON: { "operations": [ ... ] }
+
+## ORGANIZATION RULES
+1. For multiple demands/sections: CREATE a separate PAGE for each demand FIRST
+2. Use "ref" to name pages/frames, then "parentRef" to nest frames inside pages
+3. Use autoPosition: "right" to automatically position frames side-by-side (no manual x/y needed)
+4. FRAME NAMING: Always include dimensions in frame name (e.g., "Stories 1080x1920", "Banner 300x250", "A4 21x29.7cm", "Outdoor 3x2m")
+5. CRITICAL - TOP-LEVEL FRAMES: Canvas frames (Feed, Stories, Banners) must have FIXED width/height. NEVER use layoutMode on top-level frames - it causes "Hug" sizing which breaks the design. Auto-layout is ONLY for content containers INSIDE frames.
+
+## OPERATION TYPES
+
+### PAGE CREATION
+- CREATE_PAGE: { type: "CREATE_PAGE", ref: "page_id", props: { name: "Page Name" } }
+
+### FRAME CREATION (with auto-positioning)
+- CREATE_FRAME: { type: "CREATE_FRAME", ref?, parentRef?, props: {
+    name, width, height,
+    autoPosition?: "right"|"below"|"grid",  // Auto-calculates x/y
+    positionGap?: 100,  // Gap between frames (default: 100)
+    fills?: [{ type: "SOLID", color: { r, g, b } }],
+    cornerRadius?
+  } }
+
+IMPORTANT - FRAME vs AUTO-LAYOUT:
+- TOP-LEVEL FRAMES (canvas artboards like Feed, Stories, Banners): ALWAYS use FIXED width/height, NO layoutMode
+- AUTO-LAYOUT (layoutMode): ONLY for internal content containers INSIDE frames (e.g., text groups, button containers)
+- WRONG: Creating a 1080x1080 frame with layoutMode (results in "Hug" sizing)
+- CORRECT: Create frame with fixed dimensions, then create auto-layout containers inside for content
+
+### AUTO-LAYOUT CONTAINER (for content organization inside frames)
+- CREATE_FRAME with layoutMode: { type: "CREATE_FRAME", parentRef: "mainFrame", props: {
+    name: "Content Container",
+    layoutMode: "VERTICAL",  // Only use inside another frame!
+    itemSpacing: 16,
+    paddingTop/Right/Bottom/Left: 24,
+    primaryAxisSizingMode: "AUTO",  // Hug content
+    counterAxisSizingMode: "AUTO"
+  } }
+
+### TEXT CREATION
+- CREATE_TEXT: { type: "CREATE_TEXT", ref?, parentRef?, props: { name?, content, fontSize?, fontFamily?, fills?, textAlignHorizontal?: "LEFT"|"CENTER"|"RIGHT", layoutSizingHorizontal?: "FIXED"|"HUG"|"FILL" } }
+
+### CLONE BY NAME (PREFERRED - more robust than ID)
+- CLONE_NODE: { type: "CLONE_NODE", ref?, sourceName: "Asset Name", parentRef?, textOverrides?: [{ name: "TextLayerName", content: "New text" }] }
+- Use sourceName to clone existing assets by name (no fragile IDs!)
+- Use textOverrides to replace text in cloned templates
+
+### CLONE BY ID (fallback)
+- CLONE_NODE: { type: "CLONE_NODE", ref?, sourceNodeId: "123:456", parentRef? }
+${assetsSection}
+${templatesSection}
+${pagesSection}
+${linearSection}
+
+## COLOR VALUES
+RGB: 0-1 floats. Example: red = { r: 1, g: 0, b: 0 }, orange = { r: 0.83, g: 0.29, b: 0.05 }
+
+## EXAMPLE: Correct frame structure
+\`\`\`json
+{
+  "operations": [
+    { "type": "CREATE_PAGE", "ref": "p1", "props": { "name": "[VSN-511] Credenciamento" } },
+
+    // TOP-LEVEL FRAME: Fixed dimensions, NO layoutMode
+    { "type": "CREATE_FRAME", "ref": "feed", "parentRef": "p1", "props": {
+      "name": "Feed 1080x1080", "width": 1080, "height": 1080, "autoPosition": "right",
+      "fills": [{ "type": "SOLID", "color": { "r": 0.1, "g": 0.1, "b": 0.1 } }]
+    }},
+
+    // CONTENT CONTAINER: Auto-layout INSIDE the frame
+    { "type": "CREATE_FRAME", "ref": "content", "parentRef": "feed", "props": {
+      "name": "Content", "layoutMode": "VERTICAL", "itemSpacing": 24,
+      "paddingTop": 40, "paddingBottom": 40, "paddingLeft": 40, "paddingRight": 40,
+      "primaryAxisSizingMode": "AUTO", "counterAxisSizingMode": "FIXED", "width": 1000
+    }},
+
+    { "type": "CREATE_TEXT", "parentRef": "content", "props": { "content": "Título", "fontSize": 48 } }
+  ]
+}
+\`\`\``;
+
+    const userPrompt = `Canvas context (selection):
+${nodesStr}
+
+User prompt: ${isLinearIssue ? processedPrompt : prompt}
+${isLinearIssue ? `\nOriginal Linear issue data available in system prompt above.` : ''}
 
 Return JSON with "operations" array only.`;
 
