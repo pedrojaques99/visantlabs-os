@@ -104,6 +104,7 @@ export async function applyOperations(ops: FigmaOperation[]) {
   setPagesLoaded(false);
 
   const createdNodes = new Map<string, SceneNode>();
+  const createdPages = new Map<string, PageNode>();
   const summaryLines: string[] = [];
   const summaryItems: SummaryItem[] = [];
 
@@ -117,6 +118,10 @@ export async function applyOperations(ops: FigmaOperation[]) {
   }
 
   async function getParent(parentRef?: string, parentNodeId?: string): Promise<BaseNode & ChildrenMixin> {
+    // Check created pages first (for frames inside new pages)
+    if (parentRef && createdPages.has(parentRef)) {
+      return createdPages.get(parentRef) as BaseNode & ChildrenMixin;
+    }
     if (parentRef && createdNodes.has(parentRef)) {
       return createdNodes.get(parentRef) as BaseNode & ChildrenMixin;
     }
@@ -146,7 +151,7 @@ export async function applyOperations(ops: FigmaOperation[]) {
     });
 
     try {
-      await processOperation(op, { createdNodes, pushSummary, getParent });
+      await processOperation(op, { createdNodes, createdPages, pushSummary, getParent });
 
       // Notify UI of success
       postToUI({
@@ -191,12 +196,22 @@ export async function applyOperations(ops: FigmaOperation[]) {
 
 interface OperationContext {
   createdNodes: Map<string, SceneNode>;
+  createdPages: Map<string, PageNode>;
   pushSummary: (text: string, node?: SceneNode | BaseNode | null) => void;
   getParent: (parentRef?: string, parentNodeId?: string) => Promise<BaseNode & ChildrenMixin>;
 }
 
 async function processOperation(op: FigmaOperation, ctx: OperationContext) {
-  const { createdNodes, pushSummary, getParent } = ctx;
+  const { createdNodes, createdPages, pushSummary, getParent } = ctx;
+
+  // ═══ CREATE_PAGE ═══
+  if (op.type === 'CREATE_PAGE') {
+    const page = figma.createPage();
+    page.name = op.props.name;
+    if (op.ref) createdPages.set(op.ref, page);
+    pushSummary(`Página criada @"${page.name}"`, page);
+    return;
+  }
 
   // ═══ CREATE_FRAME ═══
   if (op.type === 'CREATE_FRAME') {
@@ -240,13 +255,51 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     if (op.props.strokeWeight != null) frame.strokeWeight = op.props.strokeWeight;
     if (op.props.opacity != null) frame.opacity = op.props.opacity;
 
-    if (parent === figma.currentPage) {
-      frame.x = figma.viewport.center.x - fw / 2;
-      frame.y = figma.viewport.center.y - fh / 2;
+    // Posicionamento do frame
+    if (parent === figma.currentPage || parent.type === 'PAGE') {
+      const page = parent as PageNode;
+      const gap = op.props.positionGap ?? 100;
+
+      if (op.props.autoPosition) {
+        const siblings = page.children.filter(n => n.type === 'FRAME' || n.type === 'COMPONENT');
+
+        if (op.props.autoPosition === 'right' && siblings.length > 0) {
+          // Posiciona à direita do último frame
+          const maxX = Math.max(0, ...siblings.map(n => n.x + n.width));
+          frame.x = maxX + gap;
+          frame.y = 0;
+        } else if (op.props.autoPosition === 'below' && siblings.length > 0) {
+          // Posiciona abaixo do último frame
+          const maxY = Math.max(0, ...siblings.map(n => n.y + n.height));
+          frame.x = 0;
+          frame.y = maxY + gap;
+        } else if (op.props.autoPosition === 'grid') {
+          // Grid: calcula posição baseado em linha/coluna
+          const cols = 4;
+          const idx = siblings.length;
+          const col = idx % cols;
+          const row = Math.floor(idx / cols);
+          const maxW = Math.max(fw, ...siblings.map(n => n.width));
+          const maxH = Math.max(fh, ...siblings.map(n => n.height));
+          frame.x = col * (maxW + gap);
+          frame.y = row * (maxH + gap);
+        } else {
+          frame.x = 0;
+          frame.y = 0;
+        }
+      } else if (op.props.x != null || op.props.y != null) {
+        // Posição explícita
+        frame.x = op.props.x ?? 0;
+        frame.y = op.props.y ?? 0;
+      } else {
+        // Fallback: centro do viewport
+        frame.x = figma.viewport.center.x - fw / 2;
+        frame.y = figma.viewport.center.y - fh / 2;
+      }
     }
     parent.appendChild(frame);
 
-    if (parent !== figma.currentPage) {
+    if (parent !== figma.currentPage && parent.type !== 'PAGE') {
       if (op.props.x != null) frame.x = op.props.x;
       if (op.props.y != null) frame.y = op.props.y;
     }
@@ -951,15 +1004,30 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ CLONE_NODE / DUPLICATE_NODE ═══
   else if (op.type === 'CLONE_NODE' || op.type === 'DUPLICATE_NODE') {
-    if (!op.sourceNodeId) {
-      postToUI({ type: 'ERROR', message: 'CLONE_NODE: sourceNodeId é obrigatório' });
+    const sourceName = op.type === 'CLONE_NODE' ? op.sourceName : undefined;
+    const sourceScope = op.type === 'CLONE_NODE' ? op.sourceScope : undefined;
+
+    if (!op.sourceNodeId && !sourceName) {
+      postToUI({ type: 'ERROR', message: 'CLONE_NODE: sourceNodeId ou sourceName é obrigatório' });
       return;
     }
 
-    const sourceNode = await figma.getNodeByIdAsync(op.sourceNodeId);
-    if (!sourceNode) {
-      postToUI({ type: 'ERROR', message: `CLONE_NODE: Nó "${op.sourceNodeId}" não encontrado` });
-      return;
+    let sourceNode: BaseNode | null = null;
+
+    // Buscar por nome (mais robusto) ou por ID
+    if (sourceName) {
+      const scope = sourceScope === 'page' ? figma.currentPage : figma.root;
+      sourceNode = scope.findOne(n => n.name === sourceName);
+      if (!sourceNode) {
+        postToUI({ type: 'ERROR', message: `CLONE_NODE: Nó com nome "${sourceName}" não encontrado` });
+        return;
+      }
+    } else {
+      sourceNode = await figma.getNodeByIdAsync(op.sourceNodeId!);
+      if (!sourceNode) {
+        postToUI({ type: 'ERROR', message: `CLONE_NODE: Nó "${op.sourceNodeId}" não encontrado` });
+        return;
+      }
     }
 
     if (typeof (sourceNode as any).clone !== 'function') {

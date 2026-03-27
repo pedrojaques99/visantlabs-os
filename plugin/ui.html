@@ -11,11 +11,15 @@
   <!-- ═══ MAIN VIEW ═══ -->
   <div id="mainView" class="view">
     <div class="app-header">
-      <h2>Visant Copilot</h2>
+      <div class="header-brand">
+        <div class="brand-logo">V</div>
+        <span class="brand-name">Visant</span>
+      </div>
       <div class="header-controls">
+        <div id="creditBadge" class="credit-badge" title="Créditos restantes"></div>
         <div id="userAvatar" class="user-avatar" title="Usuário"></div>
-        <button class="icon-btn" id="settingsBtn" title="Configurações">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <button class="icon-btn" id="settingsBtn" title="Configurações (Esc para fechar)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M7 9.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.2"/>
             <path d="M1.5 7h1M12.5 7h-1M7 1.5v1M7 12.5v-1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
           </svg>
@@ -33,10 +37,18 @@
     <div class="chat-card">
       <div class="chat-card-toolbar">
         <button class="tool-btn" id="codeBtn" title="Ver código">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M9.5 4.5L12 7L9.5 9.5M4.5 4.5L2 7L4.5 9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
+
+        <!-- Selection integrated in toolbar -->
+        <div id="selectionChip" class="selection-chip hidden" title="Ver detalhes da seleção">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M1.5 1.5V3M1.5 1.5H3M1.5 1.5l3 3m4 4V7M8.5 8.5H7M8.5 8.5l-3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span id="selectionName">Seleção</span>
+        </div>
         
         <button class="tool-btn" id="attachBtn" title="Anexar arquivo (Imagem, CSV, PDF)">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -96,66 +108,9 @@
         <input type="file" id="attachInput" accept="image/*,.csv,.pdf" multiple style="display: none;">
       </div>
 
-      <!-- Image Generation Settings Panel -->
-      <div id="genImageSettingsPanel" class="gen-image-settings-panel hidden">
-        <div class="settings-header">
-          <span class="settings-title">⚙ Configurações de Imagem</span>
-          <button class="settings-close" id="genImageSettingsClose">×</button>
-        </div>
-        <div class="settings-content">
-          <!-- Frame Size Selector -->
-          <div class="settings-group">
-            <label class="settings-label">📐 Tamanho do Frame</label>
-            <div class="settings-options">
-              <button class="settings-option active" data-size="16:9-800x450" title="Widescreen 800×450">
-                <span class="option-label">16:9</span>
-                <span class="option-desc">800×450</span>
-              </button>
-              <button class="settings-option" data-size="4:3-1024x768" title="Standard 1024×768">
-                <span class="option-label">4:3</span>
-                <span class="option-desc">1024×768</span>
-              </button>
-              <button class="settings-option" data-size="1:1-800x800" title="Square 800×800">
-                <span class="option-label">1:1</span>
-                <span class="option-desc">800×800</span>
-              </button>
-              <button class="settings-option" data-size="custom" title="Custom size">
-                <span class="option-label">Custom</span>
-                <span class="option-desc">⚙ Config</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Resolution Selector -->
-          <div class="settings-group">
-            <label class="settings-label">🎬 Resolução</label>
-            <div id="resolutionOptions" class="settings-options">
-              <!-- Populated dynamically based on selected model -->
-            </div>
-          </div>
-
-          <!-- Custom Size Input (Hidden by default) -->
-          <div id="customSizeGroup" class="settings-group hidden">
-            <label class="settings-label">Tamanho Customizado</label>
-            <div style="display: flex; gap: 8px; margin-bottom: 6px;">
-              <input type="number" id="customWidth" placeholder="Largura" min="100" max="4000" value="800"
-                style="flex: 1;">
-              <span
-                style="padding: 6px 0; color: var(--figma-color-text-secondary); font-size: 11px; font-weight: 600;">×</span>
-              <input type="number" id="customHeight" placeholder="Altura" min="100" max="4000" value="450"
-                style="flex: 1;">
-            </div>
-            <div
-              style="text-align: center; font-size: 10px; color: var(--figma-color-text-tertiary); padding: 4px; background: var(--figma-color-bg, white); border-radius: 3px;">
-              <span id="aspectRatioDisplay">16:9</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <textarea id="chatInput" placeholder="Descreva o design que quer criar ou modificar..." rows="2"></textarea>
       <div id="attachmentPreview" class="attachment-preview hidden"></div>
-      <div id="selectionIndicator" class="selection-indicator hidden"></div>
       <div class="chat-card-footer">
         <div class="chat-card-pills">
           <button class="chat-pill" id="scanPagePill" title="Pesquisar toda a página">
@@ -178,7 +133,6 @@
             </svg>
             Brand
           </button>
-          <span class="credit-pill" id="creditPill" title="Créditos restantes"></span>
         </div>
         <button class="undo-btn hidden" id="undoBtn" title="Desfazer (↩)">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -232,22 +186,36 @@
                     <span class="save-status-dot"></span>
                     <span class="save-status-text">Sincronizado</span>
                   </div>
-                  <button class="figma-icon-btn" id="brandGuidelineRefreshBtn" title="Atualizar lista" onclick="event.stopPropagation()">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M10 6a4 4 0 01-7.5 2M2 6a4 4 0 017.5-2M10 2v2.5H7.5M2 10V7.5h2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-                  <button class="figma-icon-btn" id="brandGuidelineImportBtn" title="Importar JSON" onclick="event.stopPropagation()">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 8v2a1 1 0 001 1h6a1 1 0 001-1V8M4 7l2-2 2 2M6 11V5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                    </svg>
-                  </button>
-                  <input type="file" id="brandGuidelineImportInput" accept=".json" style="display:none">
-                  <button class="figma-icon-btn" id="brandGuidelineExportBtn" title="Exportar JSON" onclick="event.stopPropagation()">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 8v2a1 1 0 001 1h6a1 1 0 001-1V8M4 6l2 2 2-2M6 1v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                    </svg>
-                  </button>
+                  <div class="overflow-menu-container">
+                    <button class="figma-icon-btn" id="brandHubMoreBtn" title="Mais opções de gerenciamento" onclick="event.stopPropagation()">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <circle cx="6" cy="3" r="1" fill="currentColor"/>
+                        <circle cx="6" cy="6" r="1" fill="currentColor"/>
+                        <circle cx="6" cy="9" r="1" fill="currentColor"/>
+                      </svg>
+                    </button>
+                    <div id="brandHubOverflowMenu" class="overflow-menu header-overflow-menu hidden">
+                      <button class="menu-item" id="brandGuidelineRefreshBtn">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M10 6a4 4 0 01-7.5 2M2 6a4 4 0 017.5-2M10 2v2.5H7.5M2 10V7.5h2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Atualizar Lista
+                      </button>
+                      <button class="menu-item" id="brandGuidelineImportBtn">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 8v2a1 1 0 001 1h6a1 1 0 001-1V8M4 7l2-2 2 2M6 11V5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        </svg>
+                        Importar JSON
+                      </button>
+                      <input type="file" id="brandGuidelineImportInput" accept=".json" style="display:none">
+                      <button class="menu-item" id="brandGuidelineExportBtn">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 8v2a1 1 0 001 1h6a1 1 0 001-1V8M4 6l2 2 2-2M6 1v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        </svg>
+                        Exportar JSON
+                      </button>
+                    </div>
+                  </div>
                   <button class="figma-icon-btn" id="brandGuidelineAddBtn" title="Novo guideline" onclick="event.stopPropagation()">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                       <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
@@ -529,6 +497,63 @@
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 3.5l2.5 2.5-2.5 2.5M10.5 6H4M4 2.5H2.5a1 1 0 00-1 1v5a1 1 0 001 1H4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     Sair
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image Generation Settings -->
+          <div class="figma-prop-section collapsible" id="imageGenSection">
+            <div class="figma-prop-header collapsible-header" data-target="imageGenContent">
+              <span class="figma-prop-title">Geração de Imagem</span>
+              <svg class="collapse-icon" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="collapsible-content hidden" id="imageGenContent">
+              <div class="settings-content" style="padding: 4px 12px 12px;">
+                <!-- Frame Size Selector -->
+                <div class="settings-group">
+                  <label class="settings-label">📐 Tamanho do Frame</label>
+                  <div class="settings-options" style="grid-template-columns: repeat(2, 1fr);">
+                    <button class="settings-option active" data-size="16:9-800x450" title="Widescreen 800×450">
+                      <span class="option-label">16:9</span>
+                      <span class="option-desc">800×450</span>
+                    </button>
+                    <button class="settings-option" data-size="4:3-1024x768" title="Standard 1024×768">
+                      <span class="option-label">4:3</span>
+                      <span class="option-desc">1024×768</span>
+                    </button>
+                    <button class="settings-option" data-size="1:1-800x800" title="Square 800×800">
+                      <span class="option-label">1:1</span>
+                      <span class="option-desc">800×800</span>
+                    </button>
+                    <button class="settings-option" data-size="custom" title="Custom size">
+                      <span class="option-label">Custom</span>
+                      <span class="option-desc">⚙ Config</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Custom Size Input (Hidden by default) -->
+                <div id="customSizeGroup" class="settings-group hidden" style="margin-top: 8px;">
+                  <label class="settings-label">Tamanho Customizado</label>
+                  <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+                    <input type="number" id="customWidth" class="auth-input" placeholder="Largura" min="100" max="4000" value="800">
+                    <span style="padding: 6px 0; color: var(--figma-color-text-secondary); font-size: 11px; font-weight: 600;">×</span>
+                    <input type="number" id="customHeight" class="auth-input" placeholder="Altura" min="100" max="4000" value="450">
+                  </div>
+                  <div style="text-align: center; font-size: 10px; color: var(--figma-color-text-tertiary); padding: 4px; background: var(--figma-color-bg-secondary); border-radius: 4px;">
+                    <span id="aspectRatioDisplay">16:9</span>
+                  </div>
+                </div>
+
+                <!-- Resolution Selector -->
+                <div class="settings-group" style="margin-top: 8px;">
+                  <label class="settings-label">🎬 Resolução</label>
+                  <div id="resolutionOptions" class="settings-options" style="grid-template-columns: repeat(2, 1fr);">
+                    <!-- Populated dynamically based on selected model -->
+                  </div>
                 </div>
               </div>
             </div>

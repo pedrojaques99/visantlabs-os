@@ -267,4 +267,66 @@ export const brandGuidelineApi = {
     }
     return response.json();
   },
+
+  // ── Figma REST API (without plugin) ──
+
+  async previewFigmaFile(id: string): Promise<{
+    colors: Array<{ hex: string; name: string; role?: string }>;
+    typography: Array<{ family: string; style?: string; role: string; size?: number }>;
+    components: Array<{ key: string; name: string; thumbnailUrl?: string; description?: string }>;
+    message: string;
+    needsToken?: boolean;
+  }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/figma-preview`, {
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      if (error.needsToken) throw { needsToken: true, message: error.message };
+      throw new Error(error.error || 'Failed to preview Figma file');
+    }
+    return response.json();
+  },
+
+  async importFromFigma(id: string, options: {
+    importColors?: boolean;
+    importTypography?: boolean;
+    selectedLogos?: string[];
+  }): Promise<{ success: boolean; imported: { colors: number; typography: number; logos: number }; guideline: BrandGuideline }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/figma-import`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(options),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to import from Figma');
+    }
+    return response.json();
+  },
+
+  async previewFigmaUrl(figmaUrl: string): Promise<{
+    fileKey: string;
+    fileName: string;
+    lastModified: string;
+    colors: Array<{ hex: string; name: string; role?: string }>;
+    typography: Array<{ family: string; style?: string; role: string; size?: number }>;
+    components: Array<{ key: string; name: string; thumbnailUrl?: string; description?: string }>;
+    needsToken?: boolean;
+  }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/figma-preview-url`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ figmaUrl }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      if (error.needsToken) throw { needsToken: true, message: error.message };
+      throw new Error(error.error || 'Failed to preview Figma URL');
+    }
+    return response.json();
+  },
 };

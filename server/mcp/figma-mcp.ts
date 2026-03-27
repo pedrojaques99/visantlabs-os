@@ -105,11 +105,11 @@ server.setRequestHandler(
               height: height || 900,
               fills: backgroundColor
                 ? [
-                    {
-                      type: 'SOLID',
-                      color: parseHexColor(backgroundColor as string),
-                    },
-                  ]
+                  {
+                    type: 'SOLID',
+                    color: parseHexColor(backgroundColor as string),
+                  },
+                ]
                 : [],
             },
             ...(x !== undefined && { x }),
@@ -155,11 +155,11 @@ server.setRequestHandler(
               height: height || 200,
               fills: fill
                 ? [
-                    {
-                      type: 'SOLID',
-                      color: parseHexColor(fill as string),
-                    },
-                  ]
+                  {
+                    type: 'SOLID',
+                    color: parseHexColor(fill as string),
+                  },
+                ]
                 : [],
             },
             ...(x !== undefined && { x }),
@@ -444,7 +444,7 @@ server.setRequestHandler(
             throw new Error('No image URL in response');
           }
 
-          // ✨ OPTIONAL: If fileId and targetNodeId provided, paste into Figma automatically
+          // 💎 OPTIONAL: If fileId and targetNodeId provided, paste into Figma automatically
           let pasteResult: any = null;
           if (fileId && targetNodeId) {
             const operations = [

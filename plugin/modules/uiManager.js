@@ -20,7 +20,7 @@ class UIManager {
     this.setupStateListeners();
     this.setupSandboxListeners();
     this.setupGlobalClickHandlers();
-    
+
     // Initial fetch for session and state
     this.init();
   }
@@ -35,7 +35,7 @@ class UIManager {
     getContext();
     loadGuidelines();
     loadDesignSystem();
-    
+
     // Request local brand config
     parent.postMessage({ pluginMessage: { type: 'GET_LOCAL_BRAND_CONFIG' } }, '*');
   }
@@ -103,7 +103,7 @@ class UIManager {
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     // Figma-style icons
     let icon = '';
     if (type === 'success') {
@@ -130,12 +130,16 @@ class UIManager {
 
   setupGlobalClickHandlers() {
     // Close overflow menu when clicking outside
+    // Close overflow menus when clicking outside
     document.addEventListener('click', (e) => {
-      const menu = document.getElementById('toolbarOverflowMenu');
-      const btn = document.getElementById('toolbarMoreBtn');
-      if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
-        menu.classList.add('hidden');
-      }
+      document.querySelectorAll('.overflow-menu').forEach(menu => {
+        const triggerId = menu.id.replace('OverflowMenu', 'MoreBtn') || menu.id.replace('Menu', 'Btn');
+        const trigger = document.getElementById(triggerId);
+        
+        if (trigger && !trigger.contains(e.target) && !menu.contains(e.target)) {
+          menu.classList.add('hidden');
+        }
+      });
     });
 
     // Handle generic collapsible headers (with animation support)
@@ -226,9 +230,9 @@ class UIManager {
       header.addEventListener('click', () => {
         const section = header.closest('.collapsible');
         if (section && section.closest('#tab-config')) {
-           section.classList.toggle('collapsed');
-           const content = section.querySelector('.collapsible-content');
-           content?.classList.toggle('hidden');
+          section.classList.toggle('collapsed');
+          const content = section.querySelector('.collapsible-content');
+          content?.classList.toggle('hidden');
         }
       });
     });
@@ -279,7 +283,7 @@ class UIManager {
       const rememberMe = document.getElementById('authRememberMe')?.checked ?? true;
       const status = document.getElementById('authLoginStatus');
       const btn = document.getElementById('authLoginBtn');
-      
+
       if (!email || !password) {
         if (status) {
           status.innerHTML = '<span style="color: var(--figma-color-text-danger);">⚠ Preencha email e senha</span>';
@@ -291,7 +295,7 @@ class UIManager {
         btn.classList.add('loading');
         btn.disabled = true;
       }
-      
+
       if (status) status.textContent = 'Autenticando...';
 
       try {
@@ -523,7 +527,7 @@ class UIManager {
 
         // ── Image Generation Feedback ──
         case 'IMAGE_PASTED':
-          chatModule.addAssistantMessage(msg.message || '✨ Imagem colada no canvas!');
+          chatModule.addAssistantMessage(msg.message || '💎 Imagem colada no canvas!');
           break;
 
         case 'IMAGE_PASTE_ERROR':
@@ -615,52 +619,22 @@ class UIManager {
 
   /**
    * Update selection indicator
+   * Update selection indicator in UI
    */
-  updateSelectionIndicator() {
-    if (!this.selectionIndicator) return;
-
-    const selection = state.selectionDetails;
-    if (selection.length === 0) {
-      this.selectionIndicator.classList.add('hidden');
-      return;
-    }
-
-    this.selectionIndicator.classList.remove('hidden');
-
-    if (selection.length === 1) {
-      const sel = selection[0];
-      const isTemplate = sel.type === 'FRAME' && sel.name.startsWith('[Template]');
-      const cleanName = isTemplate ? sel.name.replace('[Template]', '').trim() : sel.name;
-      const templateBadge = isTemplate ? `<span class="sel-template-badge" title="Template reconhecido pelo plugin">TEMPLATE</span>` : '';
+  updateSelectionIndicator(selection) {
+    const chip = document.getElementById('selectionChip');
+    const nameLabel = document.getElementById('selectionName');
+    if (!chip || !nameLabel) return;
+    
+    if (selection && selection.length > 0) {
+      const count = selection.length;
+      const first = selection[0];
+      const label = count > 1 ? `${first.name} +${count - 1}` : first.name;
       
-      const icon = this.getNodeTypeIcon(sel.type);
-      const thumb = state.selectionThumb;
-      const safeThumb = thumb ? this.escapeHtml(thumb) : '';
-      const thumbHtml = safeThumb
-        ? `<img class="sel-thumb" src="${safeThumb}" alt="">`
-        : `<div class="sel-icon">${icon}</div>`;
-
-      this.selectionIndicator.innerHTML = `
-        ${thumbHtml}
-        <div class="sel-info">
-          <div class="sel-name" title="${this.escapeHtml(sel.name)}">
-            ${this.escapeHtml(cleanName)}${templateBadge}
-          </div>
-          <div class="sel-type">${this.getNodeTypeLabel(sel.type)}</div>
-        </div>
-      `;
+      nameLabel.textContent = label;
+      chip.classList.remove('hidden');
     } else {
-      const templatesCount = selection.filter(s => s.type === 'FRAME' && s.name.startsWith('[Template]')).length;
-      const templateText = templatesCount > 0 ? ` <span class="sel-template-badge" style="margin-left:2px; font-size:7px; padding:0 3px;">${templatesCount} TEMPLATE${templatesCount > 1 ? 'S' : ''}</span>` : '';
-      
-      const names = selection.map((s) => s.name).join(', ');
-      this.selectionIndicator.innerHTML = `
-        <div class="sel-icon">${selection.length}</div>
-        <div class="sel-info">
-          <div class="sel-multi">${selection.length} camadas selecionadas${templateText}</div>
-          <div class="sel-type sel-multi-list" title="${this.escapeHtml(names)}">${this.escapeHtml(names)}</div>
-        </div>
-      `;
+      chip.classList.add('hidden');
     }
   }
 
@@ -828,6 +802,56 @@ class UIManager {
   }
 
   /**
+   * Switch to a specific tab in settings
+   * @param {string} tabId 
+   */
+  openTab(tabId) {
+    // Update visibility of contents
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    const targetContent = document.getElementById(tabId);
+    if (targetContent) targetContent.classList.remove('hidden');
+
+    // Update active class on buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      const isTarget = btn.getAttribute('data-tab') === tabId;
+      btn.classList.toggle('active', isTarget);
+    });
+  }
+
+  /**
+   * Open settings view specifically on the Brand tab
+   */
+  openBrandSettings() {
+    this.openSettings();
+    this.openTab('tab-brand');
+  }
+
+  /**
+   * Open settings view specifically on the Config tab
+   */
+  openConfigSettings() {
+    this.openSettings();
+    this.openTab('tab-config');
+  }
+
+  /**
+   * Expand a collapsible section
+   * @param {string} targetId 
+   */
+  expandCollapsible(targetId) {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    
+    const header = document.querySelector(`.collapsible-header[data-target="${targetId}"]`);
+    target.classList.remove('hidden');
+    if (header) header.setAttribute('data-collapsed', 'false');
+    
+    setTimeout(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
+  }
+
+  /**
    * Open settings view
    */
   openSettings() {
@@ -982,7 +1006,7 @@ class UIManager {
       if (loggedOut) loggedOut.classList.add('hidden');
       if (loggedIn) loggedIn.classList.remove('hidden');
       if (emailEl) emailEl.textContent = state.authEmail;
-      
+
       // Initials
       if (initialsEl) {
         const initials = state.authEmail.split('@')[0].substring(0, 1).toUpperCase();
@@ -1017,17 +1041,20 @@ class UIManager {
       if (loggedOut) loggedOut.classList.remove('hidden');
       if (loggedIn) loggedIn.classList.add('hidden');
     }
-    this.updateCreditPill();
+    this.renderCredits();
   }
 
   /**
    * Update credit pill in chat footer
    */
-  updateCreditPill() {
-    const pill = document.getElementById('creditPill');
+  /**
+   * Render credit balance in header
+   */
+  renderCredits() {
+    const pill = document.getElementById('creditBadge');
     if (!pill) return;
 
-    if (!state.authToken) {
+    if (!state.authToken || !state.credits) {
       pill.classList.remove('visible', 'low', 'empty');
       return;
     }
@@ -1067,3 +1094,4 @@ window.showToast = (msg, type, duration) => {
 };
 
 const uiManager = new UIManager();
+window.uiManager = uiManager;

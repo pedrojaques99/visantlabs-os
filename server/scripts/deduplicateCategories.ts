@@ -80,7 +80,7 @@ async function main() {
                     data: { categoryId: targetCategory.id }
                 });
 
-                console.log(`✨ Tags moved successfully.`);
+                console.log(`💎 Tags moved successfully.`);
             }
 
             // 4. Update 'mockup_presets' collection (Raw MongoDB)
@@ -112,7 +112,7 @@ async function main() {
                 { $set: { mockupCategoryId: new ObjectId(targetId) } } // Best practice to store as ObjectId
             );
 
-            console.log(`✨ Updated ${updateResult.modifiedCount} presets.`);
+            console.log(`💎 Updated ${updateResult.modifiedCount} presets.`);
 
             // 5. Delete the duplicate category
             console.log(`🗑️ Deleting empty category "${ptName}"...`);
