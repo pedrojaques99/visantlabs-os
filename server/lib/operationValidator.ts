@@ -64,10 +64,30 @@ class OperationValidator {
         }
         const props = op.props;
         if (!props.name) errors.push(`${op.type} requires props.name`);
-        if (typeof props.width !== 'number')
-          errors.push(`${op.type} requires props.width (number)`);
-        if (typeof props.height !== 'number')
-          errors.push(`${op.type} requires props.height (number)`);
+
+        // Child frames in auto-layout can use FILL/HUG sizing instead of explicit dimensions
+        const hasParent = !!(op.parentRef || op.parentNodeId);
+        const hasAutoLayout = props.layoutMode && props.layoutMode !== 'NONE';
+
+        // layoutSizingHorizontal/Vertical: How this frame sizes in parent's auto-layout
+        const canFillWidth = hasParent && (props.layoutSizingHorizontal === 'FILL' || props.layoutSizingHorizontal === 'HUG');
+        const canFillHeight = hasParent && (props.layoutSizingVertical === 'FILL' || props.layoutSizingVertical === 'HUG');
+
+        // primaryAxisSizingMode/counterAxisSizingMode: How this frame's auto-layout sizes
+        // AUTO = hug contents, FIXED = explicit dimension
+        const canHugWidth = hasAutoLayout && (
+          (props.layoutMode === 'HORIZONTAL' && props.primaryAxisSizingMode === 'AUTO') ||
+          (props.layoutMode === 'VERTICAL' && props.counterAxisSizingMode === 'AUTO')
+        );
+        const canHugHeight = hasAutoLayout && (
+          (props.layoutMode === 'VERTICAL' && props.primaryAxisSizingMode === 'AUTO') ||
+          (props.layoutMode === 'HORIZONTAL' && props.counterAxisSizingMode === 'AUTO')
+        );
+
+        if (typeof props.width !== 'number' && !canFillWidth && !canHugWidth)
+          errors.push(`${op.type} requires props.width (number), layoutSizingHorizontal:"FILL", or auto-layout HUG`);
+        if (typeof props.height !== 'number' && !canFillHeight && !canHugHeight)
+          errors.push(`${op.type} requires props.height (number), layoutSizingVertical:"FILL", or auto-layout HUG`);
         if (props.width && props.width <= 0)
           errors.push(`${op.type} width must be positive`);
         if (props.height && props.height <= 0)

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { useBrandGuidelines, useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
@@ -88,9 +88,11 @@ const NoSelectionState = () => {
 export const BrandGuidelinesPage: React.FC = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { isAuthenticated } = useLayout();
 
-    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const urlGuidelineId = searchParams.get('id');
+    const [selectedId, setSelectedId] = useState<string | null>(urlGuidelineId);
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [editingGuideline, setEditingGuideline] = useState<BrandGuideline | null>(null);
     const [showAuthModal, setShowAuthModal] = useState(false);
@@ -130,12 +132,20 @@ export const BrandGuidelinesPage: React.FC = () => {
         }
     }, []);
 
-    // Auto-select first guideline
+    // Auto-select from URL param or first guideline
     React.useEffect(() => {
-        if (!selectedId && guidelines.length > 0) {
+        if (guidelines.length === 0) return;
+
+        // Priority: URL param > current selection > first guideline
+        if (urlGuidelineId) {
+            const fromUrl = guidelines.find(g => g.id === urlGuidelineId);
+            if (fromUrl && selectedId !== urlGuidelineId) {
+                handleSelect(fromUrl);
+            }
+        } else if (!selectedId) {
             handleSelect(guidelines[0]);
         }
-    }, [guidelines, selectedId, handleSelect]);
+    }, [guidelines, selectedId, urlGuidelineId, handleSelect]);
 
     const selected = useMemo(
         () => guidelines.find((g) => g.id === selectedId),
