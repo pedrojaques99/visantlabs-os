@@ -6,15 +6,18 @@
 
 export const CREATE_RULES = `CRIACAO:
 - Primeiro CREATE_FRAME (ref), depois filhos (parentRef)
-- layoutSizingHorizontal: "FILL" para textos expandirem
+- Frame ROOT: sempre width + height explicitos
+- Frame FILHO: use layoutSizingHorizontal:"FILL" ou "HUG" (sem width/height)
 - textAutoResize: "HEIGHT" para texto quebrar linha
 - cornerRadius + cornerSmoothing: 0.6 para bordas iOS
-- Nomeie semanticamente: "Card/Header", "Button/Primary"`;
+- Nomeie semanticamente: "Section/Header", "Card/Body", "Button/Primary"`;
 
-export const CREATE_EXAMPLE = `EXEMPLO (card simples):
+export const CREATE_EXAMPLE = `EXEMPLO (story com secoes):
 [
-  {"type":"CREATE_FRAME","ref":"card","props":{"name":"Card","width":340,"height":200,"layoutMode":"VERTICAL","itemSpacing":16,"paddingTop":24,"paddingRight":24,"paddingBottom":24,"paddingLeft":24,"fills":[{"type":"SOLID","color":{"r":1,"g":1,"b":1}}],"cornerRadius":16}},
-  {"type":"CREATE_TEXT","parentRef":"card","props":{"name":"Title","content":"Titulo","fontSize":18,"fontFamily":"Inter","fontStyle":"Semi Bold","fills":[{"type":"SOLID","color":{"r":0.1,"g":0.1,"b":0.1}}],"layoutSizingHorizontal":"FILL"}}
+  {"type":"CREATE_FRAME","ref":"story","props":{"name":"Story","width":1080,"height":1920,"layoutMode":"VERTICAL","itemSpacing":0,"fills":[{"type":"SOLID","color":{"r":0.1,"g":0.1,"b":0.1}}]}},
+  {"type":"CREATE_FRAME","ref":"header","parentRef":"story","props":{"name":"Section/Header","layoutMode":"HORIZONTAL","layoutSizingHorizontal":"FILL","layoutSizingVertical":"HUG","paddingTop":48,"paddingLeft":32,"paddingRight":32,"itemSpacing":16}},
+  {"type":"CREATE_TEXT","parentRef":"header","props":{"name":"Title","content":"Titulo","fontSize":24,"fontFamily":"Inter","fills":[{"type":"SOLID","color":{"r":1,"g":1,"b":1}}],"layoutSizingHorizontal":"FILL"}},
+  {"type":"CREATE_FRAME","ref":"content","parentRef":"story","props":{"name":"Section/Content","layoutMode":"VERTICAL","layoutSizingHorizontal":"FILL","layoutSizingVertical":"FILL","paddingTop":32,"paddingLeft":32,"paddingRight":32,"itemSpacing":24}}
 ]`;
 
 export const MULTIPLE_FRAMES_RULES = `MULTIPLOS ELEMENTOS (organize em sections):

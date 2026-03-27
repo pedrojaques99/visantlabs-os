@@ -24,7 +24,7 @@
     "dev:server": "tsx watch server/index.ts",
     "mcp:figma": "node --loader ts-node/esm server/mcp/figma-mcp.ts",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:server\"",
-    "stop:servers": "node scripts/stop-dev-server.js",
+    "stop:servers": "node scripts/stop-dev-server.js || true",
     "build": "npm run stop:servers && prisma generate && vite build",
     "preview": "vite preview",
     "server": "tsx server/index.ts",

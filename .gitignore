@@ -55,7 +55,6 @@ plugin/.agent/
 plugin/.firecrawl/
 
 #Scripts
-scripts/
 
 # Node
 node_modules/
