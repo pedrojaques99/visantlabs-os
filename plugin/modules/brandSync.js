@@ -41,8 +41,24 @@ class BrandSyncModule {
 
   /** Create a new brand guideline */
   async create(data) {
-    const resp = await window.apiCall('/brand-guidelines', 'POST', data || { identity: { name: 'Nova Marca' } })
-    return resp?.guideline || null
+    const token = window.getState('authToken')
+    if (!token) {
+      console.warn('[BrandSync] Create failed: not authenticated')
+      window.eventBus?.emit('api:error', { message: 'Faça login para criar um brand guideline.' })
+      return null
+    }
+    try {
+      const resp = await window.apiCall('/brand-guidelines', 'POST', data || { identity: { name: 'Nova Marca' } })
+      if (!resp?.guideline) {
+        console.warn('[BrandSync] Create returned no guideline')
+        return null
+      }
+      return resp.guideline
+    } catch (e) {
+      console.error('[BrandSync] Create failed:', e.message)
+      window.eventBus?.emit('api:error', { message: `Erro ao criar brand guideline: ${e.message}` })
+      return null
+    }
   }
 
   /** Select a guideline as active for this Figma file */
@@ -104,23 +120,48 @@ class BrandSyncModule {
 
   /** Ingest a source into the active guideline */
   async ingest(source, options = {}) {
-    const bg = window.getState('brandGuideline')
-    if (!bg?._id) throw new Error('No active brand guideline. Create or select one first.')
-    const resp = await window.apiCall(`/brand-guidelines/${bg._id}/ingest`, 'POST', { source, ...options })
-    if (resp?.guideline) {
-      window.setState('brandGuideline', resp.guideline)
-      this._saveToCache(bg._id, resp.guideline)
+    const token = window.getState('authToken')
+    if (!token) {
+      window.eventBus?.emit('api:error', { message: 'Faça login para usar ingest.' })
+      return null
     }
-    return resp
+    const bg = window.getState('brandGuideline')
+    if (!bg?._id) {
+      window.eventBus?.emit('api:error', { message: 'Selecione ou crie um brand guideline primeiro.' })
+      return null
+    }
+    try {
+      const resp = await window.apiCall(`/brand-guidelines/${bg._id}/ingest`, 'POST', { source, ...options })
+      if (resp?.guideline) {
+        window.setState('brandGuideline', resp.guideline)
+        this._saveToCache(bg._id, resp.guideline)
+      }
+      return resp
+    } catch (e) {
+      console.error('[BrandSync] Ingest failed:', e.message)
+      window.eventBus?.emit('api:error', { message: `Erro ao processar: ${e.message}` })
+      return null
+    }
   }
 
   /** Delete a guideline */
   async remove(id) {
-    await window.apiCall(`/brand-guidelines/${id}`, 'DELETE')
-    if (this._selectedId === id) {
-      this._selectedId = null
-      window.setState('brandGuideline', null)
-      this._saveToCache(null, null)
+    const token = window.getState('authToken')
+    if (!token) {
+      console.warn('[BrandSync] Delete failed: not authenticated')
+      window.eventBus?.emit('api:error', { message: 'Faça login para deletar.' })
+      return
+    }
+    try {
+      await window.apiCall(`/brand-guidelines/${id}`, 'DELETE')
+      if (this._selectedId === id) {
+        this._selectedId = null
+        window.setState('brandGuideline', null)
+        this._saveToCache(null, null)
+      }
+    } catch (e) {
+      console.error('[BrandSync] Delete failed:', e.message)
+      window.eventBus?.emit('api:error', { message: `Erro ao deletar: ${e.message}` })
     }
   }
 
