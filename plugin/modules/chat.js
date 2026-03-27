@@ -99,6 +99,42 @@ class ChatModule {
       genImageBtn.addEventListener('click', () => this.handleGenerateImageClick());
     }
 
+    // Toolbar More/Overflow menu
+    const moreBtn = document.getElementById('toolbarMoreBtn');
+    const overflowMenu = document.getElementById('toolbarOverflowMenu');
+    if (moreBtn && overflowMenu) {
+      moreBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        overflowMenu.classList.toggle('hidden');
+      });
+    }
+
+    // Input Validation (Real-time)
+    const cw = document.getElementById('customWidth');
+    const ch = document.getElementById('customHeight');
+    if (cw) {
+      cw.addEventListener('input', () => {
+        const val = parseInt(cw.value);
+        if (val > 4000) cw.style.boxShadow = 'inset 0 0 0 1px var(--figma-color-bg-danger)';
+        else cw.style.boxShadow = '';
+      });
+    }
+    if (ch) {
+      ch.addEventListener('input', () => {
+        const val = parseInt(ch.value);
+        if (val > 4000) ch.style.boxShadow = 'inset 0 0 0 1px var(--figma-color-bg-danger)';
+        else ch.style.boxShadow = '';
+      });
+    }
+
+    // Code button
+    const codeBtn = document.getElementById('codeBtn');
+    if (codeBtn) {
+      codeBtn.addEventListener('click', () => {
+        this.showLatestOperationsData();
+      });
+    }
+
     // Image Generation Settings Panel
     const genImageSettingsBtn = document.getElementById('genImageSettingsBtn');
     const genImageSettingsPanel = document.getElementById('genImageSettingsPanel');
@@ -107,6 +143,7 @@ class ChatModule {
     if (genImageSettingsBtn && genImageSettingsPanel) {
       genImageSettingsBtn.addEventListener('click', () => {
         genImageSettingsPanel.classList.toggle('hidden');
+        if (overflowMenu) overflowMenu.classList.add('hidden');
       });
     }
 
@@ -145,21 +182,41 @@ class ChatModule {
       }
     });
 
-    // Custom size inputs
+    // Custom size inputs (Real-time validation)
     const customWidth = document.getElementById('customWidth');
     const customHeight = document.getElementById('customHeight');
     if (customWidth) {
+      customWidth.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value) || 0;
+        if (val > 4000) {
+          e.target.style.borderColor = 'var(--figma-color-text-danger)';
+        } else {
+          e.target.style.borderColor = '';
+        }
+        updateAspectRatio();
+      });
       customWidth.addEventListener('change', (e) => {
         const val = Math.max(100, Math.min(4000, parseInt(e.target.value) || 800));
         setState('customWidth', val);
         e.target.value = val;
+        e.target.style.borderColor = '';
       });
     }
     if (customHeight) {
+      customHeight.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value) || 0;
+        if (val > 4000) {
+          e.target.style.borderColor = 'var(--figma-color-text-danger)';
+        } else {
+          e.target.style.borderColor = '';
+        }
+        updateAspectRatio();
+      });
       customHeight.addEventListener('change', (e) => {
         const val = Math.max(100, Math.min(4000, parseInt(e.target.value) || 450));
         setState('customHeight', val);
         e.target.value = val;
+        e.target.style.borderColor = '';
       });
     }
 
@@ -279,6 +336,7 @@ class ChatModule {
     eventBus.on('api:error', (error) => {
       this.removeTypingBubble();
       this.addErrorMessage(`Erro: ${error.error}`);
+      window.showToast(error.error, 'error');
       this.setLoading(false);
     });
 
@@ -641,13 +699,13 @@ class ChatModule {
     if (isLoading) {
       this.sendBtn.classList.add('hidden');
       if (stopBtn) stopBtn.classList.remove('hidden');
-      this.statusEl.textContent = state.thinkMode ? '🧠 Analisando...' : '⏳ Gerando...';
-      this.statusEl.classList.remove('hidden');
+      // Toast instead of persistent status if it's transient, 
+      // but here we keep the status line hidden and use typing bubble.
+      this.statusEl.classList.add('hidden');
     } else {
       this.sendBtn.classList.remove('hidden');
       if (stopBtn) stopBtn.classList.add('hidden');
       this.statusEl.classList.add('hidden');
-      this.statusEl.textContent = '';
     }
   }
 
@@ -670,6 +728,21 @@ class ChatModule {
       const wrap = this.chatMessages.closest('.chat-messages-wrap') || this.chatMessages;
       wrap.scrollTop = wrap.scrollHeight;
     });
+  }
+
+  /**
+   * Helper to show data from latest assistant message
+   */
+  showLatestOperationsData() {
+    // Find latest assistant message with operations
+    for (let i = state.chatHistory.length - 1; i >= 0; i--) {
+      const msg = state.chatHistory[i];
+      if (msg.role === 'assistant' && msg.operations && msg.operations.length > 0) {
+        this.showOperationsModal(i);
+        return;
+      }
+    }
+    window.showToast('Nenhum dado de operação disponível no momento.', 'info');
   }
 
   /**

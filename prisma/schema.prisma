@@ -450,6 +450,11 @@ model BrandGuideline {
   // Version tracking
   currentVersion Int @default(1)
 
+  // Figma Integration
+  figmaFileUrl    String?   // Full URL: "https://www.figma.com/file/abc123/..."
+  figmaFileKey    String?   // Extracted key for plugin matching
+  figmaSyncedAt   DateTime? // Last successful sync timestamp
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

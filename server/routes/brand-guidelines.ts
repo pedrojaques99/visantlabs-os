@@ -15,6 +15,7 @@ import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandCon
 import { checkBrandCompliance, type ComplianceCheckInput } from '../services/complianceService.js'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
 import { calculateChangedFields, createSnapshot, generateChangeNote, generateDiff, formatVersionListItem } from '../lib/versionUtils.js'
+import { extractFigmaFileKey, isValidFigmaUrl } from '../lib/figmaUtils.js'
 
 const router = express.Router()
 
@@ -1128,6 +1129,218 @@ router.post('/:id/versions/:versionNumber/restore', apiRateLimiter, authenticate
   } catch (error: any) {
     console.error('Error restoring version:', error)
     res.status(500).json({ error: 'Failed to restore version' })
+  }
+})
+
+// FIGMA INTEGRATION ENDPOINTS
+// ═══════════════════════════════════════════════════
+
+// PUT /api/brand-guidelines/:id/figma-link — link a Figma file
+router.put('/:id/figma-link', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const { figmaFileUrl } = req.body
+    if (!figmaFileUrl) return res.status(400).json({ error: 'figmaFileUrl required' })
+
+    if (!isValidFigmaUrl(figmaFileUrl)) {
+      return res.status(400).json({ error: 'Invalid Figma URL. Expected format: figma.com/file/KEY/...' })
+    }
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const figmaFileKey = extractFigmaFileKey(figmaFileUrl)
+
+    const updated = await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { figmaFileUrl, figmaFileKey },
+    })
+
+    res.json({
+      figmaFileUrl: updated.figmaFileUrl,
+      figmaFileKey: updated.figmaFileKey,
+      guideline: { ...updated, _id: updated.id },
+    })
+  } catch (error: any) {
+    console.error('[Figma Link] Error:', error)
+    res.status(500).json({ error: 'Failed to link Figma file', message: error.message })
+  }
+})
+
+// DELETE /api/brand-guidelines/:id/figma-link — unlink Figma file
+router.delete('/:id/figma-link', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const updated = await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { figmaFileUrl: null, figmaFileKey: null, figmaSyncedAt: null },
+    })
+
+    res.json({
+      success: true,
+      guideline: { ...updated, _id: updated.id },
+    })
+  } catch (error: any) {
+    console.error('[Figma Unlink] Error:', error)
+    res.status(500).json({ error: 'Failed to unlink Figma file', message: error.message })
+  }
+})
+
+// POST /api/brand-guidelines/:id/figma-sync — receive extracted data from plugin
+router.post('/:id/figma-sync', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const { fileKey, variables, styles, components } = req.body
+
+    // Verify file key matches
+    if (guideline.figmaFileKey && fileKey !== guideline.figmaFileKey) {
+      return res.status(400).json({
+        error: 'File key mismatch. This file is not linked to this guideline.',
+        expectedKey: guideline.figmaFileKey,
+        receivedKey: fileKey,
+      })
+    }
+
+    // Merge extracted data into guideline
+    const existingColors = (guideline.colors as any[]) || []
+    const existingTypography = (guideline.typography as any[]) || []
+    const existingTokens = (guideline.tokens as any) || {}
+
+    // Process Variables → colors, tokens
+    const newColors: any[] = []
+    const newSpacing: Record<string, number> = {}
+    const newRadius: Record<string, number> = {}
+
+    if (variables?.colors) {
+      for (const v of variables.colors) {
+        newColors.push({
+          hex: v.value,
+          name: v.name,
+          role: 'variable',
+          figmaId: v.id,
+        })
+      }
+    }
+
+    if (variables?.numbers) {
+      for (const v of variables.numbers) {
+        const nameLower = v.name.toLowerCase()
+        if (nameLower.includes('spacing') || nameLower.includes('gap') || nameLower.includes('padding') || nameLower.includes('margin')) {
+          newSpacing[v.name] = v.value
+        } else if (nameLower.includes('radius') || nameLower.includes('corner') || nameLower.includes('round')) {
+          newRadius[v.name] = v.value
+        }
+      }
+    }
+
+    // Process Styles → colors, typography
+    if (styles?.colors) {
+      for (const s of styles.colors) {
+        newColors.push({
+          hex: s.value,
+          name: s.name,
+          role: 'style',
+          figmaId: s.id,
+        })
+      }
+    }
+
+    const newTypography: any[] = []
+    if (styles?.text) {
+      for (const s of styles.text) {
+        newTypography.push({
+          family: s.family,
+          style: s.style,
+          role: s.name,
+          size: s.size,
+          figmaId: s.id,
+        })
+      }
+    }
+
+    // Process shadows from effect styles
+    const newShadows: Record<string, any> = {}
+    if (styles?.effects) {
+      for (const s of styles.effects) {
+        if (s.shadows) {
+          newShadows[s.name] = s.shadows
+        }
+      }
+    }
+
+    // Process components
+    const newComponents: Record<string, any> = {}
+    if (components) {
+      for (const c of components) {
+        newComponents[c.name] = {
+          key: c.key,
+          id: c.id,
+          metadata: c.metadata,
+        }
+      }
+    }
+
+    // Merge: Figma data takes precedence, but keep manual entries
+    const mergedColors = [
+      ...existingColors.filter((c: any) => !c.figmaId), // Keep manual colors
+      ...newColors,
+    ]
+
+    const mergedTypography = [
+      ...existingTypography.filter((t: any) => !t.figmaId), // Keep manual typography
+      ...newTypography,
+    ]
+
+    const mergedTokens = {
+      ...existingTokens,
+      spacing: { ...(existingTokens.spacing || {}), ...newSpacing },
+      radius: { ...(existingTokens.radius || {}), ...newRadius },
+      shadows: { ...(existingTokens.shadows || {}), ...newShadows },
+      components: { ...(existingTokens.components || {}), ...newComponents },
+    }
+
+    const updated = await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: {
+        colors: mergedColors as any,
+        typography: mergedTypography as any,
+        tokens: mergedTokens as any,
+        figmaSyncedAt: new Date(),
+        // Update fileKey if not set (first sync can auto-link)
+        figmaFileKey: guideline.figmaFileKey || fileKey,
+      },
+    })
+
+    res.json({
+      guideline: { ...updated, _id: updated.id },
+      syncedAt: updated.figmaSyncedAt,
+      stats: {
+        colors: newColors.length,
+        typography: newTypography.length,
+        spacing: Object.keys(newSpacing).length,
+        radius: Object.keys(newRadius).length,
+        shadows: Object.keys(newShadows).length,
+        components: Object.keys(newComponents).length,
+      },
+    })
+  } catch (error: any) {
+    console.error('[Figma Sync] Error:', error)
+    res.status(500).json({ error: 'Failed to sync from Figma', message: error.message })
   }
 })
 

@@ -90,6 +90,31 @@ class BrandUIModule {
       </div>
     </div>`
 
+    // Figma Sync section
+    const figmaLinked = bg.figmaFileUrl || window.brandSyncModule.isFileLinked()
+    const syncedAt = bg.figmaSyncedAt ? this._formatSyncTime(bg.figmaSyncedAt) : null
+    html += `<div class="figma-prop-section bg-figma-sync">
+      <div class="figma-prop-section-title" style="display:flex;align-items:center;gap:6px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M8 24C10.208 24 12 22.208 12 20V16H8C5.792 16 4 17.792 4 20C4 22.208 5.792 24 8 24Z" fill="#0ACF83"/><path d="M4 12C4 9.792 5.792 8 8 8H12V16H8C5.792 16 4 14.208 4 12Z" fill="#A259FF"/><path d="M4 4C4 1.792 5.792 0 8 0H12V8H8C5.792 8 4 6.208 4 4Z" fill="#F24E1E"/><path d="M12 0H16C18.208 0 20 1.792 20 4C20 6.208 18.208 8 16 8H12V0Z" fill="#FF7262"/><path d="M20 12C20 14.208 18.208 16 16 16C13.792 16 12 14.208 12 12C12 9.792 13.792 8 16 8C18.208 8 20 9.792 20 12Z" fill="#1ABCFE"/></svg>
+        Figma Sync
+      </div>
+      ${syncedAt ? `<p class="hint-text" style="margin-bottom:8px;display:flex;align-items:center;gap:4px;">
+        <span style="width:6px;height:6px;border-radius:50%;background:#0ACF83;"></span>
+        Last sync: ${syncedAt}
+      </p>` : ''}
+      <div style="display:flex;gap:4px;">
+        <button class="figma-button figma-button--secondary bg-sync-from-figma" style="flex:1;">
+          ↓ Sync from Figma
+        </button>
+        <button class="figma-button figma-button--secondary bg-push-to-figma" style="flex:1;">
+          ↑ Push to Figma
+        </button>
+      </div>
+      <p class="hint-text" style="margin-top:6px;font-size:9px;opacity:0.5;">
+        Sync extracts Variables & Styles. Push creates Variables from colors/tokens.
+      </p>
+    </div>`
+
     // Ingest banner
     html += `<div class="figma-prop-section bg-ingest-banner">
       <div class="figma-prop-section-title">Import Sources</div>
@@ -287,11 +312,70 @@ class BrandUIModule {
         if (current?._id) await window.brandSyncModule.remove(current._id)
       })
     }
+
+    // Figma Sync buttons
+    const syncFromBtn = this._container.querySelector('.bg-sync-from-figma')
+    if (syncFromBtn) {
+      syncFromBtn.addEventListener('click', async () => {
+        syncFromBtn.textContent = 'Syncing...'
+        syncFromBtn.disabled = true
+        try {
+          const result = await window.brandSyncModule.syncFromFigma()
+          if (result?.stats) {
+            const { colors, typography, spacing, radius } = result.stats
+            window.eventBus?.emit('toast:success', {
+              message: `Synced: ${colors} colors, ${typography} fonts, ${spacing} spacing, ${radius} radius`
+            })
+          }
+        } catch (e) {
+          window.eventBus?.emit('toast:error', { message: e.message || 'Sync failed' })
+        } finally {
+          syncFromBtn.textContent = '↓ Sync from Figma'
+          syncFromBtn.disabled = false
+        }
+      })
+    }
+
+    const pushBtn = this._container.querySelector('.bg-push-to-figma')
+    if (pushBtn) {
+      pushBtn.addEventListener('click', async () => {
+        pushBtn.textContent = 'Pushing...'
+        pushBtn.disabled = true
+        try {
+          const result = await window.brandSyncModule.pushToFigma()
+          if (result) {
+            window.eventBus?.emit('toast:success', {
+              message: `Created ${result.created}, updated ${result.updated} variables`
+            })
+          }
+        } catch (e) {
+          window.eventBus?.emit('toast:error', { message: e.message || 'Push failed' })
+        } finally {
+          pushBtn.textContent = '↑ Push to Figma'
+          pushBtn.disabled = false
+        }
+      })
+    }
   }
 
   _esc(str) {
     if (!str) return ''
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  }
+
+  _formatSyncTime(dateStr) {
+    if (!dateStr) return null
+    const d = new Date(dateStr)
+    const now = new Date()
+    const diffMs = now.getTime() - d.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMins / 60)
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffMins < 1) return 'just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    return `${diffDays}d ago`
   }
 }
 

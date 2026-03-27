@@ -36,3 +36,4 @@ export {
   saveLocalBrandConfig,
   getLocalBrandConfig
 } from './storage';
+export { extractForSync, pushToFigma } from './figmaSync';

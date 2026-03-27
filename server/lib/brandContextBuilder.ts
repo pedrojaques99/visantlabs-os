@@ -1,15 +1,120 @@
 /**
  * Brand Context Builder
  *
- * Converts a BrandGuideline into a text context string for LLM prompts.
+ * Converts a BrandGuideline into context for LLM prompts.
+ * Supports both text format (legacy) and JSON format (modern, more robust).
+ *
  * Used by:
  * - Figma Plugin (plugin.ts)
  * - Mockup Machine (mockups.ts)
- * - Future: Any AI generation feature that needs brand context
+ * - AI generation features
  */
 
 import type { BrandGuideline } from '../../src/lib/figma-types.js';
 import type { TokenRegistry } from './tokenRegistry.js';
+
+// ═══════════════════════════════════════════
+// Hex to RGB conversion utility
+// ═══════════════════════════════════════════
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return null;
+  return {
+    r: parseInt(result[1], 16) / 255,
+    g: parseInt(result[2], 16) / 255,
+    b: parseInt(result[3], 16) / 255,
+  };
+}
+
+// ═══════════════════════════════════════════
+// JSON Structured Context (Modern)
+// ═══════════════════════════════════════════
+
+export interface BrandContextJSON {
+  brand: {
+    name: string;
+    tagline?: string;
+    website?: string;
+  };
+  colors: Array<{
+    name: string;
+    hex: string;
+    rgb: { r: number; g: number; b: number };
+    role?: string;
+  }>;
+  typography: Array<{
+    role: string;
+    family: string;
+    style?: string;
+    size?: number;
+    lineHeight?: number;
+  }>;
+  voice?: {
+    tone?: string;
+    dos?: string[];
+    donts?: string[];
+    imagery?: string;
+  };
+  tokens?: {
+    spacing?: Record<string, number>;
+    radius?: Record<string, number>;
+  };
+}
+
+/**
+ * Build structured JSON context from a BrandGuideline.
+ * Modern approach - better for function calling and structured outputs.
+ *
+ * @param bg - The BrandGuideline object
+ * @returns Structured JSON object for LLM context
+ */
+export function buildBrandContextJSON(bg: BrandGuideline): BrandContextJSON {
+  return {
+    brand: {
+      name: bg.identity?.name || 'Brand',
+      tagline: bg.identity?.tagline,
+      website: bg.identity?.website,
+    },
+    colors: (bg.colors || []).map(c => ({
+      name: c.name,
+      hex: c.hex,
+      rgb: hexToRgb(c.hex) || { r: 0, g: 0, b: 0 },
+      role: c.role,
+    })),
+    typography: (bg.typography || []).map(t => ({
+      role: t.role,
+      family: t.family,
+      style: t.style,
+      size: t.size,
+      lineHeight: t.lineHeight,
+    })),
+    voice: bg.guidelines ? {
+      tone: bg.guidelines.voice,
+      dos: bg.guidelines.dos,
+      donts: bg.guidelines.donts,
+      imagery: bg.guidelines.imagery,
+    } : undefined,
+    tokens: bg.tokens ? {
+      spacing: bg.tokens.spacing as Record<string, number>,
+      radius: bg.tokens.radius as Record<string, number>,
+    } : undefined,
+  };
+}
+
+/**
+ * Build JSON string context for system prompt injection.
+ * Wraps buildBrandContextJSON in a descriptive format.
+ */
+export function buildBrandContextJSONString(bg: BrandGuideline): string {
+  const json = buildBrandContextJSON(bg);
+  return `<brand_context>
+${JSON.stringify(json, null, 2)}
+</brand_context>
+
+INSTRUCTIONS: Use ONLY the colors and typography from brand_context.
+Primary color should be used for main actions, secondary for accents.`;
+}
 
 /**
  * Build a human-readable brand context string from a BrandGuideline.

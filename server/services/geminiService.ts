@@ -1347,11 +1347,8 @@ ${context}
 
 Responda de forma profissional, inspiradora e técnica.`;
 
-    // Basic input sanitization to prevent common injection patterns
-    const sanitizedQuery = query
-      .substring(0, 4000)
-      .replace(/<\s*script/gi, '')
-      .replace(/<\s*\/\s*script/gi, '');
+    // Basic input sanitization - strip angle brackets to prevent HTML/script injection
+    const sanitizedQuery = query.substring(0, 4000).replace(/[<>]/g, '');
 
     const response = await ai.models.generateContent({
       model: requestedModel || 'gemini-1.5-pro', // Fallback to stable pro

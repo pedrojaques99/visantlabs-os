@@ -38,7 +38,9 @@ import {
   saveBrandGuideline,
   linkGuideline,
   saveLocalBrandConfig,
-  getLocalBrandConfig
+  getLocalBrandConfig,
+  extractForSync,
+  pushToFigma
 } from './handlers/index';
 
 // ═══ Initialize UI ═══
@@ -352,6 +354,28 @@ figma.ui.onmessage = async (msg: UIMessage) => {
 
   if (msg.type === 'GET_LOCAL_BRAND_CONFIG') {
     await getLocalBrandConfig();
+    return;
+  }
+
+  // ── Figma Sync ──
+  if (msg.type === 'EXTRACT_FOR_SYNC') {
+    try {
+      const data = await extractForSync();
+      postToUI({ type: 'EXTRACT_FOR_SYNC_RESULT', data });
+    } catch (err) {
+      postToUI({ type: 'EXTRACT_FOR_SYNC_ERROR', error: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  if (msg.type === 'PUSH_TO_FIGMA') {
+    try {
+      const { guideline } = msg as any;
+      const result = await pushToFigma(guideline);
+      postToUI({ type: 'PUSH_TO_FIGMA_RESULT', ...result });
+    } catch (err) {
+      postToUI({ type: 'PUSH_TO_FIGMA_ERROR', error: err instanceof Error ? err.message : String(err) });
+    }
     return;
   }
 };

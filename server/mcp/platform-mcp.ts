@@ -10,15 +10,36 @@ import { prisma } from '../db/prisma.js';
 import { connectToMongoDB } from '../db/mongodb.js';
 import { improvePrompt, describeImage } from '../services/geminiService.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
+import { getCurrentUserId, runWithContext } from '../lib/request-context.js';
 
 // ═══════════════════════════════════════════
-// Session auth context
+// Session auth context (AsyncLocalStorage-based)
 // ═══════════════════════════════════════════
 
-let currentUserId: string | null = null;
+/**
+ * @deprecated Use runWithContext() instead for request-scoped auth.
+ * Kept for backward compatibility during migration.
+ */
+let _legacyUserId: string | null = null;
 
+/**
+ * Set MCP user ID for the current request scope.
+ * Prefers AsyncLocalStorage, falls back to legacy global for compatibility.
+ */
 export function setMcpUserId(userId: string | null) {
-  currentUserId = userId;
+  _legacyUserId = userId;
+}
+
+/**
+ * Get current user ID from AsyncLocalStorage or legacy fallback.
+ */
+function getMcpUserId(): string | null {
+  // Prefer AsyncLocalStorage (request-scoped, safe for concurrent requests)
+  const contextUserId = getCurrentUserId();
+  if (contextUserId) return contextUserId;
+
+  // Fallback to legacy global (for backward compatibility)
+  return _legacyUserId;
 }
 
 async function getQuotaMeta(userId: string) {
@@ -85,6 +106,7 @@ export function createPlatformMcpServer(): McpServer {
     'Get credit usage, remaining balance, plan limits, and billing cycle info for the authenticated account.',
     {},
     async () => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const quota = await getQuotaMeta(currentUserId);
@@ -101,6 +123,7 @@ export function createPlatformMcpServer(): McpServer {
     'Get the authenticated user profile including name, email, avatar, and subscription plan.',
     {},
     async () => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const user = await prisma.user.findUnique({
@@ -138,6 +161,7 @@ export function createPlatformMcpServer(): McpServer {
       skip: z.number().int().min(0).default(0).describe('Number of items to skip for pagination.'),
     },
     async ({ limit, skip }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const mockups = await prisma.mockup.findMany({
@@ -162,6 +186,7 @@ export function createPlatformMcpServer(): McpServer {
       id: z.string().describe('The mockup ID.'),
     },
     async ({ id }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const mockup = await prisma.mockup.findFirst({
@@ -195,6 +220,7 @@ export function createPlatformMcpServer(): McpServer {
         .describe('The preset category to browse.'),
     },
     async ({ type }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const db = await connectToMongoDB();
@@ -217,6 +243,7 @@ export function createPlatformMcpServer(): McpServer {
       brandGuidelineId: z.string().optional().describe('Brand guideline ID to inject brand context into generation.'),
     },
     async ({ prompt, designType, aspectRatio, brandGuidelineId }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const response = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
@@ -261,6 +288,7 @@ export function createPlatformMcpServer(): McpServer {
     'List branding projects owned by the authenticated user.',
     {},
     async () => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const projects = await prisma.brandingProject.findMany({
@@ -283,6 +311,7 @@ export function createPlatformMcpServer(): McpServer {
       id: z.string().describe('The branding project ID.'),
     },
     async ({ id }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const project = await prisma.brandingProject.findFirst({
@@ -304,6 +333,7 @@ export function createPlatformMcpServer(): McpServer {
       prompt: z.string().min(1).describe('Description of the brand to generate (e.g. "modern tech startup called Acme").'),
     },
     async ({ prompt }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const response = await fetch(`${INTERNAL_API_BASE}/api/branding/generate-step`, {
@@ -341,6 +371,7 @@ export function createPlatformMcpServer(): McpServer {
     'List canvas (whiteboard) projects owned by the authenticated user.',
     {},
     async () => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const projects = await prisma.canvasProject.findMany({
@@ -363,6 +394,7 @@ export function createPlatformMcpServer(): McpServer {
       id: z.string().describe('The canvas project ID.'),
     },
     async ({ id }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const project = await prisma.canvasProject.findFirst({
@@ -384,6 +416,7 @@ export function createPlatformMcpServer(): McpServer {
       name: z.string().min(1).describe('Name for the new canvas.'),
     },
     async ({ name }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const project = await prisma.canvasProject.create({
@@ -406,6 +439,7 @@ export function createPlatformMcpServer(): McpServer {
     'List budget documents created by the authenticated user.',
     {},
     async () => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const budgets = await prisma.budgetProject.findMany({
@@ -428,6 +462,7 @@ export function createPlatformMcpServer(): McpServer {
       id: z.string().describe('The budget document ID.'),
     },
     async ({ id }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const budget = await prisma.budgetProject.findFirst({
@@ -451,6 +486,7 @@ export function createPlatformMcpServer(): McpServer {
       brandName: z.string().optional().describe('Brand name if different from client name.'),
     },
     async ({ clientName, projectDescription, brandName }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const budget = await prisma.budgetProject.create({
@@ -489,6 +525,7 @@ export function createPlatformMcpServer(): McpServer {
       prompt: z.string().min(1).describe('The original prompt to improve.'),
     },
     async ({ prompt }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         let userApiKey: string | undefined;
@@ -510,6 +547,7 @@ export function createPlatformMcpServer(): McpServer {
       base64: z.string().optional().describe('Base64-encoded image data (include data URI prefix or raw base64).'),
     },
     async ({ imageUrl, base64 }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         if (!imageUrl && !base64) {
@@ -542,6 +580,7 @@ export function createPlatformMcpServer(): McpServer {
     'List all brand guidelines (identity vaults) owned by the authenticated user.',
     {},
     async () => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const guidelines = await prisma.brandGuideline.findMany({
@@ -565,6 +604,7 @@ export function createPlatformMcpServer(): McpServer {
       format: z.enum(['structured', 'prompt']).default('structured').describe('Output format: "structured" (JSON) or "prompt" (LLM-ready text).'),
     },
     async ({ id, format }) => {
+      const currentUserId = getMcpUserId();
       if (!currentUserId) return authError();
       try {
         const guideline = await prisma.brandGuideline.findFirst({
