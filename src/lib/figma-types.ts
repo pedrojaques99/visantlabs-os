@@ -698,6 +698,10 @@ export interface BrandGuideline {
   // Public sharing
   publicSlug?: string
   isPublic?: boolean
+  // Figma Integration
+  figmaFileUrl?: string
+  figmaFileKey?: string
+  figmaSyncedAt?: string
 }
 
 // ── Agent Component System ──
@@ -810,7 +814,10 @@ export type UIMessage =
       fontFamily: string;
       fontStyle?: string;
     };
-  };
+  }
+  // Figma Sync
+  | { type: 'EXTRACT_FOR_SYNC' }
+  | { type: 'PUSH_TO_FIGMA'; guideline: BrandGuideline };
 
 // ── Sandbox → UI messages ──
 
@@ -855,4 +862,9 @@ export type PluginMessage =
   // Agent Components
   | { type: 'AGENT_COMPONENTS_RESULT'; components: any[] }
   // Agent Library Scaffold
-  | { type: 'SCAFFOLD_COMPLETE'; message: string; components: Array<{ name: string; key: string }> };
+  | { type: 'SCAFFOLD_COMPLETE'; message: string; components: Array<{ name: string; key: string }> }
+  // Figma Sync
+  | { type: 'EXTRACT_FOR_SYNC_RESULT'; data: any }
+  | { type: 'EXTRACT_FOR_SYNC_ERROR'; error: string }
+  | { type: 'PUSH_TO_FIGMA_RESULT'; created: number; updated: number }
+  | { type: 'PUSH_TO_FIGMA_ERROR'; error: string };
