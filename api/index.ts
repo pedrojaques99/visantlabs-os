@@ -28,6 +28,7 @@ import aiRoutes from '../server/routes/ai.js';
 import workflowRoutes from '../server/routes/workflows.js';
 import pluginRoutes from '../server/routes/plugin.js';
 import brandGuidelinesRoutes from '../server/routes/brand-guidelines.js';
+import appsRoutes from '../server/routes/apps.js';
 import { errorHandler } from '../server/middleware/errorHandler.js';
 
 // Load environment variables
@@ -198,6 +199,8 @@ app.use('/plugin', pluginRoutes);
 if (isDev) console.log('✅ Plugin routes registered at /plugin');
 app.use('/brand-guidelines', brandGuidelinesRoutes);
 if (isDev) console.log('✅ Brand Guidelines routes registered at /brand-guidelines');
+app.use('/apps', appsRoutes);
+if (isDev) console.log('✅ Apps routes registered at /apps');
 
 // Health check rate limiter
 const healthCheckLimiter = rateLimit({
