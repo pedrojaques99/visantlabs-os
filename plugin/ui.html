@@ -456,10 +456,6 @@
           </div>
         </div>
 
-
-
-      </div>
-
       <!-- ================= TAB: CONFIG ================= -->
       <div id="tab-config" class="tab-content hidden">
         <div class="figma-prop-panel">
@@ -469,8 +465,10 @@
             <div class="figma-prop-header">
               <span class="figma-prop-title">Conta Visant</span>
             </div>
+
+            <!-- Logged Out State -->
             <div id="authLoggedOut">
-              <div class="auth-container">
+              <div class="auth-container" style="padding: 12px;">
                 <div class="auth-field">
                   <label class="auth-label">E-mail</label>
                   <input type="email" id="authEmailInput" class="auth-input" placeholder="seu@email.com">
@@ -482,7 +480,7 @@
                 <div class="auth-field" style="flex-direction: row; align-items: center; justify-content: flex-start; margin-top: -4px; margin-bottom: 8px;">
                   <label class="figma-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; font-weight: normal; color: var(--figma-color-text-secondary, #808080);">
                     <input type="checkbox" id="authRememberMe" style="margin: 0;" checked>
-                    Lembrar de mim para sempre
+                    Lembrar acesso
                   </label>
                 </div>
                 <button type="button" id="authLoginBtn" class="auth-login-btn">
@@ -493,70 +491,104 @@
               <div id="authLoginStatus" class="auth-status"></div>
             </div>
 
-            <div id="authLoggedIn" class="hidden">
-              <div class="auth-logged-in-card">
-                <div class="auth-user-info-row">
-                  <div class="auth-user-details">
-                    <div id="authUserEmail" class="auth-user-email"></div>
-                    <div id="authUserTier" class="auth-user-tier"></div>
+            <!-- Logged In State (Premium Look) -->
+            <div id="authLoggedIn" class="hidden" style="padding: 0 12px 12px;">
+              <div class="premium-profile-card">
+                <div class="profile-header">
+                  <div class="profile-avatar" id="authUserInitials">V</div>
+                  <div class="profile-info">
+                    <div id="authUserEmail" class="profile-email">email@visant.com</div>
+                    <div id="authUserTier" class="tier-badge premium">Premium</div>
                   </div>
-                  <button type="button" id="authLogoutBtn" class="auth-logout-btn">Sair</button>
                 </div>
-                <div id="authCreditsInfo" class="auth-credits-info"></div>
+                
+                <div class="credits-meter-container">
+                  <div class="credits-meter-label">
+                    <span>Créditos de Processamento</span>
+                    <span id="authCreditsInfo">86 / 231</span>
+                  </div>
+                  <div class="credits-bar-bg">
+                    <div id="authCreditsBar" class="credits-bar-fill" style="width: 37%;"></div>
+                  </div>
+                </div>
+
+                <div class="config-btn-grid">
+                  <button type="button" class="quick-action-btn" id="openProfileBtn">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM2 10.5a4 4 0 018 0" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    Ver Perfil
+                  </button>
+                  <button type="button" class="quick-action-btn" id="buyCreditsBtn">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4l3.5 4 3.5-4h-7zM2 2.5h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    Créditos
+                  </button>
+                  <button type="button" class="quick-action-btn" id="helpCenterBtn">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M6 7.5v.5M5 4.5c0-1 2-1 2 0 0 1-1 1-1 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    Suporte
+                  </button>
+                  <button type="button" class="quick-action-btn danger-btn" id="authLogoutBtn">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 3.5l2.5 2.5-2.5 2.5M10.5 6H4M4 2.5H2.5a1 1 0 00-1 1v5a1 1 0 001 1H4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Sair
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-
-          <div class="figma-prop-divider"></div>
 
           <!-- API Key (BYOK) - Gemini -->
-          <div class="figma-prop-section">
-            <div class="figma-prop-header" id="apiSectionToggle" style="cursor: pointer; padding-right: 12px;">
+          <div class="figma-prop-section collapsible" id="apiSection">
+            <div class="figma-prop-header collapsible-header" data-target="apiContent">
               <span class="figma-prop-title">Gemini API Key (BYOK)</span>
-              <span class="settings-section-chevron collapsed" id="apiChevron" style="width: auto;">▾</span>
+              <svg class="collapse-icon" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
             </div>
-            <div class="settings-section-content hidden" id="apiContent"
-              style="padding: 0 12px 12px; border-top: none;">
-              <p
-                style="font-size: 11px; color: var(--figma-color-text-secondary, #808080); margin-bottom: 10px; line-height: 1.5;">
-                Salva localmente no Figma. Se vazio, usa a chave do servidor.
-              </p>
-              <div style="display: flex; gap: 6px; align-items: center;">
-                <input type="password" id="apiKeyInput" placeholder="AIza..." style="flex: 1; margin-bottom: 0;">
-                <button type="button" class="secondary" id="apiKeySaveBtn"
-                  style="width: auto; padding: 0 12px; flex-shrink: 0;">Salvar</button>
+            <div class="collapsible-content hidden" id="apiContent">
+              <div style="padding: 4px 12px 12px;">
+                <p style="font-size: 11px; color: var(--figma-color-text-secondary, #808080); margin-bottom: 10px; line-height: 1.5;">
+                  Sua própria chave Gemini do Google AI Studio. Salva localmente no plugin.
+                </p>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <input type="password" id="apiKeyInput" placeholder="AIza..." style="flex: 1; margin-bottom: 0;">
+                  <button type="button" class="secondary" id="apiKeySaveBtn" style="width: auto; padding: 0 10px; flex-shrink: 0; font-size: 10px;">Salvar</button>
+                </div>
+                <div id="apiKeyStatus" style="font-size: 10px; margin-top: 6px; color: var(--figma-color-text-secondary, #808080);"></div>
               </div>
-              <div id="apiKeyStatus"
-                style="font-size: 10px; margin-top: 6px; color: var(--figma-color-text-secondary, #808080);"></div>
             </div>
           </div>
 
-          <!-- API Key (BYOK) - Anthropic/Claude -->
-          <div class="figma-prop-section">
-            <div class="figma-prop-header" id="anthropicSectionToggle" style="cursor: pointer; padding-right: 12px;">
+          <!-- API Key (BYOK) - Anthropic -->
+          <div class="figma-prop-section collapsible" id="anthropicSection">
+            <div class="figma-prop-header collapsible-header" data-target="anthropicContent">
               <span class="figma-prop-title">Anthropic API Key (BYOK)</span>
-              <span class="settings-section-chevron collapsed" id="anthropicChevron" style="width: auto;">▾</span>
+              <svg class="collapse-icon" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
             </div>
-            <div class="settings-section-content hidden" id="anthropicContent"
-              style="padding: 0 12px 12px; border-top: none;">
-              <p
-                style="font-size: 11px; color: var(--figma-color-text-secondary, #808080); margin-bottom: 10px; line-height: 1.5;">
-                Usada para pedidos complexos (Claude). Salva localmente no Figma.
-              </p>
-              <div style="display: flex; gap: 6px; align-items: center;">
-                <input type="password" id="anthropicKeyInput" placeholder="sk-ant-..."
-                  style="flex: 1; margin-bottom: 0;">
-                <button type="button" class="secondary" id="anthropicKeySaveBtn"
-                  style="width: auto; padding: 0 12px; flex-shrink: 0;">Salvar</button>
+            <div class="collapsible-content hidden" id="anthropicContent">
+              <div style="padding: 4px 12px 12px;">
+                <p style="font-size: 11px; color: var(--figma-color-text-secondary, #808080); margin-bottom: 10px; line-height: 1.5;">
+                  Chave Anthropic (Claude). Salva localmente no plugin.
+                </p>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <input type="password" id="anthropicKeyInput" placeholder="sk-ant-..." style="flex: 1; margin-bottom: 0;">
+                  <button type="button" class="secondary" id="anthropicKeySaveBtn" style="width: auto; padding: 0 10px; flex-shrink: 0; font-size: 10px;">Salvar</button>
+                </div>
+                <div id="anthropicKeyStatus" style="font-size: 10px; margin-top: 6px; color: var(--figma-color-text-secondary, #808080);"></div>
               </div>
-              <div id="anthropicKeyStatus"
-                style="font-size: 10px; margin-top: 6px; color: var(--figma-color-text-secondary, #808080);"></div>
             </div>
           </div>
 
-          <!-- Clear Chat -->
-          <div class="figma-prop-section" style="padding: 12px;">
-            <button class="secondary" id="clearChatBtn" style="width: 100%;">Limpar Histórico do Chat</button>
+          <!-- Utility Actions -->
+          <div class="figma-prop-section">
+            <div class="figma-prop-header">
+              <span class="figma-prop-title">Manutenção</span>
+            </div>
+            <div style="padding: 0 12px 12px;">
+              <button class="secondary" id="clearChatBtn" style="width: 100%; justify-content: center; gap: 8px;">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 3h7M4 3V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V3m1 0v6a1 1 0 01-1 1h-5a1 1 0 01-1-1V3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                Limpar Histórico do Chat
+              </button>
+            </div>
           </div>
 
         </div>
