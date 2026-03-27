@@ -166,7 +166,13 @@ class BrandModule {
     });
 
     this.brandGuidelineRefreshBtn?.addEventListener('click', () => {
-      this.fetchBrandGuidelines();
+      // Manual refresh of selected guideline if update found
+      if (this.brandGuidelineRefreshBtn.classList.contains('highlighted')) {
+        this.linkBrandGuideline(state.linkedGuidelineId, { force: true });
+      } else {
+        // Otherwise just refresh list
+        this.fetchBrandGuidelines();
+      }
     });
 
     document.getElementById('brandGuidelineAddBtn')?.addEventListener('click', () => {
@@ -240,6 +246,15 @@ class BrandModule {
 
     // Initial render
     this.renderComponentsGrid();
+
+    // Listen for brand updates found on server
+    eventBus?.on('brand:update-available', (serverData) => {
+      this.showUpdateAvailable(serverData);
+    });
+
+    eventBus?.on('brand:synchronized', () => {
+      this.showSynchronized();
+    });
   }
 
   // ═══ COLLAPSIBLE SECTIONS ═══
@@ -1231,7 +1246,7 @@ class BrandModule {
   /**
    * Link a brand guideline from API via brandSyncModule
    */
-  async linkBrandGuideline(guidelineId) {
+  async linkBrandGuideline(guidelineId, options = {}) {
     if (!guidelineId) {
       // Unlink
       setState('linkedGuidelineId', null);
@@ -1246,7 +1261,7 @@ class BrandModule {
     if (!window.brandSyncModule) return;
 
     // Use brandSyncModule.select() which handles caching and state
-    const guideline = await window.brandSyncModule.select(guidelineId);
+    const guideline = await window.brandSyncModule.select(guidelineId, options);
     if (guideline) {
       setState('linkedGuidelineId', guidelineId);
       setState('linkedGuideline', guideline);
@@ -1323,9 +1338,44 @@ class BrandModule {
       this.brandGuidelineStatus.classList.add('linked');
       this.brandGuidelineStatus.querySelector('.status-text').textContent =
         `Vinculado: ${guideline.identity?.name || 'Marca'}`;
+      
+      // Default to hidden unless update detected
+      this.brandGuidelineRefreshBtn?.classList.remove('highlighted');
+      this.brandGuidelineRefreshBtn?.classList.add('hidden');
     } else {
       this.brandGuidelineStatus.style.display = 'none';
       this.brandGuidelineStatus.classList.remove('linked');
+      this.brandGuidelineRefreshBtn?.classList.remove('highlighted', 'hidden');
+    }
+  }
+
+  showUpdateAvailable(serverData) {
+    const indicator = document.getElementById('saveStatusIndicator');
+    if (indicator) {
+      indicator.querySelector('.save-status-text').textContent = 'Mudanças Identificadas';
+      indicator.querySelector('.save-status-dot').style.background = 'var(--figma-color-bg-warning, #ff9800)';
+    }
+
+    if (this.brandGuidelineRefreshBtn) {
+      this.brandGuidelineRefreshBtn.classList.remove('hidden');
+      this.brandGuidelineRefreshBtn.classList.add('highlighted');
+      this.brandGuidelineRefreshBtn.title = 'Sincronizar com as mudanças identificadas';
+    }
+    
+    window.showToast?.('Mudanças encontradas na cloud. Clique em sincronizar.', 'info');
+  }
+
+  showSynchronized() {
+    const indicator = document.getElementById('saveStatusIndicator');
+    if (indicator) {
+      indicator.querySelector('.save-status-text').textContent = 'Sincronizado';
+      indicator.querySelector('.save-status-dot').style.background = '#1fa511';
+    }
+
+    if (this.brandGuidelineRefreshBtn) {
+       this.brandGuidelineRefreshBtn.classList.remove('highlighted');
+       this.brandGuidelineRefreshBtn.classList.add('hidden');
+       this.brandGuidelineRefreshBtn.title = 'Busca atualizada';
     }
   }
 

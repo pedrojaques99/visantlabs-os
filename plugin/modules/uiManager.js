@@ -219,24 +219,18 @@ class UIManager {
       setState('userApiKey', key);
     });
 
-    // API Section toggle (Gemini)
-    document.getElementById('apiSectionToggle')?.addEventListener('click', () => {
-      const chevron = document.getElementById('apiChevron');
-      const content = document.getElementById('apiContent');
-      if (chevron && content) {
-        chevron.classList.toggle('collapsed');
-        content.classList.toggle('hidden');
-      }
-    });
-
-    // API Section toggle (Anthropic)
-    document.getElementById('anthropicSectionToggle')?.addEventListener('click', () => {
-      const chevron = document.getElementById('anthropicChevron');
-      const content = document.getElementById('anthropicContent');
-      if (chevron && content) {
-        chevron.classList.toggle('collapsed');
-        content.classList.toggle('hidden');
-      }
+    // API Section toggles are now handled by generic setupCollapsibles logic in brand.js
+    // if we added .collapsible-header class to them. 
+    // However, uiManager.js has its own setup. Let's keep it but fix for new structure.
+    document.querySelectorAll('.collapsible-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const section = header.closest('.collapsible');
+        if (section && section.closest('#tab-config')) {
+           section.classList.toggle('collapsed');
+           const content = section.querySelector('.collapsible-content');
+           content?.classList.toggle('hidden');
+        }
+      });
     });
 
     // Save Anthropic key
@@ -249,6 +243,17 @@ class UIManager {
         status.textContent = key ? '✅ Chave salva' : '🗑 Chave removida';
         setTimeout(() => { status.textContent = ''; }, 2000);
       }
+    });
+
+    // Option Tab Action Buttons
+    document.getElementById('openProfileBtn')?.addEventListener('click', () => {
+      window.open('https://www.visantlabs.com/perfil', '_blank');
+    });
+    document.getElementById('buyCreditsBtn')?.addEventListener('click', () => {
+      window.open('https://www.visantlabs.com/pricing', '_blank');
+    });
+    document.getElementById('helpCenterBtn')?.addEventListener('click', () => {
+      window.open('https://www.visantlabs.com/support', '_blank');
     });
 
     // Listen for operations applied
@@ -968,23 +973,43 @@ class UIManager {
     const loggedIn = document.getElementById('authLoggedIn');
     const emailEl = document.getElementById('authUserEmail');
     const tierEl = document.getElementById('authUserTier');
+    const initialsEl = document.getElementById('authUserInitials');
     const creditsEl = document.getElementById('authCreditsInfo');
+    const creditsBar = document.getElementById('authCreditsBar');
     const statusEl = document.getElementById('authLoginStatus');
 
     if (authenticated && state.authEmail) {
       if (loggedOut) loggedOut.classList.add('hidden');
       if (loggedIn) loggedIn.classList.remove('hidden');
       if (emailEl) emailEl.textContent = state.authEmail;
-      if (tierEl) {
-        const tierLabels = { free: 'Free', premium: 'Premium', pro: 'Pro' };
-        tierEl.textContent = tierLabels[state.credits.tier] || state.credits.tier;
+      
+      // Initials
+      if (initialsEl) {
+        const initials = state.authEmail.split('@')[0].substring(0, 1).toUpperCase();
+        initialsEl.textContent = initials;
       }
+
+      if (tierEl) {
+        const tier = state.credits.tier || 'free';
+        const tierLabels = { free: 'Free', premium: 'Premium', pro: 'Pro' };
+        tierEl.textContent = tierLabels[tier] || tier;
+        tierEl.className = `tier-badge ${tier}`;
+      }
+
       if (creditsEl) {
         const c = state.credits;
         if (c.hasSubscription) {
-          creditsEl.textContent = `${c.remaining} créditos restantes de ${c.total}`;
+          creditsEl.textContent = `${c.remaining} / ${c.total}`;
+          if (creditsBar) {
+            const pct = Math.max(0, Math.min(100, (c.remaining / c.total) * 100));
+            creditsBar.style.width = `${pct}%`;
+          }
         } else {
-          creditsEl.textContent = `${c.freeRemaining} gerações grátis restantes`;
+          creditsEl.textContent = `${c.freeRemaining} gerações grátis`;
+          if (creditsBar) {
+            const pct = Math.max(0, Math.min(100, (c.freeRemaining / 10) * 100)); // Default free 10
+            creditsBar.style.width = `${pct}%`;
+          }
         }
       }
       if (statusEl) statusEl.textContent = '';

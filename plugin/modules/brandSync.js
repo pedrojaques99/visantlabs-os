@@ -63,20 +63,55 @@ class BrandSyncModule {
 
   /** Select a guideline as active for this Figma file */
   async select(id, options = {}) {
+    const prevId = this._selectedId
     this._selectedId = id
     // Reset linked status unless explicitly set
     if (!options.fromCanvas) {
       this._isLinkedFromCanvas = false
     }
-    const guideline = await this.fetchById(id)
-    if (guideline) {
-      window.setState('brandGuideline', guideline)
+
+    const cached = window.getState('brandGuideline')
+    const server = await this.fetchById(id)
+
+    if (server) {
+      // If we already had this one selected, check for changes
+      if (prevId === id && cached && !options.force) {
+        const isDifferent = this._isDifferent(cached, server)
+        if (isDifferent) {
+          console.log('[BrandSync] Remote change detected for', id)
+          window.eventBus?.emit('brand:update-available', server)
+          return cached // Keep cached for now, let user refresh
+        }
+      }
+
+      // First time selecting or no changes detected
+      window.setState('brandGuideline', server)
       window.setState('brandGuidelineLinkedFromCanvas', this._isLinkedFromCanvas)
-      this._saveToCache(id, guideline)
+      this._saveToCache(id, server)
       // Notify Canvas about selection (for reverse sync)
       this._notifyCanvasSelection(id)
+      window.eventBus?.emit('brand:synchronized')
     }
-    return guideline
+    return server
+  }
+
+  /** Deep comparison helper to detect changes between cached and server data */
+  _isDifferent(cached, server) {
+    if (!cached || !server) return true
+    
+    // Quick check by updatedAt if available
+    if (cached.updatedAt && server.updatedAt && cached.updatedAt !== server.updatedAt) {
+      return true
+    }
+
+    // Fallback to structural comparison (simplified)
+    try {
+      const c = JSON.stringify(cached)
+      const s = JSON.stringify(server)
+      return c !== s
+    } catch (e) {
+      return true
+    }
   }
 
   /** Select a guideline with auto-load from Canvas (sets "Synced with Canvas" indicator) */

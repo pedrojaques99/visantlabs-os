@@ -3,13 +3,41 @@ import type { AIProvider } from './types.js';
 import claudeProvider from './claude.js';
 import geminiProvider from './gemini.js';
 
+// ═══════════════════════════════════════════
+// Keyword-based routing (fast, no API call)
+// ═══════════════════════════════════════════
+
+const COMPLEX_KEYWORDS = [
+  'página', 'section', 'seção', 'layout', 'design', 'sistema',
+  'completo', 'complete', 'estrutura', 'structure',
+  'vários', 'multiple', 'múltiplas', ' e ', ' and ', ',',
+  // Research keywords → Claude with web_search
+  'pesquis', 'busca', 'busque', 'search',
+  'referência', 'referencia', 'reference',
+  'inspiração', 'inspiracao', 'inspiration',
+  'tendência', 'tendencia', 'trend',
+  'exemplo', 'example', 'similar', 'como',
+  'estilo de', 'style of', 'parecido com', 'like',
+];
+
 /**
- * Chooses an AI provider based on command complexity and context size
+ * Fast keyword-based complexity check (no API call).
+ */
+function hasComplexitySignals(command: string, contextSize: number): boolean {
+  const lower = command.toLowerCase();
+  const hasKeywords = COMPLEX_KEYWORDS.some(kw => lower.includes(kw));
+  const isLong = command.length > 100;
+  const isLargeContext = contextSize > 30;
+
+  return hasKeywords || isLong || isLargeContext;
+}
+
+/**
+ * Chooses an AI provider based on command complexity and context size.
+ * Uses fast keyword heuristics by default.
  *
- * Heuristics:
- * - Complex commands (multi-step, long text) → Claude (better reasoning)
- * - Large context (>50 elements) → Claude (larger context window)
- * - Simple edits or quick generation → Gemini (faster, cheaper)
+ * @param command - The user command/prompt
+ * @param contextSize - Number of elements in context
  */
 export function chooseProvider(
   command: string,
@@ -21,55 +49,7 @@ export function chooseProvider(
     return geminiProvider;
   }
 
-  const complexKeywords = [
-    'página',
-    'section',
-    'seção',
-    'layout',
-    'design',
-    'sistema',
-    'completo',
-    'complete',
-    'estrutura',
-    'structure',
-    'vários',
-    'multiple',
-    'múltiplas',
-    ' e ',
-    ' and ',
-    ',',
-    // Search/research keywords → Claude agent with web_search
-    'pesquis',
-    'busca',
-    'busque',
-    'search',
-    'referência',
-    'referencia',
-    'reference',
-    'inspiração',
-    'inspiracao',
-    'inspiration',
-    'tendência',
-    'tendencia',
-    'trend',
-    'exemplo',
-    'example',
-    'similar',
-    'como',
-    'estilo de',
-    'style of',
-    'parecido com',
-    'like',
-  ];
-
-  const hasComplexKeywords = complexKeywords.some((kw) =>
-    command.toLowerCase().includes(kw)
-  );
-
-  const isLongCommand = command.length > 100;
-  const isLargeContext = contextSize > 30;
-
-  if (hasComplexKeywords || isLongCommand || isLargeContext) {
+  if (hasComplexitySignals(command, contextSize)) {
     console.log('[Router] Using Claude for complex request');
     return claudeProvider;
   }

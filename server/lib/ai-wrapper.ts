@@ -1,37 +1,25 @@
 /**
- * AI Wrapper - Unified interface for AI calls with resilience + caching
+ * AI Wrapper - Unified interface for AI calls with resilience + observability
  *
  * Combines:
  * - Circuit breaker (prevents cascading failures)
- * - Semantic cache (reduces costs ~40%)
+ * - Observability (structured logging, metrics)
  * - Request context (tracing)
  *
  * Usage:
- *   const result = await aiCall('gemini', () => generateMockup(...), {
- *     cache: { enabled: true, brandId: 'xxx' },
- *   });
+ *   const { result } = await aiCall('gemini', () => generateMockup(...));
  */
 
 import { withResilience, onResilienceEvent } from './ai-resilience.js';
-import {
-  withSemanticCache,
-  getCacheMetrics,
-  clearCache,
-} from './semantic-cache.js';
 import { getRequestId, addContextMetadata } from './request-context.js';
+import {
+  startTrace,
+  endTrace,
+  getObservabilityMetrics,
+  getRecentTraces,
+} from './ai-observability.js';
 
 export interface AICallOptions {
-  /** Provider name for circuit breaker tracking */
-  provider?: 'gemini' | 'claude' | 'openai';
-
-  /** Semantic cache options */
-  cache?: {
-    enabled: boolean;
-    brandId?: string;
-    /** Key to use for cache (defaults to prompt if string result) */
-    cacheKey?: string;
-  };
-
   /** Skip resilience wrapper (for already-protected calls) */
   skipResilience?: boolean;
 
@@ -40,7 +28,7 @@ export interface AICallOptions {
 }
 
 /**
- * Execute an AI call with resilience and optional caching.
+ * Execute an AI call with resilience and observability.
  *
  * @param provider - AI provider name for circuit breaker
  * @param fn - The async function to execute
@@ -50,9 +38,9 @@ export async function aiCall<T>(
   provider: 'gemini' | 'claude' | 'openai',
   fn: () => Promise<T>,
   options?: AICallOptions
-): Promise<{ result: T; fromCache: boolean; requestId: string }> {
+): Promise<{ result: T; requestId: string }> {
   const requestId = getRequestId();
-  const startTime = Date.now();
+  const trace = startTrace(provider, options?.metadata?.operation as string || 'ai-call', options?.metadata);
 
   // Add metadata to context for tracing
   if (options?.metadata) {
@@ -63,43 +51,16 @@ export async function aiCall<T>(
   addContextMetadata('ai.provider', provider);
 
   try {
-    // If caching is enabled and we have a cache key
-    if (options?.cache?.enabled && options.cache.cacheKey) {
-      const cacheResult = await withSemanticCache(
-        options.cache.cacheKey,
-        async () => {
-          // Execute with resilience
-          const result = options.skipResilience
-            ? await fn()
-            : await withResilience(provider, fn);
-          // Cache only works with string results
-          return result as string;
-        },
-        { brandId: options.cache.brandId }
-      );
-
-      addContextMetadata('ai.fromCache', cacheResult.fromCache);
-      addContextMetadata('ai.duration', Date.now() - startTime);
-
-      return {
-        result: cacheResult.result as T,
-        fromCache: cacheResult.fromCache,
-        requestId,
-      };
-    }
-
-    // No caching, just resilience
     const result = options?.skipResilience
       ? await fn()
       : await withResilience(provider, fn);
 
-    addContextMetadata('ai.fromCache', false);
-    addContextMetadata('ai.duration', Date.now() - startTime);
+    endTrace(trace, {});
 
-    return { result, fromCache: false, requestId };
+    return { result, requestId };
   } catch (error) {
+    endTrace(trace, { error: error instanceof Error ? error.message : String(error) });
     addContextMetadata('ai.error', error instanceof Error ? error.message : String(error));
-    addContextMetadata('ai.duration', Date.now() - startTime);
     throw error;
   }
 }
@@ -109,9 +70,9 @@ export async function aiCall<T>(
  */
 export async function geminiCall<T>(
   fn: () => Promise<T>,
-  options?: Omit<AICallOptions, 'provider'>
-): Promise<{ result: T; fromCache: boolean; requestId: string }> {
-  return aiCall('gemini', fn, { ...options, provider: 'gemini' });
+  options?: AICallOptions
+): Promise<{ result: T; requestId: string }> {
+  return aiCall('gemini', fn, options);
 }
 
 /**
@@ -119,20 +80,17 @@ export async function geminiCall<T>(
  */
 export async function claudeCall<T>(
   fn: () => Promise<T>,
-  options?: Omit<AICallOptions, 'provider'>
-): Promise<{ result: T; fromCache: boolean; requestId: string }> {
-  return aiCall('claude', fn, { ...options, provider: 'claude' });
+  options?: AICallOptions
+): Promise<{ result: T; requestId: string }> {
+  return aiCall('claude', fn, options);
 }
 
 // Re-export utilities
-export { getCacheMetrics, clearCache, onResilienceEvent };
+export { onResilienceEvent, getRecentTraces };
 
 /**
- * Get combined AI metrics (cache + resilience).
+ * Get AI metrics (observability).
  */
 export function getAIMetrics() {
-  return {
-    cache: getCacheMetrics(),
-    // resilience stats would go here when implemented
-  };
+  return getObservabilityMetrics();
 }
