@@ -222,4 +222,49 @@ export const brandGuidelineApi = {
     const data = await response.json();
     return data.guideline;
   },
+
+  // ── Figma Integration ──
+
+  async linkFigmaFile(id: string, figmaFileUrl: string): Promise<{ figmaFileUrl: string; figmaFileKey: string; guideline: BrandGuideline }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/figma-link`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ figmaFileUrl }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to link Figma file');
+    }
+    return response.json();
+  },
+
+  async unlinkFigmaFile(id: string): Promise<{ success: boolean; guideline: BrandGuideline }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/figma-link`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) throw new Error('Failed to unlink Figma file');
+    return response.json();
+  },
+
+  async syncFromFigma(id: string, data: {
+    fileKey: string;
+    variables?: { colors?: any[]; numbers?: any[] };
+    styles?: { colors?: any[]; text?: any[]; effects?: any[] };
+    components?: any[];
+  }): Promise<{ guideline: BrandGuideline; syncedAt: string; stats: any }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/figma-sync`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to sync from Figma');
+    }
+    return response.json();
+  },
 };
