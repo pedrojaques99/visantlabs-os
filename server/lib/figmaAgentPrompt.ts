@@ -63,6 +63,7 @@ export interface PluginRequest {
   };
   // UI Components selected in plugin Brand tab
   selectedUIComponents?: Record<string, { key: string; name: string }>;
+  useBrand?: boolean;
 }
 
 export interface DesignSystemJSON {
@@ -366,16 +367,16 @@ Exemplo de bate-papo:
 ]
 
 ${thinkModeBlock}${chatHistory ? `═══ HISTÓRICO DE CONVERSA ═══\n${chatHistory}\n` : ''}
-${req.brandGuideline ? buildBrandContext(req.brandGuideline) + '\n' : (req.designSystem ? buildDesignSystemContext(req.designSystem) + '\n' : '')}
+${(req.useBrand !== false && req.brandGuideline) ? buildBrandContext(req.brandGuideline) + '\n' : (req.designSystem ? buildDesignSystemContext(req.designSystem) + '\n' : '')}
 ═══ CONTEXTO DO ARQUIVO ═══
 
-${!req.brandGuideline ? `BRAND GUIDELINES DO USUÁRIO:
+${(req.useBrand !== false && !req.brandGuideline) ? `BRAND GUIDELINES DO USUÁRIO:
 - Logo(s): ${logoInfo}
 - Fonte(s) de marca: ${fontInfo}
 - Cores de marca:
 ${brandColorsInfo}${tokensInfo ? `
 - Design Tokens:${tokensInfo}` : ''}${uiComponentsInfo ? `
-- Componentes de UI mapeados:${uiComponentsInfo}` : ''}` : ''}
+- Componentes de UI mapeados:${uiComponentsInfo}` : ''}` : (req.useBrand === false ? 'BRANDING: O usuário desativou o uso de marca. Use estilos genéricos e modernos (ex: Inter para fontes, cores neutras ou cores vibrantes genéricas se não especificado).' : '')}
 
 FRAMES/CONTAINERS SELECIONADOS (use o "id" como "parentNodeId" para criar DENTRO deles):
 ${containersHint}
@@ -565,12 +566,12 @@ export function buildSystemPromptV2(
   return assemblePrompt({
     command: req.command,
     selectedElements: req.selectedElements,
-    brandColors: req.selectedBrandColors,
-    brandFonts: req.brandFonts ? {
+    brandColors: req.useBrand !== false ? req.selectedBrandColors : undefined,
+    brandFonts: (req.useBrand !== false && req.brandFonts) ? {
       primary: req.brandFonts.primary ?? undefined,
       secondary: req.brandFonts.secondary ?? undefined,
     } : undefined,
-    brandLogos: req.brandLogos ? {
+    brandLogos: (req.useBrand !== false && req.brandLogos) ? {
       light: req.brandLogos.light ?? undefined,
       dark: req.brandLogos.dark ?? undefined,
     } : undefined,
@@ -578,6 +579,7 @@ export function buildSystemPromptV2(
     colorVariables: req.availableColorVariables,
     chatHistory,
     thinkMode: req.thinkMode,
+    useBrand: req.useBrand,
   });
 }
 

@@ -21,6 +21,7 @@ export interface ClassifiedIntent {
   needsDimensions: boolean;
   hasSelection: boolean;
   isTemplate: boolean;
+  isChart: boolean;
   keywords: string[];
 }
 

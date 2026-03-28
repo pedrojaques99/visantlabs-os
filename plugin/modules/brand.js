@@ -59,13 +59,29 @@ class BrandModule {
   }
 
   setupEventListeners() {
-    // Brand pill click - open settings to Brand tab and expand the hub section
-    this.brandPill?.addEventListener('click', () => {
-      if (window.uiManager) {
-        window.uiManager.openBrandSettings();
-        this.expandSection('brandApiSection');
-      }
-    });
+    // Brand pill toggle - enables/disables brand context for AI
+    if (this.brandPill) {
+      this.brandPill.addEventListener('click', (e) => {
+        // If they click specifically on an icon or label to open settings, we could handle it,
+        // but for now, let's keep it simple: click = toggle, double-click/long-press = settings?
+        // Actually, let's follow the scan/think pattern: single click = toggle.
+        const next = !state.useBrand;
+        setState('useBrand', next);
+        
+        // Optional: still open settings if it's the first time or if they want to configure?
+        // User asked for "using brand should be optional", so explicit toggle is priority.
+      });
+
+      // Special case: long press or some other way to open settings
+      this.brandPill.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        if (window.uiManager) {
+          window.uiManager.openBrandSettings();
+          this.expandSection('brandApiSection');
+        }
+      });
+    }
+
 
     // Guideline selection
     this.guidelineSelect?.addEventListener('change', (e) => {
@@ -324,6 +340,11 @@ class BrandModule {
       this.updateBrandPill();
     });
 
+    watchState('useBrand', () => {
+      this.updateBrandPill();
+    });
+
+
     watchState('savedGuidelines', () => {
       this.renderGuidelinesSelector();
     });
@@ -341,8 +362,10 @@ class BrandModule {
     const configPaths = [
       'logos', 'typography', 'selectedColors',
       'linkedGuidelineId', 'designTokens',
-      'selectedUIComponents', 'customComponentTypes'
+      'selectedUIComponents', 'customComponentTypes',
+      'useBrand'
     ];
+
     configPaths.forEach(path => {
       watchState(path, () => {
         this.saveLocalBrandConfig();
@@ -649,14 +672,31 @@ class BrandModule {
    * Update brand pill indicator
    */
   updateBrandPill() {
-    const isConfigured = isBrandConfigured();
-    this.brandPill?.classList.toggle('active', isConfigured);
+    if (!this.brandPill) return;
+
+    const isAvailable = isBrandConfigured();
+    const isActive = state.useBrand;
+
+    // Active state: visually highlighted (the toggle)
+    this.brandPill.classList.toggle('active', isActive);
+    
+    // Status indicator: color the icon or add a dot if configured but inactive
+    if (isAvailable) {
+      this.brandPill.style.color = isActive 
+        ? 'var(--figma-color-text-onbrand, #fff)' 
+        : 'var(--figma-color-text-brand, #0d99ff)';
+    } else {
+      this.brandPill.style.color = '';
+    }
 
     const summary = getBrandSummary();
-    if (summary) {
-      this.brandPill.title = summary;
-    }
+    const tooltip = isActive 
+      ? `Branding Ativo (${summary})` 
+      : (isAvailable ? `Branding Desativado (Configurado: ${summary})` : 'Brand não configurada');
+    
+    this.brandPill.title = tooltip + ' • Botão direito para gerenciar';
   }
+
 
   /**
    * Render dynamic logos

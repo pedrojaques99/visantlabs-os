@@ -82,7 +82,8 @@
       "mcp__claude_ai_Linear__get_issue",
       "mcp__claude_ai_Figma__use_figma",
       "mcp__claude_ai_Figma__get_screenshot",
-      "Bash(npm install @:*)"
+      "Bash(npm install @:*)",
+      "Bash(wc:*)"
     ]
   }
 }

@@ -6,6 +6,9 @@ import { Loader2, Link2, ExternalLink, Unlink, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { FigmaImportModal } from '../FigmaImportModal';
+import { Figma } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Figma logo SVG
 const FigmaIcon = ({ size = 16 }: { size?: number }) => (
@@ -28,6 +31,13 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
   const [isLinking, setIsLinking] = useState(false);
   const [isUnlinking, setIsUnlinking] = useState(false);
   const [figmaUrl, setFigmaUrl] = useState('');
+  const [isPreviewing, setIsPreviewing] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<{
+    colors: any[];
+    typography: any[];
+    components: any[];
+  }>({ colors: [], typography: [], components: [] });
 
   const isLinked = !!guideline.figmaFileUrl;
 
@@ -89,6 +99,31 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
     }
   };
 
+  const handleImportClick = async () => {
+    if (!guideline.id) return;
+
+    setIsPreviewing(true);
+    try {
+      const data = await brandGuidelineApi.previewFigmaFile(guideline.id);
+      setPreviewData(data);
+      setIsModalOpen(true);
+    } catch (error: any) {
+      if (error.needsToken) {
+        toast.error('Token do Figma não configurado', {
+          description: 'Vá em Perfil > Gerenciar para configurar seu token.',
+          action: {
+            label: 'Configurar',
+            onClick: () => window.location.href = '/profile?tab=configuration'
+          }
+        });
+      } else {
+        toast.error(error.message || 'Erro ao carregar preview do Figma');
+      }
+    } finally {
+      setIsPreviewing(false);
+    }
+  };
+
   const handleOpenInFigma = () => {
     if (guideline.figmaFileUrl) {
       window.open(guideline.figmaFileUrl, '_blank');
@@ -123,20 +158,48 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">Arquivo Linkado</p>
-              <p className="text-xs text-neutral-300 truncate font-mono">
-                {guideline.figmaFileKey}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-neutral-300 truncate font-mono">
+                  {guideline.figmaFileKey}
+                </p>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleOpenInFigma}
+                  className="h-5 w-5 text-neutral-500 hover:text-brand-cyan p-0"
+                  title="Abrir no Figma"
+                >
+                  <ExternalLink size={10} />
+                </Button>
+              </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleOpenInFigma}
-              className="shrink-0 h-8 px-3 text-[10px] gap-1.5 border-white/10 hover:border-brand-cyan/30 hover:bg-brand-cyan/5"
-            >
-              <ExternalLink size={12} />
-              Abrir no Figma
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="brand"
+                size="sm"
+                onClick={handleImportClick}
+                disabled={isPreviewing}
+                className="h-8 px-4 text-[10px] gap-1.5 bg-brand-cyan/20 hover:bg-brand-cyan text-brand-cyan hover:text-black border border-brand-cyan/30 transition-all font-bold shadow-[0_0_15px_rgba(0,186,242,0.1)] hover:shadow-[0_0_20px_rgba(0,186,242,0.2)]"
+              >
+                {isPreviewing ? <Loader2 size={12} className="animate-spin" /> : <Figma size={12} />}
+                Importar do Figma
+              </Button>
+            </div>
           </div>
+
+          <FigmaImportModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            guidelineId={guideline.id || ''}
+            previewData={previewData}
+            onImportComplete={() => {
+              if (guideline.id) {
+                // Trigger a refresh of the guideline data if needed
+                // For now, onUpdate can be used or we let the parent handle it
+                onUpdate({ figmaSyncedAt: new Date().toISOString() });
+              }
+            }}
+          />
 
           {/* Sync status */}
           {guideline.figmaSyncedAt && (

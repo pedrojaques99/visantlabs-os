@@ -78,3 +78,18 @@ export const authenticate = async (
   }
 };
 
+/**
+ * Middleware to require admin access
+ * Must be used after authenticate middleware
+ */
+export const requireAdmin = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.isAdmin) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+};
+

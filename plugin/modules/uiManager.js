@@ -23,6 +23,9 @@ class UIManager {
 
     // Initial fetch for session and state
     this.init();
+
+    // Start real-time bridge via WebSocket
+    this.initWebSocket();
   }
 
   /**

@@ -252,6 +252,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       selectedBrandColors: msg.brandColors,
       designSystem: (msg as any).designSystem || null,
       thinkMode: (msg as any).thinkMode || false,
+      useBrand: (msg as any).useBrand !== undefined ? (msg as any).useBrand : true,
       mentions: (msg as any).mentions || [],
       attachments: (msg as any).attachments || []
     };
