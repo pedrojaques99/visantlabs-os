@@ -377,7 +377,12 @@ class ChatModule {
           parts.push(`${label} tokens`);
         }
 
-        this.addStatusMessage(parts.join(' · '));
+        // If no MESSAGE ops, still save operations to history with status text
+        if (messageOps.length === 0) {
+          this.addAssistantMessage(parts.join(' · '), result.summaryItems || null, designOps);
+        } else {
+          this.addStatusMessage(parts.join(' · '));
+        }
         eventBus.emit('chat:operations-ready', designOps);
       }
 

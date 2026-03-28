@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { FigmaTokenSetup } from '../settings/FigmaTokenSetup';
 
 export const ApiSettings: React.FC = () => {
     const { t } = useTranslation();
@@ -362,6 +363,9 @@ export const ApiSettings: React.FC = () => {
                             </Button>
                         </div>
                     </div>
+
+                    {/* Figma REST API Integration */}
+                    <FigmaTokenSetup />
 
                     <ConfirmationModal
                         isOpen={showSeedreamDeleteConfirm}

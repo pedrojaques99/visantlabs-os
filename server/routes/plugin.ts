@@ -5,7 +5,7 @@ import { prisma } from '../db/prisma.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
 import path from 'path';
-import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth.js';
 import { getUserIdFromToken } from '../utils/auth.js';
 import { rateLimit } from 'express-rate-limit';
 import {
@@ -493,6 +493,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       brandGuideline: brandGuidelineFromUI,
       brandGuidelineId,
       thinkMode = false,
+      useBrand = true,
     } = req.body as PluginRequest;
 
     if (!command) {
@@ -512,45 +513,49 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     let brandGuideline: BrandGuideline | null = brandGuidelineFromUI || null;
     let brandChoiceContext = '';
 
-    // Try explicit brandGuidelineId first
-    if (brandGuidelineId && !brandGuideline) {
-      try {
-        const savedGuideline = await prisma.brandGuideline.findUnique({
-          where: { id: brandGuidelineId },
-        });
-        if (savedGuideline) {
-          brandGuideline = {
-            id: savedGuideline.id,
-            identity: savedGuideline.identity as any,
-            logos: savedGuideline.logos as any,
-            colors: savedGuideline.colors as any,
-            typography: savedGuideline.typography as any,
-            tags: savedGuideline.tags as any,
-            media: savedGuideline.media as any,
-            tokens: savedGuideline.tokens as any,
-            guidelines: savedGuideline.guidelines as any,
-          };
-          console.log('[Plugin] Loaded brand guideline from DB:', brandGuidelineId);
+    if (useBrand) {
+      // Try explicit brandGuidelineId first
+      if (brandGuidelineId && !brandGuideline) {
+        try {
+          const savedGuideline = await prisma.brandGuideline.findUnique({
+            where: { id: brandGuidelineId },
+          });
+          if (savedGuideline) {
+            brandGuideline = {
+              id: savedGuideline.id,
+              identity: savedGuideline.identity as any,
+              logos: savedGuideline.logos as any,
+              colors: savedGuideline.colors as any,
+              typography: savedGuideline.typography as any,
+              tags: savedGuideline.tags as any,
+              media: savedGuideline.media as any,
+              tokens: savedGuideline.tokens as any,
+              guidelines: savedGuideline.guidelines as any,
+            };
+            console.log('[Plugin] Loaded brand guideline from DB:', brandGuidelineId);
+          }
+        } catch (bgError) {
+          console.error('[Plugin] Error fetching brand guideline:', bgError);
         }
-      } catch (bgError) {
-        console.error('[Plugin] Error fetching brand guideline:', bgError);
       }
-    }
 
-    // If still no brand, try auto-resolve from project linkage
-    if (!brandGuideline && fileId && req.userId) {
-      try {
-        const brandResult = await resolveBrandGuideline(fileId, req.userId, brandGuidelineId);
-        if (brandResult.guideline) {
-          brandGuideline = brandResult.guideline;
-          console.log('[Plugin] Auto-resolved brand guideline from project linkage');
-        } else if (brandResult.needsUserChoice) {
-          brandChoiceContext = buildGuidelineChoiceContext(brandResult.availableGuidelines);
-          console.log('[Plugin] No linked brand, LLM will ask user to choose');
+      // If still no brand, try auto-resolve from project linkage
+      if (!brandGuideline && fileId && req.userId) {
+        try {
+          const brandResult = await resolveBrandGuideline(fileId, req.userId, brandGuidelineId);
+          if (brandResult.guideline) {
+            brandGuideline = brandResult.guideline;
+            console.log('[Plugin] Auto-resolved brand guideline from project linkage');
+          } else if (brandResult.needsUserChoice) {
+            brandChoiceContext = buildGuidelineChoiceContext(brandResult.availableGuidelines);
+            console.log('[Plugin] No linked brand, LLM will ask user to choose');
+          }
+        } catch (resolveError) {
+          console.error('[Plugin] Error auto-resolving brand:', resolveError);
         }
-      } catch (resolveError) {
-        console.error('[Plugin] Error auto-resolving brand:', resolveError);
       }
+    } else {
+      console.log('[Plugin] Branding disabled by user. Using local context ONLY.');
     }
 
     // ═══ BRANDED SOCIAL POSTS: Scan templates ═══
@@ -1033,6 +1038,154 @@ router.get('/proxy-image', proxyRateLimiter, async (req: Request, res: Response)
     // MED-002 fix: Don't expose internal error details
     console.error('[ProxyImage] Error:', error.message);
     res.status(500).json({ error: 'Failed to fetch image' });
+  }
+});
+
+// ============ Image to Prompt Generator ============
+import {
+  buildImageToPromptSystem,
+  IMAGE_ANALYSIS_USER_PROMPT,
+  detectComponentType,
+} from '../lib/prompt/modules/image-to-prompt.js';
+import {
+  UI_DESCRIBE_SYSTEM,
+  UI_DESCRIBE_USER,
+  UI_DESCRIBE_COMPACT,
+} from '../lib/prompt/modules/ui-to-image-prompt.js';
+import { generateText } from '../lib/ai-providers/gemini.js';
+import {
+  saveFeedback,
+  buildLearningContext,
+  getFeedbackStats,
+} from '../services/promptFeedbackService.js';
+
+/**
+ * POST /api/plugin/image-to-prompt
+ * Analyzes an image and generates a Figma plugin prompt
+ * Admin only
+ */
+router.post('/image-to-prompt', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { image, hint } = req.body;
+
+    if (!image?.base64) {
+      return res.status(400).json({ error: 'Image base64 required' });
+    }
+
+    // Detect component type from hint
+    const componentType = hint ? detectComponentType(hint) : undefined;
+    const typeKey = componentType || 'general';
+
+    // Get learned context from MongoDB feedback
+    const learningContext = await buildLearningContext(typeKey);
+
+    // Build system prompt with component-specific rules + learnings
+    const systemPrompt = buildImageToPromptSystem(
+      componentType,
+      learningContext ? [learningContext] : undefined
+    );
+
+    // Use Gemini Flash for fast vision analysis
+    const result = await generateText(
+      systemPrompt,
+      IMAGE_ANALYSIS_USER_PROMPT,
+      [{ mimeType: image.mimeType || 'image/png', data: image.base64 }]
+    );
+
+    // Generate a feedback ID for tracking
+    const feedbackId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    res.json({
+      success: true,
+      prompt: result.text,
+      feedbackId,
+      componentType: typeKey,
+      usage: result.usage || null
+    });
+
+  } catch (error: any) {
+    console.error('[ImageToPrompt] Error:', error.message);
+    res.status(500).json({ error: 'Failed to analyze image', details: error.message });
+  }
+});
+
+/**
+ * POST /api/plugin/image-to-prompt/feedback
+ * Submit feedback to improve prompt generation (persisted to MongoDB)
+ * Admin only
+ */
+router.post('/image-to-prompt/feedback', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { feedbackId, success, componentType, improvement, generatedPrompt } = req.body;
+
+    if (!feedbackId) {
+      return res.status(400).json({ error: 'feedbackId required' });
+    }
+
+    // Persist to MongoDB
+    await saveFeedback({
+      feedbackId,
+      componentType: componentType || 'general',
+      success: !!success,
+      improvement: improvement || undefined,
+      generatedPrompt: generatedPrompt || undefined,
+    });
+
+    res.json({ success: true, message: 'Feedback saved' });
+
+  } catch (error: any) {
+    console.error('[ImageToPrompt] Feedback error:', error.message);
+    res.status(500).json({ error: 'Failed to record feedback' });
+  }
+});
+
+/**
+ * GET /api/plugin/image-to-prompt/stats
+ * Get feedback statistics
+ * Admin only
+ */
+router.get('/image-to-prompt/stats', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const stats = await getFeedbackStats();
+    res.json({ success: true, stats });
+  } catch (error: any) {
+    console.error('[ImageToPrompt] Stats error:', error.message);
+    res.status(500).json({ error: 'Failed to get stats' });
+  }
+});
+
+/**
+ * POST /api/plugin/ui-to-image-prompt
+ * Analyzes UI screenshot → generates prompt for image generation models
+ * Admin only
+ */
+router.post('/ui-to-image-prompt', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { image, compact } = req.body;
+
+    if (!image?.base64) {
+      return res.status(400).json({ error: 'Image base64 required' });
+    }
+
+    // Use compact version for minimal tokens
+    const systemPrompt = compact ? UI_DESCRIBE_COMPACT : UI_DESCRIBE_SYSTEM;
+    const userPrompt = compact ? 'Gere o prompt.' : UI_DESCRIBE_USER;
+
+    const result = await generateText(
+      systemPrompt,
+      userPrompt,
+      [{ mimeType: image.mimeType || 'image/png', data: image.base64 }]
+    );
+
+    res.json({
+      success: true,
+      prompt: result.text.trim(),
+      usage: result.usage || null
+    });
+
+  } catch (error: any) {
+    console.error('[UItoImagePrompt] Error:', error.message);
+    res.status(500).json({ error: 'Failed to analyze UI', details: error.message });
   }
 });
 

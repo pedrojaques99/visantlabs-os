@@ -164,6 +164,7 @@ async function generateDesign(command, context) {
     apiKey: state.userApiKey || undefined,
     anthropicApiKey: state.anthropicApiKey || undefined,
     thinkMode: context.thinkMode || false,
+    useBrand: context.useBrand !== undefined ? context.useBrand : (state.useBrand !== undefined ? state.useBrand : true),
   };
 
   try {
@@ -321,6 +322,7 @@ function generateWithContext(command, context) {
         brandColors: Array.from(state.selectedColors.values()),
         designSystem: state.designSystem || undefined,
         thinkMode: state.thinkMode || false,
+        useBrand: state.useBrand !== undefined ? state.useBrand : true,
         mentions: context.mentions || [],
         attachments: (context.attachments || []).map(att => ({
           name: att.name,

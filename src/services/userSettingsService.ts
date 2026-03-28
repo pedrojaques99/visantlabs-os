@@ -213,3 +213,58 @@ export async function hasSeedreamApiKey(): Promise<boolean> {
     return false;
   }
 }
+
+// ═══ Figma Token ═══
+
+export async function saveFigmaToken(figmaToken: string): Promise<{ figmaUser: { id: string; email: string; handle: string } }> {
+  const authToken = authService.getToken();
+  if (!authToken) throw new Error('Authentication required');
+
+  const response = await fetch(`${API_BASE_URL}/users/settings/figma-token`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${authToken}`,
+    },
+    body: JSON.stringify({ token: figmaToken }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Failed to save Figma token' }));
+    throw new Error(errorData.error || 'Failed to save Figma token');
+  }
+  return response.json();
+}
+
+export async function deleteFigmaToken(): Promise<void> {
+  const token = authService.getToken();
+  if (!token) throw new Error('Authentication required');
+
+  const response = await fetch(`${API_BASE_URL}/users/settings/figma-token`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Failed to delete Figma token' }));
+    throw new Error(errorData.error || 'Failed to delete Figma token');
+  }
+}
+
+export async function hasFigmaToken(): Promise<boolean> {
+  const token = authService.getToken();
+  if (!token) return false;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/settings/figma-token`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) return false;
+    const data = await response.json();
+    return data.hasToken === true;
+  } catch {
+    return false;
+  }
+}

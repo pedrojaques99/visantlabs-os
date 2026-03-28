@@ -3118,9 +3118,37 @@ label {
 .bg-list-name { font-weight: 500; }
 .bg-list-completeness { font-size: 11px; color: var(--figma-color-text-secondary); }
 .bg-color-grid { display: flex; flex-wrap: wrap; gap: 4px; }
-.bg-color-swatch { width: 32px; height: 32px; border-radius: 4px; position: relative; border: 1px solid var(--figma-color-border); }
-.bg-color-swatch .bg-remove-btn { position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--figma-color-bg-danger); color: white; border: none; font-size: 10px; cursor: pointer; display: none; line-height: 14px; padding: 0; }
-.bg-color-swatch:hover .bg-remove-btn { display: block; }
+.bg-color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    position: relative;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+.bg-color-swatch:hover {
+    border-color: var(--figma-color-border-selected, rgba(255,255,255,0.3));
+}
+.bg-color-swatch .bg-remove-btn {
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.bg-color-swatch:hover .bg-remove-btn {
+    opacity: 1;
+}
 .bg-typo-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
 .bg-typo-item .bg-remove-btn { background: none; border: none; color: var(--figma-color-text-secondary); cursor: pointer; font-size: 14px; }
 .bg-typo-item .bg-remove-btn:hover { color: var(--figma-color-text-danger); }

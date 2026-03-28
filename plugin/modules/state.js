@@ -96,6 +96,9 @@ const state = {
 
   // Think mode: LLM analyzes context + asks questions before generating any nodes
   thinkMode: false,
+
+  // Use brand guidelines toggle
+  useBrand: true,
 };
 
 /**
