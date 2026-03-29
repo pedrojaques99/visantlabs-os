@@ -245,6 +245,9 @@ router.get('/presets/public', apiRateLimiter, async (req, res) => {
       'presets': [],
       'aesthetics': [],
       'themes': [],
+      // AI-generated prompts
+      'ui-prompts': [],
+      'figma-prompts': [],
       // Manter compatibilidade com formato antigo
       mockup: [],
       angle: [],
@@ -284,6 +287,8 @@ router.get('/presets/public', apiRateLimiter, async (req, res) => {
       'presets': [],
       'aesthetics': [],
       'themes': [],
+      'ui-prompts': [],
+      'figma-prompts': [],
       // Compatibilidade
       mockup: [],
       angle: [],

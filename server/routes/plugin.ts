@@ -7,6 +7,7 @@ import { operationValidator } from '../lib/operationValidator.js';
 import path from 'path';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth.js';
 import { getUserIdFromToken } from '../utils/auth.js';
+import { isSafeId, ensureString } from '../utils/validation.js';
 import { rateLimit } from 'express-rate-limit';
 import {
   buildSystemPrompt,
@@ -28,6 +29,48 @@ const agentCommandLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// Rate limiter for image analysis (expensive AI calls - 10 req/min)
+const imageAnalysisLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: 'Too many image analysis requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Input validation constants
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
+
+/**
+ * Validate image input for security
+ */
+function validateImageInput(image: any): { valid: boolean; error?: string } {
+  if (!image?.base64) {
+    return { valid: false, error: 'Image base64 required' };
+  }
+
+  // Check base64 size (rough estimate: base64 is ~33% larger than binary)
+  const estimatedSize = (image.base64.length * 3) / 4;
+  if (estimatedSize > MAX_IMAGE_SIZE_BYTES) {
+    return { valid: false, error: `Image too large. Max ${MAX_IMAGE_SIZE_MB}MB` };
+  }
+
+  // Validate mime type
+  const mimeType = image.mimeType || 'image/png';
+  if (!ALLOWED_IMAGE_TYPES.includes(mimeType)) {
+    return { valid: false, error: `Invalid image type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}` };
+  }
+
+  // Basic base64 format validation
+  if (!/^[A-Za-z0-9+/=]+$/.test(image.base64.replace(/\s/g, ''))) {
+    return { valid: false, error: 'Invalid base64 encoding' };
+  }
+
+  return { valid: true };
+}
 import { ObjectId } from 'mongodb';
 import WebSocket, { WebSocketServer } from 'ws';
 import type { BrandGuideline } from '../types/brandGuideline.js';
@@ -1052,24 +1095,45 @@ import {
   UI_DESCRIBE_USER,
   UI_DESCRIBE_COMPACT,
 } from '../lib/prompt/modules/ui-to-image-prompt.js';
+import {
+  SMART_ANALYZER_SYSTEM,
+  SMART_ANALYZER_USER,
+  parseAnalyzerResponse,
+  IMAGE_CATEGORIES,
+  type ImageCategory,
+  FIGMA_OPERATIONS_SYSTEM,
+  FIGMA_OPERATIONS_USER,
+  parseFigmaOperationsResponse,
+  WHITE_LABEL_INSTRUCTION,
+} from '../lib/prompt/modules/smart-image-analyzer.js';
 import { generateText } from '../lib/ai-providers/gemini.js';
 import {
   saveFeedback,
   buildLearningContext,
   getFeedbackStats,
 } from '../services/promptFeedbackService.js';
+import {
+  saveToLibrary,
+  findSimilar,
+  buildLibraryContext,
+  incrementUsage,
+  updateRating,
+  getUserPrompts,
+} from '../services/promptLibraryService.js';
 
 /**
  * POST /api/plugin/image-to-prompt
  * Analyzes an image and generates a Figma plugin prompt
  * Admin only
  */
-router.post('/image-to-prompt', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+router.post('/image-to-prompt', imageAnalysisLimiter, authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const { image, hint } = req.body;
+    const { image, hint, saveToLib, name } = req.body;
 
-    if (!image?.base64) {
-      return res.status(400).json({ error: 'Image base64 required' });
+    // Validate image input
+    const validation = validateImageInput(image);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
     }
 
     // Detect component type from hint
@@ -1079,11 +1143,14 @@ router.post('/image-to-prompt', authenticate, requireAdmin, async (req: AuthRequ
     // Get learned context from MongoDB feedback
     const learningContext = await buildLearningContext(typeKey);
 
-    // Build system prompt with component-specific rules + learnings
-    const systemPrompt = buildImageToPromptSystem(
-      componentType,
-      learningContext ? [learningContext] : undefined
-    );
+    // Get similar prompts from library for better context
+    const libraryContext = await buildLibraryContext(componentType);
+
+    // Combine contexts
+    const contexts = [learningContext, libraryContext].filter(Boolean) as string[];
+
+    // Build system prompt with component-specific rules + learnings + library examples
+    const systemPrompt = buildImageToPromptSystem(componentType, contexts);
 
     // Use Gemini Flash for fast vision analysis
     const result = await generateText(
@@ -1095,10 +1162,28 @@ router.post('/image-to-prompt', authenticate, requireAdmin, async (req: AuthRequ
     // Generate a feedback ID for tracking
     const feedbackId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+    const generatedPrompt = result.text;
+    let promptId: string | undefined;
+
+    // Save to library if requested
+    if (saveToLib && name) {
+      const { publish } = req.body;
+      promptId = await saveToLibrary({
+        name,
+        prompt: generatedPrompt,
+        category: 'figma-prompts',
+        componentType: typeKey,
+        tags: ['figma-plugin', typeKey],
+        userId: req.userId,
+        isPublic: !!publish, // Admin can publish immediately
+      });
+    }
+
     res.json({
       success: true,
-      prompt: result.text,
+      prompt: generatedPrompt,
       feedbackId,
+      promptId,
       componentType: typeKey,
       usage: result.usage || null
     });
@@ -1159,12 +1244,14 @@ router.get('/image-to-prompt/stats', authenticate, requireAdmin, async (req: Aut
  * Analyzes UI screenshot → generates prompt for image generation models
  * Admin only
  */
-router.post('/ui-to-image-prompt', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+router.post('/ui-to-image-prompt', imageAnalysisLimiter, authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const { image, compact } = req.body;
+    const { image, compact, saveToLib, name } = req.body;
 
-    if (!image?.base64) {
-      return res.status(400).json({ error: 'Image base64 required' });
+    // Validate image input
+    const validation = validateImageInput(image);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
     }
 
     // Use compact version for minimal tokens
@@ -1177,15 +1264,290 @@ router.post('/ui-to-image-prompt', authenticate, requireAdmin, async (req: AuthR
       [{ mimeType: image.mimeType || 'image/png', data: image.base64 }]
     );
 
+    const generatedPrompt = result.text.trim();
+    let promptId: string | undefined;
+
+    // Save to library if requested
+    if (saveToLib && name) {
+      const { publish } = req.body;
+      promptId = await saveToLibrary({
+        name,
+        prompt: generatedPrompt,
+        category: 'ui-prompts',
+        tags: ['image-gen', 'ui-screenshot'],
+        userId: req.userId,
+        isPublic: !!publish, // Admin can publish immediately
+      });
+    }
+
     res.json({
       success: true,
-      prompt: result.text.trim(),
+      prompt: generatedPrompt,
+      promptId,
       usage: result.usage || null
     });
 
   } catch (error: any) {
     console.error('[UItoImagePrompt] Error:', error.message);
     res.status(500).json({ error: 'Failed to analyze UI', details: error.message });
+  }
+});
+
+/**
+ * GET /api/plugin/prompt-library
+ * Get user's saved prompts from library
+ * Admin only
+ */
+router.get('/prompt-library', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { category } = req.query;
+    const prompts = await getUserPrompts(req.userId!, category as string);
+    res.json({ success: true, prompts });
+  } catch (error: any) {
+    console.error('[PromptLibrary] Error:', error.message);
+    res.status(500).json({ error: 'Failed to get prompts' });
+  }
+});
+
+/**
+ * GET /api/plugin/prompt-library/similar
+ * Find similar prompts for inspiration
+ * Admin only
+ */
+router.get('/prompt-library/similar', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { componentType, tags } = req.query;
+    const tagArray = typeof tags === 'string' ? tags.split(',') : undefined;
+    const prompts = await findSimilar(componentType as string, tagArray, 10);
+    res.json({ success: true, prompts });
+  } catch (error: any) {
+    console.error('[PromptLibrary] Error:', error.message);
+    res.status(500).json({ error: 'Failed to find similar prompts' });
+  }
+});
+
+/**
+ * POST /api/plugin/prompt-library/:id/use
+ * Mark prompt as used (increments usage count)
+ * Admin only
+ */
+router.post('/prompt-library/:id/use', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const promptId = req.params.id;
+    if (!isSafeId(promptId, 50)) {
+      return res.status(400).json({ error: 'Invalid prompt ID' });
+    }
+    await incrementUsage(promptId);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('[PromptLibrary] Error:', error.message);
+    res.status(500).json({ error: 'Failed to update usage' });
+  }
+});
+
+/**
+ * POST /api/plugin/prompt-library/:id/rate
+ * Rate a prompt (success/failure affects ranking)
+ * Admin only
+ */
+router.post('/prompt-library/:id/rate', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const promptId = req.params.id;
+    if (!isSafeId(promptId, 50)) {
+      return res.status(400).json({ error: 'Invalid prompt ID' });
+    }
+    const { success } = req.body;
+    await updateRating(promptId, !!success);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('[PromptLibrary] Error:', error.message);
+    res.status(500).json({ error: 'Failed to update rating' });
+  }
+});
+
+// ============ Smart Image Analyzer (Unified Endpoint) ============
+
+/**
+ * POST /api/plugin/smart-analyze
+ * Unified endpoint: auto-detects image type and generates appropriate prompt
+ * - mode: 'figma-plugin' → generates FigmaOperation[] JSON
+ * - mode: 'image-gen' (default) → generates image generation prompt
+ * Admin only
+ */
+router.post('/smart-analyze', imageAnalysisLimiter, authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { image, mode = 'image-gen', whiteLabel = false } = req.body;
+    const saveToLib = req.body.saveToLib === true || req.body.saveToLib === 'true';
+    const publish = req.body.publish === true || req.body.publish === 'true';
+
+    // Validate image input
+    const validation = validateImageInput(image);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    const imageData = [{ mimeType: image.mimeType || 'image/png', data: image.base64 }];
+
+    // White label instruction to append when enabled
+    const whiteLabelSuffix = whiteLabel ? WHITE_LABEL_INSTRUCTION : '';
+
+    // MODE: Figma Plugin Operations
+    if (mode === 'figma-plugin') {
+      const result = await generateText(
+        FIGMA_OPERATIONS_SYSTEM + whiteLabelSuffix,
+        FIGMA_OPERATIONS_USER,
+        imageData
+      );
+
+      const parsed = parseFigmaOperationsResponse(result.text);
+
+      if (!parsed) {
+        return res.status(500).json({
+          error: 'Failed to parse Figma operations',
+          raw: result.text
+        });
+      }
+
+      const feedbackId = `figma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+      let promptId: string | undefined;
+      if (saveToLib) {
+        promptId = await saveToLibrary({
+          name: parsed.name,
+          prompt: JSON.stringify(parsed.operations, null, 2),
+          category: 'figma-prompts',
+          componentType: parsed.category,
+          tags: ['figma-plugin', 'operations', parsed.category],
+          userId: req.userId,
+          isPublic: !!publish,
+        });
+      }
+
+      return res.json({
+        success: true,
+        mode: 'figma-plugin',
+        name: parsed.name,
+        category: parsed.category,
+        operations: parsed.operations,
+        tokens: parsed.tokens,
+        feedbackId,
+        promptId,
+        usage: result.usage || null,
+      });
+    }
+
+    // MODE: Image Generation Prompt (default)
+    const analysisResult = await generateText(
+      SMART_ANALYZER_SYSTEM + whiteLabelSuffix,
+      SMART_ANALYZER_USER,
+      imageData
+    );
+
+    const parsed = parseAnalyzerResponse(analysisResult.text);
+
+    if (!parsed) {
+      return res.status(500).json({
+        error: 'Failed to parse image analysis',
+        raw: analysisResult.text
+      });
+    }
+
+    const { category, confidence, tags, prompt, name } = parsed;
+
+    // Determine library category based on detected type
+    const isUIType = category === 'ui-screenshot' || category === 'figma-design';
+    const libraryCategory = isUIType ? 'figma-prompts' : category;
+
+    const feedbackId = `smart-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    let promptId: string | undefined;
+    if (saveToLib) {
+      promptId = await saveToLibrary({
+        name,
+        prompt,
+        category: libraryCategory,
+        componentType: category,
+        tags: [...tags, category],
+        userId: req.userId,
+        isPublic: !!publish,
+      });
+    }
+
+    res.json({
+      success: true,
+      mode: 'image-gen',
+      category,
+      confidence,
+      tags,
+      name,
+      prompt,
+      promptType: isUIType ? 'figma-plugin' : 'image-generation',
+      feedbackId,
+      promptId,
+      libraryCategory,
+      usage: analysisResult.usage || null,
+    });
+
+  } catch (error: any) {
+    console.error('[SmartAnalyze] Error:', error.message);
+    res.status(500).json({ error: 'Failed to analyze image', details: error.message });
+  }
+});
+
+/**
+ * GET /api/plugin/smart-analyze/categories
+ * Returns all detectable image categories
+ */
+router.get('/smart-analyze/categories', (req: Request, res: Response) => {
+  const categories = Object.entries(IMAGE_CATEGORIES).map(([key, value]) => ({
+    id: key,
+    keywords: value.keywords,
+    color: value.color,
+  }));
+  res.json({ categories });
+});
+
+/**
+ * POST /api/plugin/smart-analyze/publish
+ * Publish a prompt to the community library
+ * Admin only
+ */
+router.post('/smart-analyze/publish', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { name, prompt, category, tags } = req.body;
+
+    // Validate inputs
+    const validName = ensureString(name, 200);
+    const validPrompt = ensureString(prompt, 100000);
+    const validCategory = ensureString(category, 50);
+
+    if (!validName || !validPrompt || !validCategory) {
+      return res.status(400).json({ error: 'Name, prompt, and category are required' });
+    }
+
+    // Validate tags
+    const validTags = Array.isArray(tags)
+      ? tags.slice(0, 20).map(t => ensureString(t, 50)).filter((t): t is string => t !== null)
+      : [];
+
+    const promptId = await saveToLibrary({
+      name: validName,
+      prompt: validPrompt,
+      category: validCategory,
+      tags: validTags,
+      userId: req.userId,
+      isPublic: true,
+    });
+
+    res.json({
+      success: true,
+      promptId,
+      message: 'Published to community!',
+    });
+
+  } catch (error: any) {
+    console.error('[SmartAnalyze:Publish] Error:', error.message);
+    res.status(500).json({ error: 'Failed to publish', details: error.message });
   }
 });
 

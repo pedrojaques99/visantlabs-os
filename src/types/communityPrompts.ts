@@ -13,7 +13,26 @@ export const VALID_PROMPT_CATEGORIES = [
   'texture',
   'ambience',
   'luminance',
+  // AI-generated prompts
+  'ui-prompts',     // Prompts para geração de imagem (Seedream, etc)
+  'figma-prompts',  // Prompts para Figma plugin
 ] as const;
+
+// Config para novas categorias de prompts
+export const PROMPT_CATEGORY_CONFIG = {
+  'ui-prompts': {
+    label: 'UI Prompts',
+    description: 'Prompts para gerar screenshots de UI',
+    icon: 'Image',
+    color: 'text-purple-400',
+  },
+  'figma-prompts': {
+    label: 'Figma Prompts',
+    description: 'Prompts para criar designs no Figma',
+    icon: 'Figma',
+    color: 'text-pink-400',
+  },
+} as const;
 
 // Categorias - inclui novas e antigas
 export type PromptCategory = typeof VALID_PROMPT_CATEGORIES[number] | 'all';
