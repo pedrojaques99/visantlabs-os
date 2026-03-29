@@ -12,7 +12,7 @@ import {
   BreadcrumbSeparator,
 } from "../components/ui/breadcrumb";
 import { cn } from '../lib/utils';
-import { ExternalLink, Lock, Sparkles, Zap, Image as ImageIcon, Edit3, Plus, Database } from 'lucide-react';
+import { ExternalLink, Lock, Sparkles, Zap, Image as ImageIcon, Edit3, Plus, Database, Wand2, ShieldCheck } from 'lucide-react';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -181,6 +181,20 @@ export const AppsPage: React.FC = () => {
       isExternal: true,
       free: true,
       span: 'lg:col-span-2 lg:row-span-1'
+    },
+    // Admin-only tools
+    {
+      id: 'smart-analyzer',
+      name: 'Smart Analyzer',
+      desc: 'AI-powered image analysis. Auto-detects image type and generates optimized prompts for Figma plugin or image generation.',
+      link: '/admin/smart-analyzer',
+      thumbnail: '/tools/smart-analyzer.png',
+      badge: 'ADMIN',
+      badgeVariant: 'admin',
+      category: 'admin',
+      free: false,
+      adminOnly: true,
+      span: 'lg:col-span-1 lg:row-span-1'
     }
   ], [t]);
 
@@ -212,20 +226,33 @@ export const AppsPage: React.FC = () => {
     fetchApps();
   }, [fetchApps]);
 
-  const CATEGORIES = useMemo(() => [
-    { key: 'design', title: t('apps.brandingTools'), icon: Sparkles },
-    { key: 'mockup', title: 'MOCKUP LABS //', icon: Zap },
-    { key: 'effects', title: t('apps.effectsTools'), icon: ImageIcon },
-    { key: 'audio', title: t('apps.audioTools'), icon: Zap },
-    { key: 'experimental', title: 'EXPERIMENTAL //', icon: Sparkles }
-  ], [t]);
+  const CATEGORIES = useMemo(() => {
+    const categories = [
+      { key: 'design', title: t('apps.brandingTools'), icon: Sparkles },
+      { key: 'mockup', title: 'MOCKUP LABS //', icon: Zap },
+      { key: 'effects', title: t('apps.effectsTools'), icon: ImageIcon },
+      { key: 'audio', title: t('apps.audioTools'), icon: Zap },
+      { key: 'experimental', title: 'EXPERIMENTAL //', icon: Sparkles },
+    ];
+    // Admin-only category
+    if (isAdmin) {
+      categories.push({ key: 'admin', title: 'ADMIN TOOLS //', icon: ShieldCheck });
+    }
+    return categories;
+  }, [t, isAdmin]);
 
   const appsByCategory = useMemo(() => {
     return CATEGORIES.map(cat => ({
       ...cat,
-      apps: apps.filter(app => app.category === cat.key)
+      apps: apps.filter(app => {
+        // Filter by category
+        if (app.category !== cat.key) return false;
+        // Filter out admin-only apps for non-admins
+        if ((app as any).adminOnly && !isAdmin) return false;
+        return true;
+      })
     })).filter(cat => cat.apps.length > 0);
-  }, [apps, CATEGORIES]);
+  }, [apps, CATEGORIES, isAdmin]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -450,7 +477,8 @@ export const AppsPage: React.FC = () => {
                                       app.badgeVariant === 'featured' && "border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5",
                                       app.badgeVariant === 'premium' && "border-teal-500/30 text-teal-400 bg-teal-500/5",
                                       app.badgeVariant === 'free' && "border-neutral-800 text-neutral-500",
-                                      app.badgeVariant === 'comingSoon' && "border-neutral-900 text-neutral-600"
+                                      app.badgeVariant === 'comingSoon' && "border-neutral-900 text-neutral-600",
+                                      app.badgeVariant === 'admin' && "border-amber-500/30 text-amber-400 bg-amber-500/5"
                                     )}>
                                       {app.badge}
                                     </span>

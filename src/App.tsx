@@ -25,6 +25,7 @@ const CanvasSharedPage = lazyWithRetry(() => import('./pages/CanvasSharedPage').
 const AdminPage = lazyWithRetry(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
 const AdminPresetsPage = lazyWithRetry(() => import('./pages/AdminPresetsPage').then(m => ({ default: m.AdminPresetsPage })));
 const AdminProductsPage = lazyWithRetry(() => import('./pages/AdminProductsPage').then(m => ({ default: m.AdminProductsPage })));
+const SmartAnalyzerPage = lazyWithRetry(() => import('./pages/SmartAnalyzerPage').then(m => ({ default: m.SmartAnalyzerPage })));
 const CommunityPage = lazyWithRetry(() => import('./pages/CommunityPage').then(m => ({ default: m.CommunityPage })));
 const CommunityPresetsPage = lazyWithRetry(() => import('./pages/CommunityPresetsPage').then(m => ({ default: m.CommunityPresetsPage })));
 const CommunityProfilePage = lazyWithRetry(() => import('./pages/CommunityProfilePage').then(m => ({ default: m.CommunityProfilePage })));
@@ -98,6 +99,7 @@ const App: React.FC = () => {
                 <Route path="/admin" element={<AdminPage />} />
                 <Route path="/admin/presets" element={<AdminPresetsPage />} />
                 <Route path="/admin/products" element={<AdminProductsPage />} />
+                <Route path="/admin/smart-analyzer" element={<SmartAnalyzerPage />} />
                 <Route path="/community" element={<CommunityPage />} />
                 <Route path="/community/presets" element={<CommunityPresetsPage />} />
                 <Route path="/profile/:identifier" element={<CommunityProfilePage />} />

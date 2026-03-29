@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Globe, Sparkles, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette, FolderOpen } from 'lucide-react';
+import { Globe, Sparkles, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette, FolderOpen, Wand2, Figma } from 'lucide-react';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
 import { useLayout } from '@/hooks/useLayout';
@@ -47,7 +47,7 @@ const BackgroundGlow = () => (
   </div>
 );
 
-type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | '3d' | 'presets' | 'aesthetics' | 'themes';
+type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | '3d' | 'presets' | 'aesthetics' | 'themes' | 'ui-prompts' | 'figma-prompts';
 
 interface PresetStats {
   mockup: number;
@@ -59,6 +59,8 @@ interface PresetStats {
   presets: number;
   aesthetics: number;
   themes: number;
+  'ui-prompts': number;
+  'figma-prompts': number;
   total: number;
 }
 
@@ -72,6 +74,8 @@ interface CategoryPresets {
   presets: any[];
   aesthetics: any[];
   themes: any[];
+  'ui-prompts': any[];
+  'figma-prompts': any[];
 }
 
 interface GlobalStats {
@@ -94,6 +98,8 @@ export const CommunityPage: React.FC = () => {
     presets: 0,
     aesthetics: 0,
     themes: 0,
+    'ui-prompts': 0,
+    'figma-prompts': 0,
     total: 0,
   });
   const [categoryPresets, setCategoryPresets] = useState<CategoryPresets>({
@@ -106,6 +112,8 @@ export const CommunityPage: React.FC = () => {
     presets: [],
     aesthetics: [],
     themes: [],
+    'ui-prompts': [],
+    'figma-prompts': [],
   });
   const [globalCommunityStats, setGlobalCommunityStats] = useState<GlobalStats>({
     totalUsers: 0,
@@ -180,6 +188,8 @@ export const CommunityPage: React.FC = () => {
           presets: allPresets.presets?.length || 0,
           aesthetics: allPresets.aesthetics?.length || 0,
           themes: allPresets.themes?.length || 0,
+          'ui-prompts': allPresets['ui-prompts']?.length || 0,
+          'figma-prompts': allPresets['figma-prompts']?.length || 0,
           total: 0,
         };
         newStats.total = Object.values(newStats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
@@ -196,6 +206,8 @@ export const CommunityPage: React.FC = () => {
           presets: removeDuplicates(allPresets.presets || []),
           aesthetics: removeDuplicates(allPresets.aesthetics || []),
           themes: removeDuplicates(allPresets.themes || []),
+          'ui-prompts': removeDuplicates(allPresets['ui-prompts'] || []),
+          'figma-prompts': removeDuplicates(allPresets['figma-prompts'] || []),
         });
 
         // Store latest mockups
@@ -264,6 +276,9 @@ export const CommunityPage: React.FC = () => {
     { type: 'presets', icon: Settings, label: t('communityPresets.categories.presets'), count: stats.presets, presets: categoryPresets.presets },
     { type: 'aesthetics', icon: Palette, label: t('communityPresets.categories.aesthetics'), count: stats.aesthetics, presets: categoryPresets.aesthetics },
     { type: 'themes', icon: Sparkles, label: t('communityPresets.categories.themes'), count: stats.themes, presets: categoryPresets.themes },
+    // AI-generated prompts
+    { type: 'ui-prompts', icon: Wand2, label: 'UI Prompts', count: stats['ui-prompts'], presets: categoryPresets['ui-prompts'] },
+    { type: 'figma-prompts', icon: Figma, label: 'Figma Prompts', count: stats['figma-prompts'], presets: categoryPresets['figma-prompts'] },
   ];
 
   const isAuthenticated = isUserAuthenticated === true;
@@ -325,6 +340,8 @@ export const CommunityPage: React.FC = () => {
         presets: allPresets.presets?.length || 0,
         aesthetics: allPresets.aesthetics?.length || 0,
         themes: allPresets.themes?.length || 0,
+        'ui-prompts': allPresets['ui-prompts']?.length || 0,
+        'figma-prompts': allPresets['figma-prompts']?.length || 0,
         total: 0,
       };
       newStats.total = Object.values(newStats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);

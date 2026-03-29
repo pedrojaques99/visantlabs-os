@@ -17,6 +17,30 @@ body {
     line-height: 16px;
 }
 
+/* ── JSON Runner Editor ── */
+.json-editor-container {
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.json-editor-container:focus-within {
+    border-color: var(--figma-color-border-brand, #0d99ff) !important;
+    box-shadow: 0 0 0 1px var(--figma-color-border-brand, #0d99ff);
+}
+
+#jsonRunnerInput::placeholder {
+    color: #555;
+    font-size: 10px;
+}
+
+.icon-text-btn:hover {
+    background: rgba(255,255,255,0.1) !important;
+    color: #fff !important;
+}
+
+.icon-text-btn:active {
+    transform: scale(0.95);
+}
+
 h2 {
     font-size: 11px;
     margin-bottom: 12px;

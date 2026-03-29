@@ -148,6 +148,14 @@ class ChatModule {
       });
     }
 
+    // Modal close handlers (using class name convention from uiManager)
+    const closeOpsModal = document.getElementById('closeOperationsModal');
+    if (closeOpsModal) {
+      closeOpsModal.addEventListener('click', () => {
+        document.getElementById('operationsModal').classList.add('hidden');
+      });
+    }
+
 
     // Frame size selection
     const frameSizeButtons = document.querySelectorAll('.settings-option[data-size]');

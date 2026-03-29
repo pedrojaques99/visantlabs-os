@@ -7,6 +7,7 @@
 
 import { getDb } from '../db/mongodb.js';
 import type { Collection, Document } from 'mongodb';
+import { ensureString, isSafeId } from '../utils/validation.js';
 
 // ============ Types ============
 
@@ -43,6 +44,7 @@ async function getCollection(): Promise<Collection<PromptFeedback>> {
 
 /**
  * Save feedback to MongoDB
+ * @throws Error if validation fails
  */
 export async function saveFeedback(feedback: {
   feedbackId: string;
@@ -51,15 +53,34 @@ export async function saveFeedback(feedback: {
   improvement?: string;
   generatedPrompt?: string;
 }): Promise<void> {
+  // Validate inputs
+  if (!isSafeId(feedback.feedbackId, 100)) {
+    throw new Error('Invalid feedbackId');
+  }
+  const validComponentType = ensureString(feedback.componentType, 50);
+  if (!validComponentType) {
+    throw new Error('Invalid componentType');
+  }
+  const validImprovement = feedback.improvement
+    ? ensureString(feedback.improvement, 2000)
+    : undefined;
+  const validPrompt = feedback.generatedPrompt
+    ? ensureString(feedback.generatedPrompt, 10000)
+    : undefined;
+
   const collection = await getCollection();
 
   // Extract learning from improvement text
-  const learning = feedback.improvement
-    ? extractLearning(feedback.improvement, feedback.success)
+  const learning = validImprovement
+    ? extractLearning(validImprovement, feedback.success)
     : undefined;
 
   await collection.insertOne({
-    ...feedback,
+    feedbackId: feedback.feedbackId,
+    componentType: validComponentType,
+    success: feedback.success,
+    improvement: validImprovement,
+    generatedPrompt: validPrompt,
     timestamp: new Date(),
     learning,
     confidence: 0.5, // Initial confidence
@@ -67,10 +88,10 @@ export async function saveFeedback(feedback: {
 
   // Update confidence of similar learnings
   if (learning) {
-    await updateConfidence(feedback.componentType, learning, feedback.success);
+    await updateConfidence(validComponentType, learning, feedback.success);
   }
 
-  console.log(`[PromptFeedback] Saved: ${feedback.success ? '✓' : '✗'} ${feedback.componentType}`);
+  console.log(`[PromptFeedback] Saved: ${feedback.success ? '✓' : '✗'} ${validComponentType}`);
 }
 
 /**

@@ -204,10 +204,14 @@ interface OperationContext {
 async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   const { createdNodes, createdPages, pushSummary, getParent } = ctx;
 
+  // Resiliency: prioritize op.props but fallback to op root for flat JSON objects
+  const rawOp = op as any;
+  const props = rawOp.props || rawOp;
+
   // ═══ CREATE_PAGE ═══
   if (op.type === 'CREATE_PAGE') {
     const page = figma.createPage();
-    page.name = op.props.name;
+    page.name = props.name || 'Nova Página';
     if (op.ref) createdPages.set(op.ref, page);
     pushSummary(`Página criada @"${page.name}"`, page);
     return;
@@ -217,63 +221,63 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   if (op.type === 'CREATE_FRAME') {
     const parent = await getParent(op.parentRef, op.parentNodeId);
     const frame = figma.createFrame();
-    frame.name = op.props.name;
-    const fw = op.props.width > 0 ? op.props.width : 100;
-    const fh = op.props.height > 0 ? op.props.height : 100;
+    frame.name = props.name || 'Frame';
+    const fw = props.width > 0 ? props.width : 100;
+    const fh = props.height > 0 ? props.height : 100;
     frame.resize(fw, fh);
 
     // Auto-layout
-    if (op.props.layoutMode && op.props.layoutMode !== 'NONE') {
-      frame.layoutMode = op.props.layoutMode;
-      frame.primaryAxisSizingMode = op.props.primaryAxisSizingMode ?? 'AUTO';
-      frame.counterAxisSizingMode = op.props.counterAxisSizingMode ?? 'AUTO';
-      frame.primaryAxisAlignItems = op.props.primaryAxisAlignItems ?? 'MIN';
-      frame.counterAxisAlignItems = op.props.counterAxisAlignItems ?? 'MIN';
-      frame.itemSpacing = op.props.itemSpacing ?? 0;
-      if (op.props.counterAxisSpacing != null && 'counterAxisSpacing' in frame) {
-        (frame as any).counterAxisSpacing = op.props.counterAxisSpacing;
+    if (props.layoutMode && props.layoutMode !== 'NONE') {
+      frame.layoutMode = props.layoutMode;
+      frame.primaryAxisSizingMode = props.primaryAxisSizingMode ?? 'AUTO';
+      frame.counterAxisSizingMode = props.counterAxisSizingMode ?? 'AUTO';
+      frame.primaryAxisAlignItems = props.primaryAxisAlignItems ?? 'MIN';
+      frame.counterAxisAlignItems = props.counterAxisAlignItems ?? 'MIN';
+      frame.itemSpacing = props.itemSpacing ?? 0;
+      if (props.counterAxisSpacing != null && 'counterAxisSpacing' in frame) {
+        (frame as any).counterAxisSpacing = props.counterAxisSpacing;
       }
-      frame.layoutWrap = op.props.layoutWrap ?? 'NO_WRAP';
-      frame.paddingTop = op.props.paddingTop ?? 0;
-      frame.paddingRight = op.props.paddingRight ?? 0;
-      frame.paddingBottom = op.props.paddingBottom ?? 0;
-      frame.paddingLeft = op.props.paddingLeft ?? 0;
-      if (op.props.strokesIncludedInLayout != null && 'strokesIncludedInLayout' in frame) {
-        (frame as any).strokesIncludedInLayout = op.props.strokesIncludedInLayout;
+      frame.layoutWrap = props.layoutWrap ?? 'NO_WRAP';
+      frame.paddingTop = props.paddingTop ?? 0;
+      frame.paddingRight = props.paddingRight ?? 0;
+      frame.paddingBottom = props.paddingBottom ?? 0;
+      frame.paddingLeft = props.paddingLeft ?? 0;
+      if (props.strokesIncludedInLayout != null && 'strokesIncludedInLayout' in frame) {
+        (frame as any).strokesIncludedInLayout = props.strokesIncludedInLayout;
       }
-      if (op.props.minWidth != null && 'minWidth' in frame) (frame as any).minWidth = op.props.minWidth;
-      if (op.props.maxWidth != null && 'maxWidth' in frame) (frame as any).maxWidth = op.props.maxWidth;
-      if (op.props.minHeight != null && 'minHeight' in frame) (frame as any).minHeight = op.props.minHeight;
-      if (op.props.maxHeight != null && 'maxHeight' in frame) (frame as any).maxHeight = op.props.maxHeight;
+      if (props.minWidth != null && 'minWidth' in frame) (frame as any).minWidth = props.minWidth;
+      if (props.maxWidth != null && 'maxWidth' in frame) (frame as any).maxWidth = props.maxWidth;
+      if (props.minHeight != null && 'minHeight' in frame) (frame as any).minHeight = props.minHeight;
+      if (props.maxHeight != null && 'maxHeight' in frame) (frame as any).maxHeight = props.maxHeight;
     }
 
-    if (op.props.fills) frame.fills = normalizeFills(op.props.fills) || [];
-    if (op.props.cornerRadius != null) frame.cornerRadius = op.props.cornerRadius;
-    if (op.props.cornerSmoothing != null) frame.cornerSmoothing = op.props.cornerSmoothing;
-    if (op.props.clipsContent != null) frame.clipsContent = op.props.clipsContent;
-    if (op.props.strokes) frame.strokes = op.props.strokes as any;
-    if (op.props.strokeWeight != null) frame.strokeWeight = op.props.strokeWeight;
-    if (op.props.opacity != null) frame.opacity = op.props.opacity;
+    if (props.fills) frame.fills = normalizeFills(props.fills) || [];
+    if (props.cornerRadius != null) frame.cornerRadius = props.cornerRadius;
+    if (props.cornerSmoothing != null) frame.cornerSmoothing = props.cornerSmoothing;
+    if (props.clipsContent != null) frame.clipsContent = props.clipsContent;
+    if (props.strokes) frame.strokes = props.strokes as any;
+    if (props.strokeWeight != null) frame.strokeWeight = props.strokeWeight;
+    if (props.opacity != null) frame.opacity = props.opacity;
 
     // Posicionamento do frame
     if (parent === figma.currentPage || parent.type === 'PAGE') {
       const page = parent as PageNode;
-      const gap = op.props.positionGap ?? 100;
+      const gap = props.positionGap ?? 100;
 
-      if (op.props.autoPosition) {
+      if (props.autoPosition) {
         const siblings = page.children.filter(n => n.type === 'FRAME' || n.type === 'COMPONENT');
 
-        if (op.props.autoPosition === 'right' && siblings.length > 0) {
+        if (props.autoPosition === 'right' && siblings.length > 0) {
           // Posiciona à direita do último frame
           const maxX = Math.max(0, ...siblings.map(n => n.x + n.width));
           frame.x = maxX + gap;
           frame.y = 0;
-        } else if (op.props.autoPosition === 'below' && siblings.length > 0) {
+        } else if (props.autoPosition === 'below' && siblings.length > 0) {
           // Posiciona abaixo do último frame
           const maxY = Math.max(0, ...siblings.map(n => n.y + n.height));
           frame.x = 0;
           frame.y = maxY + gap;
-        } else if (op.props.autoPosition === 'grid') {
+        } else if (props.autoPosition === 'grid') {
           // Grid: calcula posição baseado em linha/coluna
           const cols = 4;
           const idx = siblings.length;
@@ -287,10 +291,10 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
           frame.x = 0;
           frame.y = 0;
         }
-      } else if (op.props.x != null || op.props.y != null) {
+      } else if (props.x != null || props.y != null) {
         // Posição explícita
-        frame.x = op.props.x ?? 0;
-        frame.y = op.props.y ?? 0;
+        frame.x = props.x ?? 0;
+        frame.y = props.y ?? 0;
       } else {
         // Fallback: centro do viewport
         frame.x = figma.viewport.center.x - fw / 2;
@@ -300,16 +304,16 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     parent.appendChild(frame);
 
     if (parent !== figma.currentPage && parent.type !== 'PAGE') {
-      if (op.props.x != null) frame.x = op.props.x;
-      if (op.props.y != null) frame.y = op.props.y;
+      if (props.x != null) frame.x = props.x;
+      if (props.y != null) frame.y = props.y;
     }
-    if (op.props.rotation != null) frame.rotation = op.props.rotation;
+    if (props.rotation != null) frame.rotation = props.rotation;
 
-    if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
-      frame.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
+    if (props.layoutSizingHorizontal && parent !== figma.currentPage) {
+      frame.layoutSizingHorizontal = props.layoutSizingHorizontal;
     }
-    if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
-      frame.layoutSizingVertical = op.props.layoutSizingVertical;
+    if (props.layoutSizingVertical && parent !== figma.currentPage) {
+      frame.layoutSizingVertical = props.layoutSizingVertical;
     }
 
     if (op.ref) createdNodes.set(op.ref, frame);
@@ -320,26 +324,26 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   else if (op.type === 'CREATE_RECTANGLE') {
     const parent = await getParent(op.parentRef, op.parentNodeId);
     const rect = figma.createRectangle();
-    rect.name = op.props.name;
-    rect.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
-    if (op.props.fills) rect.fills = normalizeFills(op.props.fills) || [];
-    if (op.props.cornerRadius != null) rect.cornerRadius = op.props.cornerRadius;
-    if (op.props.strokes) rect.strokes = op.props.strokes as any;
-    if (op.props.strokeWeight != null) rect.strokeWeight = op.props.strokeWeight;
-    if (op.props.opacity != null) rect.opacity = op.props.opacity;
-    if (op.props.effects) rect.effects = mapEffects(op.props.effects);
-    if (op.props.constraints && 'constraints' in rect) (rect as any).constraints = op.props.constraints;
+    rect.name = props.name || 'Retângulo';
+    rect.resize(props.width > 0 ? props.width : 100, props.height > 0 ? props.height : 100);
+    if (props.fills) rect.fills = normalizeFills(props.fills) || [];
+    if (props.cornerRadius != null) rect.cornerRadius = props.cornerRadius;
+    if (props.strokes) rect.strokes = props.strokes as any;
+    if (props.strokeWeight != null) rect.strokeWeight = props.strokeWeight;
+    if (props.opacity != null) rect.opacity = props.opacity;
+    if (props.effects) rect.effects = mapEffects(props.effects);
+    if (props.constraints && 'constraints' in rect) (rect as any).constraints = props.constraints;
     parent.appendChild(rect);
 
-    if (op.props.x != null) rect.x = op.props.x;
-    if (op.props.y != null) rect.y = op.props.y;
-    if (op.props.rotation != null) rect.rotation = op.props.rotation;
+    if (props.x != null) rect.x = props.x;
+    if (props.y != null) rect.y = props.y;
+    if (props.rotation != null) rect.rotation = props.rotation;
 
-    if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
-      rect.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
+    if (props.layoutSizingHorizontal && parent !== figma.currentPage) {
+      rect.layoutSizingHorizontal = props.layoutSizingHorizontal;
     }
-    if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
-      rect.layoutSizingVertical = op.props.layoutSizingVertical;
+    if (props.layoutSizingVertical && parent !== figma.currentPage) {
+      rect.layoutSizingVertical = props.layoutSizingVertical;
     }
     if (op.ref) createdNodes.set(op.ref, rect);
     pushSummary(`Criado @"${rect.name}"`, rect);
@@ -349,25 +353,25 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   else if (op.type === 'CREATE_ELLIPSE') {
     const parent = await getParent(op.parentRef, op.parentNodeId);
     const ellipse = figma.createEllipse();
-    ellipse.name = op.props.name;
-    ellipse.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
-    if (op.props.fills) ellipse.fills = normalizeFills(op.props.fills) || [];
-    if (op.props.strokes) ellipse.strokes = op.props.strokes as any;
-    if (op.props.strokeWeight != null) ellipse.strokeWeight = op.props.strokeWeight;
-    if (op.props.opacity != null) ellipse.opacity = op.props.opacity;
-    if (op.props.effects) ellipse.effects = mapEffects(op.props.effects);
-    if (op.props.constraints && 'constraints' in ellipse) (ellipse as any).constraints = op.props.constraints;
+    ellipse.name = props.name || 'Elipse';
+    ellipse.resize(props.width > 0 ? props.width : 100, props.height > 0 ? props.height : 100);
+    if (props.fills) ellipse.fills = normalizeFills(props.fills) || [];
+    if (props.strokes) ellipse.strokes = props.strokes as any;
+    if (props.strokeWeight != null) ellipse.strokeWeight = props.strokeWeight;
+    if (props.opacity != null) ellipse.opacity = props.opacity;
+    if (props.effects) ellipse.effects = mapEffects(props.effects);
+    if (props.constraints && 'constraints' in ellipse) (ellipse as any).constraints = props.constraints;
     parent.appendChild(ellipse);
 
-    if (op.props.x != null) ellipse.x = op.props.x;
-    if (op.props.y != null) ellipse.y = op.props.y;
-    if (op.props.rotation != null) ellipse.rotation = op.props.rotation;
+    if (props.x != null) ellipse.x = props.x;
+    if (props.y != null) ellipse.y = props.y;
+    if (props.rotation != null) ellipse.rotation = props.rotation;
 
-    if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
-      ellipse.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
+    if (props.layoutSizingHorizontal && parent !== figma.currentPage) {
+      ellipse.layoutSizingHorizontal = props.layoutSizingHorizontal;
     }
-    if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
-      ellipse.layoutSizingVertical = op.props.layoutSizingVertical;
+    if (props.layoutSizingVertical && parent !== figma.currentPage) {
+      ellipse.layoutSizingVertical = props.layoutSizingVertical;
     }
     if (op.ref) createdNodes.set(op.ref, ellipse);
     pushSummary(`Criado @"${ellipse.name}"`, ellipse);
@@ -375,8 +379,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ CREATE_TEXT ═══
   else if (op.type === 'CREATE_TEXT') {
-    const fontFamily = op.props.fontFamily ?? 'Inter';
-    const fontStyle = op.props.fontStyle ?? 'Regular';
+    const fontFamily = props.fontFamily ?? 'Inter';
+    const fontStyle = props.fontStyle ?? 'Regular';
     try {
       await figma.loadFontAsync({ family: fontFamily, style: fontStyle });
     } catch {
@@ -390,34 +394,34 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     } catch {
       text.fontName = DEFAULT_FONT;
     }
-    text.characters = op.props.content;
-    if (op.props.name) text.name = op.props.name;
-    if (op.props.fontSize) text.fontSize = op.props.fontSize;
-    if (op.props.fills) text.fills = normalizeFills(op.props.fills) || [];
-    if (op.props.textAlignHorizontal) text.textAlignHorizontal = op.props.textAlignHorizontal;
-    if (op.props.textAlignVertical) text.textAlignVertical = op.props.textAlignVertical;
-    if (op.props.textAutoResize) text.textAutoResize = op.props.textAutoResize;
-    if (op.props.textDecoration && op.props.textDecoration !== 'NONE') {
-      text.textDecoration = op.props.textDecoration;
+    text.characters = props.content || props.characters || '';
+    if (props.name) text.name = props.name;
+    if (props.fontSize) text.fontSize = props.fontSize;
+    if (props.fills) text.fills = normalizeFills(props.fills) || [];
+    if (props.textAlignHorizontal) text.textAlignHorizontal = props.textAlignHorizontal;
+    if (props.textAlignVertical) text.textAlignVertical = props.textAlignVertical;
+    if (props.textAutoResize) text.textAutoResize = props.textAutoResize;
+    if (props.textDecoration && props.textDecoration !== 'NONE') {
+      text.textDecoration = props.textDecoration;
     }
-    if (op.props.textCase && op.props.textCase !== 'ORIGINAL') {
-      text.textCase = op.props.textCase;
+    if (props.textCase && props.textCase !== 'ORIGINAL') {
+      text.textCase = props.textCase;
     }
-    if (op.props.lineHeight) text.lineHeight = op.props.lineHeight;
-    if (op.props.letterSpacing) text.letterSpacing = op.props.letterSpacing;
-    if (op.props.paragraphSpacing != null) text.paragraphSpacing = op.props.paragraphSpacing;
-    if (op.props.opacity != null) text.opacity = op.props.opacity;
+    if (props.lineHeight) text.lineHeight = props.lineHeight;
+    if (props.letterSpacing) text.letterSpacing = props.letterSpacing;
+    if (props.paragraphSpacing != null) text.paragraphSpacing = props.paragraphSpacing;
+    if (props.opacity != null) text.opacity = props.opacity;
 
     parent.appendChild(text);
-    if (op.props.x != null) text.x = op.props.x;
-    if (op.props.y != null) text.y = op.props.y;
-    if (op.props.rotation != null) text.rotation = op.props.rotation;
+    if (props.x != null) text.x = props.x;
+    if (props.y != null) text.y = props.y;
+    if (props.rotation != null) text.rotation = props.rotation;
 
-    if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
-      text.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
+    if (props.layoutSizingHorizontal && parent !== figma.currentPage) {
+      text.layoutSizingHorizontal = props.layoutSizingHorizontal;
     }
-    if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
-      text.layoutSizingVertical = op.props.layoutSizingVertical;
+    if (props.layoutSizingVertical && parent !== figma.currentPage) {
+      text.layoutSizingVertical = props.layoutSizingVertical;
     }
     if (op.ref) createdNodes.set(op.ref, text);
     pushSummary(`Criado @"${text.name}"`, text);

@@ -36,9 +36,9 @@
     <!-- Figma-style chat card -->
     <div class="chat-card">
       <div class="chat-card-toolbar">
-        <button class="tool-btn" id="codeBtn" title="Ver código">
+        <button class="tool-btn" id="runJsonBtn" title="Executar JSON (Dev Mode)">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M9.5 4.5L12 7L9.5 9.5M4.5 4.5L2 7L4.5 9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3 4h8M3 7h8M3 10h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
           </svg>
         </button>
 
@@ -166,6 +166,7 @@
     <div class="settings-tabs">
       <button class="tab-btn active" data-tab="tab-brand">Brand</button>
       <button class="tab-btn" data-tab="tab-config">Opções</button>
+      <button class="tab-btn" data-tab="tab-dev">Dev</button>
     </div>
 
     <div class="settings-scroll">
@@ -617,6 +618,40 @@
             </div>
           </div>
 
+        </div>
+      </div>
+      <!-- ================= TAB: DEV ================= -->
+      <div id="tab-dev" class="tab-content hidden">
+        <div class="figma-prop-panel">
+          <div class="figma-prop-section">
+            <div class="figma-prop-header">
+              <span class="figma-prop-title">JSON Runner (Direct API)</span>
+            </div>
+            <div style="padding: 0 12px 12px;">
+              <p style="font-size: 11px; color: var(--figma-color-text-secondary); margin-bottom: 12px; line-height: 1.4;">
+                Cole o JSON de operações para executar diretamente no canvas via <code class="inline-code">APPLY_OPERATIONS</code>.
+              </p>
+              
+              <div class="json-editor-container" style="border: 1px solid var(--figma-color-border); border-radius: 8px; overflow: hidden; background: #1e1e1e; margin-bottom: 12px;">
+                <div class="json-editor-toolbar" style="display: flex; justify-content: flex-end; padding: 6px 8px; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1); gap: 8px;">
+                  <button class="icon-text-btn" id="jsonRunnerFormatBtn" title="Formatar JSON" style="background:transparent; color: #aaa; font-size: 10px; width: auto; height: 24px; padding: 0 8px; border: 1px solid rgba(255,255,255,0.1);">
+                    <svg width="10" height="10" viewBox="0 0 14 14" fill="none" style="margin-right: 4px;"><path d="M2 3h10M2 7h10M2 11h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    Formatar
+                  </button>
+                  <button class="icon-text-btn" id="jsonRunnerClearBtn" title="Limpar" style="background:transparent; color: #aaa; font-size: 10px; width: auto; height: 24px; padding: 0 8px; border: 1px solid rgba(255,255,255,0.1);">
+                    <svg width="10" height="10" viewBox="0 0 14 14" fill="none" style="margin-right: 4px;"><path d="M2 3h10M4 3V2a1 1 0 011-1h4a1 1 0 011 1v1M3.5 3l.5 9a1 1 0 001 1h4a1 1 0 001-1l.5-9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    Limpar
+                  </button>
+                </div>
+                <textarea id="jsonRunnerInput" placeholder='[{"type": "CREATE_RECTANGLE", ...}]' style="height: 380px !important; font-family: 'Monaco', 'Menlo', 'Cascadia Code', monospace; font-size: 11px; margin-bottom: 0; background: transparent; border: none; color: #d4d4d4; padding: 12px; line-height: 1.5; outline: none; box-shadow: none !important;"></textarea>
+              </div>
+
+              <button id="jsonRunnerExecuteBtn" style="width: 100%; height: 40px; font-weight: 600; font-size: 12px; gap: 8px; background: var(--figma-color-bg-brand); border-radius: 8px; box-shadow: 0 4px 12px rgba(13, 153, 255, 0.25);">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 3l7 4-7 4V3z" fill="currentColor"/></svg>
+                Executar Operations
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

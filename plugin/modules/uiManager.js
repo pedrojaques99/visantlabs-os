@@ -279,6 +279,56 @@ class UIManager {
       );
     });
 
+    // --- JSON Runner Logic (Settings Tab) ---
+    const runJsonBtn = document.getElementById('runJsonBtn');
+    if (runJsonBtn) {
+      runJsonBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openDevSettings();
+      });
+    }
+
+    const jsonExecuteBtn = document.getElementById('jsonRunnerExecuteBtn');
+    if (jsonExecuteBtn) {
+      jsonExecuteBtn.addEventListener('click', () => {
+        const input = document.getElementById('jsonRunnerInput')?.value.trim();
+        if (!input) {
+          this.showToast('Cole o JSON primeiro', 'info');
+          return;
+        }
+        try {
+          const ops = JSON.parse(input);
+          parent.postMessage({ pluginMessage: { type: 'APPLY_OPERATIONS', payload: ops } }, '*');
+          this.showToast('Executando operações...', 'info');
+        } catch (e) {
+          this.showToast('JSON inválido: ' + e.message, 'error');
+        }
+      });
+    }
+
+    const jsonFormatBtn = document.getElementById('jsonRunnerFormatBtn');
+    if (jsonFormatBtn) {
+      jsonFormatBtn.addEventListener('click', () => {
+        const textarea = document.getElementById('jsonRunnerInput');
+        if (!textarea || !textarea.value.trim()) return;
+        try {
+          const json = JSON.parse(textarea.value);
+          textarea.value = JSON.stringify(json, null, 2);
+          this.showToast('JSON formatado', 'success');
+        } catch (e) {
+          this.showToast('JSON inválido para formatação', 'error');
+        }
+      });
+    }
+
+    const jsonClearBtn = document.getElementById('jsonRunnerClearBtn');
+    if (jsonClearBtn) {
+      jsonClearBtn.addEventListener('click', () => {
+        const textarea = document.getElementById('jsonRunnerInput');
+        if (textarea) textarea.value = '';
+      });
+    }
+
     // Auth: Login button
     document.getElementById('authLoginBtn')?.addEventListener('click', async () => {
       const email = document.getElementById('authEmailInput')?.value || '';
@@ -835,6 +885,14 @@ class UIManager {
   openConfigSettings() {
     this.openSettings();
     this.openTab('tab-config');
+  }
+
+  /**
+   * Open settings view specifically on the Dev tab
+   */
+  openDevSettings() {
+    this.openSettings();
+    this.openTab('tab-dev');
   }
 
   /**
