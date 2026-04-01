@@ -104,7 +104,7 @@
     "google-auth-library": "^9.4.1",
     "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
-    "jspdf": "^3.0.4",
+    "jspdf": "^4.2.1",
     "knip": "^5.82.1",
     "lru-cache": "^11.2.7",
     "lucide-react": "^0.418.0",
