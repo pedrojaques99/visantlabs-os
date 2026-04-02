@@ -14,6 +14,7 @@ import { NodeHeader } from './shared/node-header';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
+import { useNodeDataUpdater } from '@/hooks/canvas/useNodeDataUpdater';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { PromptContextMenu } from './contextmenu/PromptContextMenu';
@@ -24,7 +25,7 @@ import { ModelSelector } from './shared/ModelSelector';
 import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
 import { toast } from 'sonner';
 import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
-import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
+import { useLinkedGuidelineId } from '@/components/canvas/CanvasHeaderContext';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -33,7 +34,7 @@ import type { Connection } from '@xyflow/react';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
-  const { linkedGuidelineId } = useCanvasHeader();
+  const linkedGuidelineId = useLinkedGuidelineId();
   const nodes = useNodes();
   const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as PromptNodeData;
@@ -55,15 +56,17 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
 
+  const { debouncedUpdate: debouncedUpdateData } = useNodeDataUpdater<PromptNodeData>(nodeData.onUpdateData, id);
+
   // Preset Selection Handler
-  const handlePresetSelect = (presetId: string) => {
+  const handlePresetSelect = useCallback((presetId: string) => {
     const preset = getPresetByIdSync('mockup', presetId);
     if (preset && preset.prompt) {
       setPrompt(preset.prompt);
       debouncedUpdateData({ prompt: preset.prompt });
     }
     setIsPresetModalOpen(false);
-  };
+  }, [debouncedUpdateData]);
 
   // BrandCore connection data
   const connectedLogo = nodeData.connectedLogo;
@@ -137,12 +140,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     // BrandCore data is read directly from nodeData in handleGenerate
     // No local state needed, but we can trigger re-render if needed
   }, [nodeData.connectedLogo, nodeData.connectedIdentity, nodeData.connectedTextDirection]);
-
-  const debouncedUpdateData = useDebouncedCallback((updates: Partial<PromptNodeData>) => {
-    if (nodeData.onUpdateData) {
-      nodeData.onUpdateData(id, updates);
-    }
-  }, 500);
 
   const handleAddToBoard = (url: string, type: 'image' | 'logo') => {
     const newNodeId = `image-${Date.now()}`;

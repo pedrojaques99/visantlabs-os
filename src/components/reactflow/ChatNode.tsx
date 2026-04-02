@@ -14,6 +14,8 @@ import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 
 import { ChatMessage } from '../shared/chat/ChatMessage';
 import { ChatInput } from '../shared/chat/ChatInput';
+import { ModelSelector } from '../shared/ModelSelector';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
 
 export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
     const nodeId = id as string;
@@ -87,6 +89,12 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         });
     }, [isLoading, nodeData, nodeId, connectedImages]);
 
+    const handleModelChange = useCallback((model: string) => {
+        if (nodeData.onUpdateData) {
+            nodeData.onUpdateData(nodeId, { model: model as any });
+        }
+    }, [nodeId, nodeData]);
+
 
     return (
         <NodeContainer selected={isSelected} dragging={isDragging} className="h-full overflow-hidden">
@@ -108,20 +116,27 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                             {t('canvasNodes.chatNode.title')}
                         </h3>
                     </div>
-                    <div className="flex items-center gap-1.5 ml-4">
-                        {nodeData.onOpenSidebar && (
-                            <NodeButton variant="ghost" size="xs" onClick={() => nodeData.onOpenSidebar!(nodeId)} title={t('canvasNodes.chatNode.openAsPanel')}>
-                                <PanelRight size={14} />
+                    <div className="flex items-center gap-4">
+                        <ModelSelector
+                            selectedModel={nodeData.model || GEMINI_MODELS.TEXT}
+                            onModelChange={handleModelChange}
+                            className="w-[120px]"
+                        />
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            {nodeData.onOpenSidebar && (
+                                <NodeButton variant="ghost" size="xs" onClick={() => nodeData.onOpenSidebar!(nodeId)} title={t('canvasNodes.chatNode.openAsPanel')}>
+                                    <PanelRight size={14} />
+                                </NodeButton>
+                            )}
+                            <NodeButton
+                                variant="ghost"
+                                size="xs"
+                                onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
+                                className={cn(showSystemPromptEditor && "text-brand-cyan border-brand-cyan/30 bg-brand-cyan/5")}
+                            >
+                                <Settings2 size={14} />
                             </NodeButton>
-                        )}
-                        <NodeButton
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
-                            className={cn(showSystemPromptEditor && "text-brand-cyan border-brand-cyan/30 bg-brand-cyan/5")}
-                        >
-                            <Settings2 size={14} />
-                        </NodeButton>
+                        </div>
                     </div>
                 </div>
 
@@ -152,7 +167,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                         </div>
                     ) : (
                         messages.map((msg: any) => (
-                            <ChatMessage 
+                            <ChatMessage
                                 key={msg.id}
                                 role={msg.role}
                                 content={msg.content}

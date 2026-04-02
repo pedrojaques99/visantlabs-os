@@ -77,6 +77,13 @@ export const useCanvasHeader = () => {
   return context;
 };
 
+// Focused context for nodes that only need linkedGuidelineId.
+// Isolates re-renders: these nodes won't update on settings/collab changes.
+interface LinkedGuidelineContextValue { linkedGuidelineId: string | null; }
+const LinkedGuidelineContext = createContext<LinkedGuidelineContextValue>({ linkedGuidelineId: null });
+
+export const useLinkedGuidelineId = () => useContext(LinkedGuidelineContext).linkedGuidelineId;
+
 // Helper hook for localStorage
 const useLocalStorage = <T,>(key: string, defaultValue: T): [T, (value: T) => void] => {
   const [state, setState] = useState<T>(() => {
@@ -235,9 +242,16 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     setActiveSidePanel,
   ]);
 
+  const linkedGuidelineValue = useMemo(
+    () => ({ linkedGuidelineId }),
+    [linkedGuidelineId]
+  );
+
   return (
     <CanvasHeaderContext.Provider value={value}>
-      {children}
+      <LinkedGuidelineContext.Provider value={linkedGuidelineValue}>
+        {children}
+      </LinkedGuidelineContext.Provider>
     </CanvasHeaderContext.Provider>
   );
 };

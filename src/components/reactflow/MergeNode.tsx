@@ -14,7 +14,7 @@ import { ModelSelector } from './shared/ModelSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { DEFAULT_MODEL, isAdvancedModel } from '@/constants/geminiModels';
-import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
+import { useNodeDataUpdater } from '@/hooks/canvas/useNodeDataUpdater';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 
 export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data, selected, id, dragging }) => {
@@ -78,12 +78,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
     await data.onGenerate(id, connectedImagesFromData, prompt, model);
   };
 
-  // Debounced update for data changes
-  const debouncedUpdateData = useDebouncedCallback((updates: Partial<MergeNodeData>) => {
-    if (data.onUpdateData) {
-      data.onUpdateData(id, updates);
-    }
-  }, 500);
+  const { debouncedUpdate: debouncedUpdateData } = useNodeDataUpdater<MergeNodeData>(data.onUpdateData, id);
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {

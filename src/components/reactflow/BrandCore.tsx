@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/hooks/useTranslation';
 import { NodeButton } from './shared/node-button';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
-import { fileToBase64 } from '@/utils/fileUtils';
+import { fileToBase64, validateFile } from '@/utils/fileUtils';
 import { pdfToBase64, validatePdfBase64Size, validatePdfFile } from '@/utils/pdfUtils';
 import { normalizeImageToBase64 } from '@/services/reactFlowService';
 import { consolidateStrategiesToText } from '@/services/brandPromptService';
@@ -92,109 +92,44 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (logoInputRef.current) logoInputRef.current.value = '';
+    if (!file || !nodeData.onUpdateData) return;
 
-    if (!nodeData.onUpdateData) {
-      console.error('[BrandCore] onUpdateData handler not available', { nodeId: id, hasHandler: !!nodeData.onUpdateData });
-      toast.error(t('canvasNodes.brandCore.uploadHandlerNotReady'), { duration: 3000 });
-      if (logoInputRef.current) {
-        logoInputRef.current.value = '';
-      }
-      return;
-    }
-
-    if (!file.type.startsWith('image/')) {
-      toast.error(t('canvasNodes.brandCore.pleaseSelectImageFile'), { duration: 3000 });
-      if (logoInputRef.current) {
-        logoInputRef.current.value = '';
-      }
-      return;
-    }
-
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error(t('canvasNodes.brandCore.fileSizeExceedsLimit'), { duration: 5000 });
-      if (logoInputRef.current) {
-        logoInputRef.current.value = '';
-      }
-      return;
-    }
-
-    if (logoInputRef.current) {
-      logoInputRef.current.value = '';
-    }
+    const error = validateFile(file, 'image');
+    if (error) { toast.error(error, { duration: 3000 }); return; }
 
     try {
-      console.log('[BrandCore] Processing logo upload', { nodeId: id, fileName: file.name, fileSize: file.size });
       const imageData = await fileToBase64(file);
       nodeData.onUpdateData(id, { uploadedLogo: imageData.base64 });
-      console.log('[BrandCore] Logo uploaded successfully', { nodeId: id });
       toast.success(t('canvasNodes.brandCore.logoUploadedSuccessfully'), { duration: 2000 });
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to process logo image', { duration: 5000 });
-      console.error('[BrandCore] Failed to process logo:', error);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to process logo image', { duration: 5000 });
     }
   };
 
   const handleIdentityFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (identityInputRef.current) identityInputRef.current.value = '';
+    if (!file || !nodeData.onUpdateData) return;
 
-    if (!nodeData.onUpdateData) {
-      console.error('[BrandCore] onUpdateData handler not available', { nodeId: id, hasHandler: !!nodeData.onUpdateData });
-      toast.error(t('canvasNodes.brandCore.uploadHandlerNotReady'), { duration: 3000 });
-      if (identityInputRef.current) {
-        identityInputRef.current.value = '';
-      }
-      return;
-    }
+    const validationError = validateFile(file, ['image', 'pdf']);
+    if (validationError) { toast.error(validationError, { duration: 5000 }); return; }
 
-    let fileType: 'pdf' | 'png' | null = null;
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const fileType: 'pdf' | 'png' = isPdf ? 'pdf' : 'png';
     let base64: string;
-    let errorMessage = '';
 
-    // Check if it's a PDF
-    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-      const validation = validatePdfFile(file);
-      if (!validation.isValid) {
-        errorMessage = validation.error || 'Invalid PDF file';
-      } else {
-        fileType = 'pdf';
-        try {
-          base64 = await pdfToBase64(file);
-        } catch (error: any) {
-          errorMessage = error?.message || 'Failed to process PDF';
-        }
+    if (isPdf) {
+      const pdfValidation = validatePdfFile(file);
+      if (!pdfValidation.isValid) {
+        toast.error(pdfValidation.error || 'Invalid PDF file', { duration: 5000 });
+        return;
       }
-    }
-    // Check if it's an image (PNG, JPG, etc.)
-    else if (file.type.startsWith('image/')) {
-      fileType = 'png'; // Use 'png' as the type identifier for all images
-      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-      if (file.size > MAX_FILE_SIZE) {
-        errorMessage = 'File size exceeds 10MB limit';
-      } else {
-        try {
-          const imageData = await fileToBase64(file);
-          base64 = imageData.base64;
-        } catch (error: any) {
-          errorMessage = error?.message || 'Failed to process image';
-        }
-      }
+      try { base64 = await pdfToBase64(file); }
+      catch (err: any) { toast.error(err?.message || 'Failed to process PDF', { duration: 5000 }); return; }
     } else {
-      errorMessage = 'Please select a PDF or image file (PNG, JPG, etc.)';
-    }
-
-    if (errorMessage || !fileType || !base64) {
-      toast.error(errorMessage || 'Failed to process file', { duration: 5000 });
-      if (identityInputRef.current) {
-        identityInputRef.current.value = '';
-      }
-      return;
-    }
-
-    if (identityInputRef.current) {
-      identityInputRef.current.value = '';
+      try { base64 = (await fileToBase64(file)).base64; }
+      catch (err: any) { toast.error(err?.message || 'Failed to process image', { duration: 5000 }); return; }
     }
 
     try {
@@ -213,9 +148,6 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         const sizeValidation = validatePdfBase64Size(base64);
         if (!sizeValidation.isValid) {
           toast.error(sizeValidation.error || 'PDF is too large for upload', { duration: 5000 });
-          if (identityInputRef.current) {
-            identityInputRef.current.value = '';
-          }
           return;
         }
 

@@ -1,6 +1,7 @@
 import express from 'express';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
@@ -705,7 +706,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     const {
       promptText,
       baseImage,
-      model = 'gemini-2.5-flash-image',
+      model = GEMINI_MODELS.IMAGE_FLASH,
       resolution,
       aspectRatio,
       referenceImages,
@@ -1423,7 +1424,7 @@ router.post('/track-prompt-generation', apiRateLimiter, authenticate, async (req
 
     // Calculate cost
     const { calculateTextGenerationCost } = await import('../utils/usageTracking.js');
-    const cost = calculateTextGenerationCost(inputTokens, outputTokens, 'gemini-2.5-flash-image');
+    const cost = calculateTextGenerationCost(inputTokens, outputTokens, GEMINI_MODELS.IMAGE_FLASH);
 
     // Create usage record
     const usageRecord = {
@@ -1434,7 +1435,7 @@ router.post('/track-prompt-generation', apiRateLimiter, authenticate, async (req
       inputTokens,
       outputTokens,
       promptLength: inputTokens * 4, // Approximate
-      model: 'gemini-2.5-flash-image',
+      model: GEMINI_MODELS.IMAGE_FLASH,
       cost,
       creditsDeducted: 0, // Prompt generation doesn't deduct credits
       subscriptionStatus,
@@ -1460,7 +1461,7 @@ router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthReques
     const {
       success,
       imagesCount = 1, // Number of images generated (default 1)
-      model = 'gemini-2.5-flash-image',
+      model = GEMINI_MODELS.IMAGE_FLASH,
       hasInputImage = false,
       promptLength,
       resolution,
@@ -1526,7 +1527,7 @@ router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthReques
       const { createUsageRecord, calculateImageGenerationCost, getCreditsRequired } = await import('../utils/usageTracking.js');
 
       // Calculate credits required based on model and resolution
-      const creditsPerImage = getCreditsRequired(model as 'gemini-2.5-flash-image' | 'gemini-3-pro-image-preview', resolution);
+      const creditsPerImage = getCreditsRequired(model as typeof GEMINI_MODELS.IMAGE_FLASH | typeof GEMINI_MODELS.IMAGE_PRO, resolution);
       // In local development, don't deduct credits but still track usage
       const creditsToDeduct = isLocalDevelopment ? 0 : imagesCount * creditsPerImage;
 

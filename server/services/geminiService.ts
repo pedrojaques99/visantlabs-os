@@ -73,7 +73,7 @@ const DEFAULT_TIMEOUTS: Record<string, number> = {
   [GEMINI_MODELS.IMAGE_NB2]: 180000,
   [GEMINI_MODELS.IMAGE_PRO]: 300000,
   [GEMINI_MODELS.IMAGE_FLASH]: 120000,
-  [GEMINI_MODELS.FLASH_2_0]: 120000,
+  [GEMINI_MODELS.FLASH_2_5]: 120000,
   [GEMINI_MODELS.PRO_2_0]: 300000,
 };
 
@@ -81,7 +81,7 @@ const DEFAULT_RETRIES: Record<string, number> = {
   [GEMINI_MODELS.IMAGE_NB2]: 7,
   [GEMINI_MODELS.IMAGE_PRO]: 10,
   [GEMINI_MODELS.IMAGE_FLASH]: 5,
-  [GEMINI_MODELS.FLASH_2_0]: 5,
+  [GEMINI_MODELS.FLASH_2_5]: 5,
   [GEMINI_MODELS.PRO_2_0]: 10,
 };
 
@@ -120,7 +120,7 @@ const withRetry = async <T>(
     maxRetries,
     timeout,
     onRetry,
-    model = 'gemini-2.5-flash-image'
+    model = GEMINI_MODELS.IMAGE_FLASH
   } = options;
 
   const effectiveMaxRetries = maxRetries ?? DEFAULT_RETRIES[model] ?? 5;
@@ -232,7 +232,7 @@ const withRetry = async <T>(
 export const generateMockup = async (
   promptText: string,
   baseImage?: UploadedImage,
-  model: GeminiModel = 'gemini-2.5-flash-image',
+  model: GeminiModel = GEMINI_MODELS.IMAGE_FLASH,
   resolution?: Resolution,
   aspectRatio?: AspectRatio,
   referenceImages?: UploadedImage[],
@@ -376,7 +376,7 @@ export const suggestCategories = async (
     const base64Data = await resolveImageBase64(baseImage);
 
     const response = await getAI(apiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: [{
         parts: [
           {
@@ -412,7 +412,7 @@ export const suggestCategories = async (
 
     return { categories, inputTokens, outputTokens };
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
@@ -465,7 +465,7 @@ export const analyzeMockupSetup = async (
 
     if (process.env.NODE_ENV === 'development') console.log('[dev] analyzeMockupSetup: Gemini generateContent start');
     const response = await getAI(userApiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: [{
         parts: [
           {
@@ -562,7 +562,7 @@ export const analyzeMockupSetup = async (
       };
     }
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
@@ -636,7 +636,7 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
     parts.push({ text: promptToGemini });
 
     const response = await getAI(apiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: [{ parts }],
     });
 
@@ -654,7 +654,7 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
       outputTokens,
     };
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
@@ -702,7 +702,7 @@ export const generateMergePrompt = async (images: UploadedImage[]): Promise<Gene
     parts.push({ text: promptToGemini });
 
     const response = await getAI().models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: [{ parts }],
     });
 
@@ -717,7 +717,7 @@ export const generateMergePrompt = async (images: UploadedImage[]): Promise<Gene
       outputTokens,
     };
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
@@ -747,7 +747,7 @@ Regras:
 Retorne APENAS o texto melhorado, sem explicações.`;
 
     const response = await getAI(apiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: [{ parts: [{ text: promptToGemini }] }],
     });
 
@@ -767,7 +767,7 @@ Retorne APENAS o texto melhorado, sem explicações.`;
       outputTokens,
     };
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
@@ -794,7 +794,7 @@ export const suggestPromptVariations = async (basePrompt: string, apiKey?: strin
     Sua saída deve ser APENAS o objeto JSON.`;
 
     const response = await getAI(apiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: [{ parts: [{ text: promptToGemini }] }],
       config: {
         responseMimeType: 'application/json',
@@ -832,14 +832,14 @@ export const suggestPromptVariations = async (basePrompt: string, apiKey?: strin
       return { variations: [], inputTokens, outputTokens };
     }
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
 export const changeObjectInMockup = async (
   baseImage: UploadedImage,
   newObject: string,
-  model: GeminiModel = 'gemini-2.5-flash-image',
+  model: GeminiModel = GEMINI_MODELS.IMAGE_FLASH,
   resolution?: Resolution,
   onRetry?: (attempt: number, maxRetries: number, delay: number) => void,
   apiKey?: string
@@ -892,7 +892,7 @@ export const changeObjectInMockup = async (
 export const applyThemeToMockup = async (
   baseImage: UploadedImage,
   themes: string[],
-  model: GeminiModel = 'gemini-2.5-flash-image',
+  model: GeminiModel = GEMINI_MODELS.IMAGE_FLASH,
   resolution?: Resolution,
   onRetry?: (attempt: number, maxRetries: number, delay: number) => void,
   apiKey?: string
@@ -1001,7 +1001,7 @@ Retorne em formato JSON:
     ];
 
     const response = await getAI(apiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: [{ parts }],
       config: {
         responseMimeType: 'application/json',
@@ -1042,7 +1042,7 @@ Retorne em formato JSON:
       };
     }
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
@@ -1201,7 +1201,7 @@ ${isLinearIssue ? `\nOriginal Linear issue data available in system prompt above
 Return JSON with "operations" array only.`;
 
     const response = await getAI(userApiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
       config: {
         responseMimeType: 'application/json',
@@ -1234,7 +1234,7 @@ Return JSON with "operations" array only.`;
       console.error('Failed to parse Figma operations JSON:', e);
       throw new Error('Invalid JSON in AI response.');
     }
-  }, { model: 'gemini-2.5-flash' });
+  }, { model: GEMINI_MODELS.TEXT });
 };
 
 /**
@@ -1346,7 +1346,7 @@ Return ONLY tags that work well together with the current selections.`;
     }
 
     const response = await getAI(userApiKey).models.generateContent({
-      model: 'gemini-2.0-flash', // Faster model for text-only
+      model: GEMINI_MODELS.TEXT, // Faster model for text-only
       contents: [{ parts: [{ text: prompt }] }],
       config: {
         responseMimeType: 'application/json',
@@ -1382,7 +1382,7 @@ Return ONLY tags that work well together with the current selections.`;
       console.error('Failed to parse refineSuggestions JSON:', e);
       return { inputTokens, outputTokens };
     }
-  }, { model: 'gemini-2.0-flash' });
+  }, { model: GEMINI_MODELS.TEXT });
 };
 
 

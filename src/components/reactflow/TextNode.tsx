@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { NodeContainer } from './shared/NodeContainer';
 import { useTranslation } from '@/hooks/useTranslation';
 import { aiApi } from '@/services/aiApi';
-import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
+import { useNodeDataUpdater } from '@/hooks/canvas/useNodeDataUpdater';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
@@ -33,12 +33,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
 
 
-  // Debounced update for data changes
-  const debouncedUpdateData = useDebouncedCallback((updates: Partial<TextNodeData>) => {
-    if (nodeData.onUpdateData) {
-      nodeData.onUpdateData(id, updates);
-    }
-  }, 500);
+  const { debouncedUpdate: debouncedUpdateData } = useNodeDataUpdater<TextNodeData>(nodeData.onUpdateData, id);
 
   const handleTextChange = (value: string) => {
     setText(value);

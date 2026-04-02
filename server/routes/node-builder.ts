@@ -7,6 +7,7 @@ import {
 } from '../lib/node-builder-prompts.js';
 import { prisma } from '../db/prisma.js';
 import type { NodeBuilderLLMResponse, CustomNodeDefinition } from '../../src/types/customNode.js';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 
 const router = Router();
 
@@ -35,7 +36,7 @@ router.post('/generate', authenticate, async (req: AuthRequest, res) => {
     }));
 
     const result = await getAI().models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: GEMINI_MODELS.TEXT,
       config: { systemInstruction },
       contents,
     });
@@ -75,7 +76,7 @@ router.post('/shader-params', authenticate, async (req: AuthRequest, res) => {
 
   try {
     const result = await getAI().models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: GEMINI_MODELS.TEXT,
       config: { systemInstruction: SHADER_SELECTOR_SYSTEM_PROMPT },
       contents: [{ role: 'user', parts: [{ text: `Select shader for: "${description}"` }] }],
     });

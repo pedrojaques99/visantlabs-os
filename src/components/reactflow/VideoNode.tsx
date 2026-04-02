@@ -17,11 +17,11 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Switch } from '@/components/ui/switch';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
+import { useNodeDataUpdater } from '@/hooks/canvas/useNodeDataUpdater';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { NodeButton } from './shared/node-button';
 import { Input } from '@/components/ui/input';
-import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
+import { useLinkedGuidelineId } from '@/components/canvas/CanvasHeaderContext';
 import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
 import { toast } from 'sonner';
 
@@ -55,7 +55,7 @@ const DURATION_OPTIONS = [
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
-  const { linkedGuidelineId } = useCanvasHeader();
+  const linkedGuidelineId = useLinkedGuidelineId();
   const nodes = useNodes();
   const { setNodes } = useReactFlow();
   const nodeData = data as VideoNodeData;
@@ -124,15 +124,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     nodeData.isLooping, nodeData.isBrandActive, connectedText, hasTextConnection
   ]);
 
-  // Debounced update for text inputs
-  const debouncedUpdateData = useDebouncedCallback((updates: Partial<VideoNodeData>) => {
-    nodeData.onUpdateData?.(id, updates);
-  }, 500);
-
-  // Immediate update for non-text fields
-  const updateData = useCallback((updates: Partial<VideoNodeData>) => {
-    nodeData.onUpdateData?.(id, updates);
-  }, [nodeData, id]);
+  const { debouncedUpdate: debouncedUpdateData, immediateUpdate: updateData } = useNodeDataUpdater<VideoNodeData>(nodeData.onUpdateData, id);
 
   // Handle generation
   const handleGenerate = useCallback(async () => {

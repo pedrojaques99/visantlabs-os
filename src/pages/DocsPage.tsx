@@ -599,7 +599,7 @@ const result = await client.callTool({
   name: "mockup-generate",
   arguments: {
     prompt: "A smartphone mockup on a marble desk",
-    model: "gemini-2.0-flash-exp"
+    model: "gemini-2.5-flash"
   }
 });`}</pre>
                           </div>
@@ -1295,7 +1295,7 @@ Content-Type: application/json`}</pre>
   "data": {
     "type": "prompt",
     "prompt": "A minimalist product photo of running shoes on white background, studio lighting",
-    "model": "gemini-2.0-flash-exp",
+    "model": "gemini-2.5-flash",
     "aspectRatio": "1:1",
     "resolution": "1024x1024"
   }
@@ -1548,7 +1548,7 @@ const { project } = await fetch(\`\${BASE}/canvas\`, {
         data: {
           type: "prompt",
           prompt: "A luxury perfume bottle on a dark marble surface, dramatic lighting",
-          model: "gemini-2.0-flash-exp",
+          model: "gemini-2.5-flash",
           aspectRatio: "1:1"
         }
       },

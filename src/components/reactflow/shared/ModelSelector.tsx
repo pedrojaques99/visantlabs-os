@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import { GEMINI_MODELS, AVAILABLE_IMAGE_MODELS, MODEL_CONFIG, isAdvancedModel, getModelConfig } from '@/constants/geminiModels';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { isGenerationUnlimited } from '@/utils/unlimitedChecker';
@@ -38,26 +38,6 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   const { subscriptionStatus } = useLayout();
   const planMetadata = subscriptionStatus?.planMetadata;
 
-  const handleModelClick = useCallback((newModel: string) => {
-    const modelId = newModel as GeminiModel;
-    if (disabled || modelId === selectedModel) return;
-
-    onModelChange(modelId);
-
-    // Sync logic helpers
-    const config = getModelConfig(modelId);
-
-    if (config.supportsImageConfig) {
-      if (!resolution && onSyncResolution && config.defaultResolution) {
-        onSyncResolution(config.defaultResolution);
-      }
-    } else {
-      if (onClearAdvancedConfig) {
-        onClearAdvancedConfig();
-      }
-    }
-  }, [disabled, selectedModel, onModelChange, resolution, onSyncResolution, onClearAdvancedConfig]);
-
   const options = useMemo(() => {
     return AVAILABLE_IMAGE_MODELS.map(modelId => {
       const config = MODEL_CONFIG[modelId];
@@ -82,6 +62,40 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     }).filter(Boolean) as any[];
   }, [AVAILABLE_IMAGE_MODELS, resolution, selectedModel, planMetadata, t]);
 
+  // Normalize: if selectedModel isn't in options (e.g. old text model stored in canvas), fall back to first image model
+  const effectiveModel = useMemo(() => {
+    if (!options.length) return selectedModel;
+    return options.some(o => o.value === selectedModel) ? selectedModel : options[0].value as GeminiModel;
+  }, [selectedModel, options]);
+
+  // Sync parent if we had to normalize the value
+  useEffect(() => {
+    if (effectiveModel !== selectedModel) {
+      onModelChange(effectiveModel);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveModel]);
+
+  const handleModelClick = useCallback((newModel: string) => {
+    const modelId = newModel as GeminiModel;
+    if (disabled || modelId === selectedModel) return;
+
+    onModelChange(modelId);
+
+    // Sync logic helpers
+    const config = getModelConfig(modelId);
+
+    if (config.supportsImageConfig) {
+      if (!resolution && onSyncResolution && config.defaultResolution) {
+        onSyncResolution(config.defaultResolution);
+      }
+    } else {
+      if (onClearAdvancedConfig) {
+        onClearAdvancedConfig();
+      }
+    }
+  }, [disabled, selectedModel, onModelChange, resolution, onSyncResolution, onClearAdvancedConfig]);
+
   return (
     <div className={cn("space-y-1.5", className)}>
       <NodeLabel className="mb-1.5 text-[10px]">
@@ -89,7 +103,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       </NodeLabel>
       <Select
         options={options}
-        value={selectedModel}
+        value={effectiveModel}
         onChange={handleModelClick}
         disabled={disabled}
         variant="node"

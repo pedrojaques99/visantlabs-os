@@ -30,11 +30,11 @@ import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
 import { Input } from '@/components/ui/input'
 import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
 import { useNodes } from '@xyflow/react';
-import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
+import { useLinkedGuidelineId } from '@/components/canvas/CanvasHeaderContext';
 
 const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
-  const { linkedGuidelineId } = useCanvasHeader();
+  const linkedGuidelineId = useLinkedGuidelineId();
   const { setNodes } = useReactFlow();
   const nodes = useNodes();
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
