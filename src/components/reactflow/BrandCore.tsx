@@ -1,7 +1,7 @@
 import React, { useState, useCallback, memo, useEffect, useRef } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { LabeledHandle } from './shared/LabeledHandle';
-import { Dna, ChevronDown, ChevronUp, Copy, Check, UploadCloud, FileText, X, Maximize2 } from 'lucide-react';
+import { Palette, ChevronDown, ChevronUp, Copy, Check, UploadCloud, FileText, X, Maximize2 } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { BrandCoreData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -351,16 +351,10 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
-            <Dna size={16} className="text-brand-cyan" />
-          </div>
-          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
-            {t('canvasNodes.brandCore.title') || 'Brand Core'}
-          </h3>
-        </div>
-      </div>
+      <NodeHeader
+        icon={Palette}
+        title={t('canvasNodes.brandCore.title') || 'Brand Core'}
+      />
 
       <div className="p-4 flex flex-col gap-[var(--node-gap)]">
         {/* Inputs Section */}
@@ -526,7 +520,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               </>
             ) : (
               <>
-                <Dna size={14} className="mr-2" />
+                <Palette size={14} className="mr-2" />
                 <span>Analyze Brand Identity</span>
               </>
             )}

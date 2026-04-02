@@ -46,7 +46,7 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
         <NodeLabel className="mb-1.5 text-[10px]">
           {t('canvasNodes.promptNode.aspectRatio')}
         </NodeLabel>
-        <div onMouseDown={(e) => e.stopPropagation()}>
+        <div>
           <AspectRatioSelector
             value={aspectRatio}
             onChange={onAspectRatioChange}
@@ -60,7 +60,7 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
         <NodeLabel className="mb-1.5 text-[10px]">
           {t('canvasNodes.promptNode.resolution')}
         </NodeLabel>
-        <div onMouseDown={(e) => e.stopPropagation()}>
+        <div>
           <ResolutionSelector
             value={resolution}
             onChange={onResolutionChange}

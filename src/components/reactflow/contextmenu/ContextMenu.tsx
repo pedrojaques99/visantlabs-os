@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Wand2, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, Sparkles, MessageSquare, Clipboard, LayoutTemplate } from 'lucide-react';
+import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Wand2, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, Sparkles, MessageSquare, Clipboard, LayoutTemplate, Blocks } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SearchBar } from '@/components/ui/SearchBar';
 import type { Node } from '@xyflow/react';
@@ -33,6 +33,7 @@ interface ContextMenuProps {
   onAddStrategy?: () => void;
   onAddBrandCore?: () => void;
   onAddChat?: () => void;
+  onAddNodeBuilder?: () => void;
   onExport?: () => void;
   sourceNodeId?: string;
   nodes?: Node<FlowNodeData>[];
@@ -78,6 +79,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onAddStrategy,
   onAddBrandCore,
   onAddChat,
+  onAddNodeBuilder,
   onExport,
   sourceNodeId,
   nodes,
@@ -348,6 +350,16 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing',
       category: 'Branding',
     },
+
+    // Node Builder
+    ...(onAddNodeBuilder ? [{
+      id: 'nodeBuilder',
+      label: 'Node Builder',
+      icon: <Blocks size={16} />,
+      onClick: () => { onAddNodeBuilder!(); onClose(); },
+      section: 'processing' as const,
+      category: 'Custom',
+    }] : []),
 
     // Export
     ...(onExport && sourceNodeId ? [{

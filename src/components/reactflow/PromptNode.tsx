@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Position, type NodeProps, useReactFlow, NodeResizer, useNodes } from '@xyflow/react';
-import { Pickaxe, Image as ImageIcon, Wand2, Save, BookOpen } from 'lucide-react';
+import { Pickaxe, Image as ImageIcon, Wand2, Save, BookOpen, Sparkles, Palette, Diamond } from 'lucide-react';
+import { SeedControl } from './shared/SeedControl';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { PromptNodeData } from '@/types/reactFlow';
 import type { GeminiModel, AspectRatio, Resolution } from '@/types/types';
@@ -24,6 +25,10 @@ import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
 import { toast } from 'sonner';
 import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { motion, AnimatePresence } from 'framer-motion';
+import type { Connection } from '@xyflow/react';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -34,9 +39,9 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const nodeData = data as PromptNodeData;
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [prompt, setPrompt] = useState(nodeData.prompt || '');
-  const [model, setModel] = useState<GeminiModel>(nodeData.model || DEFAULT_MODEL);
+  const [model, setModel] = useState<GeminiModel>(nodeData.model || GEMINI_MODELS.IMAGE_NB2);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(nodeData.aspectRatio || DEFAULT_ASPECT_RATIO);
-  const [resolution, setResolution] = useState<Resolution>(nodeData.resolution || '1K');
+  const [resolution, setResolution] = useState<Resolution>(nodeData.resolution || '2K');
   const [connectedImage1, setConnectedImage1] = useState<string | undefined>(nodeData.connectedImage1);
   const [connectedImage2, setConnectedImage2] = useState<string | undefined>(nodeData.connectedImage2);
   const [connectedImage3, setConnectedImage3] = useState<string | undefined>(nodeData.connectedImage3);
@@ -367,6 +372,32 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
   };
 
+  // Connection validation logic
+  const isValidConnection = useCallback((connection: Connection) => {
+    // Prevent self-connections
+    if (connection.source === connection.target) return false;
+
+    const sourceNode = nodes.find(n => n.id === connection.source);
+    if (!sourceNode) return false;
+
+    const targetHandle = connection.targetHandle;
+    
+    // Check for text input handle
+    if (targetHandle === 'text-input') {
+      // Only Text nodes can connect to text input
+      return sourceNode.type === 'text';
+    }
+
+    // Check for image input handles
+    if (targetHandle?.startsWith('input-')) {
+      // Valid image sources
+      const validImageNodes = ['image', 'prompt', 'logo', 'video', 'merge', 'upscale', 'shader', 'color-extractor'];
+      return validImageNodes.includes(sourceNode.type || '');
+    }
+
+    return true;
+  }, [nodes]);
+
   return (
     <NodeContainer
       containerRef={containerRef}
@@ -404,6 +435,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         className="handle-text-inverted"
         handleType="text"
         style={{ top: '60px' }}
+        isValidConnection={isValidConnection}
       />
 
       {/* Image Input Handles - evenly spaced with fixed pixels */}
@@ -415,6 +447,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           label={`${t('canvasNodes.promptNode.imageInput') || 'Image'} 1`}
           handleType="image"
           style={{ top: maxHandles === 2 ? '140px' : '120px' }}
+          isValidConnection={isValidConnection}
         />
       )}
       {maxHandles >= 2 && (
@@ -425,6 +458,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           label={`${t('canvasNodes.promptNode.imageInput') || 'Image'} 2`}
           handleType="image"
           style={{ top: maxHandles === 2 ? '200px' : '180px' }}
+          isValidConnection={isValidConnection}
         />
       )}
       {maxHandles >= 3 && (
@@ -435,6 +469,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           label={`${t('canvasNodes.promptNode.imageInput') || 'Image'} 3`}
           handleType="image"
           style={{ top: '240px' }}
+          isValidConnection={isValidConnection}
         />
       )}
       {maxHandles >= 4 && (
@@ -445,6 +480,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           label={`${t('canvasNodes.promptNode.imageInput') || 'Image'} 4`}
           handleType="image"
           style={{ top: '300px' }}
+          isValidConnection={isValidConnection}
         />
       )}
 
@@ -472,18 +508,29 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
       {/* BrandCore Connection Indicator - compact, non-intrusive */}
       {hasBrandCoreConnection && (
-        <div className={cn(
-          "flex items-center gap-2 px-2 py-1.5 rounded-md border text-[10px] font-mono transition-all duration-200",
-          isBrandActive
-            ? "bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan/80"
-            : "bg-neutral-900/30 border-neutral-700/20 text-neutral-500 opacity-50"
-        )}>
-          <span className="text-[9px] uppercase">{t('canvasNodes.promptNode.brandConnected') || 'Brand'}</span>
-          <div className="flex items-center gap-1.5">
-            {connectedLogo && <span className="px-1 py-0.5 bg-neutral-800/50 rounded text-[9px]">Logo</span>}
-            {connectedIdentity && <span className="px-1 py-0.5 bg-neutral-800/50 rounded text-[9px]">ID</span>}
-            {connectedTextDirection && <span className="px-1 py-0.5 bg-neutral-800/50 rounded text-[9px]">Text</span>}
-          </div>
+        <div className="node-margin">
+          <Tooltip content={isBrandActive ? "Brand assets will be used in generation" : "Brand assets connected but inactive"}>
+            <div className={cn(
+              "flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-[10px] font-mono transition-all duration-300",
+              isBrandActive
+                ? "bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]"
+                : "bg-neutral-900/40 border-neutral-800/40 text-neutral-500 opacity-60"
+            )}>
+              <div className="relative flex items-center justify-center shrink-0">
+                <Palette size={10} className={cn(isBrandActive ? "text-brand-cyan" : "text-neutral-600", "transition-colors")} />
+                {isBrandActive && (
+                  <div className="absolute -inset-0.5 rounded-full bg-brand-cyan/20 animate-ping pointer-events-none" />
+                )}
+              </div>
+              <span className="text-[9px] uppercase tracking-wider font-bold">
+                {t('canvasNodes.promptNode.brandConnected') || 'Brand Guidelines'}
+              </span>
+              <div className="flex items-center gap-1.5 ml-auto">
+                {connectedLogo && <span className="px-1.5 py-0.5 bg-black/20 rounded border border-white/5 text-[8px]">LOGO</span>}
+                {connectedIdentity && <span className="px-1.5 py-0.5 bg-black/20 rounded border border-white/5 text-[8px]">IDENTITY</span>}
+              </div>
+            </div>
+          </Tooltip>
         </div>
       )}
 
@@ -499,36 +546,32 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         {/* Prompt Functions Toolbar */}
         <div className="flex items-center justify-between mb-1.5 px-0.5">
           <div className="flex items-center gap-1.5">
-            <NodeButton variant="ghost" size="xs" type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                setIsPresetModalOpen(true);
-              }}
-              disabled={isLoading}
-              className="nodrag nopan"
-              title={t('canvasNodes.promptNode.loadPreset') || 'Load Preset'}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <BookOpen size={14} />
-            </NodeButton>
+            <Tooltip content={t('canvasNodes.promptNode.loadPreset') || 'Load Preset'}>
+              <NodeButton variant="ghost" size="xs" type="button"
+                onClick={(e) => {
+                  setIsPresetModalOpen(true);
+                }}
+                disabled={isLoading}
+                className="nodrag nopan hover:text-brand-cyan transition-colors"
+              >
+                <BookOpen size={14} />
+              </NodeButton>
+            </Tooltip>
           </div>
 
-          <NodeButton variant="ghost" size="xs" type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              if (nodeData.onSavePrompt) {
-                nodeData.onSavePrompt(prompt);
-              }
-            }}
-            disabled={isLoading || !prompt.trim()}
-            className="nodrag nopan"
-            title={t('canvasNodes.promptNode.savePrompt') || 'Save Prompt'}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <Save size={14} />
-          </NodeButton>
+          <Tooltip content={t('canvasNodes.promptNode.savePrompt') || 'Save Prompt'}>
+            <NodeButton variant="ghost" size="xs" type="button"
+              onClick={() => {
+                if (nodeData.onSavePrompt) {
+                  nodeData.onSavePrompt(prompt);
+                }
+              }}
+              disabled={isLoading || !prompt.trim()}
+              className="nodrag nopan hover:text-brand-cyan transition-colors"
+            >
+              <Save size={14} />
+            </NodeButton>
+          </Tooltip>
         </div>
 
         <div className="relative">
@@ -543,53 +586,58 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           />
           {/* Prompt Suggestion Button */}
           {!hasTextNodeConnection && prompt.trim() && (
-            <NodeButton variant="ghost" size="xs" type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                if (nodeData.onSuggestPrompts && prompt.trim()) {
-                  nodeData.onSuggestPrompts(id, prompt);
-                }
-              }}
-              disabled={isLoading || isSuggestingPrompts || !prompt.trim()}
-              className="absolute top-2 right-2 nodrag nopan"
-              title={t('canvasNodes.promptNode.suggestPrompts')}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              {isSuggestingPrompts ? (
-                <GlitchLoader size={14} color="currentColor" />
-              ) : (
-                <Wand2 size={14} />
-              )}
-            </NodeButton>
+            <Tooltip content={t('canvasNodes.promptNode.suggestPrompts') || 'Suggest AI Prompts'}>
+              <NodeButton variant="ghost" size="xs" type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (nodeData.onSuggestPrompts && prompt.trim()) {
+                    nodeData.onSuggestPrompts(id, prompt);
+                  }
+                }}
+                disabled={isLoading || isSuggestingPrompts || !prompt.trim()}
+                className="absolute top-2 right-2 nodrag nopan text-brand-cyan hover:bg-brand-cyan/10"
+              >
+                {isSuggestingPrompts ? (
+                  <GlitchLoader size={14} color="currentColor" />
+                ) : (
+                  <Wand2 size={14} />
+                )}
+              </NodeButton>
+            </Tooltip>
           )}
         </div>
 
         {/* Prompt Suggestions */}
-        {promptSuggestions.length > 0 && (
-          <div className="mt-2 space-y-1.5 animate-fade-in">
-            <div className="text-[10px] font-mono text-brand-cyan/70 mb-1.5">
-              {t('canvasNodes.promptNode.aiSuggestions') || t('canvasNodes.promptNode.suggestions')}
-            </div>
-            {promptSuggestions.map((suggestion, index) => (
-              <NodeButton variant="ghost" size="xs" key={index}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPrompt(suggestion);
-                  handlePromptChange(suggestion);
-                  // Clear suggestions after selection
-                  if (nodeData.onUpdateData) {
-                    nodeData.onUpdateData(id, { promptSuggestions: [] });
-                  }
-                }}
-                className="w-full text-left font-mono"
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                {suggestion}
-              </NodeButton>
-            ))}
-          </div>
-        )}
+        <AnimatePresence>
+          {promptSuggestions.length > 0 && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="mt-2 space-y-1.5 overflow-hidden"
+            >
+              <div className="text-[10px] font-mono text-brand-cyan/70 mb-1.5 flex items-center gap-2">
+                <Sparkles size={10} />
+                {t('canvasNodes.promptNode.aiSuggestions') || t('canvasNodes.promptNode.suggestions')}
+              </div>
+              {promptSuggestions.map((suggestion, index) => (
+                <NodeButton variant="ghost" size="xs" key={index}
+                  onClick={(e) => {
+                    setPrompt(suggestion);
+                    handlePromptChange(suggestion);
+                    // Clear suggestions after selection
+                    if (nodeData.onUpdateData) {
+                      nodeData.onUpdateData(id, { promptSuggestions: [] });
+                    }
+                  }}
+                  className="w-full text-left font-mono border border-brand-cyan/5 hover:border-brand-cyan/20 hover:bg-brand-cyan/5"
+                >
+                  <span className="truncate">{suggestion}</span>
+                </NodeButton>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Settings Section - Compact */}
@@ -639,35 +687,49 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           isLoading={isLoading}
           allowVideo={true}
         />
+
+        {/* Seed Control */}
+        <SeedControl
+          seed={nodeData.seed}
+          seedLocked={nodeData.seedLocked}
+          onSeedChange={(seed) => {
+            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { seed });
+          }}
+          onSeedLockedChange={(locked) => {
+            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { seedLocked: locked });
+          }}
+          disabled={isLoading}
+        />
       </div>
 
       {/* Generate Image Button */}
-      <NodeButton variant="primary" size="full" onClick={(e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        handleGenerate();
-      }}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-        }}
-        disabled={isLoading || !prompt.trim()}
-        className="node-interactive"
+      <Tooltip 
+        content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
+        delay={500}
       >
-        {isLoading ? (
-          <>
-            <GlitchLoader size={14} className="mr-1" color="brand-cyan" />
-            <span>{t('canvasNodes.promptNode.generating')}</span>
-          </>
-        ) : (
-          <>
-            <ImageIcon size={14} />
-            <span>{t('canvasNodes.promptNode.generateImage')}</span>
-            <span className="text-brand-cyan/70 ml-2">
-              ({creditsRequired} {t('canvasNodes.promptNode.credits')})
-            </span>
-          </>
-        )}
-      </NodeButton>
+        <NodeButton variant="primary" size="full" onClick={(e) => {
+          handleGenerate();
+        }}
+          disabled={isLoading || !prompt.trim()}
+          className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2">
+              <GlitchLoader size={14} color="brand-cyan" />
+              <span className="animate-pulse">{t('canvasNodes.promptNode.generating')}...</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <ImageIcon size={14} className="group-hover/gen:rotate-12 transition-transform" />
+              <span className="font-semibold tracking-tight">{t('canvasNodes.promptNode.generateImage')}</span>
+              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-brand-cyan/80">
+                <Diamond size={10} className="opacity-50 fill-current" />
+                {creditsRequired}
+              </div>
+            </div>
+          )}
+        </NodeButton>
+      </Tooltip>
 
       {/* Output Handle */}
       <LabeledHandle

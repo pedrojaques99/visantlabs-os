@@ -139,6 +139,10 @@ const MockupMachinePageContent: React.FC = () => {
     imageProvider,
     setImageProvider,
     selectedBrandGuideline,
+    seed,
+    setSeed,
+    seedLocked,
+    setSeedLocked,
   } = useMockup();
 
   // Custom hooks for common operations (after getting mockupCount from context)
@@ -1280,7 +1284,13 @@ const MockupMachinePageContent: React.FC = () => {
           uniqueId: index, // Use slot index to differentiate parallel batch requests
           provider: imageProvider,
           brandGuidelineId: selectedBrandGuideline || undefined, // Auto-inject brand context
+          seed: seedLocked ? seed : undefined, // Pass seed only when locked
         });
+
+        // Update seed from backend response (tracks actual seed used)
+        if (result.seed !== undefined) {
+          setSeed(result.seed);
+        }
 
         // Image successfully generated - set it in state (prefer URL; if only base64, try client-side upload)
         imageGenerated = true;

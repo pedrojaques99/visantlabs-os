@@ -714,7 +714,13 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       width, // Optional: custom width in pixels (for Figma plugin)
       height, // Optional: custom height in pixels (for Figma plugin)
       brandGuidelineId, // Optional: brand guideline ID for context injection
+      seed: rawSeed, // Optional: seed for deterministic generation
     } = req.body;
+
+    // Validate seed: must be a non-negative integer within Int32 range
+    const validSeed = (typeof rawSeed === 'number' && Number.isInteger(rawSeed) && rawSeed >= 0 && rawSeed <= 2_147_483_647)
+      ? rawSeed
+      : undefined;
 
     // Helper to download image from URL if base64 is not provided
     const processImageInput = async (img: any) => {
@@ -1054,6 +1060,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     // Generate mockup image using selected provider
     // Note: We only generate one image per request
     let imageBase64: string;
+    let usedSeed: number | undefined;
 
     if (provider === 'seedream') {
       // Use Seedream via APIFree.ai
@@ -1070,17 +1077,21 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
         originalModel: model,
         effectiveModel: seedreamModel,
         resolution,
-        aspectRatio
+        aspectRatio,
+        seed: validSeed ?? 'random',
       });
 
-      imageBase64 = await generateSeedreamImage({
+      const seedreamResult = await generateSeedreamImage({
         prompt: finalPromptText,
         baseImage: finalBaseImage as any,
         model: seedreamModel as any,
         resolution: resolution as any,
         aspectRatio: aspectRatio as any,
         apiKey: userApiKey, // Pass user API key if available
+        seed: validSeed,
       });
+      imageBase64 = seedreamResult.base64;
+      usedSeed = seedreamResult.seed;
     } else {
       // Use Gemini (default)
       imageBase64 = await generateMockup(
@@ -1093,6 +1104,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
         undefined,
         userApiKey
       );
+      // Gemini image API doesn't support seed — leave undefined
     }
 
     // Try to upload to R2 if configured to avoid large payloads
@@ -1270,6 +1282,8 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     res.json({
       imageBase64: imageUrl ? undefined : imageBase64, // Send undefined if imageUrl is present to save bandwidth
       imageUrl, // Include the R2 URL
+      seed: usedSeed, // Return the seed used (undefined for Gemini which doesn't support it)
+      modelUsed: model, // Return exact model version for traceability
       creditsDeducted: actualCreditsDeducted,
       creditsRemaining: totalCreditsRemaining,
       isAdmin,

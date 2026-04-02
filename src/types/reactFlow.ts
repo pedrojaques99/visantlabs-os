@@ -1,4 +1,5 @@
 import type { Node, Edge } from '@xyflow/react';
+import type { CustomNodeDefinition, MultiOutputConfig } from './customNode';
 import type { Mockup } from '../services/mockupApi';
 import type { GeminiModel, Resolution, AspectRatio, DesignType, UploadedImage, GenerationMode } from './types';
 import type { SubscriptionStatus } from '../services/subscriptionService';
@@ -296,6 +297,8 @@ export interface PromptNodeData extends BaseNodeData {
   model?: GeminiModel;
   aspectRatio?: AspectRatio; // Aspect ratio for image generation (Pro model only)
   resolution?: Resolution; // Resolution for image generation (Pro model only)
+  seed?: number; // Seed for deterministic generation
+  seedLocked?: boolean; // If true, seed persists between generations
   isLoading?: boolean;
   resultImageBase64?: string;
   resultImageUrl?: string; // R2 URL for result image
@@ -534,6 +537,8 @@ export interface VideoNodeData extends BaseNodeData {
   aspectRatio?: AspectRatio;
   resolution?: Resolution;
   duration?: string; // e.g., '5s', '10s'
+  seed?: number; // Seed for deterministic generation
+  seedLocked?: boolean; // If true, seed persists between generations
   isLoading?: boolean;
 
   // Connected handles (synced from edges)
@@ -579,6 +584,7 @@ export interface GenerateVideoParams {
   inputVideoObject?: any;
   isLooping?: boolean;
   negativePrompt?: string;
+  seed?: number; // Seed for deterministic generation
 }
 
 // Brand Node - extracts brand identity from logo and PDF/PNG (legacy, kept for compatibility)
@@ -762,10 +768,10 @@ export interface ChatNodeData extends BaseNodeData {
 }
 
 // Union type for all node data
-export type FlowNodeData = ImageNodeData | MergeNodeData | EditNodeData | UpscaleNodeData | UpscaleBicubicNodeData | MockupNodeData | OutputNodeData | PromptNodeData | BrandNodeData | AngleNodeData | LogoNodeData | PDFNodeData | StrategyNodeData | BrandCoreData | VideoNodeData | VideoInputNodeData | TextureNodeData | AmbienceNodeData | LuminanceNodeData | ShaderNodeData | ColorExtractorNodeData | TextNodeData | DirectorNodeData | ChatNodeData;
+export type FlowNodeData = ImageNodeData | MergeNodeData | EditNodeData | UpscaleNodeData | UpscaleBicubicNodeData | MockupNodeData | OutputNodeData | PromptNodeData | BrandNodeData | AngleNodeData | LogoNodeData | PDFNodeData | StrategyNodeData | BrandCoreData | VideoNodeData | VideoInputNodeData | TextureNodeData | AmbienceNodeData | LuminanceNodeData | ShaderNodeData | ColorExtractorNodeData | TextNodeData | DirectorNodeData | ChatNodeData | NodeBuilderData | CustomNodeData;
 
 // Custom node types
-export type FlowNodeType = 'image' | 'merge' | 'edit' | 'upscale' | 'mockup' | 'output' | 'prompt' | 'brand' | 'angle' | 'logo' | 'pdf' | 'strategy' | 'brandCore' | 'video' | 'videoInput' | 'texture' | 'ambience' | 'luminance' | 'shader' | 'colorExtractor' | 'text' | 'director' | 'chat';
+export type FlowNodeType = 'image' | 'merge' | 'edit' | 'upscale' | 'mockup' | 'output' | 'prompt' | 'brand' | 'angle' | 'logo' | 'pdf' | 'strategy' | 'brandCore' | 'video' | 'videoInput' | 'texture' | 'ambience' | 'luminance' | 'shader' | 'colorExtractor' | 'text' | 'director' | 'chat' | 'nodeBuilder' | 'custom';
 
 // Extended Node type with our custom data
 export type FlowNode = Node<FlowNodeData>;
@@ -782,5 +788,30 @@ export interface NodePosition {
 export interface SavedFlowState {
   nodePositions: Record<string, NodePosition>;
   edges: FlowEdge[];
+}
+
+// ─── Node Builder Node ───────────────────────────────────────────────────────
+
+export interface NodeBuilderData extends BaseNodeData {
+  messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+  isLoading?: boolean;
+  pendingDefinition?: CustomNodeDefinition;
+  onSendMessage?: (nodeId: string, message: string) => Promise<void>;
+  onUpdateData?: (nodeId: string, newData: Partial<NodeBuilderData>) => void;
+  onSpawnCustomNode?: (nodeId: string, definition: CustomNodeDefinition) => void;
+}
+
+// ─── Custom Node — dynamic, behavior-driven ──────────────────────────────────
+
+export interface CustomNodeData extends BaseNodeData {
+  definition: CustomNodeDefinition;
+  // Runtime overrides (user edits these in-node)
+  prompts?: string[];
+  connectedImages?: string[];     // indexed by handle position
+  shaderDescription?: string;
+  isLoading?: boolean;
+  executionLog?: string[];        // for pipeline / iterative-refine status
+  onExecute?: (nodeId: string) => Promise<void>;
+  onUpdateData?: (nodeId: string, newData: Partial<CustomNodeData>) => void;
 }
 

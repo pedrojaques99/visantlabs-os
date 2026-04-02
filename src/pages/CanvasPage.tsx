@@ -30,6 +30,8 @@ import { ColorExtractorNode } from '../components/reactflow/ColorExtractorNode';
 import { TextNode } from '../components/reactflow/TextNode';
 import { ChatNode } from '../components/reactflow/ChatNode';
 import { DirectorNode } from '../components/reactflow/DirectorNode';
+import { NodeBuilderNode } from '../components/reactflow/NodeBuilderNode';
+import { CustomNode } from '../components/reactflow/CustomNode';
 import { BrandingProjectSelectModal } from '../components/reactflow/BrandingProjectSelectModal';
 import { CanvasBottomToolbar, type CanvasTool } from '../components/canvas/CanvasBottomToolbar';
 import { ContextMenu } from '../components/reactflow/contextmenu/ContextMenu';
@@ -37,7 +39,8 @@ import { EdgeContextMenu } from '../components/reactflow/contextmenu/EdgeContext
 import { ImageContextMenu } from '../components/reactflow/contextmenu/ImageContextMenu';
 import { NodeContextMenu } from '../components/reactflow/contextmenu/NodeContextMenu';
 import { usePasteImage } from '@/hooks/usePasteImage';
-import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, PromptNodeData, OutputNodeData, BrandNodeData, MockupNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, AngleNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, DirectorNodeData } from '../types/reactFlow';
+import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, PromptNodeData, OutputNodeData, BrandNodeData, MockupNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, AngleNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, DirectorNodeData, NodeBuilderData, CustomNodeData } from '../types/reactFlow';
+import type { CustomNodeDefinition, MultiOutputConfig } from '../types/customNode';
 import type { Mockup } from '../services/mockupApi';
 import { mockupApi } from '../services/mockupApi';
 import { FullScreenViewer } from '../components/FullScreenViewer';
@@ -120,6 +123,8 @@ const nodeTypes = {
   text: TextNode,
   chat: ChatNode,
   director: DirectorNode,
+  nodeBuilder: NodeBuilderNode,
+  custom: CustomNode,
 } as const;
 
 export const CanvasPage: React.FC = () => {
@@ -986,6 +991,9 @@ export const CanvasPage: React.FC = () => {
     handleUpscaleNodeDataUpdate,
     handlePromptNodeDataUpdate,
     handleTextNodeDataUpdate,
+    handleNodeBuilderSendMessage,
+    handleNodeBuilderSpawn,
+    handleCustomNodeExecute,
     handlersRef,
     nodesRef,
     updateNodeData,
@@ -1209,6 +1217,7 @@ export const CanvasPage: React.FC = () => {
     addTextNode,
     addChatNode,
     addDirectorNode,
+    addNodeBuilderNode,
   } = nodeCreators;
 
   const handleImportCommunityPreset = useCallback((preset: CommunityPrompt, type: string) => {
@@ -1695,10 +1704,13 @@ export const CanvasPage: React.FC = () => {
       case 'chat':
         addChatNode(flowToScreen(flowPosition));
         break;
+      case 'nodeBuilder':
+        addNodeBuilderNode(flowToScreen(flowPosition));
+        break;
       default:
         console.warn(`Unknown node type: ${nodeType}`);
     }
-  }, [reactFlowInstance, addPromptNode, addMockupNode, addShaderNode, addAngleNode, addBrandKitNodes, addLogoNode, addPDFNode, addStrategyNode, addBrandCoreNode, addTextNode, addChatNode]);
+  }, [reactFlowInstance, addPromptNode, addMockupNode, addShaderNode, addAngleNode, addBrandKitNodes, addLogoNode, addPDFNode, addStrategyNode, addBrandCoreNode, addTextNode, addChatNode, addNodeBuilderNode]);
 
   /**
    * Resets all context menu states to null.
@@ -2881,6 +2893,58 @@ export const CanvasPage: React.FC = () => {
             } as Node<FlowNodeData>;
           }
         }
+        if (n.type === 'nodeBuilder') {
+          const d = n.data as NodeBuilderData;
+          if (!d.onSendMessage || !d.onSpawnCustomNode || !d.onUpdateData) {
+            hasChanges = true;
+            return {
+              ...n,
+              data: {
+                ...d,
+                onSendMessage: (nid: string, msg: string) =>
+                  handlersRef.current?.handleNodeBuilderSendMessage?.(nid, msg) ?? Promise.resolve(),
+                onSpawnCustomNode: (nid: string, def: CustomNodeDefinition) =>
+                  handlersRef.current?.handleNodeBuilderSpawn?.(nid, def),
+                onUpdateData: handlePromptNodeDataUpdate,
+              } as NodeBuilderData,
+            } as Node<FlowNodeData>;
+          }
+        }
+        if (n.type === 'custom') {
+          const d = n.data as CustomNodeData;
+          // Sync connected images from edges
+          const imageHandleCount = (() => {
+            const cfg = d.definition?.behaviorConfig;
+            if (!cfg) return 0;
+            if (cfg.renderCategory === 'multi-input') return (cfg as any).inputCount ?? 1;
+            if (cfg.renderCategory === 'transform') return 1;
+            if (cfg.renderCategory === 'multi-output' && (cfg as MultiOutputConfig).acceptsImage) return 1;
+            return 0;
+          })();
+          const syncedImages: string[] = [];
+          for (let i = 0; i < imageHandleCount; i++) {
+            const edge = edges.find(e => e.target === n.id && e.targetHandle === `input-${i}`);
+            if (edge) {
+              const srcNode = nds.find(nd => nd.id === edge.source);
+              const img = srcNode ? (srcNode.data as any)?.resultImageBase64 || (srcNode.data as any)?.resultImageUrl || (srcNode.data as any)?.mockup?.imageUrl : undefined;
+              if (img) syncedImages.push(img);
+            }
+          }
+          const imagesChanged = JSON.stringify(syncedImages) !== JSON.stringify(d.connectedImages ?? []);
+          if (!d.onExecute || !d.onUpdateData || imagesChanged) {
+            hasChanges = true;
+            return {
+              ...n,
+              data: {
+                ...d,
+                connectedImages: syncedImages.length > 0 ? syncedImages : d.connectedImages,
+                onExecute: (nid: string) =>
+                  handlersRef.current?.handleCustomNodeExecute?.(nid) ?? Promise.resolve(),
+                onUpdateData: handlePromptNodeDataUpdate,
+              } as CustomNodeData,
+            } as Node<FlowNodeData>;
+          }
+        }
         if (n.type === 'director') {
           const directorData = n.data as DirectorNodeData;
 
@@ -3916,6 +3980,7 @@ export const CanvasPage: React.FC = () => {
             onAddStrategy={() => handleAddNode(addStrategyNode)}
             onAddBrandCore={() => handleAddNode(addBrandCoreNode)}
             onAddChat={() => handleAddNode(addChatNode)}
+            onAddNodeBuilder={() => handleAddNode(addNodeBuilderNode)}
             experimentalMode={experimentalMode}
             onPaste={handlePaste}
             onToggleUI={() => canvasHeader.setShowControls(!canvasHeader.showControls)}
@@ -4439,6 +4504,7 @@ export const CanvasPage: React.FC = () => {
           onAddStrategy={toolbarActions.onAddStrategy}
           onAddBrandCore={toolbarActions.onAddBrandCore}
           onAddChat={toolbarActions.onAddChat}
+          onAddNodeBuilder={() => handleAddNode(addNodeBuilderNode)}
           onAddPrompt={toolbarActions.onAddPrompt}
           onAddColorExtractor={toolbarActions.onAddColorExtractor}
           onAddShader={toolbarActions.onAddShader}

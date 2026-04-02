@@ -45,7 +45,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400',
                   disabled && 'opacity-50 cursor-not-allowed'
                 )}
-                onMouseDown={(e) => e.stopPropagation()}
+                /* onMouseDown removed to allow node selection */
               >
                 <div className={cn(
                   isSquare ? 'w-4 h-4' : isLandscape ? 'w-6 h-3.5' : 'w-3.5 h-6',

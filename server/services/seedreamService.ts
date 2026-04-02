@@ -18,6 +18,12 @@ interface SeedreamGenerateOptions {
     aspectRatio?: AspectRatio;
     watermark?: boolean;
     apiKey?: string;
+    seed?: number; // Seed for deterministic generation (0 to 2_147_483_647)
+}
+
+export interface SeedreamGenerateResult {
+    base64: string;
+    seed: number;
 }
 
 /**
@@ -48,7 +54,7 @@ async function resolveImageBase64(image: UploadedImage): Promise<string> {
  * Generate image using Seedream via APIFree.ai (async API)
  * Returns base64 image data
  */
-export async function generateSeedreamImage(options: SeedreamGenerateOptions): Promise<string> {
+export async function generateSeedreamImage(options: SeedreamGenerateOptions): Promise<SeedreamGenerateResult> {
     const {
         prompt,
         baseImage,
@@ -56,7 +62,13 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
         resolution = '2K',
         watermark = false,
         apiKey: specificApiKey,
+        seed: userSeed,
     } = options;
+
+    // Generate deterministic seed: use provided seed or generate random
+    const usedSeed = (typeof userSeed === 'number' && userSeed >= 0 && userSeed <= 2_147_483_647)
+        ? userSeed
+        : Math.floor(Math.random() * 2_147_483_647);
 
     const apiKey = specificApiKey || process.env.APIFREE_API_KEY;
     if (!apiKey) {
@@ -68,6 +80,7 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
         model: `bytedance/${model}`, // APIFree.ai format: bytedance/seedream-4.5
         prompt,
         size: resolution, // "2K" or "4K"
+        seed: usedSeed,
     };
 
     // Add reference image if provided (for img2img)
@@ -76,7 +89,7 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
         body.image = imageData;
     }
 
-    console.log(`[Seedream] Submitting request: model=${body.model}, size=${resolution}`);
+    console.log(`[Seedream] Submitting request: model=${body.model}, size=${resolution}, seed=${usedSeed}`);
 
     // Step 1: Submit the request
     const submitResponse = await fetch(SUBMIT_ENDPOINT, {
@@ -176,8 +189,8 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
             const arrayBuffer = await imageResponse.arrayBuffer();
             const base64 = Buffer.from(arrayBuffer).toString('base64');
 
-            console.log(`[Seedream] Generation complete. Usage: $${resultData.resp_data?.usage?.cost || 0}`);
-            return base64;
+            console.log(`[Seedream] Generation complete. seed=${usedSeed}, Usage: $${resultData.resp_data?.usage?.cost || 0}`);
+            return { base64, seed: usedSeed };
         }
 
         if (status === 'error' || status === 'failed') {

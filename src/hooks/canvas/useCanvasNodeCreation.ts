@@ -1862,6 +1862,42 @@ export const useCanvasNodeCreation = (
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef, handleDelete, handleDuplicate]);
 
+  const addNodeBuilderNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
+    if (!reactFlowInstance) {
+      toast.error('Canvas not ready. Please wait a moment and try again.');
+      return;
+    }
+
+    const screenPos = customPosition || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let position;
+    try {
+      position = reactFlowInstance.screenToFlowPosition(screenPos);
+      if (!position || isNaN(position.x) || isNaN(position.y)) position = { x: 0, y: 0 };
+    } catch {
+      position = { x: 0, y: 0 };
+    }
+
+    addToHistory(nodes, edges);
+
+    const newNode: Node<FlowNodeData> = {
+      id: generateNodeId('nodeBuilder'),
+      type: 'nodeBuilder',
+      position,
+      draggable: true,
+      connectable: true,
+      selectable: true,
+      data: { messages: [] } as any,
+    };
+
+    setNodes((nds: Node<FlowNodeData>[]) => {
+      const newNodes = [...nds, newNode];
+      setTimeout(() => addToHistory(newNodes, edges), 0);
+      return newNodes;
+    });
+
+    return newNode.id;
+  }, [reactFlowInstance, nodes, edges, addToHistory, setNodes]);
+
   // ========== UPDATE NODE CREATORS REF ==========
   // Keep nodeCreatorsRef updated with the latest node creation functions
   useEffect(() => {
@@ -1903,6 +1939,7 @@ export const useCanvasNodeCreation = (
     addTextNode,
     addChatNode,
     addDirectorNode,
+    addNodeBuilderNode,
   };
 };
 

@@ -83,6 +83,8 @@ model Mockup {
   tags         String[]
   brandingTags String[]
   aspectRatio  String   @default("16:9")
+  seed         Int?     // Seed used for this generation (deterministic reproduction)
+  modelUsed    String?  // Exact model version used (e.g. "seedream-4.5", "gemini-2.5-flash-image")
   isLiked      Boolean? // User's like status for this mockup
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
