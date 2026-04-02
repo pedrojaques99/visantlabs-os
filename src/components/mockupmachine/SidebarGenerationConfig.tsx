@@ -18,6 +18,7 @@ import { PresetsControl } from './PresetsControl';
 import { PromptSection } from './PromptSection';
 import { MicroTitle } from '../ui/MicroTitle';
 import { Switch } from '@/components/ui/switch';
+import { SeedControl } from '@/components/reactflow/shared/SeedControl';
 
 interface SidebarGenerationConfigProps {
     onGenerateClick: () => void;
@@ -138,6 +139,10 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
         setAspectRatio,
         imageProvider,
         setImageProvider,
+        seed,
+        setSeed,
+        seedLocked,
+        setSeedLocked,
     } = useMockup();
 
     const [isAdvancedOptionsOpen, setIsAdvancedOptionsOpen] = useState(isSurpriseMeMode);
@@ -411,6 +416,15 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
 
                 {/* 3. Prompt Section */}
                 <div className="animate-fade-in-up stagger-4">
+                    {/* Seed Control — lives right above prompt so users associate it with generation */}
+                    <SeedControl
+                        seed={seed}
+                        seedLocked={seedLocked}
+                        onSeedChange={setSeed}
+                        onSeedLockedChange={setSeedLocked}
+                        disabled={isGenerating}
+                        className="mb-3"
+                    />
                     <PromptSection
                         promptPreview={promptPreview}
                         isSidebarGenerating={isSidebarGenerating}

@@ -84,9 +84,7 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
     return (
       <div className="flex flex-wrap gap-[var(--node-gap-sm)]">
         {resolutions.map((res) =>
-          renderResolutionButton(res, value, model, disabled, onChange, onModelChange, true, (e) =>
-            e.stopPropagation()
-          )
+          renderResolutionButton(res, value, model, disabled, onChange, onModelChange, true)
         )}
       </div>
     );

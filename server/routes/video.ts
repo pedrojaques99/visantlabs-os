@@ -286,7 +286,13 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       inputVideo: inputVideoRaw,
       startFrame: startFrameRaw,
       endFrame: endFrameRaw,
+      seed: rawSeed, // Optional: seed for deterministic generation
     } = req.body;
+
+    // Validate and resolve seed: use provided seed or generate random
+    const usedSeed = (typeof rawSeed === 'number' && Number.isInteger(rawSeed) && rawSeed >= 0 && rawSeed <= 2_147_483_647)
+      ? rawSeed
+      : Math.floor(Math.random() * 2_147_483_647);
 
     // Helper to normalize media inputs (handle objects from client)
     const normalizeMediaInput = (input: any): string | undefined => {
@@ -522,6 +528,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
         inputVideo,
         startFrame,
         endFrame,
+        seed: usedSeed,
       });
 
       console.log(`${logPrefix} [GENERATION] ✅ Video generated successfully`, {
@@ -642,6 +649,8 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     const response: any = {
       videoUrl: videoUrl || (isUri ? videoBase64 : undefined), // R2 URL or URI
       videoBase64: (videoUrl || isUri) ? undefined : videoBase64, // Only send base64 if R2 URL/URI is not available
+      seed: usedSeed, // Return the seed used for deterministic reproduction
+      modelUsed: normalizedModel, // Return exact model version for traceability
       creditsDeducted: actualCreditsDeducted,
       creditsRemaining,
       isAdmin,

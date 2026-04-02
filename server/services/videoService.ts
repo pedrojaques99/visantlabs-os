@@ -178,6 +178,7 @@ export interface GenerateVideoParams {
   inputVideo?: string;
   startFrame?: string;
   endFrame?: string;
+  seed?: number; // Seed for deterministic generation
 }
 
 /**
@@ -198,6 +199,7 @@ export const generateVideo = async (
     inputVideo,
     startFrame,
     endFrame,
+    seed,
   } = params;
 
   // Normalize model name - map old model names to new valid model
@@ -214,6 +216,11 @@ export const generateVideo = async (
         model: normalizedModel,
         prompt: prompt,
       };
+
+      // Add seed for deterministic generation if provided
+      if (typeof seed === 'number' && seed >= 0) {
+        requestParams.seed = seed;
+      }
 
       // Helper to process base64 string
       const processBase64 = (b64: string) => {

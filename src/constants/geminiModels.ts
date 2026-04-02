@@ -59,7 +59,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
   },
   [GEMINI_MODELS.FLASH_2_0]: {
     label: 'Gemini 2.0 Flash',
-    emoji: '⚡',
+    emoji: '💎',
     maxHandles: 4,
     maxRefImages: 10,
     defaultResolution: undefined,
@@ -81,7 +81,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
   },
   [GEMINI_MODELS.FLASH_1_5]: {
     label: 'Gemini 1.5 Flash',
-    emoji: '🚀',
+    emoji: '💎',
     maxHandles: 2,
     maxRefImages: 1,
     defaultResolution: undefined,

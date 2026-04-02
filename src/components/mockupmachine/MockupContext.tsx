@@ -78,6 +78,10 @@ interface MockupContextState {
 
     // Additional Instructions
     instructions: string;
+
+    // Seed for deterministic generation
+    seed: number | undefined;
+    seedLocked: boolean;
 }
 
 interface MockupContextActions {
@@ -139,6 +143,8 @@ interface MockupContextActions {
     setIsSurpriseMeMode: Dispatch<SetStateAction<boolean>>;
     setSurpriseMePool: Dispatch<SetStateAction<SurpriseMeSelectedTags>>;
     setInstructions: Dispatch<SetStateAction<string>>;
+    setSeed: Dispatch<SetStateAction<number | undefined>>;
+    setSeedLocked: Dispatch<SetStateAction<boolean>>;
     resetAll: () => void;
     clearAllTags: () => void;
 }
@@ -234,6 +240,8 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [isSurpriseMeModeState, setIsSurpriseMeModeState] = useState(false);
     const [surpriseMePool, setSurpriseMePool] = useState<SurpriseMeSelectedTags>(() => getSurpriseMeSelectedTags());
     const [instructions, setInstructions] = useState('');
+    const [seed, setSeed] = useState<number | undefined>(undefined);
+    const [seedLocked, setSeedLocked] = useState(false);
 
     // Wrapper to clear selected tags when entering pool mode
     const setIsSurpriseMeMode = useCallback((value: boolean) => {
@@ -363,6 +371,8 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setIsSurpriseMeMode,
         surpriseMePool, setSurpriseMePool,
         instructions, setInstructions,
+        seed, setSeed,
+        seedLocked, setSeedLocked,
         resetAll,
         clearAllTags
     }), [
@@ -380,7 +390,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         customCategoryInput, customLocationInput, customAngleInput, customLightingInput,
         customEffectInput, customMaterialInput, colorInput, isValidColor,
         fullScreenImageIndex, mockupCount, isSurpriseMeModeState, surpriseMePool,
-        instructions, resetAll, clearAllTags
+        instructions, seed, seedLocked, resetAll, clearAllTags
     ]);
 
     return (

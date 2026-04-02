@@ -20,6 +20,7 @@ import {
   Pickaxe,
   X,
   Compass,
+  Blocks,
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -43,6 +44,7 @@ interface CanvasToolbarProps {
   onAddBrandCore?: () => void;
   onAddPrompt?: () => void;
   onAddChat?: () => void;
+  onAddNodeBuilder?: () => void;
   onAddShader?: () => void;
   onAddColorExtractor?: () => void;
   onAddDirector?: () => void;
@@ -86,6 +88,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   onAddBrandCore,
   onAddPrompt,
   onAddChat,
+  onAddNodeBuilder,
   onAddShader,
   onAddColorExtractor,
   onAddDirector,
@@ -166,6 +169,14 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       label: t('canvasToolbar.labels.chat') || 'Chat',
       tooltip: t('canvasToolbar.addChatNode') || 'Add Chat Node',
       onClick: onAddChat,
+      category: 'core' as const,
+    }] : []),
+    ...(onAddNodeBuilder ? [{
+      id: 'nodeBuilder',
+      icon: <Blocks className="w-4 h-4" />,
+      label: 'Node Builder',
+      tooltip: 'Build a custom AI node',
+      onClick: onAddNodeBuilder,
       category: 'core' as const,
     }] : []),
     {

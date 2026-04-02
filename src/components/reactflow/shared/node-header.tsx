@@ -1,5 +1,5 @@
 import * as React from "react"
-import { LucideIcon, ShieldCheck, LayoutGrid, Brain } from "lucide-react"
+import { LucideIcon, ShieldCheck, LayoutGrid, Palette } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { NodeButton } from "./node-button"
 import { Tooltip } from "@/components/ui/Tooltip"
@@ -64,7 +64,7 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
                     : "bg-neutral-900/50 border-neutral-800 text-neutral-600 grayscale opacity-60 hover:opacity-100"
                 )}
               >
-                <Brain size={14} className={cn(isBrandActive)} />
+                <Palette size={14} className={cn(isBrandActive)} />
               </button>
             </Tooltip>
           )}
@@ -76,12 +76,3 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
 NodeHeader.displayName = "NodeHeader"
 
 export { NodeHeader }
-
-
-
-
-
-
-
-
-

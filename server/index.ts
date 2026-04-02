@@ -216,6 +216,10 @@ app.use(`${routePrefix}/visant-templates`, visantTemplatesRoutes);
 // Import workflow routes
 import workflowRoutes from './routes/workflows.js';
 app.use(`${routePrefix}/workflows`, workflowRoutes);
+
+// Import node builder routes
+import nodeBuilderRoutes from './routes/node-builder.js';
+app.use(`${routePrefix}/node-builder`, nodeBuilderRoutes);
 console.log(`✅ Workflow routes registered at: ${routePrefix}/workflows`);
 
 // Import AI routes

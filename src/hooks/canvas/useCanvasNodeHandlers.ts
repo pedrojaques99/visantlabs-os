@@ -3,7 +3,10 @@ import { useCallback, useRef, useEffect } from 'react';
 
 // ========== IMPORTS - Tipos ReactFlow ==========
 import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, GenerateVideoParams } from '@/types/reactFlow';
+import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, GenerateVideoParams, NodeBuilderData, CustomNodeData } from '@/types/reactFlow';
+import type { CustomNodeDefinition, MultiOutputConfig } from '@/types/customNode';
+import { nodeBuilderApi } from '@/services/nodeBuilderApi';
+import { executeCustomNode } from '@/utils/canvas/executeCustomNode';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 
 // ========== IMPORTS - Tipos Customizados ==========
@@ -1295,6 +1298,11 @@ export const useCanvasNodeHandlers = (
         addToHistory(nodesRef.current, edgesRef.current);
       }
 
+      // Update source VideoNode with returned seed (tracks actual seed used)
+      if (result.seed !== undefined) {
+        updateNodeData<VideoNodeData>(nodeId, { seed: result.seed } as any, 'video');
+      }
+
       toast.success('Video generated successfully!', { duration: 3000 });
     } catch (error: any) {
       console.error('Error in handleVideoNodeGenerate:', error);
@@ -1519,7 +1527,8 @@ export const useCanvasNodeHandlers = (
           mimeType: img.mimeType
         })),
         imagesCount: 1,
-        feature: 'canvas'
+        feature: 'canvas',
+        seed: promptData.seedLocked ? promptData.seed : undefined, // Pass seed only when locked
       });
 
       const resultImage = result.imageUrl || result.imageBase64 || '';
@@ -1529,6 +1538,7 @@ export const useCanvasNodeHandlers = (
         isLoading: false, // Ensure loading is false
         resultImageUrl: result.imageUrl,
         resultImageBase64: result.imageUrl ? undefined : result.imageBase64,
+        seed: result.seed, // Update seed from backend response (tracks the actual seed used)
       } as any, 'prompt');
 
       updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
@@ -1790,6 +1800,7 @@ export const useCanvasNodeHandlers = (
       handleUpscaleBicubicApply,
       handleUpscaleBicubicNodeDataUpdate,
       handleSavePrompt,
+      // node builder handlers populated in the second useEffect below
     };
     handleUploadImageRef.current = handleUploadImage;
   }, [
@@ -1826,7 +1837,8 @@ export const useCanvasNodeHandlers = (
     handleShaderNodeDataUpdate,
     handleUpscaleBicubicApply,
     handleUpscaleBicubicNodeDataUpdate,
-    handleSavePrompt]);
+    handleSavePrompt,
+  ]);
 
   // ========== USEEFFECT - Sincronização de Imagens com Edges ==========
   // Sincroniza automaticamente imagens conectadas quando edges mudam
@@ -2061,6 +2073,115 @@ export const useCanvasNodeHandlers = (
     handleSavePrompt,
   ]);
 
+  // ========== NODE BUILDER + CUSTOM NODE HANDLERS ==========
+
+  const handleNodeBuilderSendMessage = useCallback(async (nodeId: string, message: string) => {
+    const node = reactFlowInstance?.getNode(nodeId);
+    if (!node) return;
+
+    const current = node.data as NodeBuilderData;
+    const history = current.messages ?? [];
+    const newHistory = [...history, { role: 'user' as const, content: message }];
+
+    updateNodeData(nodeId, { messages: newHistory, isLoading: true });
+
+    try {
+      const response = await nodeBuilderApi.generate(newHistory);
+
+      if (response.type === 'question') {
+        updateNodeData(nodeId, {
+          messages: [...newHistory, { role: 'assistant' as const, content: response.text }],
+          isLoading: false,
+        });
+      } else {
+        updateNodeData(nodeId, {
+          messages: [...newHistory, {
+            role: 'assistant' as const,
+            content: `Ready! I've designed **${response.definition.name}**. Review and click "Create".`,
+          }],
+          isLoading: false,
+          pendingDefinition: response.definition,
+        });
+      }
+    } catch {
+      updateNodeData(nodeId, {
+        messages: [...newHistory, { role: 'assistant' as const, content: 'Something went wrong. Please try again.' }],
+        isLoading: false,
+      });
+    }
+  }, [reactFlowInstance, updateNodeData]);
+
+  const handleNodeBuilderSpawn = useCallback((builderNodeId: string, definition: CustomNodeDefinition) => {
+    const builder = reactFlowInstance?.getNode(builderNodeId);
+    if (!builder) return;
+
+    const id = `custom-${Date.now()}`;
+    const cfg = definition.behaviorConfig;
+
+    setNodes((nds: any[]) => [...nds, {
+      id,
+      type: 'custom',
+      position: { x: builder.position.x + 500, y: builder.position.y },
+      data: {
+        definition,
+        prompts: cfg.renderCategory === 'multi-output' ? (cfg as MultiOutputConfig).prompts : undefined,
+      } as CustomNodeData,
+    }]);
+
+    setEdges(eds => [...eds, {
+      id: `${builderNodeId}->${id}`,
+      source: builderNodeId,
+      target: id,
+    }]);
+
+    updateNodeData(builderNodeId, { pendingDefinition: undefined });
+  }, [reactFlowInstance, setNodes, setEdges, updateNodeData]);
+
+  const handleCustomNodeExecute = useCallback(async (nodeId: string) => {
+    const node = reactFlowInstance?.getNode(nodeId);
+    if (!node) return;
+
+    const { definition, prompts, connectedImages, shaderDescription } = node.data as CustomNodeData;
+    const logEntries: string[] = [];
+
+    updateNodeData(nodeId, { isLoading: true, executionLog: [] });
+
+    try {
+      await executeCustomNode(
+        nodeId,
+        definition,
+        { prompts, connectedImages, shaderDescription },
+        {
+          handlePromptGenerate: handlersRef.current?.handlePromptGenerate,
+          handleMergeGenerate: handlersRef.current?.handleMergeGenerate,
+          handleUpscale: handlersRef.current?.handleUpscale,
+          getNode: (id: string) => reactFlowInstance?.getNode(id),
+          setNodes,
+          setEdges,
+        },
+        (msg: string) => {
+          logEntries.push(msg);
+          updateNodeData(nodeId, { executionLog: [...logEntries] });
+        }
+      );
+    } catch (err) {
+      console.error('[handleCustomNodeExecute]', err);
+      toast.error('Node execution failed');
+    } finally {
+      updateNodeData(nodeId, { isLoading: false });
+    }
+  }, [reactFlowInstance, setNodes, setEdges, updateNodeData, handlersRef]);
+
+  // ========== USEEFFECT - Node Builder handlers in handlersRef ==========
+  useEffect(() => {
+    handlersRef.current = {
+      ...handlersRef.current,
+      handleNodeBuilderSendMessage,
+      handleNodeBuilderSpawn,
+      handleCustomNodeExecute,
+    };
+  }, [handleNodeBuilderSendMessage, handleNodeBuilderSpawn, handleCustomNodeExecute]);
+
   // ========== RETORNO DO HOOK ==========
   // Retorna todos os handlers e refs necessários para uso nos componentes
 
@@ -2103,6 +2224,9 @@ export const useCanvasNodeHandlers = (
     handleBrandCoreGenerateStrategicPrompts,
     handleBrandCoreDataUpdate,
     handleSavePrompt,
+    handleNodeBuilderSendMessage,
+    handleNodeBuilderSpawn,
+    handleCustomNodeExecute,
     handlersRef,
     nodesRef,
     updateNodeData,

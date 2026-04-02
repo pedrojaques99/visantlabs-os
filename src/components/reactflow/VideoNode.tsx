@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Position, type NodeProps, useReactFlow, NodeResizer, useNodes } from '@xyflow/react';
 import { Clapperboard, Video as VideoIcon, Settings, ChevronRight } from 'lucide-react';
+import { SeedControl } from './shared/SeedControl';
 import type { VideoNodeData, GenerateVideoParams } from '@/types/reactFlow';
 import { VeoModel, GenerationMode, type Resolution, type AspectRatio } from '@/types/types';
 import { cn } from '@/lib/utils';
@@ -163,6 +164,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       resolution,
       duration,
       isLooping,
+      seed: nodeData.seedLocked ? nodeData.seed : undefined, // Only pass seed when locked
       // Mode-specific inputs
       startFrame: mode === GenerationMode.FRAMES_TO_VIDEO ? toInput(nodeData.connectedImage1) : undefined,
       endFrame: mode === GenerationMode.FRAMES_TO_VIDEO ? toInput(nodeData.connectedImage2) : undefined,
@@ -532,6 +534,15 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 disabled={isLoading}
               />
             </div>
+
+            {/* Seed Control */}
+            <SeedControl
+              seed={nodeData.seed}
+              seedLocked={nodeData.seedLocked}
+              onSeedChange={(seed) => updateData({ seed })}
+              onSeedLockedChange={(locked) => updateData({ seedLocked: locked })}
+              disabled={isLoading}
+            />
           </div>
         )}
       </div>
@@ -626,6 +637,8 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     prevData.connectedImage3 === nextData.connectedImage3 &&
     prevData.connectedImage4 === nextData.connectedImage4 &&
     prevData.connectedVideo === nextData.connectedVideo &&
+    prevData.seed === nextData.seed &&
+    prevData.seedLocked === nextData.seedLocked &&
     prevData.resultVideoUrl === nextData.resultVideoUrl &&
     prevData.resultVideoBase64 === nextData.resultVideoBase64
   );

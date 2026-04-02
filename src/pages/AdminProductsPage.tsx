@@ -838,7 +838,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     { key: 'hasAdvancedModels', label: 'Modelos Premium', icon: '💎' },
                                                     { key: 'hasSharedWorkspaces', label: 'Workspaces', icon: '👥' },
                                                     { key: 'hasTeamAnalytics', label: 'Analytics', icon: '📊' },
-                                                    { key: 'hasPrioritySupport', label: 'Suporte Prioritário', icon: '⚡' },
+                                                    { key: 'hasPrioritySupport', label: 'Suporte Prioritário', icon: '💎' },
                                                 ].map(({ key, label, icon }) => {
                                                     const isChecked = formData.metadata?.[key] === true;
                                                     return (
