@@ -86,7 +86,8 @@
       "Bash(wc:*)",
       "Skill(gsd:plan-phase)",
       "Skill(update-config)",
-      "Bash(xargs -I {} basename {})"
+      "Bash(xargs -I {} basename {})",
+      "Skill(gsd:do)"
     ]
   }
 }

@@ -23,14 +23,22 @@ export interface UsageRecord {
 
 // Text generation pricing (tokens-based)
 // Prices are per 1 million tokens (USD)
-const TEXT_GENERATION_PRICING = {
-  'gemini-2.5-flash': {
-    inputPricePer1M: 0.30,
-    outputPricePer1M: 2.50,
+const TEXT_GENERATION_PRICING: Record<string, { inputPricePer1M: number; outputPricePer1M: number }> = {
+  [GEMINI_MODELS.FLASH_3]: {
+    inputPricePer1M: 0.10,
+    outputPricePer1M: 0.40,
   },
-  'gemini-3-pro-preview': { // Applies to analysis/text tasks using this model
-    inputPricePer1M: 2.00,
-    outputPricePer1M: 12.00,
+  [GEMINI_MODELS.PRO_3_1]: {
+    inputPricePer1M: 1.25,
+    outputPricePer1M: 5.00,
+  },
+  [GEMINI_MODELS.FLASH_2_5]: {
+    inputPricePer1M: 0.15,
+    outputPricePer1M: 0.60,
+  },
+  [GEMINI_MODELS.PRO_2_0]: {
+    inputPricePer1M: 1.25,
+    outputPricePer1M: 5.00,
   },
 };
 
@@ -97,7 +105,7 @@ export function getVideoCreditsRequired(model?: string): number {
  */
 export function calculateImageGenerationCost(
   imagesCount: number,
-  model: string = 'gemini-2.5-flash-image',
+  model: string = GEMINI_MODELS.IMAGE_FLASH,
   hasInputImage: boolean = false,
   resolution?: Resolution
 ): number {
@@ -113,10 +121,9 @@ export function calculateImageGenerationCost(
 export function calculateTextGenerationCost(
   inputTokens: number,
   outputTokens: number,
-  model: string = 'gemini-2.5-flash'
+  model: string = GEMINI_MODELS.TEXT
 ): number {
-  const normalizedModel = model.includes('gemini-3-pro') ? 'gemini-3-pro-preview' : 'gemini-2.5-flash';
-  const pricing = TEXT_GENERATION_PRICING[normalizedModel as keyof typeof TEXT_GENERATION_PRICING];
+  const pricing = TEXT_GENERATION_PRICING[model] || TEXT_GENERATION_PRICING[GEMINI_MODELS.TEXT];
 
   if (!pricing) {
     console.warn(`Unknown text model pricing for ${model}, using Flash rates as fallback`);
@@ -137,7 +144,7 @@ export function calculateTextGenerationCost(
 export function createUsageRecord(
   userId: string,
   imagesGenerated: number,
-  model: string = 'gemini-2.5-flash-image',
+  model: string = GEMINI_MODELS.IMAGE_FLASH,
   hasInputImage: boolean = false,
   promptLength?: number,
   resolution?: Resolution,

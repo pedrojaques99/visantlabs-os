@@ -3,6 +3,7 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
 import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -63,7 +64,7 @@ router.post('/improve-prompt', apiRateLimiter, authenticate, async (req: AuthReq
         const usageRecord = createUsageRecord(
           req.userId!,
           0, // images
-          'gemini-2.5-flash',
+          GEMINI_MODELS.TEXT,
           false, // hasInputImage
           prompt.length,
           undefined, // resolution
@@ -133,7 +134,7 @@ router.post('/describe-image', apiRateLimiter, authenticate, async (req: AuthReq
         const usageRecord = createUsageRecord(
           req.userId!,
           0, // images
-          'gemini-2.5-flash',
+          GEMINI_MODELS.TEXT,
           true, // hasInputImage
           0, // promptLength
           undefined, // resolution
@@ -200,7 +201,7 @@ router.post('/suggest-categories', apiRateLimiter, authenticate, async (req: Aut
         const usageRecord = createUsageRecord(
           req.userId!,
           0, // images
-          'gemini-2.5-flash',
+          GEMINI_MODELS.TEXT,
           true, // hasInputImage
           0, // promptLength
           undefined, // resolution
@@ -291,7 +292,7 @@ router.post('/refine-suggestions', refineSuggestionsLimiter, authenticate, async
         const usageRecord = createUsageRecord(
           req.userId!,
           0,
-          'gemini-2.0-flash',
+          GEMINI_MODELS.TEXT,
           false, // no image
           100, // estimated prompt length
           undefined,
@@ -410,7 +411,7 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
         const usageRecord = createUsageRecord(
           req.userId!,
           0, // images
-          'gemini-2.5-flash',
+          GEMINI_MODELS.TEXT,
           true, // hasInputImage
           0, // promptLength
           undefined, // resolution
@@ -558,7 +559,7 @@ router.post('/suggest-prompt-variations', apiRateLimiter, authenticate, async (r
         const usageRecord = createUsageRecord(
           req.userId!,
           0, // images
-          'gemini-2.5-flash',
+          GEMINI_MODELS.TEXT,
           false, // hasInputImage
           prompt.length,
           undefined, // resolution
@@ -615,7 +616,7 @@ router.post('/change-object', apiRateLimiter, authenticate, async (req: AuthRequ
     const imageBase64 = await changeObjectInMockup(
       baseImage as UploadedImage,
       newObject,
-      (model as GeminiModel) || 'gemini-2.5-flash-image',
+      (model as GeminiModel) || GEMINI_MODELS.IMAGE_FLASH,
       resolution as Resolution | undefined,
       undefined, // onRetry
       userApiKey
@@ -664,7 +665,7 @@ router.post('/apply-theme', apiRateLimiter, authenticate, async (req: AuthReques
     const imageBase64 = await applyThemeToMockup(
       baseImage as UploadedImage,
       themes,
-      (model as GeminiModel) || 'gemini-2.5-flash-image',
+      (model as GeminiModel) || GEMINI_MODELS.IMAGE_FLASH,
       resolution as Resolution | undefined,
       undefined, // onRetry
       userApiKey
@@ -744,7 +745,7 @@ router.post('/generate/stream', apiRateLimiter, authenticate, async (req: AuthRe
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const apiKey = userApiKey || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
     const genAI = new GoogleGenerativeAI(apiKey.trim());
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT });
 
     // Build content with system prompt
     const contents = [];
@@ -779,7 +780,7 @@ router.post('/generate/stream', apiRateLimiter, authenticate, async (req: AuthRe
         const usageRecord = createUsageRecord(
           req.userId!,
           0,
-          'gemini-2.0-flash',
+          GEMINI_MODELS.TEXT,
           false,
           prompt.length,
           undefined,

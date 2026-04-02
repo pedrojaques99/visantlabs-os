@@ -6,6 +6,7 @@ import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { createUsageRecord } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 
 const apiRateLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
@@ -49,7 +50,7 @@ router.post('/generate', apiRateLimiter, authenticate, async (req: AuthRequest, 
         const usageRecord = createUsageRecord(
           req.userId!,
           0,
-          'gemini-2.5-flash',
+          GEMINI_MODELS.TEXT,
           false,
           prompt.length,
           undefined,

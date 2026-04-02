@@ -8,6 +8,7 @@ import type { BrandingData } from '../../src/types/branding.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 import { rateLimit } from 'express-rate-limit';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -517,7 +518,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
       const outputTokens = req.body.outputTokens;
       const estimatedInputTokens = inputTokens ?? (promptLength ? Math.ceil(promptLength / 4) : 500);
       const estimatedOutputTokens = outputTokens ?? 1000; // Average response size
-      const cost = calculateTextGenerationCost(estimatedInputTokens, estimatedOutputTokens, 'gemini-2.5-flash');
+      const cost = calculateTextGenerationCost(estimatedInputTokens, estimatedOutputTokens, GEMINI_MODELS.TEXT);
 
       // Create usage record for billing (even for admins, for tracking purposes)
       const usageRecord: any = {
@@ -527,7 +528,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
         stepNumber,
         timestamp: new Date(),
         promptLength,
-        model: 'gemini-2.5-flash',
+        model: GEMINI_MODELS.TEXT,
         cost,
         creditsDeducted: creditsToDeduct,
         subscriptionStatus,

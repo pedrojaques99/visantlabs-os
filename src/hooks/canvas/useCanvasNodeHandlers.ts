@@ -14,29 +14,25 @@ import type { UploadedImage, GeminiModel, Resolution, BrandingData, AspectRatio 
 import type { Mockup } from '@/services/mockupApi';
 
 // ========== IMPORTS - Serviços ==========
-import { combineImages, editImage, upscaleImage, validateCredits, validateVideoCredits, normalizeImageToBase64, detectMimeType } from '@/services/reactFlowService';
+import { detectMimeType } from '@/services/reactFlowService';
 import { subscriptionService } from '@/services/subscriptionService';
-import { aiApi } from '@/services/aiApi';
 import { generateMergePrompt } from '@/services/geminiService';
 import { mockupApi } from '@/services/mockupApi';
 import { videoApi } from '@/services/videoApi';
 import { extractBrandIdentity } from '@/services/brandIdentityService';
-import { getPreset, getPresetAsync, loadReferenceImage } from '@/services/mockupPresetsService';
 import { isLocalDevelopment } from '@/utils/env';
 import { canvasApi } from '@/services/canvasApi';
 import { videoToBase64 } from '@/utils/fileUtils';
 import { extractColors } from '@/utils/colorExtraction';
-import { authService } from '@/services/authService';
 
 // ========== IMPORTS - Utils ==========
-import { generateNodeId, getImageFromNode, getConnectedImages, cleanEdgeHandles } from '@/utils/canvas/canvasNodeUtils';
+import { generateNodeId, getConnectedImages, cleanEdgeHandles } from '@/utils/canvas/canvasNodeUtils';
 import { getImageUrl } from '@/utils/imageUtils';
 
 // ========== IMPORTS - UI/UX ==========
 import { toast } from 'sonner';
 
 // ========== IMPORTS - Hooks ==========
-import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel, getMaxHandles, getMaxRefImages, getDefaultResolution, getModelConfig } from '@/constants/geminiModels';
 import { useShaderNodeHandlers } from './handlers/useShaderNodeHandlers';
 import { useUpscaleBicubicNodeHandlers } from './handlers/useUpscaleBicubicNodeHandlers';
 import { useLogoNodeHandlers } from './handlers/useLogoNodeHandlers';
@@ -45,17 +41,19 @@ import { useAngleNodeHandlers } from './handlers/useAngleNodeHandlers';
 import { useTextureNodeHandlers } from './handlers/useTextureNodeHandlers';
 import { useAmbienceNodeHandlers } from './handlers/useAmbienceNodeHandlers';
 import { useLuminanceNodeHandlers } from './handlers/useLuminanceNodeHandlers';
+import { useBrandCoreNodeHandlers } from './handlers/useBrandCoreNodeHandlers';
+import { useVideoNodeHandlers } from './handlers/useVideoNodeHandlers';
+import { useEditNodeHandlers } from './handlers/useEditNodeHandlers';
+import { useMockupNodeHandlers } from './handlers/useMockupNodeHandlers';
+import { usePromptNodeHandlers } from './handlers/usePromptNodeHandlers';
 import { useCanvasNodeSync } from './useCanvasNodeSync';
 import {
   createOutputNodeWithSkeleton as createOutputNodeWithSkeletonUtil,
-  normalizeImagesToUploadedImages,
-  validateBase64Image,
   updateOutputNodeWithResult as updateOutputNodeWithResultUtil,
   updateOutputNodeWithR2Url as updateOutputNodeWithR2UrlUtil,
   cleanupFailedNode as cleanupFailedNodeUtil
 } from './utils/nodeGenerationUtils';
 import { uploadImageToR2Auto as uploadImageToR2AutoUtil } from './utils/r2UploadUtils';
-import { getBrandContextForNode, buildEnhancement } from './useBrandContext';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 
 export const useCanvasNodeHandlers = (
@@ -217,705 +215,52 @@ export const useCanvasNodeHandlers = (
   }, [subscriptionStatus, setSubscriptionStatus]);
 
 
-  // ========== EDIT NODE HANDLERS ==========
-  // Handlers para gerenciar operações de edição de imagens
-
-  // Handle edit node apply
-  const handleEditApply = useCallback(async (nodeId: string, imageBase64: string, config: EditNodeData) => {
-    console.log('handleEditApply called', { nodeId, imageBase64: imageBase64 ? 'provided' : 'empty', hasConfig: !!config });
-
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'edit') {
-      console.warn('handleEditApply: Node not found or wrong type', { nodeId, foundNode: !!node });
-      return;
-    }
-
-    const connectedEdge = edgesRef.current.find(e => e.target === nodeId);
-    if (!connectedEdge) {
-      console.warn('handleEditApply: No connected edge found', { nodeId, edgesCount: edgesRef.current.length });
-      toast.error('Connect an image to edit');
-      return;
-    }
-
-    const inputImage = getImageFromNode(connectedEdge.source, nodesRef.current);
-    if (!inputImage) {
-      console.warn('handleEditApply: No input image found', { sourceNodeId: connectedEdge.source });
-      toast.error('No image connected');
-      return;
-    }
-
-    console.log('handleEditApply: Proceeding with edit', { nodeId, inputImageSize: inputImage.length });
-
-    const model = config.model || DEFAULT_MODEL;
-    const resolution = config.resolution;
-    const hasCredits = await validateCredits(model, resolution);
-    if (!hasCredits) return;
-
-    updateNodeData<EditNodeData>(nodeId, { ...config, isLoading: true }, 'edit');
-
-    const editPrompt = config.promptPreview || config.additionalPrompt || 'Apply the requested changes to this image while maintaining its overall composition and quality.';
-
-    let newOutputNodeId: string | null = null;
-    const skeletonNode = createOutputNodeWithSkeletonForGenerated(node, nodeId);
-
-    if (skeletonNode) {
-      newOutputNodeId = skeletonNode.nodeId;
-      addToHistory(nodesRef.current, edgesRef.current);
-      setNodes((nds: Node<FlowNodeData>[]) => [...nds, skeletonNode.node]);
-      setEdges((eds: Edge[]) => [...eds, skeletonNode.edge]);
-    }
-
-    try {
-      const result = await editImage(inputImage, editPrompt, model, resolution);
-
-      updateNodeData<EditNodeData>(nodeId, { ...config, isLoading: false }, 'edit');
-
-      if (newOutputNodeId) {
-        updateOutputNodeWithResult(
-          newOutputNodeId,
-          result,
-          () => addToHistory(nodesRef.current, edgesRef.current)
-        );
-
-        await uploadImageToR2Auto(result, newOutputNodeId, (imageUrl) => {
-          updateOutputNodeWithR2Url(newOutputNodeId!, imageUrl);
-        });
-      }
-
-      await refreshSubscriptionStatus();
-      toast.success('Image edited successfully! New node created.', { duration: 3000 });
-    } catch (error: any) {
-      cleanupFailedNode(newOutputNodeId);
-      updateNodeData<EditNodeData>(nodeId, { ...config, isLoading: false }, 'edit');
-      toast.error(error?.message || 'Failed to edit image', { duration: 5000 });
-    }
-  }, [setNodes, setEdges, addToHistory, uploadImageToR2Auto, updateNodeData, createOutputNodeWithSkeletonForGenerated, updateOutputNodeWithResult, updateOutputNodeWithR2Url, cleanupFailedNode, refreshSubscriptionStatus]);
-
-  // ========== UPSCALE NODE HANDLERS ==========
-  // Handlers para gerenciar operações de upscale de imagens
-
-  // Handle upscale node
-  const handleUpscale = useCallback(async (nodeId: string, imageBase64: string, resolution: Resolution) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'upscale') {
-      console.warn('handleUpscale: Node not found or wrong type', { nodeId, foundNode: !!node });
-      return;
-    }
-
-    const upscaleData = node.data as UpscaleNodeData;
-
-    // Read connected image directly from nodeData to ensure we have the latest value
-    // This prevents synchronization issues
-    const connectedImage = (upscaleData as any).connectedImage as string | undefined;
-
-    console.log('[handleUpscale] Received request:', {
-      nodeId,
-      resolution,
-      hasConnectedImageInData: !!connectedImage,
-      imageType: connectedImage?.startsWith('http') ? 'URL' : connectedImage?.startsWith('data:') ? 'dataURL' : connectedImage ? 'base64' : 'none',
-    });
-
-    // Try to get image from nodeData first, then fallback to edge connection
-    let inputImage: string | null = null;
-
-    if (connectedImage) {
-      inputImage = connectedImage;
-      console.log('[handleUpscale] Using connectedImage from nodeData');
-    } else {
-      // Fallback: try to get from edge connection
-      const connectedEdge = edgesRef.current.find(e => e.target === nodeId);
-      if (connectedEdge) {
-        inputImage = getImageFromNode(connectedEdge.source, nodesRef.current);
-        console.log('[handleUpscale] Using image from edge connection');
-      }
-    }
-
-    if (!inputImage) {
-      toast.error('Connect an image to upscale');
-      return;
-    }
-
-    const model: GeminiModel = resolution === '4K' ? GEMINI_MODELS.PRO : GEMINI_MODELS.NB2;
-    const hasCredits = await validateCredits(model, resolution);
-    if (!hasCredits) return;
-
-    updateNodeLoadingState<UpscaleNodeData>(nodeId, true, 'upscale');
-
-    let newOutputNodeId: string | null = null;
-    const skeletonNode = createOutputNodeWithSkeletonForGenerated(node, nodeId);
-
-    if (skeletonNode) {
-      newOutputNodeId = skeletonNode.nodeId;
-      addToHistory(nodesRef.current, edgesRef.current);
-      setNodes((nds: Node<FlowNodeData>[]) => [...nds, skeletonNode.node]);
-      setEdges((eds: Edge[]) => [...eds, skeletonNode.edge]);
-    }
-
-    console.log('[handleUpscale] Calling upscaleImage with:', {
-      inputImageType: inputImage?.startsWith('http') ? 'URL' : inputImage?.startsWith('data:') ? 'dataURL' : 'base64',
-      inputImageLength: inputImage?.length || 0,
-      resolution,
-      model,
-    });
-
-    try {
-      const result = await upscaleImage(inputImage, resolution, model);
-
-      console.log('[handleUpscale] Upscale successful, updating OutputNode');
-
-      updateNodeData<UpscaleNodeData>(nodeId, {
-        isLoading: false,
-        resultImageBase64: result,
-      }, 'upscale');
-
-      uploadImageToR2Auto(result, nodeId, (imageUrl) => {
-        updateNodeData<UpscaleNodeData>(nodeId, {
-          resultImageUrl: imageUrl,
-          resultImageBase64: undefined, // Remove base64 after R2 upload to save memory
-        }, 'upscale');
-      });
-
-      if (newOutputNodeId) {
-        updateOutputNodeWithResult(
-          newOutputNodeId,
-          result,
-          () => addToHistory(nodesRef.current, edgesRef.current)
-        );
-
-        await uploadImageToR2Auto(result, newOutputNodeId, (imageUrl) => {
-          updateOutputNodeWithR2Url(newOutputNodeId!, imageUrl);
-        });
-      }
-
-      await refreshSubscriptionStatus();
-      toast.success(`Image upscaled to ${resolution}!`, { duration: 3000 });
-    } catch (error: any) {
-      cleanupFailedNode(newOutputNodeId);
-      updateNodeLoadingState<UpscaleNodeData>(nodeId, false, 'upscale');
-      toast.error(error?.message || 'Failed to upscale image', { duration: 5000 });
-    }
-  }, [setNodes, setEdges, addToHistory, uploadImageToR2Auto, updateNodeLoadingState, updateNodeData, createOutputNodeWithSkeletonForGenerated, updateOutputNodeWithResult, updateOutputNodeWithR2Url, cleanupFailedNode, refreshSubscriptionStatus]);
-
-  // ========== UPLOAD IMAGE HANDLER ==========
-  // Handler para upload de imagens para node existentes
-
-  // Handle upload image to existing node
-  const handleUploadImage = useCallback(async (nodeId: string, imageBase64: string) => {
-    userUploadInProgressRef.current.add(nodeId);
-    try {
-      // Update node immediately with base64
-      setNodes((nds: Node<FlowNodeData>[]) => {
-        return nds.map((n: Node<FlowNodeData>) => {
-          if (n.id === nodeId && n.type === 'image') {
-            const data = n.data as ImageNodeData;
-            const updatedMockup: Mockup = {
-              ...data.mockup,
-              imageBase64,
-              prompt: 'Uploaded image',
-            };
-            return {
-              ...n,
-              data: {
-                ...data,
-                mockup: updatedMockup,
-              } as ImageNodeData,
-            } as Node<FlowNodeData>;
-          }
-          return n;
-        });
-      });
-
-    // Try to upload to R2 in the background (non-blocking)
-    if (canvasId) {
-      try {
-        // Preservar tamanho original da imagem - sem compressão
-        const imageUrl = await canvasApi.uploadImageToR2(imageBase64, canvasId, nodeId, { skipCompression: true });
-        // Update node with R2 URL and remove base64 to reduce payload size
-        setNodes((nds: Node<FlowNodeData>[]) => {
-          return nds.map((n: Node<FlowNodeData>) => {
-            if (n.id === nodeId && n.type === 'image') {
-              const data = n.data as ImageNodeData;
-              const updatedMockup: Mockup = {
-                ...data.mockup,
-                imageUrl,
-                imageBase64: undefined, // Remove base64 after successful upload to reduce payload
-                prompt: 'Uploaded image',
-              };
-              return {
-                ...n,
-                data: {
-                  ...data,
-                  mockup: updatedMockup,
-                } as ImageNodeData,
-              } as Node<FlowNodeData>;
-            }
-            return n;
-          });
-        });
-      } catch (error: any) {
-        // If R2 upload fails, keep base64 - don't show error to user
-        console.warn('Failed to upload image to R2 (keeping base64):', error);
-      }
-    }
-
-      toast.success('Image uploaded!', {
-        id: `upload-image-${nodeId}`,
-        duration: 2000
-      });
-    } finally {
-      userUploadInProgressRef.current.delete(nodeId);
-    }
-  }, [setNodes, canvasId]);
-
-  // ========== EDIT NODE DATA UPDATE HANDLERS ==========
-  // Handlers para atualização de dados dos node de edição
-
-  // Handle EditNode data update
-  const handleEditNodeDataUpdate = useCallback((nodeId: string, newData: Partial<EditNodeData>) => {
-    updateNodeData<EditNodeData>(nodeId, newData, 'edit');
-  }, [updateNodeData]);
-
-  // ========== UPSCALE NODE DATA UPDATE HANDLERS ==========
-  // Handlers para atualização de dados dos node de upscale
-
-  // Handle UpscaleNode data update
-  const handleUpscaleNodeDataUpdate = useCallback((nodeId: string, newData: Partial<UpscaleNodeData>) => {
-    updateNodeData<UpscaleNodeData>(nodeId, newData, 'upscale');
-  }, [updateNodeData]);
-
-  // Handle EditNode generate smart prompt
-  const handleEditNodeGenerateSmartPrompt = useCallback(async (nodeId: string) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'edit') return;
-
-    const editData = node.data as EditNodeData;
-    if (!editData.designType || (editData.designType !== 'blank' && !editData.uploadedImage) || !editData.tags || editData.tags.length === 0) {
-      toast.error('Please complete all steps before generating prompt', { duration: 3000 });
-      return;
-    }
-
-    try {
-      const smartPromptResult = await aiApi.generateSmartPrompt({
-        baseImage: editData.uploadedImage || null,
-        designType: editData.designType,
-        brandingTags: editData.brandingTags || [],
-        categoryTags: editData.tags || [],
-        locationTags: editData.locationTags || [],
-        angleTags: editData.angleTags || [],
-        lightingTags: editData.lightingTags || [],
-        effectTags: editData.effectTags || [],
-        selectedColors: editData.selectedColors || [],
-        aspectRatio: editData.aspectRatio || DEFAULT_ASPECT_RATIO,
-        generateText: editData.generateText || false,
-        withHuman: editData.withHuman || false,
-        enhanceTexture: (editData as any).enhanceTexture === true,
-        removeText: (editData as any).removeText || false,
-        negativePrompt: editData.negativePrompt || '',
-        additionalPrompt: editData.additionalPrompt || '',
-        instructions: (editData as any).instructions || '',
-      });
-
-      // Handle both old string format and new object format
-      const smartPrompt = typeof smartPromptResult === 'string'
-        ? smartPromptResult
-        : smartPromptResult.prompt;
-
-      // Always track prompt generation usage (even if tokens are not available, use 0)
-      try {
-        const inputTokens = typeof smartPromptResult === 'object' ? (smartPromptResult.inputTokens ?? 0) : 0;
-        const outputTokens = typeof smartPromptResult === 'object' ? (smartPromptResult.outputTokens ?? 0) : 0;
-
-        const token = authService.getToken();
-        await fetch('/api/mockups/track-prompt-generation', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-          body: JSON.stringify({
-            inputTokens,
-            outputTokens,
-            feature: 'canvas',
-          }),
-        });
-      } catch (trackError) {
-        console.error('Failed to track prompt generation:', trackError);
-        // Don't fail the prompt generation if tracking fails
-      }
-
-      handleEditNodeDataUpdate(nodeId, {
-        promptPreview: smartPrompt,
-        isSmartPromptActive: true,
-        isPromptManuallyEdited: false,
-        isPromptReady: true,
-      });
-
-      toast.success('Prompt generated successfully!', { duration: 3000 });
-    } catch (error: any) {
-      console.error('Error generating smart prompt:', error);
-      toast.error('Failed to generate prompt. Please try again.', { duration: 5000 });
-    }
-  }, [handleEditNodeDataUpdate]);
-
-  // Handle EditNode suggest prompts
-  const handleEditNodeSuggestPrompts = useCallback(async (nodeId: string) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'edit') return;
-
-    const editData = node.data as EditNodeData;
-    if (!editData.promptPreview || !editData.promptPreview.trim()) {
-      toast.error('Please enter a prompt first', { duration: 3000 });
-      return;
-    }
-
-    try {
-      const suggestions = await aiApi.suggestPromptVariations(editData.promptPreview);
-      handleEditNodeDataUpdate(nodeId, {
-        promptSuggestions: suggestions,
-        isSuggestingPrompts: false,
-      });
-    } catch (error: any) {
-      console.error('Error suggesting prompts:', error);
-      toast.error('Failed to generate suggestions. Please try again.', { duration: 5000 });
-      handleEditNodeDataUpdate(nodeId, {
-        isSuggestingPrompts: false,
-      });
-    }
-  }, [handleEditNodeDataUpdate]);
+  // ========== EDIT / UPSCALE / UPLOAD NODE HANDLERS ==========
+  const {
+    handleEditApply,
+    handleUpscale,
+    handleUploadImage,
+    handleEditNodeDataUpdate,
+    handleUpscaleNodeDataUpdate,
+    handleEditNodeGenerateSmartPrompt,
+    handleEditNodeSuggestPrompts,
+  } = useEditNodeHandlers({
+    nodesRef,
+    edgesRef,
+    updateNodeData,
+    updateNodeLoadingState,
+    setNodes,
+    setEdges,
+    addToHistory,
+    canvasId,
+    createOutputNodeWithSkeleton: createOutputNodeWithSkeletonForGenerated,
+    updateOutputNodeWithResult,
+    updateOutputNodeWithR2Url,
+    uploadImageToR2Auto,
+    cleanupFailedNode,
+    refreshSubscriptionStatus,
+  });
 
   // ========== MOCKUP NODE HANDLERS ==========
-  // Handlers para gerenciar operações de geração de mockups
-
-  // Handle mockup node data update
-  const handleMockupNodeDataUpdate = useCallback((nodeId: string, newData: Partial<MockupNodeData>) => {
-    updateNodeData<MockupNodeData>(nodeId, newData, 'mockup');
-  }, [updateNodeData]);
-
-  // Handle mockup node generate
-  const handleMockupGenerate = useCallback(async (nodeId: string, imageInput: string, presetId: string, selectedColors?: string[], withHuman?: boolean, customPrompt?: string, modelOverride?: GeminiModel, resolutionOverride?: Resolution, aspectRatioOverride?: AspectRatio) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'mockup') {
-      console.warn('handleMockupGenerate: Node not found or wrong type', { nodeId, foundNode: !!node });
-      return;
-    }
-
-    const mockupData = node.data as MockupNodeData;
-
-    // Read connected image directly from nodeData as fallback if imageInput is not provided
-    // This ensures we always have the latest value from nodeData
-    const connectedImageFromData = mockupData.connectedImage;
-    const imageToUse = imageInput || connectedImageFromData || '';
-
-    console.log('[handleMockupGenerate] Received request:', {
-      nodeId,
-      presetId,
-      imageInputType: imageInput?.startsWith('http') ? 'URL' : imageInput?.startsWith('data:') ? 'dataURL' : imageInput ? 'base64' : 'none',
-      connectedImageFromDataType: connectedImageFromData?.startsWith('http') ? 'URL' : connectedImageFromData?.startsWith('data:') ? 'dataURL' : connectedImageFromData ? 'base64' : 'none',
-      usingImageInput: !!imageInput,
-      usingConnectedImageFromData: !imageInput && !!connectedImageFromData,
-      colorsCount: selectedColors?.length || 0,
-      withHuman,
-      hasCustomPrompt: !!customPrompt,
-    });
-
-    if (!imageToUse) {
-      toast.error('Connect an image to generate mockup');
-      return;
-    }
-
-    // Check if presetId is a custom mockup (blank mockup from database)
-    const userMockups = (mockupData as any).userMockups as Mockup[] | undefined;
-    const customMockup = userMockups?.find(m => m._id === presetId);
-
-    let preset: any;
-    let isCustomMockup = false;
-
-    if (customMockup) {
-      // This is a custom mockup, create a preset-like object from the mockup data
-      isCustomMockup = true;
-      preset = {
-        id: customMockup._id,
-        name: customMockup.prompt?.substring(0, 30) || 'Custom Mockup',
-        prompt: customMockup.prompt || '',
-        referenceImageUrl: getImageUrl(customMockup) || undefined,
-        aspectRatio: customMockup.aspectRatio || DEFAULT_ASPECT_RATIO,
-        model: DEFAULT_MODEL, // Default model for custom mockups
-      };
-      console.log('[handleMockupGenerate] Using custom mockup:', {
-        mockupId: customMockup._id,
-        prompt: customMockup.prompt?.substring(0, 50),
-        hasReferenceImage: !!preset.referenceImageUrl,
-      });
-    } else {
-      // Use async version to ensure MongoDB presets are loaded
-      preset = await getPresetAsync(presetId as any);
-      if (!preset) {
-        console.error(`[handleMockupGenerate] Preset not found: ${presetId}`);
-        toast.error(`Preset ${presetId} not found`);
-        return;
-      }
-      console.log(`[handleMockupGenerate] Loaded preset:`, {
-        id: preset.id,
-        name: preset.name,
-        hasReferenceImageUrl: !!(preset.referenceImageUrl && preset.referenceImageUrl.trim() !== ''),
-        referenceImageUrl: preset.referenceImageUrl?.substring(0, 80) || 'none',
-      });
-    }
-
-    const model = modelOverride || preset.model || DEFAULT_MODEL;
-    const resolution: Resolution = resolutionOverride || (getDefaultResolution(model) || '1K');
-    const aspectRatio = aspectRatioOverride || preset.aspectRatio;
-
-    const hasCredits = await validateCredits(model, resolution);
-    if (!hasCredits) return;
-
-    setNodes((nds: Node<FlowNodeData>[]) =>
-      nds.map((n: Node<FlowNodeData>) =>
-        n.id === nodeId
-          ? {
-            ...n,
-            data: {
-              ...(n.data as MockupNodeData),
-              isLoading: true,
-            } as MockupNodeData,
-          } as Node<FlowNodeData>
-          : n
-      )
-    );
-
-    // HIERARCHY: Logo (priority 1) as baseImage, Identity (priority 2) as referenceImage for colors/vibe
-    // Get Logo and Identity from BrandCore connection
-    const connectedLogo = mockupData.connectedLogo;
-    const connectedIdentity = mockupData.connectedIdentity;
-
-    // Convert Logo (baseImage) to base64 if needed
-    let logoBase64: string | null = null;
-    let baseImage: UploadedImage | undefined;
-
-    if (connectedLogo) {
-      try {
-        console.log('[handleMockupGenerate] Normalizing Logo (baseImage) to base64...');
-        logoBase64 = await normalizeImageToBase64(connectedLogo);
-
-        if (!validateBase64Image(logoBase64)) {
-          throw new Error('Invalid logo base64 format after conversion');
-        }
-
-        const logoMimeType = detectMimeType(connectedLogo);
-        baseImage = {
-          base64: logoBase64,
-          mimeType: logoMimeType,
-        };
-        console.log('[handleMockupGenerate] Logo set as baseImage (primary focus)');
-      } catch (error: any) {
-        console.error('Error converting logo to base64:', error);
-        toast.error('Failed to process logo image. Using fallback.');
-      }
-    }
-
-    // If no logo, use imageInput as fallback (legacy or direct input)
-    if (!baseImage && imageToUse) {
-      try {
-        console.log('[handleMockupGenerate] Using imageInput as baseImage (fallback)...');
-        const fallbackBase64 = await normalizeImageToBase64(imageToUse);
-
-        if (!validateBase64Image(fallbackBase64)) {
-          throw new Error('Invalid base64 format after conversion');
-        }
-
-        const fallbackMimeType = detectMimeType(imageInput);
-        baseImage = {
-          base64: fallbackBase64,
-          mimeType: fallbackMimeType,
-        };
-      } catch (error: any) {
-        console.error('Error converting fallback image to base64:', error);
-        toast.error(error?.message || 'Failed to process image. Please check if the image is accessible.');
-        updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
-        return;
-      }
-    }
-
-    if (!baseImage) {
-      toast.error('Connect a logo or image to generate mockup');
-      updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
-      return;
-    }
-
-    // Convert Identity (referenceImage for colors/vibe context) to base64 if available
-    let referenceImages: UploadedImage[] | undefined;
-
-    if (connectedIdentity) {
-      try {
-        console.log('[handleMockupGenerate] Normalizing Identity (referenceImage) to base64...');
-        const identityBase64 = await normalizeImageToBase64(connectedIdentity);
-
-        if (validateBase64Image(identityBase64)) {
-          const identityMimeType = detectMimeType(connectedIdentity);
-          referenceImages = [{
-            base64: identityBase64,
-            mimeType: identityMimeType,
-          }];
-          console.log('[handleMockupGenerate] Identity set as referenceImage (context/colors/vibe)');
-        }
-      } catch (error: any) {
-        console.warn('Failed to process identity as reference image, continuing without it:', error);
-        // Continue without identity, it's not critical
-      }
-    }
-
-    // Add preset/custom mockup reference image if available (after identity)
-    if (preset.referenceImageUrl && preset.referenceImageUrl.trim() !== '') {
-      let presetReferenceImage: UploadedImage | null = null;
-
-      if (isCustomMockup && customMockup) {
-        // For custom mockups, load the image directly from the mockup
-        try {
-          const mockupImageUrl = getImageUrl(customMockup);
-          if (mockupImageUrl) {
-            const mockupImageBase64 = await normalizeImageToBase64(mockupImageUrl);
-            if (validateBase64Image(mockupImageBase64)) {
-              const mockupMimeType = detectMimeType(mockupImageUrl);
-              presetReferenceImage = {
-                base64: mockupImageBase64,
-                mimeType: mockupMimeType,
-              };
-            }
-          }
-        } catch (error: any) {
-          console.warn('Failed to load custom mockup reference image:', error);
-          // Continue without reference image, it's not critical
-        }
-      } else {
-        // For regular presets, use the existing loadReferenceImage function
-        presetReferenceImage = await loadReferenceImage(preset);
-      }
-
-      if (presetReferenceImage) {
-        if (!referenceImages) {
-          referenceImages = [];
-        }
-        referenceImages.push(presetReferenceImage);
-      }
-    }
-
-    // Build base prompt from custom or preset
-    let enhancedPrompt: string;
-    if (customPrompt && customPrompt.trim()) {
-      enhancedPrompt = customPrompt.trim();
-    } else {
-      enhancedPrompt = preset.prompt;
-    }
-
-    // Apply brand guideline context (handles colors, fonts, tone, dos/donts)
-    const { tokens: mockupBrandTokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
-    if (mockupBrandTokens) {
-      enhancedPrompt = buildEnhancement(enhancedPrompt, mockupBrandTokens);
-    }
-
-    // Add human interaction if requested
-    if (withHuman && !enhancedPrompt.toLowerCase().includes('human') && !enhancedPrompt.toLowerCase().includes('person')) {
-      const humanAction = Math.random() < 0.5 ? 'looking at' : 'interacting with';
-      enhancedPrompt += ` The scene should include a human person naturally ${humanAction} the mockup product. Ensure the moment feels contextual for the product type.`;
-    }
-
-    let newOutputNodeId: string | null = null;
-    const skeletonNode = createOutputNodeWithSkeletonForGenerated(node, nodeId);
-
-    if (skeletonNode) {
-      newOutputNodeId = skeletonNode.nodeId;
-      addToHistory(nodesRef.current, edgesRef.current);
-      setNodes((nds: Node<FlowNodeData>[]) => [...nds, skeletonNode.node]);
-      setEdges((eds: Edge[]) => [...eds, skeletonNode.edge]);
-    }
-
-    try {
-      if (!validateBase64Image(baseImage.base64)) {
-        throw new Error('Base image data is empty after processing');
-      }
-
-      const isBaseImageLogo = !!mockupData.connectedLogo;
-      const hasIdentityAsReference = !!mockupData.connectedIdentity && !!referenceImages && referenceImages.length > 0;
-
-      console.log('[handleMockupGenerate] Calling generateMockup with hierarchy:', {
-        prompt: enhancedPrompt.substring(0, 100) + (enhancedPrompt.length > 100 ? '...' : ''),
-        hasBaseImage: !!baseImage,
-        baseImageIsLogo: isBaseImageLogo,
-        baseImageMimeType: baseImage?.mimeType,
-        referenceImagesCount: referenceImages?.length || 0,
-        hasIdentityAsReference,
-        model,
-        resolution,
-        aspectRatio,
-      });
-
-      // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
-      const result = await mockupApi.generate({
-        promptText: enhancedPrompt,
-        baseImage: baseImage ? {
-          base64: baseImage.base64,
-          mimeType: baseImage.mimeType
-        } : undefined,
-        model: model,
-        resolution: resolution,
-        aspectRatio: aspectRatio,
-        referenceImages: referenceImages?.map(img => ({
-          base64: img.base64,
-          mimeType: img.mimeType
-        })),
-        imagesCount: 1,
-        feature: 'canvas'
-      });
-
-      const resultImage = result.imageUrl || result.imageBase64 || '';
-
-      console.log('[handleMockupGenerate] Mockup generated successfully, updating OutputNode', {
-        hasImageUrl: !!result.imageUrl,
-        hasImageBase64: !!result.imageBase64,
-        resultImageLength: resultImage.length
-      });
-
-      // Update source node with result so manually connected nodes work
-      updateNodeData<MockupNodeData>(nodeId, {
-        isLoading: false, // Ensure loading is false
-        resultImageUrl: result.imageUrl,
-        resultImageBase64: result.imageUrl ? undefined : result.imageBase64,
-      } as any, 'mockup');
-
-      // Also update loading state explicitly to be safe
-      updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
-
-      if (newOutputNodeId) {
-        updateOutputNodeWithResult(
-          newOutputNodeId,
-          resultImage,
-          () => addToHistory(nodesRef.current, edgesRef.current)
-        );
-
-        // Only upload to R2 if we don't already have a URL
-        if (!result.imageUrl && result.imageBase64) {
-          await uploadImageToR2Auto(result.imageBase64, newOutputNodeId, (imageUrl) => {
-            updateOutputNodeWithR2Url(newOutputNodeId!, imageUrl);
-          });
-        }
-      }
-
-      // Credits were already deducted by backend before generation
-      // Update subscription status to reflect new credits
-      try {
-        await refreshSubscriptionStatus();
-      } catch (statusError: any) {
-        console.error('Failed to refresh subscription status:', statusError);
-        // Non-critical - credits were already deducted, just status refresh failed
-      }
-
-      toast.success('Mockup generated successfully!', { duration: 3000 });
-    } catch (error: any) {
-      cleanupFailedNode(newOutputNodeId);
-      updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
-      toast.error(error?.message || 'Failed to generate mockup', { duration: 5000 });
-    }
-  }, [setNodes, setEdges, addToHistory, uploadImageToR2Auto, updateNodeLoadingState, validateBase64Image, createOutputNodeWithSkeletonForGenerated, updateOutputNodeWithResult, updateOutputNodeWithR2Url, cleanupFailedNode, refreshSubscriptionStatus, edgesRef, linkedGuideline]);
+  const {
+    handleMockupNodeDataUpdate,
+    handleMockupGenerate,
+  } = useMockupNodeHandlers({
+    nodesRef,
+    edgesRef,
+    updateNodeData,
+    updateNodeLoadingState,
+    setNodes,
+    setEdges,
+    addToHistory,
+    createOutputNodeWithSkeleton: createOutputNodeWithSkeletonForGenerated,
+    updateOutputNodeWithResult,
+    updateOutputNodeWithR2Url,
+    uploadImageToR2Auto,
+    cleanupFailedNode,
+    refreshSubscriptionStatus,
+    linkedGuideline,
+  });
 
   // ========== ANGLE NODE HANDLERS ==========
   // Handlers para gerenciar operações de geração de ângulos de imagem
@@ -1017,588 +362,47 @@ export const useCanvasNodeHandlers = (
   const handleUpscaleBicubicNodeDataUpdate = upscaleBicubicHandlers.handleUpscaleBicubicNodeDataUpdate;
 
   // ========== VIDEO NODE HANDLERS ==========
-  // Handlers para gerenciar operações de geração de vídeos usando Veo 3
-
-  // Handle video node data update
-  const handleVideoNodeDataUpdate = useCallback((nodeId: string, newData: Partial<VideoNodeData>) => {
-    updateNodeData<VideoNodeData>(nodeId, newData, 'video');
-  }, [updateNodeData]);
-
-  const handleVideoInputNodeDataUpdate = useCallback((nodeId: string, newData: Partial<VideoInputNodeData>) => {
-    updateNodeData<VideoInputNodeData>(nodeId, newData, 'videoInput');
-  }, [updateNodeData]);
-
-  // Handle video node upload - accepts both File (for direct upload) or base64 string
-  const handleVideoInputNodeUpload = useCallback(async (nodeId: string, videoData: string | File) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'videoInput') {
-      console.warn('handleVideoInputNodeUpload: Node not found or wrong type', { nodeId, foundNode: !!node });
-      return;
-    }
-
-    // Determine if we have a File (preferred) or base64 string
-    const isFile = videoData instanceof File;
-    let videoBase64: string;
-    let videoFile: File | undefined;
-
-    if (isFile) {
-      // We have the original file - prefer direct upload to R2
-      videoFile = videoData;
-      // Convert to base64 for immediate display
-      const videoDataResult = await videoToBase64(videoFile);
-      videoBase64 = `data:${videoDataResult.mimeType};base64,${videoDataResult.base64}`;
-    } else {
-      // Legacy: base64 string
-      videoBase64 = videoData;
-    }
-
-    // Update node with uploaded video (base64 for immediate display)
-    setNodes((nds: Node<FlowNodeData>[]) => {
-      return nds.map((n: Node<FlowNodeData>) => {
-        if (n.id === nodeId && n.type === 'videoInput') {
-          const data = n.data as VideoInputNodeData;
-          return {
-            ...n,
-            data: {
-              ...data,
-              uploadedVideo: videoBase64,
-              uploadedVideoUrl: undefined, // Will be set after R2 upload
-            } as VideoInputNodeData,
-          } as Node<FlowNodeData>;
-        }
-        return n;
-      });
-    });
-
-    // Try to upload to R2 in the background (non-blocking)
-    if (canvasId) {
-      try {
-        let videoUrl: string;
-
-        if (videoFile) {
-          // Use direct upload (bypasses Vercel's 4.5MB limit, preserves quality)
-          videoUrl = await canvasApi.uploadVideoToR2Direct(videoFile, canvasId, nodeId);
-        } else {
-          // Fallback to base64 upload (subject to 4.5MB limit)
-          videoUrl = await canvasApi.uploadVideoToR2(videoBase64, canvasId, nodeId);
-        }
-
-        // Update node with R2 URL
-        setNodes((nds: Node<FlowNodeData>[]) => {
-          return nds.map((n: Node<FlowNodeData>) => {
-            if (n.id === nodeId && n.type === 'videoInput') {
-              const data = n.data as VideoInputNodeData;
-              return {
-                ...n,
-                data: {
-                  ...data,
-                  uploadedVideoUrl: videoUrl,
-                  // Keep base64 as fallback
-                  uploadedVideo: videoBase64,
-                } as VideoInputNodeData,
-              } as Node<FlowNodeData>;
-            }
-            return n;
-          });
-        });
-      } catch (error: any) {
-        // If R2 upload fails, keep base64 - don't show error to user
-        console.warn('Failed to upload video to R2 (keeping base64):', error);
-      }
-    }
-
-    toast.success('Video uploaded!', {
-      id: `upload-video-${nodeId}`,
-      duration: 2000
-    });
-  }, [setNodes, canvasId]);
-
-  // Handle video node generate
-  const handleVideoNodeGenerate = useCallback(async (params: GenerateVideoParams) => {
-    const { nodeId } = params;
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'video') {
-      console.warn('handleVideoNodeGenerate: Node not found or wrong type', { nodeId, foundNode: !!node });
-      return;
-    }
-
-    const videoData = node.data as VideoNodeData;
-
-    // Validate credits before generation (20 credits per video)
-    const hasCredits = await validateVideoCredits();
-    if (!hasCredits) {
-      return;
-    }
-
-    // Check if already loading to prevent duplicate requests (409 Conflict)
-    if (videoData.isLoading) {
-      console.warn('handleVideoNodeGenerate: Algorithm is already running', { nodeId });
-      return;
-    }
-
-    updateNodeLoadingState<VideoNodeData>(nodeId, true, 'video');
-
-    let newOutputNodeId: string | null = null;
-    const skeletonNode = createOutputNodeWithSkeletonForGenerated(node, nodeId);
-
-    if (skeletonNode) {
-      newOutputNodeId = skeletonNode.nodeId;
-      console.log('[handleVideoNodeGenerate] Creating OutputNode:', newOutputNodeId);
-      addToHistory(nodesRef.current, edgesRef.current);
-      setNodes((nds: Node<FlowNodeData>[]) => [...nds, skeletonNode.node]);
-      setEdges((eds: Edge[]) => [...eds, skeletonNode.edge]);
-    }
-
-    try {
-      // Helper to process media input (File, base64, or URL)
-      const processMediaInput = async (input?: { file?: File; base64?: string; url?: string } | string | null, connectedInput?: string) => {
-        if (!input && !connectedInput) return undefined;
-
-        // Handle string input (direct base64 or URL)
-        if (typeof input === 'string') return input;
-
-        // Handle object input (but not null)
-        if (input && typeof input === 'object' && input !== null) {
-          if (input?.file) {
-            const base64 = await videoToBase64(input.file);
-            return base64.base64 ? `data:${base64.mimeType};base64,${base64.base64}` : undefined;
-          }
-          if (input?.base64) return input.base64;
-          if (input?.url) return input.url;
-        }
-
-        // Fallback to connected input
-        if (connectedInput) return connectedInput;
-        return undefined;
-      };
-
-      // Resolve inputs (UI inputs override connected handles for now, or we can merge logic)
-
-      // Determine Start/End frames based on mode and inputs
-      let startFrame: string | undefined = undefined;
-      let endFrame: string | undefined = undefined;
-      let referenceImages: string[] | undefined = undefined;
-      let inputVideo: string | undefined = undefined;
-
-      // Handle Connected Inputs Mapping
-      if (params.mode === 'frames_to_video') {
-        startFrame = await processMediaInput(params.startFrame, videoData.connectedImage1);
-        endFrame = await processMediaInput(params.endFrame, videoData.connectedImage2);
-      } else if (params.mode === 'references') { // or 'text_to_video' with refs
-        // Collect all connected images
-        const refs: string[] = [];
-        if (params.referenceImages) {
-          // params.referenceImages can be string[] (from VideoNode) or object[] (legacy/upload)
-          if (Array.isArray(params.referenceImages)) {
-            params.referenceImages.forEach((img: any) => {
-              if (typeof img === 'string') {
-                refs.push(img);
-              } else if (img && typeof img === 'object') {
-                if (img.base64) refs.push(img.base64);
-                else if (img.url) refs.push(img.url);
-              }
-            });
-          }
-        }
-        // Also check connectedImages directly if they weren't passed in params (fallback)
-        if (refs.length === 0) {
-          if (videoData.connectedImage1) refs.push(videoData.connectedImage1);
-          if (videoData.connectedImage2) refs.push(videoData.connectedImage2);
-          if (videoData.connectedImage3) refs.push(videoData.connectedImage3);
-          if (videoData.connectedImage4) refs.push(videoData.connectedImage4);
-        }
-
-        if (refs.length > 0) referenceImages = refs;
-      } else if (params.mode === 'extend_video') {
-        inputVideo = await processMediaInput(params.inputVideo, videoData.connectedVideo);
-      } else if (params.mode === 'text_to_video') {
-        // Strictly Text-to-Video: Ignore connected images
-        // This matches the UI hiding the handle
-        console.log('[handleVideoNodeGenerate] Processing text-to-video (ignoring images)');
-      } else {
-        // Fallback or implicit IMAGE_TO_VIDEO (if distinct mode added later)
-        // If an image is connected to input-1, it serves as the startFrame (Image-to-Video)
-        startFrame = await processMediaInput(params.startFrame, videoData.connectedImage1);
-
-        console.log('[handleVideoNodeGenerate] Processing standard generation:', {
-          mode: params.mode,
-          hasStartFrame: !!startFrame,
-          startFrameSource: params.startFrame ? 'direct' : (videoData.connectedImage1 ? 'connected' : 'none')
-        });
-
-        // CRITICAL: Ensure the startFrame is ALSO passed as a reference image
-        // This forces the model to "analyze" and "follow" the image even in Text-to-Video mode
-        if (startFrame) {
-          if (!referenceImages) referenceImages = [];
-          // Avoid duplicates if it's already there
-          if (!referenceImages.includes(startFrame)) {
-            referenceImages.push(startFrame);
-            console.log('[handleVideoNodeGenerate] Auto-added startFrame to referenceImages to ensure analysis');
-          }
-        }
-      }
-
-      // Handle Connected Text (Prompt)
-      let finalPrompt = params.prompt;
-      if (videoData.connectedText) {
-        finalPrompt = finalPrompt ? `${videoData.connectedText} ${finalPrompt}` : videoData.connectedText;
-      }
-
-      console.log('[handleVideoNodeGenerate] Calling videoApi.generate with:', {
-        prompt: finalPrompt.substring(0, 100) + (finalPrompt.length > 100 ? '...' : ''),
-        mode: params.mode,
-        model: params.model,
-        canvasId: canvasId || 'not provided',
-        nodeId,
-      });
-
-      const result = await videoApi.generate({
-        ...params,
-        prompt: finalPrompt,
-        startFrame,
-        endFrame,
-        referenceImages,
-        inputVideo,
-        canvasId: canvasId,
-        nodeId: nodeId,
-      });
-
-      // Extract R2 URL or base64 fallback from response
-      const videoUrl = result.videoUrl;
-      const videoBase64 = result.videoBase64;
-
-      console.log('[handleVideoNodeGenerate] Video generation response received:', {
-        hasVideoUrl: !!videoUrl,
-        hasVideoBase64: !!videoBase64,
-        videoUrl: videoUrl ? videoUrl.substring(0, 100) + '...' : 'none',
-      });
-
-      if (newOutputNodeId) {
-        // Update OutputNode with video result (prefer R2 URL)
-        setNodes((nds: Node<FlowNodeData>[]) => {
-          const updatedNodes = nds.map((n: Node<FlowNodeData>) => {
-            if (n.id === newOutputNodeId && n.type === 'output') {
-              const outputData = n.data as OutputNodeData;
-              return {
-                ...n,
-                data: {
-                  ...outputData,
-                  resultVideoUrl: videoUrl || undefined, // R2 URL (preferred)
-                  resultVideoBase64: videoUrl ? undefined : videoBase64, // Base64 fallback (only if no R2 URL)
-                  isLoading: false,
-                } as OutputNodeData,
-              } as Node<FlowNodeData>;
-            }
-            return n;
-          });
-          return updatedNodes;
-        });
-
-        // Trigger history update
-        addToHistory(nodesRef.current, edgesRef.current);
-      }
-
-      // Update source VideoNode with returned seed (tracks actual seed used)
-      if (result.seed !== undefined) {
-        updateNodeData<VideoNodeData>(nodeId, { seed: result.seed } as any, 'video');
-      }
-
-      toast.success('Video generated successfully!', { duration: 3000 });
-    } catch (error: any) {
-      console.error('Error in handleVideoNodeGenerate:', error);
-
-      // Cleanup failed node
-      cleanupFailedNode(newOutputNodeId);
-
-      // Show appropriate error message
-      let errorMessage = 'Failed to generate video';
-      if (error?.status === 400) {
-        errorMessage = error?.message || 'Invalid request. Please check your inputs and try again.';
-      } else if (error?.status === 409) {
-        errorMessage = 'Video generation already in progress. Please wait.';
-      } else if (error?.message) {
-        errorMessage = error.message;
-      }
-
-      toast.error(errorMessage, { duration: 5000 });
-    } finally {
-      // Always reset loading state
-      updateNodeLoadingState<VideoNodeData>(nodeId, false, 'video');
-    }
-  }, [setNodes, setEdges, addToHistory, updateNodeLoadingState, createOutputNodeWithSkeletonForGenerated, cleanupFailedNode, canvasId]);
+  const {
+    handleVideoNodeDataUpdate,
+    handleVideoInputNodeDataUpdate,
+    handleVideoInputNodeUpload,
+    handleVideoNodeGenerate,
+  } = useVideoNodeHandlers({
+    nodesRef,
+    edgesRef,
+    updateNodeData,
+    updateNodeLoadingState,
+    setNodes,
+    setEdges,
+    addToHistory,
+    canvasId,
+    createOutputNodeWithSkeleton: createOutputNodeWithSkeletonForGenerated,
+    cleanupFailedNode,
+  });
 
 
   // ========== PROMPT NODE HANDLERS ==========
-  // Handlers para gerenciar operações de geração de imagens a partir de prompts
-
-  // Handle prompt node data update
-  const handlePromptNodeDataUpdate = useCallback((nodeId: string, newData: Partial<PromptNodeData>) => {
-    updateNodeData<PromptNodeData>(nodeId, newData, 'prompt');
-  }, [updateNodeData]);
-
-  // Handle prompt node suggest prompts
-  const handlePromptSuggestPrompts = useCallback(async (nodeId: string, prompt: string) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'prompt') return;
-
-    if (!prompt.trim()) {
-      toast.error('Please enter a prompt first', { duration: 3000 });
-      return;
-    }
-
-    updateNodeData<PromptNodeData>(nodeId, { isSuggestingPrompts: true, promptSuggestions: [] }, 'prompt');
-
-    try {
-      const suggestions = await aiApi.suggestPromptVariations(prompt);
-      updateNodeData<PromptNodeData>(nodeId, {
-        promptSuggestions: suggestions,
-        isSuggestingPrompts: false
-      }, 'prompt');
-    } catch (err: any) {
-      console.error('Error suggesting prompts:', err);
-      toast.error(err?.message || 'Failed to generate prompt suggestions', { duration: 5000 });
-      updateNodeData<PromptNodeData>(nodeId, { isSuggestingPrompts: false }, 'prompt');
-    }
-  }, [updateNodeData]);
-
-  // Handle text node data update
-  const handleTextNodeDataUpdate = useCallback((nodeId: string, newData: Partial<TextNodeData>) => {
-    updateNodeData<TextNodeData>(nodeId, newData, 'text');
-  }, [updateNodeData]);
-
-  // Handle prompt node generate
-  const handlePromptGenerate = useCallback(async (nodeId: string, prompt: string, connectedImages?: string[], model?: GeminiModel) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'prompt') {
-      console.warn('handlePromptGenerate: Node not found or wrong type', { nodeId, foundNode: !!node });
-      return;
-    }
-
-    const promptData = node.data as PromptNodeData;
-    const selectedModel: GeminiModel = model || promptData.model || DEFAULT_MODEL;
-    const isAdvanced = isAdvancedModel(selectedModel);
-    // Use resolution and aspectRatio from nodeData if available, otherwise use defaults
-    const resolution: Resolution | undefined = isAdvanced ? (promptData.resolution || (getDefaultResolution(selectedModel) || '1K')) : undefined;
-    const aspectRatio = isAdvanced ? (promptData.aspectRatio || DEFAULT_ASPECT_RATIO) : undefined;
-
-    const hasCredits = await validateCredits(selectedModel, resolution);
-    if (!hasCredits) return;
-
-    // Clear previous result from PromptNode to prevent new OutputNodes from showing old images
-    // This ensures a clean slate for each new generation
-    updateNodeData<PromptNodeData>(nodeId, {
-      resultImageUrl: undefined,
-      resultImageBase64: undefined,
-    }, 'prompt');
-
-    updateNodeLoadingState<PromptNodeData>(nodeId, true, 'prompt');
-
-    let newOutputNodeId: string | null = null;
-    const skeletonNode = createOutputNodeWithSkeletonForGenerated(node, nodeId);
-
-    if (skeletonNode) {
-      newOutputNodeId = skeletonNode.nodeId;
-      console.log('[handlePromptGenerate] Creating OutputNode:', newOutputNodeId);
-      addToHistory(nodesRef.current, edgesRef.current);
-      setNodes((nds: Node<FlowNodeData>[]) => [...nds, skeletonNode.node]);
-      setEdges((eds: Edge[]) => [...eds, skeletonNode.edge]);
-    } else {
-      console.warn('[handlePromptGenerate] Failed to create OutputNode skeleton - reactFlowInstance may not be available');
-    }
-
-    try {
-      let baseImage: UploadedImage | undefined;
-      let referenceImages: UploadedImage[] | undefined;
-
-      console.log('[handlePromptGenerate] Received connected images:', {
-        nodeId,
-        connectedImagesCount: connectedImages?.length || 0,
-        connectedImages: connectedImages?.map((img, idx) => ({
-          index: idx,
-          type: img?.startsWith('http') ? 'URL' : img?.startsWith('data:') ? 'dataURL' : 'base64',
-          length: img?.length || 0,
-        })),
-        model: selectedModel,
-      });
-
-      if (connectedImages && connectedImages.length > 0) {
-        console.log('[handlePromptGenerate] Normalizing images to UploadedImage format...');
-        const uploadedImages = await normalizeImagesToUploadedImages(connectedImages);
-
-        // Define limits based on model
-        const maxImages = getMaxHandles(selectedModel);
-
-        // Validate image count
-        if (uploadedImages.length > maxImages) {
-          updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
-          toast.error(
-            `Maximum ${maxImages} images allowed for ${isAdvanced ? getModelConfig(selectedModel).label : 'HD'} model. You have ${uploadedImages.length} images connected.`,
-            { duration: 5000 }
-          );
-          return;
-        }
-
-        console.log('[handlePromptGenerate] Normalized images:', {
-          count: uploadedImages.length,
-          maxAllowed: maxImages,
-          images: uploadedImages.map((img, idx) => ({
-            index: idx,
-            hasBase64: !!img.base64,
-            base64Length: img.base64?.length || 0,
-            mimeType: img.mimeType,
-          })),
-        });
-
-        if (uploadedImages.length > 0) {
-          // HIERARCHY: Logo (priority 1) as baseImage, Identity (priority 2) as first referenceImage
-          baseImage = uploadedImages[0];
-
-          // Process reference images based on model
-          if (uploadedImages.length > 1) {
-            const maxReferenceImages = getMaxRefImages(selectedModel);
-            referenceImages = uploadedImages.slice(1, 1 + maxReferenceImages);
-          }
-
-          const promptData = nodesRef.current.find(n => n.id === nodeId)?.data as PromptNodeData;
-          const isLogoFirst = promptData?.connectedLogo && connectedImages?.[0] === promptData.connectedLogo;
-          const isIdentitySecond = promptData?.connectedIdentity && connectedImages?.[1] === promptData.connectedIdentity;
-
-          console.log('[handlePromptGenerate] Processing images with hierarchy:', {
-            model: selectedModel,
-            hasBaseImage: !!baseImage,
-            baseImageIsLogo: isLogoFirst,
-            referenceImagesCount: referenceImages?.length || 0,
-            firstReferenceIsIdentity: isIdentitySecond,
-            totalImages: 1 + (referenceImages?.length || 0),
-          });
-        }
-      } else {
-        console.log('[handlePromptGenerate] No connected images provided - generating from prompt only');
-      }
-
-      // Get brand context (edge-connected BrandNode OR linked guideline)
-      const { source, tokens } = getBrandContextForNode(
-        nodeId,
-        nodesRef.current,
-        edgesRef.current,
-        linkedGuideline
-      );
-
-      let enhancedPrompt = tokens ? buildEnhancement(prompt, tokens) : prompt;
-
-      // Add PDF page reference if specified
-      const promptData = nodesRef.current.find(n => n.id === nodeId)?.data as PromptNodeData;
-      const pdfPageReference = promptData?.pdfPageReference;
-      if (pdfPageReference && pdfPageReference.trim()) {
-        enhancedPrompt += `\n\nRefer to "${pdfPageReference.trim()}" from the brand identity guide PDF.`;
-      }
-
-      console.log('[handlePromptGenerate] Brand context:', { source, hasEnhancement: enhancedPrompt !== prompt });
-
-      const onRetryProgress = (attempt: number, maxRetries: number, delay: number) => {
-        const delaySeconds = Math.round(delay / 1000);
-        console.log(`Retrying generation... (Attempt ${attempt}/${maxRetries}, waiting ${delaySeconds}s)`);
-      };
-
-      console.log('[handlePromptGenerate] Calling generateMockup with:', {
-        prompt: enhancedPrompt.substring(0, 100) + (enhancedPrompt.length > 100 ? '...' : ''),
-        hasBaseImage: !!baseImage,
-        baseImageMimeType: baseImage?.mimeType,
-        referenceImagesCount: referenceImages?.length || 0,
-        model: selectedModel,
-        resolution,
-        aspectRatio,
-        brandContextSource: source,
-      });
-
-      // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
-      // Note: onRetryProgress callback is not supported in backend endpoint, retries are handled automatically
-      const result = await mockupApi.generate({
-        promptText: enhancedPrompt,
-        baseImage: baseImage ? {
-          base64: baseImage.base64,
-          mimeType: baseImage.mimeType
-        } : undefined,
-        model: selectedModel,
-        resolution: resolution,
-        aspectRatio: aspectRatio,
-        referenceImages: referenceImages?.map(img => ({
-          base64: img.base64,
-          mimeType: img.mimeType
-        })),
-        imagesCount: 1,
-        feature: 'canvas',
-        seed: promptData.seedLocked ? promptData.seed : undefined, // Pass seed only when locked
-      });
-
-      const resultImage = result.imageUrl || result.imageBase64 || '';
-
-      // Update source node with result so manually connected nodes work
-      updateNodeData<PromptNodeData>(nodeId, {
-        isLoading: false, // Ensure loading is false
-        resultImageUrl: result.imageUrl,
-        resultImageBase64: result.imageUrl ? undefined : result.imageBase64,
-        seed: result.seed, // Update seed from backend response (tracks the actual seed used)
-      } as any, 'prompt');
-
-      updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
-
-      if (newOutputNodeId) {
-        updateOutputNodeWithResult(
-          newOutputNodeId,
-          resultImage,
-          () => addToHistory(nodesRef.current, edgesRef.current)
-        );
-
-        await uploadImageToR2Auto(result.imageBase64, newOutputNodeId, (imageUrl) => {
-          updateOutputNodeWithR2Url(newOutputNodeId!, imageUrl);
-        });
-      } else {
-        console.warn('handlePromptGenerate: OutputNode was not created, skeletonNode was null');
-      }
-
-      // Credits were already deducted by backend before generation
-      try {
-        await refreshSubscriptionStatus();
-      } catch (statusError: any) {
-        console.error('Failed to refresh subscription status:', statusError);
-        // Non-critical - credits were already deducted, just status refresh failed
-      }
-
-      toast.success('Image generated successfully!', { duration: 3000 });
-    } catch (error: any) {
-      console.error('[handlePromptGenerate] ❌ Error generating image', {
-        nodeId,
-        error: error?.message,
-        status: error?.status,
-        errorData: error?.errorData,
-        requiresSubscription: error?.requiresSubscription,
-        stack: error?.stack,
-      });
-
-      cleanupFailedNode(newOutputNodeId);
-      updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
-
-      // Check if model responded with text (question/clarification) instead of generating image
-      if (error?.errorData?.isModelQuestion) {
-        const modelMessage = error.errorData.message || 'The AI needs more information to generate the image.';
-        toast(modelMessage, {
-          duration: 8000,
-          icon: '💬',
-          style: {
-            background: 'var(--color-surface-2)',
-            color: 'var(--color-text)',
-            border: '1px solid var(--color-border)',
-          },
-        });
-        return;
-      }
-
-      // Show more detailed error message if available
-      const errorMessage = error?.errorData?.message || error?.errorData?.error || error?.message || 'Failed to generate image';
-      toast.error(errorMessage, { duration: 5000 });
-    }
-  }, [setNodes, setEdges, addToHistory, uploadImageToR2Auto, updateNodeLoadingState, normalizeImagesToUploadedImages, createOutputNodeWithSkeletonForGenerated, updateOutputNodeWithResult, updateOutputNodeWithR2Url, cleanupFailedNode, refreshSubscriptionStatus, edgesRef]);
+  const {
+    handlePromptNodeDataUpdate,
+    handleTextNodeDataUpdate,
+    handlePromptSuggestPrompts,
+    handlePromptGenerate,
+  } = usePromptNodeHandlers({
+    nodesRef,
+    edgesRef,
+    updateNodeData,
+    updateNodeLoadingState,
+    setNodes,
+    setEdges,
+    addToHistory,
+    createOutputNodeWithSkeleton: createOutputNodeWithSkeletonForGenerated,
+    updateOutputNodeWithResult,
+    updateOutputNodeWithR2Url,
+    uploadImageToR2Auto,
+    cleanupFailedNode,
+    refreshSubscriptionStatus,
+    linkedGuideline,
+  });
 
   // ========== BRAND NODE HANDLERS ==========
   // Handlers para gerenciar operações de análise e extração de identidade de marca
@@ -1899,144 +703,20 @@ export const useCanvasNodeHandlers = (
 
 
   // ========== BRANDCORE NODE HANDLERS ==========
-  // Handlers para gerenciar operações do Node BrandCore (núcleo de identidade de marca)
+  const {
+    handleBrandCoreAnalyze,
+    handleBrandCoreCancelAnalyze,
+    handleBrandCoreGenerateVisualPrompts,
+    handleBrandCoreGenerateStrategicPrompts,
+    handleBrandCoreDataUpdate,
+    handleBrandCoreUploadPdfToR2,
+  } = useBrandCoreNodeHandlers({
+    nodesRef,
+    updateNodeData,
+    canvasId,
+    saveImmediately,
+  });
 
-  // BrandCore handlers
-  const handleBrandCoreAnalyze = useCallback(async (nodeId: string, logoBase64: string, identityBase64: string, identityType: 'pdf' | 'png' = 'pdf') => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'brandCore') return;
-
-    const brandCoreData = node.data as BrandCoreData;
-    updateNodeData<BrandCoreData>(nodeId, { isAnalyzing: true }, 'brandCore');
-
-    try {
-      const logoImage: UploadedImage = {
-        base64: logoBase64,
-        mimeType: detectMimeType(logoBase64) || 'image/png',
-      };
-
-      // Consolidate and include strategy data if available
-      let strategyText: string | undefined;
-      if (brandCoreData.connectedStrategies && brandCoreData.connectedStrategies.length > 0) {
-        const { consolidateStrategies, consolidateStrategiesToText } = await import('@/services/brandPromptService');
-        const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
-        strategyText = consolidateStrategiesToText(consolidated);
-      }
-
-      const brandIdentity = await extractBrandIdentity(logoImage, identityBase64, identityType, strategyText);
-
-      updateNodeData<BrandCoreData>(nodeId, {
-        brandIdentity,
-        isAnalyzing: false,
-      }, 'brandCore');
-
-      if (saveImmediately) {
-        setTimeout(() => saveImmediately(), 100);
-      }
-
-      toast.success('Brand identity analyzed successfully', { duration: 2000 });
-    } catch (error: any) {
-      console.error('Error analyzing brand identity:', error);
-      toast.error(error?.message || 'Failed to analyze brand identity', { duration: 5000 });
-      updateNodeData<BrandCoreData>(nodeId, { isAnalyzing: false }, 'brandCore');
-    }
-  }, [nodesRef, updateNodeData, saveImmediately]);
-
-  const handleBrandCoreCancelAnalyze = useCallback((nodeId: string) => {
-    updateNodeData<BrandCoreData>(nodeId, { isAnalyzing: false }, 'brandCore');
-    toast.info('Analysis cancelled', { duration: 2000 });
-  }, [updateNodeData]);
-
-  const handleBrandCoreGenerateVisualPrompts = useCallback(async (nodeId: string) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'brandCore') return;
-
-    const brandCoreData = node.data as any;
-    if (!brandCoreData.brandIdentity) {
-      toast.error('Brand identity required. Connect logo and identity first.', { duration: 3000 });
-      return;
-    }
-
-    updateNodeData<BrandCoreData>(nodeId, { isGeneratingPrompts: true }, 'brandCore');
-
-    try {
-      const { generateVisualPrompt, consolidateStrategies, extractVisualStrategyText } = await import('@/services/brandPromptService');
-
-      // Extrair apenas dados visuais das estratégias (sem filosofia/conceitos)
-      let visualStrategyText: string | undefined;
-      if (brandCoreData.connectedStrategies && brandCoreData.connectedStrategies.length > 0) {
-        const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
-        visualStrategyText = extractVisualStrategyText(consolidated);
-      }
-
-      const visualPrompts = await generateVisualPrompt(brandCoreData.brandIdentity, {
-        visualStrategyText,
-      });
-
-      updateNodeData<BrandCoreData>(nodeId, {
-        visualPrompts,
-        isGeneratingPrompts: false,
-      }, 'brandCore');
-
-      if (saveImmediately) {
-        setTimeout(() => saveImmediately(), 100);
-      }
-    } catch (error: any) {
-      console.error('Error generating visual prompts:', error);
-      toast.error(error?.message || 'Failed to generate visual prompts', { duration: 5000 });
-      updateNodeData<BrandCoreData>(nodeId, { isGeneratingPrompts: false }, 'brandCore');
-    }
-  }, [nodesRef, updateNodeData, saveImmediately]);
-
-  const handleBrandCoreGenerateStrategicPrompts = useCallback(async (nodeId: string) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'brandCore') return;
-
-    const brandCoreData = node.data as any;
-    if (!brandCoreData.connectedStrategies || brandCoreData.connectedStrategies.length === 0) {
-      return; // No strategies to consolidate
-    }
-
-    try {
-      const { consolidateStrategies } = await import('@/services/brandPromptService');
-      const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
-
-      updateNodeData<BrandCoreData>(nodeId, {
-        strategicPrompts: { consolidated },
-      }, 'brandCore');
-
-      if (saveImmediately) {
-        setTimeout(() => saveImmediately(), 100);
-      }
-    } catch (error: any) {
-      console.error('Error consolidating strategies:', error);
-      toast.error(error?.message || 'Failed to consolidate strategies', { duration: 5000 });
-    }
-  }, [saveImmediately]);
-
-  const handleBrandCoreDataUpdate = useCallback((nodeId: string, newData: any) => {
-    updateNodeData<BrandCoreData>(nodeId, newData, 'brandCore');
-  }, [updateNodeData]);
-
-  // Handler para upload de PDF direto para R2 (evita armazenar base64)
-  const handleBrandCoreUploadPdfToR2 = useCallback(async (nodeId: string, pdfBase64: string): Promise<string> => {
-    if (!canvasId) {
-      throw new Error('Canvas ID is required to upload PDF to R2');
-    }
-    try {
-      const pdfUrl = await canvasApi.uploadPdfToR2(pdfBase64, canvasId, nodeId);
-      // Atualizar o Node com a URL do R2 (não armazenar base64)
-      updateNodeData<BrandCoreData>(nodeId, {
-        uploadedIdentityUrl: pdfUrl,
-        uploadedIdentity: undefined, // Limpar base64
-        uploadedIdentityType: 'pdf'
-      }, 'brandCore');
-      return pdfUrl;
-    } catch (error: any) {
-      console.error('Error uploading PDF to R2:', error);
-      throw error;
-    }
-  }, [canvasId, updateNodeData]);
 
   // ========== USEEFFECT - Atualização Final de Handlers Ref ==========
   // Atualiza handlersRef com os handlers adicionais (Logo, PDF, BrandCore)

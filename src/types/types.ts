@@ -13,7 +13,7 @@ import { GEMINI_MODELS } from '../constants/geminiModels';
 export type GeminiModel =
   // Text/chat models
   | typeof GEMINI_MODELS.PRO_2_0
-  | typeof GEMINI_MODELS.FLASH_2_0
+  | typeof GEMINI_MODELS.FLASH_2_5
   | typeof GEMINI_MODELS.PRO_1_5
   | typeof GEMINI_MODELS.FLASH_1_5
   | typeof GEMINI_MODELS.TEXT

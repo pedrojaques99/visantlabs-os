@@ -1,4 +1,5 @@
 import * as React from "react"
+import { createPortal } from "react-dom"
 import { ChevronDown, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -28,8 +29,10 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     const containerRef = React.useRef<HTMLDivElement>(null);
     const buttonRef = React.useRef<HTMLButtonElement>(null);
     const listRef = React.useRef<HTMLUListElement>(null);
+    const dropdownRef = React.useRef<HTMLDivElement>(null);
 
     const [renderPosition, setRenderPosition] = React.useState<'bottom' | 'top'>('bottom');
+    const [dropdownStyle, setDropdownStyle] = React.useState<React.CSSProperties>({});
 
     // Merge refs
     React.useImperativeHandle(ref, () => buttonRef.current as HTMLButtonElement);
@@ -37,37 +40,49 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     const selectedOption = options.find(opt => opt.value === value);
     const displayValue = selectedOption?.label || placeholder || 'Select...';
 
-    // Calculate position to avoid being cut off
+    const updatePosition = React.useCallback(() => {
+      if (!buttonRef.current) return;
+      const rect = buttonRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const dropdownHeight = 240;
+      const spaceBelow = windowHeight - rect.bottom;
+      const showAbove = spaceBelow < dropdownHeight && rect.top > dropdownHeight;
+
+      setRenderPosition(showAbove ? 'top' : 'bottom');
+
+      if (variant === 'node') {
+        setDropdownStyle({
+          position: 'fixed',
+          left: rect.left,
+          width: rect.width,
+          zIndex: 99999,
+          ...(showAbove
+            ? { bottom: windowHeight - rect.top + 2 }
+            : { top: rect.bottom + 2 }),
+        });
+      } else {
+        setDropdownStyle({});
+      }
+    }, [variant]);
+
     React.useLayoutEffect(() => {
-      if (!isOpen || !containerRef.current) return;
-
-      const checkPosition = () => {
-        const rect = containerRef.current!.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        const dropdownHeight = 240; // max-h-60 is 240px + some margin
-        const spaceBelow = windowHeight - rect.bottom;
-
-        if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
-          setRenderPosition('top');
-        } else {
-          setRenderPosition('bottom');
-        }
-      };
-
-      checkPosition();
-      // Also check on resize/scroll
-      window.addEventListener('resize', checkPosition);
-      window.addEventListener('scroll', checkPosition, true);
+      if (!isOpen) return;
+      updatePosition();
+      window.addEventListener('resize', updatePosition);
+      window.addEventListener('scroll', updatePosition, true);
       return () => {
-        window.removeEventListener('resize', checkPosition);
-        window.removeEventListener('scroll', checkPosition, true);
+        window.removeEventListener('resize', updatePosition);
+        window.removeEventListener('scroll', updatePosition, true);
       };
-    }, [isOpen]);
+    }, [isOpen, updatePosition]);
 
-    // Close on outside click
+    // Close on outside click — checks both trigger and portal dropdown
     React.useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
-        if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        const target = event.target as Node;
+        const insideTrigger = containerRef.current?.contains(target);
+        const insideDropdown = dropdownRef.current?.contains(target);
+        if (!insideTrigger && !insideDropdown) {
           setIsOpen(false);
           setFocusedIndex(0);
         }
@@ -134,7 +149,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     React.useEffect(() => {
       if (isOpen && selectedOption) {
         const index = options.findIndex(opt => opt.value === selectedOption.value);
-        setFocusedIndex(index >= 0 ? index : 10);
+        setFocusedIndex(index >= 0 ? index : 0);
       }
     }, [isOpen]);
 
@@ -145,15 +160,78 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     };
 
     const baseStyles = variant === 'node'
-      ? "w-full px-3 py-2 bg-neutral-800 border border-neutral-800/30 rounded text-xs font-mono text-neutral-300 z-[100]"
-      : "w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-xl text-neutral-200 text-sm font-mono z-[100]";
+      ? "w-full px-3 py-2 bg-neutral-800 border border-neutral-800/30 rounded text-xs font-mono text-neutral-300"
+      : "w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-xl text-neutral-200 text-sm font-mono";
 
     const focusStyles = variant === 'node'
-      ? "focus:outline-none focus:border-brand-cyan/50 z-[100]"
-      : "focus:outline-none focus:border-brand-cyan/70 focus:ring-1 focus:ring-brand-cyan/20 z-[100]";
+      ? "focus:outline-none focus:border-brand-cyan/50"
+      : "focus:outline-none focus:border-brand-cyan/70 focus:ring-1 focus:ring-brand-cyan/20";
+
+    const dropdownContent = (
+      <div
+        ref={dropdownRef}
+        className={cn(
+          "bg-neutral-950/90 backdrop-blur-xl",
+          "border border-neutral-800/50 rounded-md",
+          "shadow-2xl overflow-hidden",
+          variant !== 'node' && cn(
+            "absolute w-full",
+            renderPosition === 'bottom' ? "mt-1 top-full" : "mb-1 bottom-full",
+            "z-[99999]"
+          )
+        )}
+        style={variant === 'node' ? dropdownStyle : undefined}
+        role="listbox"
+      >
+        <ul
+          ref={listRef}
+          className="max-h-60 overflow-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent"
+        >
+          {options.map((option, index) => {
+            const isSelected = option.value === value;
+            const isFocused = index === focusedIndex;
+
+            return (
+              <li
+                key={option.value}
+                role="option"
+                aria-selected={isSelected}
+                onClick={() => handleSelect(option.value)}
+                onMouseEnter={() => setFocusedIndex(index)}
+                className={cn(
+                  "px-2 py-1.5 cursor-pointer",
+                  "text-[11px] font-medium relative",
+                  "transition-all duration-150",
+                  "flex items-center justify-start gap-2",
+                  "border-l-2 border-transparent",
+                  isFocused && "bg-neutral-800/60 border-neutral-600",
+                  isSelected && "bg-brand-cyan/10 text-brand-cyan border-brand-cyan/50",
+                  !isSelected && !isFocused && "text-neutral-400 hover:bg-neutral-800/40 hover:text-neutral-200 hover:border-neutral-700"
+                )}
+              >
+                <div className="flex items-center gap-2 flex-1 min-w-0 pointer-events-none">
+                  {option.icon && (
+                    <span className={cn(
+                      "flex-shrink-0 transition-colors duration-150",
+                      isSelected ? "text-brand-cyan" : "text-neutral-400"
+                    )}>
+                      {option.icon}
+                    </span>
+                  )}
+                  <span className="truncate">{option.label}</span>
+                </div>
+                {isSelected && (
+                  <Check size={14} className="text-brand-cyan flex-shrink-0" />
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    );
 
     return (
-      <div ref={containerRef} className={cn("relative w-full", isOpen && "z-[99999]")}>
+      <div ref={containerRef} className={cn("relative w-full")}>
         <button
           ref={buttonRef}
           type="button"
@@ -166,8 +244,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             "flex items-center justify-start gap-2",
             "hover:border-neutral-600/50",
             "disabled:cursor-not-allowed disabled:opacity-50",
-            isOpen && "border-[brand-cyan]/50",
-            variant === 'node' ? "node-interactive z-[99999]" : "",
+            variant === 'node' ? "node-interactive" : "",
             className
           )}
           aria-haspopup="listbox"
@@ -201,72 +278,13 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           />
         </button>
 
-        {/* Dropdown Menu */}
         {isOpen && (
-          <div
-            className={cn(
-              "absolute z-[99999] w-full",
-              renderPosition === 'bottom' ? "mt-1 top-full" : "mb-1 bottom-full",
-              "bg-neutral-950/70 backdrop-blur-xl",
-              "border border-neutral-800/50 rounded-md",
-              "shadow-2xl",
-              "overflow-hidden",
-              "animate-fade-in"
-            )}
-            role="listbox"
-            style={{
-              animation: 'fade-in 0.2s ease-out',
-              zIndex: 99999,
-            }}
-          >
-            <ul
-              ref={listRef}
-              className="max-h-60 overflow-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent"
-            >
-              {options.map((option, index) => {
-                const isSelected = option.value === value;
-                const isFocused = index === focusedIndex;
-
-                return (
-                  <li
-                    key={option.value}
-                    role="option"
-                    aria-selected={isSelected}
-                    onClick={() => handleSelect(option.value)}
-                    onMouseEnter={() => setFocusedIndex(index)}
-                    className={cn(
-                      "px-2 py-1.5 cursor-pointer",
-                      "text-[11px] font-medium relative",
-                      "transition-all duration-150",
-                      "flex items-center justify-start gap-2",
-                      "border-l-2 border-transparent", // Marker for hover
-                      isFocused && "bg-neutral-800/60 border-neutral-600", // Focused state
-                      isSelected && "bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]", // Selected state
-                      !isSelected && !isFocused && "text-neutral-400 hover:bg-neutral-800/40 hover:text-neutral-200 hover:border-neutral-700" // Subtle hover
-                    )}
-                  >
-                    <div className="flex items-center gap-2 flex-1 min-w-0 pointer-events-none">
-                      {option.icon && (
-                        <span className={cn(
-                          "flex-shrink-0 transition-colors duration-150",
-                          isSelected ? "text-brand-cyan" : "text-neutral-400"
-                        )}>
-                          {option.icon}
-                        </span>
-                      )}
-                      <span className="truncate">{option.label}</span>
-                    </div>
-                    {isSelected && (
-                      <Check size={14} className="text-brand-cyan flex-shrink-0" />
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+          variant === 'node'
+            ? createPortal(dropdownContent, document.body)
+            : dropdownContent
         )}
       </div>
-    )
+    );
   }
 )
 Select.displayName = "Select"

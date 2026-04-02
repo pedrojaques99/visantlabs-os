@@ -64,7 +64,7 @@ const getInitialFormData = (category: PromptCategory = 'presets', presetType?: L
     prompt: '',
     referenceImageUrl: '',
     aspectRatio: '16:9',
-    model: GEMINI_MODELS.FLASH_2_0,
+    model: GEMINI_MODELS.TEXT,
     tags: [],
     useCase: '',
 });
