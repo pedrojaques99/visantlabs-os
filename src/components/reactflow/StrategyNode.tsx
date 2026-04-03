@@ -1060,7 +1060,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   }
                 }}
                 variant="default"
-                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
               >
                 <FolderOpen size={14} />
                 <span>{t('canvasNodes.strategyNode.selectExistingProject')}</span>
@@ -1075,7 +1075,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   setIsCreatingNew(true);
                 }}
                 variant="primary"
-                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
               >
                 <Plus size={14} />
                 <span>{t('canvasNodes.strategyNode.createNewProject')}</span>
@@ -1126,7 +1126,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     nodeData.onCancelGeneration?.(id);
                   }}
                   variant="default"
-                  className="flex-1 px-3 py-2.5 gap-3 border-red-500/50 text-red-400 hover:bg-red-500/20 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all nodrag nopan"
+                  className="flex-1 px-3 py-2.5 gap-3 border-red-500/50 text-red-400 hover:bg-red-500/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-all nodrag nopan"
                 >
                   <XCircle size={14} />
                   <span>{t('canvasNodes.strategyNode.cancel')}</span>
@@ -1191,7 +1191,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 }}
                 disabled={!prompt.trim() || isGenerating}
                 variant="primary"
-                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
               >
                 <Target size={14} />
                 <span>{promptHasChanged && hasData ? t('canvasNodes.strategyNode.reAnalyze') || 'Re-analyze' : t('canvasNodes.strategyNode.analyze') || 'Analyze'}</span>

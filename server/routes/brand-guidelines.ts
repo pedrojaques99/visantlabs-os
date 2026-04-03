@@ -110,7 +110,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     const update: Partial<BrandGuideline> = req.body
     const { changeNote } = req.body // Optional user-provided change note
     const merged: any = {}
-    const fields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections', 'folder'] as const
+    const fields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections', 'folder', 'strategy', 'orderedBlocks'] as const
 
     for (const field of fields) {
       if (update[field] !== undefined) {
@@ -156,8 +156,8 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
 
     res.json({ guideline: { ...guideline, _id: guideline.id } })
   } catch (error: any) {
-    console.error('Error updating brand guideline:', error)
-    res.status(500).json({ error: 'Failed to update brand guideline' })
+    console.error('Error updating brand guideline:', error?.message || error)
+    res.status(500).json({ error: 'Failed to update brand guideline', message: error?.message })
   }
 })
 

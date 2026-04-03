@@ -6,6 +6,7 @@ import { useMockup } from './MockupContext';
 import { useSidebarEffects } from '@/hooks/useSidebarEffects';
 import { SidebarSetupSection } from './SidebarSetupSection';
 import { SidebarGenerationConfig } from './SidebarGenerationConfig';
+import { EssentialSidebar } from './EssentialSidebar';
 
 interface SidebarOrchestratorProps {
   // Layout props
@@ -24,7 +25,7 @@ interface SidebarOrchestratorProps {
   onDesignTypeChange: (type: DesignType) => void;
   onGenerateClick: () => void;
   onSuggestPrompts: () => void;
-  onGenerateSmartPrompt: () => void;
+  onGenerateSmartPrompt: (generateOutputs?: boolean) => Promise<void>;
   onSimplify: () => void;
   onRegenerate: () => void;
   onGenerateSuggestion: (suggestion: string) => void;
@@ -65,7 +66,11 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     selectedBrandingTags,
     selectedTags,
     isSurpriseMeMode,
+    isGeneratingPrompt,
+    isLoading,
   } = useMockup();
+
+  const [mode, setMode] = React.useState<'essential' | 'expert'>('essential');
 
   // Use extracted effects hook
   const { isLargeScreen, resizerRef } = useSidebarEffects({
@@ -122,23 +127,37 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
               />
             </div>
           ) : (
-            <SidebarGenerationConfig
-              onGenerateClick={onGenerateClick}
-              onRegenerate={onRegenerate}
-              onSurpriseMe={onSurpriseMe}
-              handleSurpriseMe={onSurpriseMe}
-              onSuggestPrompts={onSuggestPrompts}
-              onGenerateSmartPrompt={onGenerateSmartPrompt}
-              onSimplify={onSimplify}
-              onGenerateSuggestion={onGenerateSuggestion}
-              generateOutputsButtonRef={generateOutputsButtonRef}
-              onStartOver={onStartOver}
-              onReplaceImage={onReplaceImage}
-              onReferenceImagesChange={onReferenceImagesChange}
-              authenticationRequiredMessage={authenticationRequiredMessage}
-              isPromptReady={isPromptReady}
-              sidebarWidth={sidebarWidth}
-            />
+            mode === 'essential' ? (
+              <EssentialSidebar 
+                onSurpriseMe={onSurpriseMe}
+                onGenerateSmartPrompt={onGenerateSmartPrompt}
+                onSwitchToExpert={() => setMode('expert')}
+                isGeneratingPrompt={isGeneratingPrompt}
+                isGeneratingOutputs={isLoading.some(v => v)}
+                isDiceAnimating={false}
+                isSurpriseMeActive={isSurpriseMeMode}
+                authenticationRequiredMessage={authenticationRequiredMessage}
+                generateOutputsButtonRef={generateOutputsButtonRef}
+              />
+            ) : (
+              <SidebarGenerationConfig
+                onGenerateClick={onGenerateClick}
+                onRegenerate={onRegenerate}
+                onSurpriseMe={onSurpriseMe}
+                handleSurpriseMe={onSurpriseMe}
+                onSuggestPrompts={onSuggestPrompts}
+                onGenerateSmartPrompt={onGenerateSmartPrompt}
+                onSimplify={onSimplify}
+                onGenerateSuggestion={onGenerateSuggestion}
+                generateOutputsButtonRef={generateOutputsButtonRef}
+                onStartOver={onStartOver}
+                onReplaceImage={onReplaceImage}
+                onReferenceImagesChange={onReferenceImagesChange}
+                authenticationRequiredMessage={authenticationRequiredMessage}
+                isPromptReady={isPromptReady}
+                sidebarWidth={sidebarWidth}
+              />
+            )
           )}
         </div>
       </aside>

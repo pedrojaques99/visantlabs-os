@@ -49,6 +49,8 @@ export interface ModelConfig {
   supportsSearchGrounding: boolean;
   /** Input token limit from official docs */
   inputTokenLimit: number;
+  /** Domain for Logo.dev integration */
+  providerDomain?: string;
 }
 
 export const MODEL_CONFIG: Record<string, ModelConfig> = {
@@ -62,6 +64,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: true,
     supportsSearchGrounding: true,
     inputTokenLimit: 1_000_000,
+    providerDomain: 'google.com',
   },
   [GEMINI_MODELS.FLASH_3]: {
     label: 'Gemini 3 Flash',
@@ -73,6 +76,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: false,
     supportsSearchGrounding: true,
     inputTokenLimit: 1_000_000,
+    providerDomain: 'google.com',
   },
   [GEMINI_MODELS.FLASH_3_LITE]: {
     label: 'Gemini 3.1 Lite',
@@ -84,6 +88,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: false,
     supportsSearchGrounding: false,
     inputTokenLimit: 1_000_000,
+    providerDomain: 'google.com',
   },
   [GEMINI_MODELS.PRO_2_0]: {
     label: 'Gemini 2.0 Pro',
@@ -95,6 +100,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: true,
     supportsSearchGrounding: true,
     inputTokenLimit: 2_000_000,
+    providerDomain: 'google.com',
   },
   [GEMINI_MODELS.FLASH_2_5]: {
     label: 'Gemini 2.5 Flash',
@@ -106,6 +112,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: false,
     supportsSearchGrounding: true,
     inputTokenLimit: 1_000_000,
+    providerDomain: 'google.com',
   },
   [GEMINI_MODELS.PRO_1_5]: {
     label: 'Gemini 1.5 Pro',
@@ -117,6 +124,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: false,
     supportsSearchGrounding: false,
     inputTokenLimit: 2_000_000,
+    providerDomain: 'google.com',
   },
   [GEMINI_MODELS.FLASH_1_5]: {
     label: 'Gemini 1.5 Flash',
@@ -128,9 +136,10 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: false,
     supportsSearchGrounding: false,
     inputTokenLimit: 1_000_000,
+    providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_FLASH]: {
-    label: 'NB Flash',
+    label: 'Gemini 2.5 Flash',
     emoji: '🎨',
     maxHandles: 2,
     maxRefImages: 1,
@@ -139,9 +148,10 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: false,
     supportsSearchGrounding: false,
     inputTokenLimit: 65_536,
+    providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_NB2]: {
-    label: 'NB2',
+    label: 'Gemini 3.1 Flash',
     emoji: '💎',
     maxHandles: 4,
     maxRefImages: 3,
@@ -150,9 +160,10 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: false,
     supportsSearchGrounding: false,
     inputTokenLimit: 65_536,
+    providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_PRO]: {
-    label: 'NB Pro',
+    label: 'Gemini 3 Pro',
     emoji: '💎',
     maxHandles: 4,
     maxRefImages: 5,
@@ -161,6 +172,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: false,
     supportsSearchGrounding: false,
     inputTokenLimit: 65_536,
+    providerDomain: 'google.com',
   },
 };
 

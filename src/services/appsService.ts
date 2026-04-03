@@ -15,6 +15,7 @@ export interface AppConfig {
   span?: string;
   databaseInfo?: string;
   displayOrder: number;
+  isHidden: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

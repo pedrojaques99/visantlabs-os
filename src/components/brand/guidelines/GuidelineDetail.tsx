@@ -97,7 +97,7 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
 
   const handleUpdate = (patch: Partial<BrandGuideline>) => {
     if (!guideline.id) return;
-    updateMutation.mutate({ id: guideline.id, data: { ...guideline, ...patch } });
+    updateMutation.mutate({ id: guideline.id, data: patch });
   };
 
   const handleReIngest = () => {

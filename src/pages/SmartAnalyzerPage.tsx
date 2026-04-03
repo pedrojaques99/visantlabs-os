@@ -1066,7 +1066,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                                     onView={() => setShowFullImage(v)}
                                     onNewAngle={() => {}}
                                     onNewBackground={() => {}}
-                                    onSave={() => handleSaveToLibrary}
+                                    onSave={handleSaveToLibrary}
                                     aspectRatio={aspectRatio as any}
                                     prompt={refinedPrompt}
                                     designType={result.category}

@@ -19,6 +19,7 @@ import { getCreditsRequired } from '@/utils/creditCalculator';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { NodeButton } from './shared/node-button'
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
 
 export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -159,6 +160,18 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
         </div>
       </div>
 
+      {/* Result Display Section */}
+      {(data.resultImageUrl || data.resultImageBase64) && (
+        <div className="node-margin mb-4">
+          <NodeMediaDisplay
+            url={data.resultImageUrl || (data.resultImageBase64 ? (data.resultImageBase64.startsWith('data:') ? data.resultImageBase64 : `data:image/png;base64,${data.resultImageBase64}`) : null)}
+            isLoading={isLoading}
+            dragging={dragging}
+            alt="Upscale Result"
+          />
+        </div>
+      )}
+
       {/* Upscale Button */}
       <Tooltip 
         content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
@@ -175,7 +188,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
           }}
           onMouseDown={(e) => e.stopPropagation()}
           disabled={isLoading || !data.onUpscale}
-          className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="node-interactive group/gen"
         >
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">

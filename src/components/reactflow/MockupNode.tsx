@@ -18,6 +18,7 @@ import { LabeledHandle } from './shared/LabeledHandle';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeLabel } from './shared/node-label';
 import { getCreditsRequired } from '@/utils/creditCalculator';
+import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
 import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel } from '@/constants/geminiModels';
 import { isSeedreamModel } from '@/constants/seedreamModels';
 import { NodeHeader } from './shared/node-header';
@@ -740,6 +741,18 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         )}
       </div>
 
+      {/* Result Display Section */}
+      {(data.resultImageUrl || data.resultImageBase64) && (
+        <div className="node-margin">
+          <NodeMediaDisplay
+            url={data.resultImageUrl || (data.resultImageBase64 ? (data.resultImageBase64.startsWith('data:') ? data.resultImageBase64 : `data:image/png;base64,${data.resultImageBase64}`) : null)}
+            isLoading={isLoading}
+            dragging={dragging}
+            alt="Generation Result"
+          />
+        </div>
+      )}
+
       {/* Generate Button */}
       <Tooltip 
         content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${getCreditsRequired(model, resolution)} ${t('canvasNodes.promptNode.credits')}`}
@@ -754,7 +767,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           }}
           onMouseDown={(e) => e.stopPropagation()}
           disabled={isLoading || !hasConnectedImage}
-          className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="node-interactive group/gen"
         >
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">

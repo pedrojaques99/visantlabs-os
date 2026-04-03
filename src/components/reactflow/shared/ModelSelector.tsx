@@ -51,11 +51,24 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       const credits = getCreditsRequired(modelId, effectiveResolution, 'gemini');
       const isUnlimited = isGenerationUnlimited({ model: modelId, resolution: effectiveResolution, planMetadata });
 
+      const logoToken = import.meta.env.VITE_LOGO_DEV_TOKEN;
+      const icon = config.providerDomain ? (
+        <img 
+          src={`https://img.logo.dev/${config.providerDomain}?size=48${logoToken ? `&token=${logoToken}` : ''}`} 
+          alt={config.label}
+          className="w-3.5 h-3.5 rounded-sm object-contain"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
+      ) : undefined;
+
       return {
         value: modelId,
         label: `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`,
+        icon
       };
-    }).filter(Boolean) as { value: string; label: string }[];
+    }).filter(Boolean) as { value: string; label: string; icon?: React.ReactNode }[];
 
     const seedreamOptions = SEEDREAM_IMAGE_MODELS.map(modelId => {
       const config = SEEDREAM_MODEL_CONFIG[modelId];
@@ -63,9 +76,22 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       const credits = getCreditsRequired(modelId, effectiveResolution, 'seedream');
       const isUnlimited = isGenerationUnlimited({ model: modelId, resolution: effectiveResolution, planMetadata });
 
+      const logoToken = import.meta.env.VITE_LOGO_DEV_TOKEN;
+      const icon = config.providerDomain ? (
+        <img 
+          src={`https://img.logo.dev/${config.providerDomain}?size=48${logoToken ? `&token=${logoToken}` : ''}`} 
+          alt={config.label}
+          className="w-3.5 h-3.5 rounded-sm object-contain"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
+      ) : undefined;
+
       return {
         value: modelId,
         label: `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`,
+        icon
       };
     });
 

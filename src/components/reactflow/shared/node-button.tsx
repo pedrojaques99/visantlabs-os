@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { Button } from '@/components/ui/button'
 
 const nodeButtonVariants = cva(
-  "rounded-md text-[13px] font-mono transition-all flex items-center justify-center gap-3 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 nodrag nopan backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]",
+  "rounded-md text-[13px] font-mono transition-all flex items-center justify-center gap-3 whitespace-nowrap cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 nodrag nopan backdrop-blur-sm shadow-sm hover:shadow-md",
   {
     variants: {
       variant: {

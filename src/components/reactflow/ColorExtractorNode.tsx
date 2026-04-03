@@ -251,7 +251,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
           disabled={!canExtract}
           variant="primary"
           size="full"
-          className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98] mb-4"
+          className="node-interactive group/gen mb-4"
         >
           {isExtracting ? (
             <div className="flex items-center justify-center gap-2">

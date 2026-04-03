@@ -4,7 +4,6 @@ import type { FlowNodeData, ImageNodeData, OutputNodeData } from '@/types/reactF
 import type { DrawingStroke } from './useCanvasDrawing';
 import type { TimerRef } from '@/types/types';
 import { toast } from 'sonner';
-import { canvasApi } from '@/services/canvasApi';
 import { getImageUrl } from '@/utils/imageUtils';
 import { collectR2UrlsForDeletion } from './utils/r2UploadHelpers';
 import { copyMediaFromNode, getMediaFromNodeForCopy, copyMediaAsPngFromNode } from '@/utils/canvas/canvasNodeUtils';
@@ -150,22 +149,15 @@ export const useCanvasKeyboard = (
 
           // Delete nodes if any selected
           if (selectedNodes.length > 0) {
-            // Delete images/videos from R2 for all node types before removing them
-            Promise.allSettled(
-              selectedNodes.map(async (node) => {
-                const nodeData = node.data as any;
-                const isLiked = nodeData.isLiked === true || nodeData.mockup?.isLiked === true;
-                const urlsToDelete = collectR2UrlsForDeletion(node, isLiked);
+            // NOTE: R2 files are NOT deleted here to preserve undo (Ctrl+Z) functionality.
+            // R2 cleanup happens on permanent deletion (context menu) or canvas save.
 
-                if (urlsToDelete.length > 0) {
-                  await Promise.allSettled(
-                    urlsToDelete.map(url => canvasApi.deleteImageFromR2(url))
-                  ).catch((error) => {
-                    console.error('Failed to delete files from R2:', error);
-                  });
-                }
-              })
-            ).catch(() => {});
+            // Warn if any deleted node has R2 assets (images will be lost on save)
+            const hasR2Assets = selectedNodes.some((node) => {
+              const nodeData = node.data as any;
+              const isLiked = nodeData.isLiked === true || nodeData.mockup?.isLiked === true;
+              return collectR2UrlsForDeletion(node, isLiked).length > 0;
+            });
 
             const nodeIdsToRemove = new Set(selectedNodes.map(n => n.id));
             const newNodes = nodes.filter(n => !nodeIdsToRemove.has(n.id));
@@ -180,7 +172,14 @@ export const useCanvasKeyboard = (
               addToHistory(newNodes, newEdges, drawings);
             }, 0);
 
-            toast.success(`Removed ${selectedNodes.length} node${selectedNodes.length > 1 ? 's' : ''}`, { duration: 2000 });
+            if (hasR2Assets) {
+              toast.warning(
+                `Removed ${selectedNodes.length} node${selectedNodes.length > 1 ? 's' : ''} — images will be permanently lost on save. Undo with Ctrl+Z to recover.`,
+                { duration: 5000 }
+              );
+            } else {
+              toast.success(`Removed ${selectedNodes.length} node${selectedNodes.length > 1 ? 's' : ''}`, { duration: 2000 });
+            }
           }
         }
       }

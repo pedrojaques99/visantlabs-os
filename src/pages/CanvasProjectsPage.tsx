@@ -355,15 +355,24 @@ export const CanvasProjectsPage: React.FC = () => {
     });
   };
 
-  // Filter projects based on search query
+  // Filter and sort projects based on search query and last updated
   const filteredProjects = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return projects;
+    let result = [...projects];
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(project =>
+        project.name?.toLowerCase().includes(query)
+      );
     }
-    const query = searchQuery.toLowerCase();
-    return projects.filter(project =>
-      project.name?.toLowerCase().includes(query)
-    );
+
+    // Sort by recently edited (updatedAt)
+    return result.sort((a, b) => {
+      const dateA = new Date(a.updatedAt || a.createdAt).getTime();
+      const dateB = new Date(b.updatedAt || b.createdAt).getTime();
+      return dateB - dateA;
+    });
   }, [projects, searchQuery]);
 
   // Show loading state while checking access
@@ -629,9 +638,9 @@ export const CanvasProjectsPage: React.FC = () => {
                             </h3>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono mb-3">
+                        <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono mb-3" title={`${t('canvas.lastEdited')}: ${formatDate(project.updatedAt || project.createdAt)}`}>
                           <Calendar className="h-3.5 w-3.5" />
-                          <span>{formatDate(project.createdAt)}</span>
+                          <span>{t('canvas.lastEdited')}: {formatDate(project.updatedAt || project.createdAt)}</span>
                         </div>
                       </div>
                     </div>
