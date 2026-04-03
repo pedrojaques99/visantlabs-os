@@ -1,7 +1,8 @@
 import React, { useState, memo, useEffect, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, type Node, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Wrench, Wand2 } from 'lucide-react';
+import { Wrench, Wand2, Diamond } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { Tooltip } from '@/components/ui/Tooltip';
 import type { MergeNodeData } from '@/types/reactFlow';
 import type { GeminiModel, SeedreamModel, Resolution } from '@/types/types';
 import { cn } from '@/lib/utils';
@@ -158,16 +159,11 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
-            <Wrench size={16} className="text-brand-cyan" />
-          </div>
-          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
-            {t('canvasNodes.mergeNode.title') || 'Merge Node'}
-          </h3>
-        </div>
-      </div>
+      <NodeHeader 
+        icon={Wrench} 
+        title={t('canvasNodes.mergeNode.title') || 'Merge Node'} 
+        selected={selected} 
+      />
 
       <div className="p-4 flex flex-col gap-[var(--node-gap)]">
         {/* Connected Images Thumbnails - unified component */}
@@ -180,32 +176,31 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
 
         {/* Generate Prompt Button */}
         {hasEnoughImages && (
-          <NodeButton
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              handleGeneratePrompt();
-            }}
-            onMouseDown={(e) => {
-              e.stopPropagation();
-            }}
-            disabled={isGeneratingPrompt || isLoading}
-            variant="purple"
-            size="full"
-            className="shadow-sm backdrop-blur-sm"
-          >
-            {isGeneratingPrompt ? (
-              <>
-                <GlitchLoader size={14} className="mr-2" color="currentColor" />
-                <span>{t('canvasNodes.mergeNode.generatingPrompt') || 'Generating Prompt...'}</span>
-              </>
-            ) : (
-              <>
-                <Wand2 size={14} className="mr-2" />
-                <span>{t('canvasNodes.mergeNode.generatePrompt') || 'Generate Prompt'}</span>
-              </>
-            )}
-          </NodeButton>
+          <div className="w-full">
+            <NodeButton
+              onClick={(e) => {
+                e.stopPropagation();
+                handleGeneratePrompt();
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              disabled={isGeneratingPrompt || isLoading}
+              variant="purple"
+              size="full"
+              className="node-interactive group/prompt transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              {isGeneratingPrompt ? (
+                <div className="flex items-center justify-center gap-2">
+                  <GlitchLoader size={14} color="currentColor" />
+                  <span className="animate-pulse">{t('canvasNodes.mergeNode.generatingPrompt') || 'Generating...'}</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2">
+                  <Wand2 size={14} className="group-hover/prompt:rotate-12 transition-transform" />
+                  <span className="font-semibold tracking-tight">{t('canvasNodes.mergeNode.generatePrompt') || 'Generate Prompt'}</span>
+                </div>
+              )}
+            </NodeButton>
+          </div>
         )}
 
         {/* Prompt Input */}
@@ -242,33 +237,38 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
         </div>
 
         {/* Generate Image Button */}
-        <NodeButton
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            handleGenerateImage();
-          }}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-          }}
-          disabled={isLoading || isGeneratingPrompt || !prompt.trim()}
-          variant="primary"
-          size="full"
-          className="shadow-sm backdrop-blur-sm"
+        <Tooltip 
+          content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
+          delay={500}
         >
-          {isLoading ? (
-            <>
-              <GlitchLoader size={14} className="mr-2" color="currentColor" />
-              <span>{t('canvasNodes.mergeNode.generatingImage') || 'Generating Image...'}</span>
-            </>
-          ) : (
-            <>
-              <Wrench size={14} className="mr-2" />
-              <span>{t('canvasNodes.mergeNode.generateImage') || 'Generate Image'}</span>
-              <span className="ml-2 text-[10px] opacity-70">({creditsRequired}c)</span>
-            </>
-          )}
-        </NodeButton>
+          <NodeButton
+            onClick={(e) => {
+              e.stopPropagation();
+              handleGenerateImage();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            disabled={isLoading || isGeneratingPrompt || !prompt.trim()}
+            variant="primary"
+            size="full"
+            className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2">
+                <GlitchLoader size={14} color="brand-cyan" />
+                <span className="animate-pulse">{t('canvasNodes.mergeNode.generatingImage') || 'Generating Image...'}</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                <Wrench size={14} className="group-hover/gen:rotate-12 transition-transform" />
+                <span className="font-semibold tracking-tight">{t('canvasNodes.mergeNode.generateImage') || 'Generate Image'}</span>
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                  <Diamond size={10} className="opacity-50 fill-current" />
+                  {creditsRequired}
+                </div>
+              </div>
+            )}
+          </NodeButton>
+        </Tooltip>
 
         {/* Result Preview */}
         {hasResult && (data.resultImageUrl || data.resultImageBase64) && (

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { type NodeProps, type Node, useReactFlow, NodeResizer, Position } from '@xyflow/react';
-import { Image as ImageIcon, ChevronDown, ChevronUp, Plus, X, FileText, ChevronRight, Settings, Camera, Layers, MapPin, Sun, Box, Sparkles, LayoutGrid } from 'lucide-react';
+import { Image as ImageIcon, ChevronDown, ChevronUp, Plus, X, FileText, ChevronRight, Settings, Camera, Layers, MapPin, Sun, Box, Sparkles, LayoutGrid, Diamond } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { Tooltip } from '@/components/ui/Tooltip';
 import type { MockupNodeData } from '@/types/reactFlow';
 import type { MockupPresetType, MockupPreset } from '@/types/mockupPresets';
 import type { Mockup } from '@/services/mockupApi';
@@ -740,37 +741,38 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       </div>
 
       {/* Generate Button */}
-      <NodeButton
-        variant="primary"
-        size="full"
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          handleGenerate();
-        }}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-        }}
-        disabled={isLoading || !hasConnectedImage}
-        className={cn(
-          (isLoading || !hasConnectedImage) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
-        )}
-        title={!hasConnectedImage ? t('canvasNodes.mockupNode.connectBrandCoreHint') : undefined}
+      <Tooltip 
+        content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${getCreditsRequired(model, resolution)} ${t('canvasNodes.promptNode.credits')}`}
+        delay={500}
       >
-        {isLoading ? (
-          <>
-            <GlitchLoader size={14} />
-            {t('canvasNodes.mockupNode.generating')}
-          </>
-        ) : (
-          <>
-            <ImageIcon size={14} />
-            {t('canvasNodes.mockupNode.generateMockup')}
-          </>
-        )}
-      </NodeButton>
-
-
+        <NodeButton
+          variant="primary"
+          size="full"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleGenerate();
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          disabled={isLoading || !hasConnectedImage}
+          className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2">
+              <GlitchLoader size={14} color="brand-cyan" />
+              <span className="animate-pulse">{t('canvasNodes.mockupNode.generating')}</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <Sparkles size={14} className="group-hover/gen:rotate-12 transition-transform" />
+              <span className="font-semibold tracking-tight">{t('canvasNodes.mockupNode.generateMockup')}</span>
+              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                <Diamond size={10} className="opacity-50 fill-current" />
+                {getCreditsRequired(model, resolution)}
+              </div>
+            </div>
+          )}
+        </NodeButton>
+      </Tooltip>
 
       {/* Add Mockup Button */}
       <div className="mt-2 pt-2 border-t border-neutral-700/30 flex justify-center">

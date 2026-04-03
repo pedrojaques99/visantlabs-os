@@ -504,8 +504,8 @@ model AppConfig {
   span         String?  // lg:col-span-1 etc.
   databaseInfo String?  // Info specifically for the admin (e.g., table name, config keys)
   displayOrder Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime? @updatedAt
 
   @@map("app_configs")
 }

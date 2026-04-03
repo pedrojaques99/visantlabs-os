@@ -149,7 +149,9 @@ export const SmartAnalyzerPage: React.FC = () => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [selectedFont, setSelectedFont] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingVariations, setIsGeneratingVariations] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [generatedVariations, setGeneratedVariations] = useState<string[]>([]);
   const [mockupId, setMockupId] = useState<string | null>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -259,6 +261,7 @@ export const SmartAnalyzerPage: React.FC = () => {
         if (data.params.selectedFont) setSelectedFont(data.params.selectedFont);
       }
       if (data.generatedImage) setGeneratedImage(data.generatedImage);
+      if (data.generatedVariations) setGeneratedVariations(data.generatedVariations);
       if (data.mockupId) setMockupId(data.mockupId);
       if (data.isLiked) setIsLiked(data.isLiked);
       if (data.activeSuggestions) setActiveSuggestions(data.activeSuggestions);
@@ -277,6 +280,7 @@ export const SmartAnalyzerPage: React.FC = () => {
           result,
           mode,
           generatedImage,
+          generatedVariations,
           mockupId,
           isLiked,
           activeSuggestions,
@@ -296,7 +300,7 @@ export const SmartAnalyzerPage: React.FC = () => {
         console.warn('Analysis state exceeds storage quota. Persistence disabled for this session.');
       }
     }
-  }, [image, result, mode, intensity, visualStyle, aspectRatio, selectedFont, useAutoLayout, useSemanticNaming, useTokens, generatedImage, mockupId, isLiked, activeSuggestions, editedPrompt]);
+  }, [image, result, mode, intensity, visualStyle, aspectRatio, selectedFont, useAutoLayout, useSemanticNaming, useTokens, generatedImage, generatedVariations, mockupId, isLiked, activeSuggestions, editedPrompt]);
 
   const handleFileSelect = useCallback((file: File) => {
     if (!file) return;
@@ -352,6 +356,7 @@ export const SmartAnalyzerPage: React.FC = () => {
     setImage(null);
     setResult(null);
     setGeneratedImage(null);
+    setGeneratedVariations([]);
     setMockupId(null);
     setIsLiked(false);
     setActiveSuggestions([]);
@@ -368,6 +373,7 @@ export const SmartAnalyzerPage: React.FC = () => {
 
     setIsGenerating(true);
     setGeneratedImage(null);
+    setGeneratedVariations([]);
 
     try {
       const token = authService.getToken();
@@ -384,7 +390,7 @@ export const SmartAnalyzerPage: React.FC = () => {
             mimeType: image.mimeType
           },
           aspectRatio,
-          model: GEMINI_MODELS.IMAGE_NB2, // Use Nano Banana 2 as requested
+          model: GEMINI_MODELS.IMAGE_NB2,
           resolution: '1K'
         }),
       });
@@ -407,6 +413,67 @@ export const SmartAnalyzerPage: React.FC = () => {
       toast.error('Failed to generate image');
     } finally {
       setIsGenerating(false);
+    }
+  }, [result, image, aspectRatio, refinedPrompt]);
+
+  const handleGenerateVariations = useCallback(async () => {
+    if (!result?.prompt || !image?.base64) {
+      toast.error('Analyze the image first');
+      return;
+    }
+
+    setIsGeneratingVariations(true);
+    setGeneratedImage(null);
+    setGeneratedVariations([]);
+    
+    toast.loading('Envisioning multiple variations...', { id: 'variations' });
+
+    try {
+      const token = authService.getToken();
+      const generateOne = async () => {
+        const response = await fetch('/api/mockups/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            promptText: refinedPrompt,
+            baseImage: {
+              base64: image.base64,
+              mimeType: image.mimeType
+            },
+            aspectRatio,
+            model: GEMINI_MODELS.IMAGE_NB2,
+            resolution: '1K'
+          }),
+        });
+        
+        if (!response.ok) return null;
+        const data = await response.json();
+        return data.imageUrl || (data.imageBase64 ? `data:image/png;base64,${data.imageBase64}` : null);
+      };
+
+      // Generate 4 in parallel
+      const results = await Promise.all([
+        generateOne(),
+        generateOne(),
+        generateOne(),
+        generateOne()
+      ]);
+
+      const validResults = results.filter(r => !!r) as string[];
+
+      if (validResults.length > 0) {
+        setGeneratedVariations(validResults);
+        toast.success(`Generated ${validResults.length} variations!`, { id: 'variations' });
+      } else {
+        throw new Error('Generation failed for all variations');
+      }
+    } catch (error: any) {
+      toast.error('Failed to generate variations', { id: 'variations' });
+    } finally {
+      setIsGeneratingVariations(false);
     }
   }, [result, image, aspectRatio, refinedPrompt]);
 
@@ -961,37 +1028,81 @@ export const SmartAnalyzerPage: React.FC = () => {
                 <div className="grid lg:grid-cols-12 gap-12">
                   <div className="lg:col-span-8 space-y-10">
                     {/* #2: GENERATED RESULT BLOCK (LARGE) - Moved above prompt */}
-                    {(isGenerating || generatedImage) && (
+                    {/* #2: GENERATED RESULT BLOCK (LARGE) - Moved above prompt */}
+                    {(isGenerating || isGeneratingVariations || generatedImage || generatedVariations.length > 0) && (
                       <div className="space-y-6">
                         <div className="flex items-center justify-between pl-1">
                           <h4 className="text-[10px] font-mono uppercase tracking-[0.3em] text-brand-cyan flex items-center gap-3">
                             <span className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse" />
-                            Generated Visual Synthesis
+                            {generatedVariations.length > 0 ? "Visual Variations Suite" : "Generated Visual Synthesis"}
                           </h4>
                           <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">
-                            8K • Photorealistic • {selectedFont || 'Standard'}
+                            {generatedVariations.length > 0 ? `${generatedVariations.length} Scenarios` : "8K • Photorealistic"} • {selectedFont || 'Standard'}
                           </span>
                         </div>
-                        <div className="relative aspect-video rounded-3xl overflow-hidden bg-neutral-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5">
-                          <MockupCard
-                            base64Image={generatedImage}
-                            isLoading={isGenerating}
-                            isRedrawing={isGenerating && !!generatedImage}
-                            onRedraw={handleGenerateInline}
-                            onView={() => setShowFullImage(generatedImage)}
-                            onNewAngle={() => {}}
-                            onNewBackground={() => {}}
-                            onSave={handleSaveToLibrary}
-                            isSaved={!!mockupId}
-                            mockupId={mockupId || undefined}
-                            onToggleLike={handleToggleLike}
-                            isLiked={isLiked}
-                            aspectRatio={aspectRatio as any}
-                            prompt={refinedPrompt}
-                            designType={result.category}
-                            className="w-full h-full"
-                          />
-                        </div>
+                        
+                        <AnimatePresence mode="wait">
+                          {generatedVariations.length > 0 ? (
+                            <motion.div 
+                              key="variations-grid"
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              className="grid grid-cols-2 gap-4"
+                            >
+                              {generatedVariations.map((v, idx) => (
+                                <motion.div 
+                                  key={`var-${idx}`}
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: idx * 0.1 }}
+                                  className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-white/5 shadow-2xl"
+                                >
+                                  <MockupCard
+                                    base64Image={v}
+                                    isLoading={false}
+                                    isRedrawing={false}
+                                    onRedraw={() => {}} // Local redraw handled by Re-imagine or Variations button
+                                    onView={() => setShowFullImage(v)}
+                                    onNewAngle={() => {}}
+                                    onNewBackground={() => {}}
+                                    onSave={() => handleSaveToLibrary}
+                                    aspectRatio={aspectRatio as any}
+                                    prompt={refinedPrompt}
+                                    designType={result.category}
+                                    className="w-full h-full"
+                                  />
+                                </motion.div>
+                              ))}
+                            </motion.div>
+                          ) : (
+                            <motion.div 
+                              key="single-result"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="relative aspect-video rounded-3xl overflow-hidden bg-neutral-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5"
+                            >
+                              <MockupCard
+                                base64Image={generatedImage}
+                                isLoading={isGenerating || isGeneratingVariations}
+                                isRedrawing={isGenerating && !!generatedImage}
+                                onRedraw={handleGenerateInline}
+                                onView={() => setShowFullImage(generatedImage)}
+                                onNewAngle={() => {}}
+                                onNewBackground={() => {}}
+                                onSave={handleSaveToLibrary}
+                                isSaved={!!mockupId}
+                                mockupId={mockupId || undefined}
+                                onToggleLike={handleToggleLike}
+                                isLiked={isLiked}
+                                aspectRatio={aspectRatio as any}
+                                prompt={refinedPrompt}
+                                designType={result.category}
+                                className="w-full h-full"
+                              />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     )}
 
@@ -1024,21 +1135,40 @@ export const SmartAnalyzerPage: React.FC = () => {
                           
                           <div className="flex items-center gap-4">
                             {result.mode === 'image-gen' && (
-                              <Button 
-                                onClick={() => handleGenerateWithGemini()}
-                                disabled={isGenerating}
-                                className={cn(
-                                  "h-10 px-5 bg-brand-cyan hover:bg-brand-cyan-dark text-black rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest group shadow-[0_0_20px_rgba(34,211,238,0.2)]",
-                                  isGenerating && "opacity-80"
-                                )}
-                              >
-                                {isGenerating ? (
-                                  <Loader2 size={12} className="mr-2 animate-spin" />
-                                ) : (
-                                  <Sparkles size={12} className="mr-2 group-hover:rotate-12 transition-transform text-black/40" />
-                                )}
-                                {isGenerating ? 'Envisioning...' : 'Gerar com Gemini'}
-                              </Button>
+                              <div className="flex items-center gap-2">
+                                <Button 
+                                  onClick={() => handleGenerateVariations()}
+                                  disabled={isGenerating || isGeneratingVariations}
+                                  variant="outline"
+                                  className={cn(
+                                    "h-10 px-4 border-white/10 hover:border-brand-cyan/50 hover:bg-brand-cyan/5 text-neutral-400 hover:text-brand-cyan rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest group",
+                                    isGeneratingVariations && "opacity-80"
+                                  )}
+                                >
+                                  {isGeneratingVariations ? (
+                                    <Loader2 size={12} className="mr-2 animate-spin" />
+                                  ) : (
+                                    <Sparkles size={12} className="mr-2 group-hover:scale-110 transition-transform opacity-50" />
+                                  )}
+                                  {isGeneratingVariations ? 'Thinking...' : 'Variações'}
+                                </Button>
+
+                                <Button 
+                                  onClick={() => handleGenerateWithGemini()}
+                                  disabled={isGenerating || isGeneratingVariations}
+                                  className={cn(
+                                    "h-10 px-5 bg-brand-cyan hover:bg-brand-cyan-dark text-black rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest group shadow-[0_0_20px_rgba(34,211,238,0.2)]",
+                                    isGenerating && "opacity-80"
+                                  )}
+                                >
+                                  {isGenerating ? (
+                                    <Loader2 size={12} className="mr-2 animate-spin" />
+                                  ) : (
+                                    <Sparkles size={12} className="mr-2 group-hover:rotate-12 transition-transform text-black/40" />
+                                  )}
+                                  {isGenerating ? 'Envisioning...' : 'Gerar com Gemini'}
+                                </Button>
+                              </div>
                             )}
 
                             <div className="flex items-center gap-1.5 p-1 bg-white/5 border border-white/10 rounded-xl">

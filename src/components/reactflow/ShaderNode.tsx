@@ -1,8 +1,10 @@
 import React, { useEffect, memo, useRef, useCallback, useState } from 'react';
 import { type NodeProps, type Node, NodeResizer, useReactFlow } from '@xyflow/react';
 import { useParams } from 'react-router-dom';
-import { Sparkles, Download, Maximize2, Upload, Video, Image as ImageIcon, X } from 'lucide-react';
+import { Sparkles, Download, Maximize2, Upload, Video, Image as ImageIcon, X, Diamond } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { NodeHeader } from './shared/node-header';
+import { Tooltip } from '@/components/ui/Tooltip';
 import type { ShaderNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { NodeHandles } from './shared/NodeHandles';
@@ -495,10 +497,17 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
       <NodeHandles />
 
       {/* Header */}
-      <div className="flex items-center gap-3 node-margin">
-        <Sparkles size={16} className="text-brand-cyan" />
-        <h3 className="text-xs font-semibold text-neutral-300 font-mono">Shader Effect</h3>
-      </div>
+      <NodeHeader
+        icon={Sparkles}
+        title="Shader Effect"
+        selected={selected}
+        isBrandActive={data.isBrandActive}
+        onToggleBrand={(active) => {
+          if (data.onUpdateData) {
+            data.onUpdateData(id, { isBrandActive: active });
+          }
+        }}
+      />
 
       {/* Status/Info - Show manual apply option when ready (only for images, videos auto-process) */}
       {!isLoading && hasConnectedImage && !hasResult && !isVideoInput ? (

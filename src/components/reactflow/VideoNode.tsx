@@ -1,6 +1,12 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Position, type NodeProps, useReactFlow, NodeResizer, useNodes } from '@xyflow/react';
-import { Clapperboard, Video as VideoIcon, Settings, ChevronRight } from 'lucide-react';
+import { 
+  Clapperboard, 
+  Video as VideoIcon, 
+  Settings, 
+  ChevronRight, 
+  Diamond 
+} from 'lucide-react';
 import { SeedControl } from './shared/SeedControl';
 import type { VideoNodeData, GenerateVideoParams } from '@/types/reactFlow';
 import { VeoModel, GenerationMode, type Resolution, type AspectRatio } from '@/types/types';
@@ -24,6 +30,7 @@ import { Input } from '@/components/ui/input';
 import { useLinkedGuidelineId } from '@/components/canvas/CanvasHeaderContext';
 import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
 import { toast } from 'sonner';
+import { Tooltip } from '@/components/ui/Tooltip';
 
 // Constants
 const DEFAULT_MODEL = VeoModel.VEO_3_1;
@@ -541,30 +548,38 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       )}
 
       {/* Generate Button */}
-      <NodeButton
-        variant="primary"
-        size="full"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleGenerate();
-        }}
-        onMouseDown={(e) => e.stopPropagation()}
-        disabled={isGenerateDisabled}
-        className="node-interactive py-2.5"
+      <Tooltip 
+        content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${CREDITS_REQUIRED} ${t('canvasNodes.promptNode.credits')}`}
+        delay={500}
       >
-        {isLoading ? (
-          <>
-            <GlitchLoader size={16} color="brand-cyan" />
-            <span>{t('canvasNodes.videoNode.generating') || 'Generating...'}</span>
-          </>
-        ) : (
-          <>
-            <VideoIcon size={16} />
-            <span>{t('canvasNodes.videoNode.generateVideo') || 'Generate Video'}</span>
-            <span className="text-brand-cyan/50 ml-1">({CREDITS_REQUIRED})</span>
-          </>
-        )}
-      </NodeButton>
+        <NodeButton
+          variant="primary"
+          size="full"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleGenerate();
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          disabled={isGenerateDisabled}
+          className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2">
+              <GlitchLoader size={14} color="brand-cyan" />
+              <span className="animate-pulse">{t('canvasNodes.videoNode.generating') || 'Generating...'}</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <VideoIcon size={14} className="group-hover/gen:rotate-12 transition-transform" />
+              <span className="font-semibold tracking-tight">{t('canvasNodes.videoNode.generateVideo') || 'Generate Video'}</span>
+              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                <Diamond size={10} className="opacity-50 fill-current" />
+                {CREDITS_REQUIRED}
+              </div>
+            </div>
+          )}
+        </NodeButton>
+      </Tooltip>
 
       {/* Result Preview */}
       {(nodeData.resultVideoUrl || nodeData.resultVideoBase64) && !isLoading && (

@@ -2157,6 +2157,8 @@
     "brandWizardImagesPlaceholderShort": "IMAGENS",
     "brandWizardPdfPlaceholderShort": "PDF",
     "brandWizardExtractionHint": "extração essencialista de estratégia, arquétipos e tokens.",
+    "brandWizardImagesPasted": "Imagens coladas da área de transferência",
+    "brandWizardPdfPasted": "PDF colado da área de transferência",
     "brandWizardErrorImage": "Erro ao extrair dados das imagens",
     "branding": "IDENTIDADE_",
     "brandingComment": "Selecione tags que descrevem o estilo da sua marca (máx. 3).",
