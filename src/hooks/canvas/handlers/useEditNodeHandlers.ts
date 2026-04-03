@@ -10,6 +10,7 @@ import { canvasApi } from '@/services/canvasApi';
 import { aiApi } from '@/services/aiApi';
 import { authService } from '@/services/authService';
 import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
+import { resolveProvider } from '@/utils/canvas/generationContext';
 import { toast } from 'sonner';
 
 interface UseEditNodeHandlersParams {
@@ -81,7 +82,7 @@ export const useEditNodeHandlers = ({
 
     const model = config.model || DEFAULT_MODEL;
     const resolution = config.resolution;
-    const hasCredits = await validateCredits(model, resolution);
+    const hasCredits = await validateCredits(model, resolution, resolveProvider(model));
     if (!hasCredits) return;
 
     updateNodeData<EditNodeData>(nodeId, { ...config, isLoading: true }, 'edit');
@@ -160,7 +161,7 @@ export const useEditNodeHandlers = ({
     }
 
     const model: GeminiModel = resolution === '4K' ? GEMINI_MODELS.PRO : GEMINI_MODELS.NB2;
-    const hasCredits = await validateCredits(model, resolution);
+    const hasCredits = await validateCredits(model, resolution, 'gemini');
     if (!hasCredits) return;
 
     updateNodeLoadingState<UpscaleNodeData>(nodeId, true, 'upscale');

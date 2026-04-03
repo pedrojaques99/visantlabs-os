@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import type { MutableRefObject } from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData, PromptNodeData, TextNodeData } from '@/types/reactFlow';
-import type { GeminiModel, Resolution, UploadedImage } from '@/types/types';
+import type { GeminiModel, SeedreamModel, UploadedImage } from '@/types/types';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { validateCredits } from '@/services/reactFlowService';
 import { mockupApi } from '@/services/mockupApi';
@@ -11,13 +11,12 @@ import { normalizeImagesToUploadedImages } from '../utils/nodeGenerationUtils';
 import { getBrandContextForNode, buildEnhancement } from '../useBrandContext';
 import {
   DEFAULT_MODEL,
-  DEFAULT_ASPECT_RATIO,
-  isAdvancedModel,
   getMaxHandles,
   getMaxRefImages,
-  getDefaultResolution,
   getModelConfig,
 } from '@/constants/geminiModels';
+import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
+import { resolveGenerationContext } from '@/utils/canvas/generationContext';
 import { toast } from 'sonner';
 
 interface UsePromptNodeHandlersParams {
@@ -90,7 +89,7 @@ export const usePromptNodeHandlers = ({
     nodeId: string,
     prompt: string,
     connectedImages?: string[],
-    model?: GeminiModel
+    model?: GeminiModel | SeedreamModel
   ) => {
     const node = nodesRef.current.find(n => n.id === nodeId);
     if (!node || node.type !== 'prompt') {
@@ -99,12 +98,13 @@ export const usePromptNodeHandlers = ({
     }
 
     const promptData = node.data as PromptNodeData;
-    const selectedModel: GeminiModel = model || promptData.model || DEFAULT_MODEL;
-    const isAdvanced = isAdvancedModel(selectedModel);
-    const resolution: Resolution | undefined = isAdvanced ? (promptData.resolution || (getDefaultResolution(selectedModel) || '1K')) : undefined;
-    const aspectRatio = isAdvanced ? (promptData.aspectRatio || DEFAULT_ASPECT_RATIO) : undefined;
+    const selectedModel = model || promptData.model || DEFAULT_MODEL;
+    const { provider, resolution, aspectRatio } = resolveGenerationContext(selectedModel, {
+      resolution: promptData.resolution,
+      aspectRatio: promptData.aspectRatio,
+    });
 
-    const hasCredits = await validateCredits(selectedModel, resolution);
+    const hasCredits = await validateCredits(selectedModel, resolution, provider);
     if (!hasCredits) return;
 
     updateNodeData<PromptNodeData>(nodeId, {
@@ -146,12 +146,17 @@ export const usePromptNodeHandlers = ({
         console.log('[handlePromptGenerate] Normalizing images to UploadedImage format...');
         const uploadedImages = await normalizeImagesToUploadedImages(connectedImages);
 
-        const maxImages = getMaxHandles(selectedModel);
+        const maxImages = provider === 'seedream'
+          ? (getSeedreamModelConfig(selectedModel)?.maxRefImages ?? 14) + 1
+          : getMaxHandles(selectedModel as GeminiModel);
 
         if (uploadedImages.length > maxImages) {
           updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
+          const modelLabel = provider === 'seedream'
+            ? getSeedreamModelConfig(selectedModel)?.label
+            : getModelConfig(selectedModel as GeminiModel).label;
           toast.error(
-            `Maximum ${maxImages} images allowed for ${isAdvanced ? getModelConfig(selectedModel).label : 'HD'} model. You have ${uploadedImages.length} images connected.`,
+            `Maximum ${maxImages} images allowed for ${modelLabel || selectedModel} model. You have ${uploadedImages.length} images connected.`,
             { duration: 5000 }
           );
           return;
@@ -172,7 +177,9 @@ export const usePromptNodeHandlers = ({
           baseImage = uploadedImages[0];
 
           if (uploadedImages.length > 1) {
-            const maxReferenceImages = getMaxRefImages(selectedModel);
+            const maxReferenceImages = provider === 'seedream'
+              ? (getSeedreamModelConfig(selectedModel)?.maxRefImages ?? 14)
+              : getMaxRefImages(selectedModel as GeminiModel);
             referenceImages = uploadedImages.slice(1, 1 + maxReferenceImages);
           }
 
@@ -200,7 +207,11 @@ export const usePromptNodeHandlers = ({
         linkedGuideline
       );
 
-      let enhancedPrompt = tokens ? buildEnhancement(prompt, tokens) : prompt;
+      // 'edge' = BrandNode connected via React Flow (image-analysis data, no DB id) → enhance client-side
+      // 'guideline' = header-linked BrandGuideline (has DB id) → let server inject via brandGuidelineId
+      let enhancedPrompt = (source === 'edge' && tokens)
+        ? buildEnhancement(prompt, tokens)
+        : prompt;
 
       const currentPromptData = nodesRef.current.find(n => n.id === nodeId)?.data as PromptNodeData;
       const pdfPageReference = currentPromptData?.pdfPageReference;
@@ -230,7 +241,9 @@ export const usePromptNodeHandlers = ({
         referenceImages: referenceImages?.map(img => ({ base64: img.base64, mimeType: img.mimeType })),
         imagesCount: 1,
         feature: 'canvas',
+        provider,
         seed: currentPromptData?.seedLocked ? currentPromptData?.seed : undefined,
+        brandGuidelineId: source === 'guideline' ? linkedGuideline?.id : undefined,
       });
 
       const resultImage = result.imageUrl || result.imageBase64 || '';

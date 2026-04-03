@@ -5,12 +5,14 @@ import { useCallback, useRef, useEffect } from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, GenerateVideoParams, NodeBuilderData, CustomNodeData } from '@/types/reactFlow';
 import type { CustomNodeDefinition, MultiOutputConfig } from '@/types/customNode';
+import { DEFAULT_MODEL } from '@/constants/geminiModels';
 import { nodeBuilderApi } from '@/services/nodeBuilderApi';
 import { executeCustomNode } from '@/utils/canvas/executeCustomNode';
+import { resolveProvider } from '@/utils/canvas/generationContext';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 
 // ========== IMPORTS - Tipos Customizados ==========
-import type { UploadedImage, GeminiModel, Resolution, BrandingData, AspectRatio } from '@/types/types';
+import type { UploadedImage, GeminiModel, SeedreamModel, Resolution, BrandingData, AspectRatio } from '@/types/types';
 import type { Mockup } from '@/services/mockupApi';
 
 // ========== IMPORTS - Serviços ==========
@@ -51,7 +53,8 @@ import {
   createOutputNodeWithSkeleton as createOutputNodeWithSkeletonUtil,
   updateOutputNodeWithResult as updateOutputNodeWithResultUtil,
   updateOutputNodeWithR2Url as updateOutputNodeWithR2UrlUtil,
-  cleanupFailedNode as cleanupFailedNodeUtil
+  cleanupFailedNode as cleanupFailedNodeUtil,
+  normalizeImagesToUploadedImages,
 } from './utils/nodeGenerationUtils';
 import { uploadImageToR2Auto as uploadImageToR2AutoUtil } from './utils/r2UploadUtils';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
@@ -817,6 +820,84 @@ export const useCanvasNodeHandlers = (
     updateNodeData(builderNodeId, { pendingDefinition: undefined });
   }, [reactFlowInstance, setNodes, setEdges, updateNodeData]);
 
+  const handleNodeBuilderUpdateData = useCallback((nodeId: string, newData: Partial<NodeBuilderData>) => {
+    updateNodeData<NodeBuilderData>(nodeId, newData, 'nodeBuilder');
+  }, [updateNodeData]);
+
+  /**
+   * Generates a single image and spawns an output node near the custom node.
+   * Used by executeCustomNode so it doesn't need a PromptNode in the graph.
+   */
+  const handleCustomGenerate = useCallback(async (
+    sourceNodeId: string,
+    prompt: string,
+    images?: string[],
+    model?: GeminiModel | SeedreamModel,
+    outputIndex = 0
+  ) => {
+    const sourceNode = reactFlowInstance?.getNode(sourceNodeId);
+    if (!sourceNode) return;
+
+    const newOutputNodeId = generateNodeId('output');
+
+    setNodes((nds: any[]) => [...nds, {
+      id: newOutputNodeId,
+      type: 'output',
+      position: {
+        x: sourceNode.position.x + 360 + outputIndex * 240,
+        y: sourceNode.position.y + outputIndex * 20,
+      },
+      data: {
+        type: 'output',
+        isLoading: true,
+        sourceNodeId,
+      } as OutputNodeData,
+    }]);
+
+    setEdges((eds: any[]) => [...eds, {
+      id: `${sourceNodeId}->${newOutputNodeId}`,
+      source: sourceNodeId,
+      target: newOutputNodeId,
+    }]);
+
+    try {
+      const selectedModel = model || DEFAULT_MODEL;
+
+      let baseImage: { base64: string; mimeType: string } | undefined;
+      if (images?.[0]) {
+        const normalized = await normalizeImagesToUploadedImages([images[0]]);
+        if (normalized[0]) {
+          baseImage = { base64: normalized[0].base64, mimeType: normalized[0].mimeType };
+        }
+      }
+
+      const result = await mockupApi.generate({
+        promptText: prompt,
+        baseImage,
+        model: selectedModel,
+        imagesCount: 1,
+        feature: 'canvas',
+        provider: resolveProvider(selectedModel),
+      });
+
+      updateNodeData(newOutputNodeId, {
+        isLoading: false,
+        resultImageUrl: result.imageUrl,
+        resultImageBase64: result.imageUrl ? undefined : result.imageBase64,
+      } as any);
+
+      if (result.imageBase64) {
+        uploadImageToR2Auto(result.imageBase64, newOutputNodeId, (imageUrl) => {
+          updateNodeData(newOutputNodeId, { resultImageUrl: imageUrl } as any);
+        });
+      }
+    } catch (err) {
+      setNodes((nds: any[]) => nds.filter(n => n.id !== newOutputNodeId));
+      setEdges((eds: any[]) => eds.filter(e => e.target !== newOutputNodeId && e.source !== newOutputNodeId));
+      throw err;
+    }
+  }, [reactFlowInstance, setNodes, setEdges, updateNodeData, uploadImageToR2Auto]);
+
   const handleCustomNodeExecute = useCallback(async (nodeId: string) => {
     const node = reactFlowInstance?.getNode(nodeId);
     if (!node) return;
@@ -832,8 +913,8 @@ export const useCanvasNodeHandlers = (
         definition,
         { prompts, connectedImages, shaderDescription },
         {
-          handlePromptGenerate: handlersRef.current?.handlePromptGenerate,
-          handleMergeGenerate: handlersRef.current?.handleMergeGenerate,
+          generateImage: (prompt, images, model, outputIndex) =>
+            handleCustomGenerate(nodeId, prompt, images, model, outputIndex),
           handleUpscale: handlersRef.current?.handleUpscale,
           getNode: (id: string) => reactFlowInstance?.getNode(id),
           setNodes,
@@ -850,7 +931,7 @@ export const useCanvasNodeHandlers = (
     } finally {
       updateNodeData(nodeId, { isLoading: false });
     }
-  }, [reactFlowInstance, setNodes, setEdges, updateNodeData, handlersRef]);
+  }, [reactFlowInstance, setNodes, setEdges, updateNodeData, handlersRef, handleCustomGenerate]);
 
   // ========== USEEFFECT - Node Builder handlers in handlersRef ==========
   useEffect(() => {
@@ -858,9 +939,11 @@ export const useCanvasNodeHandlers = (
       ...handlersRef.current,
       handleNodeBuilderSendMessage,
       handleNodeBuilderSpawn,
+      handleNodeBuilderUpdateData,
       handleCustomNodeExecute,
+      handleCustomGenerate,
     };
-  }, [handleNodeBuilderSendMessage, handleNodeBuilderSpawn, handleCustomNodeExecute]);
+  }, [handleNodeBuilderSendMessage, handleNodeBuilderSpawn, handleNodeBuilderUpdateData, handleCustomNodeExecute, handleCustomGenerate]);
 
   // ========== RETORNO DO HOOK ==========
   // Retorna todos os handlers e refs necessários para uso nos componentes
@@ -906,6 +989,7 @@ export const useCanvasNodeHandlers = (
     handleSavePrompt,
     handleNodeBuilderSendMessage,
     handleNodeBuilderSpawn,
+    handleNodeBuilderUpdateData,
     handleCustomNodeExecute,
     handlersRef,
     nodesRef,

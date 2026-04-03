@@ -1,5 +1,5 @@
 import { getCreditsRequired, getVideoCreditsRequired } from '../utils/creditCalculator.js';
-import type { GeminiModel, Resolution, UploadedImage } from '../types/types.js';
+import type { GeminiModel, SeedreamModel, ImageProvider, Resolution, UploadedImage } from '../types/types.js';
 import { toast } from 'sonner';
 import { mockupApi } from './mockupApi';
 import { subscriptionService } from './subscriptionService';
@@ -398,8 +398,9 @@ export const upscaleImage = async (
  * Validate if user has enough credits for operation
  */
 export const validateCredits = async (
-  model: GeminiModel,
-  resolution?: Resolution
+  model: GeminiModel | SeedreamModel | string,
+  resolution?: Resolution,
+  provider?: ImageProvider
 ): Promise<boolean> => {
   if (isLocalDevelopment()) {
     return true;
@@ -412,7 +413,7 @@ export const validateCredits = async (
       return false;
     }
 
-    const creditsNeeded = getCreditsRequired(model, resolution);
+    const creditsNeeded = getCreditsRequired(model, resolution, provider);
     const totalCredits = status.totalCredits || 0;
 
     if (totalCredits < creditsNeeded) {

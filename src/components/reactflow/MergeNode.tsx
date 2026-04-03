@@ -3,7 +3,7 @@ import { Handle, Position, type NodeProps, type Node, useReactFlow, NodeResizer 
 import { Wrench, Wand2 } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { MergeNodeData } from '@/types/reactFlow';
-import type { GeminiModel } from '@/types/types';
+import type { GeminiModel, SeedreamModel, Resolution } from '@/types/types';
 import { cn } from '@/lib/utils';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { NodeContainer } from './shared/NodeContainer';
@@ -14,6 +14,7 @@ import { ModelSelector } from './shared/ModelSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { DEFAULT_MODEL, isAdvancedModel } from '@/constants/geminiModels';
+import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
 import { useNodeDataUpdater } from '@/hooks/canvas/useNodeDataUpdater';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 
@@ -22,7 +23,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
   const { setNodes } = useReactFlow();
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [prompt, setPrompt] = useState(data.prompt || '');
-  const [model, setModel] = useState<GeminiModel>(data.model || DEFAULT_MODEL);
+  const [model, setModel] = useState<GeminiModel | SeedreamModel>(data.model || DEFAULT_MODEL);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const isLoading = data.isLoading || false;
@@ -30,7 +31,10 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
   const hasResult = !!(data.resultImageUrl || data.resultImageBase64);
   const connectedImages = data.connectedImages || [];
   const hasEnoughImages = connectedImages.length >= 2;
-  const creditsRequired = getCreditsRequired(model, isAdvancedModel(model) ? '1K' : undefined);
+  const isSeedream = isSeedreamModel(model);
+  const seedreamResolution = isSeedream ? (data.resolution as Resolution | undefined) || getSeedreamModelConfig(model)?.defaultResolution : undefined;
+  const geminiResolution = !isSeedream && isAdvancedModel(model as GeminiModel) ? ((data.resolution as Resolution | undefined) || '1K') : undefined;
+  const creditsRequired = getCreditsRequired(model, isSeedream ? seedreamResolution : geminiResolution, isSeedream ? 'seedream' : 'gemini');
 
   // Auto-resize textarea to fit content
   const adjustTextareaHeight = () => {
@@ -227,10 +231,10 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
         <div className="flex flex-col gap-3">
           <ModelSelector
             selectedModel={model}
-            onModelChange={(newModel) => {
+            onModelChange={(newModel, provider) => {
               setModel(newModel);
               if (data.onUpdateData) {
-                data.onUpdateData(id, { model: newModel });
+                data.onUpdateData(id, { model: newModel, provider });
               }
             }}
             disabled={isLoading || isGeneratingPrompt}

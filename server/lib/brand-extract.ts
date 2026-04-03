@@ -1,8 +1,9 @@
 // server/lib/brand-extract.ts
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { ParsedChunk } from './brand-parse.js'
-import type { BrandGuideline } from '../types/brandGuideline.js'
+import { BrandGuideline } from '../types/brandGuideline.js'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js'
 
 const EXTRACTION_PROMPT = `You are a brand identity extraction expert. Analyze the content and extract brand guideline information.
 
@@ -37,7 +38,7 @@ export async function extractBrandData(
     .slice(0, 8000) // limit tokens
 
   const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+  const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT })
 
   const parts: any[] = [{ text: EXTRACTION_PROMPT + '\n\nContent:\n' + combinedText }]
   if (imageBase64) {

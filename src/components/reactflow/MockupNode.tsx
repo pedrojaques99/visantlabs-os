@@ -5,7 +5,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { MockupNodeData } from '@/types/reactFlow';
 import type { MockupPresetType, MockupPreset } from '@/types/mockupPresets';
 import type { Mockup } from '@/services/mockupApi';
-import type { GeminiModel, AspectRatio, Resolution } from '@/types/types';
+import type { GeminiModel, SeedreamModel, AspectRatio, Resolution } from '@/types/types';
 import { cn } from '@/lib/utils';
 import { getAllPresets, getPreset, getAllPresetsAsync, clearPresetsCache } from '@/services/mockupPresetsService';
 import { MockupPresetModal } from '../MockupPresetModal';
@@ -18,6 +18,7 @@ import { NodeContainer } from './shared/NodeContainer';
 import { NodeLabel } from './shared/node-label';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel } from '@/constants/geminiModels';
+import { isSeedreamModel } from '@/constants/seedreamModels';
 import { NodeHeader } from './shared/node-header';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
@@ -48,7 +49,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
   const [isValidColor, setIsValidColor] = useState(data.isValidColor || false);
   const [withHuman, setWithHuman] = useState(data.withHuman || false);
   const [customPrompt, setCustomPrompt] = useState(data.customPrompt || '');
-  const [model, setModel] = useState<GeminiModel>(data.model || DEFAULT_MODEL);
+  const [model, setModel] = useState<GeminiModel | SeedreamModel>(data.model || DEFAULT_MODEL);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(data.aspectRatio || DEFAULT_ASPECT_RATIO);
   const [resolution, setResolution] = useState<Resolution>(data.resolution || '1K');
   const [isBrandActive, setIsBrandActive] = useState<boolean>(data.isBrandActive !== undefined ? data.isBrandActive : (!!(data.connectedLogo || data.connectedIdentity || data.connectedTextDirection)));
@@ -600,10 +601,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           <div className="mt-3 space-y-3">
             <ModelSelector
               selectedModel={model}
-              onModelChange={(newModel) => {
+              onModelChange={(newModel, provider) => {
                 setModel(newModel);
                 if (data.onUpdateData) {
-                  data.onUpdateData(id, { model: newModel });
+                  data.onUpdateData(id, { model: newModel, provider });
                 }
               }}
               resolution={resolution}
@@ -622,24 +623,26 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               }}
             />
 
-            <AdvancedModelSettings
-              model={model}
-              aspectRatio={aspectRatio}
-              resolution={resolution}
-              onAspectRatioChange={(ratio) => {
-                setAspectRatio(ratio);
-                if (data.onUpdateData) data.onUpdateData(id, { aspectRatio: ratio });
-              }}
-              onResolutionChange={(res) => {
-                setResolution(res);
-                if (data.onUpdateData) data.onUpdateData(id, { resolution: res });
-              }}
-              onModelChange={(newModel) => {
-                setModel(newModel);
-                if (data.onUpdateData) data.onUpdateData(id, { model: newModel });
-              }}
-              isLoading={isLoading}
-            />
+            {!isSeedreamModel(model) && (
+              <AdvancedModelSettings
+                model={model as GeminiModel}
+                aspectRatio={aspectRatio}
+                resolution={resolution}
+                onAspectRatioChange={(ratio) => {
+                  setAspectRatio(ratio);
+                  if (data.onUpdateData) data.onUpdateData(id, { aspectRatio: ratio });
+                }}
+                onResolutionChange={(res) => {
+                  setResolution(res);
+                  if (data.onUpdateData) data.onUpdateData(id, { resolution: res });
+                }}
+                onModelChange={(newModel) => {
+                  setModel(newModel);
+                  if (data.onUpdateData) data.onUpdateData(id, { model: newModel });
+                }}
+                isLoading={isLoading}
+              />
+            )}
 
             {/* Color Picker */}
             <div>

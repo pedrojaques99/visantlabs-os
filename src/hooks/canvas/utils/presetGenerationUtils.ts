@@ -12,7 +12,7 @@ import type { UploadedImage } from '@/types/types';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { normalizeImageToBase64, detectMimeType, validateCredits } from '@/services/reactFlowService';
 import { mockupApi } from '@/services/mockupApi';
-import type { Resolution, GeminiModel } from '@/types/types';
+import type { Resolution } from '@/types/types';
 import {
   createOutputNodeWithSkeleton,
   validateBase64Image,
@@ -21,7 +21,8 @@ import {
   cleanupFailedNode
 } from './nodeGenerationUtils';
 import { uploadImageToR2Auto } from './r2UploadUtils';
-import { DEFAULT_MODEL, getDefaultResolution } from '@/constants/geminiModels';
+import { DEFAULT_MODEL } from '@/constants/geminiModels';
+import { resolveGenerationContext } from '@/utils/canvas/generationContext';
 
 interface Preset {
   id: string;
@@ -89,10 +90,11 @@ export const generateImageWithPreset = async ({
     return;
   }
 
-  const model: GeminiModel = (preset.model as GeminiModel) || DEFAULT_MODEL;
-  const resolution: Resolution = getDefaultResolution(model) || '1K';
+  const model = (preset.model as string) || DEFAULT_MODEL;
+  const { provider, resolution: resolvedResolution } = resolveGenerationContext(model);
+  const resolution: Resolution = resolvedResolution || '1K';
 
-  const hasCredits = await validateCredits(model, resolution);
+  const hasCredits = await validateCredits(model, resolution, provider);
   if (!hasCredits) return;
 
   updateNodeLoadingState(nodeId, true, nodeType);
@@ -128,16 +130,13 @@ export const generateImageWithPreset = async ({
 
     const result = await mockupApi.generate({
       promptText: promptOverride ?? preset.prompt,
-      baseImage: {
-        base64: baseImage.base64,
-        mimeType: baseImage.mimeType
-      },
-      model: model,
-      resolution: resolution,
+      baseImage: { base64: baseImage.base64, mimeType: baseImage.mimeType },
+      model,
+      resolution,
       aspectRatio: preset.aspectRatio,
-      referenceImages: undefined,
       imagesCount: 1,
-      feature: 'canvas'
+      feature: 'canvas',
+      provider,
     });
 
     updateNodeLoadingState(nodeId, false, nodeType);

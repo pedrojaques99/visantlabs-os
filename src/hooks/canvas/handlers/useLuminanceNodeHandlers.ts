@@ -12,7 +12,7 @@ import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { getLuminancePreset } from '@/services/luminancePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
 import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
-import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBrandContext';
+import { buildPromptWithBrandContext } from '@/hooks/canvas/useBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface UseLuminanceNodeHandlersParams {

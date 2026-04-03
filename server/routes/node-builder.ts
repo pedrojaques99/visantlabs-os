@@ -41,7 +41,13 @@ router.post('/generate', authenticate, async (req: AuthRequest, res) => {
       contents,
     });
 
-    const text = (result.text ?? '').trim();
+    const raw = (result.text ?? '').trim();
+    // Strip markdown code fences that LLMs sometimes add despite instructions
+    const text = raw
+      .replace(/^```json\s*/m, '')
+      .replace(/^```\s*/m, '')
+      .replace(/\s*```$/m, '')
+      .trim();
 
     let response: NodeBuilderLLMResponse;
     try {

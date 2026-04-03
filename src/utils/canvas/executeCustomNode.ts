@@ -10,13 +10,16 @@ import type {
   PipelineConfig,
   MultiInputConfig,
 } from '@/types/customNode';
-import type { GeminiModel, Resolution } from '@/types/types';
+import type { GeminiModel, SeedreamModel, Resolution } from '@/types/types';
 
 // ─── Deps injected from useCanvasNodeHandlers ────────────────────────────────
 
 export interface ExecutionDeps {
-  handlePromptGenerate?: (nodeId: string, prompt: string, images?: string[], model?: GeminiModel) => Promise<void>;
-  handleMergeGenerate?: (nodeId: string, images: string[], prompt: string, model?: GeminiModel) => Promise<void>;
+  /** Generate a single image and spawn an output node near the custom node */
+  generateImage?: (prompt: string, images?: string[], model?: GeminiModel | SeedreamModel, outputIndex?: number) => Promise<void>;
+  /** @deprecated pass generateImage instead */
+  handlePromptGenerate?: (nodeId: string, prompt: string, images?: string[], model?: GeminiModel | SeedreamModel) => Promise<void>;
+  handleMergeGenerate?: (nodeId: string, images: string[], prompt: string, model?: GeminiModel | SeedreamModel) => Promise<void>;
   handleUpscale?: (nodeId: string, image: string, resolution: Resolution) => Promise<void>;
   getNode: (id: string) => { position: { x: number; y: number } } | undefined;
   setNodes: (fn: (nds: any[]) => any[]) => void;
@@ -64,8 +67,8 @@ async function runMultiOutput(
   deps: ExecutionDeps,
   log: (msg: string) => void
 ) {
-  const { handlePromptGenerate } = deps;
-  if (!handlePromptGenerate) return;
+  const { generateImage } = deps;
+  if (!generateImage) return;
 
   const activePrompts = runtime.prompts ?? cfg.prompts;
   const images = runtime.connectedImages?.[0] ? [runtime.connectedImages[0]] : undefined;
@@ -73,7 +76,7 @@ async function runMultiOutput(
   if (cfg.behavior === 'model-comparison' && cfg.models?.length) {
     log(`Comparing ${cfg.models.length} models...`);
     await Promise.all(
-      cfg.models.map(model => handlePromptGenerate(nodeId, activePrompts[0], images, model))
+      cfg.models.map((model, i) => generateImage(activePrompts[0], images, model, i))
     );
     return;
   }
@@ -87,7 +90,7 @@ async function runMultiOutput(
     try {
       const variations: string[] = JSON.parse(resp.type === 'question' ? resp.text : '[]');
       await Promise.all(
-        variations.slice(0, cfg.outputCount).map(p => handlePromptGenerate(nodeId, p, images, cfg.model))
+        variations.slice(0, cfg.outputCount).map((p, i) => generateImage(p, images, cfg.model, i))
       );
       return;
     } catch { /* fallback below */ }
@@ -95,7 +98,7 @@ async function runMultiOutput(
 
   log(`Generating ${activePrompts.length} images...`);
   await Promise.all(
-    activePrompts.map(p => handlePromptGenerate(nodeId, p, images, cfg.model))
+    activePrompts.map((p, i) => generateImage(p, images, cfg.model, i))
   );
 }
 
@@ -123,7 +126,7 @@ async function runTransform(
       const angles = cfg.angles?.length ? cfg.angles : ['front view', 'side view', 'top view'];
       log(`Generating ${angles.length} angle variations...`);
       await Promise.all(
-        angles.map(angle => deps.handlePromptGenerate?.(nodeId, `${desc}, ${angle}`, [image], cfg.model))
+        angles.map((angle, i) => deps.generateImage?.(`${desc}, ${angle}`, [image], cfg.model, i))
       );
       break;
     }
@@ -131,7 +134,7 @@ async function runTransform(
       const presets = cfg.mockupPresets ?? [];
       log(`Generating ${presets.length} mockup variations...`);
       await Promise.all(
-        presets.map(preset => deps.handlePromptGenerate?.(nodeId, `${preset}. ${desc}`, [image], cfg.model))
+        presets.map((preset, i) => deps.generateImage?.(`${preset}. ${desc}`, [image], cfg.model, i))
       );
       break;
     }
@@ -153,7 +156,7 @@ async function runTransform(
       }]);
       const derivedPrompt = resp.type === 'question' ? resp.text : desc;
       log('Generating from visual description...');
-      await deps.handlePromptGenerate?.(nodeId, derivedPrompt, [image], cfg.model);
+      await deps.generateImage?.(derivedPrompt, [image], cfg.model, 0);
       break;
     }
   }
@@ -174,11 +177,11 @@ async function runPipeline(
 
     for (let i = 0; i < iterations; i++) {
       log(`Iteration ${i + 1}/${iterations}: generating...`);
-      await deps.handlePromptGenerate?.(
-        nodeId,
+      await deps.generateImage?.(
         currentPrompt,
         image ? [image] : undefined,
-        cfg.model
+        cfg.model,
+        i
       );
 
       if (i < iterations - 1) {
@@ -206,11 +209,11 @@ async function runPipeline(
     log(`Running: ${step.label}`);
     switch (step.operation) {
       case 'generate':
-        await deps.handlePromptGenerate?.(
-          nodeId,
+        await deps.generateImage?.(
           (step.config.prompt as string) ?? cfg.userDescription ?? '',
           image ? [image] : undefined,
-          cfg.model
+          cfg.model,
+          0
         );
         break;
       case 'upscale':
@@ -242,16 +245,16 @@ async function runMultiInput(
       }]);
       const mergePrompt = resp.type === 'question' ? resp.text : desc;
       log('Merging images...');
-      await deps.handleMergeGenerate?.(nodeId, images, mergePrompt, cfg.model);
+      await deps.generateImage?.(mergePrompt, images, cfg.model, 0);
       break;
     }
     case 'palette-generate': {
       log('Generating with palette colors...');
-      await deps.handlePromptGenerate?.(
-        nodeId,
+      await deps.generateImage?.(
         `${desc}. Use the extracted palette colors as the dominant color scheme.`,
         images,
-        cfg.model
+        cfg.model,
+        0
       );
       break;
     }
@@ -271,11 +274,11 @@ async function runMultiInput(
           spawnShaderNode(nodeId, shaderType, params as Record<string, unknown>, image, deps);
         } else {
           log('Generating transformed image...');
-          await deps.handlePromptGenerate?.(nodeId, dec.config?.prompt ?? desc, images, cfg.model);
+          await deps.generateImage?.(dec.config?.prompt ?? desc, images, cfg.model, 0);
         }
       } catch {
         log('Analysis failed — falling back to direct generation.');
-        await deps.handlePromptGenerate?.(nodeId, desc, images, cfg.model);
+        await deps.generateImage?.(desc, images, cfg.model, 0);
       }
       break;
     }

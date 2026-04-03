@@ -7,6 +7,7 @@ import { prisma } from '../db/prisma.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { generateMockup, RateLimitError, ModelResponseTextError } from '../../src/services/geminiService.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
+import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
@@ -1069,7 +1070,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       // Sanitize model: if it's not a valid Seedream model (e.g. it's a Gemini model from the UI),
       // default to the latest Seedream model to prevent "Unknown error (400)"
       let seedreamModel = model;
-      if (!seedreamModel.startsWith('seedream-')) {
+      if (!isSeedreamModel(seedreamModel)) {
         console.warn(`${logPrefix} [GENERATION] Invalid Seedream model "${model}" detected. Defaulting to "seedream-4.5"`);
         seedreamModel = 'seedream-4.5';
       }

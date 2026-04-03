@@ -1,4 +1,12 @@
 import type { UploadedImage, AspectRatio, SeedreamModel, Resolution } from '../../src/types/types.js';
+import {
+    SEEDREAM_MODELS,
+    SEEDREAM_MODEL_CONFIG,
+    resolveSeedreamSize,
+    seedreamSupportsSeed,
+    seedreamSupportsGuidanceScale,
+    seedreamRequiresImage,
+} from '../../src/constants/seedreamModels.js';
 import { safeFetch } from '../utils/securityValidation.js';
 
 // APIFree.ai endpoints (async API with submit→poll pattern)
@@ -18,7 +26,10 @@ interface SeedreamGenerateOptions {
     aspectRatio?: AspectRatio;
     watermark?: boolean;
     apiKey?: string;
-    seed?: number; // Seed for deterministic generation (0 to 2_147_483_647)
+    /** Seed for deterministic generation — only supported by seedream-3.0-t2i and seededit-3.0-i2i */
+    seed?: number;
+    /** Guidance scale [1–10] — only supported by seedream-3.0-t2i and seededit-3.0-i2i */
+    guidanceScale?: number;
 }
 
 export interface SeedreamGenerateResult {
@@ -47,7 +58,8 @@ async function resolveImageBase64(image: UploadedImage): Promise<string> {
     if (base64Data.startsWith('data:')) {
         return base64Data;
     }
-    return `data:${image.mimeType};base64,${base64Data}`;
+    const mimeType = image.mimeType || 'image/jpeg';
+    return `data:${mimeType};base64,${base64Data}`;
 }
 
 /**
@@ -58,41 +70,78 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
     const {
         prompt,
         baseImage,
-        model = 'seedream-4.5',
+        model = SEEDREAM_MODELS.SD_4_5,
         resolution = '2K',
+        aspectRatio,
         watermark = false,
         apiKey: specificApiKey,
         seed: userSeed,
+        guidanceScale,
     } = options;
 
-    // Generate deterministic seed: use provided seed or generate random
-    const usedSeed = (typeof userSeed === 'number' && userSeed >= 0 && userSeed <= 2_147_483_647)
-        ? userSeed
-        : Math.floor(Math.random() * 2_147_483_647);
+    const modelConfig = SEEDREAM_MODEL_CONFIG[model];
+    if (!modelConfig) {
+        throw new Error(`Unknown Seedream model: ${model}`);
+    }
+
+    // Validate image requirement
+    if (modelConfig.requiresImage && !baseImage) {
+        throw new Error(`Model ${model} requires an input image.`);
+    }
+
+    // Resolve seed — only for models that support it per official docs
+    const supportsSeed = seedreamSupportsSeed(model);
+    const usedSeed = supportsSeed
+        ? (typeof userSeed === 'number' && userSeed >= 0 && userSeed <= 2_147_483_647)
+            ? userSeed
+            : Math.floor(Math.random() * 2_147_483_647)
+        : -1; // -1 = not used
 
     const apiKey = specificApiKey || process.env.APIFREE_API_KEY;
     if (!apiKey) {
         throw new Error('APIFREE_API_KEY not configured and no user key provided.');
     }
 
-    // Build request body for APIFree.ai
-    const body: Record<string, any> = {
-        model: `bytedance/${model}`, // APIFree.ai format: bytedance/seedream-4.5
+    // Resolve the size value for this model + resolution + aspect ratio
+    const resolvedSize = modelConfig.adaptiveSize
+        ? 'adaptive'
+        : resolveSeedreamSize(model, resolution, aspectRatio);
+
+    // Build request body — APIFree.ai format: bytedance/<model>
+    const body: Record<string, unknown> = {
+        model: `bytedance/${model}`,
         prompt,
-        size: resolution, // "2K" or "4K"
-        seed: usedSeed,
+        watermark,
     };
 
-    // Add reference image if provided (for img2img)
+    // size param (not used for adaptive seededit)
+    if (!modelConfig.adaptiveSize && resolvedSize) {
+        body.size = resolvedSize;
+    }
+
+    // seed — only seedream-3.0-t2i and seededit-3.0-i2i
+    if (supportsSeed) {
+        body.seed = usedSeed;
+    }
+
+    // guidance_scale — only 3.0 models, value range [1, 10]
+    if (seedreamSupportsGuidanceScale(model)) {
+        const defaultScale = modelConfig.defaultGuidanceScale ?? 2.5;
+        body.guidance_scale = (typeof guidanceScale === 'number' && guidanceScale >= 1 && guidanceScale <= 10)
+            ? guidanceScale
+            : defaultScale;
+    }
+
+    // Reference image (img2img or multi-ref for 4.x)
     if (baseImage) {
         const imageData = await resolveImageBase64(baseImage);
         body.image = imageData;
     }
 
-    console.log(`[Seedream] Submitting request: model=${body.model}, size=${resolution}, seed=${usedSeed}`);
+    console.log(`[Seedream] Submitting: model=${body.model}, size=${resolvedSize ?? 'adaptive'}, seed=${supportsSeed ? usedSeed : 'n/a'}`);
 
     // Step 1: Submit the request
-    const submitResponse = await fetch(SUBMIT_ENDPOINT, {
+    const submitResponse = await safeFetch(SUBMIT_ENDPOINT, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${apiKey}`,
@@ -107,10 +156,9 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
         console.error('[Seedream] Submit error text:', errorText);
 
         try {
-            // Try to parse JSON error if possible
             const errorJson = JSON.parse(errorText);
             console.error('[Seedream] Full error details:', JSON.stringify(errorJson, null, 2));
-        } catch (e) {
+        } catch (_) {
             // Ignore parse error
         }
 
@@ -148,7 +196,7 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
         await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
         attempts++;
 
-        const resultResponse = await fetch(RESULT_ENDPOINT(requestId), {
+        const resultResponse = await safeFetch(RESULT_ENDPOINT(requestId), {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
@@ -189,8 +237,9 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
             const arrayBuffer = await imageResponse.arrayBuffer();
             const base64 = Buffer.from(arrayBuffer).toString('base64');
 
-            console.log(`[Seedream] Generation complete. seed=${usedSeed}, Usage: $${resultData.resp_data?.usage?.cost || 0}`);
-            return { base64, seed: usedSeed };
+            const finalSeed = supportsSeed ? usedSeed : (resultData.resp_data?.seed ?? -1);
+            console.log(`[Seedream] Generation complete. seed=${finalSeed}, cost=$${resultData.resp_data?.usage?.cost || 0}`);
+            return { base64, seed: finalSeed };
         }
 
         if (status === 'error' || status === 'failed') {
@@ -199,25 +248,8 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
             throw new Error(`Seedream generation failed: ${error}`);
         }
 
-        // Status is 'queuing' or 'processing' - continue polling
+        // Status is 'queuing' or 'processing' — continue polling
     }
 
     throw new Error('Seedream generation timed out after 2 minutes');
-}
-
-/**
- * Get available Seedream models
- */
-export function getSeedreamModels(): { id: SeedreamModel; name: string }[] {
-    return [
-        { id: 'seedream-4.5', name: 'Seedream 4.5 (Latest)' },
-        { id: 'seedream-4.0', name: 'Seedream 4.0' },
-    ];
-}
-
-/**
- * Get supported resolutions for Seedream
- */
-export function getSeedreamResolutions(): Resolution[] {
-    return ['2K', '4K'];
 }
