@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import type { MutableRefObject } from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData, MockupNodeData, OutputNodeData } from '@/types/reactFlow';
-import type { GeminiModel, Resolution, AspectRatio, UploadedImage } from '@/types/types';
+import type { GeminiModel, SeedreamModel, Resolution, AspectRatio, UploadedImage } from '@/types/types';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { validateCredits, normalizeImageToBase64, detectMimeType } from '@/services/reactFlowService';
 import { mockupApi } from '@/services/mockupApi';
@@ -10,7 +10,8 @@ import { getPresetAsync, loadReferenceImage } from '@/services/mockupPresetsServ
 import { getImageUrl } from '@/utils/imageUtils';
 import { validateBase64Image, normalizeImagesToUploadedImages } from '../utils/nodeGenerationUtils';
 import { getBrandContextForNode, buildEnhancement } from '../useBrandContext';
-import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, getDefaultResolution } from '@/constants/geminiModels';
+import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
+import { resolveGenerationContext } from '@/utils/canvas/generationContext';
 import { toast } from 'sonner';
 
 interface UseMockupNodeHandlersParams {
@@ -58,7 +59,7 @@ export const useMockupNodeHandlers = ({
     selectedColors?: string[],
     withHuman?: boolean,
     customPrompt?: string,
-    modelOverride?: GeminiModel,
+    modelOverride?: GeminiModel | SeedreamModel,
     resolutionOverride?: Resolution,
     aspectRatioOverride?: AspectRatio
   ) => {
@@ -123,11 +124,16 @@ export const useMockupNodeHandlers = ({
       });
     }
 
-    const model = modelOverride || preset.model || DEFAULT_MODEL;
-    const resolution: Resolution = resolutionOverride || (getDefaultResolution(model) || '1K');
-    const aspectRatio = aspectRatioOverride || preset.aspectRatio;
+    const model = modelOverride || (mockupData as any).model || preset.model || DEFAULT_MODEL;
+    const { provider, resolution: resolvedResolution, aspectRatio: resolvedAspectRatio } = resolveGenerationContext(model, {
+      resolution: resolutionOverride,
+      aspectRatio: aspectRatioOverride || preset.aspectRatio,
+    });
+    // resolution is always defined for both Seedream and advanced Gemini; cast is safe
+    const resolution = (resolvedResolution || '1K') as Resolution;
+    const aspectRatio = resolvedAspectRatio || preset.aspectRatio || DEFAULT_ASPECT_RATIO;
 
-    const hasCredits = await validateCredits(model, resolution);
+    const hasCredits = await validateCredits(model, resolution, provider);
     if (!hasCredits) return;
 
     setNodes((nds: Node<FlowNodeData>[]) =>
@@ -237,8 +243,10 @@ export const useMockupNodeHandlers = ({
       enhancedPrompt = preset.prompt;
     }
 
-    const { tokens: mockupBrandTokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
-    if (mockupBrandTokens) {
+    const { source: brandSource, tokens: mockupBrandTokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
+    // 'edge' = BrandNode connected via React Flow (image-analysis data, no DB id) → enhance client-side
+    // 'guideline' = header-linked BrandGuideline (has DB id) → let server inject via brandGuidelineId
+    if (brandSource === 'edge' && mockupBrandTokens) {
       enhancedPrompt = buildEnhancement(enhancedPrompt, mockupBrandTokens);
     }
 
@@ -280,6 +288,8 @@ export const useMockupNodeHandlers = ({
         referenceImages: referenceImages?.map(img => ({ base64: img.base64, mimeType: img.mimeType })),
         imagesCount: 1,
         feature: 'canvas',
+        provider,
+        brandGuidelineId: brandSource === 'guideline' ? linkedGuideline?.id : undefined,
       });
 
       const resultImage = result.imageUrl || result.imageBase64 || '';

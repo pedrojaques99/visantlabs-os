@@ -14,7 +14,7 @@ export interface UsageRecord {
   inputTokens?: number; // Number of input tokens
   outputTokens?: number; // Number of output tokens
   hasInputImage: boolean; // Whether input image was provided
-  model: string; // Model used (e.g., 'gemini-2.5-flash-image')
+  model: string; // Model used (e.g., GEMINI_MODELS.IMAGE_FLASH)
   cost: number; // Calculated cost in USD
   requestId?: string; // Optional request ID for tracking
   feature?: FeatureType; // Feature where credits were used (brandingmachine, mockupmachine, canvas)

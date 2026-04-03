@@ -10,7 +10,7 @@ import type {
   FlowNodeType
 } from '@/types/reactFlow';
 import { toast } from 'sonner';
-import { sendChatMessage } from '@/services/chatService';
+import { sendChatMessage, parseCanvasCommand } from '@/services/chatService';
 import { getChatMessageCreditsRequired } from '@/utils/creditCalculator';
 import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -40,6 +40,7 @@ interface UseChatNodeHandlerParams {
   userId?: string;
   saveImmediately?: () => Promise<void>;
   nodeCreators?: NodeCreationFunctions;
+  setNodes?: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void;
   setEdges?: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void;
   // Legacy support
   addPromptNode?: (customPosition?: { x: number; y: number }, initialData?: Partial<PromptNodeData>) => string | undefined;
@@ -53,6 +54,7 @@ export const useCanvasChatHandler = ({
   userId,
   saveImmediately,
   nodeCreators,
+  setNodes,
   setEdges,
   addPromptNode,
   linkedGuideline,
@@ -64,137 +66,20 @@ export const useCanvasChatHandler = ({
     addPromptNode: nodeCreators?.addPromptNode || addPromptNode,
   };
 
-  const handleChatSendMessage = useCallback(async (
-    nodeId: string,
-    message: string,
-    context: {
-      images?: string[];
-      text?: string;
-      strategyData?: StrategyNodeData['strategyData'];
+  /**
+   * Remove a node by ID from the canvas (used by canvas commands).
+   */
+  const handleChatRemoveNode = useCallback((targetNodeId: string): boolean => {
+    if (!setNodes) {
+      toast.error('Canvas state not available');
+      return false;
     }
-  ) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'chat') return;
-
-    const chatData = node.data as ChatNodeData;
-
-    // Validate message
-    if (!message || message.trim().length === 0) {
-      toast.error('Message cannot be empty', { duration: 3000 });
-      return;
+    setNodes((nds: Node<FlowNodeData>[]) => nds.filter(n => n.id !== targetNodeId));
+    if (setEdges) {
+      setEdges((eds: Edge[]) => eds.filter(e => e.source !== targetNodeId && e.target !== targetNodeId));
     }
-
-    // Apply brand context to the message if available
-    const { tokens: chatBrandTokens } = getBrandContextForNode(
-      nodeId,
-      nodesRef.current,
-      edgesRef?.current ?? [],
-      linkedGuideline
-    );
-    const enhancedMessage = chatBrandTokens ? buildEnhancement(message.trim(), chatBrandTokens) : message.trim();
-
-    // Increment user message count
-    const currentMessageCount = (chatData.userMessageCount || 0) + 1;
-
-    // Calculate credits required (1 credit every 4 messages)
-    const creditsToDeduct = getChatMessageCreditsRequired(currentMessageCount);
-
-    // Update node with user message and increment count
-    const userMessage = {
-      id: `msg-${Date.now()}-user`,
-      role: 'user' as const,
-      content: message.trim(),
-      timestamp: Date.now(),
-      contextUsed: {
-        hasImages: !!(context.images && context.images.length > 0),
-        hasStrategyData: !!context.strategyData,
-        hasTextContext: !!context.text,
-      },
-    };
-
-    const updatedMessages = [...(chatData.messages || []), userMessage];
-
-    // Update node with user message and set loading state
-    updateNodeData<ChatNodeData>(nodeId, {
-      messages: updatedMessages,
-      userMessageCount: currentMessageCount,
-      isLoading: true,
-    }, 'chat');
-
-    // Note: Credit deduction is handled on the backend via the generate endpoint
-    // The backend validates credits before processing the request
-
-    try {
-      // Prepare messages for API (convert to ChatMessage format)
-      // Replace the last user message with the brand-enhanced version (if context was added)
-      const apiMessages = updatedMessages.map((msg, idx) => ({
-        role: msg.role,
-        content: idx === updatedMessages.length - 1 && msg.role === 'user' ? enhancedMessage : msg.content,
-      }));
-
-      // Call chat service with custom system prompt if available
-      const response = await sendChatMessage(apiMessages, context, undefined, chatData.systemPrompt);
-
-      // Add assistant response
-      const assistantMessage = {
-        id: `msg-${Date.now()}-assistant`,
-        role: 'assistant' as const,
-        content: response,
-        timestamp: Date.now(),
-      };
-
-      // Limit history to last 20 messages to prevent payload issues
-      const allMessages = [...updatedMessages, assistantMessage];
-      const limitedMessages = allMessages.slice(-20);
-
-      // Update node with response
-      updateNodeData<ChatNodeData>(nodeId, {
-        messages: limitedMessages,
-        userMessageCount: currentMessageCount,
-        isLoading: false,
-      }, 'chat');
-
-      if (saveImmediately) {
-        setTimeout(() => saveImmediately(), 100);
-      }
-    } catch (error: any) {
-      console.error('[ChatHandler] Error sending message:', error);
-
-      // On error, remove user message and reset count
-      updateNodeData<ChatNodeData>(nodeId, {
-        messages: chatData.messages, // Revert to previous messages
-        userMessageCount: chatData.userMessageCount || 0, // Revert count
-        isLoading: false,
-      }, 'chat');
-
-      toast.error(error?.message || 'Failed to send message. Please try again.', { duration: 5000 });
-    }
-  }, [nodesRef, edgesRef, updateNodeData, userId, saveImmediately, linkedGuideline]);
-
-  const handleChatUpdateData = useCallback((nodeId: string, newData: Partial<ChatNodeData>) => {
-    updateNodeData<ChatNodeData>(nodeId, newData, 'chat');
-  }, [updateNodeData]);
-
-  const handleChatClearHistory = useCallback((nodeId: string) => {
-    updateNodeData<ChatNodeData>(nodeId, {
-      messages: [],
-      userMessageCount: 0,
-    }, 'chat');
-    toast.success('Chat history cleared', { duration: 2000 });
-  }, [updateNodeData]);
-
-  const handleChatAddPromptNode = useCallback((nodeId: string, prompt: string) => {
-    if (!creators.addPromptNode) {
-      toast.error('Unable to create prompt node');
-      return;
-    }
-
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node) return;
-
-    creators.addPromptNode(undefined, { prompt });
-    toast.success('Prompt node created!', { duration: 2000 });
-  }, [creators, nodesRef]);
+    return true;
+  }, [setNodes, setEdges]);
 
   /**
    * Generic handler to create any type of node from the chat
@@ -313,6 +198,194 @@ export const useCanvasChatHandler = ({
 
     return newNodeId;
   }, [nodesRef, creators, updateNodeData, setEdges, edgesRef]);
+
+  const handleChatSendMessage = useCallback(async (
+    nodeId: string,
+    message: string,
+    context: {
+      images?: string[];
+      text?: string;
+      strategyData?: StrategyNodeData['strategyData'];
+    }
+  ) => {
+    const node = nodesRef.current.find(n => n.id === nodeId);
+    if (!node || node.type !== 'chat') return;
+
+    const chatData = node.data as ChatNodeData;
+
+    // Validate message
+    if (!message || message.trim().length === 0) {
+      toast.error('Message cannot be empty', { duration: 3000 });
+      return;
+    }
+
+    // ── Canvas command intercept ──────────────────────────────────────────
+    const canvasCmd = parseCanvasCommand(message);
+    if (canvasCmd) {
+      const userMsg = {
+        id: `msg-${Date.now()}-user`,
+        role: 'user' as const,
+        content: message.trim(),
+        timestamp: Date.now(),
+        contextUsed: { hasImages: false, hasStrategyData: false, hasTextContext: false },
+      };
+
+      if (canvasCmd.action === 'clear-chat') {
+        updateNodeData<ChatNodeData>(nodeId, { messages: [], userMessageCount: 0 }, 'chat');
+        toast.success('Chat cleared', { duration: 2000 });
+        return;
+      }
+
+      let systemReply = '';
+
+      if (canvasCmd.action === 'remove-connected') {
+        const connected = edgesRef
+          ? edgesRef.current.filter(e => e.source === nodeId).map(e => e.target)
+          : [];
+        const removed = connected.filter(id => handleChatRemoveNode(id));
+        systemReply = removed.length > 0
+          ? `Removed ${removed.length} connected node(s).`
+          : 'No connected nodes to remove.';
+      }
+
+      if (canvasCmd.action === 'create' && canvasCmd.nodeType && canvasCmd.count) {
+        const createdIds: string[] = [];
+        for (let i = 0; i < canvasCmd.count; i++) {
+          const id = handleChatCreateNode(nodeId, canvasCmd.nodeType as FlowNodeType, undefined, false);
+          if (id) createdIds.push(id);
+        }
+        const typeLabel = canvasCmd.nodeType.charAt(0).toUpperCase() + canvasCmd.nodeType.slice(1);
+        systemReply = createdIds.length > 0
+          ? `Created ${createdIds.length} ${typeLabel} node${createdIds.length > 1 ? 's' : ''}.`
+          : `Could not create ${canvasCmd.nodeType} nodes. Feature may not be available.`;
+      }
+
+      const sysMsg = {
+        id: `msg-${Date.now()}-system`,
+        role: 'assistant' as const,
+        content: systemReply,
+        timestamp: Date.now(),
+      };
+      const currentMessages = (nodesRef.current.find(n => n.id === nodeId)?.data as ChatNodeData)?.messages || [];
+      updateNodeData<ChatNodeData>(nodeId, {
+        messages: [...currentMessages, userMsg, sysMsg],
+        userMessageCount: (chatData.userMessageCount || 0) + 1,
+      }, 'chat');
+      return;
+    }
+    // ─────────────────────────────────────────────────────────────────────
+
+    // Apply brand context to the message if available
+    const { tokens: chatBrandTokens } = getBrandContextForNode(
+      nodeId,
+      nodesRef.current,
+      edgesRef?.current ?? [],
+      linkedGuideline
+    );
+    const enhancedMessage = chatBrandTokens ? buildEnhancement(message.trim(), chatBrandTokens) : message.trim();
+
+    // Increment user message count
+    const currentMessageCount = (chatData.userMessageCount || 0) + 1;
+
+    // Calculate credits required (1 credit every 4 messages)
+    const creditsToDeduct = getChatMessageCreditsRequired(currentMessageCount);
+
+    // Update node with user message and increment count
+    const userMessage = {
+      id: `msg-${Date.now()}-user`,
+      role: 'user' as const,
+      content: message.trim(),
+      timestamp: Date.now(),
+      contextUsed: {
+        hasImages: !!(context.images && context.images.length > 0),
+        hasStrategyData: !!context.strategyData,
+        hasTextContext: !!context.text,
+      },
+    };
+
+    const updatedMessages = [...(chatData.messages || []), userMessage];
+
+    // Update node with user message and set loading state
+    updateNodeData<ChatNodeData>(nodeId, {
+      messages: updatedMessages,
+      userMessageCount: currentMessageCount,
+      isLoading: true,
+    }, 'chat');
+
+    // Note: Credit deduction is handled on the backend via the generate endpoint
+    // The backend validates credits before processing the request
+
+    try {
+      // Prepare messages for API (convert to ChatMessage format)
+      // Replace the last user message with the brand-enhanced version (if context was added)
+      const apiMessages = updatedMessages.map((msg, idx) => ({
+        role: msg.role,
+        content: idx === updatedMessages.length - 1 && msg.role === 'user' ? enhancedMessage : msg.content,
+      }));
+
+      // Call chat service with custom system prompt if available
+      const response = await sendChatMessage(apiMessages, context, undefined, chatData.systemPrompt);
+
+      // Add assistant response
+      const assistantMessage = {
+        id: `msg-${Date.now()}-assistant`,
+        role: 'assistant' as const,
+        content: response,
+        timestamp: Date.now(),
+      };
+
+      // Limit history to last 20 messages to prevent payload issues
+      const allMessages = [...updatedMessages, assistantMessage];
+      const limitedMessages = allMessages.slice(-20);
+
+      // Update node with response
+      updateNodeData<ChatNodeData>(nodeId, {
+        messages: limitedMessages,
+        userMessageCount: currentMessageCount,
+        isLoading: false,
+      }, 'chat');
+
+      if (saveImmediately) {
+        setTimeout(() => saveImmediately(), 100);
+      }
+    } catch (error: any) {
+      console.error('[ChatHandler] Error sending message:', error);
+
+      // On error, remove user message and reset count
+      updateNodeData<ChatNodeData>(nodeId, {
+        messages: chatData.messages, // Revert to previous messages
+        userMessageCount: chatData.userMessageCount || 0, // Revert count
+        isLoading: false,
+      }, 'chat');
+
+      toast.error(error?.message || 'Failed to send message. Please try again.', { duration: 5000 });
+    }
+  }, [nodesRef, edgesRef, updateNodeData, userId, saveImmediately, linkedGuideline, handleChatCreateNode, handleChatRemoveNode]);
+
+  const handleChatUpdateData = useCallback((nodeId: string, newData: Partial<ChatNodeData>) => {
+    updateNodeData<ChatNodeData>(nodeId, newData, 'chat');
+  }, [updateNodeData]);
+
+  const handleChatClearHistory = useCallback((nodeId: string) => {
+    updateNodeData<ChatNodeData>(nodeId, {
+      messages: [],
+      userMessageCount: 0,
+    }, 'chat');
+    toast.success('Chat history cleared', { duration: 2000 });
+  }, [updateNodeData]);
+
+  const handleChatAddPromptNode = useCallback((nodeId: string, prompt: string) => {
+    if (!creators.addPromptNode) {
+      toast.error('Unable to create prompt node');
+      return;
+    }
+
+    const node = nodesRef.current.find(n => n.id === nodeId);
+    if (!node) return;
+
+    creators.addPromptNode(undefined, { prompt });
+    toast.success('Prompt node created!', { duration: 2000 });
+  }, [creators, nodesRef]);
 
   /**
    * Handler to edit a connected node's data
@@ -458,9 +531,8 @@ export const useCanvasChatHandler = ({
     handleChatAddPromptNode,
     handleChatCreateNode,
     handleChatEditConnectedNode,
+    handleChatRemoveNode,
     getConnectedNodeIds,
     handleChatAttachMedia,
   };
 };
-
-

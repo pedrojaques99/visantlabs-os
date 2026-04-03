@@ -4,9 +4,10 @@ import { Pickaxe, Image as ImageIcon, Wand2, Save, BookOpen, Sparkles, Palette, 
 import { SeedControl } from './shared/SeedControl';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { PromptNodeData } from '@/types/reactFlow';
-import type { GeminiModel, AspectRatio, Resolution } from '@/types/types';
+import type { GeminiModel, SeedreamModel, AspectRatio, Resolution } from '@/types/types';
 import { cn } from '@/lib/utils';
 import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel as isAdvancedModelFn, getMaxHandles } from '@/constants/geminiModels';
+import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
 import { PromptInput } from '@/components/PromptInput';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { NodeContainer } from './shared/NodeContainer';
@@ -40,7 +41,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const nodeData = data as PromptNodeData;
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [prompt, setPrompt] = useState(nodeData.prompt || '');
-  const [model, setModel] = useState<GeminiModel>(nodeData.model || GEMINI_MODELS.IMAGE_NB2);
+  const [model, setModel] = useState<GeminiModel | SeedreamModel>(nodeData.model || GEMINI_MODELS.IMAGE_NB2);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(nodeData.aspectRatio || DEFAULT_ASPECT_RATIO);
   const [resolution, setResolution] = useState<Resolution>(nodeData.resolution || '2K');
   const [connectedImage1, setConnectedImage1] = useState<string | undefined>(nodeData.connectedImage1);
@@ -81,9 +82,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const isLoading = nodeData.isLoading || false;
   const isSuggestingPrompts = nodeData.isSuggestingPrompts || false;
   const promptSuggestions = nodeData.promptSuggestions || [];
-  const isAdvanced = isAdvancedModelFn(model);
-  const finalResolution = isAdvanced ? resolution : undefined;
-  const creditsRequired = getCreditsRequired(model, finalResolution);
+  const isSeedream = isSeedreamModel(model);
+  const isAdvanced = !isSeedream && isAdvancedModelFn(model as GeminiModel);
+  // For Seedream: pass resolution directly (credit differs by resolution). For Gemini: only advanced models use it.
+  const effectiveResolution = isSeedream ? resolution : (isAdvanced ? resolution : undefined);
+  const provider = isSeedream ? 'seedream' as const : 'gemini' as const;
+  const creditsRequired = getCreditsRequired(model, effectiveResolution, provider);
 
   // Determine number of handles based on model
   const maxHandles = getMaxHandles(model);
@@ -641,10 +645,10 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       <div className="node-margin space-y-[var(--node-gap)]">
         <ModelSelector
           selectedModel={model}
-          onModelChange={(newModel) => {
+          onModelChange={(newModel, provider) => {
             setModel(newModel);
             if (nodeData.onUpdateData) {
-              nodeData.onUpdateData(id, { model: newModel });
+              nodeData.onUpdateData(id, { model: newModel, provider });
             }
           }}
           resolution={resolution}
@@ -665,25 +669,27 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           }}
         />
 
-        <AdvancedModelSettings
-          model={model}
-          aspectRatio={aspectRatio}
-          resolution={resolution}
-          onAspectRatioChange={(ratio) => {
-            setAspectRatio(ratio);
-            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { aspectRatio: ratio });
-          }}
-          onResolutionChange={(res) => {
-            setResolution(res);
-            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { resolution: res });
-          }}
-          onModelChange={(newModel) => {
-            setModel(newModel);
-            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { model: newModel });
-          }}
-          isLoading={isLoading}
-          allowVideo={true}
-        />
+        {!isSeedream && (
+          <AdvancedModelSettings
+            model={model as GeminiModel}
+            aspectRatio={aspectRatio}
+            resolution={resolution}
+            onAspectRatioChange={(ratio) => {
+              setAspectRatio(ratio);
+              if (nodeData.onUpdateData) nodeData.onUpdateData(id, { aspectRatio: ratio });
+            }}
+            onResolutionChange={(res) => {
+              setResolution(res);
+              if (nodeData.onUpdateData) nodeData.onUpdateData(id, { resolution: res });
+            }}
+            onModelChange={(newModel) => {
+              setModel(newModel);
+              if (nodeData.onUpdateData) nodeData.onUpdateData(id, { model: newModel });
+            }}
+            isLoading={isLoading}
+            allowVideo={true}
+          />
+        )}
 
         {/* Seed Control */}
         <SeedControl

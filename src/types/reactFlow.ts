@@ -1,7 +1,7 @@
 import type { Node, Edge } from '@xyflow/react';
 import type { CustomNodeDefinition, MultiOutputConfig } from './customNode';
 import type { Mockup } from '../services/mockupApi';
-import type { GeminiModel, Resolution, AspectRatio, DesignType, UploadedImage, GenerationMode } from './types';
+import type { GeminiModel, SeedreamModel, ImageProvider, Resolution, AspectRatio, DesignType, UploadedImage, GenerationMode } from './types';
 import type { SubscriptionStatus } from '../services/subscriptionService';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 
@@ -43,7 +43,9 @@ export interface ImageNodeData extends BaseNodeData {
 export interface MergeNodeData extends BaseNodeData {
   type: 'merge';
   prompt?: string;
-  model?: GeminiModel;
+  model?: GeminiModel | SeedreamModel;
+  /** Derived from model at generation time — stored for credit display only */
+  provider?: ImageProvider;
   isLoading?: boolean;
   isGeneratingPrompt?: boolean;
   resultImageBase64?: string;
@@ -51,7 +53,7 @@ export interface MergeNodeData extends BaseNodeData {
   imageWidth?: number; // Natural width of the image in pixels
   imageHeight?: number; // Natural height of the image in pixels
   connectedImages?: string[];
-  onGenerate?: (nodeId: string, connectedImages: string[], prompt: string, model?: GeminiModel) => Promise<void>;
+  onGenerate?: (nodeId: string, connectedImages: string[], prompt: string, model?: GeminiModel | SeedreamModel) => Promise<void>;
   onGeneratePrompt?: (nodeId: string, images: string[]) => Promise<void>;
   onUpdateData?: (nodeId: string, newData: Partial<MergeNodeData>) => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
@@ -170,10 +172,11 @@ export interface MockupNodeData extends BaseNodeData {
   isValidColor?: boolean; // Color input validation
   withHuman?: boolean; // Include human interaction
   customPrompt?: string; // Custom editable prompt (optional)
-  model?: GeminiModel; // Model for generation
+  model?: GeminiModel | SeedreamModel; // Model for generation
+  provider?: ImageProvider; // Image generation provider
   resolution?: Resolution; // Resolution for generation
   aspectRatio?: AspectRatio; // Aspect ratio for generation
-  onGenerate?: (nodeId: string, imageBase64: string, presetId: string, selectedColors?: string[], withHuman?: boolean, customPrompt?: string, model?: GeminiModel, resolution?: Resolution, aspectRatio?: AspectRatio) => Promise<void>;
+  onGenerate?: (nodeId: string, imageBase64: string, presetId: string, selectedColors?: string[], withHuman?: boolean, customPrompt?: string, model?: GeminiModel | SeedreamModel, resolution?: Resolution, aspectRatio?: AspectRatio) => Promise<void>;
   onUpdateData?: (nodeId: string, newData: Partial<MockupNodeData>) => void;
   onAddMockupNode?: () => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
@@ -294,7 +297,8 @@ export interface ShaderNodeData extends BaseNodeData {
 export interface PromptNodeData extends BaseNodeData {
   type: 'prompt';
   prompt: string;
-  model?: GeminiModel;
+  model?: GeminiModel | SeedreamModel;
+  provider?: ImageProvider;
   aspectRatio?: AspectRatio; // Aspect ratio for image generation (Pro model only)
   resolution?: Resolution; // Resolution for image generation (Pro model only)
   seed?: number; // Seed for deterministic generation
@@ -316,7 +320,7 @@ export interface PromptNodeData extends BaseNodeData {
   pdfPageReference?: string; // Reference to specific page/section of PDF (e.g., "Page 3" or "Color section")
   promptSuggestions?: string[]; // AI-generated prompt suggestions
   isSuggestingPrompts?: boolean; // Loading state for prompt suggestions
-  onGenerate?: (nodeId: string, prompt: string, connectedImages?: string[], model?: GeminiModel) => Promise<void>;
+  onGenerate?: (nodeId: string, prompt: string, connectedImages?: string[], model?: GeminiModel | SeedreamModel) => Promise<void>;
   onSuggestPrompts?: (nodeId: string, prompt: string) => Promise<void>; // Generate prompt suggestions
   onSavePrompt?: (prompt: string) => void; // Opens save prompt modal
   onUpdateData?: (nodeId: string, newData: Partial<PromptNodeData>) => void;
@@ -750,6 +754,8 @@ export interface ChatNodeData extends BaseNodeData {
     initialData?: Partial<FlowNodeData>,
     connectToChat?: boolean
   ) => string | undefined;
+
+  onRemoveNode?: (targetNodeId: string) => void;
 
   onEditConnectedNode?: (
     targetNodeId: string,

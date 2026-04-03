@@ -138,6 +138,22 @@ export function getBrandContextForNode(
   return { source: 'none', tokens: null };
 }
 
+/**
+ * Utility for preset handlers (Angle, Texture, Ambience, Luminance).
+ * Derives brand context for a node and returns an enhanced prompt override if applicable.
+ * Returns `undefined` when there is no brand context — caller should fall back to the original prompt.
+ */
+export function buildPromptWithBrandContext(
+  basePrompt: string,
+  nodeId: string,
+  nodes: Node<FlowNodeData>[],
+  edges: Edge[],
+  linkedGuideline: BrandGuideline | null | undefined,
+): string | undefined {
+  const { tokens } = getBrandContextForNode(nodeId, nodes, edges, linkedGuideline);
+  return tokens ? buildEnhancement(basePrompt, tokens) : undefined;
+}
+
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useBrandContext(nodeId: string): BrandContextResult {

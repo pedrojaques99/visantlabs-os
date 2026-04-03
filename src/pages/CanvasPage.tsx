@@ -993,6 +993,7 @@ export const CanvasPage: React.FC = () => {
     handleTextNodeDataUpdate,
     handleNodeBuilderSendMessage,
     handleNodeBuilderSpawn,
+    handleNodeBuilderUpdateData,
     handleCustomNodeExecute,
     handlersRef,
     nodesRef,
@@ -2905,7 +2906,7 @@ export const CanvasPage: React.FC = () => {
                   handlersRef.current?.handleNodeBuilderSendMessage?.(nid, msg) ?? Promise.resolve(),
                 onSpawnCustomNode: (nid: string, def: CustomNodeDefinition) =>
                   handlersRef.current?.handleNodeBuilderSpawn?.(nid, def),
-                onUpdateData: handlePromptNodeDataUpdate,
+                onUpdateData: handleNodeBuilderUpdateData,
               } as NodeBuilderData,
             } as Node<FlowNodeData>;
           }

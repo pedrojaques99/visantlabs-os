@@ -29,8 +29,8 @@ export type GeminiModel =
   | 'veo-3.1-generate-preview'
   | 'veo-3.1-fast-generate-preview';
 
-// Seedream models via APIFree.ai
-export type SeedreamModel = 'seedream-4.5' | 'seedream-4.0';
+// Seedream / Seededit models via APIFree.ai — single source of truth is seedreamModels.ts
+export type { SeedreamModelId as SeedreamModel } from '../constants/seedreamModels';
 
 // Image generation provider
 export type ImageProvider = 'gemini' | 'seedream';

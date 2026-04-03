@@ -12,7 +12,7 @@ import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { getAmbiencePreset } from '@/services/ambiencePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
 import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
-import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBrandContext';
+import { buildPromptWithBrandContext } from '@/hooks/canvas/useBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface UseAmbienceNodeHandlersParams {
@@ -54,8 +54,7 @@ export const useAmbienceNodeHandlers = ({
     const node = nodesRef.current.find(n => n.id === nodeId);
     const ambienceData = node?.data as AmbienceNodeData;
 
-    const { tokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
-    const promptOverride = tokens ? buildEnhancement(preset.prompt, tokens) : undefined;
+    const promptOverride = buildPromptWithBrandContext(preset.prompt, nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
 
     await generateImageWithPreset({
       nodeId,

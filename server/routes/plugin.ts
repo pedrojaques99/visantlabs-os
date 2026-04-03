@@ -1376,7 +1376,7 @@ router.post('/prompt-library/:id/rate', authenticate, requireAdmin, async (req: 
  */
 router.post('/smart-analyze', imageAnalysisLimiter, authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const { image, mode = 'image-gen', whiteLabel = false } = req.body;
+    const { image, mode = 'image-gen', whiteLabel = false, params, refinements, currentPrompt } = req.body;
     const saveToLib = req.body.saveToLib === true || req.body.saveToLib === 'true';
     const publish = req.body.publish === true || req.body.publish === 'true';
 
@@ -1391,11 +1391,44 @@ router.post('/smart-analyze', imageAnalysisLimiter, authenticate, requireAdmin, 
     // White label instruction to append when enabled
     const whiteLabelSuffix = whiteLabel ? WHITE_LABEL_INSTRUCTION : '';
 
+    // Build parameter-based instructions
+    let paramInstructions = '';
+    if (params) {
+      if (mode === 'figma-plugin') {
+        if (params.useAutoLayout === false) paramInstructions += '\n- NÃO use auto-layout neste componente.';
+        if (params.useSemanticNaming) paramInstructions += '\n- Use nomes de camadas extremamente descritivos e semânticos em inglês.';
+        if (params.useTokens) paramInstructions += '\n- Priorize o uso de variáveis e tokens de cores/tipografia disponíveis no workspace.';
+        if (params.selectedFont) paramInstructions += `\n- Utilize a fonte "${params.selectedFont}" para todos os elementos de texto.`;
+      } else {
+        if (params.intensity === 'literal') paramInstructions += '\n- Seja extremamente literal: descreva apenas o que está visível, sem interpretações artísticas.';
+        else if (params.intensity === 'creative') paramInstructions += '\n- Seja criativo: adicione elementos que melhorem a estética, iluminação dramática e detalhes que complementem o mood.';
+
+        if (params.visualStyle && params.visualStyle !== 'auto') paramInstructions += `\n- Estilo visual desejado: ${params.visualStyle}.`;
+        if (params.aspectRatio) paramInstructions += `\n- Proporção alvo (Aspect Ratio): ${params.aspectRatio}.`;
+        if (params.selectedFont) paramInstructions += `\n- Sugira o uso da fonte "${params.selectedFont}" se houver texto na imagem.`;
+      }
+    }
+
+    // Refinement Logic: If refinements are provided, we ask the AI to REWRITE the prompt
+    let systemBase = mode === 'figma-plugin' ? FIGMA_OPERATIONS_SYSTEM : SMART_ANALYZER_SYSTEM;
+    let userBase = mode === 'figma-plugin' ? FIGMA_OPERATIONS_USER : SMART_ANALYZER_USER;
+
+    if (refinements && Array.isArray(refinements) && refinements.length > 0) {
+      systemBase += `\n\nREFINAMENTO DE PROMPT:
+      - O usuário deseja alterar o prompt gerado anteriormente.
+      - Prompt Original: "${currentPrompt}"
+      - Novas instruções/mudanças desejadas: ${refinements.join(', ')}
+      - Sua tarefa é REESCREVER o prompt (ou operações) incorporando essas mudanças de forma fluida e profissional.
+      - Mantenha a consistência com a imagem original, mas priorize as novas instruções.`;
+      
+      userBase = `Com base na imagem e no prompt original "${currentPrompt}", gere uma nova versão do prompt incorporando: ${refinements.join(', ')}.`;
+    }
+
     // MODE: Figma Plugin Operations
     if (mode === 'figma-plugin') {
       const result = await generateText(
-        FIGMA_OPERATIONS_SYSTEM + whiteLabelSuffix,
-        FIGMA_OPERATIONS_USER,
+        systemBase + whiteLabelSuffix + (paramInstructions ? `\n\nREGRAS ADICIONAIS DE CUSTOMIZAÇÃO:${paramInstructions}` : ''),
+        userBase,
         imageData
       );
 
@@ -1438,8 +1471,8 @@ router.post('/smart-analyze', imageAnalysisLimiter, authenticate, requireAdmin, 
 
     // MODE: Image Generation Prompt (default)
     const analysisResult = await generateText(
-      SMART_ANALYZER_SYSTEM + whiteLabelSuffix,
-      SMART_ANALYZER_USER,
+      systemBase + whiteLabelSuffix + (paramInstructions ? `\n\nREGRAS ADICIONAIS DE CUSTOMIZAÇÃO:${paramInstructions}` : ''),
+      userBase,
       imageData
     );
 

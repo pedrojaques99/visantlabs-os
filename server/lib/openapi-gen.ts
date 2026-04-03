@@ -344,7 +344,7 @@ export function generateOpenAPISpec(
                 resolution: { type: 'string', enum: ['hd', '1k', '2k', '4k'] },
                 model: {
                   type: 'string',
-                  enum: ['gemini-2.5-flash-image', 'claude-opus-4.6'],
+                  enum: ['gemini-2.5-flash-image', 'gemini-3.1-flash-image-preview', 'claude-opus-4.6'],
                 },
               },
               required: ['promptText', 'baseImage'],

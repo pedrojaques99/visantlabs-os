@@ -114,6 +114,83 @@ export function parseActionsFromResponse(content: string): DetectedAction[] {
 }
 
 // ============================================================================
+// Canvas Command Detection
+// ============================================================================
+
+export type CanvasNodeCommandType = 'prompt' | 'mockup' | 'text' | 'strategy' | 'merge' | 'image' | 'video';
+
+export interface CanvasCommand {
+  action: 'create' | 'remove-connected' | 'clear-chat';
+  nodeType?: CanvasNodeCommandType;
+  count?: number;
+}
+
+const NODE_TYPE_ALIASES: Record<string, CanvasNodeCommandType> = {
+  prompt: 'prompt',
+  prompts: 'prompt',
+  mockup: 'mockup',
+  mockups: 'mockup',
+  text: 'text',
+  texto: 'text',
+  textos: 'text',
+  strategy: 'strategy',
+  estrategia: 'strategy',
+  estratégia: 'strategy',
+  merge: 'merge',
+  image: 'image',
+  imagem: 'image',
+  imagens: 'image',
+  video: 'video',
+  vídeo: 'video',
+  videos: 'video',
+  vídeos: 'video',
+};
+
+/**
+ * Parse a user message for canvas-operation commands.
+ * Returns null if the message is not a deterministic canvas command.
+ */
+export function parseCanvasCommand(message: string): CanvasCommand | null {
+  const msg = message.trim();
+
+  // CREATE: "crie/cria/criar/create/add/adiciona N <tipo> [node(s)/nó(s)]"
+  const createRe = /\b(?:cri[ae]r?|creat[ei]?|add|adiciona[r]?)\b\s+(\d+)\s+(\w+)/i;
+  const createMatch = createRe.exec(msg);
+  if (createMatch) {
+    const rawType = createMatch[2].toLowerCase();
+    const nodeType = NODE_TYPE_ALIASES[rawType] || NODE_TYPE_ALIASES[rawType.replace(/s$/, '')];
+    const count = parseInt(createMatch[1], 10);
+    if (nodeType && count >= 1 && count <= 20) {
+      return { action: 'create', nodeType, count };
+    }
+  }
+
+  // Also match "crie <tipo> N" (count at the end)
+  const createRe2 = /\b(?:cri[ae]r?|creat[ei]?|add|adiciona[r]?)\b\s+(\w+)\s+(\d+)/i;
+  const createMatch2 = createRe2.exec(msg);
+  if (createMatch2) {
+    const rawType = createMatch2[1].toLowerCase();
+    const nodeType = NODE_TYPE_ALIASES[rawType] || NODE_TYPE_ALIASES[rawType.replace(/s$/, '')];
+    const count = parseInt(createMatch2[2], 10);
+    if (nodeType && count >= 1 && count <= 20) {
+      return { action: 'create', nodeType, count };
+    }
+  }
+
+  // REMOVE CONNECTED: "remove/remova/apague os nodes conectados"
+  if (/\b(?:remov[ae]r?|apag(?:ue|ar?)|delet[ei]?)\b.{0,30}\b(?:conect|connect|linked|ligad)/i.test(msg)) {
+    return { action: 'remove-connected' };
+  }
+
+  // CLEAR CHAT: "limpa/limpe/clear o histórico/chat"
+  if (/\b(?:limpa[r]?|limpe|clear|apaga[r]?|apague)\b.{0,30}\b(?:hist[oó]rico|chat|mensagens|messages|conversa)\b/i.test(msg)) {
+    return { action: 'clear-chat' };
+  }
+
+  return null;
+}
+
+// ============================================================================
 // Utility Functions
 // ============================================================================
 

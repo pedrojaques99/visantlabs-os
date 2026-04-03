@@ -1,5 +1,6 @@
 import type { GeminiModel, Resolution, SeedreamModel, ImageProvider } from '../types/types';
 import { GEMINI_MODELS } from '../constants/geminiModels';
+import { isSeedreamModel } from '../constants/seedreamModels';
 
 /**
  * Get credits required for image generation based on model, resolution, and provider
@@ -15,8 +16,8 @@ export function getCreditsRequired(
     return 2; // Default fallback
   }
 
-  // Seedream models (via APIFree.ai)
-  if (provider === 'seedream' || model.startsWith('seedream')) {
+  // Seedream / Seededit models (via APIFree.ai)
+  if (provider === 'seedream' || isSeedreamModel(model)) {
     switch (resolution) {
       case '2K':
         return 3;

@@ -56,15 +56,15 @@ const ColorSwatch: React.FC<{
   };
 
   return (
-    <div className="bg-card border border-neutral-800/50 rounded-md p-4 px-6 py-4 hover:border-brand-cyan/30 transition-all">
+    <div className="bg-card border border-neutral-800/20 rounded-xl p-4 px-6 py-4 hover:border-brand-cyan/20 transition-all">
       <div className="flex items-start gap-4">
         <div
-          className="w-16 h-16 rounded-md border border-neutral-800/50 flex-shrink-0"
+          className="w-16 h-16 rounded-xl border border-neutral-800/50 flex-shrink-0"
           style={{ backgroundColor: `var(${variable})` }}
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-mono font-semibold text-neutral-200">{name}</h4>
+            <h4 className="font-semibold text-neutral-200">{name}</h4>
             <Button variant="ghost" onClick={copyToClipboard}
               className="p-1 hover:bg-neutral-800/50 rounded transition-colors"
               title="Copy CSS variable"
@@ -100,9 +100,9 @@ const SpacingExample: React.FC<{
     <div className="flex items-center gap-4">
       <div className="w-24 font-mono text-sm text-neutral-400">{name}</div>
       <div className="flex-1">
-        <div className="h-8 bg-neutral-800/50 rounded flex items-center">
+        <div className="h-8 bg-neutral-800/50 rounded-lg flex items-center">
           <div
-            className="bg-brand-cyan/30 h-full flex items-center justify-center text-xs font-mono text-brand-cyan"
+            className="bg-brand-cyan/30 h-full flex items-center justify-center text-xs font-mono text-brand-cyan rounded-lg"
             style={{ width: `${size}px`, minWidth: '20px' }}
           >
             {size}px
@@ -728,9 +728,9 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent className="space-y-6">
                         {typography.map((font) => (
-                          <div key={font.className} className="border border-neutral-800/50 rounded-md p-6 bg-neutral-900/30">
-                            <h3 className="font-mono font-semibold text-neutral-200 mb-2">{font.name}</h3>
-                            <p className="text-sm text-neutral-400 font-mono mb-4">{font.description}</p>
+                          <div key={font.className} className="border border-neutral-800/20 rounded-xl p-6 bg-neutral-900/40">
+                            <h3 className="font-semibold text-neutral-200 mb-2">{font.name}</h3>
+                            <p className="text-sm text-neutral-400 mb-4">{font.description}</p>
                             <p className={cn('text-2xl', font.className)}>
                               Aa
                             </p>

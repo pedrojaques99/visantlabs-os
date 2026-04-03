@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useEffect } from 'react';
 import { GEMINI_MODELS, AVAILABLE_IMAGE_MODELS, MODEL_CONFIG, isAdvancedModel, getModelConfig } from '@/constants/geminiModels';
+import { SEEDREAM_IMAGE_MODELS, SEEDREAM_MODEL_CONFIG, isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { isGenerationUnlimited } from '@/utils/unlimitedChecker';
 import { useLayout } from '@/hooks/useLayout';
@@ -7,11 +8,11 @@ import { cn } from '@/lib/utils';
 import { Select } from '@/components/ui/select';
 import { NodeLabel } from './node-label';
 import { useTranslation } from '@/hooks/useTranslation';
-import type { GeminiModel, Resolution } from '@/types/types';
+import type { GeminiModel, SeedreamModel, ImageProvider, Resolution } from '@/types/types';
 
 interface ModelSelectorProps {
-  selectedModel: GeminiModel;
-  onModelChange: (model: GeminiModel) => void;
+  selectedModel: GeminiModel | SeedreamModel | string;
+  onModelChange: (model: GeminiModel | SeedreamModel, provider: ImageProvider) => void;
   resolution?: Resolution;
   disabled?: boolean;
   className?: string;
@@ -22,8 +23,9 @@ interface ModelSelectorProps {
 }
 
 /**
- * Reusable Model Selector component for React Flow nodes.
- * Uses a Select menu to support multiple models efficiently.
+ * Reusable Model Selector for React Flow nodes.
+ * Shows all image generation models: Gemini + Seedream.
+ * Calls onModelChange with the model ID and the derived provider.
  */
 export const ModelSelector: React.FC<ModelSelectorProps> = ({
   selectedModel,
@@ -39,59 +41,75 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   const planMetadata = subscriptionStatus?.planMetadata;
 
   const options = useMemo(() => {
-    return AVAILABLE_IMAGE_MODELS.map(modelId => {
+    const geminiOptions = AVAILABLE_IMAGE_MODELS.map(modelId => {
       const config = MODEL_CONFIG[modelId];
       if (!config) return null;
 
-      const effectiveResolution = isAdvancedModel(modelId) ? (selectedModel === modelId ? resolution : config?.defaultResolution) : undefined;
-      const credits = getCreditsRequired(modelId, effectiveResolution);
-      const isUnlimited = isGenerationUnlimited({
-        model: modelId,
-        resolution: effectiveResolution,
-        planMetadata
-      });
-
-      const creditSuffix = isUnlimited 
-        ? ' (∞)' 
-        : ` (${credits})`;
+      const effectiveResolution = isAdvancedModel(modelId)
+        ? (selectedModel === modelId ? resolution : config?.defaultResolution)
+        : undefined;
+      const credits = getCreditsRequired(modelId, effectiveResolution, 'gemini');
+      const isUnlimited = isGenerationUnlimited({ model: modelId, resolution: effectiveResolution, planMetadata });
 
       return {
         value: modelId,
-        label: `${config.label}${creditSuffix}`,
+        label: `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`,
       };
-    }).filter(Boolean) as any[];
-  }, [AVAILABLE_IMAGE_MODELS, resolution, selectedModel, planMetadata, t]);
+    }).filter(Boolean) as { value: string; label: string }[];
 
-  // Normalize: if selectedModel isn't in options (e.g. old text model stored in canvas), fall back to first image model
+    const seedreamOptions = SEEDREAM_IMAGE_MODELS.map(modelId => {
+      const config = SEEDREAM_MODEL_CONFIG[modelId];
+      const effectiveResolution = selectedModel === modelId ? resolution : config?.defaultResolution;
+      const credits = getCreditsRequired(modelId, effectiveResolution, 'seedream');
+      const isUnlimited = isGenerationUnlimited({ model: modelId, resolution: effectiveResolution, planMetadata });
+
+      return {
+        value: modelId,
+        label: `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`,
+      };
+    });
+
+    return [...geminiOptions, ...seedreamOptions];
+  }, [resolution, selectedModel, planMetadata]);
+
+  // Normalize: if selectedModel isn't in options, fall back to first image model
   const effectiveModel = useMemo(() => {
     if (!options.length) return selectedModel;
-    return options.some(o => o.value === selectedModel) ? selectedModel : options[0].value as GeminiModel;
+    return options.some(o => o.value === selectedModel) ? selectedModel : options[0].value;
   }, [selectedModel, options]);
 
   // Sync parent if we had to normalize the value
   useEffect(() => {
     if (effectiveModel !== selectedModel) {
-      onModelChange(effectiveModel);
+      const provider: ImageProvider = isSeedreamModel(effectiveModel) ? 'seedream' : 'gemini';
+      onModelChange(effectiveModel as GeminiModel | SeedreamModel, provider);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveModel]);
 
   const handleModelClick = useCallback((newModel: string) => {
-    const modelId = newModel as GeminiModel;
-    if (disabled || modelId === selectedModel) return;
+    if (disabled || newModel === selectedModel) return;
 
-    onModelChange(modelId);
+    const provider: ImageProvider = isSeedreamModel(newModel) ? 'seedream' : 'gemini';
+    onModelChange(newModel as GeminiModel | SeedreamModel, provider);
 
-    // Sync logic helpers
-    const config = getModelConfig(modelId);
-
-    if (config.supportsImageConfig) {
-      if (!resolution && onSyncResolution && config.defaultResolution) {
-        onSyncResolution(config.defaultResolution);
+    if (provider === 'seedream') {
+      // Seedream: sync to model's default resolution
+      const sdConfig = getSeedreamModelConfig(newModel);
+      if (sdConfig && !resolution && onSyncResolution) {
+        onSyncResolution(sdConfig.defaultResolution);
       }
     } else {
-      if (onClearAdvancedConfig) {
-        onClearAdvancedConfig();
+      // Gemini
+      const config = getModelConfig(newModel as GeminiModel);
+      if (config.supportsImageConfig) {
+        if (!resolution && onSyncResolution && config.defaultResolution) {
+          onSyncResolution(config.defaultResolution);
+        }
+      } else {
+        if (onClearAdvancedConfig) {
+          onClearAdvancedConfig();
+        }
       }
     }
   }, [disabled, selectedModel, onModelChange, resolution, onSyncResolution, onClearAdvancedConfig]);

@@ -418,6 +418,35 @@ const MockupMachinePageContent: React.FC = () => {
     selectedColors.length, designType, aspectRatio, generateText, withHuman
   ]);
 
+  // Capture incoming state from Smart Analyzer or other sources
+  useEffect(() => {
+    if (location.state?.prompt) {
+      console.log('[🚀 MockupMachine] Incoming state detected:', {
+        hasPrompt: !!location.state.prompt,
+        hasImage: !!location.state.image
+      });
+      
+      setPromptPreview(location.state.prompt);
+      setIsSmartPromptActive(true);
+      setIsPromptManuallyEdited(false);
+      promptWasReadyBeforeEditRef.current = true;
+      
+      if (location.state.image) {
+        setUploadedImage(location.state.image);
+      }
+      
+      // Mark as ready to generate immediately
+      promptTagsSnapshotRef.current = getTagsHash();
+      
+      // Scroll to prompt preview or results
+      setShowWelcome(false);
+      setHasGenerated(false);
+      
+      // Clean up state to prevent re-processing on re-renders
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, getTagsHash]);
+
   // Derived: prompt is ready if we have a prompt and tags haven't changed since generation
   const isPromptReady = useMemo(() => {
     if (!promptPreview.trim()) return false;
