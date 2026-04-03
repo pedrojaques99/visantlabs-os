@@ -118,7 +118,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
         className="w-2 h-2 bg-brand-cyan border-2 border-black node-handle"
       />
 
-      <NodeHeader icon={Video} title={t('canvasNodes.videoInputNode.title') || 'Video Input'} />
+      <NodeHeader icon={Video} title={t('canvasNodes.videoInputNode.title') || 'Video Input'} selected={selected} />
 
       <div className="mb-4">
         <Input

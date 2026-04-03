@@ -7,11 +7,12 @@ import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Loader2, FileText, X, ShieldCheck } from 'lucide-react';
+import { Loader2, FileText, X, ShieldCheck, Image as ImageIcon, Upload, Plus } from 'lucide-react';
 import { MicroTitle } from '../ui/MicroTitle';
 import { pdfToBase64, validatePdfFile } from '@/utils/pdfUtils';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { fileToBase64, validateFile } from '@/utils/fileUtils';
 
 interface BrandGuidelineWizardModalProps {
     isOpen: boolean;
@@ -38,6 +39,11 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     const [pdfFile, setPdfFile] = useState<File | null>(null);
     const pdfInputRef = useRef<HTMLInputElement>(null);
 
+    // Image selection state
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const imageInputRef = useRef<HTMLInputElement>(null);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
     // Local media/logos state for the gallery (edit mode)
     const [media, setMedia] = useState<BrandGuideline['media']>([]);
     const [logos, setLogos] = useState<BrandGuideline['logos']>([]);
@@ -54,7 +60,10 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             setMedia([]);
             setLogos([]);
             setPdfFile(null);
+            setImageFiles([]);
+            setImagePreviews([]);
             if (pdfInputRef.current) pdfInputRef.current.value = '';
+            if (imageInputRef.current) imageInputRef.current.value = '';
         }
     }, [isOpen, editGuideline]);
 
@@ -72,6 +81,45 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         setPdfFile(file);
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        const newFiles = [...imageFiles];
+        const newPreviews = [...imagePreviews];
+
+        for (const file of files) {
+            if (newFiles.length >= 10) break;
+
+            const error = validateFile(file, 'image');
+            if (error) {
+                toast.error(`${file.name}: ${error}`);
+                continue;
+            }
+
+            newFiles.push(file);
+            newPreviews.push(URL.createObjectURL(file));
+        }
+
+        setImageFiles(newFiles);
+        setImagePreviews(newPreviews);
+        if (imageInputRef.current) imageInputRef.current.value = '';
+    };
+
+    const removeImage = (index: number) => {
+        const newFiles = [...imageFiles];
+        const newPreviews = [...imagePreviews];
+
+        // Revoke the URL to avoid memory leaks
+        URL.revokeObjectURL(newPreviews[index]);
+
+        newFiles.splice(index, 1);
+        newPreviews.splice(index, 1);
+
+        setImageFiles(newFiles);
+        setImagePreviews(newPreviews);
+    };
+
     const removePdf = () => {
         setPdfFile(null);
         if (pdfInputRef.current) pdfInputRef.current.value = '';
@@ -87,8 +135,11 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         setName('');
         setUrl('');
         setPdfFile(null);
+        setImageFiles([]);
+        imagePreviews.forEach(url => URL.revokeObjectURL(url));
+        setImagePreviews([]);
         onClose();
-    }, [isSubmitting, isIngesting, onClose]);
+    }, [isSubmitting, isIngesting, imagePreviews, onClose]);
 
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
@@ -132,20 +183,35 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 else toast.success(t('mockup.brandWizardSuccess'));
             }
 
-            // Handle PDF Ingestion
-            if (pdfFile) {
+            // Handle Extraction Sources (PDF and/or Images)
+            if (pdfFile || imageFiles.length > 0) {
                 setIsSubmitting(false);
                 setIsIngesting(true);
                 try {
-                    const base64 = await pdfToBase64(pdfFile);
-                    await brandGuidelineApi.ingest(workingId, {
-                        source: 'pdf',
-                        data: base64,
-                        filename: pdfFile.name
-                    });
+                    const payload: any = {
+                        source: pdfFile ? 'pdf' : 'images', // 'pdf' takes precedence for text extraction, but backend and gemini will use both
+                        filename: pdfFile?.name || `${imageFiles.length}_images.zip`
+                    };
+
+                    if (pdfFile) {
+                        payload.data = await pdfToBase64(pdfFile);
+                    }
+
+                    if (imageFiles.length > 0) {
+                        const base64Images = await Promise.all(
+                            imageFiles.map(async (file) => {
+                                const result = await fileToBase64(file);
+                                return `data:${result.mimeType};base64,${result.base64}`;
+                            })
+                        );
+                        payload.images = base64Images;
+                    }
+
+                    await brandGuidelineApi.ingest(workingId, payload);
                     toast.success(t('mockup.brandWizardSuccessWithExtraction'));
-                } catch {
-                    toast.error(t('mockup.brandWizardErrorPdf'));
+                } catch (err) {
+                    console.error('Ingestion error:', err);
+                    toast.error(t('mockup.brandWizardErrorIngest'));
                 }
                 setIsIngesting(false);
             }
@@ -153,6 +219,8 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             setName('');
             setUrl('');
             setPdfFile(null);
+            setImageFiles([]);
+            setImagePreviews([]);
             onSuccess(workingId);
 
         } catch {
@@ -169,7 +237,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             ? null
             : isEditMode
                 ? t('mockup.brandWizardSave')
-                : hasUrl
+                : (hasUrl || pdfFile || imageFiles.length > 0)
                     ? t('mockup.brandWizardSubmit')
                     : t('mockup.brandWizardSubmitNoUrl');
 
@@ -247,60 +315,107 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                     )}
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                    <MicroTitle as="label" htmlFor="brand-wizard-pdf">
-                        {t('mockup.brandWizardPdfLabel')}
-                    </MicroTitle>
-                    <input
-                        ref={pdfInputRef}
-                        id="brand-wizard-pdf"
-                        type="file"
-                        accept=".pdf"
-                        onChange={handlePdfChange}
-                        className="hidden"
-                        disabled={isSubmitting || isIngesting}
-                    />
-
-                    {!pdfFile ? (
-                        <button
-                            type="button"
-                            onClick={() => pdfInputRef.current?.click()}
+                {/* PDF and Images selection (Combined or separate?) */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                        <MicroTitle as="label" htmlFor="brand-wizard-pdf">
+                            {t('mockup.brandWizardPdfLabel')}
+                        </MicroTitle>
+                        <input
+                            ref={pdfInputRef}
+                            id="brand-wizard-pdf"
+                            type="file"
+                            accept=".pdf"
+                            onChange={handlePdfChange}
+                            className="hidden"
                             disabled={isSubmitting || isIngesting}
-                            className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/5 hover:border-brand-cyan/30 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group"
-                        >
-                            <div className="flex items-center gap-3">
-                                <FileText size={18} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
-                                <span className="text-xs truncate">{t('mockup.brandWizardPdfPlaceholder')}</span>
-                            </div>
-                            <ShieldCheck size={14} className="text-neutral-800 group-hover:text-brand-cyan/40" />
-                        </button>
-                    ) : (
-                        <div className="flex items-center justify-between gap-3 bg-brand-cyan/5 border border-brand-cyan/20 rounded-md px-3 py-2.5 overflow-hidden">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <FileText size={18} className="text-brand-cyan shrink-0" />
-                                <div className="flex flex-col min-w-0">
-                                    <span className="text-[10px] font-mono text-brand-cyan/60 uppercase leading-none mb-1">
-                                        {t('mockup.brandWizardPdfSelected')}
-                                    </span>
-                                    <span className="text-[11px] font-mono text-white truncate">
+                        />
+
+                        {!pdfFile ? (
+                            <button
+                                type="button"
+                                onClick={() => pdfInputRef.current?.click()}
+                                disabled={isSubmitting || isIngesting}
+                                className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/5 hover:border-brand-cyan/30 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group h-[42px]"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <FileText size={16} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
+                                    <span className="text-[10px] uppercase tracking-wider">{t('mockup.brandWizardPdfPlaceholderShort') || 'PDF'}</span>
+                                </div>
+                                <ShieldCheck size={12} className="text-neutral-800 group-hover:text-brand-cyan/40" />
+                            </button>
+                        ) : (
+                            <div className="flex items-center justify-between gap-2 bg-brand-cyan/5 border border-brand-cyan/20 rounded-md px-2 py-1.5 overflow-hidden h-[42px]">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <FileText size={16} className="text-brand-cyan shrink-0" />
+                                    <span className="text-[10px] font-mono text-white truncate max-w-[80px]">
                                         {pdfFile.name}
                                     </span>
                                 </div>
+                                <button
+                                    type="button"
+                                    onClick={removePdf}
+                                    className="p-1 rounded-full hover:bg-white/5 text-neutral-600 hover:text-white transition-colors"
+                                >
+                                    <X size={12} />
+                                </button>
                             </div>
-                            <button
-                                type="button"
-                                onClick={removePdf}
-                                className="p-1.5 rounded-full hover:bg-white/5 text-neutral-600 hover:text-white transition-colors"
-                            >
-                                <X size={14} />
-                            </button>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
-                    <MicroTitle as="p" className="text-neutral-700 mt-0.5 lowercase">
-                        {t('mockup.brandWizardPdfHint')}
-                    </MicroTitle>
+                    <div className="flex flex-col gap-1.5">
+                        <MicroTitle as="label" htmlFor="brand-wizard-images">
+                            {t('mockup.brandWizardImagesLabel') || 'Images'}
+                        </MicroTitle>
+                        <input
+                            ref={imageInputRef}
+                            id="brand-wizard-images"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageChange}
+                            className="hidden"
+                            disabled={isSubmitting || isIngesting || imageFiles.length >= 10}
+                        />
+
+                        <button
+                            type="button"
+                            onClick={() => imageInputRef.current?.click()}
+                            disabled={isSubmitting || isIngesting || imageFiles.length >= 10}
+                            className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/5 hover:border-brand-cyan/30 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group h-[42px] disabled:opacity-30"
+                        >
+                            <div className="flex items-center gap-2">
+                                <ImageIcon size={16} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
+                                <span className="text-[10px] uppercase tracking-wider">
+                                    {imageFiles.length > 0 ? `${imageFiles.length}/10` : (t('mockup.brandWizardImagesPlaceholderShort') || 'IMAGES')}
+                                </span>
+                            </div>
+                            <Plus size={12} className="text-neutral-800 group-hover:text-brand-cyan/40" />
+                        </button>
+                    </div>
                 </div>
+
+                {/* Image Previews Grid */}
+                {imagePreviews.length > 0 && (
+                    <div className="grid grid-cols-5 gap-2 mt-1">
+                        {imagePreviews.map((preview, index) => (
+                            <div key={index} className="relative group aspect-square rounded bg-neutral-900 border border-white/5 overflow-hidden">
+                                <img src={preview} alt="" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                <button
+                                    type="button"
+                                    onClick={() => removeImage(index)}
+                                    className="absolute top-0.5 right-0.5 p-1 bg-black/60 rounded-full text-white/40 hover:text-white opacity-0 group-hover:opacity-100 transition-all"
+                                >
+                                    <X size={10} />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                <MicroTitle as="p" className="text-neutral-700 mt-1 lowercase">
+                    {t('mockup.brandWizardExtractionHint') || 'extração essencialista de estratégia, arquétipos e tokens.'}
+                </MicroTitle>
             </form>
 
             {/* Media Kit — only in edit mode (guideline must exist for uploads) */}

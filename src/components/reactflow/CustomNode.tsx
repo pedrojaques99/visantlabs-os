@@ -84,7 +84,7 @@ export const CustomNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
   return (
     <NodeContainer selected={selected} dragging={dragging} className="min-w-[360px]">
-      <NodeHeader icon={IconComponent} title={definition.name} />
+      <NodeHeader icon={IconComponent} title={definition.name} selected={selected} />
 
       {handleTops.map((top, i) => (
         <LabeledHandle

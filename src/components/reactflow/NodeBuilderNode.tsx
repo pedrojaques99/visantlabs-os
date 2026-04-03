@@ -1,10 +1,17 @@
 import React, { useState, useRef, useEffect, memo, useCallback } from 'react';
 import { type NodeProps } from '@xyflow/react';
-import { 
-  Blocks, Sparkles, CheckCircle2, RotateCcw, Send, 
+import {
+  Blocks, Sparkles, CheckCircle2, RotateCcw, Send,
   Wand2, Grid3x3, GitBranch, Zap, MessageSquare, Plus,
-  ChevronRight
+  ChevronRight, Brain, Cpu, Layers
 } from 'lucide-react';
+
+const PROCESSING_STEPS = [
+  { icon: Brain, label: 'ANALYZING INTENT...' },
+  { icon: Cpu, label: 'REASONING LOGIC...' },
+  { icon: Layers, label: 'BUILDING SCHEMA...' },
+  { icon: Zap, label: 'GENERATING NODE...' },
+];
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeButton } from './shared/node-button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -71,10 +78,17 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
   const isLoading = nodeData.isLoading ?? false;
   const messages = nodeData.messages ?? [];
   const pendingDefinition = nodeData.pendingDefinition;
+  const [processingStep, setProcessingStep] = useState(0);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length, isLoading]);
+
+  useEffect(() => {
+    if (!isLoading) { setProcessingStep(0); return; }
+    const id = setInterval(() => setProcessingStep(s => (s + 1) % PROCESSING_STEPS.length), 1200);
+    return () => clearInterval(id);
+  }, [isLoading]);
 
   const handleSend = useCallback(async () => {
     const trimmedInput = input.trim();
@@ -123,7 +137,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
           <div>
             <h3 className="text-[12px] font-bold node-text-primary font-mono tracking-wider">NODE ARCHITECT</h3>
             <p className="text-[9px] text-neutral-500 font-mono flex items-center gap-1">
-              {isLoading ? 'ANALYZING INTENT...' : 'READY TO CONSTRUCT'}
+              {isLoading ? PROCESSING_STEPS[processingStep].label : 'READY TO CONSTRUCT'}
               {isLoading && <span className="w-1 h-1 bg-brand-cyan rounded-full animate-pulse" />}
             </p>
           </div>
@@ -142,7 +156,58 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
 
       {/* Main Content Area */}
       <div className="min-h-[120px] flex flex-col justify-end">
-        {messages.length === 0 && !pendingDefinition ? (
+        {isLoading && messages.length === 0 ? (
+          <div className="node-margin py-4 space-y-4 animate-in fade-in duration-300">
+            <div className="flex flex-col gap-2">
+              {PROCESSING_STEPS.map((step, i) => {
+                const StepIcon = step.icon;
+                const isActive = i === processingStep;
+                const isPast = i < processingStep;
+                return (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2 rounded-xl border transition-all duration-500',
+                      isActive
+                        ? 'bg-brand-cyan/10 border-brand-cyan/30 shadow-[0_0_12px_rgba(0,195,255,0.08)]'
+                        : isPast
+                        ? 'bg-neutral-900/30 border-white/5 opacity-40'
+                        : 'bg-transparent border-transparent opacity-20'
+                    )}
+                  >
+                    <StepIcon
+                      size={13}
+                      className={cn(
+                        'shrink-0 transition-colors duration-300',
+                        isActive ? 'text-brand-cyan' : isPast ? 'text-neutral-500' : 'text-neutral-700'
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        'text-[10px] font-mono tracking-widest transition-colors duration-300',
+                        isActive ? 'text-brand-cyan' : isPast ? 'text-neutral-500' : 'text-neutral-700'
+                      )}
+                    >
+                      {step.label}
+                    </span>
+                    {isActive && (
+                      <span className="ml-auto flex gap-0.5">
+                        {[0, 1, 2].map(d => (
+                          <span
+                            key={d}
+                            className="w-1 h-1 rounded-full bg-brand-cyan animate-bounce"
+                            style={{ animationDelay: `${d * 150}ms` }}
+                          />
+                        ))}
+                      </span>
+                    )}
+                    {isPast && <CheckCircle2 size={11} className="ml-auto text-neutral-600" />}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : messages.length === 0 && !pendingDefinition ? (
           <div className="node-margin space-y-4 py-2">
             {!activeCategory ? (
               <>
@@ -213,9 +278,16 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
               </div>
             ))}
             {isLoading && (
-              <div className="flex items-center gap-3 px-3 py-2 bg-brand-cyan/5 border border-brand-cyan/10 rounded-2xl rounded-tl-none mr-8 animate-pulse">
+              <div className="flex items-center gap-3 px-3 py-2 bg-brand-cyan/5 border border-brand-cyan/20 rounded-2xl rounded-tl-none mr-8">
                 <GlitchLoader size={14} color="var(--brand-cyan)" />
-                <span className="text-brand-cyan/60 text-[10px] font-mono uppercase tracking-widest font-bold">Processing Logic...</span>
+                <span className="text-brand-cyan/70 text-[10px] font-mono uppercase tracking-widest font-bold">
+                  {PROCESSING_STEPS[processingStep].label}
+                </span>
+                <span className="ml-auto flex gap-0.5">
+                  {[0, 1, 2].map(d => (
+                    <span key={d} className="w-1 h-1 rounded-full bg-brand-cyan/50 animate-bounce" style={{ animationDelay: `${d * 150}ms` }} />
+                  ))}
+                </span>
               </div>
             )}
             <div ref={messagesEndRef} />

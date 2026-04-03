@@ -109,7 +109,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
       <NodeHandles />
 
       {/* Header */}
-      <NodeHeader icon={Maximize2} title={t('canvasNodes.upscaleNode.title')} />
+      <NodeHeader icon={Maximize2} title={t('canvasNodes.upscaleNode.title')} selected={selected} />
 
       {/* Connected Image Thumbnail - unified component */}
       <ConnectedImagesDisplay

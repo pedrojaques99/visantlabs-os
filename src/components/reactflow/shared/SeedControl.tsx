@@ -120,7 +120,7 @@ export const SeedControl: React.FC<SeedControlProps> = ({
             className={cn(
               "shrink-0 h-7 w-7 flex items-center justify-center rounded-md transition-colors nodrag nopan",
               seedLocked
-                ? "bg-brand-cyan/15 border border-brand-cyan/30 text-brand-cyan"
+                ? "bg-foreground/10 border border-foreground/30 text-foreground"
                 : "bg-neutral-900/60 border border-neutral-700/40 text-neutral-500 hover:text-neutral-300 hover:border-neutral-600",
               disabled && "opacity-50 cursor-not-allowed"
             )}

@@ -226,7 +226,7 @@ export function useMediaSource({
       url: media.url,
       isVideo: media.isVideo,
       sourceNodeId: sourceNode.id,
-      sourceNodeType: sourceNode.data.type || null
+      sourceNodeType: (sourceNode.data.type as string) || null
     };
   }, [nodeId, nodes, edges, ownResult]);
 }

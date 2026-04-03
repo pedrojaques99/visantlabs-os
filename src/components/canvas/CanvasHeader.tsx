@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from '@/components/ui/BackButton';
-import { Share2, ChevronRight, Settings, Users, Save, FolderOpen, Download, Check, FileJson, Upload } from 'lucide-react';
+import { Share2, ChevronRight, Settings, Users, Save, FolderOpen, Download, Check, FileJson, Upload, Plus, Library } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { AuthButton } from '../AuthButton';
@@ -10,6 +10,8 @@ import { CommunityPresetsSidebar } from './CommunityPresetsSidebar';
 import { ShareModal } from './ShareModal';
 import { useCanvasHeader } from './CanvasHeaderContext';
 import { BrandSelector } from './BrandSelector';
+import { BrandGuidelineWizardModal } from '../mockupmachine/BrandGuidelineWizardModal';
+import { BrandMediaLibraryModal } from '../reactflow/modals/BrandMediaLibraryModal';
 import { canvasApi } from '@/services/canvasApi';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button'
@@ -74,6 +76,12 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
   const inputRef = useRef<HTMLInputElement>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showBrandWizard, setShowBrandWizard] = useState(false);
+  const [showBrandMediaLibrary, setShowBrandMediaLibrary] = useState(false);
+
+  // Common button classes
+  const headerButtonClass = "h-9 w-9 p-0 border rounded-[10px] transition-all flex items-center justify-center bg-[#1A1A1A]/40 hover:bg-[#252525]/60 text-neutral-400 hover:text-neutral-200 border-white/5 hover:border-white/10 cursor-pointer shadow-sm transition-all duration-200";
+  const activeHeaderButtonClass = "bg-brand-cyan/10 text-brand-cyan border-brand-cyan/20";
 
   // Handle share button click
   const handleShareClick = useCallback(() => {
@@ -188,25 +196,38 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <BrandSelector
-            value={linkedGuidelineId}
-            onChange={(id) => onLinkedGuidelineChange?.(id)}
-            className="hidden sm:flex"
-          />
+          <div className="flex items-center gap-1.5 mr-1">
+            <BrandSelector
+              value={linkedGuidelineId}
+              onChange={(id) => onLinkedGuidelineChange?.(id)}
+              onAddClick={() => setShowBrandWizard(true)}
+              className="hidden sm:flex h-9"
+            />
+            <Button
+              variant="ghost"
+              onClick={() => setShowBrandMediaLibrary(true)}
+              disabled={!linkedGuidelineId}
+              className={cn(headerButtonClass, "hover:border-brand-cyan/30 flex-shrink-0 disabled:opacity-30")}
+              title={t('mockup.openMediaLibrary') || 'Brand Media Library'}
+            >
+              <Library size={16} />
+            </Button>
+          </div>
+
           {projectId && (
             <Button variant="ghost" onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               handleShareClick();
             }}
-              className={`p-1.5 border rounded-md transition-all flex items-center justify-center ${isCollaborative
-                ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[brand-cyan]/30 hover:border-[brand-cyan]/50'
-                : 'bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600'
-                }`}
+              className={cn(
+                headerButtonClass,
+                isCollaborative ? activeHeaderButtonClass : ""
+              )}
               title={t('canvas.share')}
               type="button"
             >
-              <Share2 size={14} />
+              <Share2 size={16} />
             </Button>
           )}
           <Button variant="ghost" onClick={() => {
@@ -217,40 +238,38 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             }
           }}
             className={cn(
-              "p-1.5 border rounded-md transition-all flex items-center justify-center cursor-pointer",
-              activeSidePanel === 'community-presets'
-                ? "bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30"
-                : "bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600"
+              headerButtonClass,
+              activeSidePanel === 'community-presets' ? activeHeaderButtonClass : ""
             )}
             title="Community Presets"
           >
-            <Users size={14} />
+            <Users size={16} />
           </Button>
           {onLoadWorkflow && (
             <Button variant="ghost" onClick={() => onLoadWorkflow?.()}
-              className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
+              className={headerButtonClass}
               title={t('workflows.loadWorkflow') || 'Load Workflow'}
             >
-              <FolderOpen size={14} />
+              <FolderOpen size={16} />
             </Button>
           )}
           {onSaveWorkflow && (
             <Button variant="ghost" onClick={() => onSaveWorkflow?.()}
-              className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
+              className={headerButtonClass}
               title={t('workflows.saveWorkflow') || 'Save as Workflow'}
             >
-              <Save size={14} />
+              <Save size={16} />
             </Button>
           )}
 
           {/* Download Dropdown */}
           <div className="relative group">
-            <Button variant="ghost" className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
+            <Button variant="ghost" className={headerButtonClass}
               title={t('canvas.download') || 'Download'}
             >
-              <Download size={14} />
+              <Download size={16} />
             </Button>
-            <div className="absolute right-0 top-full mt-1 w-52 bg-[#1a1a1a] border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-300 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
+            <div className="absolute right-0 top-full mt-1 w-52 bg-[#1a1a1a] border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
               <Button variant="ghost" onClick={() => onExportImagesRequest?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
               >
@@ -289,7 +308,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
               setShowSettingsModal(true);
             }
           }}
-            className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
+            className={headerButtonClass}
             title={t('canvas.settings')}
           >
             <Settings size={14} />
@@ -339,6 +358,23 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
           onShareUpdate={handleShareUpdate}
         />
       )}
+
+      {/* Brand Guideline Wizard */}
+      <BrandGuidelineWizardModal
+        isOpen={showBrandWizard}
+        onClose={() => setShowBrandWizard(false)}
+        onSuccess={(id) => {
+          onLinkedGuidelineChange?.(id);
+          setShowBrandWizard(false);
+        }}
+      />
+
+      {/* Brand Media Library */}
+      <BrandMediaLibraryModal
+        isOpen={showBrandMediaLibrary}
+        onClose={() => setShowBrandMediaLibrary(false)}
+        guidelineId={linkedGuidelineId}
+      />
     </div>
   );
 };

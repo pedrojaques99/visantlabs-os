@@ -354,6 +354,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       <NodeHeader
         icon={Clapperboard}
         title={t('canvasNodes.videoNode.title') || 'Veo Video'}
+        selected={selected}
         isBrandActive={isBrandActive}
         onToggleBrand={(active) => {
           setIsBrandActive(active);
@@ -436,108 +437,108 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             className={cn('transition-transform ml-auto', isAdvancedOpen && 'rotate-90')}
           />
         </NodeButton>
+      </div>
 
-        {isAdvancedOpen && (
-          <div className="p-3 space-y-3 border-t border-neutral-800 bg-neutral-900/50">
-            {/* Model */}
-            <div>
-              <NodeLabel>{t('canvasNodes.videoNode.model') || 'Model'}</NodeLabel>
-              <Select
-                value={model}
-                onChange={(v) => {
-                  setModel(v);
-                  updateData({ model: v });
-                }}
-                options={MODEL_OPTIONS}
-                variant="node"
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* Aspect Ratio & Resolution Grid */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <NodeLabel>{t('canvasNodes.videoNode.aspectRatio') || 'Aspect Ratio'}</NodeLabel>
-                <AspectRatioSelector
-                  value={aspectRatio}
-                  onChange={(r) => {
-                    setAspectRatio(r);
-                    updateData({ aspectRatio: r });
-                  }}
-                  disabled={isLoading}
-                  compact
-                />
-              </div>
-              <div>
-                <NodeLabel>{t('canvasNodes.videoNode.resolution') || 'Resolution'}</NodeLabel>
-                <ResolutionSelector
-                  value={resolution}
-                  onChange={(r) => {
-                    setResolution(r);
-                    updateData({ resolution: r });
-                  }}
-                  model={model as any}
-                  disabled={isLoading}
-                  compact
-                  allowVideo={true}
-                />
-              </div>
-            </div>
-
-            {/* Duration */}
-            <div>
-              <NodeLabel>{t('canvasNodes.videoNode.duration') || 'Duration'}</NodeLabel>
-              <Select
-                value={duration}
-                onChange={(v) => {
-                  setDuration(v);
-                  updateData({ duration: v });
-                }}
-                options={DURATION_OPTIONS}
-                variant="node"
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* Loop Toggle */}
-            <div className="flex items-center justify-between py-1">
-              <NodeLabel className="mb-0">{t('canvasNodes.videoNode.loopVideo') || 'Loop Video'}</NodeLabel>
-              <Switch
-                checked={isLooping}
-                onCheckedChange={(c) => {
-                  setIsLooping(c);
-                  updateData({ isLooping: c });
-                }}
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* Negative Prompt */}
-            <div>
-              <NodeLabel>{t('canvasNodes.videoNode.negativePrompt') || 'Negative Prompt'}</NodeLabel>
-              <Input
-                className="w-full bg-neutral-900 border border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-brand-cyan outline-none placeholder:text-neutral-600"
-                placeholder={t('canvasNodes.videoNode.whatToAvoid') || 'What to avoid...'}
-                value={negativePrompt}
-                onChange={(e) => {
-                  setNegativePrompt(e.target.value);
-                  debouncedUpdateData({ negativePrompt: e.target.value });
-                }}
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* Seed Control */}
-            <SeedControl
-              seed={nodeData.seed}
-              seedLocked={nodeData.seedLocked}
-              onSeedChange={(seed) => updateData({ seed })}
-              onSeedLockedChange={(locked) => updateData({ seedLocked: locked })}
+      {isAdvancedOpen && (
+        <div className="node-margin p-3 space-y-3 border border-neutral-800 rounded-md bg-neutral-900/50">
+          {/* Model */}
+          <div>
+            <NodeLabel>{t('canvasNodes.videoNode.model') || 'Model'}</NodeLabel>
+            <Select
+              value={model}
+              onChange={(v) => {
+                setModel(v);
+                updateData({ model: v });
+              }}
+              options={MODEL_OPTIONS}
+              variant="node"
               disabled={isLoading}
             />
           </div>
-        )}
-      </div>
+
+          {/* Aspect Ratio & Resolution Grid */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <NodeLabel>{t('canvasNodes.videoNode.aspectRatio') || 'Aspect Ratio'}</NodeLabel>
+              <AspectRatioSelector
+                value={aspectRatio}
+                onChange={(r) => {
+                  setAspectRatio(r);
+                  updateData({ aspectRatio: r });
+                }}
+                disabled={isLoading}
+                compact
+              />
+            </div>
+            <div>
+              <NodeLabel>{t('canvasNodes.videoNode.resolution') || 'Resolution'}</NodeLabel>
+              <ResolutionSelector
+                value={resolution}
+                onChange={(r) => {
+                  setResolution(r);
+                  updateData({ resolution: r });
+                }}
+                model={model as any}
+                disabled={isLoading}
+                compact
+                allowVideo={true}
+              />
+            </div>
+          </div>
+
+          {/* Duration */}
+          <div>
+            <NodeLabel>{t('canvasNodes.videoNode.duration') || 'Duration'}</NodeLabel>
+            <Select
+              value={duration}
+              onChange={(v) => {
+                setDuration(v);
+                updateData({ duration: v });
+              }}
+              options={DURATION_OPTIONS}
+              variant="node"
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Loop Toggle */}
+          <div className="flex items-center justify-between py-1">
+            <NodeLabel className="mb-0">{t('canvasNodes.videoNode.loopVideo') || 'Loop Video'}</NodeLabel>
+            <Switch
+              checked={isLooping}
+              onCheckedChange={(c) => {
+                setIsLooping(c);
+                updateData({ isLooping: c });
+              }}
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Negative Prompt */}
+          <div>
+            <NodeLabel>{t('canvasNodes.videoNode.negativePrompt') || 'Negative Prompt'}</NodeLabel>
+            <Input
+              className="w-full bg-neutral-900 border border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-brand-cyan outline-none placeholder:text-neutral-600"
+              placeholder={t('canvasNodes.videoNode.whatToAvoid') || 'What to avoid...'}
+              value={negativePrompt}
+              onChange={(e) => {
+                setNegativePrompt(e.target.value);
+                debouncedUpdateData({ negativePrompt: e.target.value });
+              }}
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Seed Control */}
+          <SeedControl
+            seed={nodeData.seed}
+            seedLocked={nodeData.seedLocked}
+            onSeedChange={(seed) => updateData({ seed })}
+            onSeedLockedChange={(locked) => updateData({ seedLocked: locked })}
+            disabled={isLoading}
+          />
+        </div>
+      )}
 
       {/* Generate Button */}
       <NodeButton

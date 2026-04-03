@@ -232,9 +232,9 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
     })
     if (!existing) return res.status(404).json({ error: 'Brand guideline not found' })
 
-    const { source, url, data, filename } = req.body
+    const { source, url, data, filename, images: imagesPayload } = req.body
     let chunks: any[] = []
-    let imageBase64: string | undefined
+    let imagesToExtract: string[] | undefined = imagesPayload
 
     switch (source) {
       case 'url':
@@ -248,7 +248,12 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
       case 'image':
         if (!data) return res.status(400).json({ error: 'Image data required' })
         chunks = parseImage(filename || 'image.png')
-        imageBase64 = data.replace(/^data:image\/\w+;base64,/, '')
+        if (!imagesToExtract) imagesToExtract = [data]
+        break
+      case 'images':
+        if (!imagesPayload || !Array.isArray(imagesPayload)) return res.status(400).json({ error: 'Images array required' })
+        chunks = parseImage(filename || 'images.zip')
+        // imagesToExtract already set from imagesPayload
         break
       case 'json': {
         if (!data) return res.status(400).json({ error: 'JSON data required' })
@@ -262,7 +267,7 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
         return res.status(400).json({ error: `Invalid source: ${source}` })
     }
 
-    const extracted = await extractBrandData(chunks, imageBase64, req.userId)
+    const extracted = await extractBrandData(chunks, imagesToExtract, req.userId)
     const merged = mergeBrandGuidelines(existing as any, extracted)
 
     // Track source

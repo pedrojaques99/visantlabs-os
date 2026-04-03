@@ -197,7 +197,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         className="node-handle"
       />
 
-      <NodeHeader icon={Palette} title={t('canvasNodes.colorExtractorNode.title') || "Color Extractor"} />
+      <NodeHeader icon={Palette} title={t('canvasNodes.colorExtractorNode.title') || "Color Extractor"} selected={selected} />
 
       <div className="mb-4">
         <NodeLabel>

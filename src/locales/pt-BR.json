@@ -823,16 +823,22 @@
   },
   "canvasNodes": {
     "ambienceNode": {
-      "connectImageNode": "Conecte um nó de imagem",
-      "generateAmbience": "Gerar Ambiente",
-      "generating": "Gerando...",
+      "title": "Preset de Ambiente",
+      "selectPreset": "Selecionar Ambiente",
       "inputImage": "Imagem de Entrada",
-      "result": "Resultado do ambiente",
-      "selectAmbience": "Selecionar ambiente",
-      "title": "Preset de Ambiente"
+      "connectImageNode": "Conecte um nó de imagem",
+      "generateButton": "Gerar Ambiente",
+      "generating": "Gerando...",
+      "result": "Resultado do ambiente"
     },
     "angleNode": {
-      "inputImage": "Imagem de Entrada"
+      "title": "Preset de Ângulo",
+      "selectPreset": "Selecionar Ângulo",
+      "inputImage": "Imagem de Entrada",
+      "connectImageNode": "Conecte um nó de imagem",
+      "generateButton": "Gerar Ângulo",
+      "generating": "Gerando...",
+      "result": "Resultado do ângulo"
     },
     "brandCore": {
       "cancelAnalysis": "Cancelar análise",
@@ -1015,13 +1021,13 @@
       "uploadLogo": "Enviar Logo"
     },
     "luminanceNode": {
-      "connectImageNode": "Conecte um nó de imagem",
-      "generateLuminance": "Gerar Iluminação",
-      "generating": "Gerando...",
+      "title": "Preset de Iluminação",
+      "selectPreset": "Selecionar Iluminação",
       "inputImage": "Imagem de Entrada",
-      "result": "Resultado da Iluminação",
-      "selectLuminance": "Selecionar Iluminação",
-      "title": "Preset de Iluminação"
+      "connectImageNode": "Conecte um nó de imagem",
+      "generateButton": "Gerar Iluminação",
+      "generating": "Gerando...",
+      "result": "Resultado da iluminação"
     },
     "mergeNode": {
       "generateImage": "Gerar Imagem",
@@ -1220,13 +1226,13 @@
       "title": "Text Node"
     },
     "textureNode": {
-      "connectImageNode": "Conecte um nó de imagem",
-      "generateTexture": "Gerar Textura",
-      "generating": "Gerando...",
+      "title": "Preset de Textura",
+      "selectPreset": "Selecionar Textura",
       "inputImage": "Imagem de Entrada",
-      "result": "Resultado da textura",
-      "selectTexture": "Selecionar textura",
-      "title": "Preset de Textura"
+      "connectImageNode": "Conecte um nó de imagem",
+      "generateButton": "Gerar Textura",
+      "generating": "Gerando...",
+      "result": "Resultado da textura"
     },
     "upscaleNode": {
       "imageSavedSuccessfully": "Imagem salva com sucesso!",
@@ -1999,7 +2005,7 @@
     "usage": "Uso"
   },
   "header": {
-    "communityMockups": "Mockups da Comunidade",
+    "communityMockups": "Comunidade",
     "createNewMockup": "Criar Mockup",
     "join": "Assinar",
     "pricing": "Preços",
@@ -2007,11 +2013,11 @@
   },
   "homepage": {
     "goToMockupMachine": "Você será redirecionado para o setup da Mockup Machine.",
-    "heroSubtitle": "e vá direto para o setup da Mockup Machine",
-    "heroTitle": "Envie seu logo ou layout",
+    "heroSubtitle": "e experimente a Mockup Machine®",
+    "heroTitle": "Crie com moderação",
     "sendImage": "Enviar imagem",
-    "seoDescription": "Ambiente de experimentação e design de alta performance.",
-    "seoTitle": "MOCKUP MACHINE® — Laboratório Experimental"
+    "seoDescription": "Laboratório de experimentos criativos e ferramentas para designers.",
+    "seoTitle": "Visant Labs®"
   },
   "messages": {
     "aiBusy": "A IA está um pouco ocupada. Mudamos para um prompt mais simples que você pode editar manualmente, ou tente regenerar.",
@@ -2147,6 +2153,11 @@
     "brandWizardPdfHint": "Extração essencialista de estratégia, arquétipos e tokens.",
     "brandWizardPdfSelected": "PDF Selecionado:",
     "brandWizardErrorPdf": "Falha ao processar arquivo PDF",
+    "brandWizardImagesLabel": "Imagens da Marca",
+    "brandWizardImagesPlaceholderShort": "IMAGENS",
+    "brandWizardPdfPlaceholderShort": "PDF",
+    "brandWizardExtractionHint": "extração essencialista de estratégia, arquétipos e tokens.",
+    "brandWizardErrorImage": "Erro ao extrair dados das imagens",
     "branding": "IDENTIDADE_",
     "brandingComment": "Selecione tags que descrevem o estilo da sua marca (máx. 3).",
     "cameraAngle": "ÂNGULO_DA_CÂMERA_",

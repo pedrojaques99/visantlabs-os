@@ -8,7 +8,7 @@ export interface AppConfig {
   link: string;
   thumbnail?: string;
   badge?: string;
-  badgeVariant: 'featured' | 'premium' | 'free' | 'comingSoon';
+  badgeVariant: 'featured' | 'premium' | 'free' | 'comingSoon' | 'admin';
   category: string;
   isExternal: boolean;
   free: boolean;

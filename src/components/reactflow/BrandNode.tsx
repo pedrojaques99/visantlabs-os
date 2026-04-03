@@ -511,7 +511,8 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       {/* Header */}
       <NodeHeader
         icon={Palette}
-        title={t('canvasNodes.brandNode.title') || 'Brand Engine'}
+        title={t('canvasNodes.brandNode.title') || "Brand Guideline"}
+        selected={selected}
       />
 
       <div className="flex flex-col gap-[var(--node-gap)]">

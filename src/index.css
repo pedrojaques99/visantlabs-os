@@ -1242,10 +1242,11 @@
   box-shadow: none;
 }
 
-/* Node selected border - use neutral color */
+/* Node selected border - use brand cyan accent */
 .react-flow__node.selected .node-container,
 .react-flow__node[data-selected="true"] .node-container {
-  border-color: var(--node-text-accent, #737373) !important;
+  border-color: var(--brand-cyan) !important;
+  box-shadow: 0 0 15px rgba(var(--brand-cyan-rgb), 0.15) !important;
 }
 
 /* Handles - base, position, scale */
@@ -1350,14 +1351,14 @@
 /* Handle type colors (default + unconnected hover only) */
 .react-flow__handle.handle-image,
 .react-flow__handle.handle-video {
-  background: var(--brand-cyan) !important;
-  border: 0.5px solid rgba(82, 221, 235, 0.4) !important;
+  background: var(--foreground) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 .react-flow__handle.handle-image:hover:not(.connected):not([data-connected="true"]),
 .react-flow__handle.handle-video:hover:not(.connected):not([data-connected="true"]) {
-  background: #3dd5e6 !important;
-  border: 0.5px solid rgba(61, 213, 230, 0.6) !important;
+  background: var(--brand-cyan) !important;
+  border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
 }
 
 .react-flow__handle.handle-text {
@@ -1562,10 +1563,15 @@
   color: var(--brand-cyan) !important;
 }
 
-/* Override border-brand-cyan inside nodes */
+/* Override border-brand-cyan inside nodes to use foreground by default (cyan on focus handled below) */
 .react-flow__node .node-container [class*="border-[brand-cyan]"],
 .react-flow__node .node-container [class*="border-brand-cyan"] {
-  border-color: var(--brand-cyan) !important;
+  border-color: var(--foreground) !important;
+  opacity: 0.4;
+}
+
+.react-flow__node .node-container [class*="text-brand-cyan"] {
+  color: var(--foreground) !important;
 }
 
 /* Override bg-brand-cyan inside nodes (solid, not with opacity) */
@@ -1574,10 +1580,11 @@
   background-color: var(--brand-cyan) !important;
 }
 
-/* Node selected border - use neutral color */
+/* Node selected border - use brand cyan accent */
 .react-flow__node.selected .node-container,
 .react-flow__node[data-selected="true"] .node-container {
-  border-color: #737373 !important;
+  border-color: var(--brand-cyan) !important;
+  box-shadow: 0 0 15px rgba(var(--brand-cyan-rgb), 0.15) !important;
 }
 
 /* Override focus rings and other brand-cyan references */

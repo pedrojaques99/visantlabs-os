@@ -380,6 +380,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       <NodeHeader 
         icon={categoryConfig.icon} 
         title={categoryTitle} 
+        selected={selected}
         isBrandActive={isBrandActive}
         onToggleBrand={(active) => {
           setIsBrandActive(active);
