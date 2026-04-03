@@ -48,13 +48,13 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     const [media, setMedia] = useState<BrandGuideline['media']>([]);
     const [logos, setLogos] = useState<BrandGuideline['logos']>([]);
 
-    // Pre-fill when editing
     useEffect(() => {
         if (isOpen && editGuideline) {
             setName(editGuideline.identity?.name || '');
             setUrl(editGuideline.identity?.website || '');
             setMedia(editGuideline.media || []);
             setLogos(editGuideline.logos || []);
+        } else if (isOpen) {
             setName('');
             setUrl('');
             setMedia([]);
@@ -66,6 +66,74 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             if (imageInputRef.current) imageInputRef.current.value = '';
         }
     }, [isOpen, editGuideline]);
+
+    // Handle paste event
+    useEffect(() => {
+        if (!isOpen || isSubmitting || isIngesting) return;
+
+        const handlePaste = (e: ClipboardEvent) => {
+            const target = e.target as HTMLElement;
+            // Don't intercept if user is typing in a text input and it's a text paste
+            if ((target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') && e.clipboardData?.types.includes('text/plain')) {
+                return;
+            }
+
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            const files: File[] = [];
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.kind === 'file') {
+                    const file = item.getAsFile();
+                    if (file) files.push(file);
+                }
+            }
+
+            if (files.length === 0) return;
+
+            const imageFilesFromPaste = files.filter(f => f.type.startsWith('image/'));
+            const pdfFilesFromPaste = files.filter(f => f.type === 'application/pdf');
+
+            if (imageFilesFromPaste.length > 0) {
+                setImageFiles(prevFiles => {
+                    const newFiles = [...prevFiles];
+                    const newPreviews: string[] = [];
+                    let addedCount = 0;
+
+                    for (const file of imageFilesFromPaste) {
+                        if (newFiles.length >= 10) break;
+                        const error = validateFile(file, 'image');
+                        if (error) {
+                            toast.error(`${file.name}: ${error}`);
+                            continue;
+                        }
+                        newFiles.push(file);
+                        newPreviews.push(URL.createObjectURL(file));
+                        addedCount++;
+                    }
+
+                    if (addedCount > 0) {
+                        setImagePreviews(prevPreviews => [...prevPreviews, ...newPreviews]);
+                        toast.success(t('mockup.brandWizardImagesPasted'));
+                    }
+                    return newFiles;
+                });
+            } else if (pdfFilesFromPaste.length > 0) {
+                const file = pdfFilesFromPaste[0];
+                const validation = validatePdfFile(file);
+                if (!validation.isValid) {
+                    toast.error(validation.error);
+                } else {
+                    setPdfFile(file);
+                    toast.success(t('mockup.brandWizardPdfPasted'));
+                }
+            }
+        };
+
+        window.addEventListener('paste', handlePaste);
+        return () => window.removeEventListener('paste', handlePaste);
+    }, [isOpen, isSubmitting, isIngesting, t]);
 
     const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

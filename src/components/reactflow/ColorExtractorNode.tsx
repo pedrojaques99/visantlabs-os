@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback, memo, useEffect } from 'react';
 import { Handle, Position, NodeResizer, type NodeProps, useReactFlow } from '@xyflow/react';
-import { UploadCloud, Palette, X, RefreshCw } from 'lucide-react';
+import { UploadCloud, Palette, X, RefreshCw, Diamond } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { Tooltip } from '@/components/ui/Tooltip';
 import type { ColorExtractorNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { fileToBase64 } from '@/utils/fileUtils';
@@ -241,24 +242,34 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         )}
       </div>
 
-      <NodeButton
-        onClick={() => handleExtract(false)}
-        disabled={!canExtract}
-        variant="primary"
-        className="w-full mb-4"
+      <Tooltip 
+        content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} 1 ${t('canvasNodes.promptNode.credits')}`}
+        delay={500}
       >
-        {isExtracting ? (
-          <>
-            <GlitchLoader size={14} />
-            {t('canvasNodes.colorExtractorNode.extracting')} {glitchText}
-          </>
-        ) : (
-          <>
-            <Palette size={14} />
-            {t('canvasNodes.colorExtractorNode.extractColors')}
-          </>
-        )}
-      </NodeButton>
+        <NodeButton
+          onClick={() => handleExtract(false)}
+          disabled={!canExtract}
+          variant="primary"
+          size="full"
+          className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98] mb-4"
+        >
+          {isExtracting ? (
+            <div className="flex items-center justify-center gap-2">
+              <GlitchLoader size={14} color="brand-cyan" />
+              <span className="animate-pulse">{t('canvasNodes.colorExtractorNode.extracting')} {glitchText}</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <Palette size={14} className="group-hover/gen:rotate-12 transition-transform" />
+              <span className="font-semibold tracking-tight">{t('canvasNodes.colorExtractorNode.extractColors')}</span>
+              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                <Diamond size={10} className="opacity-50 fill-current" />
+                1
+              </div>
+            </div>
+          )}
+        </NodeButton>
+      </Tooltip>
 
       {extractedColors.length > 0 && (
         <div className="border-t border-neutral-700/30 pt-4 space-y-3">

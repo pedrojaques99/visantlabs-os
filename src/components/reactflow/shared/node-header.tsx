@@ -12,10 +12,11 @@ export interface NodeHeaderProps {
   selected?: boolean
   onToggleBrand?: (active: boolean) => void;
   onOpenMediaLibrary?: () => void;
+  children?: React.ReactNode;
 }
 
 const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
-  ({ icon: Icon, title, className, isBrandActive, selected, onToggleBrand, onOpenMediaLibrary }, ref) => {
+  ({ icon: Icon, title, className, isBrandActive, selected, onToggleBrand, onOpenMediaLibrary, children }, ref) => {
     return (
       <div
         ref={ref}
@@ -75,6 +76,8 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
               </button>
             </Tooltip>
           )}
+
+          {children}
         </div>
       </div>
     )

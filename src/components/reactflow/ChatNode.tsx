@@ -11,6 +11,7 @@ import { LabeledHandle } from './shared/LabeledHandle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { NodeHeader } from './shared/node-header';
 
 import { ChatMessage } from '../shared/chat/ChatMessage';
 import { ChatInput } from '../shared/chat/ChatInput';
@@ -107,15 +108,12 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
             <div className="flex flex-col h-full w-full min-h-[600px] overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm">
-                    <div className="flex items-center gap-3 flex-1 truncate">
-                        <div className="p-1.5 rounded-md bg-neutral-900/10 border border-neutral-900/20">
-                            <MessageSquare size={14} className="text-neutral-200" />
-                        </div>
-                        <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight truncate uppercase">
-                            {t('canvasNodes.chatNode.title')}
-                        </h3>
-                    </div>
+                <NodeHeader
+                    icon={MessageSquare}
+                    title={t('canvasNodes.chatNode.title')}
+                    selected={isSelected}
+                    className="p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm node-margin-0"
+                >
                     <div className="flex items-center gap-4">
                         <ModelSelector
                             selectedModel={nodeData.model || GEMINI_MODELS.TEXT}
@@ -138,7 +136,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                             </NodeButton>
                         </div>
                     </div>
-                </div>
+                </NodeHeader>
 
                 {/* System Prompt Editor */}
                 {showSystemPromptEditor && (

@@ -1,5 +1,6 @@
-import { type NodeProps, type Node, NodeResizer, Position } from '@xyflow/react';
-import { ChevronDown, LucideIcon } from 'lucide-react';
+import React, { ComponentType, memo, useCallback, useEffect, useState, useRef } from 'react';
+import { type NodeProps, type Node, NodeResizer, Position, useNodes } from '@xyflow/react';
+import { ChevronDown, type LucideIcon, Diamond, LayoutGrid, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ConnectedImagesDisplay } from '../ConnectedImagesDisplay';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -7,9 +8,13 @@ import { NodeHandles } from './NodeHandles';
 import { NodeContainer } from './NodeContainer';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
-import { ComponentType, memo, useCallback, useEffect, useState } from 'react';
 import { NodeButton } from './node-button';
 import { NodeLabel } from './NodeLabel';
+import { NodeHeader } from './node-header';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { BrandMediaLibraryModal } from '../modals/BrandMediaLibraryModal';
+import { useLinkedGuidelineId } from '@/components/canvas/CanvasHeaderContext';
+import { toast } from 'sonner';
 
 interface PresetItem {
     id: string;
@@ -60,11 +65,15 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
 ) {
     const GenericPresetNodeComponent: React.FC<NodeProps<Node<TNodeData>>> = ({ data, selected, id, dragging }) => {
         const { t } = useTranslation();
+        const nodes = useNodes();
+        const linkedGuidelineId = useLinkedGuidelineId();
         const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
         const [selectedPresetId, setSelectedPresetId] = useState<TPresetType | string>(
             (config.getSelectedPreset(data) as TPresetType | string) || config.defaultPresetId
         );
         const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
+        const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+        const containerRef = useRef<HTMLDivElement>(null);
 
         const isLoading = config.getIsLoading(data) || false;
         const resultImageUrl = config.getResultImageUrl(data);
@@ -95,23 +104,23 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
 
         const handleGenerate = async () => {
             const onGenerate = config.getOnGenerate(data);
-            if (!onGenerate) {
+            if (!onGenerate || !connectedImage) {
                 return;
             }
-
-            if (!connectedImage) {
-                console.warn(`[${config.nodeName}] No connected image available`);
-                return;
-            }
-
-            console.log(`[${config.nodeName}] Generating with:`, {
-                nodeId: id,
-                presetId: selectedPresetId,
-                hasConnectedImage: !!connectedImage,
-                imageType: connectedImage?.startsWith('http') ? 'URL' : connectedImage?.startsWith('data:') ? 'dataURL' : 'base64',
-            });
 
             await onGenerate(id, connectedImage, selectedPresetId);
+        };
+
+        const handleOpenMediaLibrary = () => {
+            setShowMediaLibrary(true);
+        };
+
+        const handleSelectAsset = (url: string, type: 'image' | 'logo') => {
+            const onUpdateData = config.getOnUpdateData(data);
+            if (onUpdateData) {
+                onUpdateData(id, { connectedImage: url } as any);
+            }
+            setShowMediaLibrary(false);
         };
 
         const handleFitToContent = useCallback(() => {
@@ -143,14 +152,11 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
 
         return (
             <NodeContainer
+                containerRef={containerRef}
                 selected={selected}
                 dragging={dragging}
                 onFitToContent={handleFitToContent}
-                className="w-full h-full"
-                style={{
-                    width: '320px',
-                    height: 'auto'
-                }}
+                className="min-w-[320px]"
                 onContextMenu={(e) => {
                     // Allow ReactFlow to handle the context menu event
                 }}
@@ -170,15 +176,22 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                 <NodeHandles />
 
                 {/* Header */}
-                <div className="flex items-center gap-3 mb-3">
-                    <Icon size={16} className="text-foreground" />
-                    <h3 className="text-xs font-semibold text-neutral-300 font-mono uppercase">
-                        {t(config.translationKeys.title) || config.title}
-                    </h3>
-                </div>
+                <NodeHeader
+                    icon={Icon}
+                    title={t(config.translationKeys.title) || config.title}
+                    selected={selected}
+                    isBrandActive={data.isBrandActive}
+                    onToggleBrand={(active) => {
+                        const onUpdateData = config.getOnUpdateData(data);
+                        if (onUpdateData) {
+                            onUpdateData(id, { isBrandActive: active } as any);
+                        }
+                    }}
+                    onOpenMediaLibrary={handleOpenMediaLibrary}
+                />
 
                 {/* Preset Selector - Button to open modal */}
-                <div className="mb-2 w-full">
+                <div className="node-margin">
                     <NodeButton variant="ghost" size="full"
                         onClick={(e) => {
                             e.stopPropagation();
@@ -194,9 +207,15 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                             isLoading && 'opacity-50 cursor-not-allowed'
                         )}
                     >
-                        <div className="w-10 h-10 bg-neutral-900/30 border border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0">
-                            <Icon size={14} className="text-neutral-400" />
-                        </div>
+                        {selectedPreset?.id ? (
+                            <div className="w-10 h-10 bg-neutral-900/30 border border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                <Icon size={14} className="text-neutral-400" />
+                            </div>
+                        ) : (
+                            <div className="w-10 h-10 bg-neutral-900/30 border border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0">
+                                <Icon size={14} className="text-neutral-400" />
+                            </div>
+                        )}
                         <div className="flex-1 min-w-0">
                             <div className="text-xs font-mono truncate text-foreground font-semibold">
                                 {selectedPreset?.name || t(config.translationKeys.selectPreset) || `Select ${config.title.toLowerCase()}`}
@@ -227,33 +246,39 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                 )}
 
                 {/* Generate Button */}
-                <NodeButton variant="primary" size="full"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        handleGenerate();
-                    }}
-                    onMouseDown={(e) => {
-                        e.stopPropagation();
-                    }}
-                    disabled={isLoading || !hasConnectedImage}
-                    className={cn(
-                        'w-full px-2 py-1.5 bg-foreground/10 hover:bg-foreground/20 border border-foreground/30 rounded text-xs font-mono text-foreground transition-colors flex items-center justify-center gap-3 node-interactive focus:bg-brand-cyan/20 focus:text-brand-cyan focus:border-brand-cyan/50',
-                        (isLoading || !hasConnectedImage) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
-                    )}
+                <Tooltip 
+                    content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} 2 ${t('canvasNodes.promptNode.credits')}`}
+                    delay={500}
                 >
-                    {isLoading ? (
-                        <>
-                            <GlitchLoader size={14} className="mr-1" color="brand-cyan" />
-                            {t(config.translationKeys.generating) || 'Generating...'}
-                        </>
-                    ) : (
-                        <>
-                            <Icon size={14} />
-                            {t(config.translationKeys.generateButton) || `Generate ${config.title}`}
-                        </>
-                    )}
-                </NodeButton>
+                    <NodeButton variant="primary" size="full"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleGenerate();
+                        }}
+                        onMouseDown={(e) => {
+                            e.stopPropagation();
+                        }}
+                        disabled={isLoading || !hasConnectedImage}
+                        className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                        {isLoading ? (
+                            <div className="flex items-center justify-center gap-2">
+                                <GlitchLoader size={14} color="brand-cyan" />
+                                <span className="animate-pulse">{t(config.translationKeys.generating) || 'Generating...'}</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center gap-2">
+                                <Icon size={14} className="group-hover/gen:rotate-12 transition-transform" />
+                                <span className="font-semibold tracking-tight">{t(config.translationKeys.generateButton) || `Generate ${config.title}`}</span>
+                                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                                    <Diamond size={10} className="opacity-50 fill-current" />
+                                    2
+                                </div>
+                            </div>
+                        )}
+                    </NodeButton>
+                </Tooltip>
 
                 {/* Result Preview */}
                 {hasResult && (resultImageUrl || resultImageBase64) && (
@@ -287,6 +312,13 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                         handlePresetChange(presetId);
                     }}
                     isLoading={isLoading}
+                />
+
+                <BrandMediaLibraryModal
+                    isOpen={showMediaLibrary}
+                    onClose={() => setShowMediaLibrary(false)}
+                    onSelectAsset={handleSelectAsset}
+                    guidelineId={linkedGuidelineId}
                 />
             </NodeContainer>
         );

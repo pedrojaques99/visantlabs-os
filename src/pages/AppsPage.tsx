@@ -202,12 +202,23 @@ export const AppsPage: React.FC = () => {
     setIsLoading(true);
     try {
       const data = await appsService.getAll();
-      if (data.length === 0 && isAdmin) {
-        // Auto seed if empty and user is admin
-        await appsService.seed(staticAppsData);
-        const seededData = await appsService.getAll();
-        setApps(seededData);
-      } else if (data.length === 0) {
+      
+      // Auto seed if missing any app and user is admin
+      if (isAdmin && data.length < staticAppsData.length) {
+        // Find which apps are missing by checking appId
+        const dbAppIds = new Set(data.map(app => app.appId));
+        const missingApps = staticAppsData.filter(app => !dbAppIds.has(app.id));
+        
+        if (missingApps.length > 0) {
+           console.log(`Syncing ${missingApps.length} missing apps to database...`);
+           await appsService.seed(staticAppsData);
+           const syncedData = await appsService.getAll();
+           setApps(syncedData);
+           return;
+        }
+      }
+
+      if (data.length === 0) {
         // Fallback to static data if not admin and DB is empty
         setApps(staticAppsData as any);
       } else {

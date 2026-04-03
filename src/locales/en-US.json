@@ -2087,6 +2087,8 @@
     "brandWizardImagesPlaceholderShort": "IMAGES",
     "brandWizardPdfPlaceholderShort": "PDF",
     "brandWizardExtractionHint": "essentialist extraction of strategy, archetypes and tokens.",
+    "brandWizardImagesPasted": "Images pasted from clipboard",
+    "brandWizardPdfPasted": "PDF pasted from clipboard",
     "brandWizardErrorImage": "Failed to extract data from images",
     "branding": "BRANDING_",
     "brandingComment": "Select tags that describe your brand's style (max 3).",
