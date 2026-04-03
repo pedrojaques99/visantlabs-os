@@ -26,7 +26,7 @@ Rules:
 
 export async function extractBrandData(
   chunks: ParsedChunk[],
-  imageBase64?: string,
+  images?: string[],
   userId?: string
 ): Promise<Partial<BrandGuideline>> {
   const apiKey = await getGeminiApiKey(userId)
@@ -38,11 +38,20 @@ export async function extractBrandData(
     .slice(0, 8000) // limit tokens
 
   const genAI = new GoogleGenerativeAI(apiKey)
+  // GEMINI_MODELS.TEXT is gemini-3-flash which is multimodal
   const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT })
 
   const parts: any[] = [{ text: EXTRACTION_PROMPT + '\n\nContent:\n' + combinedText }]
-  if (imageBase64) {
-    parts.push({ inlineData: { mimeType: 'image/png', data: imageBase64 } })
+  
+  if (images && images.length > 0) {
+    for (const imgBase64 of images) {
+      parts.push({
+        inlineData: {
+          mimeType: 'image/png',
+          data: imgBase64.replace(/^data:image\/\w+;base64,/, '')
+        }
+      })
+    }
   }
 
   try {

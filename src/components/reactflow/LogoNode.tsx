@@ -123,7 +123,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
       />
 
       {/* Header */}
-      <NodeHeader icon={UploadCloud} title={t('canvasNodes.logoNode.title')} />
+      <NodeHeader icon={UploadCloud} title={t('canvasNodes.logoNode.title')} selected={selected} />
 
       {/* Logo Upload Section */}
       {logoImageUrl ? (

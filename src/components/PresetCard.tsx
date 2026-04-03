@@ -18,6 +18,8 @@ export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string;
   'texture': { icon: Layers, color: 'text-green-400', label: 'Texture' },
   'ambience': { icon: MapPin, color: 'text-orange-400', label: 'Ambience' },
   'luminance': { icon: Sun, color: 'text-yellow-400', label: 'Luminance' },
+  'ui-prompts': { icon: ImageIcon, color: 'text-purple-400', label: 'UI Prompts' },
+  'figma-prompts': { icon: Clipboard, color: 'text-pink-400', label: 'Figma Prompts' },
 };
 
 const getPresetIcon = (category: PromptCategory) => {

@@ -818,16 +818,22 @@
   },
   "canvasNodes": {
     "ambienceNode": {
-      "connectImageNode": "Connect an image node",
-      "generateAmbience": "Generate Ambience",
-      "generating": "Generating...",
+      "title": "Ambience Preset",
+      "selectPreset": "Select Ambience",
       "inputImage": "Input Image",
-      "result": "Ambience result",
-      "selectAmbience": "Select ambience",
-      "title": "Ambience Preset"
+      "connectImageNode": "Connect an image node",
+      "generateButton": "Generate Ambience",
+      "generating": "Generating...",
+      "result": "Ambience result"
     },
     "angleNode": {
-      "inputImage": "Input Image"
+      "title": "Angle Preset",
+      "selectPreset": "Select Angle",
+      "inputImage": "Input Image",
+      "connectImageNode": "Connect an image node",
+      "generateButton": "Generate Angle",
+      "generating": "Generating...",
+      "result": "Angle result"
     },
     "brandCore": {
       "cancelAnalysis": "Cancel analysis",
@@ -1023,13 +1029,13 @@
       "uploadLogo": "Upload Logo"
     },
     "luminanceNode": {
-      "connectImageNode": "Connect an image node",
-      "generateLuminance": "Generate Luminance",
-      "generating": "Generating...",
+      "title": "Luminance Preset",
+      "selectPreset": "Select Luminance",
       "inputImage": "Input Image",
-      "result": "Luminance result",
-      "selectLuminance": "Select luminance",
-      "title": "Luminance Preset"
+      "connectImageNode": "Connect an image node",
+      "generateButton": "Generate Luminance",
+      "generating": "Generating...",
+      "result": "Luminance result"
     },
     "mergeNode": {
       "generateImage": "Generate Image",
@@ -1228,13 +1234,13 @@
       "title": "Text Node"
     },
     "textureNode": {
-      "connectImageNode": "Connect an image node",
-      "generateTexture": "Generate Texture",
-      "generating": "Generating...",
+      "title": "Texture Preset",
+      "selectPreset": "Select Texture",
       "inputImage": "Input Image",
-      "result": "Texture result",
-      "selectTexture": "Select texture",
-      "title": "Texture Preset"
+      "connectImageNode": "Connect an image node",
+      "generateButton": "Generate Texture",
+      "generating": "Generating...",
+      "result": "Texture result"
     },
     "upscaleNode": {
       "imageSavedSuccessfully": "Image saved successfully!",
@@ -2077,6 +2083,11 @@
     "brandWizardPdfHint": "Essentialist extraction of strategy, archetypes, and tokens.",
     "brandWizardPdfSelected": "Selected PDF:",
     "brandWizardErrorPdf": "Failed to process PDF file",
+    "brandWizardImagesLabel": "Brand Images",
+    "brandWizardImagesPlaceholderShort": "IMAGES",
+    "brandWizardPdfPlaceholderShort": "PDF",
+    "brandWizardExtractionHint": "essentialist extraction of strategy, archetypes and tokens.",
+    "brandWizardErrorImage": "Failed to extract data from images",
     "branding": "BRANDING_",
     "brandingComment": "Select tags that describe your brand's style (max 3).",
     "cameraAngle": "CAMERA_ANGLE",

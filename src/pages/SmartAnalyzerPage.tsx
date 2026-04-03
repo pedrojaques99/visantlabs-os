@@ -960,9 +960,44 @@ export const SmartAnalyzerPage: React.FC = () => {
               >
                 <div className="grid lg:grid-cols-12 gap-12">
                   <div className="lg:col-span-8 space-y-10">
+                    {/* #2: GENERATED RESULT BLOCK (LARGE) - Moved above prompt */}
+                    {(isGenerating || generatedImage) && (
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between pl-1">
+                          <h4 className="text-[10px] font-mono uppercase tracking-[0.3em] text-brand-cyan flex items-center gap-3">
+                            <span className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse" />
+                            Generated Visual Synthesis
+                          </h4>
+                          <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">
+                            8K • Photorealistic • {selectedFont || 'Standard'}
+                          </span>
+                        </div>
+                        <div className="relative aspect-video rounded-3xl overflow-hidden bg-neutral-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5">
+                          <MockupCard
+                            base64Image={generatedImage}
+                            isLoading={isGenerating}
+                            isRedrawing={isGenerating && !!generatedImage}
+                            onRedraw={handleGenerateInline}
+                            onView={() => setShowFullImage(generatedImage)}
+                            onNewAngle={() => {}}
+                            onNewBackground={() => {}}
+                            onSave={handleSaveToLibrary}
+                            isSaved={!!mockupId}
+                            mockupId={mockupId || undefined}
+                            onToggleLike={handleToggleLike}
+                            isLiked={isLiked}
+                            aspectRatio={aspectRatio as any}
+                            prompt={refinedPrompt}
+                            designType={result.category}
+                            className="w-full h-full"
+                          />
+                        </div>
+                      </div>
+                    )}
+
                     {/* #1: CREATIVE PROMPT BLOCK */}
-                    <div className="flex flex-col h-full">
-                      <GlassPanel padding="lg" className="flex-1 rounded-3xl border-neutral-800/60 bg-neutral-950/40 relative group">
+                    <div className="flex flex-col">
+                      <GlassPanel padding="lg" className="rounded-3xl border-neutral-800/60 bg-neutral-950/40 relative group">
                         <div className="flex items-center justify-between mb-8">
                           <div className="flex items-center gap-6">
                             <h3 className="text-[10px] font-mono uppercase tracking-[0.3em] text-neutral-500 flex items-center gap-2">
@@ -1036,14 +1071,22 @@ export const SmartAnalyzerPage: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="relative min-h-[400px] flex flex-col">
+                        <div className="relative flex flex-col">
                           {isEditingPrompt ? (
                             <textarea 
                               value={refinedPrompt}
-                              onChange={(e) => setEditedPrompt(e.target.value)}
-                              className="w-full flex-1 bg-transparent border-0 text-lg leading-relaxed text-neutral-200 focus:ring-0 resize-none font-sans scrollbar-hide selection:bg-brand-cyan/30 p-0"
+                              onChange={(e) => {
+                                setEditedPrompt(e.target.value);
+                                e.target.style.height = 'auto';
+                                e.target.style.height = e.target.scrollHeight + 'px';
+                              }}
+                              className="w-full bg-transparent border-0 text-lg leading-relaxed text-neutral-200 focus:ring-0 resize-none font-sans scrollbar-hide selection:bg-brand-cyan/30 p-0 min-h-[120px]"
                               placeholder="Sculpt your vision here..."
                               autoFocus
+                              onFocus={(e) => {
+                                e.target.style.height = 'auto';
+                                e.target.style.height = e.target.scrollHeight + 'px';
+                              }}
                             />
                           ) : (
                             <pre className="text-lg leading-relaxed text-neutral-200 whitespace-pre-wrap font-sans selection:bg-brand-cyan/30">
@@ -1105,40 +1148,6 @@ export const SmartAnalyzerPage: React.FC = () => {
                         </div>
                       </GlassPanel>
                     </div>
-
-                    {/* #2: GENERATED RESULT BLOCK (LARGE) */}
-                    {(isGenerating || generatedImage) && (
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between pl-1">
-                          <h4 className="text-[10px] font-mono uppercase tracking-[0.3em] text-brand-cyan flex items-center gap-3">
-                            Generated Visual Synthesis
-                          </h4>
-                          <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">
-                            8K • Photorealistic • {selectedFont || 'Standard'}
-                          </span>
-                        </div>
-                        <div className="relative aspect-video rounded-3xl overflow-hidden bg-neutral-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5">
-                          <MockupCard
-                            base64Image={generatedImage}
-                            isLoading={isGenerating}
-                            isRedrawing={isGenerating && !!generatedImage}
-                            onRedraw={handleGenerateInline}
-                            onView={() => setShowFullImage(generatedImage)}
-                            onNewAngle={() => {}}
-                            onNewBackground={() => {}}
-                            onSave={handleSaveToLibrary}
-                            isSaved={!!mockupId}
-                            mockupId={mockupId || undefined}
-                            onToggleLike={handleToggleLike}
-                            isLiked={isLiked}
-                            aspectRatio={aspectRatio as any}
-                            prompt={refinedPrompt}
-                            designType={result.category}
-                            className="w-full h-full"
-                          />
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* SIDEBAR: CONTEXT & METADATA */}

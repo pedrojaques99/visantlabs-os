@@ -160,8 +160,8 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     };
 
     const baseStyles = variant === 'node'
-      ? "w-full px-3 py-2 bg-neutral-800 border border-neutral-800/30 rounded text-xs font-mono text-neutral-300"
-      : "w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-xl text-neutral-200 text-sm font-mono";
+      ? "w-full px-3 py-2 bg-neutral-950/40 border border-white/5 rounded-xl text-xs text-neutral-300"
+      : "w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-xl text-neutral-200 text-sm";
 
     const focusStyles = variant === 'node'
       ? "focus:outline-none focus:border-brand-cyan/50"
@@ -205,7 +205,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                   "flex items-center justify-start gap-2",
                   "border-l-2 border-transparent",
                   isFocused && "bg-neutral-800/60 border-neutral-600",
-                  isSelected && "bg-brand-cyan/10 text-brand-cyan border-brand-cyan/50",
+                  isSelected && "bg-foreground/10 text-foreground border-l border-foreground/50",
                   !isSelected && !isFocused && "text-neutral-400 hover:bg-neutral-800/40 hover:text-neutral-200 hover:border-neutral-700"
                 )}
               >
@@ -213,7 +213,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                   {option.icon && (
                     <span className={cn(
                       "flex-shrink-0 transition-colors duration-150",
-                      isSelected ? "text-brand-cyan" : "text-neutral-400"
+                      isSelected ? "text-foreground" : "text-neutral-400"
                     )}>
                       {option.icon}
                     </span>
@@ -221,7 +221,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                   <span className="truncate">{option.label}</span>
                 </div>
                 {isSelected && (
-                  <Check size={14} className="text-brand-cyan flex-shrink-0" />
+                  <Check size={14} className="text-foreground flex-shrink-0" />
                 )}
               </li>
             );

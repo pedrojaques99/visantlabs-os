@@ -54,8 +54,7 @@ export const useLuminanceNodeHandlers = ({
     const node = nodesRef.current.find(n => n.id === nodeId);
     const luminanceData = node?.data as LuminanceNodeData;
 
-    const { tokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
-    const promptOverride = tokens ? buildEnhancement(preset.prompt, tokens) : undefined;
+    const promptOverride = buildPromptWithBrandContext(preset.prompt, nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
 
     await generateImageWithPreset({
       nodeId,

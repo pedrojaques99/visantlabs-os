@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Position, type NodeProps, useReactFlow, NodeResizer, useNodes } from '@xyflow/react';
-import { Pickaxe, Image as ImageIcon, Wand2, Save, BookOpen, Sparkles, Palette, Diamond } from 'lucide-react';
+import { Pickaxe, Image as ImageIcon, Wand2, Save, BookOpen, Sparkles, Palette, Diamond, Settings, ChevronRight } from 'lucide-react';
 import { SeedControl } from './shared/SeedControl';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { PromptNodeData } from '@/types/reactFlow';
@@ -55,6 +55,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
   // Context Menu state
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
 
   const { debouncedUpdate: debouncedUpdateData } = useNodeDataUpdater<PromptNodeData>(nodeData.onUpdateData, id);
@@ -489,6 +490,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       <NodeHeader 
         icon={Pickaxe} 
         title={t('canvasNodes.promptNode.title')} 
+        selected={selected}
         isBrandActive={isBrandActive}
         onToggleBrand={(active) => {
           setIsBrandActive(active);
@@ -514,7 +516,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             <div className={cn(
               "flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-[10px] font-mono transition-all duration-300",
               isBrandActive
-                ? "bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]"
+                ? "bg-foreground/10 border-foreground/30 text-foreground shadow-[0_0_15px_rgba(255,255,255,0.05)]"
                 : "bg-neutral-900/40 border-neutral-800/40 text-neutral-500 opacity-60"
             )}>
               <div className="relative flex items-center justify-center shrink-0">
@@ -538,7 +540,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       {/* Prompt Input */}
       <div className="node-margin">
         {hasTextNodeConnection && (
-          <div className="mb-1.5 text-[10px] font-mono text-brand-cyan/70 flex items-center gap-1">
+          <div className="mb-1.5 text-[10px] font-mono text-foreground/70 flex items-center gap-1">
             <span>•</span>
             <span>{t('canvasNodes.promptNode.connectedToTextNode')}</span>
           </div>
@@ -596,7 +598,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                   }
                 }}
                 disabled={isLoading || isSuggestingPrompts || !prompt.trim()}
-                className="absolute top-2 right-2 nodrag nopan text-brand-cyan hover:bg-brand-cyan/10"
+                className="absolute top-2 right-2 nodrag nopan text-foreground hover:bg-brand-cyan/10 hover:text-brand-cyan transition-colors"
               >
                 {isSuggestingPrompts ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -617,7 +619,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               exit={{ height: 0, opacity: 0 }}
               className="mt-2 space-y-1.5 overflow-hidden"
             >
-              <div className="text-[10px] font-mono text-brand-cyan/70 mb-1.5 flex items-center gap-2">
+              <div className="text-[10px] font-mono text-foreground/70 mb-1.5 flex items-center gap-2">
                 <Sparkles size={10} />
                 {t('canvasNodes.promptNode.aiSuggestions') || t('canvasNodes.promptNode.suggestions')}
               </div>
@@ -631,7 +633,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                       nodeData.onUpdateData(id, { promptSuggestions: [] });
                     }
                   }}
-                  className="w-full text-left font-mono border border-brand-cyan/5 hover:border-brand-cyan/20 hover:bg-brand-cyan/5"
+                  className="w-full text-left font-mono border border-foreground/10 hover:border-brand-cyan/20 hover:bg-brand-cyan/5 hover:text-brand-cyan transition-colors"
                 >
                   <span className="truncate">{suggestion}</span>
                 </NodeButton>
@@ -669,40 +671,60 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           }}
         />
 
-        {!isSeedream && (
-          <AdvancedModelSettings
-            model={model as GeminiModel}
-            aspectRatio={aspectRatio}
-            resolution={resolution}
-            onAspectRatioChange={(ratio) => {
-              setAspectRatio(ratio);
-              if (nodeData.onUpdateData) nodeData.onUpdateData(id, { aspectRatio: ratio });
-            }}
-            onResolutionChange={(res) => {
-              setResolution(res);
-              if (nodeData.onUpdateData) nodeData.onUpdateData(id, { resolution: res });
-            }}
-            onModelChange={(newModel) => {
-              setModel(newModel);
-              if (nodeData.onUpdateData) nodeData.onUpdateData(id, { model: newModel });
-            }}
-            isLoading={isLoading}
-            allowVideo={true}
-          />
-        )}
+        {/* Advanced Options Accordion */}
+        <div className="border border-neutral-800 rounded-md bg-neutral-900/30">
+          <NodeButton
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+            className="text-xs font-mono text-neutral-400 hover:text-neutral-200 w-full p-2 hover:bg-neutral-800/50"
+          >
+            <Settings size={12} />
+            <span>Advanced Settings</span>
+            <ChevronRight
+              size={12}
+              className={cn('transition-transform ml-auto', isAdvancedOpen && 'rotate-90')}
+            />
+          </NodeButton>
 
-        {/* Seed Control */}
-        <SeedControl
-          seed={nodeData.seed}
-          seedLocked={nodeData.seedLocked}
-          onSeedChange={(seed) => {
-            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { seed });
-          }}
-          onSeedLockedChange={(locked) => {
-            if (nodeData.onUpdateData) nodeData.onUpdateData(id, { seedLocked: locked });
-          }}
-          disabled={isLoading}
-        />
+          {isAdvancedOpen && (
+            <div className="p-3 space-y-3 border-t border-neutral-800 bg-neutral-900/50">
+              {!isSeedream && (
+                <AdvancedModelSettings
+                  model={model as GeminiModel}
+                  aspectRatio={aspectRatio}
+                  resolution={resolution}
+                  onAspectRatioChange={(ratio) => {
+                    setAspectRatio(ratio);
+                    if (nodeData.onUpdateData) nodeData.onUpdateData(id, { aspectRatio: ratio });
+                  }}
+                  onResolutionChange={(res) => {
+                    setResolution(res);
+                    if (nodeData.onUpdateData) nodeData.onUpdateData(id, { resolution: res });
+                  }}
+                  onModelChange={(newModel) => {
+                    setModel(newModel);
+                    if (nodeData.onUpdateData) nodeData.onUpdateData(id, { model: newModel });
+                  }}
+                  isLoading={isLoading}
+                  allowVideo={true}
+                />
+              )}
+
+              <SeedControl
+                seed={nodeData.seed}
+                seedLocked={nodeData.seedLocked}
+                onSeedChange={(seed) => {
+                  if (nodeData.onUpdateData) nodeData.onUpdateData(id, { seed });
+                }}
+                onSeedLockedChange={(locked) => {
+                  if (nodeData.onUpdateData) nodeData.onUpdateData(id, { seedLocked: locked });
+                }}
+                disabled={isLoading}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Generate Image Button */}
@@ -725,7 +747,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             <div className="flex items-center justify-center gap-2">
               <ImageIcon size={14} className="group-hover/gen:rotate-12 transition-transform" />
               <span className="font-semibold tracking-tight">{t('canvasNodes.promptNode.generateImage')}</span>
-              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-brand-cyan/80">
+              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
                 <Diamond size={10} className="opacity-50 fill-current" />
                 {creditsRequired}
               </div>

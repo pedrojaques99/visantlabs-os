@@ -55,8 +55,8 @@ function renderResolutionButton(
           ? 'flex-1 flex items-center justify-center gap-1 h-11 px-2 text-xs font-mono transition-all min-w-0'
           : 'flex flex-col items-center justify-center gap-1 py-2 px-3 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer',
         isSelected
-          ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-          : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-300',
+          ? 'bg-foreground/10 text-foreground border-foreground/40'
+          : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-brand-cyan/30 hover:text-brand-cyan',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
       title={`${res} (${credits} credits)`}
