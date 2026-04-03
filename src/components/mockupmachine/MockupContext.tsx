@@ -79,6 +79,9 @@ interface MockupContextState {
     // Additional Instructions
     instructions: string;
 
+    // Generation Mode
+    autoGenerate: boolean;
+
     // Seed for deterministic generation
     seed: number | undefined;
     seedLocked: boolean;
@@ -143,6 +146,7 @@ interface MockupContextActions {
     setIsSurpriseMeMode: Dispatch<SetStateAction<boolean>>;
     setSurpriseMePool: Dispatch<SetStateAction<SurpriseMeSelectedTags>>;
     setInstructions: Dispatch<SetStateAction<string>>;
+    setAutoGenerate: Dispatch<SetStateAction<boolean>>;
     setSeed: Dispatch<SetStateAction<number | undefined>>;
     setSeedLocked: Dispatch<SetStateAction<boolean>>;
     resetAll: () => void;
@@ -240,6 +244,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [isSurpriseMeModeState, setIsSurpriseMeModeState] = useState(false);
     const [surpriseMePool, setSurpriseMePool] = useState<SurpriseMeSelectedTags>(() => getSurpriseMeSelectedTags());
     const [instructions, setInstructions] = useState('');
+    const [autoGenerate, setAutoGenerate] = useState(true);
     const [seed, setSeed] = useState<number | undefined>(undefined);
     const [seedLocked, setSeedLocked] = useState(false);
 
@@ -370,7 +375,10 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         isSurpriseMeMode: isSurpriseMeModeState,
         setIsSurpriseMeMode,
         surpriseMePool, setSurpriseMePool,
-        instructions, setInstructions,
+        instructions,
+        setInstructions,
+        autoGenerate,
+        setAutoGenerate,
         seed, setSeed,
         seedLocked, setSeedLocked,
         resetAll,
@@ -390,7 +398,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         customCategoryInput, customLocationInput, customAngleInput, customLightingInput,
         customEffectInput, customMaterialInput, colorInput, isValidColor,
         fullScreenImageIndex, mockupCount, isSurpriseMeModeState, surpriseMePool,
-        instructions, seed, seedLocked, resetAll, clearAllTags
+        instructions, autoGenerate, seed, seedLocked, resetAll, clearAllTags
     ]);
 
     return (

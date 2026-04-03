@@ -49,6 +49,8 @@ export interface SeedreamModelConfig {
   defaultResolution: Resolution;
   /** Whether size is adaptive (seededit-3.0-i2i — no user size control) */
   adaptiveSize: boolean;
+  /** Domain for Logo.dev integration */
+  providerDomain?: string;
 }
 
 export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig> = {
@@ -63,6 +65,7 @@ export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig>
     resolutionKeywords: ['2K', '4K'],
     defaultResolution: '2K',
     adaptiveSize: false,
+    providerDomain: 'bytedance.com',
   },
   [SEEDREAM_MODELS.SD_4_0]: {
     label: 'Seedream 4.0',
@@ -75,6 +78,7 @@ export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig>
     resolutionKeywords: ['1K', '2K', '4K'],
     defaultResolution: '2K',
     adaptiveSize: false,
+    providerDomain: 'bytedance.com',
   },
   [SEEDREAM_MODELS.SD_3_T2I]: {
     label: 'Seedream 3.0',
@@ -88,6 +92,7 @@ export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig>
     resolutionKeywords: ['512px', '1K', '2K'],
     defaultResolution: '1K',
     adaptiveSize: false,
+    providerDomain: 'bytedance.com',
   },
   [SEEDREAM_MODELS.SE_3_I2I]: {
     label: 'Seededit 3.0',
@@ -101,6 +106,7 @@ export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig>
     resolutionKeywords: [],
     defaultResolution: '1K', // unused — adaptiveSize=true
     adaptiveSize: true,
+    providerDomain: 'bytedance.com',
   },
 };
 

@@ -44,6 +44,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
     free: true,
     span: 'lg:col-span-1',
     databaseInfo: '',
+    isHidden: false,
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -62,6 +63,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
         free: app.free,
         span: app.span,
         databaseInfo: app.databaseInfo || '',
+        isHidden: app.isHidden || false,
       });
     } else {
       setFormData({
@@ -77,6 +79,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
         free: true,
         span: 'lg:col-span-1',
         databaseInfo: '',
+        isHidden: false,
       });
     }
   }, [app, isOpen]);
@@ -186,6 +189,15 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                        className="rounded border-white/10 bg-white/5 text-brand-cyan"
                     />
                     FREE TOOL
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer text-amber-500">
+                    <input 
+                       type="checkbox" 
+                       checked={formData.isHidden} 
+                       onChange={(e) => setFormData({ ...formData, isHidden: e.target.checked })}
+                       className="rounded border-white/10 bg-white/5 text-amber-500"
+                    />
+                    HIDE APP (ADMIN ONLY)
                 </label>
             </div>
           </div>

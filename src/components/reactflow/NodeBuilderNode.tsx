@@ -314,7 +314,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             <div className="pt-2 border-t border-brand-cyan/10">
               <button
                 onClick={handleSpawn}
-                className="nodrag nopan w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-brand-cyan text-black font-bold text-[11px] uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(0,195,255,0.3)]"
+                className="nodrag nopan w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-brand-cyan text-black font-bold text-[11px] uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,195,255,0.3)]"
               >
                 <Plus size={14} strokeWidth={3} />
                 Deploy Node to Canvas

@@ -1524,11 +1524,11 @@
 }
 
 .node-text-muted {
-  color: var(--node-text-color-muted, #9ca3af) !important;
+  color: var(--node-text-color-muted, #d1d5db) !important;
 }
 
 .node-text-subtle {
-  color: var(--node-text-color-subtle, #6b7280) !important;
+  color: var(--node-text-color-subtle, #9ca3af) !important;
 }
 
 .node-text-accent {
@@ -1567,7 +1567,7 @@
 .react-flow__node .node-container [class*="border-[brand-cyan]"],
 .react-flow__node .node-container [class*="border-brand-cyan"] {
   border-color: var(--foreground) !important;
-  opacity: 0.4;
+  opacity: 0.7;
 }
 
 .react-flow__node .node-container [class*="text-brand-cyan"] {

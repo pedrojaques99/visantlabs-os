@@ -18,12 +18,22 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   type = 'chat'
 }) => {
   const options = useMemo(() => {
+    const token = import.meta.env.VITE_LOGO_DEV_TOKEN || '';
+
     if (type === 'image') {
       const geminiOptions = AVAILABLE_IMAGE_MODELS.map(modelId => {
         const config = MODEL_CONFIG[modelId];
         return {
           value: modelId,
           label: config?.label || modelId,
+          icon: config?.providerDomain ? (
+            <img 
+              src={`https://img.logo.dev/${config.providerDomain}?token=${token}`}
+              className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all"
+              onError={(e) => (e.currentTarget.style.display = 'none')}
+              alt=""
+            />
+          ) : undefined
         };
       });
 
@@ -32,6 +42,14 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         return {
           value: modelId,
           label: config?.label || modelId,
+          icon: config?.providerDomain ? (
+            <img 
+              src={`https://img.logo.dev/${config.providerDomain}?token=${token}`}
+              className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all"
+              onError={(e) => (e.currentTarget.style.display = 'none')}
+              alt=""
+            />
+          ) : undefined
         };
       });
 
@@ -43,6 +61,14 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       return {
         value: modelId,
         label: config?.label || modelId,
+        icon: config?.providerDomain ? (
+          <img 
+            src={`https://img.logo.dev/${config.providerDomain}?token=${token}`}
+            className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all"
+            onError={(e) => (e.currentTarget.style.display = 'none')}
+            alt=""
+          />
+        ) : undefined
       };
     });
   }, [type]);

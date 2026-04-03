@@ -260,7 +260,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                             e.stopPropagation();
                         }}
                         disabled={isLoading || !hasConnectedImage}
-                        className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        className="node-interactive group/gen"
                     >
                         {isLoading ? (
                             <div className="flex items-center justify-center gap-2">

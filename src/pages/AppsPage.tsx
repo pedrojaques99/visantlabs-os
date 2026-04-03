@@ -239,8 +239,8 @@ export const AppsPage: React.FC = () => {
 
   const CATEGORIES = useMemo(() => {
     const categories = [
-      { key: 'design', title: t('apps.brandingTools'), icon: Sparkles },
       { key: 'mockup', title: 'MOCKUP LABS //', icon: Zap },
+      { key: 'design', title: t('apps.brandingTools'), icon: Sparkles },
       { key: 'effects', title: t('apps.effectsTools'), icon: ImageIcon },
       { key: 'audio', title: t('apps.audioTools'), icon: Zap },
       { key: 'experimental', title: 'EXPERIMENTAL //', icon: Sparkles },
@@ -256,6 +256,8 @@ export const AppsPage: React.FC = () => {
     return CATEGORIES.map(cat => ({
       ...cat,
       apps: apps.filter(app => {
+        // Filter out hidden apps for non-admins
+        if (app.isHidden && !isAdmin) return false;
         // Filter by category
         if (app.category !== cat.key) return false;
         // Filter out admin-only apps for non-admins
@@ -382,9 +384,15 @@ export const AppsPage: React.FC = () => {
                         variants={itemVariants}
                         className={cn(
                           "group relative bg-[#0A0A0A] border border-white/5 rounded-2xl overflow-hidden transition-all duration-500",
-                          !isComingSoon ? "hover:border-brand-cyan/30 hover:shadow-[0_0_40px_-15px_rgba(0,186,227,0.2)] cursor-pointer" : "opacity-40 grayscale pointer-events-none"
+                          !isComingSoon ? "hover:border-brand-cyan/30 hover:shadow-[0_0_40px_-15px_rgba(0,186,227,0.2)] cursor-pointer" : "opacity-40 grayscale pointer-events-none",
+                          app.isHidden && "border-amber-500/20 opacity-60"
                         )}
                       >
+                        {app.isHidden && (
+                          <div className="absolute top-0 right-0 z-50 bg-amber-500 text-black px-2 py-0.5 text-[8px] font-bold font-mono rounded-bl-lg">
+                            HIDDEN //
+                          </div>
+                        )}
                         {/* Thumbnail Area */}
                         <div 
                           className="aspect-[16/10] relative overflow-hidden bg-neutral-900"

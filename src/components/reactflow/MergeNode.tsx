@@ -186,7 +186,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
               disabled={isGeneratingPrompt || isLoading}
               variant="purple"
               size="full"
-              className="node-interactive group/prompt transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="node-interactive group/prompt"
             >
               {isGeneratingPrompt ? (
                 <div className="flex items-center justify-center gap-2">
@@ -250,7 +250,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
             disabled={isLoading || isGeneratingPrompt || !prompt.trim()}
             variant="primary"
             size="full"
-            className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="node-interactive group/gen"
           >
             {isLoading ? (
               <div className="flex items-center justify-center gap-2">

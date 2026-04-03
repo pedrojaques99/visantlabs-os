@@ -437,8 +437,12 @@ model BrandGuideline {
   // Editorial guidelines
   guidelines Json?   // { voice?, dos?, donts?, imagery?, accessibility? }
 
+  // Brand strategy
+  strategy      Json?  // { manifesto?, archetypes[], personas[], voiceValues[], positioning? }
+
   // UI preferences
   activeSections Json?  // string[] — persisted section toggles
+  orderedBlocks  Json?  // string[] — persisted section order
 
   // Extraction metadata
   extraction Json?   // { sources[], completeness }
@@ -504,6 +508,7 @@ model AppConfig {
   span         String?  // lg:col-span-1 etc.
   databaseInfo String?  // Info specifically for the admin (e.g., table name, config keys)
   displayOrder Int      @default(0)
+  isHidden     Boolean  @default(false)
   createdAt    DateTime? @default(now())
   updatedAt    DateTime? @updatedAt
 

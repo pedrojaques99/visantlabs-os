@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { strategySchema } from '@/schemas/brandGuideline.schema';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
 import { Compass, Sparkles, User, MessageCircle, Plus, Trash2, Heart } from 'lucide-react';
-import type { BrandGuideline, BrandArchetype, BrandPersona, BrandToneOfVoiceValue } from '@/lib/figma-types';
+import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 
 interface StrategySectionProps {
@@ -19,40 +16,76 @@ interface StrategySectionProps {
 
 export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onUpdate, span }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'manifesto' | 'positioning' | 'archetypes' | 'personas' | 'voice'>('manifesto');
+  const [localStrategy, setLocalStrategy] = useState(guideline.strategy || {});
+  const [isSaving, setIsSaving] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const strategy = guideline.strategy || {};
+  // Sync local state when server data changes (only when not editing)
+  useEffect(() => {
+    if (!isEditing) {
+      setLocalStrategy(guideline.strategy || {});
+    }
+  }, [guideline.strategy, isEditing]);
+
+  const strategy = isEditing ? localStrategy : (guideline.strategy || {});
+
+  const persistStrategy = useCallback((data: any) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setIsSaving(true);
+    debounceRef.current = setTimeout(() => {
+      onUpdate({ strategy: data });
+      setIsSaving(false);
+    }, 800);
+  }, [onUpdate]);
 
   const handleUpdateStrategy = (updatedStrategy: any) => {
-    onUpdate({ strategy: { ...strategy, ...updatedStrategy } });
+    const next = { ...localStrategy, ...updatedStrategy };
+    setLocalStrategy(next);
+    persistStrategy(next);
+  };
+
+  const handleCancel = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setLocalStrategy(guideline.strategy || {});
+    setIsSaving(false);
+    setIsEditing(false);
+  };
+
+  // Flush pending save and exit editing
+  const handleDone = () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      onUpdate({ strategy: localStrategy });
+    }
+    setIsSaving(false);
+    setIsEditing(false);
   };
 
   const addItem = (type: string) => {
     if (!isEditing) setIsEditing(true);
-
+    let next = { ...localStrategy };
     if (type === 'archetype') {
-      const archetypes = [...(strategy.archetypes || []), { name: 'New Archetype', description: '', role: 'primary' }];
-      handleUpdateStrategy({ archetypes });
+      next.archetypes = [...(localStrategy.archetypes || []), { name: 'New Archetype', description: '', role: 'primary' }];
     } else if (type === 'persona') {
-      const personas = [...(strategy.personas || []), { name: 'New Persona', age: 30, traits: [], desires: [], bio: '' }];
-      handleUpdateStrategy({ personas });
+      next.personas = [...(localStrategy.personas || []), { name: 'New Persona', age: 30, traits: [], desires: [], bio: '' }];
     } else if (type === 'voice') {
-      const voiceValues = [...(strategy.voiceValues || []), { title: 'Tone Name', description: '', example: '' }];
-      handleUpdateStrategy({ voiceValues });
+      next.voiceValues = [...(localStrategy.voiceValues || []), { title: 'Tone Name', description: '', example: '' }];
     }
+    setLocalStrategy(next);
+    persistStrategy(next);
   };
 
   const removeItem = (type: string, index: number) => {
+    let next = { ...localStrategy };
     if (type === 'archetype') {
-      const archetypes = (strategy.archetypes || []).filter((_, i) => i !== index);
-      handleUpdateStrategy({ archetypes });
+      next.archetypes = (localStrategy.archetypes || []).filter((_, i) => i !== index);
     } else if (type === 'persona') {
-      const personas = (strategy.personas || []).filter((_, i) => i !== index);
-      handleUpdateStrategy({ personas });
+      next.personas = (localStrategy.personas || []).filter((_, i) => i !== index);
     } else if (type === 'voice') {
-      const voiceValues = (strategy.voiceValues || []).filter((_, i) => i !== index);
-      handleUpdateStrategy({ voiceValues });
+      next.voiceValues = (localStrategy.voiceValues || []).filter((_, i) => i !== index);
     }
+    setLocalStrategy(next);
+    persistStrategy(next);
   };
 
   return (
@@ -61,9 +94,10 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
       icon={<Compass size={14} />}
       title="Brand Strategy"
       isEditing={isEditing}
+      isSaving={isSaving}
       onEdit={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
-      onCancel={() => setIsEditing(false)}
+      onSave={handleDone}
+      onCancel={handleCancel}
       span={span as any}
       expandedContent={
         <div className="space-y-8">

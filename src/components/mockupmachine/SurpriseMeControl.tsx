@@ -11,7 +11,7 @@ import { getCreditsRequired } from '@/utils/creditCalculator';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { ComponentProps } from 'react';
-import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { GEMINI_MODELS, MODEL_CONFIG } from '@/constants/geminiModels';
 import { MicroTitle } from '../ui/MicroTitle';
 import { GlassPanel } from '../ui/GlassPanel';
 import { Button } from '@/components/ui/button'
@@ -425,8 +425,30 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                                 }
                                             }}
                                             options={[
-                                                { value: 'gemini-pro', label: 'Gemini Pro' },
-                                                { value: 'seedream-4.5', label: 'Seedream 4.5' }
+                                                { 
+                                                  value: 'gemini-pro', 
+                                                  label: MODEL_CONFIG[GEMINI_MODELS.PRO]?.label || 'Gemini 3 Pro',
+                                                  icon: (
+                                                    <img 
+                                                      src={`https://img.logo.dev/${MODEL_CONFIG[GEMINI_MODELS.PRO]?.providerDomain}?token=${import.meta.env.VITE_LOGO_DEV_TOKEN || ''}`}
+                                                      className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all"
+                                                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                                                      alt=""
+                                                    />
+                                                  )
+                                                },
+                                                { 
+                                                  value: 'seedream-4.5', 
+                                                  label: 'Seedream 4.5',
+                                                  icon: (
+                                                    <img 
+                                                      src={`https://img.logo.dev/bytedance.com?token=${import.meta.env.VITE_LOGO_DEV_TOKEN || ''}`}
+                                                      className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all"
+                                                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                                                      alt=""
+                                                    />
+                                                  )
+                                                }
                                             ]}
                                             className="w-full bg-black/40 border-white/10 text-[11px]"
                                             variant="default"

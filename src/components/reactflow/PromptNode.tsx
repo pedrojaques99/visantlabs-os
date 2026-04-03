@@ -32,6 +32,7 @@ import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Connection } from '@xyflow/react';
 
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
@@ -517,7 +518,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               "flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-[10px] font-mono transition-all duration-300",
               isBrandActive
                 ? "bg-foreground/10 border-foreground/30 text-foreground shadow-[0_0_15px_rgba(255,255,255,0.05)]"
-                : "bg-neutral-900/40 border-neutral-800/40 text-neutral-500 opacity-60"
+                : "bg-neutral-900/40 border-neutral-800/40 text-neutral-400 opacity-80"
             )}>
               <div className="relative flex items-center justify-center shrink-0">
                 <Palette size={10} className={cn(isBrandActive ? "text-brand-cyan" : "text-neutral-600", "transition-colors")} />
@@ -540,7 +541,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       {/* Prompt Input */}
       <div className="node-margin">
         {hasTextNodeConnection && (
-          <div className="mb-1.5 text-[10px] font-mono text-foreground/70 flex items-center gap-1">
+          <div className="mb-1.5 text-[10px] font-mono text-foreground/80 flex items-center gap-1">
             <span>•</span>
             <span>{t('canvasNodes.promptNode.connectedToTextNode')}</span>
           </div>
@@ -619,7 +620,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               exit={{ height: 0, opacity: 0 }}
               className="mt-2 space-y-1.5 overflow-hidden"
             >
-              <div className="text-[10px] font-mono text-foreground/70 mb-1.5 flex items-center gap-2">
+              <div className="text-[10px] font-mono text-foreground/80 mb-1.5 flex items-center gap-2">
                 <Sparkles size={10} />
                 {t('canvasNodes.promptNode.aiSuggestions') || t('canvasNodes.promptNode.suggestions')}
               </div>
@@ -727,6 +728,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         </div>
       </div>
 
+
+
       {/* Generate Image Button */}
       <Tooltip 
         content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
@@ -736,7 +739,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           handleGenerate();
         }}
           disabled={isLoading || !prompt.trim()}
-          className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="node-interactive group/gen"
         >
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
@@ -747,8 +750,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             <div className="flex items-center justify-center gap-2">
               <ImageIcon size={14} className="group-hover/gen:rotate-12 transition-transform" />
               <span className="font-semibold tracking-tight">{t('canvasNodes.promptNode.generateImage')}</span>
-              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
-                <Diamond size={10} className="opacity-50 fill-current" />
+              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground">
+                <Diamond size={10} className="opacity-70 fill-current" />
                 {creditsRequired}
               </div>
             </div>

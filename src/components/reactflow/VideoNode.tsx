@@ -31,6 +31,7 @@ import { useLinkedGuidelineId } from '@/components/canvas/CanvasHeaderContext';
 import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
 import { toast } from 'sonner';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
 
 // Constants
 const DEFAULT_MODEL = VeoModel.VEO_3_1;
@@ -561,7 +562,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           }}
           onMouseDown={(e) => e.stopPropagation()}
           disabled={isGenerateDisabled}
-          className="node-interactive group/gen transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="node-interactive group/gen"
         >
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
@@ -582,21 +583,18 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       </Tooltip>
 
       {/* Result Preview */}
-      {(nodeData.resultVideoUrl || nodeData.resultVideoBase64) && !isLoading && (
-        <div className="node-margin mt-4 rounded-md overflow-hidden border border-neutral-700 bg-black relative group shadow-lg">
-          <video
-            src={nodeData.resultVideoUrl || (nodeData.resultVideoBase64 ? `data:video/mp4;base64,${nodeData.resultVideoBase64}` : undefined)}
-            className="w-full h-auto max-h-[200px] object-contain"
-            controls
-            loop={isLooping}
-            onLoadedMetadata={(e) => {
-              const video = e.target as HTMLVideoElement;
-              if (video.videoWidth > 0 && video.videoHeight > 0) {
-                nodeData.onUpdateData?.(String(id), {
-                  imageWidth: video.videoWidth,
-                  imageHeight: video.videoHeight,
-                });
-              }
+      {(nodeData.resultVideoUrl || nodeData.resultVideoBase64) && (
+        <div className="node-margin">
+          <NodeMediaDisplay
+            url={nodeData.resultVideoUrl || (nodeData.resultVideoBase64 ? (nodeData.resultVideoBase64.startsWith('data:') ? nodeData.resultVideoBase64 : `data:video/mp4;base64,${nodeData.resultVideoBase64}`) : null)}
+            isVideo={true}
+            isLoading={isLoading}
+            dragging={dragging}
+            onMediaLoad={(width, height) => {
+              nodeData.onUpdateData?.(String(id), {
+                imageWidth: width,
+                imageHeight: height,
+              });
             }}
           />
         </div>

@@ -136,6 +136,8 @@ const MockupMachinePageContent: React.FC = () => {
     isSurpriseMeMode,
     setIsSurpriseMeMode,
     surpriseMePool,
+    autoGenerate,
+    setAutoGenerate,
     imageProvider,
     setImageProvider,
     selectedBrandGuideline,
@@ -163,7 +165,6 @@ const MockupMachinePageContent: React.FC = () => {
   const [savedMockupIds, setSavedMockupIds] = useState<Map<number, string>>(new Map()); // Map index -> mockup ID
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [isDiceAnimating, setIsDiceAnimating] = useState(false);
-  const [autoGenerate, setAutoGenerate] = useState(true);
 
   // React to external tag changes (e.g. SurpriseMeSelectedTagsDisplay reroll)
   useEffect(() => {
@@ -385,6 +386,7 @@ const MockupMachinePageContent: React.FC = () => {
     removeText,
     negativePrompt,
     additionalPrompt,
+    autoGenerate,
     // Note: isPromptReady is intentionally excluded - it's not persisted and causes extra saves
     suggestedTags,
     suggestedBrandingTags,
@@ -506,7 +508,7 @@ const MockupMachinePageContent: React.FC = () => {
     return basePrompt;
   }, [designType, selectedTags, aspectRatio, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedMaterialTags, selectedColors, generateText, withHuman, negativePrompt, additionalPrompt, referenceImages]);
 
-  const handleGenerateSmartPrompt = useCallback(async () => {
+  const handleGenerateSmartPrompt = useCallback(async (shouldAutoGenerate: boolean = false) => {
     if (isGeneratingPrompt) {
       if (isLocalDevelopment()) {
         console.warn('Prompt generation already in progress, skipping duplicate call');
@@ -637,6 +639,14 @@ const MockupMachinePageContent: React.FC = () => {
           generateOutputsButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, scrollDelay);
+      
+      // If we are in auto-generate mode (Essential Mode), trigger image generation
+      if (shouldAutoGenerate || autoGenerate) {
+        if (isLocalDevelopment()) {
+          console.log('[AutoGenerate] Triggering output generation...');
+        }
+        runGeneration();
+      }
     } catch (err) {
       const errorInfo = formatMockupError(err, t);
       if (isLocalDevelopment()) {

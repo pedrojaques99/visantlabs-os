@@ -81,11 +81,10 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
           ? 'var(--node-bg-color-dragging, #0a0a0a)' 
           : 'var(--node-bg-color, #0a0a0a)',
         // Use opacity from style prop if provided, otherwise use default
-        opacity: customOpacity !== undefined ? customOpacity : (dragging ? 1 : 0.8),
+        opacity: customOpacity !== undefined ? customOpacity : 1,
         // Pass through text color variables for button/textarea contrast
         '--node-text-color': 'var(--node-text-color, #e5e7eb)',
-        '--node-text-color-muted': 'var(--node-text-color-muted, #9ca3af)',
-        '--node-text-color-subtle': 'var(--node-text-color-subtle, #6b7280)',
+        '--node-text-color-muted': 'var(--node-text-color-muted, #d1d5db)',        '--node-text-color-subtle': 'var(--node-text-color-subtle, #9ca3af)',
         // Spread style prop (without opacity) to allow other overrides
         ...styleWithoutOpacity,
       } as React.CSSProperties}

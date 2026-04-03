@@ -88,7 +88,8 @@
       "Skill(update-config)",
       "Bash(xargs -I {} basename {})",
       "Skill(gsd:do)",
-      "Skill(gsd:fast)"
+      "Skill(gsd:fast)",
+      "Skill(gsd:debug)"
     ]
   }
 }
