@@ -138,7 +138,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             <h3 className="text-[12px] font-bold node-text-primary font-mono tracking-wider">NODE ARCHITECT</h3>
             <p className="text-[9px] text-neutral-500 font-mono flex items-center gap-1">
               {isLoading ? PROCESSING_STEPS[processingStep].label : 'READY TO CONSTRUCT'}
-              {isLoading && <span className="w-1 h-1 bg-brand-cyan rounded-full animate-pulse" />}
+              {isLoading && <span className="w-1 h-1 bg-brand-cyan rounded-full" />}
             </p>
           </div>
         </div>

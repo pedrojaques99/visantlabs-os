@@ -106,7 +106,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                     <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
                                         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-brand-cyan/10 to-transparent animate-scanline h-20 w-full" />
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="px-4 py-2 bg-black/60 backdrop-blur-md rounded-full border border-brand-cyan/30 animate-pulse">
+                                            <div className="px-4 py-2 bg-black/60 backdrop-blur-md rounded-full border border-brand-cyan/30">
                                                 <span className="text-[10px] font-mono text-brand-cyan tracking-widest uppercase">
                                                     Analyzing Structure...
                                                 </span>

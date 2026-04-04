@@ -5,7 +5,7 @@ import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { useDynamicSuggestions } from '@/hooks/useDynamicSuggestions';
 import { translateTag } from '@/utils/localeUtils';
-import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3, Settings2 } from 'lucide-react';
+import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3, Settings2, Wand2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { MockupTagCategory } from '@/services/mockupTagService';
@@ -204,7 +204,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
       >
         <span className="truncate">
           {isGenerating ? (
-            <span className="inline-block w-16 h-3 rounded animate-pulse bg-neutral-700/50" />
+            <span className="inline-block w-16 h-3 rounded bg-neutral-700/50" />
           ) : (
             selectedTags.length > 0
               ? (selectedTags.length === 1 ? translateTag(selectedTags[0]) : `${translateTag(selectedTags[0])} +${selectedTags.length - 1}`)
@@ -264,7 +264,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
                     : 'text-brand-cyan hover:bg-neutral-100'
                 )}
               >
-                <Plus size={10} className="shrink-0" />
+                <Wand2 size={12} className="text-brand-cyan" />
                 <span className="truncate">Adicionar "{searchQuery.trim()}"</span>
               </Button>
             )}
@@ -543,7 +543,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
           >
             <Shuffle size={14} className={cn(
               "text-neutral-500 group-hover/reroll:text-brand-cyan transition-all duration-300",
-              isGenerating ? "animate-diceRoll" : "group-hover/reroll:rotate-180"
+              isGenerating ? "rotate-180" : "group-hover/reroll:rotate-180"
             )} />
           </Button>
         )}

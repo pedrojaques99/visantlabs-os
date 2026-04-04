@@ -157,7 +157,7 @@ export type MockupContextValue = MockupContextState & MockupContextActions;
 
 export const MockupContext = createContext<MockupContextValue | undefined>(undefined);
 
-const initialMockupCount = 2;
+const initialMockupCount = 1;
 
 export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);

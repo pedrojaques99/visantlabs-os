@@ -191,7 +191,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
               {isGeneratingPrompt ? (
                 <div className="flex items-center justify-center gap-2">
                   <GlitchLoader size={14} color="currentColor" />
-                  <span className="animate-pulse">{t('canvasNodes.mergeNode.generatingPrompt') || 'Generating...'}</span>
+                  <span>{t('canvasNodes.mergeNode.generatingPrompt') || 'Generating...'}</span>
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
@@ -255,7 +255,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
             {isLoading ? (
               <div className="flex items-center justify-center gap-2">
                 <GlitchLoader size={14} color="brand-cyan" />
-                <span className="animate-pulse">{t('canvasNodes.mergeNode.generatingImage') || 'Generating Image...'}</span>
+                <span>{t('canvasNodes.mergeNode.generatingImage') || 'Generating Image...'}</span>
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2">

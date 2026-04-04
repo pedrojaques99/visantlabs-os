@@ -64,7 +64,7 @@ async function resolveImageBase64(image: UploadedImage): Promise<string> {
 
 /**
  * Generate image using Seedream via APIFree.ai (async API)
- * Returns base64 image data
+ * Falls back to server APIFREE_API_KEY if no user key provided
  */
 export async function generateSeedreamImage(options: SeedreamGenerateOptions): Promise<SeedreamGenerateResult> {
     const {
@@ -97,9 +97,10 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
             : Math.floor(Math.random() * 2_147_483_647)
         : -1; // -1 = not used
 
+    // Use user BYOK first, then server key
     const apiKey = specificApiKey || process.env.APIFREE_API_KEY;
     if (!apiKey) {
-        throw new Error('APIFREE_API_KEY not configured and no user key provided.');
+        throw new Error('No Seedream API key available. Configure APIFREE_API_KEY on the server or provide your own key.');
     }
 
     // Resolve the size value for this model + resolution + aspect ratio
@@ -138,7 +139,7 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
         body.image = imageData;
     }
 
-    console.log(`[Seedream] Submitting: model=${body.model}, size=${resolvedSize ?? 'adaptive'}, seed=${supportsSeed ? usedSeed : 'n/a'}`);
+    console.log(`[Seedream] Submitting: model=${body.model}, size=${resolvedSize ?? 'adaptive'}, seed=${supportsSeed ? usedSeed : 'n/a'}, keySource=${specificApiKey ? 'user' : 'server'}`);
 
     // Step 1: Submit the request
     const submitResponse = await safeFetch(SUBMIT_ENDPOINT, {

@@ -44,7 +44,7 @@ export function GlitchPickaxe({
 
             {/* Glitch/Sparks effect positioned near the pickaxe tip impact zone */}
             <span
-                className="absolute bottom-1 right-1.5 text-[10px] font-mono font-bold leading-none select-none pointer-events-none opacity-80 animate-pulse"
+                className="absolute bottom-1 right-1.5 text-[10px] font-mono font-bold leading-none select-none pointer-events-none opacity-80"
                 style={{ color }}
             >
                 {sparks}

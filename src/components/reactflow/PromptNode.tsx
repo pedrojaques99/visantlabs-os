@@ -744,7 +744,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
               <GlitchLoader size={14} color="brand-cyan" />
-              <span className="animate-pulse">{t('canvasNodes.promptNode.generating')}...</span>
+              <span>{t('canvasNodes.promptNode.generating')}...</span>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">

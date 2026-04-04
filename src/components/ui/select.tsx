@@ -263,7 +263,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
               !selectedOption && "text-neutral-500"
             )}>
               {loading ? (
-                <span className="inline-block w-20 h-4 rounded animate-pulse bg-neutral-700/50" />
+                <span className="inline-block w-20 h-4 rounded bg-neutral-700/50" />
               ) : (
                 displayValue
               )}

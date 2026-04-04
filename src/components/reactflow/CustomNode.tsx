@@ -142,7 +142,7 @@ export const CustomNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         {isLoading ? (
           <div className="flex items-center gap-2">
             <GlitchLoader size={14} color="brand-cyan" />
-            <span className="animate-pulse">Running...</span>
+            <span>Running...</span>
           </div>
         ) : (
           <div className="flex items-center gap-2">

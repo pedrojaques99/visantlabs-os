@@ -42,7 +42,7 @@ const CountUp: React.FC<{ value: number }> = ({ value }) => {
 
 const BackgroundGlow = () => (
   <div className="absolute inset-0 pointer-events-none overflow-hidden">
-    <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-brand-cyan/10 blur-[120px] rounded-full animate-pulse" />
+    <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-brand-cyan/10 blur-[120px] rounded-full" />
     <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-indigo-500/5 blur-[120px] rounded-full" />
   </div>
 );
@@ -403,7 +403,7 @@ export const CommunityPage: React.FC = () => {
                 className="mb-6"
               >
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 backdrop-blur-md">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
                   <span className="text-[10px] font-bold font-mono text-brand-cyan uppercase tracking-widest">
                     Comunidade Ativa
                   </span>
@@ -508,7 +508,7 @@ export const CommunityPage: React.FC = () => {
 
         {isCheckingAuth && (
           <div className="flex items-center justify-center py-20">
-            <p className="text-neutral-400 font-mono animate-pulse">{t('common.loading')}</p>
+            <p className="text-neutral-400 font-mono">{t('common.loading')}</p>
           </div>
         )}
 
@@ -605,7 +605,7 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {workflowsLoading ? (
                   Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="bg-[#141414] border border-neutral-800/50 rounded-md p-6 animate-pulse">
+                    <div key={i} className="bg-[#141414] border border-neutral-800/50 rounded-md p-6">
                       <div className="aspect-video bg-neutral-900 rounded-md mb-4" />
                       <div className="h-4 bg-neutral-900 rounded mb-2" />
                       <div className="h-3 bg-neutral-900 rounded w-2/3" />
@@ -713,7 +713,7 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {isLoading ? (
                   Array.from({ length: 10 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-neutral-900 rounded-md animate-pulse border border-neutral-800/50" />
+                    <div key={i} className="aspect-square bg-neutral-900 rounded-md border border-neutral-800/50" />
                   ))
                 ) : (isGalleryExpanded ? allPublicMockups : communityMockups).length > 0 ? (
                   (isGalleryExpanded ? allPublicMockups : communityMockups).map((mockup) => (
@@ -805,7 +805,7 @@ export const CommunityPage: React.FC = () => {
                       <span className="font-mono uppercase tracking-widest">Ver Repositório</span>
                       <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </a>
-                    <MicroTitle as="p" className="animate-pulse">
+                    <MicroTitle as="p">
                       v1.0.0-alpha • MIT License
                     </MicroTitle>
                   </div>

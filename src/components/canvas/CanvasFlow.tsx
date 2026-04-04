@@ -801,7 +801,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       {/* Drag-over overlay with clear visual feedback */}
       {isDraggingOver && (
         <div className="absolute inset-0 z-[9999] pointer-events-none flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm">
-          <div className="text-center animate-pulse">
+          <div className="text-center">
             <div className="w-32 h-32 mx-auto mb-6 rounded-full flex items-center justify-center bg-gradient-to-br from-brand-cyan to-blue-500 shadow-[0_0_40px_color-mix(in_srgb,var(--brand-cyan)_60%,transparent)]">
               <svg
                 className="w-16 h-16 text-white"
@@ -1078,7 +1078,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
             top: `${createIndicatorPos.y}px`,
           }}
         >
-          <div className="w-5 h-5 rounded-full flex items-center justify-center bg-brand-cyan/20 border-[1.5px] border-brand-cyan/60 animate-pulse">
+          <div className="w-5 h-5 rounded-full flex items-center justify-center bg-brand-cyan/20 border-[1.5px] border-brand-cyan/60">
             <span className="text-xs font-bold text-brand-cyan leading-none">
               +
             </span>
@@ -1086,18 +1086,6 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         </div>
       )}
 
-      <style>{`
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 0.6;
-            transform: translate(-50%, -50%) scale(1);
-          }
-          50% {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.1);
-          }
-        }
-      `}</style>
     </div>
   );
 };

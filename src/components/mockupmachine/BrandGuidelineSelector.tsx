@@ -198,7 +198,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
                                         >
                                             <div className={cn(
                                                 "w-1.5 h-1.5 rounded-full",
-                                                selectedBrandGuideline === g.id ? "bg-brand-cyan animate-pulse" : "bg-neutral-700"
+                                                selectedBrandGuideline === g.id ? "bg-brand-cyan" : "bg-neutral-700"
                                             )} />
                                             <span className="truncate text-[11px] font-bold uppercase tracking-tight">{g.identity?.name || 'Unnamed'}</span>
                                         </button>

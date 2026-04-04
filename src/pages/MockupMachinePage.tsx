@@ -2689,11 +2689,18 @@ Generate the new mockup image with the requested changes applied.`;
 
   return (
     <>
-      <SEO
+      <SEO 
         title={t('mockup.seoTitle')}
         description={t('mockup.seoDescription')}
         keywords={t('mockup.seoKeywords')}
       />
+      
+      {/* Dynamic Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(82,221,235,0.05)_0%,transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(82,221,235,0.02)_0%,transparent_50%)]" />
+      </div>
+
       <SoftwareApplicationSchema
         name="Mockup Machine"
         description="Gere mockups profissionais com inteligência artificial. Ferramenta integrada de geração rápida de mockups e assets para designers."

@@ -256,7 +256,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
           {isExtracting ? (
             <div className="flex items-center justify-center gap-2">
               <GlitchLoader size={14} color="brand-cyan" />
-              <span className="animate-pulse">{t('canvasNodes.colorExtractorNode.extracting')} {glitchText}</span>
+              <span>{t('canvasNodes.colorExtractorNode.extracting')} {glitchText}</span>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">

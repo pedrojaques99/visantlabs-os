@@ -475,35 +475,6 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                         </div>
                                     )}
 
-                                    {setMockupCount && (
-                                        <div className="space-y-1">
-                                            <MicroTitle as="span" className="text-[9px] ml-1">Nº Imagens (Outputs)</MicroTitle>
-                                            <div className="relative flex items-center">
-                                                <Input
-                                                    type="number"
-                                                    min={1}
-                                                    max={4}
-                                                    value={mockupCount}
-                                                    onChange={(e) => setMockupCount(Math.min(Math.max(parseInt(e.target.value) || 1, 1), 4))}
-                                                    className="w-full h-[32px] pl-2 pr-6 bg-neutral-800/50 border border-neutral-700/50 rounded text-xs font-mono text-neutral-200 focus:outline-none focus:border-brand-cyan/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                />
-                                                <div className="absolute right-1 flex flex-col h-[80%] my-auto justify-center space-y-[1px] border-neutral-700/50 border-l pl-0.5">
-                                                    <Button variant="ghost" type="button"
-                                                        onClick={() => setMockupCount(Math.min(mockupCount + 1, 4))}
-                                                        className="flex items-center justify-center p-0.5 rounded-sm hover:bg-neutral-700/50 text-neutral-500 hover:text-neutral-200 transition-colors"
-                                                    >
-                                                        <ChevronUp size={10} />
-                                                    </Button>
-                                                    <Button variant="ghost" type="button"
-                                                        onClick={() => setMockupCount(Math.max(mockupCount - 1, 1))}
-                                                        className="flex items-center justify-center p-0.5 rounded-sm hover:bg-neutral-700/50 text-neutral-500 hover:text-neutral-200 transition-colors"
-                                                    >
-                                                        <ChevronDown size={10} />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
 
                                     {aspectRatio && setAspectRatio && (
                                         <div className="space-y-1">
