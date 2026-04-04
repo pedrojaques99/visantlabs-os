@@ -464,7 +464,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         {isAnalyzing && (
           <div className="px-3 py-2.5 bg-brand-cyan/10 border border-brand-cyan/20 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="p-1.5 rounded-full bg-brand-cyan/20 animate-pulse">
+              <div className="p-1.5 rounded-full bg-brand-cyan/20">
                 <GlitchLoader size={12} color="brand-cyan" />
               </div>
               <span className="text-[10px] font-mono text-brand-cyan uppercase font-bold">Analysis in progress...</span>

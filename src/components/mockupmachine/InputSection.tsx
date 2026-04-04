@@ -263,7 +263,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 e.stopPropagation();
                 onAddRef();
               }}
-              className="flex flex-col items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white delay-75"
+              className="flex flex-col items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white"
             >
               <div className="p-3 rounded-full bg-white/10 border border-white/20 group-hover:bg-brand-cyan group-hover:text-black transition-all shadow-xl">
                 <Plus size={20} />
@@ -357,7 +357,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             {!displayImage && (
               <label
                 htmlFor="image-upload-blank"
-                className="cursor-pointer px-3 h-8 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-md transition-all text-brand-cyan flex items-center gap-2 animate-pulse"
+                className="cursor-pointer px-3 h-8 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-md transition-all text-brand-cyan flex items-center gap-2"
               >
                 <Plus size={12} />
                 <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">UPLOAD</MicroTitle>

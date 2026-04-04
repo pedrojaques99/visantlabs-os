@@ -193,7 +193,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
               <GlitchLoader size={14} color="brand-cyan" />
-              <span className="animate-pulse">{t('canvasNodes.upscaleNode.upscaling') || 'Upscaling...'}</span>
+              <span>{t('canvasNodes.upscaleNode.upscaling') || 'Upscaling...'}</span>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">

@@ -828,7 +828,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     // Use uniqueId if provided (for batch requests), otherwise use 'single' for single-image requests
     const batchId = req.body.uniqueId !== undefined ? String(req.body.uniqueId) : 'single';
     lockKey = `credit-deduction-${req.userId}-${model}-${resolution || 'default'}-${promptHash}-${batchId}`;
-    const lockExpiry = new Date(Date.now() + 30000); // 30 seconds lock (increased from 10s to handle longer generation times)
+    const lockExpiry = new Date(Date.now() + 30000); // 30 seconds lock
 
     console.log(`${logPrefix} [LOCK] Checking for existing locks`, {
       userId: req.userId,

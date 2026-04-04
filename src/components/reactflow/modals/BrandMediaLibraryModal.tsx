@@ -151,7 +151,7 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
         {isLoading ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4">
             <Loader2 className="animate-spin text-brand-cyan" size={32} />
-            <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest animate-pulse">Syncing Brand DNA...</p>
+            <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">Syncing Brand DNA...</p>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">

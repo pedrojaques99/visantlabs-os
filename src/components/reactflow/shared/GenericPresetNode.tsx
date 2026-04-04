@@ -265,7 +265,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                         {isLoading ? (
                             <div className="flex items-center justify-center gap-2">
                                 <GlitchLoader size={14} color="brand-cyan" />
-                                <span className="animate-pulse">{t(config.translationKeys.generating) || 'Generating...'}</span>
+                                <span>{t(config.translationKeys.generating) || 'Generating...'}</span>
                             </div>
                         ) : (
                             <div className="flex items-center justify-center gap-2">

@@ -1033,7 +1033,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                       <div className="space-y-6">
                         <div className="flex items-center justify-between pl-1">
                           <h4 className="text-[10px] font-mono uppercase tracking-[0.3em] text-brand-cyan flex items-center gap-3">
-                            <span className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse" />
+                            <span className="w-2 h-2 rounded-full bg-brand-cyan" />
                             {generatedVariations.length > 0 ? "Visual Variations Suite" : "Generated Visual Synthesis"}
                           </h4>
                           <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">

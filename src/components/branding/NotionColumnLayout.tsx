@@ -380,7 +380,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                 }} />
               </div>
             </div>
-            <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl animate-pulse" />
+            <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl" />
           </div>
         )}
 
@@ -435,7 +435,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                             }} />
                           </div>
                         </div>
-                        <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl animate-pulse" />
+                        <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl" />
                       </>
                     )}
                     {!isDropTargetBefore && isDraggingToFullWidth && draggedStepNumber !== null && (
@@ -485,7 +485,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                               }} />
                             </div>
                           </div>
-                          <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl animate-pulse" />
+                          <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl" />
                         </>
                       )}
                       {!isDropTargetAfter && isDraggingToFullWidth && draggedStepNumber !== null && (
@@ -845,7 +845,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
             <div className={`flex-1 flex items-center justify-center text-sm font-mono ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
               }`}>
               <div className="text-center space-y-3">
-                <div className="text-brand-cyan text-2xl font-semibold animate-pulse">+</div>
+                <div className="text-brand-cyan text-2xl font-semibold">+</div>
                 <div className="text-sm font-medium text-brand-cyan">Nova coluna</div>
                 <div className="text-xs opacity-70">Solte aqui para criar</div>
               </div>

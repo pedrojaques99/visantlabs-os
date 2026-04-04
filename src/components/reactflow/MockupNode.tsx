@@ -772,7 +772,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
               <GlitchLoader size={14} color="brand-cyan" />
-              <span className="animate-pulse">{t('canvasNodes.mockupNode.generating')}</span>
+              <span>{t('canvasNodes.mockupNode.generating')}</span>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">

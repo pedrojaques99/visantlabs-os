@@ -2027,6 +2027,8 @@
     "selectVibe": "Please select a style before generating.",
     "switchToExpert": "EXPERT MODE",
     "vibeSelect": "CHOOSE THE STYLE (VIBE)",
+    "scenarioDetails": "SCENARIO DETAILS",
+    "scenarioPlaceholder": "Ex: On top of a mountain, sunset lighting, cinematic style...",
     "aiSuggested": "AI Suggested:",
     "aiSuggestions": "AI Suggestions:",
     "allCategories": "ALL_CATEGORIES",

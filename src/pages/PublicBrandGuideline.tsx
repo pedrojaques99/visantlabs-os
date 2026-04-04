@@ -160,7 +160,7 @@ export const PublicBrandGuideline: React.FC = () => {
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 flex flex-col items-center gap-4">
           <GlitchLoader size={40} />
-          <MicroTitle className="text-neutral-600 animate-pulse uppercase tracking-[0.2em]">Decrypting Brand Assets</MicroTitle>
+          <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em]">Decrypting Brand Assets</MicroTitle>
         </motion.div>
       </div>
     );
@@ -259,7 +259,7 @@ export const PublicBrandGuideline: React.FC = () => {
           className="mb-20 text-center"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-cyan/5 border border-brand-cyan/10 text-brand-cyan text-[10px] font-mono uppercase tracking-[0.25em] mb-6 shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.05)]">
-            <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
+            <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
             Brand DNA
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight font-manrope">{brandName}</h1>

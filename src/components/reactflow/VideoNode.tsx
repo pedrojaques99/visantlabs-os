@@ -567,7 +567,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
               <GlitchLoader size={14} color="brand-cyan" />
-              <span className="animate-pulse">{t('canvasNodes.videoNode.generating') || 'Generating...'}</span>
+              <span>{t('canvasNodes.videoNode.generating') || 'Generating...'}</span>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">

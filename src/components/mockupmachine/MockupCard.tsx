@@ -158,7 +158,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
 
             {isLoading && !isRedrawing && !!base64Image && (
                 <div className="absolute inset-0 flex items-center justify-center bg-neutral-950/20 backdrop-blur-[2px]">
-                    <ImageIcon size={40} className="text-white/20 animate-pulse" />
+                    <ImageIcon size={40} className="text-white/20" />
                 </div>
             )}
 

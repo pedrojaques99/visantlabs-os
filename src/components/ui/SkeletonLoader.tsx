@@ -15,7 +15,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   className = '',
   variant = 'rectangular',
 }) => {
-  const baseClasses = 'animate-pulse bg-neutral-800/50 rounded';
+  const baseClasses = 'bg-neutral-800/50 rounded';
 
   const variantClasses = {
     text: 'h-4',

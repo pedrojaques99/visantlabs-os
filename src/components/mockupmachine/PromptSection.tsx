@@ -253,7 +253,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           <div className="flex items-center gap-2 animate-fade-in">
             {isPromptReady ? (
                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
-                 <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                 <div className="w-1 h-1 rounded-full bg-emerald-500" />
                  <span className="text-[9px] font-mono text-emerald-400 uppercase tracking-wider">{t('mockup.promptSynced')}</span>
                </div>
             ) : (
