@@ -6,7 +6,7 @@ import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { MicroTitle } from '../ui/MicroTitle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
-import { Gem, Wand2, ChevronRight, Zap, Settings2, Sparkles } from 'lucide-react';
+import { Gem, Wand2, ChevronRight, Zap, Settings2, Diamond } from 'lucide-react';
 import { toast } from 'sonner';
 import { SurpriseMeControl } from './SurpriseMeControl';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -140,7 +140,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
       <section className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
-            <Sparkles size={16} className="text-brand-cyan/80" />
+            <Diamond size={16} className="text-brand-cyan/80" />
           </div>
           <MicroTitle className="text-neutral-200">
             {t('mockup.scenarioDetails') || 'DETALHES DO CENÁRIO'}

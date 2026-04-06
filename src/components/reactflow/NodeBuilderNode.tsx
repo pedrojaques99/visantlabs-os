@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, memo, useCallback } from 'react';
 import { type NodeProps } from '@xyflow/react';
 import {
-  Blocks, Sparkles, CheckCircle2, RotateCcw, Send,
+  Blocks, Diamond, CheckCircle2, RotateCcw, Send,
   Wand2, Grid3x3, GitBranch, Zap, MessageSquare, Plus,
   ChevronRight, Brain, Cpu, Layers
 } from 'lucide-react';
@@ -24,7 +24,7 @@ const CATEGORIES = [
   { 
     id: 'gen', 
     name: 'Generation', 
-    icon: Sparkles, 
+    icon: Diamond, 
     color: 'var(--brand-cyan)',
     hints: [
       'Create 4 unique product concepts',

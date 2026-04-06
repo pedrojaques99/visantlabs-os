@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ExternalLink, Lock, Eye, EyeOff, Sparkles, AlertTriangle } from 'lucide-react';
+import { ExternalLink, Lock, Eye, EyeOff, Diamond, AlertTriangle } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { saveGeminiApiKey, deleteGeminiApiKey, hasGeminiApiKey, saveSeedreamApiKey, deleteSeedreamApiKey, hasSeedreamApiKey } from '@/services/userSettingsService';
 import { toast } from 'sonner';
@@ -151,7 +151,7 @@ export const ApiSettings: React.FC = () => {
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-md bg-gradient-to-br from-brand-cyan/10 to-blue-500/10 border border-brand-cyan/20 flex items-center justify-center shadow-lg shadow-brand-cyan/5">
-                                <Sparkles size={24} className="text-brand-cyan" />
+                                <Diamond size={24} className="text-brand-cyan" />
                             </div>
                             <div>
                                 <CardTitle className="text-xl font-bold font-manrope text-neutral-100 mb-1">
@@ -280,7 +280,7 @@ export const ApiSettings: React.FC = () => {
                     <div className="pt-6 border-t border-neutral-800/50 space-y-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Sparkles size={16} className="text-violet-400" />
+                                <Diamond size={16} className="text-violet-400" />
                                 <h3 className="text-lg font-bold font-manrope text-neutral-200">
                                     Seedream (APIFree.ai)
                                 </h3>

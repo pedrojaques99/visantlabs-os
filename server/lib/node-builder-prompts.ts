@@ -36,7 +36,7 @@ Your mission is to help the user design a "Custom Node" — a specialized canvas
 ## Rules
 - When ready, respond ONLY with a JSON object. No markdown, no prose.
 - The \`id\` must always be "USE_UUID_PLACEHOLDER".
-- Icons: Choose the best-fitting Lucide icon (Sparkles, Wand2, Grid3x3, Layers, GitBranch, Repeat2, Zap, Palette, etc.).
+- Icons: Choose the best-fitting Lucide icon (Diamond, Wand2, Grid3x3, Layers, GitBranch, Repeat2, Zap, Palette, etc.).
 
 {
   "type": "definition",

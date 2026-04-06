@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Plus, ChevronDown, ChevronUp, Dices, MapPin, Camera, Lightbulb, Sparkles, Layers, XCircle, FilePlus } from 'lucide-react';
+import { X, Plus, ChevronDown, ChevronUp, Dices, MapPin, Camera, Lightbulb, Diamond, Layers, XCircle, FilePlus } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { translateTag } from '@/utils/localeUtils';
@@ -448,7 +448,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         isSurpriseMeMode={isSurpriseMeMode}
         poolTags={effectPool}
         onPoolToggle={onEffectPoolToggle}
-        icon={<Sparkles size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
+        icon={<Diamond size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
       />
       {designType === 'logo' && (
         <CollapsableTagSection

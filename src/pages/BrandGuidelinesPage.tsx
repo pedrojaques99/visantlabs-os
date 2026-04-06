@@ -180,7 +180,12 @@ export const BrandGuidelinesPage: React.FC = () => {
     }, []);
 
     return (
-        <div className="brand-guidelines-root">
+        <div 
+            className="brand-guidelines-root"
+            data-vsn-page="brand-guidelines"
+            data-vsn-component="brand-explorer"
+            data-vsn-selected-id={selectedId}
+        >
             <SEO
                 title={t('brandGuidelines.seoTitle')}
                 description={t('brandGuidelines.seoDescription')}
@@ -190,7 +195,12 @@ export const BrandGuidelinesPage: React.FC = () => {
             <div className="min-h-screen bg-transparent relative z-10 flex">
                 {/* Desktop Sidebar */}
                 {!isLoading && guidelines.length > 0 && (
-                    <aside className="hidden lg:flex flex-col fixed top-10 md:top-14 left-0 bottom-0 w-[260px] xl:w-[280px] border-r border-white/10 bg-neutral-950/80 backdrop-blur-xl z-30">
+                    <aside 
+                        role="navigation"
+                        aria-label="Brand Guidelines Selection"
+                        className="hidden lg:flex flex-col fixed top-10 md:top-14 left-0 bottom-0 w-[260px] xl:w-[280px] border-r border-white/10 bg-neutral-950/80 backdrop-blur-xl z-30"
+                        data-vsn-region="sidebar"
+                    >
                         <GuidelinesSidebar
                             guidelines={guidelines}
                             selectedId={selectedId}
@@ -203,10 +213,15 @@ export const BrandGuidelinesPage: React.FC = () => {
                 )}
 
                 {/* Main Content Area */}
-                <main className={cn(
-                    "flex-1 w-full min-h-screen transition-all duration-300",
-                    !isLoading && guidelines.length > 0 ? "lg:ml-[260px] xl:ml-[280px]" : ""
-                )}>
+                <main 
+                    role="main"
+                    aria-label="Brand Guideline Content"
+                    className={cn(
+                        "flex-1 w-full min-h-screen transition-all duration-300",
+                        !isLoading && guidelines.length > 0 ? "lg:ml-[260px] xl:ml-[280px]" : ""
+                    )}
+                    data-vsn-region="content"
+                >
                     <div className={cn(
                         "mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16",
                         !isLoading && guidelines.length > 0 ? "max-w-5xl" : "max-w-7xl"

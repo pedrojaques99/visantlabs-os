@@ -314,18 +314,7 @@ class BrandModule {
     document.querySelectorAll('.collapsible-header').forEach(header => {
       header.addEventListener('click', () => {
         const section = header.closest('.collapsible');
-        const isCollapsed = section?.classList.contains('collapsed');
-        
-        // Aggressive Accordion: Close others in the same group
-        if (isCollapsed) {
-          const group = section.closest('.figma-prop-panel') || section.parentElement;
-          group.querySelectorAll('.collapsible').forEach(s => {
-            if (s !== section) s.classList.add('collapsed');
-          });
-          section.classList.remove('collapsed');
-        } else {
-          section?.classList.add('collapsed');
-        }
+        section?.classList.toggle('collapsed');
       });
     });
   }
@@ -517,7 +506,7 @@ class BrandModule {
     // Listen for available components (for UI component selectors)
     eventBus.on('context:components-loaded', (components) => {
       setState('availableComponents', components);
-      this.renderComponentSelects(components);
+      this.renderComponentsGrid();
     });
 
     // Listen for component capture result

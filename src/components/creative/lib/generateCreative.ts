@@ -14,9 +14,11 @@ interface GenerateInput {
   prompt: string;
   format: CreativeFormat;
   guideline: BrandGuideline | null;
+  brandId?: string | null;
   modelId?: string;
   provider?: string;
   resolution?: string;
+  existingBackgroundUrl?: string | null;
 }
 
 interface GenerateOutput {
@@ -29,9 +31,11 @@ export async function generateCreative({
   prompt,
   format,
   guideline,
+  brandId,
   modelId,
   provider,
   resolution,
+  existingBackgroundUrl,
 }: GenerateInput): Promise<GenerateOutput> {
   // 1. Ask backend for structured creative plan
   const brandContext = guideline
@@ -41,6 +45,7 @@ export async function generateCreative({
         fonts: (guideline.typography ?? []).map((t) => t.family).filter(Boolean),
         voice: guideline.guidelines?.voice,
         keywords: Object.values(guideline.tags ?? {}).flat(),
+        hasLogos: (guideline.logos ?? []).length > 0,
       }
     : undefined;
 
@@ -51,7 +56,7 @@ export async function generateCreative({
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
     },
-    body: JSON.stringify({ prompt, format, brandContext }),
+    body: JSON.stringify({ prompt, format, brandContext, brandId: brandId ?? undefined }),
   });
 
   if (!planResp.ok) {
@@ -61,27 +66,32 @@ export async function generateCreative({
 
   const plan = (await planResp.json()) as CreativeAIResponse;
 
-  // 2. Generate background image via mockupApi (centralized backend generation)
-  const bgPrompt = plan.background?.prompt ?? prompt;
-  const result = await mockupApi.generate({
-    promptText: bgPrompt,
-    model: modelId || 'gemini-3.1-flash-image-preview',
-    provider: (provider as any) || 'gemini',
-    resolution,
-    aspectRatio: format,
-    feature: 'canvas',
-  });
-
-  const base64 = result.imageBase64;
-  if (!base64 && !result.imageUrl) {
-    throw new Error('No image generated for creative background');
-  }
-
-  // 3. Upload to R2 (so dom-to-image-more can load via CORS)
-  const backgroundUrl = result.imageUrl || await canvasApi.uploadImageToR2(`data:image/png;base64,${base64}`);
+  // 2. Resolve background image
+  let backgroundUrl = existingBackgroundUrl || '';
 
   if (!backgroundUrl) {
-    throw new Error('Failed to upload background image to R2');
+    // Generate background image via mockupApi (centralized backend generation)
+    const bgPrompt = plan.background?.prompt ?? prompt;
+    const result = await mockupApi.generate({
+      promptText: bgPrompt,
+      model: modelId || 'gemini-3.1-flash-image-preview',
+      provider: (provider as any) || 'gemini',
+      resolution,
+      aspectRatio: format,
+      feature: 'canvas',
+    });
+
+    const base64 = result.imageBase64;
+    if (!base64 && !result.imageUrl) {
+      throw new Error('No image generated for creative background');
+    }
+
+    // 3. Upload to R2 (so dom-to-image-more can load via CORS)
+    backgroundUrl = result.imageUrl || await canvasApi.uploadImageToR2(`data:image/png;base64,${base64}`);
+
+    if (!backgroundUrl) {
+      throw new Error('Failed to upload background image to R2');
+    }
   }
 
   // 4. Resolve logo layers — replace any logo placeholder with actual brand logo URL

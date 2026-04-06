@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Palette, Type, Box, LayoutGrid, Copy, Check, Home, Sparkles, ChevronLeft, ChevronRight, Users, Search, Command } from 'lucide-react';
+import { Palette, Type, Box, LayoutGrid, Copy, Check, Home, Diamond, ChevronLeft, ChevronRight, Users, Search, Command } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
@@ -568,7 +568,7 @@ export const DesignSystemPage: React.FC = () => {
                     <Card className="overflow-hidden">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <Sparkles className="w-5 h-5 text-brand-cyan" />
+                          <Diamond className="w-5 h-5 text-brand-cyan" />
                           {t('designSystem.home.welcome') || 'Welcome to the Design System'}
                         </CardTitle>
                         <CardDescription>

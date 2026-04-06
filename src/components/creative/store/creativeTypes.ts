@@ -3,7 +3,7 @@ export type CreativeFormat = '1:1' | '9:16' | '16:9' | '4:5';
 export interface TextLayerData {
   type: 'text';
   content: string;        // supports <accent>word</accent>
-  role: 'headline' | 'subheadline' | 'body';
+  role: 'headline' | 'subheadline' | 'body' | 'custom';
   position: { x: number; y: number };  // 0-1 normalized (top-left origin)
   size: { w: number; h: number };      // 0-1 normalized
   align: 'left' | 'center' | 'right';
@@ -28,7 +28,14 @@ export interface ShapeLayerData {
   size: { w: number; h: number };
 }
 
-export type CreativeLayerData = TextLayerData | LogoLayerData | ShapeLayerData;
+export interface GroupLayerData {
+  type: 'group';
+  children: string[];      // IDs of child layers
+  position: { x: number; y: number };
+  size: { w: number; h: number };
+}
+
+export type CreativeLayerData = TextLayerData | LogoLayerData | ShapeLayerData | GroupLayerData;
 
 export interface CreativeLayer {
   id: string;
@@ -51,3 +58,10 @@ export interface CreativeAIResponse {
 }
 
 export type CreativeStatus = 'setup' | 'generating' | 'editing';
+
+export type CreativeTool = 'select' | 'lasso';
+
+export type BackgroundLayerData = {
+  type: 'background';
+  url: string | null;
+};

@@ -38,7 +38,7 @@ body {
 }
 
 .icon-text-btn:active {
-    transform: scale(0.95);
+    opacity: 0.8;
 }
 
 h2 {
@@ -76,8 +76,7 @@ h2 {
 }
 
 .selection-indicator .selection-thumb:hover {
-    transform: scale(3.5) translateX(15px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     z-index: 100;
 }
 
@@ -164,13 +163,12 @@ button {
 }
 
 button:active, .figma-icon-btn:active {
-    transform: scale(0.97);
+    opacity: 0.8;
 }
 
 .figma-icon-btn.highlighted {
     color: var(--figma-color-text-brand, #0d99ff) !important;
     background: var(--figma-color-bg-brand-tertiary, #e5f4ff) !important;
-    animation: pulse-brand 2s infinite;
 }
 
 @keyframes pulse-brand {
@@ -669,13 +667,12 @@ button.secondary:hover {
     border-radius: 6px !important;
     border: 2px solid var(--figma-color-border, #e5e5e5) !important;
     cursor: pointer;
-    transition: border-color 0.15s, transform 0.1s;
+    transition: border-color 0.15s;
     position: relative;
 }
 
 .color-swatch:hover {
     border-color: var(--figma-color-text-secondary, #808080) !important;
-    transform: scale(1.08);
 }
 
 .color-swatch.selected {
@@ -1572,7 +1569,6 @@ label {
 .chat-pill.active {
     border-color: var(--figma-color-border-brand, #0d99ff) !important;
     color: var(--figma-color-text-brand, #0d99ff) !important;
-    animation: brand-pulse 2s infinite ease-in-out;
 }
 
 @keyframes brand-pulse {
@@ -2165,8 +2161,8 @@ label {
 }
 
 @keyframes message-appear {
-    from { opacity: 0; transform: translateY(8px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .chat-message.user {
@@ -2404,8 +2400,8 @@ label {
 }
 
 @keyframes modal-pop {
-    from { opacity: 0; transform: scale(0.9) translateY(4px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal-header {
@@ -2511,7 +2507,7 @@ label {
 }
 
 .figma-prop-row:active {
-    transform: translateX(2px);
+    background: var(--figma-color-bg-pressed, #e5e5e5);
 }
 
 .figma-prop-label {
@@ -2571,7 +2567,6 @@ label {
 }
 
 .figma-icon-btn:active {
-    transform: scale(0.9);
     background: var(--figma-color-bg-pressed, #e5e5e5) !important;
 }
 
@@ -2639,8 +2634,8 @@ label {
 }
 
 @keyframes save-pulse {
-    from { opacity: 0.5; transform: scale(0.85); }
-    to { opacity: 1; transform: scale(1.1); }
+    from { opacity: 0.5; }
+    to { opacity: 1; }
 }
 
 /* ── Mentions Autocomplete ── */
@@ -3298,7 +3293,6 @@ button.secondary.loading .spinner {
 }
 
 .color-item-row:hover {
-    transform: translateY(-2px);
     border-color: var(--figma-color-border-brand, #0d99ff);
     z-index: 10;
 }
@@ -3561,11 +3555,6 @@ button.secondary.loading .spinner {
     border-radius: 6px;
     background: var(--figma-color-bg, #fff);
     cursor: pointer;
-    transition: transform 0.15s;
-}
-
-.shadow-preview:hover {
-    transform: scale(1.1);
 }
 
 .shadow-preview.sm {
@@ -3873,8 +3862,8 @@ button.secondary.loading .spinner {
 .toast.warning { background: var(--figma-color-bg-warning, #ff9800); }
 
 @keyframes toast-in {
-    from { transform: translateY(20px) scale(0.95); opacity: 0; }
-    to { transform: translateY(0) scale(1); opacity: 1; }
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 .toast.fade-out {
@@ -4109,7 +4098,6 @@ button.secondary.loading .spinner {
 .quick-action-btn:hover {
     background: var(--figma-color-bg-hover, #f5f5f5) !important;
     border-color: var(--figma-color-border-strong, #cccccc) !important;
-    transform: translateY(-1px);
 }
 
 .quick-action-btn svg {

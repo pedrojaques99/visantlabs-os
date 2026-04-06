@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Download, Edit2, Trash2, Heart, LayoutGrid, Box, Settings, Palette, Sparkles, Image as ImageIcon, Camera, Layers, MapPin, Sun, Check, Clipboard } from 'lucide-react';
+import { Copy, Download, Edit2, Trash2, Heart, LayoutGrid, Box, Settings, Palette, Diamond, Image as ImageIcon, Camera, Layers, MapPin, Sun, Check, Clipboard } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import { authService } from '../services/authService';
@@ -12,7 +12,7 @@ export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string;
   '3d': { icon: Box, color: 'text-purple-400', label: '3D' },
   'presets': { icon: Settings, color: 'text-blue-400', label: 'Presets' },
   'aesthetics': { icon: Palette, color: 'text-pink-400', label: 'Aesthetics' },
-  'themes': { icon: Sparkles, color: 'text-amber-400', label: 'Themes' },
+  'themes': { icon: Diamond, color: 'text-amber-400', label: 'Themes' },
   'mockup': { icon: ImageIcon, color: 'text-blue-400', label: 'Mockup' },
   'angle': { icon: Camera, color: 'text-cyan-400', label: 'Angle' },
   'texture': { icon: Layers, color: 'text-green-400', label: 'Texture' },

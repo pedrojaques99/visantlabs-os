@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Instagram, Youtube, Twitter, Globe, User, ImageIcon, Sparkles, Edit, Workflow, Play, Heart, Share2 } from 'lucide-react';
+import { Instagram, Youtube, Twitter, Globe, User, ImageIcon, Diamond, Edit, Workflow, Play, Heart, Share2 } from 'lucide-react';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { FullScreenViewer } from '../components/FullScreenViewer';
@@ -511,7 +511,7 @@ export const CommunityProfilePage: React.FC = () => {
                     </Badge>
                   </TabsTrigger>
                   <TabsTrigger value="presets" className="gap-2">
-                    <Sparkles size={14} />
+                    <Diamond size={14} />
                     Presets
                     <Badge variant="secondary" className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5">
                       {allPresets.length}
@@ -675,7 +675,7 @@ export const CommunityProfilePage: React.FC = () => {
               <TabsContent value="presets" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                 {allPresets.length === 0 ? (
                   <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-neutral-800/50 rounded-xl border-dashed">
-                    <Sparkles size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
+                    <Diamond size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
                     <h2 className="text-lg font-semibold font-mono uppercase text-neutral-500 mb-2">
                       No presets yet
                     </h2>
@@ -702,7 +702,7 @@ export const CommunityProfilePage: React.FC = () => {
                               />
                             ) : (
                               <div className="absolute inset-0 flex items-center justify-center">
-                                <Sparkles size={32} className="text-neutral-700" />
+                                <Diamond size={32} className="text-neutral-700" />
                               </div>
                             )}
                             <div className="absolute bottom-2 right-2">

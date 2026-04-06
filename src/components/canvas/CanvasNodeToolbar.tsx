@@ -8,7 +8,6 @@ import {
   Dna,
   Upload,
   FileText as FileTextIcon,
-  Sparkles,
   MessageSquare,
   ChevronLeft,
   ChevronRight,

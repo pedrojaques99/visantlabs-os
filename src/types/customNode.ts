@@ -118,7 +118,7 @@ export interface CustomNodeDefinition {
   id: string;
   name: string;
   description: string;
-  iconName: string;               // Lucide icon name e.g. 'Layers', 'Sparkles'
+  iconName: string;               // Lucide icon name e.g. 'Layers', 'Diamond'
   inputs: CustomNodeHandle[];
   behaviorConfig: BehaviorConfig;
   savedToDb?: boolean;

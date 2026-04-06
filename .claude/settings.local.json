@@ -92,7 +92,8 @@
       "Skill(gsd:debug)",
       "Read(//c/Users/Usuario/.claude/plugins/cache/claude-plugins-official/superpowers/**)",
       "Read(//c/Users/Usuario/.claude/plugins/**)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

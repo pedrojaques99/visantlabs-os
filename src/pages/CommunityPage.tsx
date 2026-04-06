@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Globe, Sparkles, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette, FolderOpen, Wand2, Figma } from 'lucide-react';
+import { Globe, Diamond, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette, FolderOpen, Wand2, Figma } from 'lucide-react';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
 import { useLayout } from '@/hooks/useLayout';
@@ -275,7 +275,7 @@ export const CommunityPage: React.FC = () => {
     { type: '3d', icon: Box, label: t('communityPresets.categories.3d'), count: stats['3d'], presets: categoryPresets['3d'] },
     { type: 'presets', icon: Settings, label: t('communityPresets.categories.presets'), count: stats.presets, presets: categoryPresets.presets },
     { type: 'aesthetics', icon: Palette, label: t('communityPresets.categories.aesthetics'), count: stats.aesthetics, presets: categoryPresets.aesthetics },
-    { type: 'themes', icon: Sparkles, label: t('communityPresets.categories.themes'), count: stats.themes, presets: categoryPresets.themes },
+    { type: 'themes', icon: Diamond, label: t('communityPresets.categories.themes'), count: stats.themes, presets: categoryPresets.themes },
     // AI-generated prompts
     { type: 'ui-prompts', icon: Wand2, label: 'UI Prompts', count: stats['ui-prompts'], presets: categoryPresets['ui-prompts'] },
     { type: 'figma-prompts', icon: Figma, label: 'Figma Prompts', count: stats['figma-prompts'], presets: categoryPresets['figma-prompts'] },
@@ -485,7 +485,7 @@ export const CommunityPage: React.FC = () => {
                 <GlassPanel padding="sm" className="bg-white/[0.02] border-white/[0.05] hover:border-brand-cyan/30 transition-colors group">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">Criações</span>
-                    <Sparkles size={14} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
+                    <Diamond size={14} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
                   </div>
                   <p className="text-3xl font-bold text-white font-mono tracking-tighter">
                     {isLoading ? '...' : (globalCommunityStats.totalPresets === 0 ? '!' : <CountUp value={globalCommunityStats.totalPresets} />)}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Wand2, Layers, Target, FileText, Plus } from 'lucide-react';
+import { Diamond, Wand2, Layers, Target, FileText, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
@@ -59,7 +59,7 @@ export const ActionDetector: React.FC<ActionDetectorProps> = ({
   return (
     <div className="mt-4 pt-3 border-t border-white/5 space-y-2.5 min-w-0">
       <MicroTitle className="text-[10px] text-brand-cyan/80 flex items-center gap-1.5 mb-2 min-w-0 uppercase tracking-wider">
-        <Sparkles size={11} className="animate-pulse text-brand-cyan shrink-0" />
+        <Diamond size={11} className="text-brand-cyan shrink-0" />
         <span className="truncate">
           {t('canvasNodes.chatNode.detectedActions') || 'Ações Sugeridas'}
         </span>

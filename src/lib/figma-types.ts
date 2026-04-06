@@ -6,6 +6,7 @@ export type SolidPaint = {
   type: 'SOLID';
   color: { r: number; g: number; b: number };
   opacity?: number;
+  variableId?: string; // Support for Figma Variables
 };
 
 export type GradientStop = {
@@ -186,6 +187,10 @@ export type FigmaOperation =
     parentNodeId?: string;
     componentKey: string;
     name?: string;
+    width?: number;
+    height?: number;
+    x?: number;
+    y?: number;
   }
   // ═══ FASE 2: Advanced Creation ═══
   | {
@@ -380,6 +385,7 @@ export type FigmaOperation =
   | { type: 'UNGROUP'; nodeId: string }
   | { type: 'DETACH_INSTANCE'; nodeId: string }
   | { type: 'DELETE_NODE'; nodeId: string }
+  | { type: 'RECOLOR_NODE'; ref?: string; nodeId?: string; props: { fills: FigmaPaint[] } }
   // ═══ FASE 4: Polish & Advanced Features ═══
   | {
     type: 'CLONE_NODE';

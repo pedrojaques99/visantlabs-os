@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { type NodeProps, type Node, useReactFlow, NodeResizer, Position } from '@xyflow/react';
-import { Image as ImageIcon, ChevronDown, ChevronUp, Plus, X, FileText, ChevronRight, Settings, Camera, Layers, MapPin, Sun, Box, Sparkles, LayoutGrid, Diamond } from 'lucide-react';
+import { Image as ImageIcon, ChevronDown, ChevronUp, Plus, X, FileText, ChevronRight, Settings, Camera, Layers, MapPin, Sun, Box, LayoutGrid, Diamond } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { MockupNodeData } from '@/types/reactFlow';
@@ -776,7 +776,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">
-              <Sparkles size={14} className="group-hover/gen:rotate-12 transition-transform" />
+              <Diamond size={14} className="group-hover/gen:rotate-12 transition-transform" />
               <span className="font-semibold tracking-tight">{t('canvasNodes.mockupNode.generateMockup')}</span>
               <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
                 <Diamond size={10} className="opacity-50 fill-current" />

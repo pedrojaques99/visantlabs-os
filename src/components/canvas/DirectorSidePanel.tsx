@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { X, Compass, Sparkles, ChevronDown, ChevronUp, MapPin, Camera, Lightbulb, Layers, Palette, Package, Wand2, FileText, Shirt, Smartphone, CupSoda, Grid3x3, Dices, Shuffle, Plus } from 'lucide-react';
+import { X, Compass, Diamond, ChevronDown, ChevronUp, MapPin, Camera, Lightbulb, Layers, Palette, Package, Wand2, FileText, Shirt, Smartphone, CupSoda, Grid3x3, Dices, Shuffle, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
@@ -574,7 +574,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   </>
                 ) : (
                   <>
-                    <Sparkles size={16} />
+                    <Diamond size={16} />
                     {t('canvasNodes.directorNode.analyze') || 'Analyze Image'}
                   </>
                 )}

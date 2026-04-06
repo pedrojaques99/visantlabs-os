@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Sparkles, Globe, Lock } from 'lucide-react';
+import { X, Diamond, Globe, Lock } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { toast } from 'sonner';
 import { authService } from '@/services/authService';
@@ -306,7 +306,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                             </>
                         ) : (
                             <>
-                                <Sparkles size={14} />
+                                <Diamond size={14} />
                                 <span>{t('canvasNodes.savePromptModal.save') || 'Save Prompt'}</span>
                             </>
                         )}

@@ -1,4 +1,4 @@
-import { Sparkles, Building2, Palmtree, Gem, Camera, Zap, Palette } from 'lucide-react';
+import { Diamond, Building2, Palmtree, Gem, Camera, Zap, Palette } from 'lucide-react';
 
 export interface MockupVibe {
   id: string;
