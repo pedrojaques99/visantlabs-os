@@ -5,6 +5,7 @@ import { ErrorBoundaryWrapper } from './components/ErrorBoundaryWrapper';
 import { GlitchLoader } from './components/ui/GlitchLoader';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { CanvasHeaderProvider } from './components/canvas/CanvasHeaderContext';
+import { ActiveBrandKitProvider } from './contexts/BrandKitContext';
 
 // Lazy load all pages for code-splitting with automatic retry
 const HomePage = lazyWithRetry(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
@@ -48,6 +49,7 @@ const ApiKeysPage = lazyWithRetry(() => import('./pages/ApiKeysPage').then(m => 
 const BrandGuidelinesPage = lazyWithRetry(() => import('./pages/BrandGuidelinesPage').then(m => ({ default: m.BrandGuidelinesPage })));
 const PublicBrandGuideline = lazyWithRetry(() => import('./pages/PublicBrandGuideline').then(m => ({ default: m.PublicBrandGuideline })));
 const BrandingExpertPage = lazyWithRetry(() => import('./pages/BrandingExpertPage').then(m => ({ default: m.BrandingExpertPage })));
+const CreatePage = lazyWithRetry(() => import('./pages/CreatePage').then(m => ({ default: m.CreatePage })));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
@@ -59,6 +61,7 @@ const App: React.FC = () => {
   return (
     <ErrorBoundaryWrapper>
       <CanvasHeaderProvider>
+        <ActiveBrandKitProvider>
         <Layout>
           <ErrorBoundaryWrapper>
             <Suspense fallback={<LoadingFallback />}>
@@ -100,6 +103,7 @@ const App: React.FC = () => {
                 <Route path="/admin/presets" element={<AdminPresetsPage />} />
                 <Route path="/admin/products" element={<AdminProductsPage />} />
                 <Route path="/admin/smart-analyzer" element={<SmartAnalyzerPage />} />
+                <Route path="/create" element={<CreatePage />} />
                 <Route path="/community" element={<CommunityPage />} />
                 <Route path="/community/presets" element={<CommunityPresetsPage />} />
                 <Route path="/profile/:identifier" element={<CommunityProfilePage />} />
@@ -108,6 +112,7 @@ const App: React.FC = () => {
             </Suspense>
           </ErrorBoundaryWrapper>
         </Layout>
+        </ActiveBrandKitProvider>
       </CanvasHeaderProvider>
     </ErrorBoundaryWrapper>
   );
