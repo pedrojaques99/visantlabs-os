@@ -16,7 +16,7 @@ import {
   AlertCircle,
   Search,
   Compass,
-  Sparkles,
+  Diamond,
   User,
   ChevronLeft,
 } from 'lucide-react';
@@ -387,12 +387,12 @@ export const PublicBrandGuideline: React.FC = () => {
                         <div key={i} className="group relative bg-[#F5F5F5] rounded-[40px] p-12 flex flex-col md:flex-row gap-12 items-center text-neutral-900 overflow-hidden min-h-[400px]">
                           <div className="w-full md:w-1/2 aspect-[3/4] rounded-2xl border-[3px] border-neutral-900 p-4 flex flex-col items-center justify-between relative bg-white shadow-xl group-hover:rotate-2 transition-transform duration-500">
                             <div className="w-full text-center border-b border-neutral-900 pb-2 flex items-center justify-between px-2">
-                              <Sparkles size={12} />
+                              <Diamond size={12} />
                               <span className="text-[10px] font-bold uppercase">{arch.name}</span>
-                              <Sparkles size={12} />
+                              <Diamond size={12} />
                             </div>
                             <div className="flex-1 flex items-center justify-center py-8">
-                              {arch.image ? <img src={arch.image} className="w-full object-contain" /> : <Sparkles size={64} className="opacity-30" />}
+                              {arch.image ? <img src={arch.image} className="w-full object-contain" /> : <Diamond size={64} className="opacity-30" />}
                             </div>
                             <div className="w-full text-center border-t border-neutral-900 pt-2 font-bold uppercase tracking-widest text-xs ">
                               {arch.name}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Position, type NodeProps, useReactFlow, NodeResizer, useNodes } from '@xyflow/react';
-import { Pickaxe, Image as ImageIcon, Wand2, Save, BookOpen, Sparkles, Palette, Diamond, Settings, ChevronRight } from 'lucide-react';
+import { Pickaxe, Image as ImageIcon, Wand2, Save, BookOpen, Palette, Diamond, Settings, ChevronRight } from 'lucide-react';
 import { SeedControl } from './shared/SeedControl';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { PromptNodeData } from '@/types/reactFlow';
@@ -29,6 +29,8 @@ import { useBrandKit } from '@/contexts/BrandKitContext';
 
 import { Tooltip } from '@/components/ui/Tooltip';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { NODE_LAYOUT } from '@/constants/nodeLayout';
+import { useBaseNode } from '@/hooks/canvas/useBaseNode';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Connection } from '@xyflow/react';
 
@@ -40,7 +42,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const nodes = useNodes();
   const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as PromptNodeData;
-  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
+  const { handleResize: baseResize, handleFitToContent: baseFitToContent } = useBaseNode(id, nodeData);
   const [prompt, setPrompt] = useState(nodeData.prompt || '');
   const [model, setModel] = useState<GeminiModel | SeedreamModel>(nodeData.model || GEMINI_MODELS.IMAGE_NB2);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(nodeData.aspectRatio || DEFAULT_ASPECT_RATIO);
@@ -334,7 +336,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     const w = Math.max(el.scrollWidth, el.offsetWidth);
     const h = Math.max(el.scrollHeight, el.offsetHeight);
     if (w > 0 && h > 0) {
-      fitToContent(id, w, 'auto', nodeData.onResize as any, undefined, h);
+      baseFitToContent(w, h);
     }
   }, 150);
 
@@ -348,15 +350,14 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     return () => ro.disconnect();
   }, [id, debouncedFitToContent]);
 
-  // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
+  // Handle resize from NodeResizer
   const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize);
-  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+    baseResize(width, height);
+  }, [baseResize]);
 
   const handleFitToContent = useCallback(() => {
-    // For prompt nodes, we set height to auto to let it grow based on prompt length
-    fitToContent(id, 'auto', 'auto', nodeData.onResize);
-  }, [id, nodeData.onResize, fitToContent]);
+    baseFitToContent();
+  }, [baseFitToContent]);
 
   const handleDuplicate = () => {
     // ReactFlow handle duplication through the internal state
@@ -408,7 +409,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       dragging={dragging}
       warning={nodeData.oversizedWarning}
       onFitToContent={handleFitToContent}
-      className="min-w-[400px]"
+      className={cn(`min-w-[${NODE_LAYOUT.PROMPT_NODE_WIDTH}px]`)}
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -419,10 +420,10 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         <NodeResizer
           color="brand-cyan"
           isVisible={selected}
-          minWidth={280}
-          minHeight={350}
-          maxWidth={2000}
-          maxHeight={2000}
+          minWidth={NODE_LAYOUT.MIN_WIDTH}
+          minHeight={NODE_LAYOUT.MIN_HEIGHT}
+          maxWidth={NODE_LAYOUT.MAX_WIDTH}
+          maxHeight={NODE_LAYOUT.MAX_HEIGHT}
           onResize={(_, { width, height }) => {
             handleResize(width, height);
           }}
@@ -437,11 +438,11 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         label={t('canvasNodes.promptNode.textInput') || 'Text'}
         className="handle-text-inverted"
         handleType="text"
-        style={{ top: '60px' }}
+        style={{ top: `${NODE_LAYOUT.HANDLE_START_TOP}px` }}
         isValidConnection={isValidConnection}
       />
 
-      {/* Image Input Handles - evenly spaced with fixed pixels */}
+      {/* Image Input Handles - evenly spaced using constants */}
       {maxHandles >= 1 && (
         <LabeledHandle
           type="target"
@@ -449,7 +450,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           id="input-1"
           label={`${t('canvasNodes.promptNode.imageInput') || 'Image'} 1`}
           handleType="image"
-          style={{ top: maxHandles === 2 ? '140px' : '120px' }}
+          style={{ top: `${NODE_LAYOUT.HANDLE_START_TOP + NODE_LAYOUT.HANDLE_SPACING}px` }}
           isValidConnection={isValidConnection}
         />
       )}
@@ -460,7 +461,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           id="input-2"
           label={`${t('canvasNodes.promptNode.imageInput') || 'Image'} 2`}
           handleType="image"
-          style={{ top: maxHandles === 2 ? '200px' : '180px' }}
+          style={{ top: `${NODE_LAYOUT.HANDLE_START_TOP + NODE_LAYOUT.HANDLE_SPACING * 2}px` }}
           isValidConnection={isValidConnection}
         />
       )}
@@ -471,7 +472,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           id="input-3"
           label={`${t('canvasNodes.promptNode.imageInput') || 'Image'} 3`}
           handleType="image"
-          style={{ top: '240px' }}
+          style={{ top: `${NODE_LAYOUT.HANDLE_START_TOP + NODE_LAYOUT.HANDLE_SPACING * 3}px` }}
           isValidConnection={isValidConnection}
         />
       )}
@@ -482,7 +483,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           id="input-4"
           label={`${t('canvasNodes.promptNode.imageInput') || 'Image'} 4`}
           handleType="image"
-          style={{ top: '300px' }}
+          style={{ top: `${NODE_LAYOUT.HANDLE_START_TOP + NODE_LAYOUT.HANDLE_SPACING * 4}px` }}
           isValidConnection={isValidConnection}
         />
       )}
@@ -621,7 +622,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               className="mt-2 space-y-1.5 overflow-hidden"
             >
               <div className="text-[10px] font-mono text-foreground/80 mb-1.5 flex items-center gap-2">
-                <Sparkles size={10} />
+                <Diamond size={10} />
                 {t('canvasNodes.promptNode.aiSuggestions') || t('canvasNodes.promptNode.suggestions')}
               </div>
               {promptSuggestions.map((suggestion, index) => (

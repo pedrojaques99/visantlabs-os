@@ -13,6 +13,8 @@ import { NodeInput } from './shared/node-input';
 import { cleanMarketResearchText } from '@/utils/brandingHelpers';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { NODE_LAYOUT } from '@/constants/nodeLayout';
+import { useBaseNode } from '@/hooks/canvas/useBaseNode';
 
 const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
   minHeight?: number;
@@ -69,7 +71,7 @@ AutoResizeTextarea.displayName = 'AutoResizeTextarea';
 export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
   const nodeData = data as StrategyNodeData;
-  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
+  const { handleResize: baseResize, handleFitToContent: baseFitToContent } = useBaseNode(id, nodeData);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(
     nodeData.expandedSections || {}
   );
@@ -949,19 +951,19 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   }, [sections, expandedSections, hasSectionData, id, nodeData]);
 
   const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize);
-  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+    baseResize(width, height);
+  }, [baseResize]);
 
   const handleFitToContent = useCallback(() => {
-    fitToContent(id, 500, 'auto', nodeData.onResize);
-  }, [id, nodeData.onResize, fitToContent]);
+    baseFitToContent();
+  }, [baseFitToContent]);
 
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="min-w-[500px] flex flex-col"
+      className={cn(`min-w-[${NODE_LAYOUT.STRATEGY_NODE_WIDTH}px] flex flex-col`)}
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
@@ -970,10 +972,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         <NodeResizer
           color="brand-cyan"
           isVisible={selected}
-          minWidth={400}
-          minHeight={800}
-          maxWidth={2000}
-          maxHeight={2000}
+          minWidth={NODE_LAYOUT.STRATEGY_NODE_WIDTH}
+          minHeight={NODE_LAYOUT.STRATEGY_NODE_MIN_HEIGHT}
+          maxWidth={NODE_LAYOUT.MAX_WIDTH}
+          maxHeight={NODE_LAYOUT.MAX_HEIGHT}
           onResize={(_, { width, height }) => {
             handleResize(width, height);
           }}

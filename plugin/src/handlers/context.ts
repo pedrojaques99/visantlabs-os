@@ -16,9 +16,11 @@ export async function notifyContextChange() {
   const selection = figma.currentPage.selection;
 
   // Build detailed selection info
-  const selectionDetails: Array<{ id: string; name: string; type: string }> = [];
+  const selectionDetails: Array<{ id: string; name: string; type: string; width: number; height: number }> = [];
   for (const node of selection) {
-    selectionDetails.push({ id: node.id, name: node.name, type: node.type });
+    const width = 'width' in node ? node.width : 0;
+    const height = 'height' in node ? node.height : 0;
+    selectionDetails.push({ id: node.id, name: node.name, type: node.type, width, height });
   }
 
   postToUI({

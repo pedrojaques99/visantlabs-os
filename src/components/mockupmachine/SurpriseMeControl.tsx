@@ -1,7 +1,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
-import { Dices, PenLine, Pickaxe, Check, Settings, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Dices, PenLine, Pickaxe, Check, Settings, Diamond, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
@@ -402,7 +402,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                 <div className="space-y-3 pb-4 border-b border-white/5">
                                     <div className="flex items-center justify-between">
                                         <MicroTitle as="h5" className="font-bold flex items-center gap-2">
-                                            <Sparkles size={12} className="text-brand-cyan" />
+                                            <Diamond size={12} className="text-brand-cyan" />
                                             {t('mockup.aiSettings') || 'MODELO & AJUSTES'}
                                         </MicroTitle>
                                         {selectedModel && (

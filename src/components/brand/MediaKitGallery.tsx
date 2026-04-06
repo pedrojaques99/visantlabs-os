@@ -3,10 +3,11 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Plus, Trash2, Loader2, Image as ImageIcon, FileText, Link2, Copy, Check } from 'lucide-react';
+import { Plus, Trash2, Loader2, Image as ImageIcon, FileText, Link2, Copy, Check, MousePointerClick } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { getProxiedUrl } from '@/utils/proxyUtils';
 
 interface MediaItem {
     id: string;
@@ -30,6 +31,8 @@ interface MediaKitGalleryProps {
     onLogosChange: (logos: LogoItem[]) => void;
     compact?: boolean;
     readOnly?: boolean;
+    onAssetClick?: (url: string, type: 'logo' | 'image') => void;
+    onAssetDragStart?: (e: React.DragEvent, url: string, type: 'logo' | 'image') => void;
 }
 
 const ACCEPTED_IMAGE_TYPES = 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml';
@@ -44,6 +47,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
     onLogosChange,
     compact = false,
     readOnly = false,
+    onAssetClick,
+    onAssetDragStart
 }) => {
     const { t } = useTranslation();
     const [isUploading, setIsUploading] = useState(false);
@@ -55,11 +60,26 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
     const mediaInputRef = useRef<HTMLInputElement>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
 
-    const toggleSelect = (id: string) => {
+    const toggleSelect = (id: string, e: React.MouseEvent) => {
+        // If onAssetClick is provided and no multi-select is happening, trigger asset click
+        if (onAssetClick && !e.shiftKey && selectedIds.size === 0) {
+            return;
+        }
+
         const next = new Set(selectedIds);
         if (next.has(id)) next.delete(id);
         else next.add(id);
         setSelectedIds(next);
+    };
+
+    const handleItemClick = (id: string, url: string, type: 'logo' | 'image', e: React.MouseEvent) => {
+        if (onAssetClick && !e.shiftKey) {
+            onAssetClick(url, type);
+            return;
+        }
+        if (!readOnly) {
+            toggleSelect(id, e);
+        }
     };
 
     const handleBulkDelete = useCallback(async () => {
@@ -135,32 +155,6 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
         }
     }, [guidelineId, readOnly, isUploading, onMediaChange, onLogosChange, t]);
 
-    const handleDeleteMedia = useCallback(async (mediaId: string) => {
-        setDeletingId(mediaId);
-        try {
-            await brandGuidelineApi.deleteMedia(guidelineId, mediaId);
-            onMediaChange(media.filter(m => m.id !== mediaId));
-            toast.success(t('mockup.mediaKit.deleteSuccess'));
-        } catch {
-            toast.error(t('mockup.mediaKit.deleteError'));
-        } finally {
-            setDeletingId(null);
-        }
-    }, [guidelineId, media, onMediaChange, t]);
-
-    const handleDeleteLogo = useCallback(async (logoId: string) => {
-        setDeletingId(logoId);
-        try {
-            await brandGuidelineApi.deleteLogo(guidelineId, logoId);
-            onLogosChange(logos.filter(l => l.id !== logoId));
-            toast.success(t('mockup.mediaKit.deleteSuccess'));
-        } catch {
-            toast.error(t('mockup.mediaKit.deleteError'));
-        } finally {
-            setDeletingId(null);
-        }
-    }, [guidelineId, logos, onLogosChange, t]);
-
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -175,8 +169,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
     const handleDragEnter = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
     const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); };
 
-    const displayedMedia = compact ? media.slice(0, 6) : media;
-    const displayedLogos = compact ? logos.slice(0, 4) : logos;
+    const displayedMedia = compact ? media.slice(0, 12) : media;
+    const displayedLogos = compact ? logos.slice(0, 12) : logos;
 
     return (
         <div className="flex flex-col gap-4 relative">
@@ -235,17 +229,19 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                 return (
                                     <div
                                         key={logo.id}
-                                        onClick={() => !readOnly && toggleSelect(logo.id)}
+                                        onClick={(e) => handleItemClick(logo.id, logo.url, 'logo', e)}
                                         className={cn(
                                             "group/logo relative aspect-square rounded-md border transition-all cursor-pointer overflow-hidden",
                                             isSelected ? "border-brand-cyan bg-brand-cyan/5 scale-[0.98]" : "border-white/5 bg-neutral-900/40"
                                         )}
                                     >
                                         <img
-                                            src={logo.url}
+                                            src={getProxiedUrl(logo.url)}
                                             alt={logo.label || logo.variant}
                                             className="w-full h-full object-contain p-2"
                                             loading="lazy"
+                                            draggable={!!onAssetDragStart}
+                                            onDragStart={(e) => onAssetDragStart?.(e, logo.url, 'logo')}
                                         />
                                         <span className={cn(
                                             "absolute bottom-0 left-0 right-0 text-[8px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase",
@@ -254,7 +250,14 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                             {logo.variant}
                                         </span>
                                         
-                                        {/* Selection Checkbox (Professional, subtle) */}
+                                        {/* Asset Click Indicator (Subtle) */}
+                                        {onAssetClick && (
+                                            <div className="absolute inset-0 bg-brand-cyan/0 group-hover/logo:bg-brand-cyan/5 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-all pointer-events-none">
+                                                <MousePointerClick size={14} className="text-brand-cyan/40" />
+                                            </div>
+                                        )}
+                                        
+                                        {/* Selection Checkbox */}
                                         {!readOnly && (
                                             <div className={cn(
                                                 "absolute top-1 left-1 w-4 h-4 rounded-full border flex items-center justify-center transition-opacity shadow-lg",
@@ -263,50 +266,15 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                                 {isSelected && <Check size={10} className="text-black" strokeWidth={4} />}
                                             </div>
                                         )}
-
-                                        <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/logo:opacity-300 transition-all duration-300">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-6 w-6 p-1 rounded bg-black/60 text-white hover:bg-black/80 hover:text-brand-cyan"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    navigator.clipboard.writeText(logo.url);
-                                                    toast.success('URL copied');
-                                                }}
-                                            >
-                                                <Copy size={10} />
-                                            </Button>
-                                        </div>
                                     </div>
                                 );
                             })}
-                            
-                            {/* Optimistic UI Placeholders */}
-                            {uploadingFiles.filter(f => f.type === 'logo').map((file, i) => (
-                                <div key={i} className="aspect-square rounded-md border border-brand-cyan/20 bg-brand-cyan/5 flex flex-col items-center justify-center gap-1 animate-pulse">
-                                    <Loader2 size={14} className="animate-spin text-brand-cyan/50" />
-                                    <span className="text-[7px] font-mono text-brand-cyan/40 uppercase truncate px-1 w-full text-center">{file.name}</span>
-                                </div>
-                            ))}
                         </div>
                     ) : (
                         <MicroTitle className="text-[10px] text-neutral-700 ">
                             {t('mockup.mediaKit.noLogos')}
                         </MicroTitle>
                     )}
-                    <Input
-                        ref={logoInputRef}
-                        type="file"
-                        accept={ACCEPTED_IMAGE_TYPES}
-                        multiple
-                        onChange={(e) => {
-                            const files = Array.from(e.target.files || []);
-                            if (files.length) handleUpload(files, 'logo');
-                            e.target.value = '';
-                        }}
-                        className="hidden"
-                    />
                 </div>
             )}
 
@@ -316,20 +284,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                     <span className="text-[10px] ">
                         {t('mockup.mediaKit.title')}
                     </span>
-                    {!readOnly && (
-                        <Button variant="ghost"
-                            type="button"
-                            onClick={() => mediaInputRef.current?.click()}
-                            disabled={isUploading}
-                            className="text-[10px] font-mono text-neutral-600 hover:text-brand-cyan transition-colors flex items-center gap-1 disabled:opacity-50"
-                        >
-                            <Plus size={10} />
-                            {t('mockup.mediaKit.addMedia')}
-                        </Button>
-                    )}
                 </div>
 
-                {/* Drop Zone + Grid */}
                 <div
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
@@ -343,14 +299,14 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                         readOnly && "border-transparent"
                     )}
                 >
-                    {(displayedMedia.length > 0 || uploadingFiles.some(f => f.type === 'media')) ? (
+                    {(displayedMedia.length > 0) ? (
                         <div className={cn("grid gap-2 p-2", compact ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4")}>
                             {displayedMedia.map((item) => {
                                 const isSelected = selectedIds.has(item.id);
                                 return (
                                     <div
                                         key={item.id}
-                                        onClick={() => !readOnly && toggleSelect(item.id)}
+                                        onClick={(e) => handleItemClick(item.id, item.url, 'image', e)}
                                         className={cn(
                                             "group/media relative aspect-[4/3] rounded-md border transition-all cursor-pointer overflow-hidden",
                                             isSelected ? "border-brand-cyan bg-brand-cyan/5 scale-[0.98]" : "border-white/5 bg-neutral-900/40"
@@ -358,10 +314,12 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                     >
                                         {item.type === 'image' ? (
                                             <img
-                                                src={item.url}
+                                                src={getProxiedUrl(item.url)}
                                                 alt={item.label || 'Media'}
                                                 className="w-full h-full object-contain p-2"
                                                 loading="lazy"
+                                                draggable={!!onAssetDragStart}
+                                                onDragStart={(e) => onAssetDragStart?.(e, item.url, 'image')}
                                             />
                                         ) : (
                                             <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-neutral-600">
@@ -371,86 +329,31 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                                 </span>
                                             </div>
                                         )}
-                                        {item.label && item.type === 'image' && (
-                                            <span className={cn(
-                                                "absolute bottom-0 left-0 right-0 text-[8px] font-mono text-neutral-400 text-center py-0.5 bg-black/60 truncate px-1",
-                                                isSelected && "bg-brand-cyan text-black font-bold"
-                                            )}>
-                                                {item.label}
-                                            </span>
-                                        )}
-
-                                        {/* Selection Checkbox */}
-                                        {!readOnly && (
-                                            <div className={cn(
-                                                "absolute top-1 left-1 w-4 h-4 rounded-full border flex items-center justify-center transition-opacity shadow-lg",
-                                                isSelected ? "bg-brand-cyan border-brand-cyan opacity-100" : "bg-black/40 border-white/20 opacity-0 group-hover/media:opacity-100"
-                                            )}>
-                                                {isSelected && <Check size={10} className="text-black" strokeWidth={4} />}
+                                        
+                                        {/* Asset Click Indicator */}
+                                        {onAssetClick && item.type === 'image' && (
+                                            <div className="absolute inset-0 bg-brand-cyan/0 group-hover/media:bg-brand-cyan/5 flex items-center justify-center opacity-0 group-hover/media:opacity-100 transition-all pointer-events-none">
+                                                <MousePointerClick size={14} className="text-brand-cyan/40" />
                                             </div>
                                         )}
 
-                                        <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/media:opacity-300 transition-all duration-300">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-6 w-6 p-1 rounded bg-black/60 text-white hover:bg-black/80 hover:text-brand-cyan"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    navigator.clipboard.writeText(item.url);
-                                                    toast.success('URL copied');
-                                                }}
-                                            >
-                                                <Copy size={10} />
-                                            </Button>
-                                        </div>
+                                        {isSelected && (
+                                            <div className={cn(
+                                                "absolute top-1 left-1 w-4 h-4 rounded-full border border-brand-cyan bg-brand-cyan flex items-center justify-center shadow-lg"
+                                            )}>
+                                                <Check size={10} className="text-black" strokeWidth={4} />
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}
-                            
-                            {/* Optimistic UI Placeholders */}
-                            {uploadingFiles.filter(f => f.type === 'media').map((file, i) => (
-                                <div key={i} className="aspect-[4/3] rounded-md border border-brand-cyan/20 bg-brand-cyan/5 flex flex-col items-center justify-center gap-1 animate-pulse">
-                                    <Loader2 size={14} className="animate-spin text-brand-cyan/50" />
-                                    <span className="text-[7px] font-mono text-brand-cyan/40 uppercase truncate px-1 w-full text-center">{file.name}</span>
-                                </div>
-                            ))}
-                        </div>
-                    ) : !readOnly ? (
-                        <div className="flex flex-col items-center justify-center py-12 gap-4 border border-dashed border-white/5 rounded-3xl bg-white/[0.01]">
-                            <div className="p-3 rounded-full bg-white/[0.02] border border-white/[0.03]">
-                                <ImageIcon size={24} strokeWidth={1} className="text-neutral-800" />
-                            </div>
-                            <div className="space-y-1 text-center">
-                                <p className="text-[10px] uppercase font-bold text-neutral-500">{t('mockup.mediaKit.vaultEmpty') || 'Vault Empty'}</p>
-                                <p className="text-[9px] text-neutral-700 font-mono">{t('mockup.mediaKit.dropHere')}</p>
-                            </div>
                         </div>
                     ) : (
-                        <p className="text-[10px] font-mono text-neutral-700  p-3 text-center">
+                        <p className="text-[10px] font-mono text-neutral-700 p-3 text-center">
                             {t('mockup.mediaKit.noMedia')}
                         </p>
                     )}
                 </div>
-
-                {compact && media.length > 6 && (
-                    <span className="text-[9px] font-mono text-neutral-600 text-center">
-                        +{media.length - 6} {t('mockup.mediaKit.more')}
-                    </span>
-                )}
-
-                <Input
-                    ref={mediaInputRef}
-                    type="file"
-                    accept={ACCEPTED_ALL_TYPES}
-                    multiple
-                    onChange={(e) => {
-                        const files = Array.from(e.target.files || []);
-                        if (files.length) handleUpload(files, 'media');
-                        e.target.value = '';
-                    }}
-                    className="hidden"
-                />
             </div>
         </div>
     );

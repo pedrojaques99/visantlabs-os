@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { ExternalLink, Github, Users, Building2, Lightbulb, Code, Info, Layers, Mail, Globe, Sparkles, ArrowRight } from 'lucide-react';
+import { ExternalLink, Github, Users, Building2, Lightbulb, Code, Info, Layers, Mail, Globe, Diamond, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';

@@ -21,7 +21,7 @@ import {
   Maximize2,
   RefreshCw,
   Type,
-  Sparkles
+  Diamond
 } from 'lucide-react';
 import { MockupCard } from '../components/mockupmachine/MockupCard';
 import { mockupApi } from '@/services/mockupApi';
@@ -813,7 +813,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                         <label className="text-xs font-semibold text-neutral-400 block pl-1">Target Dimension</label>
                         <div className="grid grid-cols-2 gap-3">
                           {[
-                            { id: 'image-gen', label: 'AI Prompt', sub: 'For image generators', icon: Sparkles },
+                            { id: 'image-gen', label: 'AI Prompt', sub: 'For image generators', icon: Diamond },
                             { id: 'figma-plugin', label: 'Plugin Data', sub: 'For Figma Code Connect', icon: Figma },
                           ].map((opt) => (
                             <button
@@ -1147,9 +1147,9 @@ export const SmartAnalyzerPage: React.FC = () => {
                                 >
                                   {isGeneratingVariations ? (
                                     <Loader2 size={12} className="mr-2 animate-spin" />
-                                  ) : (
-                                    <Sparkles size={12} className="mr-2 group-hover:scale-110 transition-transform opacity-50" />
-                                  )}
+                                    ) : (
+                                      <Diamond size={12} className="mr-2 group-hover:scale-110 transition-transform opacity-50" />
+                                    )}
                                   {isGeneratingVariations ? 'Thinking...' : 'Variações'}
                                 </Button>
 
@@ -1163,9 +1163,9 @@ export const SmartAnalyzerPage: React.FC = () => {
                                 >
                                   {isGenerating ? (
                                     <Loader2 size={12} className="mr-2 animate-spin" />
-                                  ) : (
-                                    <Sparkles size={12} className="mr-2 group-hover:rotate-12 transition-transform text-black/40" />
-                                  )}
+                                    ) : (
+                                      <Diamond size={12} className="mr-2 group-hover:rotate-12 transition-transform text-black/40" />
+                                    )}
                                   {isGenerating ? 'Envisioning...' : 'Gerar com Gemini'}
                                 </Button>
                               </div>

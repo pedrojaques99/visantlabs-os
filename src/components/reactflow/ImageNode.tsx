@@ -24,12 +24,12 @@ import { useMockupLike } from '@/hooks/useMockupLike';
 import { NodeButton } from './shared/node-button';
 import { fileToBase64, validateFile } from '@/utils/fileUtils';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { NODE_LAYOUT, NODE_TYPES } from '@/constants/nodeLayout';
+import { useBaseNode } from '@/hooks/canvas/useBaseNode';
 
 import { Input } from '@/components/ui/input'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const MAX_FIT_WIDTH = 1200;
-const GENERATING_TYPES = ['merge', 'edit', 'upscale', 'mockup', 'prompt'];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -38,7 +38,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const edges = useEdges();
   const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as ImageNodeData;
-  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
+  const { handleResize: baseResize, handleFitToContent: baseFitToContent } = useBaseNode(id, nodeData);
 
   const mockup = nodeData?.mockup ?? ({} as Mockup);
   const imageUrl = getImageUrl(mockup);
@@ -75,7 +75,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const isGenerated = imageUrl && edges?.length > 0 && nodes?.length > 0 && (() => {
     const incomingEdge = edges.find(e => e.target === id);
     const sourceNode = incomingEdge ? nodes.find(n => n.id === incomingEdge.source) : null;
-    return sourceNode ? GENERATING_TYPES.includes(sourceNode.type || '') : false;
+    return sourceNode ? (NODE_TYPES.GENERATIVE as readonly string[]).includes(sourceNode.type || '') : false;
   })();
 
   // Sync local description with node data
@@ -135,23 +135,13 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     }
   }, [imageUrl, id, nodeData]);
 
-  const handleResize = useCallback((_: any, params: { width: number }) => {
-    handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize);
-  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+  const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
+    baseResize(params.width, params.height);
+  }, [baseResize]);
 
   const handleFitToContent = useCallback(() => {
-    const { imageWidth, imageHeight } = nodeData;
-    if (!imageWidth || !imageHeight) return;
-
-    let targetWidth = imageWidth;
-    let targetHeight = imageHeight;
-    if (targetWidth > MAX_FIT_WIDTH) {
-      const ratio = MAX_FIT_WIDTH / targetWidth;
-      targetWidth = MAX_FIT_WIDTH;
-      targetHeight *= ratio;
-    }
-    fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), nodeData.onResize);
-  }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
+    baseFitToContent();
+  }, [baseFitToContent]);
 
   const handleSave = useCallback(async () => {
     if (!imageUrl || isSaving || isSaved) return;
@@ -339,10 +329,10 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         <NodeResizer
           color="brand-cyan"
           isVisible={selected}
-          minWidth={150}
-          minHeight={150}
-          maxWidth={2000}
-          maxHeight={2000}
+          minWidth={NODE_LAYOUT.MIN_WIDTH}
+          minHeight={NODE_LAYOUT.MIN_HEIGHT}
+          maxWidth={NODE_LAYOUT.MAX_WIDTH}
+          maxHeight={NODE_LAYOUT.MAX_HEIGHT}
           keepAspectRatio={true}
           onResize={handleResize}
         />

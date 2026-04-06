@@ -4,7 +4,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { expertApi, ExpertChatMessage } from '@/services/expertApi';
-import { X, Bot, Loader2, Sparkles, FileText, Image as ImageIcon, Video, Paperclip } from 'lucide-react';
+import { X, Bot, Loader2, Diamond, FileText, Image as ImageIcon, Video, Paperclip } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { authService } from '@/services/authService';
@@ -152,7 +152,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                             <div className="flex items-center justify-between p-3 md:p-4 border-b border-white/5 bg-white/5">
                                 <div className="flex items-center gap-2 md:gap-3">
                                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-brand-gradient flex items-center justify-center text-white shadow-lg shrink-0">
-                                        <Sparkles size={16} className="md:w-[20px]" />
+                                        <Diamond size={16} className="md:w-[20px]" />
                                     </div>
                                     <div className="min-w-0">
                                         <h3 className="font-semibold text-neutral-100 text-sm md:text-base truncate">Especialista em Branding</h3>

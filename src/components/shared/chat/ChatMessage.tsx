@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Bot, User, Copy, Check, Sparkles } from 'lucide-react';
+import { Bot, User, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '@/utils/markdownRenderer';
 import { Button } from '@/components/ui/button';

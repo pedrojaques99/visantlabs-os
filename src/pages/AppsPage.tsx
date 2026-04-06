@@ -12,7 +12,7 @@ import {
   BreadcrumbSeparator,
 } from "../components/ui/breadcrumb";
 import { cn } from '../lib/utils';
-import { ExternalLink, Lock, Sparkles, Zap, Image as ImageIcon, Edit3, Plus, Database, Wand2, ShieldCheck } from 'lucide-react';
+import { ExternalLink, Lock, Diamond, Zap, Image as ImageIcon, Edit3, Plus, Database, Wand2, ShieldCheck } from 'lucide-react';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -240,10 +240,10 @@ export const AppsPage: React.FC = () => {
   const CATEGORIES = useMemo(() => {
     const categories = [
       { key: 'mockup', title: 'MOCKUP LABS //', icon: Zap },
-      { key: 'design', title: t('apps.brandingTools'), icon: Sparkles },
+      { key: 'design', title: t('apps.brandingTools'), icon: Diamond },
       { key: 'effects', title: t('apps.effectsTools'), icon: ImageIcon },
       { key: 'audio', title: t('apps.audioTools'), icon: Zap },
-      { key: 'experimental', title: 'EXPERIMENTAL //', icon: Sparkles },
+      { key: 'experimental', title: 'EXPERIMENTAL //', icon: Diamond },
     ];
     // Admin-only category
     if (isAdmin) {

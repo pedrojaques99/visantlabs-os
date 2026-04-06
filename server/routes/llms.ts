@@ -19,6 +19,7 @@ router.get('/llms.txt', (req, res) => {
 
 - **Mockup Generation**: AI-generated product mockups from text prompts and images
 - **Branding Machine**: Complete brand identity generation (logos, colors, typography, guidelines)
+- **Creative Studio**: Generate layered marketing creatives (text, logos, shapes) with AI-guided layouts
 - **Brand Guidelines**: Centralized identity vault to maintain visual consistency across designs
 - **Canvas Editor**: Collaborative design canvas with real-time multiplayer
 - **Budget Machine**: AI-powered project budget estimation and planning
@@ -142,6 +143,9 @@ For older clients: \`GET /api/mcp/sse\` (deprecated, use POST /api/mcp)
 - \`brand-guidelines-get\` — Get guideline (JSON or LLM-ready prompt)
 - \`brand-guidelines-public\` — Get public guideline by slug (no auth)
 
+**Creatives** (requires auth):
+- \`creative-generate\` — Generate a structured creative plan (1 credit)
+
 **Community** (no auth required):
 - \`community-presets\` — Browse shared mockup presets
 - \`community-profiles\` — Browse public creator profiles
@@ -186,6 +190,9 @@ For older clients: \`GET /api/mcp/sse\` (deprecated, use POST /api/mcp)
 - \`PUT /api/brand-guidelines/:id\` — Update guideline
 - \`DELETE /api/brand-guidelines/:id\` — Delete guideline
 - \`GET /api/brand-guidelines/:id/context\` — Get LLM-ready context (text/json)
+
+### Creatives — \`/api/creative\`
+- \`POST /api/creative/plan\` — Generate structured creative layout with Gemini
 - \`POST /api/brand-guidelines/:id/share\` — Enable public sharing
 - \`GET /api/brand-guidelines/public/:slug\` — Public read access
 - \`GET /api/brand-guidelines/public/:slug/context\` — Public LLM context

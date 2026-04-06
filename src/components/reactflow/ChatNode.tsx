@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { Handle, Position, type NodeProps, NodeResizer, useReactFlow } from '@xyflow/react';
-import { MessageSquare, CheckCircle2, Sparkles, Settings2, PanelRight } from 'lucide-react';
+import { MessageSquare, CheckCircle2, Diamond, Settings2, PanelRight } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { ChatNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -189,7 +189,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                                 {connectedImages.length > 0 && <span className="text-[10px] bg-brand-cyan/10 text-brand-cyan px-2 rounded-full border border-brand-cyan/20">{t('canvasNodes.chatNode.images')}: {connectedImages.length}</span>}
                             </div>
                             <NodeButton variant="primary" size="xs" onClick={handleSuggestMockups} disabled={isLoading}>
-                                <Sparkles size={11} className="mr-1.5" /> {t('canvasNodes.chatNode.suggestMockups') || 'Suggest'}
+                                <Diamond size={11} className="mr-1.5" /> {t('canvasNodes.chatNode.suggestMockups') || 'Suggest'}
                             </NodeButton>
                         </div>
                     )}

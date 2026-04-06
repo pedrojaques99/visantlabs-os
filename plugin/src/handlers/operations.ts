@@ -18,6 +18,41 @@ interface SummaryItem {
  * Normalize fills to valid Figma format
  * Handles common AI-generated formats like hex strings, color objects, etc.
  */
+/**
+ * Applies Figma variables to a set of fills if variableId is present
+ */
+async function applyVariablesToFills(fills: Paint[]): Promise<Paint[]> {
+  if (!figma.variables) {
+    // Cleanup variableId even if variables API is not available
+    return fills.map(f => {
+      const copy = { ...f };
+      delete (copy as any).variableId;
+      return copy;
+    });
+  }
+  
+  const results: Paint[] = [];
+  for (const fill of fills) {
+    const variableId = (fill as any).variableId;
+    const cleanFill = { ...fill };
+    delete (cleanFill as any).variableId;
+    
+    if (fill.type === 'SOLID' && variableId) {
+      try {
+        const variable = await figma.variables.getVariableByIdAsync(variableId);
+        if (variable) {
+          results.push(figma.variables.setBoundVariableForPaint(cleanFill as SolidPaint, 'color', variable));
+          continue;
+        }
+      } catch (err) {
+        console.warn(`Failed to apply variable ${variableId} to fill:`, err);
+      }
+    }
+    results.push(cleanFill as Paint);
+  }
+  return results;
+}
+
 function normalizeFills(fills: any): Paint[] | undefined {
   if (!fills || !Array.isArray(fills)) return undefined;
 
@@ -51,6 +86,7 @@ function normalizeFills(fills: any): Paint[] | undefined {
       type: 'SOLID' as const,
       color,
       opacity: fill.opacity ?? 1,
+      variableId: fill.variableId
     };
   }).filter(Boolean) as Paint[];
 }
@@ -251,11 +287,17 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       if (props.maxHeight != null && 'maxHeight' in frame) (frame as any).maxHeight = props.maxHeight;
     }
 
-    if (props.fills) frame.fills = normalizeFills(props.fills) || [];
+    if (props.fills) {
+      const normalized = normalizeFills(props.fills) || [];
+      frame.fills = await applyVariablesToFills(normalized);
+    }
     if (props.cornerRadius != null) frame.cornerRadius = props.cornerRadius;
     if (props.cornerSmoothing != null) frame.cornerSmoothing = props.cornerSmoothing;
     if (props.clipsContent != null) frame.clipsContent = props.clipsContent;
-    if (props.strokes) frame.strokes = props.strokes as any;
+    if (props.strokes) {
+      const normalized = normalizeFills(props.strokes) || [];
+      frame.strokes = await applyVariablesToFills(normalized);
+    }
     if (props.strokeWeight != null) frame.strokeWeight = props.strokeWeight;
     if (props.opacity != null) frame.opacity = props.opacity;
 
@@ -279,7 +321,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
           frame.y = maxY + gap;
         } else if (props.autoPosition === 'grid') {
           // Grid: calcula posição baseado em linha/coluna
-          const cols = 4;
+          const cols = props.gridCols || 4;
           const idx = siblings.length;
           const col = idx % cols;
           const row = Math.floor(idx / cols);
@@ -326,9 +368,15 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     const rect = figma.createRectangle();
     rect.name = props.name || 'Retângulo';
     rect.resize(props.width > 0 ? props.width : 100, props.height > 0 ? props.height : 100);
-    if (props.fills) rect.fills = normalizeFills(props.fills) || [];
+    if (props.fills) {
+      const normalized = normalizeFills(props.fills) || [];
+      rect.fills = await applyVariablesToFills(normalized);
+    }
     if (props.cornerRadius != null) rect.cornerRadius = props.cornerRadius;
-    if (props.strokes) rect.strokes = props.strokes as any;
+    if (props.strokes) {
+      const normalized = normalizeFills(props.strokes) || [];
+      rect.strokes = await applyVariablesToFills(normalized);
+    }
     if (props.strokeWeight != null) rect.strokeWeight = props.strokeWeight;
     if (props.opacity != null) rect.opacity = props.opacity;
     if (props.effects) rect.effects = mapEffects(props.effects);
@@ -355,8 +403,14 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     const ellipse = figma.createEllipse();
     ellipse.name = props.name || 'Elipse';
     ellipse.resize(props.width > 0 ? props.width : 100, props.height > 0 ? props.height : 100);
-    if (props.fills) ellipse.fills = normalizeFills(props.fills) || [];
-    if (props.strokes) ellipse.strokes = props.strokes as any;
+    if (props.fills) {
+      const normalized = normalizeFills(props.fills) || [];
+      ellipse.fills = await applyVariablesToFills(normalized);
+    }
+    if (props.strokes) {
+      const normalized = normalizeFills(props.strokes) || [];
+      ellipse.strokes = await applyVariablesToFills(normalized);
+    }
     if (props.strokeWeight != null) ellipse.strokeWeight = props.strokeWeight;
     if (props.opacity != null) ellipse.opacity = props.opacity;
     if (props.effects) ellipse.effects = mapEffects(props.effects);
@@ -397,7 +451,10 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     text.characters = props.content || props.characters || '';
     if (props.name) text.name = props.name;
     if (props.fontSize) text.fontSize = props.fontSize;
-    if (props.fills) text.fills = normalizeFills(props.fills) || [];
+    if (props.fills) {
+      const normalized = normalizeFills(props.fills) || [];
+      text.fills = await applyVariablesToFills(normalized);
+    }
     if (props.textAlignHorizontal) text.textAlignHorizontal = props.textAlignHorizontal;
     if (props.textAlignVertical) text.textAlignVertical = props.textAlignVertical;
     if (props.textAutoResize) text.textAutoResize = props.textAutoResize;
@@ -452,8 +509,14 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     const instance = component.createInstance();
     if (op.name) instance.name = op.name;
     parent.appendChild(instance);
+    
+    // Position & Size if provided
+    if (op.width != null && op.height != null) instance.resize(op.width, op.height);
+    if (op.x != null) instance.x = op.x;
+    if (op.y != null) instance.y = op.y;
+    
     if (op.ref) createdNodes.set(op.ref, instance);
-    pushSummary(`Criado @"${instance.name}"`, instance);
+    pushSummary(`Instância de @"${instance.name}" criada`, instance);
   }
 
   // ═══ SET_FILL ═══
@@ -1228,12 +1291,55 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     }
   }
 
-  // ═══ DELETE_NODE ═══
-  else if (op.type === 'DELETE_NODE') {
-    const node = await figma.getNodeByIdAsync(op.nodeId);
+  // ═══ RECOLOR_NODE ═══
+  else if (op.type === 'RECOLOR_NODE') {
+    const node = (op.ref ? createdNodes.get(op.ref) : null)
+      ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
+    
     if (node) {
-      pushSummary(`Removido @"${node.name}"`);
-      node.remove();
+      const fills = normalizeFills(props.fills) || [];
+      await recolorRecursive(node, fills);
+      pushSummary(`Recoloring @"${(node as any).name}" recursivamente`, node as SceneNode);
+    }
+  }
+}
+
+/**
+ * Recursively changes the fill color of all vector and text nodes within a tree.
+ */
+async function recolorRecursive(node: BaseNode, fills: Paint[]) {
+  // Check if node has fills and is a graphic/text type
+  if ('fills' in node && (
+     node.type === 'VECTOR' || 
+     node.type === 'TEXT' || 
+     node.type === 'STAR' || 
+     node.type === 'LINE' || 
+     node.type === 'ELLIPSE' || 
+     node.type === 'RECTANGLE' || 
+     node.type === 'POLYGON' || 
+     node.type === 'BOOLEAN_OPERATION'
+  )) {
+    // For text, we must load the font first
+    if (node.type === 'TEXT') {
+      const font = (node as TextNode).fontName;
+      if (font && typeof font !== 'symbol') {
+        try {
+          await figma.loadFontAsync(font);
+        } catch (e) {
+          console.warn('Failed to load font for recoloring:', font);
+        }
+      }
+    }
+    try {
+      (node as any).fills = fills;
+    } catch (e) {
+      console.warn(`Failed to set fill for node type ${node.type}:`, e);
+    }
+  }
+  
+  if ('children' in node) {
+    for (const child of node.children) {
+      await recolorRecursive(child, fills);
     }
   }
 }

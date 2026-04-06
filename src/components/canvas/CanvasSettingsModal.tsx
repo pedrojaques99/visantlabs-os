@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2, Beaker, Sparkles, Link } from 'lucide-react';
+import { X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2, Beaker, Diamond, Link } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -376,7 +376,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
           {/* Brand Cyan Color Settings */}
           <div className="p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={16} className="text-neutral-400 flex-shrink-0" />
+              <Diamond size={16} className="text-neutral-400 flex-shrink-0" />
               <label className="text-xs font-mono text-neutral-300">
                 {t('canvas.brandCyanColor') || 'Brand Cyan Color'}
               </label>

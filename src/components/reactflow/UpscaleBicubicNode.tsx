@@ -1,6 +1,6 @@
 import React, { useEffect, memo, useRef, useCallback, useState } from 'react';
 import { type NodeProps, type Node, NodeResizer, useReactFlow } from '@xyflow/react';
-import { Maximize2, Download, Upload, Sparkles, Trash2, Palette, FileText, Heart } from 'lucide-react';
+import { Maximize2, Download, Upload, Diamond, Trash2, Palette, FileText, Heart } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { UpscaleBicubicNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -436,7 +436,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <Sparkles size={12} className="text-brand-cyan" />
+              <Diamond size={12} className="text-brand-cyan" />
               <span className="text-[10px] font-mono text-neutral-400 uppercase ">Sharpening</span>
             </div>
             <span className="text-[10px] font-mono text-neutral-500">{Math.round(localSharpening * 100)}%</span>

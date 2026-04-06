@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Book, Server, Puzzle, Terminal, Code, Sparkles, Layers, Workflow, Copy, Check, FileText, Bot, Coins } from 'lucide-react';
+import { Book, Server, Puzzle, Terminal, Code, Diamond, Layers, Workflow, Copy, Check, FileText, Bot, Coins } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { BreadcrumbWithBack } from '../components/ui/BreadcrumbWithBack';
 import {
@@ -388,7 +388,7 @@ export const DocsPage: React.FC = () => {
 
                       <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('brand-guidelines')}>
                         <CardHeader>
-                          <Sparkles className="w-8 h-8 text-brand-cyan mb-2" />
+                          <Diamond className="w-8 h-8 text-brand-cyan mb-2" />
                           <CardTitle>Brand Guidelines</CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -716,7 +716,7 @@ const result = await client.callTool({
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div>
-                          <h3 className="text-lg font-medium mb-3 flex items-center gap-2"><Sparkles className="w-5 h-5 text-brand-cyan" /> Capabilities</h3>
+                          <h3 className="text-lg font-medium mb-3 flex items-center gap-2"><Diamond className="w-5 h-5 text-brand-cyan" /> Capabilities</h3>
                           <ul className="space-y-2 list-none">
                             <li className="flex items-start gap-3">
                               <span className="bg-secondary text-brand-cyan p-1 rounded mt-0.5"><Puzzle className="w-4 h-4" /></span>
@@ -1522,7 +1522,7 @@ Content-Type: application/json`}</pre>
                     {/* Agent Integration */}
                     <Card id="ca-agents">
                       <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-brand-cyan" /> Agent Integration</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Diamond className="w-5 h-5 text-brand-cyan" /> Agent Integration</CardTitle>
                         <CardDescription>Complete workflow examples for LLM agents and external tools interacting with the Canvas API.</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
@@ -1762,7 +1762,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                     <Card className="bg-card border border-border">
                       <CardHeader>
                         <div className="flex items-center gap-3">
-                          <Sparkles className="h-8 w-8 text-brand-cyan" />
+                          <Diamond className="h-8 w-8 text-brand-cyan" />
                           <div>
                             <CardTitle className="text-2xl">Brand Guidelines API</CardTitle>
                             <CardDescription>Structured brand identity context for AI agents</CardDescription>

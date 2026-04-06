@@ -288,6 +288,20 @@ class UIManager {
       });
     }
 
+    const runBrandGridBtn = document.getElementById('jsonRunnerBrandGridBtn');
+    if (runBrandGridBtn) {
+      runBrandGridBtn.addEventListener('click', () => {
+        this.generateBrandGridFromSelection();
+      });
+    }
+
+    const runSocialBtn = document.getElementById('jsonRunnerSocialFramesBtn');
+    if (runSocialBtn) {
+      runSocialBtn.addEventListener('click', () => {
+        this.generateSocialBrandFrames();
+      });
+    }
+
     const jsonExecuteBtn = document.getElementById('jsonRunnerExecuteBtn');
     if (jsonExecuteBtn) {
       jsonExecuteBtn.addEventListener('click', () => {
@@ -1139,13 +1153,400 @@ class UIManager {
    * Escape HTML
    */
   escapeHtml(text) {
-    if (typeof text !== 'string') return '';
     return text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  }
+
+  /**
+   * Generates a professional Brand Grid from current selection
+   * Based on the user's reference image
+   */
+  async generateBrandGridFromSelection() {
+    const selection = getState('selectionDetails');
+    if (!selection || selection.length === 0) {
+      this.showToast('Selecione primeiro um componente ou logo no canvas', 'warning');
+      return;
+    }
+
+    const sourceNode = selection[0];
+    const ops = [];
+
+    // 1. Root Board Frame
+    ops.push({
+      type: 'CREATE_FRAME',
+      ref: 'brand_board',
+      props: {
+        name: `Brand Showcase: ${sourceNode.name}`,
+        layoutMode: 'VERTICAL',
+        primaryAxisSizingMode: 'AUTO',
+        counterAxisSizingMode: 'FIXED', 
+        width: 1400,
+        itemSpacing: 64,
+        paddingTop: 80, paddingRight: 80, paddingBottom: 80, paddingLeft: 80,
+        fills: [{ type: 'SOLID', color: { r: 0.1, g: 0.1, b: 0.1 } }]
+      }
+    });
+
+    // --- SECTIONS CONFIG ---
+    const sections = [
+      {
+        id: 'fundo',
+        title: 'Com Fundo',
+        variations: [
+          { name: 'Orange BG', bg: '#FF6000', logo: 'white' },
+          { name: 'White BG', bg: '#FFFFFF', logo: 'black' },
+          { name: 'Dark BG', bg: '#1A1A1A', logo: 'orange' },
+          { name: 'Contrast BG', bg: '#000000', logo: 'white' }
+        ]
+      },
+      {
+        id: 'isolado',
+        title: 'Isolado',
+        variations: [
+          { name: 'Black Logo', bg: null, logo: '#000000' },
+          { name: 'Orange Logo', bg: null, logo: '#FF6000' },
+          { name: 'White Logo', bg: null, logo: '#FFFFFF' }
+        ]
+      }
+    ];
+
+    for (const section of sections) {
+      const sectionRef = `section_${section.id}`;
+      
+      // Section Container
+      ops.push({
+        type: 'CREATE_FRAME',
+        ref: sectionRef,
+        parentRef: 'brand_board',
+        props: {
+          name: section.title,
+          layoutMode: 'VERTICAL',
+          itemSpacing: 24,
+          fills: []
+        }
+      });
+
+      // Section Title
+      ops.push({
+        type: 'CREATE_TEXT',
+        parentRef: sectionRef,
+        props: {
+          content: section.title,
+          fontSize: 18,
+          fontStyle: 'Bold',
+          fills: [{ type: 'SOLID', color: { r: 0.5, g: 0.5, b: 0.5 } }]
+        }
+      });
+
+      // Grid Container
+      const gridRef = `grid_${section.id}`;
+      ops.push({
+        type: 'CREATE_FRAME',
+        ref: gridRef,
+        parentRef: sectionRef,
+        props: {
+          name: 'Variants Grid',
+          layoutMode: 'HORIZONTAL',
+          layoutWrap: 'WRAP',
+          itemSpacing: 24,
+          fills: []
+        }
+      });
+
+      // Variations
+      for (let i = 0; i < section.variations.length; i++) {
+        const v = section.variations[i];
+        const vRef = `v_${section.id}_${i}`;
+        const cardW = 280;
+        const cardH = 160;
+        const padding = 40;
+        const maxW = cardW - (padding * 2);
+        const maxH = cardH - (padding * 2);
+
+        // Calculate scale to fit
+        let scale = 1;
+        if (sourceNode.width > 0 && sourceNode.height > 0) {
+          scale = Math.min(maxW / sourceNode.width, maxH / sourceNode.height);
+          if (scale > 1) scale = 1; // Don't upscale logos
+        }
+
+        const newW = sourceNode.width * scale;
+        const newH = sourceNode.height * scale;
+
+        // Asset Card
+        ops.push({
+          type: 'CREATE_FRAME',
+          ref: vRef,
+          parentRef: gridRef,
+          props: {
+            name: v.name,
+            width: cardW, height: cardH,
+            fills: v.bg ? [{ type: 'SOLID', color: v.bg }] : [],
+            cornerRadius: 4,
+            clipsContent: true,
+            // Center the logo using Auto Layout
+            layoutMode: 'HORIZONTAL',
+            primaryAxisAlignItems: 'CENTER',
+            counterAxisAlignItems: 'CENTER'
+          }
+        });
+
+        // Clone logo into card
+        ops.push({
+          type: 'CLONE_NODE',
+          sourceNodeId: sourceNode.id,
+          parentRef: vRef,
+          overrides: {
+            name: 'Logo Instance',
+            width: newW,
+            height: newH
+          }
+        });
+
+        // Sub-label for variant
+        if (!v.bg) {
+          ops.push({
+            type: 'CREATE_TEXT',
+            parentRef: vRef,
+            props: {
+              content: 'Isolado',
+              fontSize: 10,
+              y: 140, x: 10,
+              fills: [{ type: 'SOLID', color: { r: 0.4, g: 0.4, b: 0.4 } }]
+            }
+          });
+        }
+      }
+    }
+
+    // Send to sandbox
+    parent.postMessage({ pluginMessage: { type: 'APPLY_OPERATIONS', payload: ops } }, '*');
+    this.showToast('Gerando Brand Showcase no Canvas...', 'success');
+  }
+
+  /**
+   * Generates frames in 16:9 and 1:1 using all colors from the brand guideline
+   * Directly on the canvas, without nested helper frames
+   */
+  async generateSocialBrandFrames() {
+    const brandColors = getState('selectedColors');
+    const brandGuideline = getState('linkedGuideline');
+    const selection = getState('selectionDetails') || [];
+
+    if (!brandColors || (brandColors instanceof Map ? brandColors.size === 0 : Object.keys(brandColors).length === 0)) {
+      this.showToast('Nenhuma cor de brand configurada no Brand Hub.', 'warning');
+      return;
+    }
+
+    if (selection.length === 0) {
+      this.showToast('Selecione primeiro um ou mais logos no Figma.', 'warning');
+      return;
+    }
+
+    const ops = [];
+    const colors = brandColors instanceof Map 
+      ? Array.from(brandColors.values()) 
+      : Object.values(brandColors);
+
+    const sizes = [
+      { name: '16:9', w: 1280, h: 720, id: 'wide' },
+      { name: '1:1', w: 1080, h: 1080, id: 'post' }
+    ];
+
+    // Manual positioning to ensure 100% accuracy regardless of siblings
+    const pivot = selection[0] || { x: 0, y: 0, height: 0 };
+    const startX = pivot.x ?? 0;
+    const startY = (pivot.y ?? 0) + (pivot.height ?? 0) + 500;
+    const horizontalGap = 100;
+    const verticalGap = 150;
+    
+    let currentRow = 0;
+
+    // For each selected component (logo)
+    selection.forEach((sourceNode, selIdx) => {
+      // For each size format (Wide/Post)
+      sizes.forEach((size, sizeIdx) => {
+        // For each brand color
+        colors.forEach((color, colorIdx) => {
+          const hex = color.value || color.hex || '#FFFFFF';
+          const variableId = color.variableId; // Use variable ID if synced
+          const frameRef = `frame_s_${selIdx}_${size.id}_${colorIdx}`;
+          
+          // Calculate grid position manually
+          const x = startX + colorIdx * (size.w + horizontalGap);
+          const y = startY + currentRow * (1080 + verticalGap);
+          
+          ops.push({
+            type: 'CREATE_FRAME',
+            ref: frameRef,
+            props: {
+              name: `${sourceNode.name} | ${color.name || 'Brand'} - ${size.name}`,
+              width: size.w, height: size.h,
+              x: x,
+              y: y,
+              fills: [{ type: 'SOLID', color: hex, variableId }], // Variable binding if available
+              cornerRadius: 12,
+              clipsContent: true,
+              layoutMode: 'HORIZONTAL',
+              primaryAxisSizingMode: 'FIXED', 
+              counterAxisSizingMode: 'FIXED', 
+              primaryAxisAlignItems: 'CENTER',
+              counterAxisAlignItems: 'CENTER'
+            }
+          });
+
+          // Create official Component Instance if possible, otherwise clone
+          const maxWidth = size.w * 0.5;
+          const maxHeight = size.h * 0.5;
+          let scale = 1;
+          if (sourceNode.width > 0 && sourceNode.height > 0) {
+            scale = Math.min(maxWidth / sourceNode.width, maxHeight / sourceNode.height);
+            if (scale > 1) scale = 1;
+          }
+
+          const logoWidth = sourceNode.width * scale;
+          const logoHeight = sourceNode.height * scale;
+          const logoRef = `logo_s_${selIdx}_${size.id}_${colorIdx}`;
+
+          if (sourceNode.componentKey) {
+            ops.push({
+              type: 'CREATE_COMPONENT_INSTANCE',
+              ref: logoRef,
+              parentRef: frameRef,
+              componentKey: sourceNode.componentKey,
+              name: 'Logo Instance',
+              width: logoWidth,
+              height: logoHeight
+            });
+          } else {
+            ops.push({
+              type: 'CLONE_NODE',
+              ref: logoRef,
+              sourceNodeId: sourceNode.id,
+              parentRef: frameRef,
+              overrides: {
+                name: 'Logo Clone',
+                width: logoWidth,
+                height: logoHeight
+              }
+            });
+          }
+
+          // Contrast coloring
+          ops.push({
+            type: 'RECOLOR_NODE',
+            ref: logoRef,
+            props: {
+              fills: [{ type: 'SOLID', color: this.getContrastColor(hex) }]
+            }
+          });
+        });
+
+        // --- NEW: Transparent variations after the colored ones ---
+        const transparentVariants = [
+          ...colors.map(c => ({ name: `${c.name || 'Brand'} Color`, color: c.value || c.hex || '#FFFFFF', variableId: c.variableId })),
+          { name: 'Black Logo', color: '#000000' },
+          { name: 'White Logo', color: '#FFFFFF' }
+        ];
+
+        transparentVariants.forEach((variant, vIdx) => {
+          const frameRef = `frame_s_${selIdx}_${size.id}_trans_${vIdx}`;
+          const x = startX + (colors.length + vIdx) * (size.w + horizontalGap);
+          const y = startY + currentRow * (1080 + verticalGap);
+
+          ops.push({
+            type: 'CREATE_FRAME',
+            ref: frameRef,
+            props: {
+              name: `${sourceNode.name} | Transparent - ${variant.name} - ${size.name}`,
+              width: size.w, height: size.h,
+              x: x,
+              y: y,
+              fills: [], // Transparent
+              cornerRadius: 12,
+              clipsContent: true,
+              layoutMode: 'HORIZONTAL',
+              primaryAxisSizingMode: 'FIXED', 
+              counterAxisSizingMode: 'FIXED', 
+              primaryAxisAlignItems: 'CENTER',
+              counterAxisAlignItems: 'CENTER'
+            }
+          });
+
+          const logoRef = `logo_s_${selIdx}_${size.id}_trans_${vIdx}`;
+          const maxWidth = size.w * 0.5;
+          const maxHeight = size.h * 0.5;
+          let scale = 1;
+          if (sourceNode.width > 0 && sourceNode.height > 0) {
+            scale = Math.min(maxWidth / sourceNode.width, maxHeight / sourceNode.height);
+            if (scale > 1) scale = 1;
+          }
+
+          const logoWidth = sourceNode.width * scale;
+          const logoHeight = sourceNode.height * scale;
+
+          if (sourceNode.componentKey) {
+            ops.push({
+              type: 'CREATE_COMPONENT_INSTANCE',
+              ref: logoRef,
+              parentRef: frameRef,
+              componentKey: sourceNode.componentKey,
+              name: 'Logo Instance',
+              width: logoWidth,
+              height: logoHeight
+            });
+          } else {
+            ops.push({
+              type: 'CLONE_NODE',
+              ref: logoRef,
+              sourceNodeId: sourceNode.id,
+              parentRef: frameRef,
+              overrides: {
+                name: 'Logo Clone',
+                width: logoWidth,
+                height: logoHeight
+              }
+            });
+          }
+
+          ops.push({
+            type: 'RECOLOR_NODE',
+            ref: logoRef,
+            props: {
+              fills: [{ type: 'SOLID', color: variant.color, variableId: variant.variableId }]
+            }
+          });
+        });
+
+        currentRow++;
+      });
+      currentRow++;
+    });
+
+    parent.postMessage({ pluginMessage: { type: 'APPLY_OPERATIONS', payload: ops } }, '*');
+    this.showToast(`Gerando ${ops.filter(o => o.type === 'CREATE_FRAME').length} frames independentes...`, 'success');
+  }
+
+  /**
+   * Determine contrast color (black/white) based on background hex
+   */
+  getContrastColor(hex) {
+    try {
+      if (!hex) return '#000000';
+      const clean = String(hex).replace('#', '');
+      if (clean.length < 6) return '#000000';
+      const r = parseInt(clean.substring(0, 2), 16);
+      const g = parseInt(clean.substring(2, 4), 16);
+      const b = parseInt(clean.substring(4, 6), 16);
+      const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+      return (yiq >= 128) ? '#000000' : '#FFFFFF';
+    } catch (e) {
+      return '#000000';
+    }
   }
 }
 

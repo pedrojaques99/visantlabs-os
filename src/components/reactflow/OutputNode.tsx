@@ -21,6 +21,8 @@ import { ConfirmationModal } from '../ConfirmationModal';
 import { MockupPresetModal } from '../MockupPresetModal';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { useMediaSource } from '@/hooks/canvas/useMediaSource';
+import { NODE_LAYOUT } from '@/constants/nodeLayout';
+import { useBaseNode } from '@/hooks/canvas/useBaseNode';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -29,7 +31,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const edges = useEdges();
   const { getNode, getZoom } = useReactFlow();
   const nodeData = data as OutputNodeData;
-  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
+  const { handleResize: baseResize, handleFitToContent: baseFitToContent } = useBaseNode(id, nodeData);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLiked, setIsLiked] = useState(nodeData.isLiked || false);
@@ -264,11 +266,10 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
   }, [mediaUrl, isDescribing, nodeData, id]);
 
-  // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
-  const handleResize = useCallback((_: any, params: { width: number; height: number; x: number; y: number }) => {
-    const { width } = params;
-    handleResizeWithDebounce(id, width, 'auto');
-  }, [id, handleResizeWithDebounce]);
+  // Handle resize from NodeResizer
+  const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
+    baseResize(params.width, params.height);
+  }, [baseResize]);
 
   const handleDuplicate = () => {
     if (nodeData.onDuplicate) {
@@ -277,23 +278,8 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   };
 
   const handleFitToContent = useCallback(() => {
-    const width = nodeData.imageWidth as number;
-    const height = nodeData.imageHeight as number;
-    if (width && height) {
-      // Calculate a reasonable size if image is too large
-      let targetWidth = width;
-      let targetHeight = height;
-      const MAX_FIT_WIDTH = 1200;
-
-      if (targetWidth > MAX_FIT_WIDTH) {
-        const ratio = MAX_FIT_WIDTH / targetWidth;
-        targetWidth = MAX_FIT_WIDTH;
-        targetHeight = targetHeight * ratio;
-      }
-
-      fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), nodeData.onResize);
-    }
-  }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
+    baseFitToContent();
+  }, [baseFitToContent]);
 
   const hasMedia = !!mediaUrl;
 
@@ -305,7 +291,8 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       warning={nodeData.oversizedWarning}
       onFitToContent={handleFitToContent}
       className={cn(
-        'group min-w-[400px]',
+        'group',
+        `min-w-[${NODE_LAYOUT.MIN_WIDTH}px]`,
         dragging ? 'node-dragging' : 'node-dragging-static'
       )}
       style={hasMedia ? { opacity: 1 } : undefined}
@@ -317,10 +304,10 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         <NodeResizer
           color="brand-cyan"
           isVisible={selected}
-          minWidth={400}
-          minHeight={300}
-          maxWidth={2000}
-          maxHeight={2000}
+          minWidth={NODE_LAYOUT.MIN_WIDTH}
+          minHeight={NODE_LAYOUT.MIN_HEIGHT}
+          maxWidth={NODE_LAYOUT.MAX_WIDTH}
+          maxHeight={NODE_LAYOUT.MAX_HEIGHT}
           keepAspectRatio={true}
           onResize={handleResize}
         />

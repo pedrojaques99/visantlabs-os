@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { MessageSquare, FileText, Image as ImageIcon, CheckCircle2, Target, ChevronDown, ChevronUp, Sparkles, Settings2 } from 'lucide-react';
+import { MessageSquare, FileText, Image as ImageIcon, CheckCircle2, Target, ChevronDown, ChevronUp, Diamond, Settings2 } from 'lucide-react';
 import type { ChatNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -385,7 +385,7 @@ export const ChatSidebar = ({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Button variant="brand" onClick={handleSuggestMockups} disabled={isLoading} className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/40 rounded-md text-[10px] text-brand-cyan transition-all disabled:opacity-50 tracking-tighter backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95">
-                  <Sparkles size={11} />
+                  <Diamond size={11} />
                   <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
                 </Button>
 

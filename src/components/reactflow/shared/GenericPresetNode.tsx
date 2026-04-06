@@ -13,6 +13,9 @@ import { NodeLabel } from './NodeLabel';
 import { NodeHeader } from './node-header';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useBrandKit } from '@/contexts/BrandKitContext';
+import { NODE_LAYOUT } from '@/constants/nodeLayout';
+import { useBaseNode } from '@/hooks/canvas/useBaseNode';
+import { getCreditsRequired } from '@/utils/creditCalculator';
 
 import { toast } from 'sonner';
 
@@ -66,7 +69,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
     const GenericPresetNodeComponent: React.FC<NodeProps<Node<TNodeData>>> = ({ data, selected, id, dragging }) => {
         const { t } = useTranslation();
         const nodes = useNodes();
-        const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
+        const { handleResize: baseResize, handleFitToContent: baseFitToContent } = useBaseNode(id, data);
         const [selectedPresetId, setSelectedPresetId] = useState<TPresetType | string>(
             (config.getSelectedPreset(data) as TPresetType | string) || config.defaultPresetId
         );
@@ -123,31 +126,12 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
         };
 
         const handleFitToContent = useCallback(() => {
-            const width = data.imageWidth as number;
-            const height = data.imageHeight as number;
-            if (width && height) {
-                // Calculate a reasonable size if image is too large
-                let targetWidth = width;
-                let targetHeight = height;
-                const MAX_FIT_WIDTH = 1200;
-
-                if (targetWidth > MAX_FIT_WIDTH) {
-                    const ratio = MAX_FIT_WIDTH / targetWidth;
-                    targetWidth = MAX_FIT_WIDTH;
-                    targetHeight = targetHeight * ratio;
-                }
-
-                fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), data.onResize as any);
-            } else {
-                // For nodes without result image yet, just reset to original width/auto height
-                fitToContent(id, 320, 'auto', data.onResize as any);
-            }
-        }, [id, data.imageWidth, data.imageHeight, data.onResize, fitToContent]);
+            baseFitToContent();
+        }, [baseFitToContent]);
 
         const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-            const { width } = params;
-            handleResizeWithDebounce(id, width, 'auto', data.onResize as any);
-        }, [id, data.onResize, handleResizeWithDebounce]);
+            baseResize(params.width, params.height);
+        }, [baseResize]);
 
         return (
             <NodeContainer
@@ -155,7 +139,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                 selected={selected}
                 dragging={dragging}
                 onFitToContent={handleFitToContent}
-                className="min-w-[320px]"
+                className={cn(`min-w-[${NODE_LAYOUT.MIN_WIDTH}px]`)}
                 onContextMenu={(e) => {
                     // Allow ReactFlow to handle the context menu event
                 }}
@@ -164,10 +148,10 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                     <NodeResizer
                         color="brand-cyan"
                         isVisible={selected}
-                        minWidth={320}
-                        minHeight={200}
-                        maxWidth={2000}
-                        maxHeight={2000}
+                        minWidth={NODE_LAYOUT.MIN_WIDTH}
+                        minHeight={NODE_LAYOUT.MIN_HEIGHT}
+                        maxWidth={NODE_LAYOUT.MAX_WIDTH}
+                        maxHeight={NODE_LAYOUT.MAX_HEIGHT}
                         keepAspectRatio={hasResult}
                         onResize={handleResize}
                     />
@@ -246,7 +230,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
 
                 {/* Generate Button */}
                 <Tooltip 
-                    content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} 2 ${t('canvasNodes.promptNode.credits')}`}
+                    content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${getCreditsRequired('mockup')} ${t('canvasNodes.promptNode.credits')}`}
                     delay={500}
                 >
                     <NodeButton variant="primary" size="full"
@@ -272,7 +256,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                                 <span className="font-semibold tracking-tight">{t(config.translationKeys.generateButton) || `Generate ${config.title}`}</span>
                                 <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
                                     <Diamond size={10} className="opacity-50 fill-current" />
-                                    2
+                                    {getCreditsRequired('mockup')}
                                 </div>
                             </div>
                         )}

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
-import { Compass, Sparkles, User, MessageCircle, Plus, Trash2, Heart } from 'lucide-react';
+import { Compass, Diamond, User, MessageCircle, Plus, Trash2, Heart } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 
@@ -122,7 +122,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                 {strategy.archetypes.map((arch, i) => (
                   <div key={i} className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex gap-6 hover:border-brand-cyan/20 transition-all group">
                     <div className="w-16 h-16 rounded-xl bg-neutral-900 border border-white/5 flex items-center justify-center shrink-0">
-                      <Sparkles size={24} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
+                      <Diamond size={24} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -278,7 +278,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
           <div className="grid grid-cols-2 gap-3 w-full h-full flex-1 opacity-300">
             {[
               { label: 'Manifesto', icon: Heart, type: 'manifesto' },
-              { label: 'Archetypes', icon: Sparkles, type: 'archetype' },
+              { label: 'Archetypes', icon: Diamond, type: 'archetype' },
               { label: 'Personas', icon: User, type: 'persona' },
               { label: 'Voice Values', icon: MessageCircle, type: 'voice' },
             ].map((p, i) => (

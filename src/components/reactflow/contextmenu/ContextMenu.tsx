@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Wand2, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, Sparkles, MessageSquare, Clipboard, LayoutTemplate, Blocks } from 'lucide-react';
+import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Wand2, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, MessageSquare, Clipboard, LayoutTemplate, Blocks } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SearchBar } from '@/components/ui/SearchBar';
 import type { Node } from '@xyflow/react';

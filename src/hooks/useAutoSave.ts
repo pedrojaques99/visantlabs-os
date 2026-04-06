@@ -1,37 +1,39 @@
-import { useEffect, useRef, useCallback } from 'react';
-import type { BrandingData, TimerRef } from '../types/types';
+import { useEffect, useRef, useCallback, useState } from 'react';
+import type { TimerRef } from '../types/types';
 
-interface UseAutoSaveProps {
-  data: BrandingData;
-  onSave: (data: BrandingData) => Promise<void>;
+export type AutoSaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+interface UseAutoSaveProps<T> {
+  data: T;
+  onSave: (data: T) => Promise<void>;
   debounceMs?: number;
   enabled?: boolean;
 }
 
 /**
- * Hook for auto-saving branding data with debounce
- * Saves automatically after changes stop for the specified delay
+ * Generic hook for auto-saving any serializable data shape with debounce.
+ * Saves automatically after changes stop for the specified delay.
+ *
+ * Returns reactive `status` + `lastSavedAt` for UI indicators, plus
+ * `saveImmediately` to bypass the debounce (e.g. on blur or unmount).
  */
-export const useAutoSave = ({
+export const useAutoSave = <T,>({
   data,
   onSave,
-  debounceMs = 2000, // 2 seconds default
+  debounceMs = 2000,
   enabled = true,
-}: UseAutoSaveProps) => {
+}: UseAutoSaveProps<T>) => {
   const timeoutRef = useRef<TimerRef | null>(null);
   const lastSavedDataRef = useRef<string>('');
   const isSavingRef = useRef(false);
   const savePromiseRef = useRef<Promise<void> | null>(null);
 
-  // Deep comparison helper (simple JSON comparison)
-  const dataChanged = useCallback((a: BrandingData, b: BrandingData): boolean => {
-    return JSON.stringify(a) !== JSON.stringify(b);
-  }, []);
+  const [status, setStatus] = useState<AutoSaveStatus>('idle');
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
 
   // Save function with error handling
-  const performSave = useCallback(async (dataToSave: BrandingData) => {
+  const performSave = useCallback(async (dataToSave: T) => {
     if (isSavingRef.current) {
-      // If already saving, wait for it to complete
       if (savePromiseRef.current) {
         await savePromiseRef.current;
       }
@@ -39,6 +41,7 @@ export const useAutoSave = ({
     }
 
     isSavingRef.current = true;
+    setStatus('saving');
 
     try {
       const savePromise = onSave(dataToSave);
@@ -46,12 +49,12 @@ export const useAutoSave = ({
 
       await savePromise;
 
-      // Update last saved data
       lastSavedDataRef.current = JSON.stringify(dataToSave);
+      setLastSavedAt(Date.now());
+      setStatus('saved');
     } catch (error) {
       console.error('Auto-save failed:', error);
-      // Don't update lastSavedDataRef if save failed
-      // This allows retry on next change
+      setStatus('error');
     } finally {
       isSavingRef.current = false;
       savePromiseRef.current = null;
@@ -71,18 +74,18 @@ export const useAutoSave = ({
   useEffect(() => {
     if (!enabled) return;
 
-    // Compare with last saved data
     const currentDataString = JSON.stringify(data);
     if (currentDataString === lastSavedDataRef.current) {
       return; // No changes
     }
 
-    // Clear existing timeout
+    // Mark as pending (idle) unless a save is currently in flight
+    if (!isSavingRef.current) setStatus('idle');
+
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    // Set new timeout
     timeoutRef.current = setTimeout(() => {
       performSave(data);
     }, debounceMs);
@@ -112,7 +115,9 @@ export const useAutoSave = ({
 
   return {
     saveImmediately,
-    isSaving: isSavingRef.current,
+    status,
+    lastSavedAt,
+    isSaving: status === 'saving',
   };
 };
 
