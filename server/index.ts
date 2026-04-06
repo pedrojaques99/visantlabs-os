@@ -238,6 +238,10 @@ app.use(`${routePrefix}/plugin`, pluginRoutes);
 import brandGuidelinesRoutes from './routes/brand-guidelines.js';
 app.use(`${routePrefix}/brand-guidelines`, brandGuidelinesRoutes);
 
+// Import creative studio routes
+import creativeRoutes from './routes/creative.js';
+app.use(`${routePrefix}/creative`, creativeRoutes);
+
 // Import documentation routes
 import docsRoutes from './routes/docs.js';
 app.use(`${routePrefix}/docs`, docsRoutes);
