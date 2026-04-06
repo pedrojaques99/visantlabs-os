@@ -1,4 +1,4 @@
-import { getMultimodalEmbedding, chatWithBrandingContext } from './geminiService.js';
+import { getMultimodalEmbedding, chatWithAIContext } from './geminiService.js';
 import { vectorService, VectorMetadata } from './vectorService.js';
 import { v4 as uuidv4 } from 'uuid';
 import { PDFDocument } from 'pdf-lib';
@@ -147,10 +147,24 @@ export const knowledgeService = {
     // 1. Get context
     const context = await this.getContext(query, userId, projectId);
     
-    // 2. Chat with Gemini
-    return await chatWithBrandingContext(query, context, history, {
+    // 2. Chat with Gemini using niche Branding instructions
+    const brandingSystemInstruction = `Você é o Especialista em Branding e Estratégia da Visant Labs.
+Sua missão é ajudar o usuário a aplicar a metodologia Visant de branding de forma rigorosa, criativa e estratégica.
+
+DIRETRIZES:
+1. Mantenha o foco exclusivamente no CONTEXTO fornecido e na metodologia Visant.
+2. Analise diferenciação, trade-offs e defensibilidade competitiva.
+3. Seja direto, minimalista e focado na estratégia do negócio.
+4. JAMAIS utilize emojis.
+5. Responda no idioma do usuário.
+
+UTILIZE O CONTEXTO ABAIXO:
+\${context}`;
+
+    return await chatWithAIContext(query, context, history, {
       apiKey: userApiKey,
-      model
+      model,
+      systemInstruction: brandingSystemInstruction
     });
   }
 };

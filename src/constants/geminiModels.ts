@@ -10,14 +10,11 @@ export const GEMINI_MODELS = {
   FLASH_3_LITE: 'gemini-3.1-flash-lite-preview' as const,
   /** High-end intelligence for branding strategy & complex reasoning */
   PRO_2_0: 'gemini-2.0-pro-exp-02-05' as const,
-  /** Fast, multimodal, and reliable for most tasks */
+  /** Nano Banana 1 — Fast, multimodal, and reliable for most tasks */
   FLASH_2_5: 'gemini-2.5-flash' as const,
-  /** Professional grade with massive context window (2M tokens) */
-  PRO_1_5: 'gemini-1.5-pro' as const,
-  /** Lightweight and optimized for cost/speed */
-  FLASH_1_5: 'gemini-1.5-flash' as const,
   /** Image generation models */
   IMAGE_FLASH: 'gemini-2.5-flash-image' as const,
+  /** Nano Banana 2 — High performance 2K multimodal generation */
   IMAGE_NB2: 'gemini-3.1-flash-image-preview' as const,
   IMAGE_PRO: 'gemini-3-pro-image-preview' as const,
   // Backward-compatible aliases (deprecated, use IMAGE_* variants)
@@ -28,7 +25,7 @@ export const GEMINI_MODELS = {
   TEXT: 'gemini-3-flash-preview' as const,
 } as const;
 
-export const DEFAULT_MODEL: GeminiModel = GEMINI_MODELS.PRO_2_0;
+export const DEFAULT_MODEL: GeminiModel = GEMINI_MODELS.IMAGE_NB2;
 export const DEFAULT_ASPECT_RATIO: AspectRatio = '16:9';
 
 // ── Per-model configuration ────────────────────────────────────────────────
@@ -103,38 +100,14 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     providerDomain: 'google.com',
   },
   [GEMINI_MODELS.FLASH_2_5]: {
-    label: 'Gemini 2.5 Flash',
-    emoji: '💎',
+    label: 'Nano Banana 1',
+    emoji: '🍌',
     maxHandles: 4,
     maxRefImages: 10,
     defaultResolution: undefined,
     supportsImageConfig: false,
     supportsThinking: false,
     supportsSearchGrounding: true,
-    inputTokenLimit: 1_000_000,
-    providerDomain: 'google.com',
-  },
-  [GEMINI_MODELS.PRO_1_5]: {
-    label: 'Gemini 1.5 Pro',
-    emoji: '💎',
-    maxHandles: 4,
-    maxRefImages: 5,
-    defaultResolution: undefined,
-    supportsImageConfig: false,
-    supportsThinking: false,
-    supportsSearchGrounding: false,
-    inputTokenLimit: 2_000_000,
-    providerDomain: 'google.com',
-  },
-  [GEMINI_MODELS.FLASH_1_5]: {
-    label: 'Gemini 1.5 Flash',
-    emoji: '💎',
-    maxHandles: 2,
-    maxRefImages: 1,
-    defaultResolution: undefined,
-    supportsImageConfig: false,
-    supportsThinking: false,
-    supportsSearchGrounding: false,
     inputTokenLimit: 1_000_000,
     providerDomain: 'google.com',
   },
@@ -151,15 +124,15 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_NB2]: {
-    label: 'Gemini 3.1 Flash',
-    emoji: '💎',
+    label: 'Nano Banana 2',
+    emoji: '🍌',
     maxHandles: 4,
-    maxRefImages: 3,
-    defaultResolution: '1K',
+    maxRefImages: 10,
+    defaultResolution: '2K',
     supportsImageConfig: true,
     supportsThinking: false,
     supportsSearchGrounding: false,
-    inputTokenLimit: 65_536,
+    inputTokenLimit: 1_000_000,
     providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_PRO]: {
@@ -182,8 +155,6 @@ export const CHAT_MODELS: string[] = [
   GEMINI_MODELS.FLASH_3,
   GEMINI_MODELS.PRO_2_0,
   GEMINI_MODELS.FLASH_2_5,
-  GEMINI_MODELS.PRO_1_5,
-  GEMINI_MODELS.FLASH_1_5,
 ];
 
 export const IMAGE_MODELS: string[] = [

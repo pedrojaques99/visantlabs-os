@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 
 const router = Router();
 
@@ -51,8 +52,10 @@ router.post('/plan', async (req, res) => {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      generationConfig: { responseMimeType: 'application/json' },
+      model: GEMINI_MODELS.TEXT,
+      generationConfig: {
+        responseMimeType: 'application/json',
+      },
     });
 
     const userMessage = [
