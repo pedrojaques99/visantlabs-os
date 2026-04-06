@@ -89,7 +89,10 @@
       "Bash(xargs -I {} basename {})",
       "Skill(gsd:do)",
       "Skill(gsd:fast)",
-      "Skill(gsd:debug)"
+      "Skill(gsd:debug)",
+      "Read(//c/Users/Usuario/.claude/plugins/cache/claude-plugins-official/superpowers/**)",
+      "Read(//c/Users/Usuario/.claude/plugins/**)",
+      "Bash(npm install:*)"
     ]
   }
 }

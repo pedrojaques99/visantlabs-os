@@ -25,8 +25,8 @@ import { NodeButton } from './shared/node-button';
 import { ModelSelector } from './shared/ModelSelector';
 import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
 import { toast } from 'sonner';
-import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
-import { useLinkedGuidelineId } from '@/components/canvas/CanvasHeaderContext';
+import { useBrandKit } from '@/contexts/BrandKitContext';
+
 import { Tooltip } from '@/components/ui/Tooltip';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,7 +36,7 @@ import type { Connection } from '@xyflow/react';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
-  const linkedGuidelineId = useLinkedGuidelineId();
+
   const nodes = useNodes();
   const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as PromptNodeData;
@@ -50,7 +50,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const [connectedImage3, setConnectedImage3] = useState<string | undefined>(nodeData.connectedImage3);
   const [connectedImage4, setConnectedImage4] = useState<string | undefined>(nodeData.connectedImage4);
   const [isBrandActive, setIsBrandActive] = useState<boolean>(nodeData.isBrandActive !== undefined ? nodeData.isBrandActive : (!!(nodeData.connectedLogo || nodeData.connectedIdentity || nodeData.connectedTextDirection)));
-  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+  const { openLibrary } = useBrandKit();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -205,7 +205,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   };
 
   const handleOpenMediaLibrary = () => {
-    setShowMediaLibrary(true);
+    openLibrary({ onSelectAsset: handleSelectAsset, onAddToBoard: handleAddToBoard });
   };
 
   const handlePromptChange = (value: string) => {
@@ -793,13 +793,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         onSelectPreset={handlePresetSelect}
       />
 
-      <BrandMediaLibraryModal
-        isOpen={showMediaLibrary}
-        onClose={() => setShowMediaLibrary(false)}
-        onSelectAsset={handleSelectAsset}
-        onAddToBoard={handleAddToBoard}
-        guidelineId={linkedGuidelineId}
-      />
     </NodeContainer >
   );
 }, (prevProps, nextProps) => {

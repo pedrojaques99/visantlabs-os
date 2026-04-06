@@ -1,13 +1,16 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useMemo, useContext, useDeferredValue } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { useTranslation } from '@/hooks/useTranslation';
 import { MockupContext } from '@/components/mockupmachine/MockupContext';
-import { Loader2, ImageIcon, Palette, Type, Plus, ChevronRight, Search, LayoutGrid, List } from 'lucide-react';
+import { Loader2, ImageIcon, Palette, Type, Plus, ChevronRight, Search, LayoutGrid, List, Paintbrush, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
+import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 
 interface BrandMediaLibraryModalProps {
   isOpen: boolean;
@@ -28,36 +31,40 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
   guidelineId: propGuidelineId
 }) => {
   const { t } = useTranslation();
-  // Safely try MockupContext (returns undefined if not in provider)
+  const canvasHeader = useCanvasHeader();
   const mockupContext = useContext(MockupContext);
   const mockupGuideline = mockupContext?.selectedBrandGuideline ?? null;
-  // Prefer prop (from CanvasHeader), fallback to MockupContext
-  const selectedBrandGuideline = propGuidelineId ?? mockupGuideline;
-  const [guideline, setGuideline] = useState<BrandGuideline | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const selectedBrandGuidelineId = propGuidelineId ?? mockupGuideline;
+
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  const deferredSearchQuery = useDeferredValue(searchQuery);
 
-  useEffect(() => {
-    const fetchGuideline = async () => {
-      if (!selectedBrandGuideline || !isOpen) return;
-      setIsLoading(true);
-      try {
-        const data = await brandGuidelineApi.getById(selectedBrandGuideline);
-        setGuideline(data);
-      } catch (error) {
-        console.error('Failed to load brand guideline:', error);
-        toast.error('Failed to load Brand Guideline data');
-      } finally {
-        setIsLoading(false);
-      }
+  const { data: guideline, isLoading } = useQuery({
+    queryKey: ['brand-guideline', selectedBrandGuidelineId],
+    queryFn: () => selectedBrandGuidelineId ? brandGuidelineApi.getById(selectedBrandGuidelineId) : null,
+    enabled: !!selectedBrandGuidelineId && isOpen,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+  });
+
+  const { filteredLogos, filteredMedia, colors } = useMemo(() => {
+    if (!guideline) return { filteredLogos: [], filteredMedia: [], colors: [] };
+    
+    const query = deferredSearchQuery.toLowerCase();
+    const logos = guideline.logos || [];
+    const media = guideline.media || [];
+    const colors = guideline.colors || [];
+
+    return {
+      filteredLogos: logos.filter(l => !query || l.label?.toLowerCase().includes(query)),
+      filteredMedia: media.filter(m => !query || m.label?.toLowerCase().includes(query)),
+      colors
     };
+  }, [guideline, deferredSearchQuery]);
 
-    fetchGuideline();
-  }, [selectedBrandGuideline, isOpen]);
-
-  if (!selectedBrandGuideline) {
+  if (!selectedBrandGuidelineId) {
     return (
       <Modal isOpen={isOpen} onClose={onClose} title="Brand Media Library" size="lg">
         <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -73,17 +80,10 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
     );
   }
 
-  const logos = guideline?.logos || [];
-  const media = guideline?.media || [];
-  const colors = guideline?.colors || [];
-
-  const filteredLogos = logos.filter(l => l.label?.toLowerCase().includes(searchQuery.toLowerCase()) || !searchQuery);
-  const filteredMedia = media.filter(m => m.label?.toLowerCase().includes(searchQuery.toLowerCase()) || !searchQuery);
-
   const handleAssetSelect = (url: string, type: 'image' | 'logo') => {
     if (onSelectAsset) {
       onSelectAsset(url, type);
-      toast.success('Asset referenced in node');
+      toast.success('Asset referenced');
       onClose();
     } else if (onAddToBoard) {
       onAddToBoard(url, type);
@@ -91,6 +91,27 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
       onClose();
     }
   };
+
+  const handleApplyToTheme = (hex: string, mode: 'background' | 'primary') => {
+    if (mode === 'background') {
+      canvasHeader.setBackgroundColor(hex);
+      toast.success('Canvas Background updated');
+    } else {
+      canvasHeader.setBrandCyan(hex);
+      toast.success('Brand Primary Color updated');
+    }
+  };
+
+  const renderSkeletons = () => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+        <div key={i} className="aspect-square rounded-2xl bg-neutral-900/30 border border-white/5 p-3 flex flex-col gap-3">
+          <SkeletonLoader height="100%" width="100%" className="rounded-xl" />
+          <SkeletonLoader height="8px" width="60%" />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <Modal 
@@ -115,7 +136,7 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
                     : "text-neutral-500 hover:text-neutral-300"
                 )}
               >
-                {tab}
+                {t(`common.tabs.${tab}`) || tab.toUpperCase()}
               </button>
             ))}
           </div>
@@ -149,9 +170,8 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
         </div>
 
         {isLoading ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="animate-spin text-brand-cyan" size={32} />
-            <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">Syncing Brand DNA...</p>
+          <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+             {renderSkeletons()}
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
@@ -171,7 +191,7 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
                     {filteredLogos.map((logo, i) => (
                       <AssetCard 
                         key={`logo-${i}`} 
-                        url={logo.url} 
+                        url={logo.url!} 
                         label={logo.label || `Logo ${i+1}`} 
                         type="logo" 
                         viewMode={viewMode}
@@ -198,7 +218,7 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
                     {filteredMedia.map((asset, i) => (
                       <AssetCard 
                         key={`media-${i}`} 
-                        url={asset.url} 
+                        url={asset.url!} 
                         label={asset.label || `Asset ${i+1}`} 
                         type="image" 
                         viewMode={viewMode}
@@ -235,9 +255,26 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
                           style={{ backgroundColor: color.hex }}
                         />
                         <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-tight">{color.hex}</span>
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-300 rounded-xl flex items-center justify-center transition-opacity">
-                           <span className="text-[8px] font-bold text-white uppercase">Copy</span>
+                        
+                        {/* Theme Options */}
+                        <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button 
+                            onClick={(e) => { e.stopPropagation(); handleApplyToTheme(color.hex!, 'background'); }}
+                            className="p-1 rounded bg-black/60 text-white hover:text-brand-cyan transition-colors"
+                            title="Apply as Canvas Background"
+                           >
+                             <Paintbrush size={10} />
+                           </button>
+                           <button 
+                            onClick={(e) => { e.stopPropagation(); handleApplyToTheme(color.hex!, 'primary'); }}
+                            className="p-1 rounded bg-black/60 text-white hover:text-brand-cyan transition-colors"
+                            title="Set as Brand Primary"
+                           >
+                             <Zap size={10} />
+                           </button>
                         </div>
+
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-10 pointer-events-none rounded-xl transition-opacity" />
                       </div>
                     ))}
                   </div>
@@ -267,9 +304,17 @@ interface AssetCardProps {
 }
 
 const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onClick, onAdd }) => {
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('application/vsn-asset-url', url);
+    e.dataTransfer.setData('application/vsn-asset-type', type);
+    e.dataTransfer.effectAllowed = 'copy';
+  };
+
   if (viewMode === 'list') {
     return (
       <div 
+        draggable
+        onDragStart={handleDragStart}
         className="flex items-center gap-4 p-2 rounded-lg bg-neutral-900/30 border border-white/5 hover:border-brand-cyan/30 hover:bg-neutral-900/50 transition-all group cursor-pointer"
         onClick={onClick}
       >
@@ -300,6 +345,8 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
 
   return (
     <div 
+      draggable
+      onDragStart={handleDragStart}
       className="flex flex-col gap-3 p-3 rounded-2xl bg-neutral-900/30 border border-white/5 hover:border-brand-cyan/30 transition-all group cursor-pointer"
       onClick={onClick}
     >

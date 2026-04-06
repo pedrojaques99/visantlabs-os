@@ -12,8 +12,8 @@ import { NodeButton } from './node-button';
 import { NodeLabel } from './NodeLabel';
 import { NodeHeader } from './node-header';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { BrandMediaLibraryModal } from '../modals/BrandMediaLibraryModal';
-import { useLinkedGuidelineId } from '@/components/canvas/CanvasHeaderContext';
+import { useBrandKit } from '@/contexts/BrandKitContext';
+
 import { toast } from 'sonner';
 
 interface PresetItem {
@@ -66,13 +66,12 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
     const GenericPresetNodeComponent: React.FC<NodeProps<Node<TNodeData>>> = ({ data, selected, id, dragging }) => {
         const { t } = useTranslation();
         const nodes = useNodes();
-        const linkedGuidelineId = useLinkedGuidelineId();
         const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
         const [selectedPresetId, setSelectedPresetId] = useState<TPresetType | string>(
             (config.getSelectedPreset(data) as TPresetType | string) || config.defaultPresetId
         );
         const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
-        const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+        const { openLibrary, closeLibrary } = useBrandKit();
         const containerRef = useRef<HTMLDivElement>(null);
 
         const isLoading = config.getIsLoading(data) || false;
@@ -111,16 +110,16 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
             await onGenerate(id, connectedImage, selectedPresetId);
         };
 
-        const handleOpenMediaLibrary = () => {
-            setShowMediaLibrary(true);
-        };
-
         const handleSelectAsset = (url: string, type: 'image' | 'logo') => {
             const onUpdateData = config.getOnUpdateData(data);
             if (onUpdateData) {
                 onUpdateData(id, { connectedImage: url } as any);
             }
-            setShowMediaLibrary(false);
+            closeLibrary();
+        };
+
+        const handleOpenMediaLibrary = () => {
+            openLibrary({ onSelectAsset: handleSelectAsset });
         };
 
         const handleFitToContent = useCallback(() => {
@@ -314,12 +313,6 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                     isLoading={isLoading}
                 />
 
-                <BrandMediaLibraryModal
-                    isOpen={showMediaLibrary}
-                    onClose={() => setShowMediaLibrary(false)}
-                    onSelectAsset={handleSelectAsset}
-                    guidelineId={linkedGuidelineId}
-                />
             </NodeContainer>
         );
     };

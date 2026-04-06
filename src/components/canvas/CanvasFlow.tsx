@@ -384,6 +384,16 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       position = { x: 0, y: 0 };
     }
 
+    // Check if this is an internal asset drop (from Brand Library)
+    const assetUrl = e.dataTransfer.getData('application/vsn-asset-url');
+    const assetType = e.dataTransfer.getData('application/vsn-asset-type') as 'image' | 'logo';
+
+    if (assetUrl && onDropImage) {
+      onDropImage({ url: assetUrl, mimeType: 'image/png' }, position);
+      toast.success(t('canvas.assetAdded') || 'Asset added to board');
+      return;
+    }
+
     // Check if this is a toolbar node drop
     const toolbarNodeType = e.dataTransfer.getData('application/vsn-toolbar-node') ||
       e.dataTransfer.getData('text/plain');

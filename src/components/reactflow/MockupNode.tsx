@@ -31,13 +31,13 @@ import { NodeButton } from './shared/node-button';
 import { ModelSelector } from './shared/ModelSelector';
 import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
 import { Input } from '@/components/ui/input'
-import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
+import { useBrandKit } from '@/contexts/BrandKitContext';
 import { useNodes } from '@xyflow/react';
-import { useLinkedGuidelineId } from '@/components/canvas/CanvasHeaderContext';
+
 
 const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
-  const linkedGuidelineId = useLinkedGuidelineId();
+
   const { setNodes } = useReactFlow();
   const nodes = useNodes();
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
@@ -57,7 +57,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
   const [isBrandActive, setIsBrandActive] = useState<boolean>(data.isBrandActive !== undefined ? data.isBrandActive : (!!(data.connectedLogo || data.connectedIdentity || data.connectedTextDirection)));
   const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [isColorSectionOpen, setIsColorSectionOpen] = useState(false);
-  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+  const { openLibrary } = useBrandKit();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const userMockups = (data as any).userMockups as Mockup[] | undefined;
 
@@ -388,7 +388,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           setIsBrandActive(active);
           if (data.onUpdateData) data.onUpdateData(id, { isBrandActive: active });
         }}
-        onOpenMediaLibrary={() => setShowMediaLibrary(true)}
+        onOpenMediaLibrary={() => openLibrary({ onSelectAsset: handleSelectAsset, onAddToBoard: handleAddToBoard })}
       />
 
       {/* Preset Selector - Button to open modal */}
@@ -822,13 +822,6 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         }}
         userMockups={userMockups || []}
         isLoading={isLoading}
-      />
-      <BrandMediaLibraryModal
-        isOpen={showMediaLibrary}
-        onClose={() => setShowMediaLibrary(false)}
-        onSelectAsset={handleSelectAsset}
-        onAddToBoard={handleAddToBoard}
-        guidelineId={linkedGuidelineId}
       />
     </NodeContainer>
   );

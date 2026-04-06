@@ -7,6 +7,7 @@ import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuide
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { generateCreative } from './lib/generateCreative';
+import { ModelSelector } from '@/components/reactflow/shared/ModelSelector';
 import { toast } from 'sonner';
 import type { CreativeFormat } from './store/creativeTypes';
 
@@ -19,12 +20,17 @@ export const CreativeSetupSidebar: React.FC = () => {
     format,
     backgroundMode,
     uploadedBackgroundUrl,
+    modelId,
+    provider,
+    resolution,
     status,
     setBrandId,
     setPrompt,
     setFormat,
     setBackgroundMode,
     setUploadedBackgroundUrl,
+    setModel,
+    setResolution,
     setStatus,
     hydrateFromAI,
   } = useCreativeStore();
@@ -67,6 +73,9 @@ export const CreativeSetupSidebar: React.FC = () => {
           prompt,
           format,
           guideline: selectedGuideline,
+          modelId: modelId as string,
+          provider,
+          resolution,
         });
         hydrateFromAI(result);
       }
@@ -195,6 +204,18 @@ export const CreativeSetupSidebar: React.FC = () => {
             {uploadedBackgroundUrl ? 'Imagem carregada ✓' : 'Clique para subir imagem'}
           </label>
         )}
+      </div>
+
+      {/* Model Selection */}
+      <div className="flex flex-col gap-1.5 min-h-[70px]">
+        <ModelSelector
+          selectedModel={modelId}
+          onModelChange={(m, p) => setModel(m, p)}
+          resolution={resolution}
+          onSyncResolution={setResolution}
+          disabled={status !== 'setup'}
+          className="model-selector-creative"
+        />
       </div>
 
       {/* Generate */}

@@ -1,5 +1,5 @@
-import { generateMockup } from '@/services/geminiService';
-import { uploadImageToR2Auto } from '@/hooks/canvas/utils/r2UploadUtils';
+import { mockupApi } from '@/services/mockupApi';
+import { canvasApi } from '@/services/canvasApi';
 import { authService } from '@/services/authService';
 import type { BrandGuideline } from '@/lib/figma-types';
 import type {
@@ -14,6 +14,9 @@ interface GenerateInput {
   prompt: string;
   format: CreativeFormat;
   guideline: BrandGuideline | null;
+  modelId?: string;
+  provider?: string;
+  resolution?: string;
 }
 
 interface GenerateOutput {
@@ -26,6 +29,9 @@ export async function generateCreative({
   prompt,
   format,
   guideline,
+  modelId,
+  provider,
+  resolution,
 }: GenerateInput): Promise<GenerateOutput> {
   // 1. Ask backend for structured creative plan
   const brandContext = guideline
@@ -49,24 +55,30 @@ export async function generateCreative({
   });
 
   if (!planResp.ok) {
-    throw new Error(`Creative plan failed: ${planResp.status}`);
+    const errText = await planResp.text();
+    throw new Error(`Creative plan failed: ${planResp.status} - ${errText}`);
   }
 
   const plan = (await planResp.json()) as CreativeAIResponse;
 
-  // 2. Generate background image via existing geminiService
+  // 2. Generate background image via mockupApi (centralized backend generation)
   const bgPrompt = plan.background?.prompt ?? prompt;
-  const base64 = await generateMockup(
-    bgPrompt,
-    undefined,
-    undefined,
-    undefined,
-    format
-  );
+  const result = await mockupApi.generate({
+    promptText: bgPrompt,
+    model: modelId || 'gemini-3.1-flash-image-preview',
+    provider: (provider as any) || 'gemini',
+    resolution,
+    aspectRatio: format,
+    feature: 'canvas',
+  });
+
+  const base64 = result.imageBase64;
+  if (!base64 && !result.imageUrl) {
+    throw new Error('No image generated for creative background');
+  }
 
   // 3. Upload to R2 (so dom-to-image-more can load via CORS)
-  const dataUrl = `data:image/png;base64,${base64}`;
-  const backgroundUrl = await uploadImageToR2Auto(dataUrl, `creative-bg-${Date.now()}.png`);
+  const backgroundUrl = result.imageUrl || await canvasApi.uploadImageToR2(`data:image/png;base64,${base64}`);
 
   if (!backgroundUrl) {
     throw new Error('Failed to upload background image to R2');

@@ -11,7 +11,7 @@ import { ShareModal } from './ShareModal';
 import { useCanvasHeader } from './CanvasHeaderContext';
 import { BrandSelector } from './BrandSelector';
 import { BrandGuidelineWizardModal } from '../mockupmachine/BrandGuidelineWizardModal';
-import { BrandMediaLibraryModal } from '../reactflow/modals/BrandMediaLibraryModal';
+import { useBrandKit } from '@/contexts/BrandKitContext';
 import { canvasApi } from '@/services/canvasApi';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button'
@@ -77,7 +77,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showBrandWizard, setShowBrandWizard] = useState(false);
-  const [showBrandMediaLibrary, setShowBrandMediaLibrary] = useState(false);
+  const { openLibrary: openBrandLibrary } = useBrandKit();
 
   // Common button classes
   const headerButtonClass = "h-9 w-9 p-0 border rounded-[10px] transition-all flex items-center justify-center bg-[#1A1A1A]/40 hover:bg-[#252525]/60 text-neutral-400 hover:text-neutral-200 border-white/5 hover:border-white/10 cursor-pointer shadow-sm transition-all duration-200";
@@ -205,7 +205,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             />
             <Button
               variant="ghost"
-              onClick={() => setShowBrandMediaLibrary(true)}
+              onClick={() => openBrandLibrary()}
               disabled={!linkedGuidelineId}
               className={cn(headerButtonClass, "hover:border-brand-cyan/30 flex-shrink-0 disabled:opacity-30")}
               title={t('mockup.openMediaLibrary') || 'Brand Media Library'}
@@ -369,12 +369,6 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
         }}
       />
 
-      {/* Brand Media Library */}
-      <BrandMediaLibraryModal
-        isOpen={showBrandMediaLibrary}
-        onClose={() => setShowBrandMediaLibrary(false)}
-        guidelineId={linkedGuidelineId}
-      />
     </div>
   );
 };

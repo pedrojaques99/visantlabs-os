@@ -49,8 +49,39 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
     const [isUploading, setIsUploading] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [uploadingFiles, setUploadingFiles] = useState<{ name: string; type: 'media' | 'logo' }[]>([]);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isBulkDeleting, setIsBulkDeleting] = useState(false);
     const mediaInputRef = useRef<HTMLInputElement>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
+
+    const toggleSelect = (id: string) => {
+        const next = new Set(selectedIds);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        setSelectedIds(next);
+    };
+
+    const handleBulkDelete = useCallback(async () => {
+        if (selectedIds.size === 0 || readOnly) return;
+        setIsBulkDeleting(true);
+        try {
+            const idsToDelete = Array.from(selectedIds);
+            await Promise.all(idsToDelete.map(id => {
+                const isLogo = logos.some(l => l.id === id);
+                return isLogo ? brandGuidelineApi.deleteLogo(guidelineId, id) : brandGuidelineApi.deleteMedia(guidelineId, id);
+            }));
+            
+            onLogosChange(logos.filter(l => !selectedIds.has(l.id)));
+            onMediaChange(media.filter(m => !selectedIds.has(m.id)));
+            setSelectedIds(new Set());
+            toast.success(t('mockup.mediaKit.bulkDeleteSuccess') || 'Assets deleted');
+        } catch {
+            toast.error(t('mockup.mediaKit.bulkDeleteError') || 'Failed to delete some assets');
+        } finally {
+            setIsBulkDeleting(false);
+        }
+    }, [selectedIds, guidelineId, logos, media, onLogosChange, onMediaChange, t, readOnly]);
 
     const fileToBase64 = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
@@ -61,61 +92,48 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
         });
     };
 
-    const handleMediaUpload = useCallback(async (files: File[]) => {
+    const handleUpload = useCallback(async (files: File[], type: 'media' | 'logo') => {
         if (readOnly || isUploading) return;
         setIsUploading(true);
+        setUploadingFiles(files.map(f => ({ name: f.name, type })));
 
         try {
-            for (const file of files) {
+            const uploadPromises = files.map(async (file) => {
                 if (file.size > MAX_FILE_SIZE) {
                     toast.error(`${file.name}: ${t('mockup.mediaKit.fileTooLarge')}`);
-                    continue;
+                    return null;
                 }
 
                 const base64 = await fileToBase64(file);
-                const result = await brandGuidelineApi.uploadMedia(
-                    guidelineId,
-                    base64,
-                    file.name.replace(/\.[^/.]+$/, ''),
-                    file.type,
-                );
-                onMediaChange(result.allMedia);
-            }
-            toast.success(t('mockup.mediaKit.uploadSuccess'));
-        } catch {
-            toast.error(t('mockup.mediaKit.uploadError'));
-        } finally {
-            setIsUploading(false);
-        }
-    }, [guidelineId, readOnly, isUploading, onMediaChange, t]);
-
-    const handleLogoUpload = useCallback(async (files: File[]) => {
-        if (readOnly || isUploading) return;
-        setIsUploading(true);
-
-        try {
-            for (const file of files) {
-                if (file.size > MAX_FILE_SIZE) {
-                    toast.error(`${file.name}: ${t('mockup.mediaKit.fileTooLarge')}`);
-                    continue;
+                const fileName = file.name.replace(/\.[^/.]+$/, '');
+                
+                if (type === 'media') {
+                    return brandGuidelineApi.uploadMedia(guidelineId, base64, fileName, file.type);
+                } else {
+                    return brandGuidelineApi.uploadLogo(guidelineId, base64, 'primary', fileName);
                 }
+            });
 
-                const base64 = await fileToBase64(file);
-                const result = await brandGuidelineApi.uploadLogo(
-                    guidelineId,
-                    base64,
-                    'primary',
-                    file.name.replace(/\.[^/.]+$/, ''),
-                );
-                onLogosChange(result.allLogos);
+            const results = await Promise.all(uploadPromises);
+            const validResults = results.filter(Boolean);
+
+            if (validResults.length > 0) {
+                const latestResult = validResults[validResults.length - 1];
+                if (type === 'media' && latestResult && 'allMedia' in latestResult) {
+                    onMediaChange(latestResult.allMedia);
+                } else if (type === 'logo' && latestResult && 'allLogos' in latestResult) {
+                    onLogosChange(latestResult.allLogos);
+                }
+                toast.success(t('mockup.mediaKit.uploadSuccess'));
             }
-            toast.success(t('mockup.mediaKit.uploadSuccess'));
-        } catch {
+        } catch (error) {
+            console.error('Upload error:', error);
             toast.error(t('mockup.mediaKit.uploadError'));
         } finally {
             setIsUploading(false);
+            setUploadingFiles([]);
         }
-    }, [guidelineId, readOnly, isUploading, onLogosChange, t]);
+    }, [guidelineId, readOnly, isUploading, onMediaChange, onLogosChange, t]);
 
     const handleDeleteMedia = useCallback(async (mediaId: string) => {
         setDeletingId(mediaId);
@@ -150,8 +168,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
         if (readOnly) return;
 
         const files = Array.from(e.dataTransfer.files);
-        if (files.length > 0) handleMediaUpload(files);
-    }, [readOnly, handleMediaUpload]);
+        if (files.length > 0) handleUpload(files, 'media');
+    }, [readOnly, handleUpload]);
 
     const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
     const handleDragEnter = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
@@ -161,9 +179,38 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
     const displayedLogos = compact ? logos.slice(0, 4) : logos;
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 relative">
+            {/* Bulk Actions Bar */}
+            {selectedIds.size > 0 && !readOnly && (
+                <div className="sticky top-0 z-20 flex items-center justify-between p-2 mb-2 bg-brand-cyan/10 border border-brand-cyan/20 rounded-lg backdrop-blur-md animate-in fade-in slide-in-from-top-2">
+                    <span className="text-[10px] font-mono text-brand-cyan font-bold px-2 uppercase">
+                        {selectedIds.size} SELECTED
+                    </span>
+                    <div className="flex gap-2">
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => setSelectedIds(new Set())}
+                            className="text-[10px] font-mono hover:bg-white/5"
+                        >
+                            Cancel
+                        </Button>
+                        <Button 
+                            variant="destructive" 
+                            size="sm" 
+                            onClick={handleBulkDelete}
+                            disabled={isBulkDeleting}
+                            className="text-[10px] h-7 bg-red-500 hover:bg-red-600 font-mono"
+                        >
+                            {isBulkDeleting ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                            <span className="ml-2 uppercase">Delete All</span>
+                        </Button>
+                    </div>
+                </div>
+            )}
+
             {/* Logos Section */}
-            {(logos.length > 0 || !readOnly) && (
+            {(logos.length > 0 || !readOnly || uploadingFiles.some(f => f.type === 'logo')) && (
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
                         <MicroTitle className="text-[10px] ">
@@ -181,46 +228,65 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             </Button>
                         )}
                     </div>
-                    {displayedLogos.length > 0 ? (
+                    {(displayedLogos.length > 0 || uploadingFiles.some(f => f.type === 'logo')) ? (
                         <div className={cn("grid gap-2", compact ? "grid-cols-4" : "grid-cols-3 sm:grid-cols-4 md:grid-cols-6")}>
-                            {displayedLogos.map((logo) => (
-                                <div
-                                    key={logo.id}
-                                    className="group/logo relative aspect-square rounded-md border border-white/5 bg-neutral-900/40 overflow-hidden"
-                                >
-                                    <img
-                                        src={logo.url}
-                                        alt={logo.label || logo.variant}
-                                        className="w-full h-full object-contain p-2"
-                                        loading="lazy"
-                                    />
-                                    <span className="absolute bottom-0 left-0 right-0 text-[8px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase">
-                                        {logo.variant}
-                                    </span>
-                                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/logo:opacity-300 transition-all duration-300">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-6 w-6 p-1 rounded bg-black/60 text-white hover:bg-black/80 hover:text-brand-cyan"
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(logo.url);
-                                                toast.success('URL copied');
-                                            }}
-                                        >
-                                            <Copy size={10} />
-                                        </Button>
+                            {displayedLogos.map((logo) => {
+                                const isSelected = selectedIds.has(logo.id);
+                                return (
+                                    <div
+                                        key={logo.id}
+                                        onClick={() => !readOnly && toggleSelect(logo.id)}
+                                        className={cn(
+                                            "group/logo relative aspect-square rounded-md border transition-all cursor-pointer overflow-hidden",
+                                            isSelected ? "border-brand-cyan bg-brand-cyan/5 scale-[0.98]" : "border-white/5 bg-neutral-900/40"
+                                        )}
+                                    >
+                                        <img
+                                            src={logo.url}
+                                            alt={logo.label || logo.variant}
+                                            className="w-full h-full object-contain p-2"
+                                            loading="lazy"
+                                        />
+                                        <span className={cn(
+                                            "absolute bottom-0 left-0 right-0 text-[8px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase",
+                                            isSelected && "bg-brand-cyan text-black font-bold"
+                                        )}>
+                                            {logo.variant}
+                                        </span>
+                                        
+                                        {/* Selection Checkbox (Professional, subtle) */}
                                         {!readOnly && (
+                                            <div className={cn(
+                                                "absolute top-1 left-1 w-4 h-4 rounded-full border flex items-center justify-center transition-opacity shadow-lg",
+                                                isSelected ? "bg-brand-cyan border-brand-cyan opacity-100" : "bg-black/40 border-white/20 opacity-0 group-hover/logo:opacity-100"
+                                            )}>
+                                                {isSelected && <Check size={10} className="text-black" strokeWidth={4} />}
+                                            </div>
+                                        )}
+
+                                        <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/logo:opacity-300 transition-all duration-300">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={() => handleDeleteLogo(logo.id)}
-                                                disabled={deletingId === logo.id}
-                                                className="h-6 w-6 p-1 rounded bg-red-500/80 text-white hover:bg-red-500"
+                                                className="h-6 w-6 p-1 rounded bg-black/60 text-white hover:bg-black/80 hover:text-brand-cyan"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigator.clipboard.writeText(logo.url);
+                                                    toast.success('URL copied');
+                                                }}
                                             >
-                                                {deletingId === logo.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                                                <Copy size={10} />
                                             </Button>
-                                        )}
+                                        </div>
                                     </div>
+                                );
+                            })}
+                            
+                            {/* Optimistic UI Placeholders */}
+                            {uploadingFiles.filter(f => f.type === 'logo').map((file, i) => (
+                                <div key={i} className="aspect-square rounded-md border border-brand-cyan/20 bg-brand-cyan/5 flex flex-col items-center justify-center gap-1 animate-pulse">
+                                    <Loader2 size={14} className="animate-spin text-brand-cyan/50" />
+                                    <span className="text-[7px] font-mono text-brand-cyan/40 uppercase truncate px-1 w-full text-center">{file.name}</span>
                                 </div>
                             ))}
                         </div>
@@ -236,7 +302,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                         multiple
                         onChange={(e) => {
                             const files = Array.from(e.target.files || []);
-                            if (files.length) handleLogoUpload(files);
+                            if (files.length) handleUpload(files, 'logo');
                             e.target.value = '';
                         }}
                         className="hidden"
@@ -277,57 +343,76 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                         readOnly && "border-transparent"
                     )}
                 >
-                    {displayedMedia.length > 0 ? (
+                    {(displayedMedia.length > 0 || uploadingFiles.some(f => f.type === 'media')) ? (
                         <div className={cn("grid gap-2 p-2", compact ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4")}>
-                            {displayedMedia.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="group/media relative aspect-[4/3] rounded-md border border-white/5 bg-neutral-900/40 overflow-hidden"
-                                >
-                                    {item.type === 'image' ? (
-                                        <img
-                                            src={item.url}
-                                            alt={item.label || 'Media'}
-                                            className="w-full h-full object-contain p-2"
-                                            loading="lazy"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-neutral-600">
-                                            <FileText size={24} />
-                                            <span className="text-[9px] font-mono truncate max-w-full px-2">
-                                                {item.label || 'PDF'}
+                            {displayedMedia.map((item) => {
+                                const isSelected = selectedIds.has(item.id);
+                                return (
+                                    <div
+                                        key={item.id}
+                                        onClick={() => !readOnly && toggleSelect(item.id)}
+                                        className={cn(
+                                            "group/media relative aspect-[4/3] rounded-md border transition-all cursor-pointer overflow-hidden",
+                                            isSelected ? "border-brand-cyan bg-brand-cyan/5 scale-[0.98]" : "border-white/5 bg-neutral-900/40"
+                                        )}
+                                    >
+                                        {item.type === 'image' ? (
+                                            <img
+                                                src={item.url}
+                                                alt={item.label || 'Media'}
+                                                className="w-full h-full object-contain p-2"
+                                                loading="lazy"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-neutral-600">
+                                                <FileText size={24} />
+                                                <span className="text-[9px] font-mono truncate max-w-full px-2">
+                                                    {item.label || 'PDF'}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {item.label && item.type === 'image' && (
+                                            <span className={cn(
+                                                "absolute bottom-0 left-0 right-0 text-[8px] font-mono text-neutral-400 text-center py-0.5 bg-black/60 truncate px-1",
+                                                isSelected && "bg-brand-cyan text-black font-bold"
+                                            )}>
+                                                {item.label}
                                             </span>
-                                        </div>
-                                    )}
-                                    {item.label && item.type === 'image' && (
-                                        <span className="absolute bottom-0 left-0 right-0 text-[8px] font-mono text-neutral-400 text-center py-0.5 bg-black/60 truncate px-1">
-                                            {item.label}
-                                        </span>
-                                    )}
-                                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/media:opacity-300 transition-all duration-300">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-6 w-6 p-1 rounded bg-black/60 text-white hover:bg-black/80 hover:text-brand-cyan"
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(item.url);
-                                                toast.success('URL copied');
-                                            }}
-                                        >
-                                            <Copy size={10} />
-                                        </Button>
+                                        )}
+
+                                        {/* Selection Checkbox */}
                                         {!readOnly && (
+                                            <div className={cn(
+                                                "absolute top-1 left-1 w-4 h-4 rounded-full border flex items-center justify-center transition-opacity shadow-lg",
+                                                isSelected ? "bg-brand-cyan border-brand-cyan opacity-100" : "bg-black/40 border-white/20 opacity-0 group-hover/media:opacity-100"
+                                            )}>
+                                                {isSelected && <Check size={10} className="text-black" strokeWidth={4} />}
+                                            </div>
+                                        )}
+
+                                        <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/media:opacity-300 transition-all duration-300">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={() => handleDeleteMedia(item.id)}
-                                                disabled={deletingId === item.id}
-                                                className="h-6 w-6 p-1 rounded bg-red-500/80 text-white hover:bg-red-500"
+                                                className="h-6 w-6 p-1 rounded bg-black/60 text-white hover:bg-black/80 hover:text-brand-cyan"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigator.clipboard.writeText(item.url);
+                                                    toast.success('URL copied');
+                                                }}
                                             >
-                                                {deletingId === item.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                                                <Copy size={10} />
                                             </Button>
-                                        )}
+                                        </div>
                                     </div>
+                                );
+                            })}
+                            
+                            {/* Optimistic UI Placeholders */}
+                            {uploadingFiles.filter(f => f.type === 'media').map((file, i) => (
+                                <div key={i} className="aspect-[4/3] rounded-md border border-brand-cyan/20 bg-brand-cyan/5 flex flex-col items-center justify-center gap-1 animate-pulse">
+                                    <Loader2 size={14} className="animate-spin text-brand-cyan/50" />
+                                    <span className="text-[7px] font-mono text-brand-cyan/40 uppercase truncate px-1 w-full text-center">{file.name}</span>
                                 </div>
                             ))}
                         </div>
@@ -361,7 +446,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                     multiple
                     onChange={(e) => {
                         const files = Array.from(e.target.files || []);
-                        if (files.length) handleMediaUpload(files);
+                        if (files.length) handleUpload(files, 'media');
                         e.target.value = '';
                     }}
                     className="hidden"

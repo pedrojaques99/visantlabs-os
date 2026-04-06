@@ -27,8 +27,8 @@ import { useNodeDataUpdater } from '@/hooks/canvas/useNodeDataUpdater';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { NodeButton } from './shared/node-button';
 import { Input } from '@/components/ui/input';
-import { useLinkedGuidelineId } from '@/components/canvas/CanvasHeaderContext';
-import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
+
+import { useBrandKit } from '@/contexts/BrandKitContext';
 import { toast } from 'sonner';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
@@ -63,7 +63,6 @@ const DURATION_OPTIONS = [
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
-  const linkedGuidelineId = useLinkedGuidelineId();
   const nodes = useNodes();
   const { setNodes } = useReactFlow();
   const nodeData = data as VideoNodeData;
@@ -86,7 +85,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   // UI state
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
-  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+  const { openLibrary } = useBrandKit();
 
   // Derived state
   const isLoading = nodeData.isLoading || false;
@@ -368,7 +367,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           setIsBrandActive(active);
           updateData({ isBrandActive: active } as any);
         }}
-        onOpenMediaLibrary={() => setShowMediaLibrary(true)}
+        onOpenMediaLibrary={() => openLibrary({ onSelectAsset: handleSelectAsset, onAddToBoard: handleAddToBoard })}
       />
 
       {/* Mode Selector */}
@@ -609,14 +608,6 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         style={{ top: '50%' }}
       />
 
-      {/* Brand Media Library Modal */}
-      <BrandMediaLibraryModal
-        isOpen={showMediaLibrary}
-        onClose={() => setShowMediaLibrary(false)}
-        onSelectAsset={handleSelectAsset}
-        onAddToBoard={handleAddToBoard}
-        guidelineId={linkedGuidelineId}
-      />
     </NodeContainer>
   );
 }, (prevProps, nextProps) => {

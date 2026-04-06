@@ -743,17 +743,16 @@ router.post('/generate/stream', apiRateLimiter, authenticate, async (req: AuthRe
 
     // Import Gemini SDK for streaming
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const { GENERIC_SYSTEM_PROMPT } = await import('../services/geminiService.js');
     const apiKey = userApiKey || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
     const genAI = new GoogleGenerativeAI(apiKey.trim());
-    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT });
+    const model = genAI.getGenerativeModel({ 
+      model: GEMINI_MODELS.TEXT,
+      systemInstruction: fullSystemPrompt || GENERIC_SYSTEM_PROMPT
+    });
 
-    // Build content with system prompt
-    const contents = [];
-    if (fullSystemPrompt) {
-      contents.push({ role: 'user', parts: [{ text: `System: ${fullSystemPrompt}` }] });
-      contents.push({ role: 'model', parts: [{ text: 'Understood. I will follow these guidelines.' }] });
-    }
-    contents.push({ role: 'user', parts: [{ text: prompt }] });
+    // Build content
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
 
     // Start streaming
     const result = await model.generateContentStream({ contents });

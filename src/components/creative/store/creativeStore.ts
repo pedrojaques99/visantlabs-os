@@ -6,6 +6,8 @@ import type {
   CreativeOverlay,
   CreativeStatus,
 } from './creativeTypes';
+import type { GeminiModel, SeedreamModel, ImageProvider, Resolution } from '@/types/types';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
 
 interface CreativeStore {
   // Setup
@@ -14,6 +16,9 @@ interface CreativeStore {
   format: CreativeFormat;
   backgroundMode: 'ai' | 'upload';
   uploadedBackgroundUrl: string | null;
+  modelId: GeminiModel | SeedreamModel | string;
+  provider: ImageProvider;
+  resolution: Resolution;
 
   // Editor
   status: CreativeStatus;
@@ -28,6 +33,8 @@ interface CreativeStore {
   setFormat: (f: CreativeFormat) => void;
   setBackgroundMode: (m: 'ai' | 'upload') => void;
   setUploadedBackgroundUrl: (url: string | null) => void;
+  setModel: (modelId: GeminiModel | SeedreamModel, provider: ImageProvider) => void;
+  setResolution: (r: Resolution) => void;
 
   // Editor actions
   setStatus: (s: CreativeStatus) => void;
@@ -53,6 +60,9 @@ export const useCreativeStore = create<CreativeStore>((set) => ({
   format: '1:1',
   backgroundMode: 'ai',
   uploadedBackgroundUrl: null,
+  modelId: GEMINI_MODELS.NB2,
+  provider: 'gemini',
+  resolution: '2K',
 
   status: 'setup',
   backgroundUrl: null,
@@ -65,6 +75,8 @@ export const useCreativeStore = create<CreativeStore>((set) => ({
   setFormat: (format) => set({ format }),
   setBackgroundMode: (backgroundMode) => set({ backgroundMode }),
   setUploadedBackgroundUrl: (uploadedBackgroundUrl) => set({ uploadedBackgroundUrl }),
+  setModel: (modelId, provider) => set({ modelId, provider }),
+  setResolution: (resolution) => set({ resolution }),
 
   setStatus: (status) => set({ status }),
 
@@ -122,6 +134,9 @@ export const useCreativeStore = create<CreativeStore>((set) => ({
       format: '1:1',
       backgroundMode: 'ai',
       uploadedBackgroundUrl: null,
+      modelId: GEMINI_MODELS.NB2,
+      provider: 'gemini',
+      resolution: '2K',
       status: 'setup',
       backgroundUrl: null,
       overlay: null,
