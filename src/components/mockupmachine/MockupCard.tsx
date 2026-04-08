@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Download, RefreshCw, ImageIcon, Heart, X, Pencil } from 'lucide-react';
+import { Download, RefreshCw, ImageIcon, Heart, X, Pencil, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
@@ -12,6 +12,8 @@ import type { AspectRatio } from '@/types/types';
 import { GlassPanel } from '../ui/GlassPanel';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button'
+import { useGenerationFeedback } from '@/hooks/useGenerationFeedback';
+import { type FeedbackContext } from '@/services/feedbackApi';
 
 export interface MockupCardProps {
     base64Image: string | null;
@@ -38,6 +40,10 @@ export interface MockupCardProps {
     creditsPerOperation?: number;
     className?: string;
     style?: React.CSSProperties;
+    /** UUID da geração para o RAG loop */
+    generationId?: string | null;
+    /** Contexto da geração para o RAG loop */
+    feedbackContext?: FeedbackContext | (() => FeedbackContext);
 }
 
 export const MockupCard: React.FC<MockupCardProps> = React.memo(({
@@ -64,7 +70,9 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
     editButtonsDisabled = false,
     creditsPerOperation,
     className,
-    style
+    style,
+    generationId,
+    feedbackContext
 }) => {
     const { t } = useTranslation();
     const [showReImaginePanel, setShowReImaginePanel] = useState(false);
@@ -94,6 +102,13 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
             if (onLikeStateChange) onLikeStateChange(newIsLiked);
         },
         translationKeyPrefix: 'canvas',
+    });
+    
+    // RAG Logic Hook
+    const feedback = useGenerationFeedback({
+        generationId,
+        feature: 'mockup',
+        context: feedbackContext || {},
     });
 
     const handleToggleLike = mockupId && onLikeStateChange ? handleToggleLikeHook : onToggleLike;
@@ -271,6 +286,44 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                                     </Button>
                                 </Tooltip>
                             )}
+
+                            <div className="w-px h-3 bg-white/10 mx-1" />
+
+                            <div className="flex items-center gap-0.5 px-1">
+                                <Tooltip content={feedback.rating === 'up' ? "Remover feedback positivo" : "Valeu! (Melhora o modelo)"} position="top">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={(e) => { e.stopPropagation(); feedback.submit('up'); }}
+                                        className={cn(
+                                            "w-8 h-8 rounded-md transition-all",
+                                            feedback.rating === 'up' 
+                                                ? "text-green-400 bg-green-400/10 hover:bg-green-400/20" 
+                                                : "text-neutral-400 hover:text-white hover:bg-white/10"
+                                        )}
+                                        disabled={feedback.isLoading}
+                                    >
+                                        <ThumbsUp size={12} className={cn(feedback.rating === 'up' && "fill-current")} />
+                                    </Button>
+                                </Tooltip>
+                                
+                                <Tooltip content={feedback.rating === 'down' ? "Remover feedback negativo" : "Não gostei (Reportar ruído)"} position="top">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={(e) => { e.stopPropagation(); feedback.submit('down'); }}
+                                        className={cn(
+                                            "w-8 h-8 rounded-md transition-all",
+                                            feedback.rating === 'down' 
+                                                ? "text-red-400 bg-red-400/10 hover:bg-red-400/20" 
+                                                : "text-neutral-400 hover:text-white hover:bg-white/10"
+                                        )}
+                                        disabled={feedback.isLoading}
+                                    >
+                                        <ThumbsDown size={12} className={cn(feedback.rating === 'down' && "fill-current")} />
+                                    </Button>
+                                </Tooltip>
+                            </div>
                         </GlassPanel>
                     </div>
                 </div>

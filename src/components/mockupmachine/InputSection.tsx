@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
-import { ImageOff, Info, X, Plus, CheckCircle2, ChevronRight, ArrowLeftRight } from 'lucide-react';
-import { GlitchLoader } from '../ui/GlitchLoader';
+import { X, Plus, CheckCircle2, ArrowLeftRight } from 'lucide-react';
 import type { UploadedImage, DesignType, GeminiModel } from '@/types/types';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { formatImageTo16_9 } from '@/utils/fileUtils';
 import { isSafeUrl } from '@/utils/imageUtils';
-import { cn, sectionTitleClass } from '@/lib/utils';
-import { useMockup } from './MockupContext';
+import { cn } from '@/lib/utils';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { MicroTitle } from '../ui/MicroTitle';
-import { GlassPanel } from '../ui/GlassPanel';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { BrandGuidelineSelector } from './BrandGuidelineSelector';
-import { Switch } from '@/components/ui/switch';
 
 
 interface InputSectionProps {
@@ -229,140 +225,129 @@ export const InputSection: React.FC<InputSectionProps> = ({
     highlight?: boolean;
   }) => (
     <div className={cn(
-      "relative flex flex-col p-2.5 rounded-xl border transition-all group w-full animate-in fade-in zoom-in-95 duration-300",
-      highlight ? "bg-brand-cyan/[0.03] border-brand-cyan/20 shadow-lg shadow-brand-cyan/5" : "bg-neutral-900/40 border-white/[0.05] hover:border-white/10"
+      "relative flex flex-col p-2 rounded-2xl border transition-all group w-full animate-in fade-in zoom-in-95 duration-500",
+      highlight ? "bg-brand-cyan/[0.02] border-brand-cyan/20 shadow-[0_8px_32px_rgba(var(--brand-cyan-rgb),0.05)]" : "bg-neutral-900/20 border-white/[0.03] hover:border-white/10"
     )}>
       {/* Image Container */}
-      <div className="relative h-auto max-h-[min(200px,38vh)] w-full rounded-md overflow-hidden flex items-center justify-center group/img-container">
+      <div className="relative h-64 w-full rounded-xl overflow-hidden flex items-center justify-center group/img-container bg-black/20 p-4">
         <img
           src={getImageSrc(img)}
           alt={label}
           loading="lazy"
-          decoding="async"
-          className="max-h-[min(200px,28vh)] w-full h-auto object-contain transition-transform duration-300 group-hover/img-container:scale-[1.02]"
+          className="max-h-full max-w-full object-contain transition-transform duration-700 group-hover/img-container:scale-[1.02]"
         />
 
         {/* Hover Overlay with Replace Action */}
-        <div className="absolute inset-0 bg-black/20 flex items-center justify-center gap-4 opacity-0 group-hover/img-container:opacity-300 transition-all duration-300 backdrop-blur-[10px] p-3">
-          <Button variant="ghost" type="button"
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/img-container:opacity-100 transition-all duration-300 backdrop-blur-md bg-black/40">
+          <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onReplace();
             }}
-            className="flex flex-col items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white"
+            className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all transform translate-y-4 group-hover/img-container:translate-y-0 duration-500"
           >
-            <div className="p-3 rounded-full bg-white/10 border border-white/20 group-hover:bg-brand-cyan group-hover:text-black transition-all shadow-xl">
+            <div className="p-3 rounded-full bg-brand-cyan text-black shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.4)]">
               <ArrowLeftRight size={20} />
             </div>
-            <MicroTitle as="span" className="font-bold text-white">{t('mockup.replace') || 'Substituir'}</MicroTitle>
-          </Button>
-
-          {onAddRef && (
-            <Button variant="ghost" type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddRef();
-              }}
-              className="flex flex-col items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white"
-            >
-              <div className="p-3 rounded-full bg-white/10 border border-white/20 group-hover:bg-brand-cyan group-hover:text-black transition-all shadow-xl">
-                <Plus size={20} />
-              </div>
-              <MicroTitle as="span" className="font-bold text-white">+ REF</MicroTitle>
-            </Button>
-          )}
+            <span className="text-[10px] font-bold font-mono tracking-widest text-white uppercase">{t('mockup.replace') || 'Substituir'}</span>
+          </button>
         </div>
 
-        {/* Status Badge (Top Right) */}
+        {/* Status Badge */}
         {isAnalyzed && (
-          <div className="absolute top-2 right-2 flex items-center justify-center bg-brand-cyan text-black p-1 rounded-full shadow-lg border border-brand-cyan/50 z-10 animate-in zoom-in duration-300">
+          <div className="absolute top-3 right-3 flex items-center justify-center bg-brand-cyan text-black w-6 h-6 rounded-full shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.5)] z-10 animate-in zoom-in duration-500">
             <CheckCircle2 size={12} strokeWidth={3} />
           </div>
         )}
       </div>
 
       {/* Info & Footer */}
-      <div className="mt-3 flex items-start justify-between gap-2">
+      <div className="mt-3 px-2 flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className={cn(
-            "text-[11px] font-mono font-bold uppercase  truncate mb-0.5",
-            highlight ? "text-brand-cyan" : "text-neutral-300"
-          )}>
-            {label}
+          <div className="flex items-center gap-2 mb-0.5">
+             <div className={cn("w-1 h-1 rounded-full", highlight ? "bg-brand-cyan animate-pulse" : "bg-neutral-600")} />
+             <p className={cn(
+                "text-[10px] font-mono font-bold uppercase tracking-widest truncate",
+                highlight ? "text-brand-cyan" : "text-neutral-500"
+             )}>
+                {label}
+             </p>
+          </div>
+          <p className="text-[9px] font-mono text-neutral-600 tracking-tight opacity-60">
+            {img.mimeType?.split('/')[1]?.toUpperCase() || 'IMG'} • {img.size ? `${(img.size / 1024).toFixed(0)}KB` : '--'}
           </p>
-          <MicroTitle className="text-[10px] tracking-tighter truncate opacity-80">
-            {img.mimeType?.split('/')[1] || 'IMG'} • {img.size ? `${(img.size / 1024).toFixed(0)}KB` : '---'}
-          </MicroTitle>
         </div>
 
-        {onRemove && (
-          <Button
-            onClick={onRemove}
-            className="p-1.5 hover:bg-white/5 rounded transition-colors text-neutral-600 hover:text-red-400 group/remove"
-            title={t('mockup.removeFileTitle') || "Remover arquivo"}
-          >
-            <X size={14} className="group-hover/remove:scale-110 transition-transform" />
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          {onAddRef && (
+            <button
+              onClick={onAddRef}
+              className="p-2 hover:bg-brand-cyan/10 rounded-lg transition-colors text-neutral-700 hover:text-brand-cyan group/add"
+              title={t('mockup.addReference') || "Adicionar referência"}
+            >
+              <Plus size={14} className="group-hover/add:scale-110 transition-transform" />
+            </button>
+          )}
+
+          {onRemove && (
+            <button
+              onClick={onRemove}
+              className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-neutral-700 hover:text-red-400 group/remove"
+              title={t('mockup.removeFileTitle') || "Remover arquivo"}
+            >
+              <X size={14} className="group-hover/remove:rotate-90 transition-transform duration-300" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
 
   return (
-    <section className={cn("flex flex-col gap-5 w-full", className)}>
-      {/* Files Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-10">
-          <MicroTitle className="text-brand-cyan uppercase mr-20">
-            {t('mockup.filesLoaded', { count: referenceImages.length + 1 }) || `${referenceImages.length + 1} Arquivo(s) carregados`}
-          </MicroTitle>
+    <section className={cn("flex flex-col gap-8 w-full", className)}>
+      {/* Header Area: Metadata + Settings */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/[0.03] pb-6">
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col">
+            <MicroTitle className="text-neutral-600 font-mono text-[9px] tracking-[0.2em] mb-1">
+               WORKSPACE INITIALIZED
+            </MicroTitle>
+            <p className="text-sm font-bold text-white tracking-tight">
+              {t('mockup.filesLoaded', { count: referenceImages.length + 1 }) || `${referenceImages.length + 1} Assets Carregados`}
+            </p>
+          </div>
         </div>
 
         {!isLoadingImage && (
-          <div className="flex items-center gap-3">
-            {/* Brand Guideline Button */}
-            {uploadedImage && <BrandGuidelineSelector asButton />}
-
-            <div
-                role="button"
-                onClick={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
+          <div className="flex items-center gap-2">
+            {/* Design Type Segmented Control */}
+            <div className="flex items-center p-1 bg-neutral-900/50 rounded-xl border border-white/[0.05]">
+              <button
+                onClick={() => onDesignTypeChange('layout')}
                 className={cn(
-                    "px-2 h-7 rounded-md transition-all flex items-center gap-1.5 border cursor-pointer select-none",
-                    designType === 'logo'
-                        ? "bg-brand-cyan/10 border-brand-cyan/20 text-brand-cyan"
-                        : "bg-white/5 border-white/10 text-neutral-500 hover:text-neutral-400 hover:bg-white/10"
+                  "px-3 py-1.5 rounded-lg text-[9px] font-bold font-mono tracking-widest uppercase transition-all",
+                  designType === 'layout' 
+                    ? "bg-white/10 text-white shadow-lg" 
+                    : "text-neutral-600 hover:text-neutral-400"
                 )}
-                title={t('mockup.transparentBackground') || 'Isolar Logotipo'}
-            >
-                <Switch
-                    checked={designType === 'logo'}
-                    onCheckedChange={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
-                    className="scale-[0.5] origin-left pointer-events-none"
-                />
-                <span className="font-bold text-[8px] uppercase tracking-tighter whitespace-nowrap opacity-80">
-                    {t('mockup.transparentBackground') || 'ISOLAR LOGO'}
-                </span>
+              >
+                Full Layout
+              </button>
+              <button
+                onClick={() => onDesignTypeChange('logo')}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-[9px] font-bold font-mono tracking-widest uppercase transition-all",
+                  designType === 'logo' 
+                    ? "bg-brand-cyan/20 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]" 
+                    : "text-neutral-600 hover:text-neutral-400"
+                )}
+              >
+                Logo Isolar
+              </button>
             </div>
 
-            {canAddMoreReferences && (
-              <label
-                htmlFor="multiple-image-upload"
-                className="cursor-pointer px-3 h-8 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-all text-neutral-400 hover:text-white flex items-center gap-2"
-                title={t('mockup.addReferenceImage', { count: referenceImages.length })}
-              >
-                <Plus size={12} />
-                <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">REF</MicroTitle>
-              </label>
-            )}
-            {!displayImage && (
-              <label
-                htmlFor="image-upload-blank"
-                className="cursor-pointer px-3 h-8 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-md transition-all text-brand-cyan flex items-center gap-2"
-              >
-                <Plus size={12} />
-                <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">UPLOAD</MicroTitle>
-              </label>
-            )}
+            {uploadedImage && <BrandGuidelineSelector asButton />}
           </div>
         )}
       </div>
@@ -370,20 +355,31 @@ export const InputSection: React.FC<InputSectionProps> = ({
       {/* Standardized Files Grid */}
       <div
         className={cn(
-          "grid gap-4 w-full min-h-0",
-          displayImage && referenceImages.length === 0 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"
+          "grid gap-5 w-full min-h-[140px]",
+          displayImage ? (referenceImages.length === 0 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2") : "grid-cols-1"
         )}
       >
         {/* Main Image Card */}
-        {displayImage && (
+        {displayImage ? (
           <ImageCard
             img={displayImage}
-            label={t('mockup.mainFile')}
+            label={t('mockup.mainFile') || "PRIMARY DESIGN"}
             onReplace={() => document.getElementById('image-upload-blank')?.click()}
             onAddRef={canAddMoreReferences ? () => document.getElementById('multiple-image-upload')?.click() : undefined}
             isAnalyzed={hasAnalyzed}
             highlight={hasAnalyzed}
           />
+        ) : (
+          <label
+            htmlFor="image-upload-blank"
+            className="flex flex-col items-center justify-center p-12 rounded-3xl border-2 border-dashed border-white/5 hover:border-brand-cyan/20 bg-white/[0.02] hover:bg-brand-cyan/[0.02] transition-all cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-brand-cyan/10 transition-all">
+              <Plus className="text-neutral-500 group-hover:text-brand-cyan" size={20} />
+            </div>
+            <MicroTitle className="text-neutral-600 group-hover:text-brand-cyan/60">Initialize Workspace</MicroTitle>
+            <p className="text-[10px] text-neutral-700 font-mono mt-1 group-hover:text-neutral-500 transition-colors uppercase">Drop primary design asset</p>
+          </label>
         )}
 
         {/* Reference Images List */}
@@ -391,7 +387,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
           <ImageCard
             key={index}
             img={img}
-            label={t('mockup.referenceLabel', { order: index + 1 }) || `Referência ${index + 1}`}
+            label={t('mockup.referenceLabel', { order: index + 1 }) || `REF-0${index + 1}`}
             onReplace={() => {
               setReplacingRefIndex(index);
               document.getElementById('replace-reference-upload')?.click();
@@ -400,7 +396,16 @@ export const InputSection: React.FC<InputSectionProps> = ({
           />
         ))}
 
-
+        {/* Add Reference Placeholder */}
+        {canAddMoreReferences && (
+          <label
+            htmlFor="multiple-image-upload"
+            className="flex flex-col items-center justify-center p-6 rounded-2xl border border-dashed border-white/5 hover:border-white/10 bg-white/[0.01] hover:bg-white/[0.03] transition-all cursor-pointer group"
+          >
+            <Plus className="text-neutral-700 group-hover:text-neutral-500 mb-2" size={16} />
+            <span className="text-[9px] font-bold font-mono text-neutral-600 group-hover:text-neutral-400 uppercase tracking-widest">+ Add Reference</span>
+          </label>
+        )}
       </div>
 
       {/* Hidden Inputs */}

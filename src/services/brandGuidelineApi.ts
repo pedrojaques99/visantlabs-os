@@ -110,7 +110,10 @@ export const brandGuidelineApi = {
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) throw new Error('Failed to ingest brand guideline data');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || 'Failed to ingest brand guideline data');
+    }
     const result = await response.json();
     return result;
   },

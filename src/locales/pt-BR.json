@@ -138,6 +138,16 @@
     "videos": "Vídeos",
     "videosByModel": "Vídeos por Modelo"
   },
+  "mockup": {
+    "searchBrand": "Buscar marca...",
+    "noResults": "Nenhuma marca encontrada",
+    "brandContext": "DNA DA MARCA",
+    "optional": "OPCIONAL",
+    "selectBrandTitle": "SELECIONAR DNA DA MARCA",
+    "selectBrandDescription": "Escolha um guia de marca para contextualizar suas gerações.",
+    "none": "IGNORAR CONTEXTO",
+    "createNewBrandGuideline": "ADICIONAR NOVO DNA"
+  },
   "adminPresets": {
     "batchPasteLabel": "Cole o JSON com os presets (array de objetos)",
     "batchTitle": "Importar Batch de Mockup Presets",
@@ -240,6 +250,10 @@
       "name": "Halftone Machine"
     },
     "home": "Início",
+    "instagramExtractor": {
+      "description": "Extraia imagens em alta resolução de qualquer perfil público do Instagram.",
+      "name": "Instagram Extractor"
+    },
     "mockupMachine": {
       "description": "Gere mockups profissionais com IA",
       "name": "Mockup Machine"
@@ -2267,19 +2281,20 @@
     "materialCategory": "MATERIAL",
     "maxReferenceImages": "Limite de 3 imagens de referência atingido",
     "mediaKit": {
-      "addLogo": "Adicionar logo",
-      "addMedia": "Adicionar mídia",
-      "deleteError": "Falha ao remover mídia",
-      "deleteSuccess": "Mídia removida",
-      "dropHere": "Arraste arquivos aqui ou clique para enviar",
-      "fileTooLarge": "Arquivo muito grande (máx 10MB)",
-      "logos": "Logos",
-      "more": "mais",
-      "noLogos": "Nenhum logo ainda",
-      "noMedia": "Nenhum asset de mídia ainda",
       "title": "Media Kit",
-      "uploadError": "Falha ao enviar mídia",
-      "uploadSuccess": "Mídia enviada com sucesso"
+      "logos": "Logos",
+      "addLogo": "Add logo",
+      "addMedia": "Add media",
+      "dropHere": "Drag files here or click to upload",
+      "noLogos": "No logos yet",
+      "noMedia": "No media assets yet",
+      "fileTooLarge": "File too large (max 10MB)",
+      "uploadSuccess": "Media uploaded successfully",
+      "uploadError": "Failed to upload media",
+      "deleteSuccess": "Media removed",
+      "deleteError": "Failed to remove media",
+      "more": "more",
+      "vaultEmpty": "Vault is empty"
     },
     "modelSelection": "0. MODELO_",
     "modelSelectionDescription": "Escolha o modelo de IA para a geração.",

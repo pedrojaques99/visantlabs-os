@@ -173,7 +173,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
           <div className="space-y-8">
             {/* Editing Manifesto */}
             <div className="space-y-2">
-              <MicroTitle className="opacity-300 uppercase text-[9px]">Manifesto</MicroTitle>
+              <MicroTitle className="opacity-60 uppercase text-[11px] tracking-widest text-neutral-400">Manifesto</MicroTitle>
               <Textarea
                 value={strategy.manifesto || ''}
                 onChange={(e) => handleUpdateStrategy({ manifesto: e.target.value })}
@@ -185,7 +185,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             {/* Editing Archetypes */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <MicroTitle className="opacity-300 uppercase text-[9px]">Archetypes</MicroTitle>
+                <MicroTitle className="opacity-60 uppercase text-[11px] tracking-widest text-neutral-400">Archetypes</MicroTitle>
                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => addItem('archetype')}>
                   <Plus size={12} />
                 </Button>
@@ -226,7 +226,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             {/* Editing Voice Values */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <MicroTitle className="opacity-300 uppercase text-[9px]">Tone of Voice Values</MicroTitle>
+                <MicroTitle className="opacity-60 uppercase text-[11px] tracking-widest text-neutral-400">Tone of Voice Values</MicroTitle>
                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => addItem('voice')}>
                   <Plus size={12} />
                 </Button>
@@ -275,7 +275,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1 opacity-300">
+          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1">
             {[
               { label: 'Manifesto', icon: Heart, type: 'manifesto' },
               { label: 'Archetypes', icon: Diamond, type: 'archetype' },
@@ -284,7 +284,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             ].map((p, i) => (
               <div
                 key={i}
-                className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-white/[0.01] bg-white/[0.01] h-full w-full cursor-pointer hover:bg-white/[0.03] transition-colors"
+                className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-white/[0.05] bg-white/[0.01] h-full w-full cursor-pointer hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300"
                 onClick={() => {
                   setIsEditing(true);
                   if (p.type !== 'manifesto') {
@@ -292,10 +292,10 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                   }
                 }}
               >
-                <div className="w-10 h-10 flex items-center justify-center rounded-lg text-neutral-800 border border-white/5">
-                  <p.icon size={18} strokeWidth={1} />
+                <div className="w-12 h-12 flex items-center justify-center rounded-xl text-neutral-500 border border-white/5 bg-neutral-900/50">
+                  <p.icon size={20} strokeWidth={1} />
                 </div>
-                <span className="py-4 text-center text-[10px] font-mono tracking-widest uppercase w-full opacity-30">{p.label}</span>
+                <span className="pt-4 text-center text-[11px] font-mono tracking-[0.2em] uppercase w-full text-neutral-400">{p.label}</span>
               </div>
             ))}
           </div>

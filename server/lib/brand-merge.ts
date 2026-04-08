@@ -57,6 +57,17 @@ export function mergeBrandGuidelines(existing: BrandGuideline, incoming: Partial
     if (!merged.guidelines.imagery && incoming.guidelines.imagery) merged.guidelines.imagery = incoming.guidelines.imagery
   }
 
+  // Strategy: only fill empty
+  if (incoming.strategy) {
+    merged.strategy = merged.strategy || {}
+    if (!merged.strategy.manifesto && incoming.strategy.manifesto) merged.strategy.manifesto = incoming.strategy.manifesto
+    if (!merged.strategy.positioning && incoming.strategy.positioning) merged.strategy.positioning = incoming.strategy.positioning
+    if (!merged.strategy.archetypes?.length && incoming.strategy.archetypes?.length) merged.strategy.archetypes = incoming.strategy.archetypes
+    if (!merged.strategy.personas?.length && incoming.strategy.personas?.length) merged.strategy.personas = incoming.strategy.personas
+    if (!merged.strategy.voiceValues?.length && incoming.strategy.voiceValues?.length) merged.strategy.voiceValues = incoming.strategy.voiceValues
+  }
+
+
   merged.extraction = merged.extraction || { sources: [], completeness: 0 }
   merged.extraction.completeness = calculateCompleteness(merged)
 

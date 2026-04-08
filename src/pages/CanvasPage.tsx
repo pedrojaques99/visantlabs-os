@@ -95,6 +95,7 @@ import { ExportPanel } from '../components/ui/ExportPanel';
 import type { CommunityPrompt } from '../types/communityPrompts';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { Input } from '@/components/ui/input'
+import { PageShell } from '@/components/ui/PageShell';
 
 
 // Node types
@@ -3705,25 +3706,84 @@ export const CanvasPage: React.FC = () => {
       </div>
     );
   }
+  // Global mouse handlers for drawing outside the canvas
+  const handleGlobalMouseMove = useCallback((e: React.MouseEvent) => {
+    if (drawing.isDrawing) {
+      drawing.draw(e);
+    }
+  }, [drawing]);
+
+  const handleGlobalMouseUp = useCallback(() => {
+    if (drawing.isDrawing) {
+      drawing.stopDrawing();
+    }
+  }, [drawing]);
+
+  // Handle drag and drop onto canvas
+  const handleCanvasDrop = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+
+    if (!reactFlowInstance) return;
+
+    const type = event.dataTransfer.getData('application/reactflow');
+    const dataString = event.dataTransfer.getData('application/nodeData');
+
+    // check if the dropped element is valid
+    if (typeof type === 'undefined' || !type) {
+      return;
+    }
+
+    const position = reactFlowInstance.screenToFlowPosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    const nodeId = generateNodeId(type);
+    let nodeData: any = { label: `${type} node` };
+    
+    if (dataString) {
+      try {
+        nodeData = JSON.parse(dataString);
+      } catch (e) {
+        console.error('Failed to parse node data', e);
+      }
+    }
+
+    const newNode = {
+      id: nodeId,
+      type,
+      position,
+      data: nodeData,
+    };
+
+    setNodes((nds) => nds.concat(newNode as any));
+    addToHistory([...nodes, newNode as any], edges, drawing.drawings);
+  }, [reactFlowInstance, setNodes, addToHistory, nodes, edges, drawing.drawings]);
 
   return (
-    <>
-      <div
-        className="text-neutral-300 relative overflow-hidden transition-colors duration-300"
-        style={{ backgroundColor: backgroundColor, minHeight: '100vh' }}
+    <PageShell
+      pageId="canvas-editor"
+      title={canvasHeader.projectName || "Canvas Editor"}
+      width="full"
+      noBackground
+      seoTitle={`${canvasHeader.projectName || 'Canvas'} | Visant Canvas`}
+      seoDescription="Powerful node-based workflow editor for creative generation and image processing."
+      hideHeader
+      contentClassName="p-0"
+    >
+      <div 
+        className="flex flex-col h-[calc(100vh-3.5rem)] relative overflow-hidden select-none bg-neutral-950" 
+        onMouseMove={handleGlobalMouseMove} 
+        onMouseUp={handleGlobalMouseUp}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'copy';
+        }}
+        onDrop={handleCanvasDrop}
       >
-        <div className="fixed inset-0 z-0" style={{ position: 'relative', opacity: 1, scale: 5 }}>
-        </div>
-
-        {/* Main Canvas Container with Sidebar Layout - Starts below header (65px) */}
-        <div className="flex relative w-full" style={{ height: 'calc(100vh - 65px)', paddingTop: '0px', justifyContent: 'flex-start' }}>
-          {/* Canvas Area - Adjusts width when sidebar is open */}
-          <div
-            className="flex-1 transition-all duration-300 ease-out relative"
-            style={{
-              width: '100%',
-            }}
-          >
+        <div className="flex-1 relative flex overflow-hidden">
+          {/* Main Canvas Area */}
+          <div className="flex-1 relative order-2 overflow-hidden flex flex-col">
             {isCollaborative && projectId && isAuthenticated && authService.getToken() ? (
               <RoomProvider
                 id={`canvas-${projectId}`}
@@ -3844,8 +3904,6 @@ export const CanvasPage: React.FC = () => {
                 drawings={drawing.drawings}
                 selectedDrawingIds={drawing.selectedDrawingIds}
                 onDrawingClick={(id: string) => {
-                  // Handle single click - for now just select single item
-                  // Multi-select with Shift/Ctrl can be added later if needed
                   drawing.setSelectedDrawingId(id);
                 }}
                 selectionBox={drawing.selectionBox}
@@ -3889,9 +3947,6 @@ export const CanvasPage: React.FC = () => {
               />
             )}
           </div>
-
-          {/* Chat Sidebar - Positioned absolutely within flex container */}
-
         </div>
 
         {/* Bottom Toolbar */}
@@ -3988,7 +4043,7 @@ export const CanvasPage: React.FC = () => {
             onToggleUI={() => canvasHeader.setShowControls(!canvasHeader.showControls)}
           />
         )}
-
+        
         {/* Edge Context Menu */}
         {edgeContextMenu && (
           <EdgeContextMenu
@@ -4004,14 +4059,12 @@ export const CanvasPage: React.FC = () => {
           const node = nodes.find(n => n.id === imageContextMenu.nodeId);
           if (!node) return null;
 
-          // Check if node has media
           const media = getMediaFromNodeForCopy(node);
           if (!media) return null;
 
           const imageUrl = media.mediaUrl;
           const isLiked = (node.data as any).isLiked || (node.data as any).mockup?.isLiked || false;
 
-          // Use appropriate handlers
           const isOutputNode = node.type === 'output';
 
           const onLike = isOutputNode ? handleOutputLike : handleImageLike;
@@ -4136,7 +4189,6 @@ export const CanvasPage: React.FC = () => {
         />
       </div>
 
-
       {/* Branding Project Selection Modal */}
       {projectModalNodeId && (
         <BrandingProjectSelectModal
@@ -4150,219 +4202,65 @@ export const CanvasPage: React.FC = () => {
               const node = nodes.find(n => n.id === projectModalNodeId);
               if (node && node.type === 'strategy') {
                 const strategyData = node.data as StrategyNodeData;
-                // Load project using the handler from StrategyNode
                 try {
-                  if (isLocalDevelopment()) {
-                    console.log(`[CanvasPage] 📂 Loading project from modal`, {
-                      projectId,
-                      nodeId: projectModalNodeId
-                    });
-                  }
-
                   const { brandingApi } = await import('../services/brandingApi');
                   const project = await brandingApi.getById(projectId);
 
-                  if (isLocalDevelopment()) {
-                    console.log(`[CanvasPage] 📦 Project loaded from API`, {
-                      projectId,
-                      projectName: project.name,
-                      hasPrompt: !!project.prompt,
-                      promptLength: project.prompt?.length || 0,
-                      dataKeys: Object.keys(project.data || {}),
-                      dataValues: Object.keys(project.data || {}).reduce((acc, key) => {
-                        const value = project.data[key];
-                        if (Array.isArray(value)) {
-                          acc[key] = `Array(${value.length})`;
-                        } else if (typeof value === 'object' && value !== null) {
-                          acc[key] = `Object(${Object.keys(value).length} keys)`;
-                        } else if (typeof value === 'string') {
-                          acc[key] = `String(${value.length} chars)`;
-                        } else {
-                          acc[key] = typeof value;
-                        }
-                        return acc;
-                      }, {} as Record<string, string>),
-                      fullData: project.data
-                    });
-                  }
-
-                  // Convert BrandingData to StrategyNodeData format
                   const convertedStrategyData: any = {};
-
-                  // Handle marketResearch - support multiple formats (same logic as StrategyNode)
                   if (typeof project.data.marketResearch === 'string' && project.data.marketResearch.trim()) {
-                    // New format: marketResearch is a string (benchmarking paragraph)
                     convertedStrategyData.marketResearch = project.data.marketResearch;
-                    if (isLocalDevelopment()) {
-                      console.log(`[CanvasPage] ✅ Converted marketResearch (string)`, {
-                        length: project.data.marketResearch.length
-                      });
-                    }
                   } else if (typeof project.data.marketResearch === 'object' && project.data.marketResearch !== null) {
-                    // Object format
                     convertedStrategyData.marketResearch = project.data.marketResearch;
-                    if (isLocalDevelopment()) {
-                      console.log(`[CanvasPage] ✅ Converted marketResearch (object)`, {
-                        keys: Object.keys(project.data.marketResearch)
-                      });
-                    }
                   } else if (project.data.mercadoNicho || project.data.publicoAlvo || project.data.posicionamento || project.data.insights) {
-                    // Old format: separate fields
                     convertedStrategyData.marketResearch = {
                       mercadoNicho: project.data.mercadoNicho || '',
                       publicoAlvo: project.data.publicoAlvo || '',
                       posicionamento: project.data.posicionamento || '',
                       insights: project.data.insights || '',
                     };
-                    if (isLocalDevelopment()) {
-                      console.log(`[CanvasPage] ✅ Converted marketResearch (old format)`, {
-                        hasMercadoNicho: !!project.data.mercadoNicho,
-                        hasPublicoAlvo: !!project.data.publicoAlvo,
-                        hasPosicionamento: !!project.data.posicionamento,
-                        hasInsights: !!project.data.insights
-                      });
-                    }
                   }
 
-                  // Convert persona
                   if (project.data.persona) {
                     if (typeof project.data.persona === 'object' && project.data.persona !== null) {
                       convertedStrategyData.persona = project.data.persona;
-                      if (isLocalDevelopment()) {
-                        console.log(`[CanvasPage] ✅ Converted persona`, {
-                          hasDemographics: !!project.data.persona.demographics,
-                          desiresCount: Array.isArray(project.data.persona.desires) ? project.data.persona.desires.length : 0,
-                          painsCount: Array.isArray(project.data.persona.pains) ? project.data.persona.pains.length : 0
-                        });
-                      }
                     }
                   }
 
-                  // Convert archetypes
                   if (project.data.archetypes) {
                     if (typeof project.data.archetypes === 'object' && project.data.archetypes !== null) {
                       convertedStrategyData.archetypes = project.data.archetypes;
-                      if (isLocalDevelopment()) {
-                        console.log(`[CanvasPage] ✅ Converted archetypes`, {
-                          hasPrimary: !!project.data.archetypes.primary,
-                          hasSecondary: !!project.data.archetypes.secondary,
-                          hasReasoning: !!project.data.archetypes.reasoning
-                        });
-                      }
                     }
                   }
 
-                  // Convert array sections
                   const arraySections = ['competitors', 'references', 'colorPalettes', 'visualElements', 'mockupIdeas'] as const;
                   arraySections.forEach(key => {
                     if (project.data[key] !== undefined && project.data[key] !== null) {
-                      if (Array.isArray(project.data[key])) {
-                        if (project.data[key].length > 0) {
-                          convertedStrategyData[key] = project.data[key];
-                          if (isLocalDevelopment()) {
-                            console.log(`[CanvasPage] ✅ Converted ${key}`, {
-                              count: project.data[key].length
-                            });
-                          }
-                        } else if (isLocalDevelopment()) {
-                          console.log(`[CanvasPage] ⚠️ Skipped ${key} (empty array)`);
-                        }
-                      } else if (isLocalDevelopment()) {
-                        console.log(`[CanvasPage] ⚠️ Skipped ${key} (not an array)`, {
-                          type: typeof project.data[key]
-                        });
+                      if (Array.isArray(project.data[key]) && project.data[key].length > 0) {
+                        convertedStrategyData[key] = project.data[key];
                       }
                     }
                   });
 
-                  // Convert object sections
                   const objectSections = ['swot', 'moodboard'] as const;
                   objectSections.forEach(key => {
                     if (project.data[key] !== undefined && project.data[key] !== null) {
                       if (typeof project.data[key] === 'object') {
                         convertedStrategyData[key] = project.data[key];
-                        if (isLocalDevelopment()) {
-                          console.log(`[CanvasPage] ✅ Converted ${key}`, {
-                            keys: Object.keys(project.data[key])
-                          });
-                        }
-                      } else if (isLocalDevelopment()) {
-                        console.log(`[CanvasPage] ⚠️ Skipped ${key} (not an object)`, {
-                          type: typeof project.data[key]
-                        });
                       }
                     }
                   });
 
-                  const convertedKeys = Object.keys(convertedStrategyData);
-                  if (isLocalDevelopment()) {
-                    console.log(`[CanvasPage] 🔄 Converting project data`, {
-                      projectId,
-                      nodeId: projectModalNodeId,
-                      convertedSections: convertedKeys,
-                      sectionsCount: convertedKeys.length,
-                      convertedData: convertedStrategyData
-                    });
-                  }
-
                   if (strategyData.onUpdateData) {
-                    if (isLocalDevelopment()) {
-                      console.log(`[CanvasPage] 🔄 Calling onUpdateData`, {
-                        projectId,
-                        nodeId: projectModalNodeId,
-                        prompt: project.prompt || '',
-                        name: project.name || '',
-                        strategyDataKeys: Object.keys(convertedStrategyData),
-                        strategyDataCount: Object.keys(convertedStrategyData).length,
-                        convertedStrategyData
-                      });
-                    }
-
                     strategyData.onUpdateData(projectModalNodeId, {
                       prompt: project.prompt || '',
                       name: project.name || '',
                       strategyData: convertedStrategyData,
                       projectId: project._id || (project as any).id,
                     });
-
-                    if (isLocalDevelopment()) {
-                      console.log(`[CanvasPage] ✅ onUpdateData called successfully`, {
-                        projectId,
-                        nodeId: projectModalNodeId
-                      });
-                    }
-                  } else {
-                    if (isLocalDevelopment()) {
-                      console.error(`[CanvasPage] ❌ onUpdateData not available`, {
-                        projectId,
-                        nodeId: projectModalNodeId,
-                        hasStrategyData: !!strategyData,
-                        strategyDataKeys: strategyData ? Object.keys(strategyData) : []
-                      });
-                    }
-                  }
-
-                  if (isLocalDevelopment()) {
-                    console.log(`[CanvasPage] ✅ Project loaded successfully from modal`, {
-                      projectId,
-                      nodeId: projectModalNodeId,
-                      projectName: project.name,
-                      sectionsLoaded: convertedKeys.length,
-                      hasData: convertedKeys.length > 0,
-                      convertedSections: convertedKeys
-                    });
                   }
 
                   toast.success(t('canvas.projectLoadedSuccessfully'));
                 } catch (error: any) {
-                  if (isLocalDevelopment()) {
-                    console.error(`[CanvasPage] ❌ Failed to load project from modal`, {
-                      projectId,
-                      nodeId: projectModalNodeId,
-                      error: error?.message || error,
-                      stack: error?.stack
-                    });
-                  }
                   toast.error(error?.message || t('canvas.failedToLoadProject'), { duration: 3000 });
                 }
               }
@@ -4372,14 +4270,11 @@ export const CanvasPage: React.FC = () => {
           }}
           onCreateNew={() => {
             if (projectModalNodeId) {
-              // Clear the node data to show create new form
               setNodes((nds) => {
                 return nds.map((n) => {
                   if (n.id === projectModalNodeId && n.type === 'strategy') {
                     const strategyData = n.data as StrategyNodeData;
-                    // Update to show create new form
                     if (strategyData.onUpdateData) {
-                      // Use onUpdateData to trigger node re-render
                       setTimeout(() => {
                         strategyData.onUpdateData?.(projectModalNodeId, {
                           prompt: '',
@@ -4414,12 +4309,10 @@ export const CanvasPage: React.FC = () => {
           <AuthModal
             isOpen={showAuthModal}
             onClose={() => {
-              // Don't allow closing without authentication - redirect to canvas list
               navigate('/canvas');
             }}
             onSuccess={() => {
               setShowAuthModal(false);
-              // Project will reload automatically when isAuthenticated becomes true
             }}
             isSignUp={false}
           />
@@ -4430,10 +4323,8 @@ export const CanvasPage: React.FC = () => {
       <UniversalSidePanel
         selectedNodes={(() => {
           const selected = nodes.filter(n => n.selected);
-          // Always include chat node in the panel context if it exists, so the tab is available
           const chatNode = nodes.find(n => n.type === 'chat');
           if (chatNode && !selected.find(n => n.id === chatNode.id)) {
-            // Prepend chat node so real selected nodes take priority in tab selection (last wins)
             return [chatNode, ...selected];
           }
           return selected;
@@ -4443,7 +4334,7 @@ export const CanvasPage: React.FC = () => {
         onImportCommunityPreset={canvasHeader.onImportCommunityPreset}
         onClose={() => {
           setIsUniversalPanelOpen(false);
-          canvasHeader.setActiveSidePanel(null); // Clear global panel on close
+          canvasHeader.setActiveSidePanel(null);
           setExportPanel(null);
         }}
         onUpdateNode={updateNodeData}
@@ -4453,8 +4344,6 @@ export const CanvasPage: React.FC = () => {
           data: exportPanel,
           onClose: () => {
             setExportPanel(null);
-            // If no nodes selected, close panel too. If nodes selected, go back to tabs?
-            // For simplified UX, if export was open via override, closing it goes back to default state.
           }
         } : null}
       />
@@ -4521,6 +4410,8 @@ export const CanvasPage: React.FC = () => {
           onToggleToolbar={() => setIsToolbarCollapsed(!isToolbarCollapsed)}
         />
       </div>
-    </>
+    </PageShell>
   );
 };
+
+export default CanvasPage;

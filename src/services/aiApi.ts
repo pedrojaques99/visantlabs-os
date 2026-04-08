@@ -145,6 +145,7 @@ export const aiApi = {
     angleTags: string[];
     lightingTags: string[];
     effectTags: string[];
+    materialTags?: string[];
     selectedColors: string[];
     aspectRatio: string;
     generateText: boolean;
@@ -154,7 +155,23 @@ export const aiApi = {
     negativePrompt: string;
     additionalPrompt: string;
     instructions: string;
-  }): Promise<{ prompt: string; inputTokens?: number; outputTokens?: number }> {
+    /** Brand guideline id — se presente, server busca e injeta o brief na geração. */
+    brandGuidelineId?: string;
+    /** Vibe preset id — mantém coesão de direção de arte. */
+    vibeId?: string;
+    /** Se false, pula o RAG de exemplos aprendidos. Default: true. */
+    learnFromHistory?: boolean;
+  }): Promise<{
+    prompt: string;
+    inputTokens?: number;
+    outputTokens?: number;
+    rationale?: string[];
+    brandBrief?: unknown;
+    /** UUID da geração — usa pra atrelar feedback 👍/👎 depois. */
+    generationId?: string;
+    /** Quantos exemplos aprendidos foram injetados (0 se RAG vazio/offline). */
+    learnedExamplesCount?: number;
+  }> {
     const response = await fetch(`${API_BASE_URL}/ai/generate-smart-prompt`, {
       method: 'POST',
       headers: getAuthHeaders(),

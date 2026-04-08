@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
   brandModule.updateBrandPill();
   libraryModule.render();
   designSystemModule.init();
+  if (window.brandIntelligence) window.brandIntelligence.init();
   if (window.brandSyncModule) window.brandSyncModule.init()
   if (window.brandUIModule) window.brandUIModule.init()
 

@@ -37,3 +37,7 @@ export {
   getLocalBrandConfig
 } from './storage';
 export { extractForSync, pushToFigma } from './figmaSync';
+export { applyBrandGuidelinesLocally } from './brandApply';
+export { createStickyPrompt, varySelectionColors, selectionToSlices } from './devTools';
+export { lintBrandAdherence, focusNode, fixBrandIssues } from './brandLint';
+export { multiplyResponsive, DEFAULT_FORMATS } from './responsiveMultiply';

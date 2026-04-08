@@ -103,6 +103,37 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
         }
     }, [selectedIds, guidelineId, logos, media, onLogosChange, onMediaChange, t, readOnly]);
 
+    const handleRenamePrompt = useCallback(() => {
+        if (selectedIds.size !== 1 || readOnly) return;
+        const id = Array.from(selectedIds)[0];
+        const isLogo = logos.some(l => l.id === id);
+        const item = isLogo ? logos.find(l => l.id === id) : media.find(m => m.id === id);
+        if (!item) return;
+
+        const newLabel = window.prompt("Enter new name for asset:", item.label || '');
+        if (newLabel !== null && newLabel.trim() !== '' && newLabel !== item.label) {
+            handleRename(id, isLogo, newLabel.trim());
+        }
+    }, [selectedIds, logos, media, readOnly]);
+
+    const handleRename = useCallback(async (id: string, isLogo: boolean, newLabel: string) => {
+        try {
+            if (isLogo) {
+                const newLogos = logos.map(l => l.id === id ? { ...l, label: newLabel } : l);
+                await brandGuidelineApi.update(guidelineId, { logos: newLogos });
+                onLogosChange(newLogos);
+            } else {
+                const newMedia = media.map(m => m.id === id ? { ...m, label: newLabel } : m);
+                await brandGuidelineApi.update(guidelineId, { media: newMedia });
+                onMediaChange(newMedia);
+            }
+            setSelectedIds(new Set());
+            toast.success("Asset renamed successfully");
+        } catch (error) {
+            toast.error("Failed to rename asset");
+        }
+    }, [guidelineId, logos, media, onLogosChange, onMediaChange]);
+
     const fileToBase64 = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -181,11 +212,22 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                         {selectedIds.size} SELECTED
                     </span>
                     <div className="flex gap-2">
+                        {selectedIds.size === 1 && (
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={handleRenamePrompt}
+                                className="text-[10px] font-mono h-7 bg-black/40 border-brand-cyan/30 text-white hover:bg-brand-cyan/20"
+                            >
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                                RENAME
+                            </Button>
+                        )}
                         <Button 
                             variant="ghost" 
                             size="sm" 
                             onClick={() => setSelectedIds(new Set())}
-                            className="text-[10px] font-mono hover:bg-white/5"
+                            className="text-[10px] font-mono hover:bg-white/5 h-7"
                         >
                             Cancel
                         </Button>
@@ -197,7 +239,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             className="text-[10px] h-7 bg-red-500 hover:bg-red-600 font-mono"
                         >
                             {isBulkDeleting ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
-                            <span className="ml-2 uppercase">Delete All</span>
+                            <span className="ml-2 uppercase">Delete</span>
                         </Button>
                     </div>
                 </div>
@@ -313,19 +355,29 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                         )}
                                     >
                                         {item.type === 'image' ? (
-                                            <img
-                                                src={getProxiedUrl(item.url)}
-                                                alt={item.label || 'Media'}
-                                                className="w-full h-full object-contain p-2"
-                                                loading="lazy"
-                                                draggable={!!onAssetDragStart}
-                                                onDragStart={(e) => onAssetDragStart?.(e, item.url, 'image')}
-                                            />
+                                            <>
+                                                <img
+                                                    src={getProxiedUrl(item.url)}
+                                                    alt={item.label || 'Media'}
+                                                    className="w-full h-full object-contain p-2"
+                                                    loading="lazy"
+                                                    draggable={!!onAssetDragStart}
+                                                    onDragStart={(e) => onAssetDragStart?.(e, item.url, 'image')}
+                                                />
+                                                {item.label && (
+                                                    <span className={cn(
+                                                        "absolute bottom-0 left-0 right-0 text-[8px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 truncate px-1",
+                                                        isSelected && "bg-brand-cyan text-black font-bold"
+                                                    )}>
+                                                        {item.label}
+                                                    </span>
+                                                )}
+                                            </>
                                         ) : (
-                                            <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-neutral-600">
-                                                <FileText size={24} />
-                                                <span className="text-[9px] font-mono truncate max-w-full px-2">
-                                                    {item.label || 'PDF'}
+                                            <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-black/20">
+                                                <FileText size={20} className="text-neutral-500 mb-1" />
+                                                <span className="text-[8px] font-mono text-neutral-400 text-center px-2 truncate w-full">
+                                                    {item.label || 'PDF Document'}
                                                 </span>
                                             </div>
                                         )}

@@ -209,12 +209,12 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                     
                     <div className="flex-1 min-w-0 space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-brand-cyan font-bold font-mono uppercase tracking-tight">{f.role || 'Primary'}</span>
+                        <span className="text-[11px] text-brand-cyan font-bold font-mono uppercase tracking-tight">{f.role || 'Primary'}</span>
                         <div className="w-1 h-1 rounded-full bg-neutral-800" />
-                        <span className="text-[9px] text-neutral-500 font-mono">{f.size || '16'}px</span>
+                        <span className="text-[10px] text-neutral-400 font-mono">{f.size || '16'}px</span>
                       </div>
-                      <p className="text-sm font-medium text-neutral-300 truncate" style={{ fontFamily: f.family }}>
-                        {f.family} <span className="text-neutral-600 font-normal ml-1">· {f.style || 'Regular'}</span>
+                      <p className="text-sm font-medium text-neutral-200 truncate" style={{ fontFamily: f.family }}>
+                        {f.family} <span className="text-neutral-500 font-normal ml-1">· {f.style || 'Regular'}</span>
                       </p>
                     </div>
 
@@ -244,8 +244,8 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                       Aa
                     </div>
                     <div className="space-y-1">
-                      <MicroTitle className="text-[9px] uppercase tracking-widest text-neutral-500">{p.role}</MicroTitle>
-                      <p className="text-[9px] font-mono text-neutral-700 uppercase">{p.family} · {p.weight} · {p.size}</p>
+                      <MicroTitle className="text-[10px] uppercase tracking-widest text-neutral-400">{p.role}</MicroTitle>
+                      <p className="text-[10px] font-mono text-neutral-500 uppercase">{p.family} · {p.weight} · {p.size}</p>
                     </div>
                   </div>
                 ))}

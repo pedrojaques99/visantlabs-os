@@ -23,10 +23,7 @@ import {
   Type,
   Diamond
 } from 'lucide-react';
-import { MockupCard } from '../components/mockupmachine/MockupCard';
-import { mockupApi } from '@/services/mockupApi';
-
-import { SEO } from '../components/SEO';
+import { PageShell } from '../components/ui/PageShell';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -41,22 +38,16 @@ import {
 } from '../components/ui/dialog';
 import { useLayout } from '@/hooks/useLayout';
 import { authService } from '@/services/authService';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '../components/ui/breadcrumb';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { Select } from '../components/ui/select';
 import { AnalyzingImageOverlay } from '../components/ui/AnalyzingImageOverlay';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { mockupApi } from '@/services/mockupApi';
 
 import { GEMINI_MODELS } from '../constants/geminiModels';
 import type { AspectRatio } from '../types/types';
+import { MockupCard } from '@/components/mockupmachine/MockupCard';
 
 const GOOGLE_FONTS = [
   { value: '', label: 'Auto Detect' },
@@ -682,60 +673,41 @@ export const SmartAnalyzerPage: React.FC = () => {
     return colors[category] || 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30';
   };
 
+  const adminActions = (
+    <div className="flex items-center gap-4">
+      <div className="flex flex-col items-end mr-4">
+        <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-tighter">System Access</span>
+        <span className="text-xs font-mono text-white">ADMINISTRATOR</span>
+      </div>
+      {step !== 'idle' && (
+        <Button
+          onClick={reset}
+          variant="ghost"
+          className="h-10 px-4 text-neutral-500 hover:text-white hover:bg-white/5 border border-transparent hover:border-neutral-800 transition-all rounded-lg"
+        >
+          <RefreshCw size={14} className="mr-2" />
+          Reset
+        </Button>
+      )}
+    </div>
+  );
+
   return (
-    <>
-      <SEO title="Smart Analyzer | Admin" description="AI-powered image analysis and prompt generation" />
-
-      <div className="min-h-screen bg-black text-neutral-300 pb-32 pt-16 selection:bg-brand-cyan/30 selection:text-brand-cyan">
-        <div className="max-w-7xl mx-auto px-8 lg:px-12">
-          <div className="mb-16 space-y-6">
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/apps" className="text-neutral-500 hover:text-white transition-colors text-[10px] font-mono tracking-widest uppercase">
-                      Systems
-                    </Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="text-neutral-800" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage className="text-brand-cyan text-[10px] font-mono tracking-widest uppercase opacity-80">
-                    Smart Analyzer
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-
-            <div className="flex items-end justify-between pb-8">
-              <div className="space-y-1">
-                <h1 className="text-4xl font-semibold text-white tracking-tight font-manrope">
-                  Image Analyzer
-                </h1>
-                <p className="text-neutral-500 font-mono text-[10px] uppercase tracking-[0.2em] opacity-60">
-                  AI-powered design and prompt engine
-                </p>
-              </div>
-              <div className="flex items-center gap-6">
-                <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-tighter">System Access</span>
-                  <span className="text-xs font-mono text-white">ADMINISTRATOR</span>
-                </div>
-                {step !== 'idle' && (
-                  <Button
-                    onClick={reset}
-                    variant="ghost"
-                    className="h-10 px-4 text-neutral-500 hover:text-white hover:bg-white/5 border border-transparent hover:border-neutral-800 transition-all rounded-lg"
-                  >
-                    <RefreshCw size={14} className="mr-2" />
-                    Reset
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <AnimatePresence mode="wait">
+    <PageShell
+      pageId="smart-analyzer"
+      seoTitle="Smart Analyzer | Admin"
+      seoDescription="AI-powered image analysis and prompt generation"
+      title="Image Analyzer"
+      microTitle="Admin // Analysis"
+      description="AI-powered design and prompt engine for professional workflows."
+      breadcrumb={[
+        { label: 'Systems', to: '/apps' },
+        { label: 'Smart Analyzer' }
+      ]}
+      actions={adminActions}
+    >
+      <div className="selection:bg-brand-cyan/30 selection:text-brand-cyan">
+        <AnimatePresence mode="wait">
             {step === 'idle' && (
               <motion.div
                 key="idle"
@@ -1082,7 +1054,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                               animate={{ opacity: 1 }}
                               className="relative aspect-video rounded-3xl overflow-hidden bg-neutral-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5"
                             >
-                              <MockupCard
+                              <MockupCard 
                                 base64Image={generatedImage}
                                 isLoading={isGenerating || isGeneratingVariations}
                                 isRedrawing={isGenerating && !!generatedImage}
@@ -1337,12 +1309,8 @@ export const SmartAnalyzerPage: React.FC = () => {
             )}
           </AnimatePresence>
 
-        {/* Overlay outside AnimatePresence to avoid mode="wait" conflict */}
-        <AnalyzingImageOverlay isVisible={step === 'analyzing'} />
       </div>
-    </div>
 
-      {/* Publish Modal */}
       <Dialog open={showPublishModal} onOpenChange={setShowPublishModal}>
         <DialogContent className="bg-neutral-950 border-neutral-800 text-white max-w-xl p-0 overflow-hidden">
           <div className="bg-neutral-950 p-8 flex items-center justify-between">
@@ -1408,7 +1376,7 @@ export const SmartAnalyzerPage: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {/* Full Image Viewer */}
+
       <Dialog open={!!showFullImage} onOpenChange={() => setShowFullImage(null)}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0 bg-transparent flex items-center justify-center">
           <div className="relative w-full h-full flex items-center justify-center group">
@@ -1431,6 +1399,6 @@ export const SmartAnalyzerPage: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </PageShell>
   );
 };

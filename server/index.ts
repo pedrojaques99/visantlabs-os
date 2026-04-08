@@ -35,6 +35,7 @@ import communityRoutes from './routes/community.js';
 import storageRoutes from './routes/storage.js';
 import usersRoutes from './routes/users.js';
 import expertRoutes from './routes/expert.js';
+import telemetryRoutes from './routes/telemetry.js';
 import llmsRoutes from './routes/llms.js';
 import appRoutes from './routes/apps.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -190,16 +191,16 @@ app.use(`${routePrefix}/branding`, brandingRoutes);
 app.use(`${routePrefix}/feedback`, feedbackRoutes);
 app.use(`${routePrefix}/canvas`, canvasRoutes);
 app.use(`${routePrefix}/images`, imagesRoutes);
+console.log(`✅ Images routes registered at: ${routePrefix}/images`);
 app.use(`${routePrefix}/waitlist`, waitlistRoutes);
 app.use(`${routePrefix}/usage`, usageRoutes);
 app.use(`${routePrefix}/video`, videoRoutes);
+console.log(`✅ Video routes registered at: ${routePrefix}/video`);
 app.use(`${routePrefix}/community`, communityRoutes);
+console.log(`✅ Community routes registered at: ${routePrefix}/community`);
 app.use(`${routePrefix}/storage`, storageRoutes);
 app.use(`${routePrefix}/users`, usersRoutes);
 app.use(`${routePrefix}/apps`, appRoutes);
-console.log(`✅ Video routes registered at: ${routePrefix}/video`);
-console.log(`✅ Community routes registered at: ${routePrefix}/community`);
-console.log(`✅ Images routes registered at: ${routePrefix}/images`);
 
 // Import referral routes
 import referralRoutes from './routes/referral.js';
@@ -216,11 +217,12 @@ app.use(`${routePrefix}/visant-templates`, visantTemplatesRoutes);
 // Import workflow routes
 import workflowRoutes from './routes/workflows.js';
 app.use(`${routePrefix}/workflows`, workflowRoutes);
+console.log(`✅ Workflow routes registered at: ${routePrefix}/workflows`);
 
 // Import node builder routes
 import nodeBuilderRoutes from './routes/node-builder.js';
 app.use(`${routePrefix}/node-builder`, nodeBuilderRoutes);
-console.log(`✅ Workflow routes registered at: ${routePrefix}/workflows`);
+console.log(`✅ Node builder routes registered at: ${routePrefix}/node-builder`);
 
 // Import AI routes
 import aiRoutes from './routes/ai.js';
@@ -255,12 +257,13 @@ console.log(`✅ Documentation routes registered at: ${routePrefix}/docs`);
 import surpriseMeRoutes from './routes/surprise-me.js';
 app.use(`${routePrefix}/surprise-me`, surpriseMeRoutes);
 
-// Import API key routes
-import apiKeyRoutes from './routes/apiKeys.js';
-app.use(`${routePrefix}/api-keys`, apiKeyRoutes);
+// Import brand intelligence routes
+import brandIntelligenceRoutes from './routes/brandIntelligence.js';
+app.use(`${routePrefix}/brand-intelligence`, brandIntelligenceRoutes);
 
 // Import expert routes
 app.use(`${routePrefix}/expert`, expertRoutes);
+app.use(`${routePrefix}/telemetry`, telemetryRoutes);
 console.log(`✅ Expert routes registered at: ${routePrefix}/expert`);
 
 // ═══ Platform MCP Server (Streamable HTTP transport for Claude Connectors) ═══
@@ -514,6 +517,11 @@ if (!process.env.VERCEL) {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📝 Make sure MONGODB_URI is configured in your .env file`);
     });
+
+    // Increase server timeout for long-running scrapers
+    server.timeout = 600000;
+    server.keepAliveTimeout = 650000;
+    server.headersTimeout = 660000;
 
     // Initialize WebSocket server for Figma plugin
     initPluginWebSocket(server);

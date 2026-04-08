@@ -11,7 +11,7 @@ import { NodeContainer } from './shared/NodeContainer';
 import { Textarea } from '@/components/ui/textarea';
 import { NodeHeader } from './shared/node-header';
 import { NodeButton } from './shared/node-button';
-import { ModelSelector } from './shared/ModelSelector';
+import { ModelSelector } from '../shared/ModelSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { DEFAULT_MODEL, isAdvancedModel } from '@/constants/geminiModels';
@@ -225,6 +225,8 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
 
         <div className="flex flex-col gap-3">
           <ModelSelector
+            type="image"
+            variant="node"
             selectedModel={model}
             onModelChange={(newModel, provider) => {
               setModel(newModel);

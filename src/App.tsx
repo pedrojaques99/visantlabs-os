@@ -37,6 +37,7 @@ const BudgetMachinePage = lazyWithRetry(() => import('./pages/BudgetMachinePage'
 const MyBudgetsPage = lazyWithRetry(() => import('./pages/MyBudgetsPage').then(m => ({ default: m.MyBudgetsPage })));
 const BudgetSharedPage = lazyWithRetry(() => import('./pages/BudgetSharedPage').then(m => ({ default: m.BudgetSharedPage })));
 const AppsPage = lazyWithRetry(() => import('./pages/AppsPage').then(m => ({ default: m.AppsPage })));
+const InstagramExtractorPage = lazyWithRetry(() => import('./pages/InstagramExtractorPage').then(m => ({ default: m.InstagramExtractorPage })));
 const QRCodePage = lazyWithRetry(() => import('./pages/QRCodePage').then(m => ({ default: m.QRCodePage })));
 const AboutPage = lazyWithRetry(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
 const PrivacyPolicyPage = lazyWithRetry(() => import('./pages/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })));
@@ -89,6 +90,7 @@ const App: React.FC = () => {
                 <Route path="/my-budgets" element={<MyBudgetsPage />} />
                 <Route path="/budget/shared/:shareId" element={<BudgetSharedPage />} />
                 <Route path="/apps" element={<AppsPage />} />
+                <Route path="/instagram-extractor" element={<InstagramExtractorPage />} />
                 <Route path="/qrcode" element={<QRCodePage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/privacy" element={<PrivacyPolicyPage />} />

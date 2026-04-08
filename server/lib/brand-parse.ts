@@ -7,20 +7,29 @@ export interface ParsedChunk {
 }
 
 export async function parseUrl(url: string): Promise<ParsedChunk[]> {
-  const response = await fetch(url, {
+  let targetUrl = url.trim()
+  if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+    targetUrl = `https://${targetUrl}`
+  }
+
+  const response = await fetch(targetUrl, {
     headers: { 'User-Agent': 'VisantBot/1.0 (brand-extractor)' },
     signal: AbortSignal.timeout(15000),
   })
-  if (!response.ok) throw new Error(`HTTP ${response.status} fetching ${url}`)
+  if (!response.ok) throw new Error(`HTTP ${response.status} fetching ${targetUrl}`)
 
   const html = await response.text()
   const text = stripHtml(html)
-  return chunkText(text, 2000).map(chunk => ({ text: chunk, source: url, type: 'url' as const }))
+  return chunkText(text, 2000).map(chunk => ({ text: chunk, source: targetUrl, type: 'url' as const }))
 }
 
 export async function parsePdf(buffer: Buffer, filename?: string): Promise<ParsedChunk[]> {
-  const pdf = (await import('pdf-parse')) as any
-  const data = await (pdf.default || pdf)(buffer)
+  const pdfModule = (await import('pdf-parse')) as any
+  const pdfFunc = pdfModule.PDFParse || pdfModule.default || pdfModule
+  if (typeof pdfFunc !== 'function') {
+    throw new Error('Could not find PDF parsing function in pdf-parse module')
+  }
+  const data = await pdfFunc(buffer)
   return chunkText(data.text || '', 2000).map(chunk => ({
     text: chunk,
     source: filename || 'uploaded.pdf',

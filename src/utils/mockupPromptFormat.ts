@@ -80,8 +80,27 @@ export function buildGeminiPromptInstructionsTemplate(params: {
   enhanceTexture: boolean;
   removeText: boolean;
   locationTags: string[];
+  /** Brief de marca destilado (opcional) — injetado como contexto de mais alta prioridade. */
+  brandBrief?: string | null;
+  /** Se verdadeiro, inclui diretiva explícita pra analisar o design base antes de gerar. */
+  analyzeDesignImage?: boolean;
+  /** Exemplos aprendidos (few-shot) — mockups similares aprovados anteriormente. */
+  learnedExamples?: string | null;
+  /** Vibe preset id (informativo — ajuda Gemini a manter coesão). */
+  vibeId?: string | null;
 }): string {
-  const { designType, isBlankMockup, withHuman, enhanceTexture, removeText, locationTags } = params;
+  const {
+    designType,
+    isBlankMockup,
+    withHuman,
+    enhanceTexture,
+    removeText,
+    locationTags,
+    brandBrief,
+    analyzeDesignImage,
+    learnedExamples,
+    vibeId,
+  } = params;
 
   const designTypeDescription = isBlankMockup
     ? 'A blank mockup (no design provided)'
@@ -115,8 +134,24 @@ export function buildGeminiPromptInstructionsTemplate(params: {
     ? `5.  **Minimalist Studio Setting (SPECIAL):** If "Minimalist Studio" is selected as the location, describe it as "a professional photography studio with infinite white wall background, studio lighting, clean and minimalist aesthetic". Include a plant in the setting.`
     : `5.  **Incorporate Additional Details:** If the user provides "Additional Details (MUST HAVE)", integrate these keywords and concepts naturally into the core description of the scene. These are high-priority requirements.`;
 
-  return `You are an expert AI prompt engineer. Your task is to convert user selections into a concise and effective prompt for an AI image generator to create a photorealistic product mockup.
+  const brandContextBlock = brandBrief
+    ? `\n**BRAND CONTEXT (HIGHEST PRIORITY — honor this above stylistic tags):**\n${brandBrief}\n`
+    : '';
 
+  const learnedExamplesBlock = learnedExamples
+    ? `\n**LEARNED EXAMPLES (prompts approved by this user/brand before — absorb the pattern, DO NOT copy verbatim):**\n${learnedExamples}\n`
+    : '';
+
+  const vibeBlock = vibeId
+    ? `\n**ART DIRECTION PRESET:** "${vibeId}" — keep aesthetic coherent with this vibe.\n`
+    : '';
+
+  const designAnalysisBlock = analyzeDesignImage && !isBlankMockup
+    ? `\n**DESIGN ANALYSIS (do this BEFORE writing the prompt):**\n- Read the provided design image: dominant color, shape weight, orientation (portrait/landscape/square), and whether it has fine detail or bold forms.\n- The mockup scene must FRAME the design so its original proportions and legibility are preserved.\n- The ambient palette you describe must CONTRAST with the design's dominant color — never compete.\n- Pick a camera angle that respects the design's natural reading direction.\n`
+    : '';
+
+  return `You are an expert AI prompt engineer. Your task is to convert user selections into a concise and effective prompt for an AI image generator to create a photorealistic product mockup.
+${brandContextBlock}${learnedExamplesBlock}${vibeBlock}${designAnalysisBlock}
 **USER'S INPUT:**
 -   **Design Type:** ${designTypeDescription}
 -   **Branding Style:** [BRANDING_TAGS]
@@ -136,6 +171,7 @@ export function buildGeminiPromptInstructionsTemplate(params: {
 
 **INSTRUCTIONS:**
 Based ${isBlankMockup ? '' : 'on the user\'s input and the provided design image, '}write an improved prompt.
+0.  **Brand Context First (if provided):** If a BRAND CONTEXT block exists above, treat its facts (archetype, palette, voice, do's/don'ts) as HARD constraints. The mockup's ambient palette, material choices, and mood must align with the brand brief even when stylistic tags are silent. Stylistic tags refine within the brand's lane — they never override it.
 1.  **Be Concise & Objective:** Combine the user's selections into a clear, direct, and effective prompt. Prioritize clarity and efficiency over descriptive prose.
 2.  **Aspect Ratio is Paramount (CRITICAL):** Use the **Aspect Ratio** from the user's input above. Start the entire prompt with a photorealistic, super-detailed shot description that matches the selected aspect ratio (e.g. widescreen cinematic for 16:9/21:9, portrait for 9:16/2:3/3:4, square for 1:1).
 ${designTypeHandlingInstruction}

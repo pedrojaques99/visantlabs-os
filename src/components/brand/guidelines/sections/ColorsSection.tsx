@@ -18,7 +18,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
-import { checkWCAGCompliance, getContrastRatioPublic } from '@/utils/colorUtils';
+import { checkWCAGCompliance, getContrastRatioPublic, hexToCmyk } from '@/utils/colorUtils';
 
 const colorsFormSchema = z.object({ colors: z.array(colorSchema) });
 
@@ -78,11 +78,16 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
   }, [guideline.id]);
 
   const handleSave = form.handleSubmit((data) => {
-    onUpdate({ colors: data.colors });
+    // Auto-compute CMYK for each color on save
+    const colorsWithCmyk = data.colors.map(c => ({
+      ...c,
+      cmyk: hexToCmyk(c.hex),
+    }));
+    onUpdate({ colors: colorsWithCmyk });
     setIsEditing(false);
   });
 
-  const copyAllColors = (format: 'json' | 'css' | 'tailwind') => {
+  const copyAllColors = (format: 'json' | 'css' | 'tailwind' | 'cmyk') => {
     const colors = guideline.colors || [];
     if (colors.length === 0) {
       toast.error('No colors to copy');
@@ -107,6 +112,12 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
           obj[name] = c.hex;
         });
         content = JSON.stringify(obj, null, 2);
+        break;
+      case 'cmyk':
+        content = colors.map(c => {
+          const cmyk = c.cmyk || hexToCmyk(c.hex);
+          return `${c.name || 'Color'}: C${cmyk.c} M${cmyk.m} Y${cmyk.y} K${cmyk.k}`;
+        }).join('\n');
         break;
     }
 
@@ -139,8 +150,11 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-300 transition-opacity" />
               </div>
               <div className="text-center w-full">
-                <p className="text-[11px] font-bold text-white uppercase tracking-tight truncate">{c.name || 'Color'}</p>
-                <p className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest mt-0.5">{c.hex}</p>
+                <p className="text-[12px] font-bold text-white uppercase tracking-tight truncate">{c.name || 'Color'}</p>
+                <p className="text-[11px] font-mono text-neutral-400 uppercase tracking-widest mt-0.5">{c.hex}</p>
+                <p className="text-[10px] font-mono text-neutral-500 mt-0.5">
+                  {(() => { const cmyk = c.cmyk || hexToCmyk(c.hex); return `C${cmyk.c} M${cmyk.m} Y${cmyk.y} K${cmyk.k}`; })()}
+                </p>
               </div>
             </div>
           ))}
@@ -178,6 +192,9 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => copyAllColors('tailwind')} className="text-xs font-mono">
                   Tailwind
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => copyAllColors('cmyk')} className="text-xs font-mono">
+                  CMYK
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -236,9 +253,12 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                     className="h-6 bg-transparent border-none p-0 text-[10px] font-mono text-brand-cyan/70 focus-visible:ring-0 uppercase  placeholder:text-neutral-700"
                     placeholder="#000000"
                   />
+                  <p className="text-[8px] font-mono text-neutral-600 pl-0">
+                    {(() => { try { const cmyk = hexToCmyk(form.watch(`colors.${i}.hex`) || '#000000'); return `CMYK ${cmyk.c}/${cmyk.m}/${cmyk.y}/${cmyk.k}`; } catch { return ''; } })()}
+                  </p>
                 </div>
                 <Button variant="ghost" size="icon"
-                  className="h-7 w-7 rounded-lg text-neutral-700 hover:text-red-400 opacity-0 group-hover/color:opacity-300 transition-all hover:bg-red-400/10 shrink-0"
+                  className="h-7 w-7 rounded-lg text-neutral-700 hover:text-red-400 opacity-0 group-hover/color:opacity-100 transition-all hover:bg-red-400/10 shrink-0"
                   onClick={() => remove(i)}>
                   <Trash2 size={12} />
                 </Button>
@@ -270,8 +290,11 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                     <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-300 transition-opacity" />
                   </div>
                   <div className="text-center min-w-0 w-full">
-                    <p className="text-[10px] font-bold text-white uppercase tracking-tight truncate">{c.name || 'Color'}</p>
-                    <p className="text-[8px] font-mono text-neutral-600 uppercase tracking-widest">{c.hex}</p>
+                    <p className="text-[11px] font-bold text-white uppercase tracking-tight truncate">{c.name || 'Color'}</p>
+                    <p className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">{c.hex}</p>
+                    <p className="text-[9px] font-mono text-neutral-500 mt-1 uppercase">
+                      {(() => { const cmyk = c.cmyk || hexToCmyk(c.hex); return `C${cmyk.c} M${cmyk.m} Y${cmyk.y} K${cmyk.k}`; })()}
+                    </p>
                   </div>
                 </motion.div>
               ))
@@ -285,14 +308,14 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                 ].map((p, i) => (
                   <div
                     key={i}
-                    className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-white/[0.02] bg-white/[0.01] opacity-300 h-full w-full cursor-pointer hover:bg-white/[0.03] transition-colors"
+                    className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-white/[0.02] bg-white/[0.01] opacity-60 h-full w-full cursor-pointer hover:bg-white/[0.03] transition-colors"
                     onClick={() => {
                       setIsEditing(true);
                       append({ hex: '#000000', name: p.name });
                     }}
                   >
                     <div className={cn("w-full aspect-square max-w-[56px] rounded-lg border border-dashed border-white/10", p.color)} />
-                    <span className="text-[8px] font-mono uppercase tracking-widest text-neutral-600">{p.name}</span>
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500">{p.name}</span>
                   </div>
                 ))}
               </div>
@@ -314,7 +337,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <ShieldCheck size={12} className="text-brand-cyan" />
-                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider">
+                  <span className="text-[11px] font-mono text-neutral-300 uppercase tracking-[0.2em]">
                     WCAG Contrast Matrix
                   </span>
                 </div>
@@ -351,13 +374,13 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
 
                     {/* Names */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-[9px] font-mono text-neutral-400 truncate">
+                      <p className="text-[10px] font-mono text-neutral-300 truncate tracking-tight">
                         {pair.fgName} / {pair.bgName}
                       </p>
                     </div>
 
                     {/* Ratio */}
-                    <span className="text-[10px] font-mono text-neutral-300 tabular-nums">
+                    <span className="text-[11px] font-mono text-white tabular-nums">
                       {pair.ratio.toFixed(2)}:1
                     </span>
 
@@ -386,11 +409,11 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
               </div>
 
               {/* Legend */}
-              <div className="mt-3 flex flex-wrap gap-3 text-[8px] font-mono text-neutral-600">
-                <span><span className="text-green-400">AAA</span> = 7:1+</span>
-                <span><span className="text-brand-cyan">AA</span> = 4.5:1+</span>
-                <span><span className="text-amber-400">AA Large</span> = 3:1+</span>
-                <span><span className="text-red-400">Fail</span> = &lt;3:1</span>
+              <div className="mt-3 flex flex-wrap gap-4 text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+                <span><span className="text-green-400 font-bold">AAA</span> 7:1+</span>
+                <span><span className="text-brand-cyan font-bold">AA</span> 4.5:1+</span>
+                <span><span className="text-amber-400 font-bold">AA LG</span> 3:1+</span>
+                <span><span className="text-red-400 font-bold">FAIL</span> &lt;3:1</span>
               </div>
             </div>
           </motion.div>

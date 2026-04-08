@@ -475,14 +475,15 @@ class ChatModule {
    * Show animated typing indicator while AI is processing.
    * GlitchLoader-style: random chars + glitch-reveal word transitions + animated dots + timer.
    */
-  showTypingBubble() {
+  showTypingBubble(customWords = null) {
     this.removeTypingBubble();
 
-    const words = [
+    const defaultWords = [
       'Criando', 'Desenhando', 'Esculpindo', 'Burilando',
       'Arquitetando', 'Rabiscando', 'Refinando', 'Compondo',
       'Moldando', 'Traçando', 'Prototipando', 'Lapidando',
     ];
+    const words = customWords || defaultWords;
     const glitchChars = '*•□/-®▸◆○~#%&';
     const revealChars = 'abcdefghijklmnopqrstuvwxyz*•-□';
     let wordIdx = Math.floor(Math.random() * words.length);

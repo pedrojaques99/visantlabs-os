@@ -41,7 +41,7 @@ import { useAnalysisOverlay } from '@/hooks/useAnalysisOverlay';
 import { formatMockupError } from '@/utils/mockupErrorHandling';
 import { compressImage } from '@/utils/imageCompression';
 
-const MOCKUP_COUNT = 2;
+const MOCKUP_COUNT = 1;
 
 import { isLocalDevelopment } from '@/utils/env';
 import {
@@ -158,7 +158,7 @@ const MockupMachinePageContent: React.FC = () => {
   } = useMockupTags();
 
   const promptWasReadyBeforeEditRef = useRef<boolean>(false);
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [isRestoring, setIsRestoring] = useState(true);
   const [autoMode, setAutoMode] = useState<'idle' | 'prompt-only' | 'prompt-and-generate'>('idle');
   const [savedIndices, setSavedIndices] = useState<Set<number>>(new Set());
   const [mockupLikedStatus, setMockupLikedStatus] = useState<Map<number, boolean>>(new Map()); // Map index -> isLiked
@@ -212,8 +212,26 @@ const MockupMachinePageContent: React.FC = () => {
   const promptTagsSnapshotRef = useRef<string | null>(null);
   const generateOutputsButtonRef = useRef<HTMLButtonElement>(null);
   const hasRestoredStateRef = useRef(false);
-  const isRestoringRef = useRef(true); // true until first restoration attempt completes
   const generatedSmartPromptRef = useRef<string | null>(null);
+  /** UUID da última geração de smart prompt — usado pra atrelar feedback 👍/👎. */
+  const lastGenerationIdRef = useRef<string | null>(null);
+
+  const getFeedbackContext = useCallback(() => ({
+    prompt: promptPreview,
+    designType: designType || 'layout',
+    tags: {
+      category: selectedTags,
+      branding: selectedBrandingTags,
+      location: selectedLocationTags,
+      angle: selectedAngleTags,
+      lighting: selectedLightingTags,
+      effect: selectedEffectTags,
+      material: selectedMaterialTags,
+    },
+    brandGuidelineId: selectedBrandGuideline || undefined,
+    model: selectedModel || 'gemini-1.5-flash',
+    aspectRatio: aspectRatio,
+  }), [promptPreview, designType, selectedTags, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedMaterialTags, selectedBrandGuideline, selectedModel, aspectRatio]);
 
   // Restore state from localStorage on mount (prioritize edit-mockup if exists)
   useEffect(() => {
@@ -235,7 +253,7 @@ const MockupMachinePageContent: React.FC = () => {
           localStorage.removeItem('edit-mockup');
         }
         // Don't restore persisted state if edit-mockup exists
-        isRestoringRef.current = false;
+        setIsRestoring(false);
         return;
       }
 
@@ -249,12 +267,12 @@ const MockupMachinePageContent: React.FC = () => {
         setDesignType(persistedState.designType);
         setSelectedModel(persistedState.selectedModel);
         setHasGenerated(persistedState.hasGenerated);
-        setMockupCount(persistedState.mockupCount);
+        // Force mockupCount to 1 as requested - Essentialist approach
+        setMockupCount(1);
         
         // Let all tag arrays initialize empty. Zumbi State prevented.
 
-        // Hide welcome screen and show mockups
-        setShowWelcome(false);
+        // Let all tag arrays initialize empty. Zumbi State prevented.
 
         // Adjust loading array to match mockups length
         setIsLoading(Array(persistedState.mockups.length).fill(false));
@@ -266,7 +284,7 @@ const MockupMachinePageContent: React.FC = () => {
       }
     } finally {
       // Mark restoration complete so save effect and render don't flash
-      isRestoringRef.current = false;
+      setIsRestoring(false);
     }
   }, []); // Only run once on mount
 
@@ -304,19 +322,10 @@ const MockupMachinePageContent: React.FC = () => {
     }
   }, [selectedModel, subscriptionStatus, promptPreview, onCreditPackagesModalOpen]);
 
-  // Note: mockupCount changes should NOT affect already generated images
-  // It only affects the number of images for the next generation
-
-
-  // Note: showWelcome state is kept for handleStartOver/handleImageUpload but
-  // the render decision uses `shouldShowWelcome = !uploadedImage` (line ~2680),
-  // so no effect needed here — the effect was triggering wasteful re-renders.
-
-  // Save state to localStorage when mockups are generated (with debounce)
   // Using a longer debounce (1500ms) to prevent excessive saves and localStorage quota issues
   useEffect(() => {
     // Skip save during state restoration to prevent cascading re-renders
-    if (isRestoringRef.current) return;
+    if (isRestoring) return;
 
     // Save if there are generated mockups OR if an image has been uploaded (to persist analysis)
     const hasAnyMockups = mockups.some(m => m !== null);
@@ -440,8 +449,6 @@ const MockupMachinePageContent: React.FC = () => {
       // Mark as ready to generate immediately
       promptTagsSnapshotRef.current = getTagsHash();
       
-      // Scroll to prompt preview or results
-      setShowWelcome(false);
       setHasGenerated(false);
       
       // Clean up state to prevent re-processing on re-renders
@@ -450,7 +457,35 @@ const MockupMachinePageContent: React.FC = () => {
   }, [location.state, getTagsHash]);
 
   // Derived: prompt is ready if we have a prompt and tags haven't changed since generation
+  const handleOpenFullScreen = (index: number) => setFullScreenImageIndex(index);
+  const handleCloseFullScreen = () => setFullScreenImageIndex(null);
+
+  const prepareForNewMockupSlot = useCallback(() => {
+    // Close fullscreen modal immediately
+    handleCloseFullScreen();
+
+    // Ensure we stay on MockupMachinePage
+    if (!hasGenerated) {
+      setHasGenerated(true);
+    }
+
+    // Open sidebar on mobile if it's closed
+    if (!isSidebarVisibleMobile) {
+      setIsSidebarVisibleMobile(true);
+    }
+
+    // Calculate new index before appending
+    const newIndex = mockups.length;
+
+    // Append new slot
+    setMockups(prev => [...prev, null]);
+    setIsLoading(prev => [...prev, true]);
+
+    return newIndex;
+  }, [handleCloseFullScreen, hasGenerated, isSidebarVisibleMobile, mockups.length]);
+
   const isPromptReady = useMemo(() => {
+
     if (!promptPreview.trim()) return false;
     if (!promptTagsSnapshotRef.current) return false;
     return promptTagsSnapshotRef.current === getTagsHash();
@@ -507,640 +542,6 @@ const MockupMachinePageContent: React.FC = () => {
 
     return basePrompt;
   }, [designType, selectedTags, aspectRatio, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedMaterialTags, selectedColors, generateText, withHuman, negativePrompt, additionalPrompt, referenceImages]);
-
-  const handleGenerateSmartPrompt = useCallback(async (shouldAutoGenerate: boolean = false) => {
-    if (isGeneratingPrompt) {
-      if (isLocalDevelopment()) {
-        console.warn('Prompt generation already in progress, skipping duplicate call');
-      }
-      return;
-    }
-
-    // Require a design type before generating any prompt
-    if (!designType || designType === 'blank') {
-      toast.error(t('messages.selectDesignTypeFirst') || 'Selecione o tipo (logo ou layout) antes de gerar o prompt.');
-      return;
-    }
-
-    // Allow prompt generation only if we have a design type AND (uploaded image / reference)
-    const hasRefImagesForSmartPrompt = referenceImages.length > 0;
-    const hasValidDesignSetup = designType && (uploadedImage || hasRefImagesForSmartPrompt);
-    if (!hasValidDesignSetup) {
-      toast.error(t('messages.completeSteps') || 'Complete as etapas de configuração antes de gerar o prompt.');
-      return;
-    }
-
-    setIsGeneratingPrompt(true);
-    setPromptSuggestions([]);
-
-    // Check if user has their own API key and notify them
-    import('../services/userSettingsService').then(async ({ hasGeminiApiKey }) => {
-      try {
-        const userHasApiKey = await hasGeminiApiKey();
-        if (userHasApiKey) {
-          toast.info('API do usuário está sendo usada', {
-            duration: 3000,
-          });
-        }
-      } catch (error) {
-        // Silently fail - don't block generation if key check fails
-        if (isLocalDevelopment()) {
-          console.warn('Failed to check user API key:', error);
-        }
-      }
-    });
-
-    try {
-      // Image compression removed as requested by user
-      let imageToSend = uploadedImage;
-
-
-      const smartPromptResult = await aiApi.generateSmartPrompt({
-        baseImage: imageToSend,
-        designType: designType,
-        brandingTags: selectedBrandingTags,
-        categoryTags: selectedTags,
-        locationTags: selectedLocationTags,
-        angleTags: selectedAngleTags,
-        lightingTags: selectedLightingTags,
-        effectTags: selectedEffectTags,
-        selectedColors: selectedColors,
-        aspectRatio: aspectRatio,
-        generateText: generateText,
-        withHuman: withHuman,
-        enhanceTexture: enhanceTexture,
-        removeText: removeText,
-        negativePrompt: negativePrompt,
-        additionalPrompt: additionalPrompt,
-        instructions: instructions,
-      });
-
-      // Handle both old string format and new object format
-      const smartPrompt = typeof smartPromptResult === 'string'
-        ? smartPromptResult
-        : smartPromptResult.prompt;
-
-      // Always track prompt generation usage (even if tokens are not available, use 0)
-      try {
-        const inputTokens = typeof smartPromptResult === 'object' ? (smartPromptResult.inputTokens ?? 0) : 0;
-        const outputTokens = typeof smartPromptResult === 'object' ? (smartPromptResult.outputTokens ?? 0) : 0;
-
-        const token = authService.getToken();
-        await fetch('/api/mockups/track-prompt-generation', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-          body: JSON.stringify({
-            inputTokens,
-            outputTokens,
-            feature: 'mockupmachine',
-          }),
-        });
-      } catch (trackError) {
-        if (isLocalDevelopment()) {
-          console.error('Failed to track prompt generation:', trackError);
-        }
-        // Don't fail the prompt generation if tracking fails
-      }
-
-      // Add reference images instruction if present
-      let finalPrompt = smartPrompt;
-      if (referenceImages.length > 0) {
-        finalPrompt += ` IMPORTANT: The provided reference image${referenceImages.length > 1 ? 's' : ''} ${referenceImages.length > 1 ? 'are' : 'is'} included as style and composition guidance. Study ${referenceImages.length > 1 ? 'these images' : 'this image'} carefully and create a mockup that matches the aesthetic, mood, composition style, lighting approach, color palette, and overall visual feeling of ${referenceImages.length > 1 ? 'these reference mockups' : 'this reference mockup'}. Use ${referenceImages.length > 1 ? 'them' : 'it'} as inspiration for creating a similar visual quality and atmosphere.`;
-      }
-
-      setPromptPreview(finalPrompt);
-      generatedSmartPromptRef.current = finalPrompt; // Store for use in auto-generate
-      promptTagsSnapshotRef.current = getTagsHash(); // Save snapshot for isPromptReady derivation
-      setIsSmartPromptActive(true);
-      setIsPromptManuallyEdited(false);
-      // Track that prompt is ready so manual edits can still allow direct generation
-      promptWasReadyBeforeEditRef.current = true;
-
-      toast.success(t('messages.promptGeneratedSuccessfully'), { duration: 4000 });
-
-      // Optimized: Use a much smaller delay or skip if autoGenerate is ON
-      const scrollDelay = autoGenerate ? 0 : 400;
-      setTimeout(() => {
-        if (autoGenerate) return; // Skip scrolling if we're naturally going to see results
-
-        if (generateOutputsButtonRef.current && sidebarRef.current) {
-          const buttonRect = generateOutputsButtonRef.current.getBoundingClientRect();
-          const sidebarRect = sidebarRef.current.getBoundingClientRect();
-          const relativeTop = buttonRect.top - sidebarRect.top + sidebarRef.current.scrollTop;
-
-          sidebarRef.current.scrollTo({
-            top: relativeTop - 20,
-            behavior: 'smooth'
-          });
-        } else {
-          generateOutputsButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, scrollDelay);
-      
-      // If we are in auto-generate mode (Essential Mode), trigger image generation
-      if (shouldAutoGenerate || autoGenerate) {
-        if (isLocalDevelopment()) {
-          console.log('[AutoGenerate] Triggering output generation...');
-        }
-        runGeneration();
-      }
-    } catch (err) {
-      const errorInfo = formatMockupError(err, t);
-      if (isLocalDevelopment()) {
-        console.error("Error generating smart prompt:", err);
-      }
-      toast.error(errorInfo.message, {
-        ...(errorInfo.suggestion && { description: errorInfo.suggestion }),
-        duration: 5000,
-      });
-      setPromptPreview(buildPrompt());
-    } finally {
-      setIsGeneratingPrompt(false);
-    }
-  }, [
-    uploadedImage,
-    designType,
-    selectedTags,
-    selectedBrandingTags,
-    selectedLocationTags,
-    selectedAngleTags,
-    selectedLightingTags,
-    selectedEffectTags,
-    selectedColors,
-    aspectRatio,
-    generateText,
-    withHuman,
-    enhanceTexture,
-    negativePrompt,
-    additionalPrompt,
-    instructions,
-    buildPrompt,
-    t,
-    isGeneratingPrompt,
-    referenceImages,
-    getTagsHash
-  ]);
-
-
-  const resetControls = useCallback(() => {
-    setDesignType('layout');
-    setSelectedModel(null);
-    setResolution('1K');
-    setMockups(Array(mockupCount).fill(null));
-    setSelectedTags([]);
-    setSelectedBrandingTags([]);
-    setSelectedLocationTags([]);
-    setSelectedAngleTags([]);
-    setSelectedLightingTags([]);
-    setSelectedEffectTags([]);
-    setSelectedMaterialTags([]);
-    setSelectedColors([]);
-    setColorInput('');
-    setIsValidColor(false);
-    setIsAdvancedOpen(false);
-    setIsAllCategoriesOpen(false);
-    setSuggestedTags([]);
-    setHasGenerated(false);
-    setHasAnalyzed(false);
-    setSuggestedBrandingTags([]);
-    setSuggestedLocationTags([]);
-    setSuggestedAngleTags([]);
-    setSuggestedLightingTags([]);
-    setSuggestedEffectTags([]);
-    setSuggestedMaterialTags([]);
-    setSuggestedColors([]);
-    setNegativePrompt('');
-    setAdditionalPrompt('');
-    setGenerateText(false);
-    setWithHuman(false);
-    setRemoveText(true);
-    setIsSmartPromptActive(true);
-    setPromptSuggestions([]);
-    setPromptPreview('');
-    setIsPromptManuallyEdited(false);
-    promptTagsSnapshotRef.current = null;
-    setMockups(Array(mockupCount).fill(null));
-    setIsLoading(Array(mockupCount).fill(false));
-    setReferenceImages([]);
-    setSavedIndices(new Set());
-    setSavedMockupIds(new Map());
-    setMockupLikedStatus(new Map());
-    setUploadedImage(null);
-    setInstructions('');
-    // Clear localStorage when resetting
-    clearMockupState();
-  }, [mockupCount]);
-
-  const handleAnalyze = useCallback(async (imageOverride?: UploadedImage, silent?: boolean) => {
-    const imageToUse = imageOverride ?? uploadedImage;
-    const t0 = Date.now();
-    if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze start', silent ? '(silent)' : '');
-    if (!imageToUse) {
-      if (import.meta.env.DEV) console.log('[dev] analyze: skip (no image or blank)');
-      return;
-    }
-
-    let nextStepTimeoutId: number | null = null;
-    const nextStepShownRef = { current: false };
-
-    if (!silent) {
-      setIsAnalyzing(true);
-      showTemporaryOverlay(5000); // Mostrar overlay por no máximo 5 segundos
-
-      // Após 5 segundos, mostrar o próximo passo mesmo que a análise não tenha completado
-      nextStepTimeoutId = window.setTimeout(() => {
-        if (import.meta.env.DEV) console.log('[dev] analyze: showing next step after 5s (analysis may still be running)');
-        nextStepShownRef.current = true;
-        setIsAllCategoriesOpen(true);
-        setIsAdvancedOpen(true);
-        setHasAnalyzed(true);
-        if (!selectedModel) setSelectedModel(GEMINI_MODELS.FLASH);
-      }, 5000);
-    }
-
-    try {
-      let imageToAnalyze = imageToUse;
-      if (imageToUse.base64) {
-        try {
-          const dataUrl = await compressImage(imageToUse.base64.includes(',') ? imageToUse.base64 : `data:${imageToUse.mimeType};base64,${imageToUse.base64}`, {
-            maxWidth: 1024,
-            maxHeight: 1024,
-            maxSizeBytes: 500 * 1024,
-            mimeType: imageToUse.mimeType,
-          });
-          const comma = dataUrl.indexOf(',');
-          const b64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
-          const mime = /^data:([^;]+);/.exec(dataUrl)?.[1] || imageToUse.mimeType;
-          imageToAnalyze = { base64: b64, mimeType: mime };
-        } catch {
-          /* keep original if compression fails */
-        }
-      }
-
-      const userContext = {
-        ...(selectedBrandingTags.length > 0 && { selectedBrandingTags }),
-        ...(selectedBrandGuideline && { brandGuidelineId: selectedBrandGuideline }),
-      };
-      if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup start', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-      const analysis = await aiApi.analyzeSetup(
-        imageToAnalyze,
-        instructions,
-        Object.keys(userContext).length > 0 ? userContext : undefined
-      );
-      if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-
-      setSuggestedBrandingTags(analysis.branding);
-      setSuggestedTags(analysis.categories);
-      setSuggestedLocationTags(analysis.locations);
-      setSuggestedAngleTags(analysis.angles);
-      setSuggestedLightingTags(analysis.lighting);
-      setSuggestedEffectTags(analysis.effects);
-      setSuggestedMaterialTags(analysis.materials);
-      // Design type is now manually selected by user, not auto-set from analysis
-
-      if (imageToUse.base64) {
-        try {
-          if (import.meta.env.DEV) console.log('[dev] analyze: extractColors start', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-          const { extractColors } = await import('@/utils/colorExtraction');
-          const colorResult = await extractColors(imageToUse.base64, imageToUse.mimeType, 8);
-          setSuggestedColors(colorResult.colors);
-          if (import.meta.env.DEV) console.log('[dev] analyze: extractColors done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-        } catch (colorErr) {
-          console.error("Error extracting colors:", colorErr);
-        }
-      }
-
-      // Se a análise terminou antes de 5 segundos, mostrar o próximo passo agora
-      // Se terminou depois de 5 segundos, o timeout já terá mostrado o próximo passo
-      if (!silent) {
-        // Se o timeout ainda não executou, cancelar e mostrar o próximo passo agora
-        if (nextStepTimeoutId !== null && !nextStepShownRef.current) {
-          clearTimeout(nextStepTimeoutId);
-          nextStepTimeoutId = null;
-          setIsAllCategoriesOpen(true);
-          setIsAdvancedOpen(true);
-          setHasAnalyzed(true);
-          if (!selectedModel) setSelectedModel(GEMINI_MODELS.FLASH);
-        }
-        // Se o timeout já executou (passou de 5s), apenas atualizar os dados
-        // (hasAnalyzed já está true, então o conteúdo já está visível)
-      }
-      if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze success', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-    } catch (err) {
-      const errorInfo = formatMockupError(err, t);
-      if (isLocalDevelopment()) console.error("Error getting full analysis:", err);
-      toast.error(errorInfo.message, {
-        ...(errorInfo.suggestion && { description: errorInfo.suggestion }),
-        duration: 5000,
-      });
-    } finally {
-      if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze finally', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-      if (!silent) {
-        setIsAnalyzing(false);
-        // Garantir que o overlay seja ocultado quando a análise terminar
-        // (mesmo que ainda não tenham passado os 5 segundos)
-        hideOverlay();
-
-        // Limpar timeout se ainda existir
-        if (nextStepTimeoutId !== null) {
-          clearTimeout(nextStepTimeoutId);
-        }
-      }
-    }
-  }, [uploadedImage, designType, instructions, selectedBrandingTags, t, showTemporaryOverlay, hideOverlay]);
-
-  // Botão explícito de análise (dispara a análise completa com overlay)
-  const handleAnalyzeButtonClick = useCallback(() => {
-    void handleAnalyze();
-  }, [handleAnalyze]);
-
-  const handleImageUpload = useCallback(async (image: UploadedImage) => {
-    // Check authentication
-    if (!(await requireAuth())) return;
-
-    // Para outros modos, a imagem é usada na geração
-    // Reset controls primeiro (ele vai resetar uploadedImage, mas vamos setar depois)
-    setReferenceImages([]);
-    resetControls();
-    // Agora seta uploadedImage DEPOIS do reset para que não seja sobrescrito
-    setUploadedImage(image);
-
-    // Upload to temp R2 to save storage
-    // Preload the URL before swapping to prevent image flicker
-    if (image.base64 && !image.url) {
-      mockupApi.uploadTempImage(image.base64, image.mimeType)
-        .then(url => {
-          const img = new Image();
-          img.onload = () => {
-            setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
-          };
-          img.onerror = () => {
-            // Keep base64 if URL fails to load
-            setUploadedImage(prev => prev ? ({ ...prev, url }) : null);
-          };
-          img.src = url;
-        })
-        .catch(err => {
-          if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
-        });
-    }
-
-    setSelectedModel(null);
-    setResolution('1K');
-
-    // Navega para a rota /mockupmachine
-    navigate('/mockupmachine');
-
-    // Auto-extract colors from uploaded image (local only, sem chamar análise de IA)
-    try {
-      const { extractColors } = await import('@/utils/colorExtraction');
-      const colorResult = await extractColors(image.base64, image.mimeType, 8);
-      setSuggestedColors(colorResult.colors);
-      if (isLocalDevelopment()) {
-        console.log('🎨 Auto-extracted colors:', colorResult.colors);
-      }
-    } catch (colorErr) {
-      if (isLocalDevelopment()) {
-        console.error("Error auto-extracting colors:", colorErr);
-      }
-      // Non-critical - don't block UX if color extraction fails
-    }
-  }, [designType, resetControls, isAuthenticated, isCheckingAuth, t]);
-
-  const handleReplaceImage = useCallback(async (image: UploadedImage) => {
-    // Check authentication
-    if (!(await requireAuth())) return;
-
-    // Validate image data
-    if (!image || (!image.base64 && !image.url)) {
-      console.error('Invalid image: missing base64 or url');
-      return;
-    }
-
-    // Ensure base64 is a string
-    const base64String = typeof image.base64 === 'string' ? image.base64 : '';
-    const mimeType = image.mimeType || 'image/png';
-
-    // Para outros modos, substitui a imagem mantendo o setup
-    const validImage: UploadedImage = base64String ? { base64: base64String, mimeType } : { url: image.url!, mimeType };
-    setUploadedImage(validImage);
-
-    // Upload to temp R2 to save storage
-    // Preload the URL before swapping to prevent image flicker
-    if (base64String && !image.url) {
-      mockupApi.uploadTempImage(base64String, mimeType)
-        .then(url => {
-          const img = new Image();
-          img.onload = () => {
-            setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
-          };
-          img.onerror = () => {
-            setUploadedImage(prev => prev ? ({ ...prev, url }) : null);
-          };
-          img.src = url;
-        })
-        .catch(err => {
-          if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
-        });
-    }
-
-    // Auto-extract colors from uploaded image (only if we have base64)
-    if (base64String) {
-      try {
-        const { extractColors } = await import('@/utils/colorExtraction');
-        const colorResult = await extractColors(base64String, mimeType, 8);
-        setSuggestedColors(colorResult.colors);
-        if (isLocalDevelopment()) {
-          console.log('🎨 Auto-extracted colors:', colorResult.colors);
-        }
-      } catch (colorErr) {
-        if (isLocalDevelopment()) {
-          console.error("Error auto-extracting colors:", colorErr);
-        }
-      }
-    }
-
-  }, [designType, isAuthenticated, isCheckingAuth, t]);
-
-  const handleStartOver = () => {
-    setUploadedImage(null);
-    setReferenceImages([]);
-    resetControls();
-    setShowWelcome(true);
-    // Clear persisted state from localStorage
-    clearMockupState();
-    localStorage.removeItem('edit-mockup');
-  };
-
-  const handleDesignTypeChange = (type: DesignType) => {
-    // Se mudar de blank para outro tipo, limpar referenceImage
-
-    setDesignType(type);
-  };
-
-
-
-  const handleNewAngles = useCallback(() => {
-    if (selectedTags.length === 0) {
-      const shuffledCategories = [...AVAILABLE_TAGS].sort(() => 0.5 - Math.random());
-      setSelectedTags([shuffledCategories[0]]);
-    }
-
-    const currentAngle = selectedAngleTags[0];
-    const availableAngles = currentAngle
-      ? AVAILABLE_ANGLE_TAGS.filter(angle => angle !== currentAngle)
-      : AVAILABLE_ANGLE_TAGS;
-
-    if (availableAngles.length === 0) {
-      const shuffled = [...AVAILABLE_ANGLE_TAGS].sort(() => 0.5 - Math.random());
-      setSelectedAngleTags([shuffled[0]]);
-    } else {
-      const shuffled = [...availableAngles].sort(() => 0.5 - Math.random());
-      setSelectedAngleTags([shuffled[0]]);
-    }
-
-    setTimeout(() => {
-      promptTagsSnapshotRef.current = null;
-      setAutoMode('prompt-and-generate');
-    }, 300);
-  }, [selectedTags.length, selectedAngleTags]);
-
-  const handleNewEnvironments = useCallback(() => {
-    if (selectedTags.length === 0) {
-      const shuffledCategories = [...AVAILABLE_TAGS].sort(() => 0.5 - Math.random());
-      setSelectedTags([shuffledCategories[0]]);
-    }
-
-    const currentEnv = selectedLocationTags[0];
-    const availableEnvs = currentEnv
-      ? AVAILABLE_LOCATION_TAGS.filter(env => env !== currentEnv)
-      : AVAILABLE_LOCATION_TAGS;
-
-    if (availableEnvs.length === 0) {
-      const shuffled = [...AVAILABLE_LOCATION_TAGS].sort(() => 0.5 - Math.random());
-      setSelectedLocationTags([shuffled[0]]);
-    } else {
-      const shuffled = [...availableEnvs].sort(() => 0.5 - Math.random());
-      setSelectedLocationTags([shuffled[0]]);
-    }
-
-    setTimeout(() => {
-      promptTagsSnapshotRef.current = null;
-      setAutoMode('prompt-and-generate');
-    }, 300);
-  }, [selectedTags.length, selectedLocationTags]);
-
-  useEffect(() => {
-    if (prevBrandingTagsLength.current === 0 && selectedBrandingTags.length === 1) {
-      setIsAllCategoriesOpen(true);
-    }
-    prevBrandingTagsLength.current = selectedBrandingTags.length;
-  }, [selectedBrandingTags]);
-
-
-
-
-  // Check for unsaved images and warn before leaving
-  useEffect(() => {
-    const hasUnsavedImages = mockups.some((mockup, index) =>
-      mockup !== null && !savedIndices.has(index)
-    );
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedImages) {
-        e.preventDefault();
-        // Modern browsers ignore custom messages, but we still need to set returnValue
-        e.returnValue = '';
-        return '';
-      }
-    };
-
-    if (hasUnsavedImages) {
-      window.addEventListener('beforeunload', handleBeforeUnload);
-    }
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [mockups, savedIndices]);
-
-  // Auto-collapse sections when reference images are uploaded
-  useEffect(() => {
-    const hasReferenceImage = referenceImages.length > 0;
-    const shouldCollapseSections = hasReferenceImage && uploadedImage !== null;
-
-    if (shouldCollapseSections) {
-      // Collapse categories and advanced options
-      setIsAllCategoriesOpen(false);
-      setIsAdvancedOpen(false);
-
-      // Auto-scroll to prompt section after a short delay
-      setTimeout(() => {
-        const promptSection = document.getElementById('prompt-section');
-        const sidebar = sidebarRef.current;
-        if (promptSection && sidebar) {
-          const sidebarRect = sidebar.getBoundingClientRect();
-          const elementRect = promptSection.getBoundingClientRect();
-          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
-
-          sidebar.scrollTo({
-            top: relativeTop - 20,
-            behavior: 'smooth'
-          });
-        }
-      }, 300);
-    }
-  }, [referenceImages, uploadedImage, designType]);
-
-
-  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    setPromptPreview(newValue);
-    if (isSmartPromptActive) {
-      setIsSmartPromptActive(false);
-    }
-    setIsPromptManuallyEdited(true);
-    // isPromptReady is derived - if tags haven't changed since last prompt generation,
-    // it will remain true even after manual edits
-  };
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setPromptPreview(suggestion);
-    if (isSmartPromptActive) setIsSmartPromptActive(false);
-    setIsPromptManuallyEdited(false);
-  };
-
-  const handleSimplify = () => {
-    setPromptPreview(buildPrompt());
-    setIsSmartPromptActive(false);
-    setIsPromptManuallyEdited(false);
-    setPromptSuggestions([]);
-  };
-
-  const handleSuggestPrompts = async () => {
-    if (!promptPreview.trim()) return;
-    setIsSuggestingPrompts(true);
-    setPromptSuggestions([]);
-    try {
-      const suggestions = await aiApi.suggestPromptVariations(promptPreview);
-      setPromptSuggestions(suggestions);
-    } catch (err) {
-      const errorInfo = formatMockupError(err, t);
-      if (isLocalDevelopment()) {
-        console.error("Error suggesting prompts:", err);
-      }
-      toast.error(errorInfo.message, {
-        ...(errorInfo.suggestion && { description: errorInfo.suggestion }),
-        duration: 5000,
-      });
-    } finally {
-      setIsSuggestingPrompts(false);
-    }
-  };
-
 
   const executeImageEditOperation = useCallback(async (params: {
     base64Image: string;
@@ -1239,8 +640,6 @@ const MockupMachinePageContent: React.FC = () => {
     }
   }, [validateCredits, selectedModel, resolution, aspectRatio, onSubscriptionModalOpen, setSubscriptionStatus, referenceImages, t]);
 
-
-
   const runGeneration = useCallback(async (indexToUpdate?: number, promptOverride?: string, appendMode: boolean = false) => {
     // Prevent multiple simultaneous calls to runGeneration
     // Check if any generation is currently in progress
@@ -1326,9 +725,9 @@ const MockupMachinePageContent: React.FC = () => {
           seed: seedLocked ? seed : undefined, // Pass seed only when locked
         });
 
-        // Update seed from backend response (tracks actual seed used)
-        if (result.seed !== undefined) {
-          setSeed(result.seed);
+        // Track generationId for feedback system
+        if (result.requestId) {
+          lastGenerationIdRef.current = result.requestId;
         }
 
         // Image successfully generated - set it in state (prefer URL; if only base64, try client-side upload)
@@ -1531,6 +930,359 @@ const MockupMachinePageContent: React.FC = () => {
       }
     }
   }, [uploadedImage, selectedTags, selectedBrandingTags, promptPreview, hasGenerated, designType, mockupCount, subscriptionStatus, aspectRatio, selectedModel, resolution, validateCredits, onSubscriptionModalOpen, setSubscriptionStatus, mockups, referenceImages, t, imageProvider, selectedBrandGuideline]);
+
+  const handleGenerateSmartPrompt = useCallback(async (shouldAutoGenerate: boolean = false) => {
+    if (isGeneratingPrompt) {
+      if (isLocalDevelopment()) {
+        console.warn('Prompt generation already in progress, skipping duplicate call');
+      }
+      return;
+    }
+
+    // Require a design type before generating any prompt
+    if (!designType || designType === 'blank') {
+      toast.error(t('messages.selectDesignTypeFirst') || 'Selecione o tipo (logo ou layout) antes de gerar o prompt.');
+      return;
+    }
+
+    // Allow prompt generation only if we have a design type AND (uploaded image / reference)
+    const hasRefImagesForSmartPrompt = referenceImages.length > 0;
+    const hasValidDesignSetup = designType && (uploadedImage || hasRefImagesForSmartPrompt);
+    if (!hasValidDesignSetup) {
+      toast.error(t('messages.completeSteps') || 'Complete as etapas de configuração antes de gerar o prompt.');
+      return;
+    }
+
+    setIsGeneratingPrompt(true);
+    setPromptSuggestions([]);
+
+    // Check if user has their own API key and notify them
+    import('../services/userSettingsService').then(async ({ hasGeminiApiKey }) => {
+      try {
+        const userHasApiKey = await hasGeminiApiKey();
+        if (userHasApiKey) {
+          toast.info('API do usuário está sendo usada', {
+            duration: 3000,
+          });
+        }
+      } catch (error) {
+        // Silently fail - don't block generation if key check fails
+        if (isLocalDevelopment()) {
+          console.warn('Failed to check user API key:', error);
+        }
+      }
+    });
+
+    try {
+      // Image compression removed as requested by user
+      let imageToSend = uploadedImage;
+
+
+      const smartPromptResult = await aiApi.generateSmartPrompt({
+        baseImage: imageToSend,
+        designType: designType,
+        brandingTags: selectedBrandingTags,
+        categoryTags: selectedTags,
+        locationTags: selectedLocationTags,
+        angleTags: selectedAngleTags,
+        lightingTags: selectedLightingTags,
+        effectTags: selectedEffectTags,
+        materialTags: selectedMaterialTags,
+        selectedColors: selectedColors,
+        aspectRatio: aspectRatio,
+        generateText: generateText,
+        withHuman: withHuman,
+        enhanceTexture: enhanceTexture,
+        removeText: removeText,
+        negativePrompt: negativePrompt,
+        additionalPrompt: additionalPrompt,
+        instructions: instructions,
+        brandGuidelineId: selectedBrandGuideline || undefined,
+      });
+
+      // Handle both old string format and new object format
+      const smartPrompt = typeof smartPromptResult === 'string'
+        ? smartPromptResult
+        : smartPromptResult.prompt;
+
+      // Always track prompt generation usage (even if tokens are not available, use 0)
+      try {
+        const inputTokens = typeof smartPromptResult === 'object' ? (smartPromptResult.inputTokens ?? 0) : 0;
+        const outputTokens = typeof smartPromptResult === 'object' ? (smartPromptResult.outputTokens ?? 0) : 0;
+
+        const token = authService.getToken();
+        await fetch('/api/mockups/track-prompt-generation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: JSON.stringify({
+            inputTokens,
+            outputTokens,
+            feature: 'mockupmachine',
+          }),
+        });
+      } catch (trackError) {
+        if (isLocalDevelopment()) {
+          console.error('Failed to track prompt generation:', trackError);
+        }
+        // Don't fail the prompt generation if tracking fails
+      }
+
+      // Add reference images instruction if present
+      let finalPrompt = smartPrompt;
+      if (referenceImages.length > 0) {
+        finalPrompt += ` IMPORTANT: The provided reference image${referenceImages.length > 1 ? 's' : ''} ${referenceImages.length > 1 ? 'are' : 'is'} included as style and composition guidance. Study ${referenceImages.length > 1 ? 'these images' : 'this image'} carefully and create a mockup that matches the aesthetic, mood, composition style, lighting approach, color palette, and overall visual feeling of ${referenceImages.length > 1 ? 'these reference mockups' : 'this reference mockup'}. Use ${referenceImages.length > 1 ? 'them' : 'it'} as inspiration for creating a similar visual quality and atmosphere.`;
+      }
+
+      setPromptPreview(finalPrompt);
+      generatedSmartPromptRef.current = finalPrompt; // Store for use in auto-generate
+      
+      // Store generation ID for feedback (👍/👎)
+      if (typeof smartPromptResult === 'object' && smartPromptResult.generationId) {
+        lastGenerationIdRef.current = smartPromptResult.generationId;
+      }
+      
+      promptTagsSnapshotRef.current = getTagsHash(); // Save snapshot for isPromptReady derivation
+      setIsSmartPromptActive(true);
+      setIsPromptManuallyEdited(false);
+      // Track that prompt is ready so manual edits can still allow direct generation
+      promptWasReadyBeforeEditRef.current = true;
+
+      toast.success(t('messages.promptGeneratedSuccessfully'), { duration: 4000 });
+
+      // Optimized: Use a much smaller delay or skip if autoGenerate is ON
+      const scrollDelay = autoGenerate ? 0 : 400;
+      setTimeout(() => {
+        if (autoGenerate) return; // Skip scrolling if we're naturally going to see results
+
+        if (generateOutputsButtonRef.current && sidebarRef.current) {
+          const buttonRect = generateOutputsButtonRef.current.getBoundingClientRect();
+          const sidebarRect = sidebarRef.current.getBoundingClientRect();
+          const relativeTop = buttonRect.top - sidebarRect.top + sidebarRef.current.scrollTop;
+
+          sidebarRef.current.scrollTo({
+            top: relativeTop - 20,
+            behavior: 'smooth'
+          });
+        } else {
+          generateOutputsButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, scrollDelay);
+      
+      // runGeneration is now handled by the unified autoMode effect or explicit callers
+      // to prevent double-triggering
+    } catch (err) {
+      const errorInfo = formatMockupError(err, t);
+      if (isLocalDevelopment()) {
+        console.error("Error generating smart prompt:", err);
+      }
+      toast.error(errorInfo.message, {
+        ...(errorInfo.suggestion && { description: errorInfo.suggestion }),
+        duration: 5000,
+      });
+      setPromptPreview(buildPrompt());
+    } finally {
+      setIsGeneratingPrompt(false);
+    }
+  }, [
+    uploadedImage,
+    designType,
+    selectedTags,
+    selectedBrandingTags,
+    selectedLocationTags,
+    selectedAngleTags,
+    selectedLightingTags,
+    selectedEffectTags,
+    selectedColors,
+    aspectRatio,
+    generateText,
+    withHuman,
+    enhanceTexture,
+    negativePrompt,
+    additionalPrompt,
+    instructions,
+    buildPrompt,
+    t,
+    isGeneratingPrompt,
+    referenceImages,
+    getTagsHash
+  ]);
+
+
+  const resetControls = useCallback(() => {
+    setDesignType('layout');
+    setSelectedModel(null);
+    setResolution('1K');
+    setMockups(Array(mockupCount).fill(null));
+    setSelectedTags([]);
+    setSelectedBrandingTags([]);
+    setSelectedLocationTags([]);
+    setSelectedAngleTags([]);
+    setSelectedLightingTags([]);
+    setSelectedEffectTags([]);
+    setSelectedMaterialTags([]);
+    setSelectedColors([]);
+    setColorInput('');
+    setIsValidColor(false);
+    setIsAdvancedOpen(false);
+    setIsAllCategoriesOpen(false);
+    setSuggestedTags([]);
+    setHasGenerated(false);
+    setHasAnalyzed(false);
+    setSuggestedBrandingTags([]);
+    setSuggestedLocationTags([]);
+    setSuggestedAngleTags([]);
+    setSuggestedLightingTags([]);
+    setSuggestedEffectTags([]);
+    setSuggestedMaterialTags([]);
+    setSuggestedColors([]);
+    setNegativePrompt('');
+    setAdditionalPrompt('');
+    setGenerateText(false);
+    setWithHuman(false);
+    setRemoveText(true);
+    setIsSmartPromptActive(true);
+    setPromptSuggestions([]);
+    setPromptPreview('');
+    setIsPromptManuallyEdited(false);
+    promptTagsSnapshotRef.current = null;
+    setMockups(Array(mockupCount).fill(null));
+    setIsLoading(Array(mockupCount).fill(false));
+    setReferenceImages([]);
+    setSavedIndices(new Set());
+    setSavedMockupIds(new Map());
+    setMockupLikedStatus(new Map());
+    setUploadedImage(null);
+    setInstructions('');
+    // Clear localStorage when resetting
+    clearMockupState();
+  }, [mockupCount]);
+
+  const handleAnalyze = useCallback(async (imageOverride?: UploadedImage, silent?: boolean) => {
+    const imageToUse = imageOverride ?? uploadedImage;
+    const t0 = Date.now();
+    if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze start', silent ? '(silent)' : '');
+    if (!imageToUse) {
+      if (import.meta.env.DEV) console.log('[dev] analyze: skip (no image or blank)');
+      return;
+    }
+
+    let nextStepTimeoutId: number | null = null;
+    const nextStepShownRef = { current: false };
+
+    if (!silent) {
+      setIsAnalyzing(true);
+      // showTemporaryOverlay(5000); // Removed full-screen overlay for a smoother journey
+
+      // Após 5 segundos, mostrar o próximo passo mesmo que a análise não tenha completado
+
+      nextStepTimeoutId = window.setTimeout(() => {
+        if (import.meta.env.DEV) console.log('[dev] analyze: showing next step after 5s (analysis may still be running)');
+        nextStepShownRef.current = true;
+        setIsAllCategoriesOpen(true);
+        setIsAdvancedOpen(true);
+        setHasAnalyzed(true);
+        if (!selectedModel) setSelectedModel(GEMINI_MODELS.FLASH);
+      }, 5000);
+    }
+
+    try {
+      let imageToAnalyze = imageToUse;
+      if (imageToUse.base64) {
+        try {
+          const dataUrl = await compressImage(imageToUse.base64.includes(',') ? imageToUse.base64 : `data:${imageToUse.mimeType};base64,${imageToUse.base64}`, {
+            maxWidth: 1024,
+            maxHeight: 1024,
+            maxSizeBytes: 500 * 1024,
+            mimeType: imageToUse.mimeType,
+          });
+          const comma = dataUrl.indexOf(',');
+          const b64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
+          const mime = /^data:([^;]+);/.exec(dataUrl)?.[1] || imageToUse.mimeType;
+          imageToAnalyze = { base64: b64, mimeType: mime };
+        } catch {
+          /* keep original if compression fails */
+        }
+      }
+
+      const userContext = {
+        ...(selectedBrandingTags.length > 0 && { selectedBrandingTags }),
+        ...(selectedBrandGuideline && { brandGuidelineId: selectedBrandGuideline }),
+      };
+      if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup start', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+      const analysis = await aiApi.analyzeSetup(
+        imageToAnalyze,
+        instructions,
+        Object.keys(userContext).length > 0 ? userContext : undefined
+      );
+      if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+
+      setSuggestedBrandingTags(analysis.branding);
+      setSuggestedTags(analysis.categories);
+      setSuggestedLocationTags(analysis.locations);
+      setSuggestedAngleTags(analysis.angles);
+      setSuggestedLightingTags(analysis.lighting);
+      setSuggestedEffectTags(analysis.effects);
+      setSuggestedMaterialTags(analysis.materials);
+      // Design type is now manually selected by user, not auto-set from analysis
+
+      if (imageToUse.base64) {
+        try {
+          if (import.meta.env.DEV) console.log('[dev] analyze: extractColors start', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+          const { extractColors } = await import('@/utils/colorExtraction');
+          const colorResult = await extractColors(imageToUse.base64, imageToUse.mimeType, 8);
+          setSuggestedColors(colorResult.colors);
+          if (import.meta.env.DEV) console.log('[dev] analyze: extractColors done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+        } catch (colorErr) {
+          console.error("Error extracting colors:", colorErr);
+        }
+      }
+
+      // Se a análise terminou antes de 5 segundos, mostrar o próximo passo agora
+      // Se terminou depois de 5 segundos, o timeout já terá mostrado o próximo passo
+      if (!silent) {
+        // Se o timeout ainda não executou, cancelar e mostrar o próximo passo agora
+        if (nextStepTimeoutId !== null && !nextStepShownRef.current) {
+          clearTimeout(nextStepTimeoutId);
+          nextStepTimeoutId = null;
+          setIsAllCategoriesOpen(true);
+          setIsAdvancedOpen(true);
+          setHasAnalyzed(true);
+          if (!selectedModel) setSelectedModel(GEMINI_MODELS.FLASH);
+        }
+        // Se o timeout já executou (passou de 5s), apenas atualizar os dados
+        // (hasAnalyzed já está true, então o conteúdo já está visível)
+      }
+      if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze success', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+    } catch (err) {
+      const errorInfo = formatMockupError(err, t);
+      if (isLocalDevelopment()) console.error("Error getting full analysis:", err);
+      toast.error(errorInfo.message, {
+        ...(errorInfo.suggestion && { description: errorInfo.suggestion }),
+        duration: 5000,
+      });
+    } finally {
+      if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze finally', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+      if (!silent) {
+        setIsAnalyzing(false);
+        // Garantir que o overlay seja ocultado quando a análise terminar
+        // (mesmo que ainda não tenham passado os 5 segundos)
+        // hideOverlay(); // Removed full-screen overlay
+
+        // Limpar timeout se ainda existir
+        if (nextStepTimeoutId !== null) {
+          clearTimeout(nextStepTimeoutId);
+        }
+      }
+    }
+  }, [uploadedImage, designType, instructions, selectedBrandingTags, t, showTemporaryOverlay, hideOverlay]);
+
+  // Botão explícito de análise (dispara a análise completa com overlay)
+  const handleAnalyzeButtonClick = useCallback(() => {
+    void handleAnalyze();
+  }, [handleAnalyze]);
 
   const handleSurpriseMe = useCallback(async (autoGenerate: boolean = false) => {
     // Ensure model is selected (default to gemini-2.5-flash-image if not set)
@@ -1831,6 +1583,301 @@ const MockupMachinePageContent: React.FC = () => {
     setTimeout(() => setIsDiceAnimating(false), 800);
   }, [handleSurpriseMe, showTemporaryOverlay]);
 
+  const handleImageUpload = useCallback(async (image: UploadedImage) => {
+
+    // Check authentication
+    if (!(await requireAuth())) return;
+
+    // Para outros modos, a imagem é usada na geração
+    // Reset controls primeiro (ele vai resetar uploadedImage, mas vamos setar depois)
+    setReferenceImages([]);
+    resetControls();
+    // Agora seta uploadedImage DEPOIS do reset para que não seja sobrescrito
+    setUploadedImage(image);
+
+    // Upload to temp R2 to save storage
+    // Preload the URL before swapping to prevent image flicker
+    if (image.base64 && !image.url) {
+      mockupApi.uploadTempImage(image.base64, image.mimeType)
+        .then(url => {
+          const img = new Image();
+          img.onload = () => {
+            setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+          };
+          img.onerror = () => {
+            // Keep base64 if URL fails to load
+            setUploadedImage(prev => prev ? ({ ...prev, url }) : null);
+          };
+          img.src = url;
+        })
+        .catch(err => {
+          if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
+        });
+    }
+
+    setSelectedModel(null);
+    setResolution('1K');
+
+    // Navega para a rota /mockupmachine
+    navigate('/mockupmachine');
+
+    // AUTO-JOURNEY: Move straight to dashboard mode and trigger analysis + automatic generation
+    setHasAnalyzed(true);
+    setIsAllCategoriesOpen(false);
+    setIsAdvancedOpen(false);
+    
+    // Auto-extract colors from uploaded image (local only)
+    try {
+      const { extractColors } = await import('@/utils/colorExtraction');
+      const colorResult = await extractColors(image.base64, image.mimeType, 8);
+      setSuggestedColors(colorResult.colors);
+    } catch (colorErr) {}
+
+    // Start full AI analysis in background without blocking with a modal
+    handleAnalyze(image, true);
+
+    // If auto-generate is enabled, trigger a first "Surprise Me" batch immediately
+    if (autoGenerate) {
+       setTimeout(() => {
+         handleSurpriseMeWithDice(true);
+       }, 500);
+    }
+  }, [designType, resetControls, isAuthenticated, isCheckingAuth, t, handleAnalyze, autoGenerate, handleSurpriseMeWithDice]);
+
+  const handleReplaceImage = useCallback(async (image: UploadedImage) => {
+    // Check authentication
+    if (!(await requireAuth())) return;
+
+    // Validate image data
+    if (!image || (!image.base64 && !image.url)) {
+      console.error('Invalid image: missing base64 or url');
+      return;
+    }
+
+    // Ensure base64 is a string
+    const base64String = typeof image.base64 === 'string' ? image.base64 : '';
+    const mimeType = image.mimeType || 'image/png';
+
+    // Para outros modos, substitui a imagem mantendo o setup
+    const validImage: UploadedImage = base64String ? { base64: base64String, mimeType } : { url: image.url!, mimeType };
+    setUploadedImage(validImage);
+
+    // Upload to temp R2 to save storage
+    // Preload the URL before swapping to prevent image flicker
+    if (base64String && !image.url) {
+      mockupApi.uploadTempImage(base64String, mimeType)
+        .then(url => {
+          const img = new Image();
+          img.onload = () => {
+            setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+          };
+          img.onerror = () => {
+            setUploadedImage(prev => prev ? ({ ...prev, url }) : null);
+          };
+          img.src = url;
+        })
+        .catch(err => {
+          if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
+        });
+    }
+
+    // Auto-extract colors from uploaded image (only if we have base64)
+    if (base64String) {
+      try {
+        const { extractColors } = await import('@/utils/colorExtraction');
+        const colorResult = await extractColors(base64String, mimeType, 8);
+        setSuggestedColors(colorResult.colors);
+        if (isLocalDevelopment()) {
+          console.log('🎨 Auto-extracted colors:', colorResult.colors);
+        }
+      } catch (colorErr) {
+        if (isLocalDevelopment()) {
+          console.error("Error auto-extracting colors:", colorErr);
+        }
+      }
+    }
+
+  }, [designType, isAuthenticated, isCheckingAuth, t]);
+
+  const handleStartOver = () => {
+    setUploadedImage(null);
+    setReferenceImages([]);
+    resetControls();
+    // Clear persisted state from localStorage
+    clearMockupState();
+    localStorage.removeItem('edit-mockup');
+  };
+
+  const handleDesignTypeChange = (type: DesignType) => {
+    // Se mudar de blank para outro tipo, limpar referenceImage
+
+    setDesignType(type);
+  };
+
+
+
+  const handleNewAngles = useCallback(() => {
+    if (selectedTags.length === 0) {
+      const shuffledCategories = [...AVAILABLE_TAGS].sort(() => 0.5 - Math.random());
+      setSelectedTags([shuffledCategories[0]]);
+    }
+
+    const currentAngle = selectedAngleTags[0];
+    const availableAngles = currentAngle
+      ? AVAILABLE_ANGLE_TAGS.filter(angle => angle !== currentAngle)
+      : AVAILABLE_ANGLE_TAGS;
+
+    if (availableAngles.length === 0) {
+      const shuffled = [...AVAILABLE_ANGLE_TAGS].sort(() => 0.5 - Math.random());
+      setSelectedAngleTags([shuffled[0]]);
+    } else {
+      const shuffled = [...availableAngles].sort(() => 0.5 - Math.random());
+      setSelectedAngleTags([shuffled[0]]);
+    }
+
+    setTimeout(() => {
+      promptTagsSnapshotRef.current = null;
+      setAutoMode('prompt-and-generate');
+    }, 300);
+  }, [selectedTags.length, selectedAngleTags]);
+
+  const handleNewEnvironments = useCallback(() => {
+    if (selectedTags.length === 0) {
+      const shuffledCategories = [...AVAILABLE_TAGS].sort(() => 0.5 - Math.random());
+      setSelectedTags([shuffledCategories[0]]);
+    }
+
+    const currentEnv = selectedLocationTags[0];
+    const availableEnvs = currentEnv
+      ? AVAILABLE_LOCATION_TAGS.filter(env => env !== currentEnv)
+      : AVAILABLE_LOCATION_TAGS;
+
+    if (availableEnvs.length === 0) {
+      const shuffled = [...AVAILABLE_LOCATION_TAGS].sort(() => 0.5 - Math.random());
+      setSelectedLocationTags([shuffled[0]]);
+    } else {
+      const shuffled = [...availableEnvs].sort(() => 0.5 - Math.random());
+      setSelectedLocationTags([shuffled[0]]);
+    }
+
+    setTimeout(() => {
+      promptTagsSnapshotRef.current = null;
+      setAutoMode('prompt-and-generate');
+    }, 300);
+  }, [selectedTags.length, selectedLocationTags]);
+
+  useEffect(() => {
+    if (prevBrandingTagsLength.current === 0 && selectedBrandingTags.length === 1) {
+      setIsAllCategoriesOpen(true);
+    }
+    prevBrandingTagsLength.current = selectedBrandingTags.length;
+  }, [selectedBrandingTags]);
+
+
+
+
+  // Check for unsaved images and warn before leaving
+  useEffect(() => {
+    const hasUnsavedImages = mockups.some((mockup, index) =>
+      mockup !== null && !savedIndices.has(index)
+    );
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedImages) {
+        e.preventDefault();
+        // Modern browsers ignore custom messages, but we still need to set returnValue
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    if (hasUnsavedImages) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [mockups, savedIndices]);
+
+  // Auto-collapse sections when reference images are uploaded
+  useEffect(() => {
+    const hasReferenceImage = referenceImages.length > 0;
+    const shouldCollapseSections = hasReferenceImage && uploadedImage !== null;
+
+    if (shouldCollapseSections) {
+      // Collapse categories and advanced options
+      setIsAllCategoriesOpen(false);
+      setIsAdvancedOpen(false);
+
+      // Auto-scroll to prompt section after a short delay
+      setTimeout(() => {
+        const promptSection = document.getElementById('prompt-section');
+        const sidebar = sidebarRef.current;
+        if (promptSection && sidebar) {
+          const sidebarRect = sidebar.getBoundingClientRect();
+          const elementRect = promptSection.getBoundingClientRect();
+          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
+
+          sidebar.scrollTo({
+            top: relativeTop - 20,
+            behavior: 'smooth'
+          });
+        }
+      }, 300);
+    }
+  }, [referenceImages, uploadedImage, designType]);
+
+
+  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setPromptPreview(newValue);
+    if (isSmartPromptActive) {
+      setIsSmartPromptActive(false);
+    }
+    setIsPromptManuallyEdited(true);
+    // isPromptReady is derived - if tags haven't changed since last prompt generation,
+    // it will remain true even after manual edits
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setPromptPreview(suggestion);
+    if (isSmartPromptActive) setIsSmartPromptActive(false);
+    setIsPromptManuallyEdited(false);
+  };
+
+  const handleSimplify = () => {
+    setPromptPreview(buildPrompt());
+    setIsSmartPromptActive(false);
+    setIsPromptManuallyEdited(false);
+    setPromptSuggestions([]);
+  };
+
+  const handleSuggestPrompts = async () => {
+    if (!promptPreview.trim()) return;
+    setIsSuggestingPrompts(true);
+    setPromptSuggestions([]);
+    try {
+      const suggestions = await aiApi.suggestPromptVariations(promptPreview);
+      setPromptSuggestions(suggestions);
+    } catch (err) {
+      const errorInfo = formatMockupError(err, t);
+      if (isLocalDevelopment()) {
+        console.error("Error suggesting prompts:", err);
+      }
+      toast.error(errorInfo.message, {
+        ...(errorInfo.suggestion && { description: errorInfo.suggestion }),
+        duration: 5000,
+      });
+    } finally {
+      setIsSuggestingPrompts(false);
+    }
+  };
+
+
+
+
+
   useEffect(() => {
     if (isGeneratingPrompt) setIsDiceAnimating(false);
   }, [isGeneratingPrompt]);
@@ -2067,8 +2114,7 @@ const MockupMachinePageContent: React.FC = () => {
   }, [isAuthenticated, mockupLikedStatus, promptPreview, designType, selectedTags, selectedBrandingTags, aspectRatio, t]);
 
   const handleRedrawClick = (index: number) => runGeneration(index);
-  const handleOpenFullScreen = (index: number) => setFullScreenImageIndex(index);
-  const handleCloseFullScreen = () => setFullScreenImageIndex(null);
+
 
   // Handler for syncing like state directly (used when hook updates state)
   const handleLikeStateChange = useCallback((index: number) => (newIsLiked: boolean) => {
@@ -2249,30 +2295,7 @@ const MockupMachinePageContent: React.FC = () => {
     handleNewLightingFromOutputWithPreset(index, lighting);
   };
 
-  const prepareForNewMockupSlot = useCallback(() => {
-    // Close fullscreen modal immediately
-    handleCloseFullScreen();
 
-    // Ensure we stay on MockupMachinePage
-    setShowWelcome(false);
-    if (!hasGenerated) {
-      setHasGenerated(true);
-    }
-
-    // Open sidebar on mobile if it's closed
-    if (!isSidebarVisibleMobile) {
-      setIsSidebarVisibleMobile(true);
-    }
-
-    // Calculate new index before appending
-    const newIndex = mockups.length;
-
-    // Append new slot
-    setMockups(prev => [...prev, null]);
-    setIsLoading(prev => [...prev, true]);
-
-    return newIndex;
-  }, [handleCloseFullScreen, hasGenerated, isSidebarVisibleMobile, mockups.length]);
 
   const handleNewAngleFromOutput = useCallback(async (index: number, angle: string) => {
     const outputImage = mockups[index];
@@ -2684,8 +2707,9 @@ Generate the new mockup image with the requested changes applied.`;
   const isSetupMode = !hasAnalyzed;
   const isDashboardMode = hasAnalyzed;
 
-  // Se vazio, mostrar a WelcomeScreen por cima, pro user sempre upar a imagem pela WelcomeScreen
-  const shouldShowWelcome = !uploadedImage;
+  // Mas não mostrar se estiver restaurando estado ou se já tiver conteúdo gerado/referências
+  const isActuallyEmpty = !uploadedImage && !hasGenerated && referenceImages.length === 0;
+  const shouldShowWelcome = !isRestoring && isActuallyEmpty;
 
   return (
     <>
@@ -2707,7 +2731,8 @@ Generate the new mockup image with the requested changes applied.`;
         applicationCategory="DesignApplication"
       />
       <WebSiteSchema />
-      <AnalyzingImageOverlay isVisible={isAnalysisOverlayVisible} />
+      {/* Note: AnalyzingImageOverlay removed for a cleaner journey - analyze happens in background */}
+
 
       {shouldShowWelcome ? (
         <WelcomeScreen
@@ -2726,10 +2751,11 @@ Generate the new mockup image with the requested changes applied.`;
               isSetupMode ? "w-full" : [
                 "fixed inset-0 lg:relative lg:inset-auto",
                 isSidebarVisibleMobile ? "flex items-center justify-center bg-background/95 backdrop-blur-md" : "hidden lg:flex lg:items-center lg:justify-center",
-                isSidebarCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none" : "lg:w-auto lg:opacity-100"
+                isSidebarCollapsed ? "lg:w-16" : "lg:w-auto"
               ]
             )}>
               <SidebarOrchestrator
+                isCollapsed={isSidebarCollapsed}
                 sidebarWidth={sidebarWidth}
                 sidebarRef={sidebarRef}
                 onSidebarWidthChange={setSidebarWidth}
@@ -2759,17 +2785,22 @@ Generate the new mockup image with the requested changes applied.`;
                 isSidebarCollapsed && "lg:pl-16 shadow-[inset_20px_0_30px_-20px_rgba(0,0,0,0.3)]"
               )}>
 
-                {/* Desktop Sidebar Toggle - PanelLeftOpen when collapsed (expand), X when expanded (close) */}
-                <div className="hidden lg:block absolute left-4 top-6 z-40">
-                  <Button variant="ghost" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                {/* Desktop Sidebar Toggle - Subtly docked to the sidebar edge near vertical center */}
+                <div className={cn(
+                  "hidden lg:block absolute z-[45] transition-all duration-300",
+                  isSidebarCollapsed ? "left-0 translate-x-3" : "left-[-20px]"
+                )} style={{ top: 'calc(50% - 20px)' }}>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     size="icon"
-                    className="w-10 h-10 rounded-xl bg-neutral-900/50 backdrop-blur-md border border-white/5 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan shadow-xl transition-all group"
+                    className="w-10 h-10 rounded-full bg-neutral-900 border border-white/5 hover:bg-neutral-800 text-neutral-500 hover:text-white shadow-2xl transition-all group"
                     title={isSidebarCollapsed ? (t('mockup.openSidebar') || 'Abrir barra lateral') : (t('mockup.closeSidebar') || 'Fechar barra lateral')}
                   >
                     {isSidebarCollapsed ? (
-                      <PanelLeftOpen className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                      <PanelLeftOpen className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                     ) : (
-                      <X className="h-5 w-5 transition-transform duration-300" />
+                      <X className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                     )}
                   </Button>
                 </div>
@@ -2811,61 +2842,12 @@ Generate the new mockup image with the requested changes applied.`;
                       aspectRatio={aspectRatio as '16:9' | '4:3' | '1:1'}
                       editButtonsDisabled={isEditOperationDisabled}
                       creditsPerOperation={creditsNeededForEdit}
+                      generationId={lastGenerationIdRef.current}
+                      feedbackContext={getFeedbackContext}
                     />
                   </div>
                 </div>
 
-                {/* Global Floating Control Bar (Inside Main to respect Footer) */}
-                {isDashboardMode && (hasAnalyzed || shouldShowGenerateButton) && (
-                  <div 
-                    className={cn(
-                      "absolute bottom-10 inset-x-0 z-[100] px-4 pointer-events-none flex justify-center transition-all duration-500 ease-in-out"
-                    )}
-                  >
-                    <div className="pointer-events-auto flex items-center gap-3 animate-in fade-in slide-in-from-bottom-8 duration-500">
-                      {/* Mobile Sidebar Shortcut */}
-                      {!isSidebarVisibleMobile && (
-                        <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(true)}
-                          size="icon"
-                          className="lg:hidden shrink-0 w-12 h-12 rounded-2xl border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl hover:bg-neutral-800 hover:border-brand-cyan/40 text-neutral-400 hover:text-brand-cyan transition-all group"
-                          title={t('mockup.openSidebar') || 'Abrir barra lateral'}
-                        >
-                          <PanelLeftOpen className="h-6 w-6 group-hover:scale-110 transition-all" />
-                        </Button>
-                      )}
-
-                      <div className="w-auto max-w-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl relative">
-                        <SurpriseMeControl
-                          onSurpriseMe={handleSurpriseMeWithDice}
-                          isGeneratingPrompt={isGeneratingPrompt}
-                          isDiceAnimating={isDiceAnimating}
-                          isSurpriseMeMode={isSurpriseMeMode}
-                          setIsSurpriseMeMode={setIsSurpriseMeMode}
-                          autoGenerate={autoGenerate}
-                          setAutoGenerate={setAutoGenerate}
-                          selectedModel={selectedModel}
-                          mockupCount={mockupCount}
-                          resolution={resolution}
-                          showBackground={true}
-                          onGeneratePrompt={handleGenerateSmartPrompt}
-                          onGenerateOutputs={handleGenerateClick}
-                          isGenerateDisabled={isGenerateDisabled}
-                          isGeneratingOutputs={isLoading.some(Boolean)}
-                          isPromptReady={isPromptReady}
-                          setSelectedModel={setSelectedModel}
-                          imageProvider={imageProvider}
-                          setImageProvider={setImageProvider}
-                          uploadedImage={uploadedImage}
-                          setMockupCount={setMockupCount}
-                          setResolution={setResolution}
-                          aspectRatio={aspectRatio}
-                          setAspectRatio={setAspectRatio}
-                          showGenerateButtons={true}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
               </main>
             )}
           </div>

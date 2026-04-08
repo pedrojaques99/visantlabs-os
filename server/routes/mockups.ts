@@ -1282,15 +1282,16 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     // Return generated image
     // Prefer imageUrl if available to save bandwidth
     res.json({
-      imageBase64: imageUrl ? undefined : imageBase64, // Send undefined if imageUrl is present to save bandwidth
-      imageUrl, // Include the R2 URL
-      seed: usedSeed, // Return the seed used (undefined for Gemini which doesn't support it)
-      modelUsed: model, // Return exact model version for traceability
+      imageBase64: imageUrl ? undefined : imageBase64,
+      imageUrl,
+      seed: usedSeed,
+      modelUsed: model,
       creditsDeducted: actualCreditsDeducted,
       creditsRemaining: totalCreditsRemaining,
       isAdmin,
-      width: width || undefined, // Echo back custom dimensions for Figma plugin
+      width: width || undefined,
       height: height || undefined,
+      requestId, // Track request ID for feedback linking
     });
   } catch (error: any) {
     // Always release lock on error if it was acquired

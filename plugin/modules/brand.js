@@ -1,12 +1,12 @@
 /**
- * Brand module - Handle brand guidelines, logos, colors, fonts, tokens, components
- * Best practice: Isolated brand management logic
+ * Brand module — orchestrator for brand guidelines, logos, colors, fonts,
+ * tokens, and UI components. Delegates colors to BrandColors and complex
+ * modals to BrandModals (see plugin/modules/brand/).
  */
 
-// Constants
 const WEBAPP_BASE_URL = {
   local: 'http://localhost:5173',
-  prod: 'https://www.visantlabs.com'
+  prod: 'https://www.visantlabs.com',
 };
 
 class BrandModule {
@@ -44,18 +44,13 @@ class BrandModule {
     // Font selection search
     this.fontSearch = document.getElementById('fontSearch');
 
+    // Colors sub-module — handles role slots + extras
+    this.colors = new BrandColors();
+
     this.setupEventListeners();
     this.setupStateListeners();
     this.setupCollapsibles();
     this.loadInitialData();
-  }
-
-  /** Helper to toggle the "Open in webapp" button visibility */
-  _updateOpenBtnVisibility(visible) {
-    const openBtn = document.getElementById('brandGuidelineOpenBtn');
-    if (openBtn) {
-      openBtn.style.display = visible ? 'flex' : 'none';
-    }
   }
 
   setupEventListeners() {
@@ -98,65 +93,33 @@ class BrandModule {
       this.deleteCurrentGuideline();
     });
 
-    // Logo Buttons (open modal)
-    document.querySelectorAll('.brand-select-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const target = e.currentTarget.getAttribute('data-target');
-        setState('activeModalTarget', target);
-        document.getElementById('componentModal')?.classList.remove('hidden');
+    // Auto-close any open <details> row menu when clicking outside
+    document.addEventListener('click', (e) => {
+      document.querySelectorAll('.brand-row-menu[open]').forEach(d => {
+        if (!d.contains(e.target)) d.removeAttribute('open');
       });
     });
 
-    // Color management - show add row
+    // Color management — directly open native picker to add an extra color
     document.getElementById('colorAddBtn')?.addEventListener('click', () => {
-      const addRow = document.getElementById('colorAddRow');
-      if (addRow) {
-        // Toggle add row and make sure library list is hidden
-        const isHidden = addRow.classList.contains('hidden');
-        if (isHidden) {
-          addRow.classList.remove('hidden');
-          this.availableColorsList?.classList.add('hidden');
-          document.getElementById('colorNameInput')?.focus();
-        } else {
-          addRow.classList.add('hidden');
-        }
-      }
+      this.availableColorsList?.classList.add('hidden');
+      this.colors.addExtra();
     });
 
-    // Color library toggle
+    // Color library toggle — show/hide the file's available colors strip
     document.getElementById('colorImportBtn')?.addEventListener('click', () => {
-      if (this.availableColorsList) {
-        // Toggle library list and make sure add row is hidden
-        const isHidden = this.availableColorsList.classList.contains('hidden');
-        if (isHidden) {
-          this.availableColorsList.classList.remove('hidden');
-          document.getElementById('colorAddRow')?.classList.add('hidden');
-          // Refresh data if empty
-          if (!state.allColors || state.allColors.length === 0) {
-            getContext();
-          } else {
-            this.renderAvailableColors();
-          }
-        } else {
-          this.availableColorsList.classList.add('hidden');
-        }
+      if (!this.availableColorsList) return;
+      const isHidden = this.availableColorsList.classList.contains('hidden');
+      if (!isHidden) {
+        this.availableColorsList.classList.add('hidden');
+        return;
       }
-    });
-
-    // Color confirm
-    document.getElementById('colorConfirmBtn')?.addEventListener('click', () => {
-      this.addManualColor();
-    });
-
-    // Color cancel
-    document.getElementById('colorCancelBtn')?.addEventListener('click', () => {
-      document.getElementById('colorAddRow')?.classList.add('hidden');
-    });
-
-    // Color name input - enter to confirm
-    document.getElementById('colorNameInput')?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') this.addManualColor();
-      if (e.key === 'Escape') document.getElementById('colorAddRow')?.classList.add('hidden');
+      this.availableColorsList.classList.remove('hidden');
+      if (!state.allColors || state.allColors.length === 0) {
+        getContext();
+      } else {
+        this.renderAvailableColors();
+      }
     });
 
     // Font Buttons (open modal)
@@ -207,6 +170,11 @@ class BrandModule {
       this.openGuidelineInWebapp();
     });
 
+    document.getElementById('brandGuidelineUnlinkBtn')?.addEventListener('click', () => {
+      this.linkBrandGuideline('');
+      if (this.brandGuidelineSelect) this.brandGuidelineSelect.value = '';
+    });
+
     // ═══ DESIGN TOKENS ═══
     this.tokenInputs.forEach(input => {
       input.addEventListener('change', (e) => {
@@ -222,7 +190,7 @@ class BrandModule {
 
     this.componentLibraryBtn?.addEventListener('click', () => {
       setState('activeModalTarget', 'ui-component-__new__');
-      document.getElementById('componentModal')?.classList.remove('hidden');
+      this._openLibraryModal();
     });
 
     // ═══ EXPORT / IMPORT ═══
@@ -237,6 +205,33 @@ class BrandModule {
       importInput.addEventListener('change', (e) => this.handleImportBrandJSON(e));
     }
 
+
+    // ═══ SMART SCAN (multi-select → auto-fill brand slots) ═══
+    const smartScanBtn = document.getElementById('brandSmartScanBtn');
+    smartScanBtn?.addEventListener('click', async () => {
+      if (!window.brandSyncModule) return;
+      smartScanBtn.style.opacity = '0.5';
+      smartScanBtn.style.pointerEvents = 'none';
+      try {
+        const items = await window.brandSyncModule.smartScan();
+        if (!items || items.length === 0) {
+          eventBus.emit('toast:error', { message: 'Select elements in Figma first' });
+          return;
+        }
+        this._showSmartScanModal(items);
+      } catch (e) {
+        eventBus.emit('toast:error', { message: e.message || 'Scan failed' });
+      } finally {
+        smartScanBtn.style.opacity = '';
+        smartScanBtn.style.pointerEvents = '';
+      }
+    });
+
+    // ═══ FIGMA SYNC (push plugin state → webapp guideline) ═══
+    const figmaSyncBtn = document.getElementById('brandFigmaSyncBtn');
+    figmaSyncBtn?.addEventListener('click', () => {
+      this._showPushToWebappPreview();
+    });
 
     // Font search
     this.fontSearch?.addEventListener('input', () => {
@@ -386,9 +381,10 @@ class BrandModule {
           ]);
         }
         if (!config.typography && config.fontPrimary) {
+          const toFamilyValue = (f) => f ? { family: f.family || f.name, availableStyles: [f.style || 'Regular'] } : null;
           setState('typography', [
-            { id: 'primary', label: 'Primary', value: config.fontPrimary },
-            { id: 'secondary', label: 'Secondary', value: config.fontSecondary }
+            { id: 'primary', label: 'Primary', value: toFamilyValue(config.fontPrimary) },
+            { id: 'secondary', label: 'Secondary', value: toFamilyValue(config.fontSecondary) }
           ]);
         }
         if (config.selectedColors) {
@@ -402,7 +398,6 @@ class BrandModule {
             this.brandGuidelineSelect.value = config.linkedGuidelineId;
           }
           // Show open button
-          this._updateOpenBtnVisibility(true);
           // Show linked status from cached guideline if available
           const cachedGuideline = state.apiGuidelines?.find(g =>
             (g.id || g._id) === config.linkedGuidelineId
@@ -657,6 +652,22 @@ class BrandModule {
     }
   }
 
+
+  // ═══ SMART SCAN MODAL ═══
+  _showSmartScanModal(items) {
+    BrandModals.showSmartScan(items, (assignments) => BrandModals.applySmartScan(assignments));
+  }
+
+  _applySmartScan(assignments) {
+    BrandModals.applySmartScan(assignments);
+  }
+
+  // ═══ PUSH TO WEBAPP PREVIEW ═══
+  async _showPushToWebappPreview() {
+    return BrandModals.showPushToWebapp(this);
+  }
+
+
   /**
    * Update brand pill indicator
    */
@@ -697,76 +708,103 @@ class BrandModule {
     list.innerHTML = '';
     state.logos.forEach((logo, index) => {
       const row = document.createElement('div');
-      row.className = 'figma-prop-row';
+      row.className = 'brand-row';
 
       const val = logo.value;
       const isConfigured = !!val;
+      const canRemove = state.logos.length > 1;
 
       row.innerHTML = `
-        <input type="text" class="figma-prop-label-editable" value="${this.escapeHtml(logo.label)}" data-index="${index}" title="Renomear propriedade" />
-        <div class="figma-prop-value ${isConfigured ? '' : 'text-muted'}" style="flex: 1; min-width: 0;">
-          ${isConfigured ? (val.thumbnail ? `<img src="${val.thumbnail}" class="brand-item-thumb" alt="">` : '<div class="brand-item-icon">◇</div>') : 'Não selecionado'}
-          ${isConfigured ? `<div class="brand-label" title="${this.escapeHtml(val.name)}">${this.escapeHtml(val.name)}</div>` : ''}
-        </div>
-        <div class="row-actions" style="display: flex; gap: 2px;">
-          ${isConfigured ? `
-            <button class="figma-icon-btn btn-remove-item" data-index="${index}" title="Limpar valor">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <button class="brand-row-preview ${isConfigured ? 'is-set' : 'is-empty'}" data-index="${index}" title="${isConfigured ? 'Trocar logo' : 'Escolher da biblioteca'}">
+          ${isConfigured && val.thumbnail
+            ? `<img src="${val.thumbnail}" alt="">`
+            : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'}
+        </button>
+        <input type="text" class="brand-row-label" value="${this.escapeHtml(logo.label)}" data-index="${index}" title="Renomear" />
+        <details class="brand-row-menu">
+          <summary class="figma-icon-btn" title="Mais opções">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="3" r="1" fill="currentColor"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="9" r="1" fill="currentColor"/></svg>
+          </summary>
+          <div class="brand-row-menu-popup">
+            <button class="menu-item" data-action="library">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="2" width="9" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 5h9" stroke="currentColor" stroke-width="1.2"/></svg>
+              Escolher da biblioteca
             </button>
-          ` : ''}
-          <button class="figma-icon-btn logo-capture-btn" data-index="${index}" title="Usar seleção atual">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 1.5L9 5L6.5 6L8 9.5L7 10L5.5 6.5L4 8V1.5Z" fill="currentColor"/></svg>
-          </button>
-          <button class="figma-icon-btn logo-select-btn" data-index="${index}" title="Escolher da Biblioteca">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z" fill="currentColor" /></svg>
-          </button>
-          ${state.logos.length > 1 ? `
-            <button class="figma-icon-btn logo-remove-prop-btn" data-index="${index}" title="Remover propriedade">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.5"/></svg>
+            <button class="menu-item" data-action="capture">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 1.5L9 5L6.5 6L8 9.5L7 10L5.5 6.5L4 8V1.5Z" fill="currentColor"/></svg>
+              Usar seleção atual
             </button>
-          ` : ''}
-        </div>
+            ${isConfigured ? `
+              <button class="menu-item" data-action="clear">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                Limpar valor
+              </button>` : ''}
+            ${canRemove ? `
+              <button class="menu-item menu-item--danger" data-action="remove">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3.5h8M4.5 3.5V2.5a.5.5 0 01.5-.5h2a.5.5 0 01.5.5v1M3.5 3.5l.5 7a.5.5 0 00.5.5h3a.5.5 0 00.5-.5l.5-7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                Remover variante
+              </button>` : ''}
+          </div>
+        </details>
       `;
 
-      // Label Edit
-      row.querySelector('.figma-prop-label-editable').addEventListener('change', (e) => {
-        const idx = parseInt(e.target.dataset.index);
-        const updatedLogos = [...state.logos];
-        updatedLogos[idx].label = e.target.value;
-        setState('logos', updatedLogos);
-      });
+      const closeMenu = () => row.querySelector('.brand-row-menu')?.removeAttribute('open');
 
-      // Clear Value
-      row.querySelector('.btn-remove-item')?.addEventListener('click', () => {
-        const idx = index;
-        const updatedLogos = [...state.logos];
-        updatedLogos[idx].value = null;
-        setState('logos', updatedLogos);
-      });
-
-      // Capture Selection
-      row.querySelector('.logo-capture-btn').addEventListener('click', () => {
+      // Preview click → open library
+      row.querySelector('.brand-row-preview').addEventListener('click', () => {
         setState('activeModalTarget', `logo-${index}`);
-        parent.postMessage({ pluginMessage: { type: 'USE_SELECTION_AS_LOGO' } }, '*');
+        this._openLibraryModal();
       });
 
-      // Select Library
-      row.querySelector('.logo-select-btn').addEventListener('click', () => {
-        setState('activeModalTarget', `logo-${index}`);
-        document.getElementById('componentModal')?.classList.remove('hidden');
+      // Label edit
+      row.querySelector('.brand-row-label').addEventListener('change', (e) => {
+        const updated = [...state.logos];
+        updated[index].label = e.target.value;
+        setState('logos', updated);
       });
 
-      // Remove Property
-      row.querySelector('.logo-remove-prop-btn')?.addEventListener('click', () => {
-        this.removeLogoProperty(index);
+      // Per-row menu actions (event delegation)
+      row.querySelector('.brand-row-menu-popup').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        closeMenu();
+        if (action === 'library') {
+          setState('activeModalTarget', `logo-${index}`);
+          this._openLibraryModal();
+        } else if (action === 'capture') {
+          setState('activeModalTarget', `logo-${index}`);
+          parent.postMessage({ pluginMessage: { type: 'USE_SELECTION_AS_LOGO' } }, '*');
+        } else if (action === 'clear') {
+          const updated = [...state.logos];
+          updated[index].value = null;
+          setState('logos', updated);
+        } else if (action === 'remove') {
+          this.removeLogoProperty(index);
+        }
       });
 
       list.appendChild(row);
     });
   }
 
+  /** Open the library modal with a contextual title based on activeModalTarget. */
+  _openLibraryModal() {
+    const modal = document.getElementById('componentModal');
+    const title = document.getElementById('componentModalTitle');
+    if (title) {
+      const target = state.activeModalTarget || '';
+      title.textContent = target.startsWith('logo-')
+        ? 'Escolher Logo'
+        : target.startsWith('ui-component-')
+          ? 'Escolher Componente'
+          : 'Escolher da Biblioteca';
+    }
+    modal?.classList.remove('hidden');
+  }
+
   /**
-   * Render dynamic typography
+   * Render dynamic typography — family-first approach
    */
   renderFonts() {
     const list = document.getElementById('fontPropList');
@@ -779,11 +817,19 @@ class BrandModule {
 
       const val = font.value;
       const isConfigured = !!val;
+      const familyName = val?.family || '';
+      const styleCount = val?.availableStyles?.length || 0;
+      const isRequired = font.id === 'primary' || font.id === 'secondary';
 
       row.innerHTML = `
-        <input type="text" class="figma-prop-label-editable" value="${this.escapeHtml(font.label)}" data-index="${index}" title="Renomear propriedade" />
-        <div class="figma-prop-value ${isConfigured ? '' : 'text-muted'}" style="flex: 1; min-width: 0;">
-          ${isConfigured ? `<div class="brand-label" title="${this.escapeHtml(val.name)}">${this.escapeHtml(val.name)}</div>` : 'Não selecionado'}
+        <div class="figma-prop-label-container" style="display:flex; align-items:center; gap:4px; width:80px; flex-shrink:0;">
+          <input type="text" class="figma-prop-label-editable" value="${this.escapeHtml(font.label)}" data-index="${index}" title="Renomear propriedade" />
+          ${isRequired ? '<span class="required-indicator" title="Obrigatório" style="color:var(--brand-cyan); font-weight:bold;">*</span>' : ''}
+        </div>
+        <div class="figma-prop-value ${isConfigured ? '' : (isRequired ? 'text-muted-urgent' : 'text-muted')}" style="flex: 1; min-width: 0;">
+          ${isConfigured
+            ? `<div class="brand-label" title="${this.escapeHtml(familyName)}">${this.escapeHtml(familyName)}${styleCount ? ` <span style="opacity:0.5;font-size:10px">${styleCount} pesos</span>` : ''}</div>`
+            : (isRequired ? '<strong>Vincule uma família</strong>' : 'Escolher família')}
         </div>
         <div class="row-actions" style="display: flex; gap: 2px;">
           ${isConfigured ? `
@@ -791,10 +837,10 @@ class BrandModule {
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
             </button>
           ` : ''}
-          <button class="figma-icon-btn font-capture-btn" data-index="${index}" title="Usar seleção atual">
+          <button class="figma-icon-btn font-capture-btn" data-index="${index}" title="Capturar da seleção">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 1.5L9 5L6.5 6L8 9.5L7 10L5.5 6.5L4 8V1.5Z" fill="currentColor"/></svg>
           </button>
-          <button class="figma-icon-btn font-select-btn" data-index="${index}" title="Escolher da Biblioteca">
+          <button class="figma-icon-btn font-select-btn" data-index="${index}" title="Escolher família">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z" fill="currentColor" /></svg>
           </button>
           ${state.typography.length > 1 ? `
@@ -815,19 +861,18 @@ class BrandModule {
 
       // Clear Value
       row.querySelector('.btn-remove-item')?.addEventListener('click', () => {
-        const idx = index;
         const updatedTypo = [...state.typography];
-        updatedTypo[idx].value = null;
+        updatedTypo[index].value = null;
         setState('typography', updatedTypo);
       });
 
-      // Capture Selection
+      // Capture from selection — extracts just the family
       row.querySelector('.font-capture-btn').addEventListener('click', () => {
         setState('activeModalTarget', `font-${index}`);
         parent.postMessage({ pluginMessage: { type: 'USE_SELECTION_AS_FONT' } }, '*');
       });
 
-      // Select Library
+      // Select from library
       row.querySelector('.font-select-btn').addEventListener('click', () => {
         setState('activeModalTarget', `font-${index}`);
         document.getElementById('fontModal')?.classList.remove('hidden');
@@ -897,14 +942,16 @@ class BrandModule {
     const index = parseInt(target.split('-')[1]);
     const updatedLogos = [...state.logos];
     if (updatedLogos[index]) {
-      updatedLogos[index].value = logo;
+      // Enrich with thumbnail from library state if not already present
+      const thumb = logo?.thumbnail || (logo?.id ? state.componentThumbs?.[logo.id] : null);
+      updatedLogos[index].value = thumb ? { ...logo, thumbnail: thumb } : logo;
       setState('logos', updatedLogos);
     }
     setState('activeModalTarget', null);
   }
 
   /**
-   * Handle captured font from sandbox
+   * Handle font captured from selection — extract family + resolve available styles
    */
   handleFontCaptured(font) {
     const target = state.activeModalTarget;
@@ -912,228 +959,124 @@ class BrandModule {
     const index = parseInt(target.split('-')[1]);
     const updatedTypo = [...state.typography];
     if (updatedTypo[index]) {
-      updatedTypo[index].value = font;
+      const family = font?.family || font?.name || '';
+      // Resolve available styles from allFonts
+      const styles = (state.allFonts || [])
+        .filter(f => (f.family || f.name) === family)
+        .map(f => f.style || 'Regular')
+        .filter((v, i, a) => a.indexOf(v) === i);
+      updatedTypo[index].value = { family, availableStyles: styles.length > 0 ? styles : ['Regular'] };
       setState('typography', updatedTypo);
     }
     setState('activeModalTarget', null);
   }
 
   /**
-   * Render color grid
+   * Handle family selected from the font picker modal
    */
+  handleFontFamilySelected(entry) {
+    const target = state.activeModalTarget;
+    if (!target || !target.startsWith('font-')) return;
+    const index = parseInt(target.split('-')[1]);
+    const updatedTypo = [...state.typography];
+    if (updatedTypo[index]) {
+      updatedTypo[index].value = { family: entry.family, availableStyles: entry.styles || ['Regular'] };
+      setState('typography', updatedTypo);
+    }
+    setState('activeModalTarget', null);
+  }
+
+  /** Render color grid — delegates to BrandColors (preset role slots). */
   renderColorGrid() {
-    if (!this.colorGrid) return;
-
-    if (state.selectedColors.size === 0) {
-      this.colorGrid.innerHTML = '<div class="text-muted">Nenhuma cor selecionada</div>';
-      return;
-    }
-
-    const roles = [
-      { id: '', label: 'Nenhuma' },
-      { id: 'primary', label: 'Primária' },
-      { id: 'secondary', label: 'Secundária' },
-      { id: 'accent', label: 'Destaque' },
-      { id: 'background', label: 'Fundo' },
-      { id: 'surface', label: 'Superfície' },
-      { id: 'text', label: 'Texto' }
-    ];
-
-    this.colorGrid.innerHTML = '';
-    for (const [id, color] of state.selectedColors) {
-      const div = document.createElement('div');
-      div.className = 'color-item-row';
-      
-      const roleOptions = roles.map(r => 
-        `<option value="${r.id}" ${color.role === r.id ? 'selected' : ''}>${r.label}</option>`
-      ).join('');
-
-      // Get first letter of role for badge
-      const roleChar = color.role ? color.role.charAt(0).toUpperCase() : '';
-      const roleBadge = roleChar ? `<div class="color-role-badge">${roleChar}</div>` : '';
-
-      div.innerHTML = `
-        <div class="color-swatch-medium" style="background: ${color.value}" title="${this.escapeHtml(color.name)}: ${color.value}"></div>
-        ${roleBadge}
-        <select class="color-role-select" data-color-id="${id}">
-          ${roleOptions}
-        </select>
-        <button class="btn-remove-color" data-color-id="${id}" title="Remover cor">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M2.5 2.5L7.5 7.5M7.5 2.5L2.5 7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      `;
-
-      // Handle Role change
-      div.querySelector('.color-role-select').addEventListener('change', (e) => {
-        const newColors = new Map(state.selectedColors);
-        const colorData = newColors.get(id);
-        if (colorData) {
-          colorData.role = e.target.value;
-          setState('selectedColors', newColors);
-        }
-      });
-
-      // Handle Remove
-      div.querySelector('.btn-remove-color').addEventListener('click', () => {
-        const newColors = new Map(state.selectedColors);
-        newColors.delete(id);
-        setState('selectedColors', newColors);
-      });
-
-      this.colorGrid.appendChild(div);
-    }
+    this.colors.render();
   }
 
-  /**
-   * Add a color manually via color picker
-   */
+  /** Add a free-form extra color (opens native picker). */
   addManualColor() {
-    const colorInput = document.getElementById('colorPickerInput');
-    const nameInput = document.getElementById('colorNameInput');
-    const addRow = document.getElementById('colorAddRow');
-
-    const hex = colorInput?.value || '#6366F1';
-    const name = nameInput?.value?.trim() || hex;
-
-    const colorId = `manual-${Date.now()}`;
-    const newColors = new Map(state.selectedColors);
-    newColors.set(colorId, {
-      id: colorId,
-      name: name,
-      value: hex,
-      role: ''
-    });
-
-    setState('selectedColors', newColors);
-    // watchState auto-saves
-
-    // Reset and hide
-    if (nameInput) nameInput.value = '';
-    addRow?.classList.add('hidden');
+    this.colors.addExtra();
   }
 
-  /**
-   * Render available colors for selection
-   */
+  /** Render library colors strip — delegated to brandColors */
   renderAvailableColors() {
-    const colorList = document.getElementById('availableColorsList');
-    if (!colorList) return;
-
-    colorList.innerHTML = '';
-
-    for (const color of state.allColors) {
-      const div = document.createElement('div');
-      div.className = 'bg-color-swatch';
-      div.style.backgroundColor = color.value;
-      div.title = `${color.name}: ${color.value}`;
-      
-      div.addEventListener('click', () => {
-        const colorId = `lib-${Date.now()}`;
-        const newColors = new Map(state.selectedColors);
-        newColors.set(colorId, {
-          id: colorId,
-          name: color.name,
-          value: color.value,
-          role: ''
-        });
-        setState('selectedColors', newColors);
-      });
-
-      colorList.appendChild(div);
-    }
+    this.colors.renderAvailableColors();
   }
 
   /**
    * Render font list
    */
+  /**
+   * Group allFonts by family, returning { family, styles[] } entries
+   */
+  _groupFontsByFamily() {
+    const familyMap = new Map();
+    for (const f of (state.allFonts || [])) {
+      const family = f.family || f.name;
+      if (!familyMap.has(family)) {
+        familyMap.set(family, { family, styles: [] });
+      }
+      const style = f.style || 'Regular';
+      if (!familyMap.get(family).styles.includes(style)) {
+        familyMap.get(family).styles.push(style);
+      }
+    }
+    return [...familyMap.values()];
+  }
+
   renderFontList() {
     if (!this.fontList) return;
 
     const query = this.fontSearch?.value.toLowerCase() || '';
     const category = state.activeFontCategory || 'all';
 
-    const filteredFonts = state.allFonts.filter(f => {
-      // Search query filter
-      const matchesQuery = f.name.toLowerCase().includes(query) || 
-                          (f.family && f.family.toLowerCase().includes(query)) ||
-                          (f.style && f.style.toLowerCase().includes(query));
-      
-      if (!matchesQuery) return false;
+    const allFamilies = this._groupFontsByFamily();
 
-      // Category filter
+    const filtered = allFamilies.filter(f => {
+      const fam = f.family.toLowerCase();
+      if (query && !fam.includes(query)) return false;
       if (category === 'all') return true;
-      
-      const family = (f.family || f.name).toLowerCase();
-      if (category === 'sans') return family.includes('sans') || family.includes('inter') || family.includes('roboto') || family.includes('helvetica') || family.includes('arial') || family.includes('open sans') || family.includes('lato');
-      if (category === 'serif') return family.includes('serif') || family.includes('times') || family.includes('georgia') || family.includes('palatino') || family.includes('playfair');
-      if (category === 'mono') return family.includes('mono') || family.includes('code') || family.includes('courier') || family.includes('fira') || family.includes('ubuntu mono');
-      
+      if (category === 'sans') return fam.includes('sans') || ['inter', 'roboto', 'helvetica', 'arial', 'lato', 'barlow', 'poppins', 'montserrat', 'nunito', 'raleway', 'outfit'].some(k => fam.includes(k));
+      if (category === 'serif') return fam.includes('serif') || ['times', 'georgia', 'palatino', 'playfair', 'merriweather', 'lora', 'crimson'].some(k => fam.includes(k));
+      if (category === 'mono') return fam.includes('mono') || ['code', 'courier', 'fira', 'consolas', 'jetbrains'].some(k => fam.includes(k));
       return true;
     });
 
-    if (filteredFonts.length === 0) {
-      if (query || category !== 'all') {
-        this.fontList.innerHTML = '<div class="text-muted" style="text-align:center; padding: 20px;">Nenhuma fonte corresponde aos filtros</div>';
-      } else {
-        this.fontList.innerHTML = '<div class="text-muted" style="text-align:center; padding: 20px;">Carregando fontes do Figma...</div>';
-      }
+    if (filtered.length === 0) {
+      this.fontList.innerHTML = query || category !== 'all'
+        ? '<div class="text-muted" style="text-align:center; padding: 20px;">Nenhuma família corresponde</div>'
+        : '<div class="text-muted" style="text-align:center; padding: 20px;">Carregando fontes...</div>';
       return;
     }
 
     this.fontList.innerHTML = '';
-    
-    // Group by family for better UX
-    const families = [...new Set(filteredFonts.map(f => f.family || f.name))].slice(0, 100); // Limit to 100 for performance
 
-    for (const family of families) {
-      const familyFonts = filteredFonts.filter(f => (f.family || f.name) === family);
-      
-      const groupDiv = document.createElement('div');
-      groupDiv.className = 'font-group';
-      groupDiv.style.marginBottom = '12px';
+    // Show up to 80 families for performance
+    for (const entry of filtered.slice(0, 80)) {
+      const div = document.createElement('div');
+      div.className = 'font-item clickable';
+      div.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 10px 8px; border-radius: 6px; border: 1px solid var(--figma-color-border); margin-bottom: 4px; cursor: pointer;';
 
-      const label = document.createElement('div');
-      label.className = 'font-family-label';
-      label.style.cssText = 'font-size: 11px; font-weight: 600; color: var(--figma-color-text-secondary); margin-bottom: 4px; padding: 0 4px;';
-      label.textContent = this.escapeHtml(family);
-      groupDiv.appendChild(label);
+      const left = document.createElement('div');
+      left.style.cssText = 'display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1;';
 
-      const itemsGrid = document.createElement('div');
-      itemsGrid.style.cssText = 'display: grid; grid-template-columns: 1fr; gap: 4px;';
+      const preview = document.createElement('div');
+      preview.style.cssText = `font-family: "${entry.family}"; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`;
+      preview.textContent = entry.family;
 
-      for (const font of familyFonts) {
-        const div = document.createElement('div');
-        div.className = 'font-item clickable';
-        div.style.cssText = 'display: flex; flex-direction: column; gap: 2px; padding: 8px; border-radius: 6px; border: 1px solid var(--figma-color-border);';
-        
-        const styleName = font.style || 'Regular';
-        
-        // Preview text
-        const preview = document.createElement('div');
-        preview.className = 'font-preview';
-        preview.style.cssText = `font-family: "${font.family || font.name}"; font-size: 14px;`;
-        preview.textContent = 'Abc 123';
-        
-        const info = document.createElement('div');
-        info.style.cssText = 'font-size: 10px; color: var(--figma-color-text-tertiary); display: flex; justify-content: space-between;';
-        info.innerHTML = `<span>${this.escapeHtml(styleName)}</span>`;
+      const meta = document.createElement('div');
+      meta.style.cssText = 'font-size: 10px; color: var(--figma-color-text-tertiary);';
+      meta.textContent = `${entry.styles.length} peso${entry.styles.length !== 1 ? 's' : ''}`;
 
-        div.appendChild(preview);
-        div.appendChild(info);
+      left.appendChild(preview);
+      left.appendChild(meta);
+      div.appendChild(left);
 
-        div.addEventListener('click', () => {
-          this.handleFontCaptured(font);
-          document.getElementById('fontModal')?.classList.add('hidden');
-          setState('activeModalTarget', null);
-        });
+      div.addEventListener('click', () => {
+        this.handleFontFamilySelected(entry);
+        document.getElementById('fontModal')?.classList.add('hidden');
+        setState('activeModalTarget', null);
+      });
 
-        itemsGrid.appendChild(div);
-      }
-      
-      groupDiv.appendChild(itemsGrid);
-      this.fontList.appendChild(groupDiv);
+      this.fontList.appendChild(div);
     }
   }
 
@@ -1189,9 +1132,10 @@ class BrandModule {
         ]);
       }
       if (!guideline.typography && guideline.fontPrimary) {
+        const toFamilyValue = (f) => f ? { family: f.family || f.name, availableStyles: [f.style || 'Regular'] } : null;
         setState('typography', [
-          { id: 'primary', label: 'Primary', value: guideline.fontPrimary },
-          { id: 'secondary', label: 'Secondary', value: guideline.fontSecondary }
+          { id: 'primary', label: 'Primary', value: toFamilyValue(guideline.fontPrimary) },
+          { id: 'secondary', label: 'Secondary', value: toFamilyValue(guideline.fontSecondary) }
         ]);
       }
 
@@ -1312,7 +1256,6 @@ class BrandModule {
     if (linkedId) {
       this.brandGuidelineSelect.value = linkedId;
     }
-    this._updateOpenBtnVisibility(!!linkedId);
   }
 
   /**
@@ -1325,7 +1268,6 @@ class BrandModule {
       setState('linkedGuideline', null);
       setState('brandGuideline', null);
       this.updateBrandGuidelineStatus(null);
-      this._updateOpenBtnVisibility(false);
       parent.postMessage({ pluginMessage: { type: 'LINK_GUIDELINE', guidelineId: null } }, '*');
       return;
     }
@@ -1341,7 +1283,6 @@ class BrandModule {
       // Auto-populate colors, typography, tokens
       this.applyGuidelineToState(guideline);
       this.updateBrandGuidelineStatus(guideline);
-      this._updateOpenBtnVisibility(true);
 
       // Save link to Figma file
       parent.postMessage({ pluginMessage: { type: 'LINK_GUIDELINE', guidelineId, autoLoad: true } }, '*');
@@ -1369,15 +1310,25 @@ class BrandModule {
   applyGuidelineToState(guideline) {
     if (!guideline) return;
 
-    // Colors
+    // Logos — map API shape { id, url, variant, label } to state shape { id, label, value }
+    if (guideline.logos?.length) {
+      setState('logos', guideline.logos.map((l, i) => ({
+        id: l.id || `logo-${i}`,
+        label: l.label || l.variant || `Logo ${i + 1}`,
+        value: l.url || l.value || null,
+        variant: l.variant,
+      })));
+    } else {
+      setState('logos', []);
+    }
+
+    // Colors — key by role when present so the new role-slot UI picks them up
     if (guideline.colors?.length) {
       const colorMap = new Map();
       guideline.colors.forEach((c, i) => {
-        colorMap.set(`api-color-${i}`, {
-          name: c.name,
-          value: c.hex,
-          role: c.role || ''
-        });
+        const role = c.role || '';
+        const id = role ? `role-${role}` : `api-color-${i}`;
+        colorMap.set(id, { id, name: c.name, value: c.hex, role });
       });
       setState('selectedColors', colorMap);
     }
@@ -1387,7 +1338,7 @@ class BrandModule {
       setState('typography', guideline.typography.map((t, i) => ({
         id: t.id || `font-${i}`,
         label: t.role || (i === 0 ? 'Primary' : 'Secondary'),
-        value: { id: t.family, name: `${t.family} ${t.style || ''}`.trim() }
+        value: { family: t.family, availableStyles: t.availableStyles || [t.style || 'Regular'] }
       })));
     }
 
@@ -1403,20 +1354,27 @@ class BrandModule {
    * Update brand guideline status indicator
    */
   updateBrandGuidelineStatus(guideline) {
-    if (!this.brandGuidelineStatus) return;
+    const selectContainer = document.getElementById('brandSelectContainer');
+    const linkedContainer = document.getElementById('brandLinkedContainer');
+    const linkedName = document.getElementById('brandLinkedName');
 
-    if (guideline) {
-      this.brandGuidelineStatus.style.display = 'flex';
-      this.brandGuidelineStatus.classList.add('linked');
-      this.brandGuidelineStatus.querySelector('.status-text').textContent =
-        `Vinculado: ${guideline.identity?.name || 'Marca'}`;
+    if (guideline || state.linkedGuidelineId) {
+      if (selectContainer) selectContainer.classList.add('hidden');
+      if (linkedContainer) linkedContainer.classList.remove('hidden');
+      
+      if (linkedName && guideline) {
+        linkedName.textContent = guideline.identity?.name || 'Marca vinculada';
+      } else if (linkedName && !guideline) {
+        linkedName.textContent = 'Carregando marca...';
+      }
       
       // Default to hidden unless update detected
       this.brandGuidelineRefreshBtn?.classList.remove('highlighted');
       this.brandGuidelineRefreshBtn?.classList.add('hidden');
     } else {
-      this.brandGuidelineStatus.style.display = 'none';
-      this.brandGuidelineStatus.classList.remove('linked');
+      if (selectContainer) selectContainer.classList.remove('hidden');
+      if (linkedContainer) linkedContainer.classList.add('hidden');
+      
       this.brandGuidelineRefreshBtn?.classList.remove('highlighted', 'hidden');
     }
   }
@@ -1591,7 +1549,7 @@ class BrandModule {
         // Selection click
         row.querySelector('.component-value').addEventListener('click', () => {
           setState('activeModalTarget', `ui-component-${typeKey}`);
-          document.getElementById('componentModal')?.classList.remove('hidden');
+          this._openLibraryModal();
         });
 
         // Capture button

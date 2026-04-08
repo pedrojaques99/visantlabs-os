@@ -3,16 +3,8 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, Heart, Maximize2, ExternalLink, Copy, Globe, User, LayoutGrid, Box, Settings, Palette, Diamond, Download, Clipboard } from 'lucide-react';
 import { SearchBar } from '../components/ui/SearchBar';
 
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
-
-import {
-  BreadcrumbWithBack,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "../components/ui/BreadcrumbWithBack";
+import { PageShell } from '../components/ui/PageShell';
+import { PremiumButton } from '../components/ui/PremiumButton';
 import { useLayout } from '@/hooks/useLayout';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
@@ -758,33 +750,60 @@ export const CommunityPresetsPage: React.FC = () => {
 
 
 
-  return (
-    <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
-      <div className="fixed inset-0 z-0">
+  const headerActions = (
+    <div className="flex items-center gap-3">
+      <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 backdrop-blur-md">
+        <button
+          onClick={() => handleViewModeChange('all')}
+          className={cn(
+            "px-4 py-1.5 rounded-lg text-xs font-bold font-mono transition-all",
+            viewMode === 'all'
+              ? "bg-brand-cyan/20 text-brand-cyan shadow-sm border border-brand-cyan/20"
+              : "text-neutral-500 hover:text-neutral-300"
+          )}
+        >
+          {t('communityPresets.tabs.all')}
+        </button>
+        <button
+          onClick={() => handleViewModeChange('my')}
+          className={cn(
+            "px-4 py-1.5 rounded-lg text-xs font-bold font-mono transition-all",
+            viewMode === 'my'
+              ? "bg-indigo-500/20 text-indigo-400 shadow-sm border border-indigo-500/20"
+              : "text-neutral-500 hover:text-neutral-300"
+          )}
+        >
+          {t('communityPresets.tabs.my')}
+        </button>
       </div>
+      
+      {isAuthenticated && (
+        <PremiumButton
+          onClick={handleCreate}
+          className="h-10 px-6 text-xs gap-2"
+        >
+          <Plus size={16} />
+          {t('communityPresets.buttons.create')}
+        </PremiumButton>
+      )}
+    </div>
+  );
 
-      <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
-        <div className="mb-6">
-          <BreadcrumbWithBack to="/community">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/">{t('common.home')}</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/community">{t('common.community')}</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{t('common.presets')}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </BreadcrumbWithBack>
-        </div>
+  return (
+    <PageShell
+      pageId="community-presets"
+      seoTitle={viewMode === 'my' ? t('communityPresets.tabs.my') : t('communityPresets.title')}
+      title={viewMode === 'my' ? t('communityPresets.tabs.my') : t('communityPresets.title')}
+      microTitle="Community // Library"
+      description={t('communityPresets.subtitle')}
+      breadcrumb={[
+        { label: t('common.home'), to: '/' },
+        { label: t('common.community'), to: '/community' },
+        { label: t('common.presets') }
+      ]}
+      actions={headerActions}
+    >
+      <div className="relative z-10">
 
         <div className="flex items-start gap-4">
           <div className="flex-1">
@@ -1027,7 +1046,7 @@ export const CommunityPresetsPage: React.FC = () => {
           />
         )}
       </div>
-    </div>
+    </PageShell>
   );
 };
 

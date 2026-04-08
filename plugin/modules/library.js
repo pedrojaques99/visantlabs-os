@@ -21,7 +21,10 @@ class LibraryModule {
 
     // Toggle folder view
     this.showFoldersBtn?.addEventListener('click', () => {
-      setState('showFolders', !state.showFolders);
+      const next = !state.showFolders;
+      setState('showFolders', next);
+      this.showFoldersBtn.setAttribute('aria-pressed', String(next));
+      this.showFoldersBtn.classList.toggle('is-active', next);
       this.render();
     });
   }

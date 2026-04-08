@@ -133,6 +133,16 @@
     "videos": "Videos",
     "videosByModel": "Videos by Model"
   },
+  "mockup": {
+    "searchBrand": "Search brand...",
+    "noResults": "No brand found",
+    "brandContext": "BRAND DNA",
+    "optional": "OPTIONAL",
+    "selectBrandTitle": "SELECT BRAND DNA",
+    "selectBrandDescription": "Choose a brand guideline to contextualize your generations.",
+    "none": "IGNORE CONTEXT",
+    "createNewBrandGuideline": "ADD NEW DNA"
+  },
   "adminPresets": {
     "batchPasteLabel": "Paste JSON with presets (array of objects)",
     "batchTitle": "Batch Import Mockup Presets",
@@ -235,6 +245,10 @@
       "name": "Halftone Machine"
     },
     "home": "Home",
+    "instagramExtractor": {
+      "description": "Extract high-resolution images from any public Instagram profile.",
+      "name": "Instagram Extractor"
+    },
     "mockupMachine": {
       "description": "Generate professional mockups with AI",
       "name": "Mockup Machine"

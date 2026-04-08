@@ -18,8 +18,14 @@ export const FORMAT_PRESETS: Record<Exclude<FormatType, 'unknown'>, FormatPreset
   instagram_feed: {
     width: 1080,
     height: 1080,
-    label: 'Instagram Feed',
+    label: 'Instagram Feed (Quadrado)',
     aliases: ['feed', 'post instagram', 'instagram post', 'post feed', 'feed post', 'insta feed'],
+  },
+  instagram_portrait: {
+    width: 1080,
+    height: 1350,
+    label: 'Instagram Portrait',
+    aliases: ['portrait', 'vertical post', 'post vertical', 'instagram vertical', 'post 4:5', '1350'],
   },
   instagram_stories: {
     width: 1080,

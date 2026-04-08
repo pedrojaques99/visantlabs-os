@@ -14,6 +14,7 @@ import { EDIT_RULES, EDIT_EXAMPLE, TEXT_EDIT_WARNING } from './modules/edit.js';
 import { TEMPLATE_RULES, TEMPLATE_EXAMPLE } from './modules/template.js';
 import { CHART_RULES, CHART_EXAMPLE } from './modules/charts.js';
 import { BRAND_PRIORITY_RULE, buildCompactBrandContext } from './modules/brand.js';
+import { DESIGN_EXCELLENCE_RULES, PREMIUM_EXAMPLE_HINT } from './modules/design-excellence.js';
 import { buildSelectionContext, buildContainersHint } from './modules/context.js';
 
 // Re-export for external use
@@ -25,7 +26,7 @@ export interface PromptAssemblerInput {
   command: string;
   selectedElements?: any[];
   brandColors?: Array<{ name: string; value: string; role?: string }>;
-  brandFonts?: { primary?: { name: string }; secondary?: { name: string } };
+  brandFonts?: { primary?: { family?: string; style?: string; size?: number }; secondary?: { family?: string; style?: string; size?: number } };
   brandLogos?: { light?: { name: string; key?: string }; dark?: { name: string; key?: string } };
   availableComponents?: any[];
   colorVariables?: Array<{ id: string; name: string; value?: string }>;
@@ -80,11 +81,13 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
 
     if (intent.complexity !== 'simple') {
       modules.push({ id: 'create_example', content: CREATE_EXAMPLE, priority: 70 });
+      modules.push({ id: 'sexy_design', content: DESIGN_EXCELLENCE_RULES, priority: 82 });
     }
 
     // Multiple frames hint for complex creations
     if (intent.complexity === 'complex') {
       modules.push({ id: 'multi_frames', content: MULTIPLE_FRAMES_RULES, priority: 60 });
+      modules.push({ id: 'premium_hint', content: PREMIUM_EXAMPLE_HINT, priority: 58 });
     }
   }
 

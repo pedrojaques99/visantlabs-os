@@ -28,7 +28,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { applyPresetDataToNodes } from '@/lib/presetImportUtils';
 import { NodeButton } from './shared/node-button';
-import { ModelSelector } from './shared/ModelSelector';
+import { ModelSelector } from '../shared/ModelSelector';
 import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
 import { Input } from '@/components/ui/input'
 import { useBrandKit } from '@/contexts/BrandKitContext';
@@ -603,6 +603,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         {isColorSectionOpen && (
           <div className="mt-3 space-y-3">
             <ModelSelector
+              type="image"
+              variant="node"
               selectedModel={model}
               onModelChange={(newModel, provider) => {
                 setModel(newModel);

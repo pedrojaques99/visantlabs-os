@@ -12,6 +12,11 @@ import { preprocessPrompt, type LinearIssue } from '../utils/linearParser.js';
 import { safeFetch } from '../utils/securityValidation.js';
 import { buildGeminiPromptInstructionsTemplate } from '../../src/utils/mockupPromptFormat.js';
 import type { AvailableTags } from './tagService.js';
+import { distillBrandGuideline, type BrandBrief } from '../lib/mockup/brandDistiller.js';
+import { harmonizeTags } from '../lib/mockup/tagHarmonizer.js';
+import { exampleRetriever } from '../lib/mockup/exampleRetriever.js';
+import type { BrandGuideline } from '../types/brandGuideline.js';
+import { randomUUID } from 'crypto';
 
 export const GENERIC_SYSTEM_PROMPT = `Você é um Assistente de IA de alta performance, inteligente, versátil e profissional.
 Sua missão é fornecer respostas precisas, criativas e tecnicamente sólidas, adaptando-se instantaneamente ao contexto e à tarefa solicitada.
@@ -577,6 +582,7 @@ interface SmartPromptParams {
   angleTags: string[];
   lightingTags: string[];
   effectTags: string[];
+  materialTags?: string[];
   selectedColors: string[];
   aspectRatio: AspectRatio;
   generateText: boolean;
@@ -586,37 +592,116 @@ interface SmartPromptParams {
   negativePrompt: string;
   additionalPrompt: string;
   instructions: string;
+  /** Brand guideline completo (opcional) — se presente, vira o contexto de mais alta prioridade. */
+  brandGuideline?: BrandGuideline | null;
+  /** User id — necessário pra filtrar exemplos personalizados no RAG. */
+  userId?: string;
+  /** Vibe preset selecionada (id) — informativo, mantém coesão. */
+  vibeId?: string;
+  /** Se true, consulta Pinecone por exemplos similares e injeta como few-shot. Default: true. */
+  learnFromHistory?: boolean;
 }
 
-interface SmartPromptResult {
+export interface SmartPromptResult {
   prompt: string;
   inputTokens?: number;
   outputTokens?: number;
+  /** Decisões do harmonizer de tags — exposto pra debug/telemetria. */
+  rationale?: string[];
+  /** Brief de marca usado, se houver — útil pro front mostrar "usando brand X". */
+  brandBrief?: BrandBrief | null;
+  /** ID único dessa geração — front usa pra atrelar feedback 👍/👎 depois. */
+  generationId: string;
+  /** Quantos exemplos o RAG injetou (0 se Pinecone vazio/offline). */
+  learnedExamplesCount: number;
+  /** Metadados do Reflection Loop (se ativado). */
+  reflection?: {
+    originalPrompt: string;
+    critique: string;
+    isRefined: boolean;
+  };
 }
 
 export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: string): Promise<SmartPromptResult> => {
   return withRetry(async () => {
     const isBlankMockup = params.designType === 'blank';
 
-    // Use shared function to build instructions template
+    // 1. Destila brand guideline → brief curto e acionável
+    const brandBrief = distillBrandGuideline(params.brandGuideline ?? null);
+
+    // 2. Harmoniza tags: dedup, normaliza, resolve conflitos, preenche gaps por arquétipo
+    const harmonized = harmonizeTags({
+      brandingTags: params.brandingTags || [],
+      locationTags: params.locationTags || [],
+      angleTags: params.angleTags || [],
+      lightingTags: params.lightingTags || [],
+      effectTags: params.effectTags || [],
+      materialTags: params.materialTags || [],
+    });
+
+    if (harmonized.rationale.length > 0 && process.env.NODE_ENV !== 'production') {
+      console.log('[generateSmartPrompt] tag harmonization:', harmonized.rationale);
+    }
+
+    // 3. Mescla cores do brand brief com selectedColors do usuário (user wins, brand complementa)
+    const mergedColors = [
+      ...params.selectedColors,
+      ...(brandBrief?.palette ?? []).filter(c => !params.selectedColors.includes(c)),
+    ];
+
+    // 4. RAG loop: consulta Pinecone por exemplos similares aprovados antes
+    let learnedExamplesBlock: string | null = null;
+    let learnedExamplesCount = 0;
+    if (params.learnFromHistory !== false) {
+      const queryText = [
+        brandBrief?.promptText ?? '',
+        `TYPE: ${params.designType}`,
+        `VIBE: ${params.vibeId ?? 'none'}`,
+        `TAGS: branding=[${harmonized.brandingTags.join(', ')}] location=[${harmonized.locationTags.join(', ')}] lighting=[${harmonized.lightingTags.join(', ')}]`,
+      ].filter(Boolean).join('\n');
+
+      const filter: Record<string, any> = {};
+      if (params.userId) filter.userId = params.userId;
+      if (params.brandGuideline?.id) filter.brandGuidelineId = params.brandGuideline.id;
+
+      const similar = await exampleRetriever.findSimilar({
+        feature: 'mockup',
+        queryText,
+        filter: Object.keys(filter).length > 0 ? filter : undefined,
+        topK: 3,
+      });
+      learnedExamplesCount = similar.length;
+      if (similar.length > 0) {
+        learnedExamplesBlock = exampleRetriever.formatAsFewShot(similar);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`[generateSmartPrompt] RAG injected ${similar.length} learned examples`);
+        }
+      }
+    }
+
+    // 5. Monta o template com brand context + design analysis + few-shot
     const instructionsTemplate = buildGeminiPromptInstructionsTemplate({
       designType: params.designType,
       isBlankMockup,
       withHuman: params.withHuman,
       enhanceTexture: params.enhanceTexture,
       removeText: params.removeText,
-      locationTags: params.locationTags,
+      locationTags: harmonized.locationTags,
+      brandBrief: brandBrief?.promptText ?? null,
+      analyzeDesignImage: !isBlankMockup && !!params.baseImage,
+      learnedExamples: learnedExamplesBlock,
+      vibeId: params.vibeId ?? null,
     });
 
-    // Replace placeholders with actual values
+    // 5. Substitui placeholders usando as tags JÁ HARMONIZADAS
     const promptToGemini = instructionsTemplate
-      .replace('[BRANDING_TAGS]', params.brandingTags.join(', ') || 'Not specified')
+      .replace('[BRANDING_TAGS]', harmonized.brandingTags.join(', ') || 'Not specified')
       .replace('[CATEGORY_TAGS]', params.categoryTags.join(', '))
-      .replace('[COLORS]', params.selectedColors.join(', ') || 'Not specified')
-      .replace('[LOCATION_TAGS]', params.locationTags.join(', ') || 'Not specified')
-      .replace('[ANGLE_TAGS]', params.angleTags.join(', ') || 'Not specified')
-      .replace('[LIGHTING_TAGS]', params.lightingTags.join(', ') || 'Not specified')
-      .replace('[EFFECT_TAGS]', params.effectTags.join(', ') || 'Not specified')
+      .replace('[COLORS]', mergedColors.join(', ') || 'Not specified')
+      .replace('[LOCATION_TAGS]', harmonized.locationTags.join(', ') || 'Not specified')
+      .replace('[ANGLE_TAGS]', harmonized.angleTags.join(', ') || 'Not specified')
+      .replace('[LIGHTING_TAGS]', harmonized.lightingTags.join(', ') || 'Not specified')
+      .replace('[EFFECT_TAGS]', harmonized.effectTags.join(', ') || 'Not specified')
       .replace('[GENERATE_TEXT]', isBlankMockup ? 'No (Blank Mockup)' : (params.generateText ? 'Yes' : 'No'))
       .replace('[REMOVE_TEXT]', isBlankMockup ? 'No' : (params.removeText ? 'Yes' : 'No'))
       .replace('[WITH_HUMAN]', params.withHuman ? 'Yes' : 'No')
@@ -647,17 +732,120 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
     const inputTokens = usageMetadata?.promptTokenCount;
     const outputTokens = usageMetadata?.candidatesTokenCount;
 
-    const prompt = response.text || '';
+    let prompt = response.text || '';
+    const generationId = randomUUID();
+    let reflectionData: SmartPromptResult['reflection'] = undefined;
 
-    // Return object with prompt and tokens for tracking
+    // 6. Reflection Loop (opcional via feature flag)
+    // Só faz sentido se houver um brandBrief pra comparar contra.
+    if (process.env.FEATURE_REFLECTION_LOOP === 'true' && brandBrief && prompt.length > 0) {
+      try {
+        if (process.env.NODE_ENV !== 'production') console.log('[generateSmartPrompt] Launching Reflection Loop...');
+        
+        const reflection = await reflectAndRefinePrompt(
+          prompt,
+          brandBrief,
+          params,
+          apiKey
+        );
+
+        if (reflection.refinedPrompt !== prompt) {
+          reflectionData = {
+            originalPrompt: prompt,
+            critique: reflection.rationale,
+            isRefined: true
+          };
+          prompt = reflection.refinedPrompt;
+        } else {
+          reflectionData = {
+            originalPrompt: prompt,
+            critique: reflection.rationale || 'Prompt already looks optimal.',
+            isRefined: false
+          };
+        }
+      } catch (reflectErr) {
+        console.warn('[generateSmartPrompt] Reflection Loop failed (graceful skip):', reflectErr);
+      }
+    }
+
+    // Return object with prompt, tokens, harmonization metadata + generation id
     return {
       prompt,
       inputTokens,
       outputTokens,
+      rationale: harmonized.rationale,
+      brandBrief,
+      generationId,
+      learnedExamplesCount,
+      reflection: reflectionData,
     };
   }, {
     model: GEMINI_MODELS.TEXT
   });
+};
+
+/**
+ * Reflection Loop: Uma segunda chamada ao Gemini que atua como um "Brand Critic".
+ * Compara o prompt gerado contra a Brand Guideline e refina para máxima fidelidade.
+ */
+export const reflectAndRefinePrompt = async (
+  candidatePrompt: string,
+  brandBrief: BrandBrief,
+  params: SmartPromptParams,
+  apiKey?: string
+): Promise<{ refinedPrompt: string; rationale: string }> => {
+  return withRetry(async () => {
+    const critiquePrompt = `Você é um Crítico de Design e Especialista em Branding da Visant Labs.
+Sua missão é auditar rigorosamente um PROMPT DE GERAÇÃO DE IMAGEM contra os valores e estética desta Marca.
+
+**CONTEXTO DA MARCA:**
+${brandBrief.promptText}
+
+**INTENÇÃO ORIGINAL DO USUÁRIO:**
+Design Type: ${params.designType}
+Mood/Vibe: ${params.vibeId || 'Normal'}
+Additional Instructions: ${params.instructions || 'Nenhuma'}
+
+**PROMPT CANDIDATO (Para Audrey/Midjourney/Gemini):**
+"${candidatePrompt}"
+
+**TAREFA:**
+1. Verifique se o prompt candidato captura os tons específicos, a iluminação, os materiais e a "vibe" da marca descritos no contexto.
+2. Se o prompt estiver genérico demais (ex: não citando as cores da paleta ou materiais da marca), refine-o.
+3. Garanta que o prompt seja focado na IMAGEM, mantendo fidelidade absoluta ao branding.
+4. Se o prompt atual já for excelente e fiel, não mude nada.
+
+**REGRAS DE RESPOSTA:**
+- Retorne apenas um objeto JSON com duas chaves: "refinedPrompt" e "rationale" (breve explicação da mudança ou porque não mudou).
+- Se não houver mudanças necessárias, "refinedPrompt" deve ser idêntico ao original.
+- Não use emojis.`;
+
+    const response = await getAI(apiKey).models.generateContent({
+      model: GEMINI_MODELS.TEXT,
+      contents: [{ parts: [{ text: critiquePrompt }] }],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            refinedPrompt: { type: Type.STRING },
+            rationale: { type: Type.STRING },
+          },
+          required: ['refinedPrompt', 'rationale'],
+        },
+      },
+    });
+
+    try {
+      const result = JSON.parse(response.text || '{}');
+      return {
+        refinedPrompt: result.refinedPrompt || candidatePrompt,
+        rationale: result.rationale || 'No changes suggested.',
+      };
+    } catch (e) {
+      return { refinedPrompt: candidatePrompt, rationale: 'Critique failed to parse.' };
+    }
+  }, { model: GEMINI_MODELS.TEXT });
 };
 
 export interface GenerateMergePromptResult {

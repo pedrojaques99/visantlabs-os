@@ -42,8 +42,7 @@ const COMPONENT_RULES: Record<ComponentType, string> = {
 - Container: cornerRadius 8-16, padding 16-24, fill branco ou cinza claro
 - Header: HORIZONTAL, título + ações
 - Body: VERTICAL, conteúdo principal
-- Footer: HORIZONTAL, botões/links
-- Sombra sutil: DROP_SHADOW blur 8-16, opacity 0.1`,
+- Footer: HORIZONTAL, botões/links`,
   form: `FORMS:
 - Container: VERTICAL, itemSpacing 16-24
 - Label + Input: VERTICAL, itemSpacing 4-8

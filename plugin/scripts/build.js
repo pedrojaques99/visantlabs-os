@@ -23,9 +23,11 @@ const moduleFiles = [
   'api.js',
   'designSystem.js',
   'brandSync.js',
-  'brandUI.js',
   'chat.js',
+  'brand/brandColors.js',
+  'brand/brandModals.js',
   'brand.js',
+  'brandIntelligence.js',
   'library.js',
   'uiManager.js',
 ];

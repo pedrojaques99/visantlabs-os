@@ -16,8 +16,10 @@ Schema:
   "typography": [{ "family": "Font Name", "style": "Bold|Regular", "role": "heading|body|accent|mono" }],
   "tags": { "brand_values": [...], "tone": [...], "aesthetic": [...] },
   "guidelines": { "voice": "...", "dos": [...], "donts": [...], "imagery": "..." },
-  "tokens": { "spacing": { "xs": 4, ... }, "radius": { "sm": 4, ... } }
+  "tokens": { "spacing": { "xs": 4, ... }, "radius": { "sm": 4, ... } },
+  "strategy": { "manifesto": "...", "archetypes": ["..."], "personas": ["..."], "voiceValues": ["..."], "positioning": "..." }
 }
+
 
 Rules:
 - Colors MUST be valid hex (#RGB or #RRGGBB)
@@ -114,6 +116,36 @@ function validateExtracted(data: any): Partial<BrandGuideline> {
     if (Array.isArray(g.donts)) result.guidelines.donts = g.donts.filter((d: any) => typeof d === 'string')
     if (typeof g.imagery === 'string') result.guidelines.imagery = g.imagery
   }
+
+  if (data.strategy && typeof data.strategy === 'object') {
+    result.strategy = {}
+    const s = data.strategy
+    if (typeof s.manifesto === 'string') result.strategy.manifesto = s.manifesto
+    
+    // Position can be string or array from LLM, ensure array of strings
+    if (typeof s.positioning === 'string') result.strategy.positioning = [s.positioning]
+    else if (Array.isArray(s.positioning)) result.strategy.positioning = s.positioning.filter((x: any) => typeof x === 'string')
+
+    if (Array.isArray(s.archetypes)) {
+      result.strategy.archetypes = s.archetypes
+        .filter((x: any) => typeof x === 'string' || (typeof x === 'object' && x.name))
+        .map((x: any) => typeof x === 'string' ? { name: x, description: '' } : x)
+    }
+    
+    if (Array.isArray(s.personas)) {
+      result.strategy.personas = s.personas
+        .filter((x: any) => typeof x === 'string' || (typeof x === 'object' && x.name))
+        .map((x: any) => typeof x === 'string' ? { name: x, bio: '' } : x)
+    }
+    
+    if (Array.isArray(s.voiceValues)) {
+      result.strategy.voiceValues = s.voiceValues
+        .filter((x: any) => typeof x === 'string' || (typeof x === 'object' && x.title))
+        .map((x: any) => typeof x === 'string' ? { title: x, description: '', example: '' } : x)
+    }
+  }
+
+
 
   if (data.tokens && typeof data.tokens === 'object') {
     result.tokens = {}

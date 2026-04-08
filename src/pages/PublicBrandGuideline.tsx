@@ -19,6 +19,9 @@ import {
   Diamond,
   User,
   ChevronLeft,
+  Sun,
+  Moon,
+  Home,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -59,7 +62,23 @@ async function triggerDownload(url: string, filename: string) {
   }
 }
 
-// CSS Variables generator
+// Accessibility Helpers
+function getRelativeLuminance(hex: string): number {
+  const h = hex.replace('#', '').padEnd(6, '0');
+  const rgb = [
+    parseInt(h.substring(0, 2), 16) / 255,
+    parseInt(h.substring(2, 4), 16) / 255,
+    parseInt(h.substring(4, 6), 16) / 255
+  ].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+  return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+}
+
+function getContrastRatio(l1: number, l2: number): number {
+  const brightest = Math.max(l1, l2);
+  const darkest = Math.min(l1, l2);
+  return (brightest + 0.05) / (darkest + 0.05);
+}
+
 function toCSSVariables(g: BrandGuideline): string {
   const lines: string[] = [':root {'];
   g.colors?.forEach(c => {
@@ -82,6 +101,7 @@ export const PublicBrandGuideline: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [theme, setTheme] = useState<'brand' | 'light' | 'dark'>('brand');
 
   useEffect(() => {
     if (!slug) return;
@@ -155,6 +175,77 @@ export const PublicBrandGuideline: React.FC = () => {
     [guideline?.media, searchTerm]
   );
 
+  // Intelligent Brand Theme Extraction
+  const brandTheme = useMemo(() => {
+    const findByRole = (role: string) => 
+      guideline?.colors?.find(c => c.role?.toUpperCase() === role || c.name?.toUpperCase() === role);
+    
+    const findByMatch = (keywords: string[]) => 
+      guideline?.colors?.find(c => keywords.some(k => c.name?.toLowerCase().includes(k) || c.role?.toLowerCase().includes(k)));
+
+    // Base Brand Tokens
+    const accentToken = findByRole('PRIMARY') || findByRole('ACCENT') || findByMatch(['brand', 'primary', 'accent', 'main']) || { hex: '#00E5FF' };
+    const bgToken = findByRole('BACKGROUND') || findByRole('BG') || findByMatch(['background', 'canvas', 'bg']) || { hex: '#0a0a0a' };
+    const surfaceToken = findByRole('SURFACE') || findByRole('CARD') || findByMatch(['surface', 'card', 'neutral', 'off']) || { hex: '#141414' };
+    const textToken = findByRole('TEXT') || findByRole('HEADLINE') || findByMatch(['text', 'content', 'body']) || { hex: '#ffffff' };
+
+    // Sort palette by luminance to find extremes
+    const paletteByLum = [...(guideline?.colors || [])].sort((a, b) => 
+      getRelativeLuminance(a.hex) - getRelativeLuminance(b.hex)
+    );
+
+    const lightestInPalette = paletteByLum[paletteByLum.length - 1]?.hex || '#ffffff';
+    const darkestInPalette = paletteByLum[0]?.hex || '#050505';
+
+    // Resolve base colors
+    let rBg = bgToken.hex;
+    let rSurface = surfaceToken.hex;
+    let rText = textToken.hex;
+
+    if (theme === 'light') {
+      rBg = lightestInPalette;
+      // If lightest is too dark for a 'light' base, force white
+      if (getRelativeLuminance(rBg) < 0.8) rBg = '#ffffff'; 
+      // Surface is slightly darker than BG
+      rSurface = paletteByLum[paletteByLum.length - 2]?.hex || '#f5f5f7';
+      rText = darkestInPalette;
+    } else if (theme === 'dark') {
+      rBg = darkestInPalette;
+      // If darkest is too light for a 'dark' base, force black
+      if (getRelativeLuminance(rBg) > 0.2) rBg = '#050505';
+      // Surface is slightly lighter than BG
+      rSurface = paletteByLum[1]?.hex || '#111111';
+      rText = lightestInPalette;
+    }
+
+    // Acessibilidade Audit: Check contrast between bg and text
+    const bgLum = getRelativeLuminance(rBg);
+    let textLum = getRelativeLuminance(rText);
+    let contrast = getContrastRatio(bgLum, textLum);
+
+    // If contrast < 4.5 (WCAG AA), intelligently fix it
+    if (contrast < 4.5) {
+      rText = bgLum > 0.5 ? '#000000' : '#ffffff';
+    }
+
+    const toRgb = (hex: string) => {
+      const h = hex.replace('#', '').padEnd(6, '0');
+      const r = parseInt(h.substring(0, 2), 16) || 0;
+      const g = parseInt(h.substring(2, 4), 16) || 0;
+      const b = parseInt(h.substring(4, 6), 16) || 0;
+      return `${r}, ${g}, ${b}`;
+    };
+
+    return {
+      accent: accentToken.hex,
+      accentRgb: toRgb(accentToken.hex),
+      bg: rBg,
+      surface: rSurface,
+      text: rText,
+      isCustomBg: theme === 'brand' && (!!findByRole('BACKGROUND') || !!findByMatch(['background', 'bg']))
+    };
+  }, [guideline?.colors, theme]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
@@ -176,7 +267,7 @@ export const PublicBrandGuideline: React.FC = () => {
             {error || 'This brand guideline is either private or does not exist in our secure vault.'}
           </p>
           <Link to="/">
-            <Button variant="outline" className="text-brand-cyan border-brand-cyan/20 hover:bg-brand-cyan/5">
+            <Button variant="outline" className="text-[var(--accent)] border-[var(--accent)]/20 hover:bg-[var(--accent)]/5" style={{ '--accent': guideline?.colors?.[0]?.hex || '#00E5FF' } as any}>
               Return to Surface
             </Button>
           </Link>
@@ -206,7 +297,18 @@ export const PublicBrandGuideline: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-300 selection:bg-brand-cyan/30">
+    <div 
+      className="min-h-screen transition-all duration-1000 selection:bg-[var(--accent)]/30 overflow-x-hidden"
+      style={{ 
+        '--accent': brandTheme.accent,
+        '--accent-rgb': brandTheme.accentRgb,
+        '--brand-bg': brandTheme.bg,
+        '--brand-surface': brandTheme.surface,
+        '--brand-text': brandTheme.text,
+        backgroundColor: 'var(--brand-bg)',
+        color: 'var(--brand-text)'
+      } as any}
+    >
       <SEO title={`${brandName} - Brand Portal`} description={guideline.identity?.description || guideline.identity?.tagline} />
 
       {/* Floating Side Nav (Desktop) */}
@@ -220,89 +322,140 @@ export const PublicBrandGuideline: React.FC = () => {
             }}
             className={cn(
               "group flex items-center gap-3 transition-all duration-300",
-              activeTab === tab.id ? "translate-x-2" : "opacity-300 hover:opacity-300"
+              activeTab === tab.id ? "translate-x-2" : "opacity-60 hover:opacity-100"
             )}
           >
             <div className={cn(
               "w-1 h-1 rounded-full transition-all duration-300",
-              activeTab === tab.id ? "h-6 bg-brand-cyan shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.5)]" : "bg-neutral-600 group-hover:bg-neutral-400"
+              activeTab === tab.id 
+                ? "h-6 bg-[var(--accent)] shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]" 
+                : "bg-current opacity-20 group-hover:opacity-60"
             )} />
-            <span className="text-[10px] uppercase font-bold tracking-[0.2em] font-mono">{tab.label}</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider font-mono opacity-80 group-hover:opacity-100 transition-opacity">
+              {tab.label}
+            </span>
           </button>
         ))}
       </nav>
-      <div className="flex gap-2 mt-4" style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 1000 }}>
+      <div className="flex gap-2" style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 1000 }}>
+        <Button
+          onClick={() => navigate('/')}
+          variant="ghost"
+          className={cn(
+            "h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all",
+            getRelativeLuminance(brandTheme.bg) > 0.5
+              ? "bg-black/5 border-black/10 text-black hover:bg-black/10"
+              : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+          )}
+        >
+          <Home size={14} /> HOME
+        </Button>
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"
-          className="h-9 px-4 text-[10px] font-mono gap-2 border border-white/5 bg-black/40 backdrop-blur-md hover:bg-white/5"
+          className={cn(
+            "h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all",
+            getRelativeLuminance(brandTheme.bg) > 0.5
+              ? "bg-black/5 border-black/10 text-black hover:bg-black/10"
+              : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+          )}
         >
           <ChevronLeft size={14} /> VOLTAR
         </Button>
       </div>
 
-      <div className="flex gap-2 mt-4" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
-        <Button onClick={handleDownloadJSON} variant="ghost" className="h-9 px-4 text-[10px] font-mono gap-2 border border-white/5 bg-black/40 backdrop-blur-md hover:bg-white/5">
-          <Download size={14} /> JSON
+      <div className="flex gap-2" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
+        <Button 
+          onClick={() => setTheme(prev => prev === 'brand' ? 'light' : prev === 'light' ? 'dark' : 'brand')}
+          variant="ghost" 
+          className={cn(
+            "h-10 px-4 rounded-full border transition-all duration-500 gap-2 font-mono text-[10px] font-bold uppercase tracking-widest",
+            theme === 'brand' 
+              ? "bg-[var(--accent)] text-black border-transparent shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]" 
+              : theme === 'dark'
+                ? "bg-neutral-900 border-white/5 text-white hover:bg-neutral-800" 
+                : "bg-white border-neutral-200 text-neutral-900 hover:bg-neutral-50 shadow-sm"
+          )}
+        >
+          {theme === 'brand' ? <Diamond size={14} className="animate-pulse" /> : theme === 'light' ? <Sun size={14} /> : <Moon size={14} />}
+          {theme}
         </Button>
-        <Button onClick={handleDownloadCSS} variant="ghost" className="h-9 px-4 text-[10px] font-mono gap-2 border border-white/5 bg-black/40 backdrop-blur-md hover:bg-white/5">
-          <Download size={14} /> TOKENS
+        <Button 
+          onClick={handleDownloadJSON} 
+          variant="ghost" 
+          className={cn(
+            "h-10 w-10 p-0 rounded-full border transition-colors",
+            theme === 'dark' 
+              ? "bg-neutral-900/50 border-white/5 text-neutral-400 hover:text-white" 
+              : "bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm"
+          )}
+        >
+          <Download size={14} />
+        </Button>
+        <Button 
+          onClick={handleDownloadCSS} 
+          variant="ghost" 
+          className={cn(
+            "h-10 w-10 p-0 rounded-full border transition-colors",
+            theme === 'dark' 
+              ? "bg-neutral-900/50 border-white/5 text-neutral-400 hover:text-white" 
+              : "bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm"
+          )}
+        >
+          <Palette size={14} />
         </Button>
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 py-16 md:py-24">
-        {/* Hero Section */}
-        <motion.header
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          className="mb-20 text-center"
+        {/* Dynamic Hero Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="relative mb-32"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-cyan/5 border border-brand-cyan/10 text-brand-cyan text-[10px] font-mono uppercase tracking-[0.25em] mb-6 shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.05)]">
-            <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
-            Brand DNA
-          </div>
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight font-manrope">{brandName}</h1>
-          {guideline.identity?.tagline && (
-            <p className="text-xl md:text-2xl text-neutral-500  max-w-2xl mx-auto font-serif">
-              "{guideline.identity.tagline}"
-            </p>
+          {theme === 'dark' && brandTheme.isCustomBg && (
+            <div className="absolute -top-40 -left-60 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[160px] opacity-20 pointer-events-none" />
           )}
 
-          <div className="flex flex-wrap items-center justify-center gap-6 mt-10">
-            {guideline.identity?.website && (
-              <a href={guideline.identity.website} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-brand-cyan transition-colors">
-                <Globe size={14} /> {guideline.identity.website.replace(/^https?:\/\//, '')}
-              </a>
-            )}
+          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-12">
+            <div className="space-y-6">
+              <MicroTitle className="text-[var(--accent)] tracking-[0.3em] font-bold opacity-60">
+                {guideline.identity?.tagline || 'Brand Guidelines'}
+              </MicroTitle>
+              <h1 className="text-6xl md:text-8xl font-black font-manrope tracking-tight leading-[0.9]">
+                {brandName}
+              </h1>
+            </div>
           </div>
-        </motion.header>
+        </motion.div>
 
         {/* Global Controls */}
         <div className="sticky top-6 z-40 mb-16 px-2">
-          <GlassPanel padding="sm" className="bg-neutral-950/60 backdrop-blur-2xl border-white/[0.05] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <GlassPanel padding="sm" className="backdrop-blur-2xl transition-all duration-500 bg-[var(--brand-surface)]/80 border-[var(--brand-text)]/10 shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Search */}
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600" size={16} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40" size={16} />
                 <Input
                   placeholder="Search assets, colors, or specs..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-11 bg-transparent border-none focus-visible:ring-0 text-sm placeholder:text-neutral-700"
+                  className="pl-10 h-11 bg-transparent border-none focus-visible:ring-0 text-sm placeholder:opacity-40"
                 />
               </div>
 
               {/* Desktop Filters */}
-              <div className="hidden md:flex items-center gap-1 border-l border-white/5 pl-4">
+              <div className="hidden md:flex items-center gap-1 border-l border-[var(--brand-text)]/10 pl-4">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all",
-                      activeTab === tab.id ? "bg-brand-cyan/10 text-brand-cyan" : "text-neutral-500 hover:text-neutral-300 hover:bg-white/5"
+                      "px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
+                      activeTab === tab.id 
+                        ? "bg-[var(--accent)] text-black" 
+                        : "opacity-40 hover:opacity-100 hover:bg-[var(--brand-text)]/5"
                     )}
                   >
                     {tab.label}
@@ -320,27 +473,24 @@ export const PublicBrandGuideline: React.FC = () => {
             {(activeTab === 'all' || activeTab === 'identity') && (
               <motion.section id="identity" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
                 <div className="flex flex-col gap-10">
-                  <div className="space-y-4">
-                    <MicroTitle className="text-brand-cyan/60 tracking-[0.4em]">Section 01 // Identity</MicroTitle>
-                    <h2 className="text-3xl font-bold text-white font-manrope">Core Essence</h2>
-                  </div>
+                  <h2 className="text-4xl font-bold font-manrope opacity-90">Identity</h2>
                   {guideline.identity?.description && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                       <div className="md:col-span-2">
-                        <p className="text-lg md:text-xl text-neutral-400 leading-relaxed font-light">
+                        <p className="text-lg md:text-xl leading-relaxed font-light opacity-70">
                           {guideline.identity.description}
                         </p>
                       </div>
                       <div className="space-y-8">
                         {guideline.identity?.tagline && (
                           <div className="space-y-2">
-                            <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">Brand Tagline</span>
-                            <p className="text-sm font-bold text-neutral-200 uppercase">{guideline.identity.tagline}</p>
+                            <span className="text-[10px] font-mono opacity-40 uppercase tracking-widest">Brand Tagline</span>
+                            <p className="text-sm font-bold uppercase opacity-80">{guideline.identity.tagline}</p>
                           </div>
                         )}
                         <div className="space-y-2">
-                          <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">Primary Objective</span>
-                          <p className="text-sm font-bold text-neutral-200">Standardize Visual & Strategic Communications</p>
+                          <span className="text-[10px] font-mono opacity-40 uppercase tracking-widest">Primary Objective</span>
+                          <p className="text-sm font-bold opacity-80">Standardize Visual & Strategic Communications</p>
                         </div>
                       </div>
                     </div>
@@ -352,21 +502,21 @@ export const PublicBrandGuideline: React.FC = () => {
             {/* Strategic Branding Section */}
             {(activeTab === 'all' || activeTab === 'strategy') && guideline.strategy && (
               <motion.section id="strategy" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="space-y-32">
-                {/* Manifesto - Full Screen Style */}
+                {/* Manifest - Full Screen Style */}
                 {guideline.strategy.manifesto && (
                   <div className="space-y-12">
                     <div className="flex items-center gap-4">
-                      <div className="h-[1px] w-12 bg-brand-cyan/30" />
-                      <MicroTitle className="text-brand-cyan/60 tracking-[0.4em]">[Manifesto]</MicroTitle>
+                      <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
+                      <MicroTitle className="text-[var(--accent)]/60 tracking-wider">[Manifesto]</MicroTitle>
                     </div>
                     <div className="relative group">
-                      <div className="absolute -inset-8 bg-brand-cyan/[0.02] blur-3xl rounded-full opacity-0 group-hover:opacity-300 transition-opacity duration-1000" />
-                      <h3 className="text-4xl md:text-6xl font-bold text-white tracking-tight font-manrope leading-[1.1]">
+                      <div className="absolute -inset-8 bg-[var(--accent)]/[0.02] blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                      <h3 className="text-4xl md:text-6xl font-bold tracking-tight font-manrope leading-[1.1] opacity-90">
                         {guideline.strategy.manifesto.split('\n')[0]}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-16">
                         {guideline.strategy.manifesto.split('\n').slice(1).map((para, i) => (
-                          <p key={i} className="text-lg md:text-xl text-neutral-400 leading-relaxed font-light">
+                          <p key={i} className="text-lg md:text-xl leading-relaxed font-light opacity-60">
                             {para}
                           </p>
                         ))}
@@ -378,40 +528,23 @@ export const PublicBrandGuideline: React.FC = () => {
                 {/* Archetypes - Tarot Style */}
                 {guideline.strategy.archetypes && guideline.strategy.archetypes.length > 0 && (
                   <div className="space-y-16">
-                    <div className="space-y-4">
-                      <MicroTitle className="text-brand-cyan/60 tracking-[0.4em]">Section 01.A // Archetypes</MicroTitle>
-                      <h2 className="text-3xl font-bold text-white font-manrope">Brand Personality</h2>
-                    </div>
+                    <h2 className="text-4xl font-bold font-manrope opacity-90">Archetypes</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {guideline.strategy.archetypes.map((arch, i) => (
-                        <div key={i} className="group relative bg-[#F5F5F5] rounded-[40px] p-12 flex flex-col md:flex-row gap-12 items-center text-neutral-900 overflow-hidden min-h-[400px]">
-                          <div className="w-full md:w-1/2 aspect-[3/4] rounded-2xl border-[3px] border-neutral-900 p-4 flex flex-col items-center justify-between relative bg-white shadow-xl group-hover:rotate-2 transition-transform duration-500">
-                            <div className="w-full text-center border-b border-neutral-900 pb-2 flex items-center justify-between px-2">
-                              <Diamond size={12} />
-                              <span className="text-[10px] font-bold uppercase">{arch.name}</span>
-                              <Diamond size={12} />
+                        <div key={i} className="group relative rounded-[40px] p-12 flex flex-col md:flex-row gap-12 items-center overflow-hidden min-h-[400px] transition-colors bg-[var(--brand-surface)]/40 border-[var(--brand-text)]/5 hover:border-[var(--brand-text)]/10">
+                          <div className="w-full md:w-1/2 aspect-[3/4] rounded-2xl border-[3px] p-4 flex flex-col items-center justify-between relative transition-all duration-500 border-[var(--brand-text)]/20 bg-[var(--brand-bg)] shadow-2xl group-hover:rotate-2">
+                            <div className="w-full text-center border-b border-[var(--brand-text)]/10 pb-2 flex items-center justify-center px-2">
+                              <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">{arch.name}</span>
                             </div>
                             <div className="flex-1 flex items-center justify-center py-8">
-                              {arch.image ? <img src={arch.image} className="w-full object-contain" /> : <Diamond size={64} className="opacity-30" />}
-                            </div>
-                            <div className="w-full text-center border-t border-neutral-900 pt-2 font-bold uppercase tracking-widest text-xs ">
-                              {arch.name}
+                              {arch.image ? <img src={arch.image} className="w-full object-contain" /> : <Diamond size={64} className="opacity-10" />}
                             </div>
                           </div>
                           <div className="flex-1 space-y-6">
-                            <div className="space-y-1">
-                              <span className="text-[10px] uppercase font-bold text-brand-cyan">Arquétipo de marca // {arch.role || 'Principal'}</span>
-                              <h4 className="text-3xl font-bold tracking-tight">{arch.name}</h4>
-                            </div>
-                            <p className="text-neutral-600 text-sm leading-relaxed font-medium">
+                            <h4 className="text-3xl font-bold tracking-tight opacity-90">{arch.name}</h4>
+                            <p className="text-lg font-light leading-relaxed opacity-60">
                               {arch.description}
                             </p>
-                            {arch.examples && (
-                              <div className="pt-4 space-y-2">
-                                <span className="text-[10px] uppercase font-bold text-neutral-400">Exemplos:</span>
-                                <p className="text-xs font-bold text-neutral-500">{arch.examples.join(', ')}</p>
-                              </div>
-                            )}
                           </div>
                         </div>
                       ))}
@@ -422,45 +555,41 @@ export const PublicBrandGuideline: React.FC = () => {
                 {/* Personas - Gustavo Style */}
                 {guideline.strategy.personas && guideline.strategy.personas.length > 0 && (
                   <div className="space-y-16">
-                    <div className="space-y-4">
-                      <MicroTitle className="text-brand-cyan/60 tracking-[0.4em]">Section 01.B // Personas</MicroTitle>
-                      <h2 className="text-3xl font-bold text-white font-manrope">Ideal Customer Profile</h2>
-                    </div>
+                    <h2 className="text-4xl font-bold font-manrope opacity-90">Personas</h2>
                     <div className="grid grid-cols-1 gap-12">
                       {guideline.strategy.personas.map((persona, i) => (
-                        <GlassPanel key={i} padding="lg" className="border-white/5 bg-white/[0.01]">
+                        <GlassPanel key={i} padding="lg" className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10">
                           <div className="flex flex-col md:flex-row gap-12">
-                            <div className="w-full md:w-1/3 aspect-square rounded-[32px] overflow-hidden border border-white/10 shadow-2xl">
-                              {persona.image ? <img src={persona.image} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-neutral-900 flex items-center justify-center"><User size={64} className="opacity-30" /></div>}
+                            <div className="w-full md:w-1/3 aspect-square rounded-[32px] overflow-hidden border border-[var(--brand-text)]/10 shadow-2xl">
+                              {persona.image ? <img src={persona.image} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-black/20 flex items-center justify-center opacity-30"><User size={64} /></div>}
                             </div>
                             <div className="flex-1 space-y-8">
                               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                                 <div className="space-y-1">
-                                  <h4 className="text-4xl font-bold text-white">{persona.name}, {persona.age}</h4>
+                                  <h4 className="text-4xl font-bold opacity-90">{persona.name}, {persona.age}</h4>
                                   <div className="flex flex-wrap gap-2 pt-2">
                                     {persona.traits?.map((trait, idx) => (
-                                      <span key={idx} className="px-3 py-1 rounded-full border border-white/10 text-[10px] font-medium text-neutral-400 uppercase tracking-widest">{trait}</span>
+                                      <span key={idx} className="px-3 py-1 rounded-full border border-[var(--brand-text)]/10 bg-[var(--brand-text)]/5 text-[10px] font-bold uppercase tracking-widest opacity-60">{trait}</span>
                                     ))}
                                   </div>
                                 </div>
                               </div>
 
-                              <div className="h-[1px] w-full bg-white/5" />
+                              <div className="h-[1px] w-full bg-[var(--brand-text)]/10" />
 
                               <div className="space-y-4">
-                                <h5 className="text-2xl font-bold text-neutral-200">O que o {persona.name.split(' ')[0]} realmente deseja?</h5>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   {persona.desires?.map((desire, idx) => (
-                                    <div key={idx} className="p-6 rounded-2xl border border-white/5 bg-white/[0.01] hover:border-white/10 transition-colors">
-                                      <p className="text-sm text-neutral-400 leading-relaxed font-light">{desire}</p>
+                                    <div key={idx} className="p-6 rounded-2xl border border-[var(--brand-text)]/5 bg-[var(--brand-surface)]/60 hover:border-[var(--brand-text)]/10 transition-all">
+                                      <p className="text-sm leading-relaxed font-light opacity-60">{desire}</p>
                                     </div>
                                   ))}
                                 </div>
                               </div>
 
                               {persona.bio && (
-                                <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] ">
-                                  <p className="text-sm text-neutral-300 font-light leading-relaxed">"{persona.bio}"</p>
+                                <div className="p-6 rounded-2xl border border-[var(--brand-text)]/5 bg-[var(--brand-text)]/[0.02]">
+                                  <p className="text-sm font-light leading-relaxed opacity-60">"{persona.bio}"</p>
                                 </div>
                               )}
                             </div>
@@ -474,36 +603,20 @@ export const PublicBrandGuideline: React.FC = () => {
                 {/* Tone of Voice - Cards Style */}
                 {guideline.strategy.voiceValues && guideline.strategy.voiceValues.length > 0 && (
                   <div className="space-y-16">
-                    <div className="space-y-12">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-4xl font-bold text-white font-manrope">Tom de voz</h2>
-                        <div className="flex gap-2">
-                          {guideline.strategy.voiceValues.map((v, i) => (
-                            <span key={i} className="px-4 py-1.5 rounded-full border border-white/10 text-[10px] font-mono text-neutral-500">{v.title}</span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {guideline.strategy.voiceValues.map((v, i) => (
-                          <div key={i} className="relative group p-8 rounded-[32px] border border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.02] transition-all duration-500 overflow-hidden min-h-[450px] flex flex-col">
-                            <div className="absolute top-0 left-0 w-16 h-16 bg-white/[0.03] rounded-br-[32px] flex items-center justify-center text-xl font-bold text-white/20">{i + 1}</div>
-                            <div className="mt-12 space-y-8 flex-1">
-                              <h4 className="text-2xl font-bold text-white">{v.title}</h4>
-                              <div className="space-y-2">
-                                <span className="text-[10px] font-bold uppercase text-neutral-600 tracking-widest">Como soa:</span>
-                                <p className="text-sm text-neutral-400 leading-relaxed ">{v.description}</p>
-                              </div>
-                              <div className="space-y-3 pt-8 mt-auto">
-                                <span className="text-[10px] font-bold uppercase text-neutral-600 tracking-widest">Exemplo de frase:</span>
-                                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05]">
-                                  <p className="text-xs text-neutral-300 font-medium leading-relaxed">"{v.example}"</p>
-                                </div>
-                              </div>
+                    <h2 className="text-4xl font-bold font-manrope opacity-90">Tone of Voice</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {guideline.strategy.voiceValues.map((v, i) => (
+                        <div key={i} className="relative group p-8 rounded-[32px] border transition-all duration-500 overflow-hidden min-h-[400px] flex flex-col bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:bg-[var(--brand-surface)]/40 hover:border-[var(--brand-text)]/10">
+                          <div className="absolute top-0 left-0 w-16 h-16 rounded-br-[32px] flex items-center justify-center text-xl font-bold bg-[var(--brand-text)]/5 opacity-20">{i + 1}</div>
+                          <div className="mt-12 space-y-8 flex-1">
+                            <h4 className="text-2xl font-bold opacity-90">{v.title}</h4>
+                            <p className="text-sm leading-relaxed opacity-60 transition-colors">{v.description}</p>
+                            <div className="p-4 rounded-xl border mt-auto bg-[var(--brand-text)]/[0.02] border-[var(--brand-text)]/5 shadow-inner">
+                              <p className="text-xs font-medium leading-relaxed italic opacity-80">"{v.example}"</p>
                             </div>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -514,12 +627,8 @@ export const PublicBrandGuideline: React.FC = () => {
             {(activeTab === 'all' || activeTab === 'colors') && guideline.colors && guideline.colors.length > 0 && (
               <motion.section id="colors" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
                 <div className="space-y-12">
-                  <div className="flex items-end justify-between border-b border-white/5 pb-6">
-                    <div className="space-y-4">
-                      <MicroTitle className="text-brand-cyan/60 tracking-[0.4em]">Section 02 // Chromatography</MicroTitle>
-                      <h2 className="text-3xl font-bold text-white font-manrope">Color Palette</h2>
-                    </div>
-                    <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">{filteredColors.length} Defined Values</span>
+                  <div className="flex items-end justify-between border-b border-[var(--brand-text)]/10 pb-12">
+                    <h2 className="text-4xl font-bold font-manrope opacity-90">Color Palette</h2>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
@@ -532,18 +641,18 @@ export const PublicBrandGuideline: React.FC = () => {
                         onClick={() => handleCopyColor(color.hex)}
                         className="group cursor-pointer space-y-3"
                       >
-                        <div className="relative aspect-square rounded-2xl overflow-hidden border border-white/10 transition-all group-hover:scale-105 group-hover:border-brand-cyan/30 shadow-2xl">
+                        <div className="relative aspect-square rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-all group-hover:scale-105 group-hover:border-[var(--accent)]/30 shadow-2xl">
                           <div className="absolute inset-0" style={{ backgroundColor: color.hex }} />
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-300 transition-opacity" />
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-300 transition-opacity bg-black/20 backdrop-blur-[2px]">
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
                             <span className="text-[10px] font-mono text-white opacity-60">COPY HEX</span>
                           </div>
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-neutral-200 truncate uppercase tracking-tight">{color.name || 'Untitled'}</p>
-                          <p className="text-[10px] font-mono text-neutral-500 uppercase flex items-center gap-2">
+                          <p className="text-xs font-bold truncate uppercase tracking-tight opacity-90">{color.name || 'Untitled'}</p>
+                          <p className="text-[10px] font-mono opacity-40 uppercase flex items-center gap-2">
                             {color.hex}
-                            <div className="w-1 h-1 rounded-full bg-neutral-800" />
+                            <div className="w-1 h-1 rounded-full bg-current opacity-20" />
                             {color.role || 'Accent'}
                           </p>
                         </div>
@@ -558,32 +667,31 @@ export const PublicBrandGuideline: React.FC = () => {
             {(activeTab === 'all' || activeTab === 'typography') && guideline.typography && guideline.typography.length > 0 && (
               <motion.section id="typography" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
                 <div className="space-y-12">
-                  <div className="flex items-end justify-between border-b border-white/5 pb-6">
-                    <div className="space-y-4">
-                      <MicroTitle className="text-brand-cyan/60 tracking-[0.4em]">Section 03 // Typography</MicroTitle>
-                      <h2 className="text-3xl font-bold text-white font-manrope">Visual Language</h2>
-                    </div>
+                  <div className="flex items-end justify-between border-b border-[var(--brand-text)]/10 pb-12">
+                    <h2 className="text-4xl font-bold font-manrope opacity-90">Typography</h2>
                   </div>
                   <div className="grid grid-cols-1 gap-8">
                     {guideline.typography.map((font, i) => (
-                      <div key={i} className="group flex flex-col md:flex-row md:items-center gap-8 md:gap-16 p-8 rounded-3xl bg-white/[0.01] border border-white/[0.03] hover:border-brand-cyan/10 transition-all">
-                        <div className="text-7xl md:text-8xl font-bold text-white tracking-tighter w-40 text-center shrink-0" style={{ fontFamily: font.family }}>Aa</div>
+                      <div key={i} className="group flex flex-col md:flex-row md:items-center gap-8 md:gap-16 p-8 rounded-3xl border transition-all bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:border-[var(--brand-text)]/10">
+                        <div className="text-7xl md:text-8xl font-bold tracking-tighter w-40 text-center shrink-0 opacity-90" style={{ fontFamily: font.family }}>Aa</div>
                         <div className="flex-1 space-y-4">
                           <div className="flex items-center gap-4">
-                            <span className="px-3 py-1 rounded-full bg-brand-cyan/5 border border-brand-cyan/10 text-brand-cyan text-[10px] font-mono uppercase font-bold tracking-widest">{font.role}</span>
-                            <span className="text-neutral-500 text-sm font-mono">{font.family}</span>
+                            <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase font-black tracking-widest border bg-[var(--brand-text)]/5 text-[var(--brand-text)] border-[var(--brand-text)]/10">
+                              {font.role}
+                            </span>
+                            <span className="text-xs font-mono font-medium opacity-40">{font.family}</span>
                           </div>
-                          <p className="text-4xl md:text-5xl text-neutral-200 tracking-tight leading-none" style={{ fontFamily: font.family }}>
+                          <p className="text-4xl md:text-5xl tracking-tight leading-none opacity-80" style={{ fontFamily: font.family }}>
                             The quick brown fox jumps over the lazy dog.
                           </p>
                           <div className="flex items-center gap-6 pt-2">
                             <div className="space-y-1">
-                              <span className="text-[9px] font-mono text-neutral-700 uppercase tracking-widest">Style</span>
-                              <p className="text-sm font-medium text-neutral-400">{font.style || 'Regular'}</p>
+                              <span className="text-[9px] font-mono uppercase tracking-widest font-bold opacity-30">Style</span>
+                              <p className="text-sm font-bold opacity-70">{font.style || 'Regular'}</p>
                             </div>
                             <div className="space-y-1">
-                              <span className="text-[9px] font-mono text-neutral-700 uppercase tracking-widest">Base Size</span>
-                              <p className="text-sm font-medium text-neutral-400">{font.size || '16'}PX</p>
+                              <span className="text-[9px] font-mono uppercase tracking-widest font-bold opacity-30">Base Size</span>
+                              <p className="text-sm font-bold opacity-70">{font.size || '16'}PX</p>
                             </div>
                           </div>
                         </div>
@@ -598,15 +706,12 @@ export const PublicBrandGuideline: React.FC = () => {
             {(activeTab === 'all' || activeTab === 'logos') && guideline.logos && guideline.logos.length > 0 && (
               <motion.section id="logos" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
                 <div className="space-y-12">
-                  <div className="flex items-end justify-between border-b border-white/5 pb-6">
-                    <div className="space-y-4">
-                      <MicroTitle className="text-brand-cyan/60 tracking-[0.4em]">Section 04 // Symbology</MicroTitle>
-                      <h2 className="text-3xl font-bold text-white font-manrope">Logotypes & Icons</h2>
-                    </div>
+                  <div className="flex items-end justify-between border-b border-[var(--brand-text)]/10 pb-12">
+                    <h2 className="text-4xl font-bold font-manrope opacity-90">Logo Assets</h2>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-[10px] font-mono text-neutral-500 hover:text-brand-cyan gap-2"
+                      className="text-[10px] font-mono opacity-40 hover:opacity-100 hover:text-[var(--accent)] gap-2"
                       onClick={() => handleBatchDownload(filteredLogos)}
                     >
                       <Download size={12} />
@@ -622,26 +727,30 @@ export const PublicBrandGuideline: React.FC = () => {
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                         className="group relative flex flex-col gap-4"
                       >
-                        <div className="relative aspect-[4/3] rounded-3xl bg-white/[0.02] border border-white/[0.04] p-8 flex items-center justify-center overflow-hidden transition-all group-hover:bg-white/[0.04] group-hover:border-white/10 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
-                          <img src={logo.url} alt={logo.label || 'Logo'} className="w-full h-full object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] group-hover:scale-105 transition-transform duration-500" />
+                        <div className="relative aspect-[4/3] rounded-3xl p-8 flex items-center justify-center overflow-hidden transition-all duration-500 border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 group-hover:bg-[var(--brand-surface)]/40 group-hover:border-[var(--brand-text)]/10 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
+                          <img 
+                            src={logo.url} 
+                            alt={logo.label || 'Logo'} 
+                            className="w-3/4 h-3/4 object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_15px_25px_rgba(0,0,0,0.2)]" 
+                          />
 
                           {/* Quick Actions */}
-                          <div className="absolute inset-x-4 bottom-4 flex gap-2 opacity-0 group-hover:opacity-300 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                          <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                             <Button
-                              className="flex-1 h-9 rounded-xl bg-neutral-900/90 backdrop-blur border border-white/10 text-[9px] font-mono uppercase tracking-widest gap-2 hover:bg-brand-cyan hover:text-black transition-all"
+                              className="w-full h-10 rounded-xl text-[10px] font-bold uppercase tracking-wider gap-2 shadow-lg transition-all bg-[var(--accent)] text-black hover:scale-[1.02]"
                               onClick={() => {
                                 const safeName = (logo.label || logo.variant || 'logo').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
                                 const ext = logo.url.split('.').pop()?.split('?')[0] || 'png';
                                 triggerDownload(logo.url, `${safeName}.${ext}`);
                               }}
                             >
-                              <Download size={12} /> Download
+                              <Download size={14} /> Download
                             </Button>
                           </div>
                         </div>
                         <div className="px-2">
-                          <p className="text-[10px] font-bold text-white uppercase tracking-[0.1em]">{logo.label || 'Untitled Asset'}</p>
-                          <p className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest mt-1">{logo.variant} Variant</p>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-90">{logo.label || 'Untitled Asset'}</p>
+                          <p className="text-[9px] font-mono uppercase tracking-widest mt-1 opacity-40">{logo.variant} Variant</p>
                         </div>
                       </motion.div>
                     ))}
@@ -654,11 +763,8 @@ export const PublicBrandGuideline: React.FC = () => {
             {(activeTab === 'all' || activeTab === 'media') && guideline.media && guideline.media.length > 0 && (
               <motion.section id="media" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
                 <div className="space-y-12">
-                  <div className="flex items-end justify-between border-b border-white/5 pb-6">
-                    <div className="space-y-4">
-                      <MicroTitle className="text-brand-cyan/60 tracking-[0.4em]">Section 05 // Visual Library</MicroTitle>
-                      <h2 className="text-3xl font-bold text-white font-manrope">Production Assets</h2>
-                    </div>
+                  <div className={cn("flex items-end justify-between border-b pb-12", theme === 'dark' ? "border-white/5" : "border-neutral-200")}>
+                    <h2 className={cn("text-4xl font-bold font-manrope", theme === 'dark' ? "text-white" : "text-neutral-900")}>Media Library</h2>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -671,12 +777,12 @@ export const PublicBrandGuideline: React.FC = () => {
                       >
                         <div className="relative aspect-[16/10] rounded-3xl overflow-hidden border border-white/[0.04] shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-white/10">
                           <img src={item.url} alt={item.label || 'Media'} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-300 transition-opacity" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
 
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-300 transition-all">
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
                             <Button
                               size="icon"
-                              className="w-14 h-14 rounded-full bg-brand-cyan text-black shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.5)] active:scale-90 transition-all"
+                              className="w-14 h-14 rounded-full bg-[var(--accent)] text-black shadow-[0_0_30px_rgba(var(--accent-rgb),0.5)] active:scale-90 transition-all"
                               onClick={() => {
                                 const safeName = (item.label || 'media').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
                                 const ext = item.url.split('.').pop()?.split('?')[0] || 'png';
@@ -690,7 +796,7 @@ export const PublicBrandGuideline: React.FC = () => {
                           <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
                             <div className="space-y-1">
                               <p className="text-sm font-bold text-white tracking-tight">{item.label || 'Production File'}</p>
-                              <span className="text-[9px] font-mono text-neutral-400 uppercase tracking-widest">Asset // 0{i + 1}</span>
+                              <span className="text-[9px] font-mono text-white/50 uppercase tracking-widest">Asset // 0{i + 1}</span>
                             </div>
                           </div>
                         </div>
@@ -702,18 +808,14 @@ export const PublicBrandGuideline: React.FC = () => {
             )}
 
             {/* Strategy / Editorial Section */}
-            {(activeTab === 'all' || activeTab === 'identity') && (guideline.guidelines?.voice || (guideline.guidelines?.dos?.length || 0) > 0) && (
+            {(activeTab === 'all' || activeTab === 'identity' || activeTab === 'strategy') && (guideline.guidelines?.voice || (guideline.guidelines?.dos?.length || 0) > 0) && (
               <motion.section id="editorial" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
                   <div className="space-y-8">
-                    <div className="space-y-4">
-                      <MicroTitle className="text-brand-cyan/60 tracking-[0.4em]">Section 06 // Editorial</MicroTitle>
-                      <h2 className="text-3xl font-bold text-white font-manrope">Voice & Guidelines</h2>
-                    </div>
+                    <h2 className="text-4xl font-bold font-manrope opacity-90">Guidelines</h2>
                     {guideline.guidelines?.voice && (
-                      <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05]">
-                        <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest mb-4 block">Tone of Voice</span>
-                        <p className="text-sm text-neutral-400 leading-relaxed ">"{guideline.guidelines.voice}"</p>
+                      <div className="p-8 rounded-3xl bg-[var(--brand-text)]/[0.03] border border-[var(--brand-text)]/[0.05]">
+                        <p className="text-lg md:text-xl font-serif italic leading-relaxed opacity-60">"{guideline.guidelines.voice}"</p>
                       </div>
                     )}
                   </div>
@@ -721,15 +823,11 @@ export const PublicBrandGuideline: React.FC = () => {
                   <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
                     {guideline.guidelines?.dos && (
                       <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-[1px] bg-green-500/30" />
-                          <span className="text-[10px] font-mono text-green-500/60 uppercase tracking-widest">Standard Compliance (Do)</span>
-                        </div>
-                        <ul className="space-y-4">
+                        <ul className="space-y-4 pt-12">
                           {guideline.guidelines.dos.map((item, i) => (
                             <li key={i} className="flex gap-4 group">
-                              <div className="mt-1.5 w-1 h-1 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                              <span className="text-sm text-neutral-400 group-hover:text-neutral-200 transition-colors">{item}</span>
+                              <div className="mt-1.5 w-1 h-1 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.3)]" />
+                              <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">{item}</span>
                             </li>
                           ))}
                         </ul>
@@ -737,15 +835,11 @@ export const PublicBrandGuideline: React.FC = () => {
                     )}
                     {guideline.guidelines?.donts && (
                       <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-[1px] bg-red-500/30" />
-                          <span className="text-[10px] font-mono text-red-500/60 uppercase tracking-widest">Restricted Patterns (Don't)</span>
-                        </div>
-                        <ul className="space-y-4">
+                        <ul className="space-y-4 pt-12">
                           {guideline.guidelines.donts.map((item, i) => (
                             <li key={i} className="flex gap-4 group">
-                              <div className="mt-1.5 w-1 h-1 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
-                              <span className="text-sm text-neutral-400 group-hover:text-neutral-200 transition-colors">{item}</span>
+                              <div className="mt-1.5 w-1 h-1 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.3)]" />
+                              <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">{item}</span>
                             </li>
                           ))}
                         </ul>
@@ -759,11 +853,11 @@ export const PublicBrandGuideline: React.FC = () => {
         </div>
 
         {/* Dynamic Footer */}
-        <footer className="mt-40 pt-20 border-t border-white/5 text-center space-y-8">
+        <footer className="mt-40 pt-20 border-t border-[var(--brand-text)]/10 text-center space-y-8">
           <div className="flex justify-center gap-12">
             <div className="text-left space-y-2">
-              <span className="text-[10px] font-mono text-neutral-700 uppercase tracking-widest">Version</span>
-              <p className="text-xs font-bold text-neutral-500">Visant // Labs®</p>
+              <span className="text-[10px] font-mono opacity-30 uppercase tracking-widest">Version</span>
+              <p className="text-xs font-bold opacity-40">Visant // Labs®</p>
             </div>
           </div>
         </footer>
