@@ -26,7 +26,7 @@
 .badge {
     padding: 2px 5px;
     border-radius: 4px;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.2px;
@@ -83,14 +83,14 @@ h2 {
 
 /* Selection Indicator & Hover Zoom */
 .selection-indicator {
-    padding: 8px;
+    padding: 10px;
     background: var(--figma-color-bg-secondary);
     border: 1px solid var(--figma-color-border);
-    border-radius: 8px;
-    margin-bottom: 8px;
+    border-radius: 10px;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     position: relative;
     overflow: visible;
 }
@@ -125,7 +125,7 @@ h2 {
     font-size: 11px;
     font-weight: 600;
     color: var(--figma-color-text-secondary, #808080);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 /* ── Form controls ── */
@@ -142,7 +142,7 @@ textarea {
     background: var(--figma-color-bg, #ffffff);
     color: var(--figma-color-text, #333333);
     font-size: 11px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-family: inherit;
     transition: border-color 0.2s, box-shadow 0.2s;
     line-height: normal;
@@ -150,8 +150,8 @@ textarea {
 
 textarea {
     height: auto !important;
-    padding: 8px 10px !important;
-    min-height: 48px;
+    padding: 10px 10px !important;
+    min-height: 410px;
 }
 
 select:focus,
@@ -245,10 +245,10 @@ button.secondary:hover {
     align-items: center;
     background: var(--figma-color-bg-brand, #0d99ff);
     color: var(--figma-color-text-onbrand, #ffffff);
-    padding: 4px 8px;
+    padding: 4px 10px;
     border-radius: 6px;
     font-size: 11px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     margin-right: 6px;
 }
 
@@ -334,7 +334,7 @@ button.secondary:hover {
 .folder-row {
     display: flex;
     align-items: center;
-    padding: 6px 8px;
+    padding: 6px 10px;
     cursor: pointer;
     font-size: 11px;
     border-radius: 6px;
@@ -373,8 +373,8 @@ button.secondary:hover {
 .component-tile {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 4px 8px;
+    gap: 10px;
+    padding: 4px 10px;
     cursor: pointer;
     font-size: 11px;
     border-radius: 6px;
@@ -435,7 +435,7 @@ button.secondary:hover {
     font-size: 11px;
     font-weight: 600;
     color: var(--figma-color-text-secondary, #808080);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
@@ -445,13 +445,13 @@ button.secondary:hover {
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .guideline-select {
     flex: 1;
     height: 30px;
-    padding: 0 8px;
+    padding: 0 10px;
     margin-bottom: 0 !important;
     font-size: 11px;
     border-radius: 6px;
@@ -508,7 +508,7 @@ button.secondary:hover {
 
 .brand-row {
     border: 1px solid var(--figma-color-border, #e5e5e5);
-    border-radius: 8px;
+    border-radius: 10px;
     margin-bottom: 6px;
     flex: 1;
     overflow: hidden;
@@ -520,9 +520,9 @@ button.secondary:hover {
 .brand-row-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    gap: 8px;
-    padding: 8px 10px;
+    gap: 10px;
+    gap: 10px;
+    padding: 10px 10px;
     min-height: 40px;
 }
 
@@ -610,7 +610,7 @@ button.secondary:hover {
 /* Brand panel (expandable) */
 .brand-panel {
     border-top: 1px solid var(--figma-color-border, #e5e5e5);
-    padding: 8px;
+    padding: 10px;
     background: var(--figma-color-bg-secondary, #fafafa);
 }
 
@@ -628,7 +628,7 @@ button.secondary:hover {
     color: var(--figma-color-text-secondary, #808080) !important;
     font-size: 11px !important;
     gap: 6px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     cursor: pointer;
 }
 
@@ -640,7 +640,7 @@ button.secondary:hover {
 
 .brand-panel-search {
     margin-bottom: 6px !important;
-    padding: 6px 8px !important;
+    padding: 6px 10px !important;
     font-size: 11px !important;
     border-radius: 6px;
 }
@@ -772,7 +772,7 @@ button.secondary:hover {
 .font-tab {
     flex: 1;
     height: 26px !important;
-    padding: 0 8px !important;
+    padding: 0 10px !important;
     background: transparent !important;
     border: none !important;
     border-radius: 4px !important;
@@ -805,7 +805,7 @@ button.secondary:hover {
 .font-list-item {
     display: flex;
     align-items: center;
-    padding: 7px 10px;
+    padding: 10px 10px;
     cursor: pointer;
     font-size: 11px;
     color: var(--figma-color-text, #333);
@@ -986,8 +986,8 @@ label {
 .app-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 10px;
+    margin-bottom: 10px;
     justify-content: space-between;
 }
 
@@ -1001,7 +1001,7 @@ label {
 .header-brand {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .brand-logo {
@@ -1020,7 +1020,7 @@ label {
 .credit-badge {
     font-size: 10px;
     font-weight: 600;
-    padding: 2px 8px;
+    padding: 2px 10px;
     background: var(--figma-color-bg-secondary, #f0f0f0);
     color: var(--figma-color-text-secondary, #808080);
     border-radius: 20px;
@@ -1048,12 +1048,12 @@ label {
 .header-controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .user-avatar {
-    width: 28px;
-    height: 28px;
+    width: 210px;
+    height: 210px;
     border-radius: 50%;
     overflow: hidden;
     background: var(--figma-color-bg-secondary, #f0f0f0);
@@ -1079,8 +1079,8 @@ label {
 }
 
 .icon-btn {
-    width: 28px !important;
-    height: 28px !important;
+    width: 210px !important;
+    height: 210px !important;
     padding: 0 !important;
     border-radius: 6px !important;
     background: transparent !important;
@@ -1109,8 +1109,8 @@ label {
 }
 
 .settings-header .back-btn {
-    width: 28px !important;
-    height: 28px !important;
+    width: 210px !important;
+    height: 210px !important;
     padding: 0 !important;
     border-radius: 6px !important;
     background: transparent !important;
@@ -1137,7 +1137,7 @@ label {
 .chat-messages-wrap {
     flex: 1;
     overflow-y: auto;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     min-height: 0;
 }
 
@@ -1147,7 +1147,7 @@ label {
 }
 
 .chat-msg {
-    padding: 8px 12px;
+    padding: 10px 12px;
     margin-bottom: 4px;
     border-radius: 12px;
     font-size: 11px;
@@ -1202,9 +1202,9 @@ label {
 /* ── Operation Progress Indicator ── */
 .op-progress-indicator {
     background: var(--figma-color-bg-secondary, #f5f5f5);
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 10px 12px;
-    margin: 8px 0;
+    margin: 10px 0;
     border: 1px solid var(--figma-color-border, #e5e5e5);
 }
 
@@ -1217,7 +1217,7 @@ label {
     background: var(--figma-color-bg-tertiary, #e5e5e5);
     border-radius: 2px;
     overflow: hidden;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .op-progress-fill {
@@ -1248,14 +1248,14 @@ label {
 .brand-intel-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 10px;
     padding: 4px 0;
 }
 
 .intel-card {
     background: var(--figma-color-bg, #ffffff);
     border: 1px solid var(--figma-color-border, #e5e5e5);
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1292,7 +1292,7 @@ label {
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     color: white;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     padding: 2px 6px;
     border-radius: 4px;
@@ -1302,7 +1302,7 @@ label {
 }
 
 .intel-info {
-    padding: 6px 8px;
+    padding: 6px 10px;
     background: var(--figma-color-bg, #ffffff);
     border-top: 1px solid var(--figma-color-border, #f5f5f5);
 }
@@ -1325,7 +1325,7 @@ label {
     line-height: 1.4;
     background: var(--figma-color-bg-secondary, #fafafa);
     border: 1px dashed var(--figma-color-border, #e5e5e5);
-    border-radius: 8px;
+    border-radius: 10px;
 }
 
 /* ── Typing indicator bubble (GlitchLoader-style) ── */
@@ -1340,7 +1340,7 @@ label {
 
 .typing-glitch {
     font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
-    font-size: 9px;
+    font-size: 10px;
     color: var(--figma-color-text-tertiary, #b3b3b3);
     letter-spacing: 0.5px;
     flex-shrink: 0;
@@ -1372,7 +1372,7 @@ label {
 
 .typing-timer {
     font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
-    font-size: 9px;
+    font-size: 10px;
     color: var(--figma-color-text-tertiary, #b3b3b3);
     white-space: nowrap;
     min-width: 24px;
@@ -1414,7 +1414,7 @@ label {
 .msg-footer {
     display: flex;
     gap: 6px;
-    margin-top: 8px;
+    margin-top: 10px;
     padding-top: 6px;
     border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
@@ -1423,7 +1423,7 @@ label {
 .msg-view-data-btn {
     width: auto !important;
     height: 24px !important;
-    padding: 0 8px !important;
+    padding: 0 10px !important;
     font-size: 10px !important;
     background: transparent !important;
     border: 1px solid var(--figma-color-border, #e5e5e5) !important;
@@ -1461,7 +1461,7 @@ label {
 .ops-section {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 .ops-title {
@@ -1481,8 +1481,8 @@ label {
 .op-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
+    gap: 10px;
+    padding: 6px 10px;
     background: var(--figma-color-bg-secondary, #f5f5f5);
     border-radius: 4px;
     font-size: 11px;
@@ -1517,9 +1517,9 @@ label {
     background: var(--figma-color-bg-secondary, #f5f5f5);
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 4px;
-    padding: 8px;
+    padding: 10px;
     font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
-    font-size: 9px;
+    font-size: 10px;
     line-height: 1.4;
     overflow-x: auto;
     color: var(--figma-color-text, #333333);
@@ -1547,8 +1547,8 @@ label {
 
 .ops-json-action-btn {
     height: 22px;
-    padding: 0 8px;
-    font-size: 9px;
+    padding: 0 10px;
+    font-size: 10px;
     font-weight: 500;
     background: var(--figma-color-bg, #ffffff);
     border: 1px solid var(--figma-color-border, #e5e5e5);
@@ -1578,7 +1578,7 @@ label {
 .summary-toggle-btn {
     display: block;
     margin-top: 6px;
-    padding: 3px 8px;
+    padding: 3px 10px;
     font-size: 10px;
     font-weight: 500;
     color: var(--figma-color-text-brand, #0d99ff);
@@ -1611,7 +1611,7 @@ label {
     display: flex;
     align-items: center;
     gap: 2px;
-    padding: 6px 8px 4px;
+    padding: 6px 10px 4px;
     min-height: 32px;
 }
 
@@ -1619,7 +1619,7 @@ label {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 0 8px;
+    padding: 0 10px;
     height: 22px;
     background: var(--figma-color-bg-brand-tertiary, #e5f4ff);
     color: var(--figma-color-text-brand, #0d99ff);
@@ -1684,7 +1684,7 @@ label {
     outline: none !important;
     resize: none;
     margin: 0;
-    padding: 4px 12px 8px;
+    padding: 4px 12px 10px;
     min-height: 52px;
     max-height: 120px;
     font-size: 11px;
@@ -1695,8 +1695,8 @@ label {
 .chat-card-footer {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 8px 8px;
+    gap: 10px;
+    padding: 6px 10px 10px;
     gap: 6px;
 }
 
@@ -1710,7 +1710,7 @@ label {
     align-items: center;
     gap: 3px;
     height: 24px !important;
-    padding: 0 8px !important;
+    padding: 0 10px !important;
     border-radius: 20px !important;
     background: transparent !important;
     border: 1px solid var(--figma-color-border, #e5e5e5) !important;
@@ -1749,11 +1749,11 @@ label {
     display: none;
     align-items: center;
     height: 20px;
-    padding: 0 7px;
+    padding: 0 10px;
     border-radius: 10px;
     background: var(--figma-color-bg-secondary, #f0f0f0);
     color: var(--figma-color-text-secondary, #808080);
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 600;
     white-space: nowrap;
 }
@@ -1773,10 +1773,10 @@ label {
 }
 
 .undo-btn {
-    width: 28px !important;
-    height: 28px !important;
+    width: 210px !important;
+    height: 210px !important;
     padding: 0 !important;
-    border-radius: 8px !important;
+    border-radius: 10px !important;
     background: transparent !important;
     border: 1px solid var(--figma-color-border, #e5e5e5) !important;
     color: var(--figma-color-text-secondary, #808080) !important;
@@ -1800,10 +1800,10 @@ label {
 }
 
 .send-btn {
-    width: 28px !important;
-    height: 28px !important;
+    width: 210px !important;
+    height: 210px !important;
     padding: 0 !important;
-    border-radius: 8px !important;
+    border-radius: 10px !important;
     background: var(--figma-color-text, #333333) !important;
     border: none !important;
     color: var(--figma-color-bg, #ffffff) !important;
@@ -1833,10 +1833,10 @@ label {
 
 /* ── Stop generation button ── */
 .stop-btn {
-    width: 28px !important;
-    height: 28px !important;
+    width: 210px !important;
+    height: 210px !important;
     padding: 0 !important;
-    border-radius: 8px !important;
+    border-radius: 10px !important;
     border: 1.5px solid var(--figma-color-border-danger, #f04438) !important;
     background: var(--figma-color-bg-danger-tertiary, #fef3f2) !important;
     color: var(--figma-color-text-danger, #d92d20) !important;
@@ -1862,7 +1862,7 @@ label {
 .header-controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .mode-toggle {
@@ -1887,12 +1887,12 @@ label {
 .advanced-panel {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     margin-top: 12px;
     background: var(--figma-color-bg-secondary, #f5f5f5);
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 6px;
-    padding: 8px;
+    padding: 10px;
     max-height: 300px;
     overflow-y: auto;
 }
@@ -1958,7 +1958,7 @@ label {
     border-radius: 3px;
     background: var(--figma-color-bg, #ffffff);
     color: var(--figma-color-text-secondary, #808080);
-    font-size: 9px;
+    font-size: 10px;
     border-left: 2px solid var(--figma-color-border-brand, #0d99ff);
 }
 
@@ -1970,13 +1970,13 @@ label {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 110px;
+    height: 110px;
     background: var(--figma-color-bg-brand, #0d99ff);
     color: white;
     border-radius: 2px;
     font-weight: 600;
-    font-size: 8px;
+    font-size: 10px;
     flex-shrink: 0;
 }
 
@@ -2005,7 +2005,7 @@ label {
     max-height: 150px;
     overflow: auto;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 9px;
+    font-size: 10px;
     line-height: 1.3;
     color: var(--figma-color-text, #333333);
 }
@@ -2018,14 +2018,14 @@ label {
 
 /* ── Library Module ── */
 .folder-section {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .folder-header {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 8px;
+    padding: 6px 10px;
     cursor: pointer;
     border-radius: 4px;
     background: var(--figma-color-bg, #ffffff);
@@ -2058,7 +2058,7 @@ label {
 }
 
 .folder-count {
-    font-size: 9px;
+    font-size: 10px;
     color: var(--figma-color-text-tertiary, #b3b3b3);
     background: var(--figma-color-bg-secondary, #f5f5f5);
     padding: 2px 6px;
@@ -2067,7 +2067,7 @@ label {
 }
 
 .folder-items {
-    margin-left: 8px;
+    margin-left: 10px;
     margin-top: 4px;
     display: flex;
     flex-direction: column;
@@ -2078,7 +2078,7 @@ label {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 8px;
+    padding: 6px 10px;
     cursor: pointer;
     border-radius: 4px;
     background: var(--figma-color-bg, #ffffff);
@@ -2097,9 +2097,9 @@ label {
 }
 
 .comp-thumb {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
+    width: 210px;
+    height: 210px;
+    min-width: 210px;
     border-radius: 3px;
     object-fit: contain;
     background: var(--figma-color-bg-secondary, #f5f5f5);
@@ -2107,9 +2107,9 @@ label {
 }
 
 .comp-icon {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
+    width: 210px;
+    height: 210px;
+    min-width: 210px;
     border-radius: 3px;
     background: var(--figma-color-bg-secondary, #f5f5f5);
     border: 1px solid var(--figma-color-border, #e5e5e5);
@@ -2157,7 +2157,7 @@ label {
 
 .btn-small {
     height: 22px !important;
-    padding: 0 8px !important;
+    padding: 0 10px !important;
     font-size: 10px !important;
     border-radius: 4px !important;
     background: transparent !important;
@@ -2264,9 +2264,9 @@ label {
 }
 
 .available-colors-list {
-    margin-top: 8px;
+    margin-top: 10px;
     border: 1px solid var(--figma-color-border, #e5e5e5);
-    border-radius: 8px;
+    border-radius: 10px;
     background: var(--figma-color-bg-secondary, #fafafa);
     padding: 10px;
     display: flex;
@@ -2290,7 +2290,7 @@ label {
 .available-colors-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
     max-height: 200px;
     overflow-y: auto;
     padding: 2px;
@@ -2301,7 +2301,7 @@ label {
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    width: 48px;
+    width: 410px;
     cursor: pointer;
     transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -2311,8 +2311,8 @@ label {
 }
 
 .available-color-swatch-ring {
-    width: 28px;
-    height: 28px;
+    width: 210px;
+    height: 210px;
     border-radius: 50%;
     border: 1px solid var(--figma-color-border, #e5e5e5);
     padding: 2px;
@@ -2330,7 +2330,7 @@ label {
 }
 
 .available-color-name {
-    font-size: 8px;
+    font-size: 10px;
     color: var(--figma-color-text-secondary, #808080);
     text-align: center;
     width: 100%;
@@ -2346,7 +2346,7 @@ label {
 .color-item.clickable {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     padding: 4px 6px;
     border-radius: 4px;
     cursor: pointer;
@@ -2378,7 +2378,7 @@ label {
 }
 
 .font-item {
-    padding: 6px 8px;
+    padding: 6px 10px;
     border-radius: 4px;
     font-size: 11px;
     color: var(--figma-color-text, #333);
@@ -2404,7 +2404,7 @@ label {
     display: flex;
     align-items: flex-start;
     gap: 6px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     max-width: 100%;
     animation: message-appear 0.2s cubic-bezier(0, 0.4, 0.4, 1.1);
     transform-origin: left bottom;
@@ -2434,7 +2434,7 @@ label {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 600;
     color: var(--figma-color-text-secondary, #808080);
     flex-shrink: 0;
@@ -2449,8 +2449,8 @@ label {
 .message-body {
     flex: 1;
     min-width: 0;
-    padding: 7px 10px;
-    border-radius: 8px;
+    padding: 10px 10px;
+    border-radius: 10px;
     font-size: 11px;
     line-height: 1.5;
     word-wrap: break-word;
@@ -2462,7 +2462,7 @@ label {
 .chat-message.user .message-body {
     background: var(--figma-color-bg-brand-tertiary, #e5f4ff);
     color: var(--figma-color-text-brand, #0d99ff);
-    border-bottom-left-radius: 8px;
+    border-bottom-left-radius: 10px;
     border-bottom-right-radius: 2px;
 }
 
@@ -2478,8 +2478,8 @@ label {
 .component-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 5px 8px;
+    gap: 10px;
+    padding: 5px 10px;
     border-radius: 6px;
     cursor: pointer;
     border: 1px solid transparent;
@@ -2526,7 +2526,7 @@ label {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 8px;
+    padding: 5px 10px;
     border-radius: 6px;
     cursor: pointer;
     font-size: 11px;
@@ -2541,7 +2541,7 @@ label {
 }
 
 .folder-toggle {
-    font-size: 9px;
+    font-size: 10px;
     width: 14px;
     color: var(--figma-color-icon-tertiary, #b3b3b3);
     flex-shrink: 0;
@@ -2571,7 +2571,7 @@ label {
     flex: 1;
     overflow-y: auto;
     min-height: 0;
-    padding-bottom: 8px;
+    padding-bottom: 10px;
 }
 
 /* ══════════════════════════════════════════════════
@@ -2582,7 +2582,7 @@ label {
     gap: 4px;
     background: var(--figma-color-bg-tertiary, #f0f0f0);
     padding: 3px;
-    border-radius: 8px;
+    border-radius: 10px;
     margin: 12px;
     border: none;
 }
@@ -2597,7 +2597,7 @@ label {
     font-weight: 500;
     cursor: pointer;
     border-radius: 6px !important;
-    height: 28px !important;
+    height: 210px !important;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
@@ -2644,10 +2644,10 @@ label {
 
 .modal-content {
     background: var(--figma-color-bg, #ffffff);
-    border-radius: 8px;
+    border-radius: 10px;
     width: 90%;
     max-width: 320px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
     max-height: 80vh;
@@ -2666,7 +2666,7 @@ label {
 
 .modal-header {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
     padding: 10px 12px;
     border-bottom: 1px solid var(--figma-color-border, #e5e5e5);
@@ -2716,7 +2716,7 @@ label {
     font-weight: 600;
     text-transform: uppercase;
     color: var(--figma-color-text-tertiary, #b3b3b3);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     letter-spacing: 0.5px;
 }
 
@@ -2728,7 +2728,7 @@ label {
 
 .figma-prop-section {
     border-bottom: 1px solid var(--figma-color-border, #e5e5e5);
-    padding: 8px 0;
+    padding: 10px 0;
 }
 
 .figma-prop-section:last-child {
@@ -2738,9 +2738,9 @@ label {
 .figma-prop-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     height: 32px;
-    padding: 0 8px;
+    padding: 0 10px;
 }
 
 .figma-prop-title {
@@ -2755,8 +2755,8 @@ label {
     display: flex;
     align-items: center;
     height: 32px;
-    padding: 0 8px;
-    gap: 8px;
+    padding: 0 10px;
+    gap: 10px;
     border-radius: 4px;
     margin-bottom: 2px;
     transition: background 0.1s, transform 0.1s;
@@ -2771,7 +2771,7 @@ label {
 }
 
 .figma-prop-label {
-    width: 68px;
+    width: 610px;
     font-size: 11px;
     color: var(--figma-color-text-tertiary, #b3b3b3);
     flex-shrink: 0;
@@ -2836,7 +2836,7 @@ label {
 .brand-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
 }
 
@@ -2928,7 +2928,7 @@ label {
 }
 
 .mention-search {
-    padding: 8px 12px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--figma-color-border, #e5e5e5);
     font-size: 10px;
     color: var(--figma-color-text-secondary, #808080);
@@ -2944,8 +2944,8 @@ label {
 .mention-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
+    gap: 10px;
+    padding: 10px 12px;
     cursor: pointer;
     height: 32px;
     border-bottom: 1px solid var(--figma-color-border, #f0f0f0);
@@ -2984,7 +2984,7 @@ label {
 }
 
 .mention-type {
-    font-size: 9px;
+    font-size: 10px;
     opacity: 0.7;
     flex-shrink: 0;
     text-transform: uppercase;
@@ -3013,11 +3013,11 @@ label {
     right: -4px;
     background: var(--figma-color-bg-brand, #0d99ff);
     color: white;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 700;
     width: 16px;
     height: 16px;
-    border-radius: 8px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3030,10 +3030,10 @@ label {
 
 .attachment-preview {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     overflow-x: auto;
-    padding: 8px 0;
-    margin: 8px 0 0 0;
+    padding: 10px 0;
+    margin: 10px 0 0 0;
     border-top: 1px solid var(--figma-color-border, #e5e5e5);
     max-height: 100px;
 }
@@ -3047,7 +3047,7 @@ label {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 8px;
+    padding: 6px 10px;
     background: var(--figma-color-bg-secondary, #f5f5f5);
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 4px;
@@ -3123,7 +3123,7 @@ label {
 
 .chat-msg .attachment-file-chip {
     display: inline-block;
-    padding: 4px 8px;
+    padding: 4px 10px;
     background: var(--figma-color-bg-secondary, #f5f5f5);
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 4px;
@@ -3145,8 +3145,8 @@ label {
 
 .model-btn {
     flex: 0 0 auto;
-    padding: 6px 8px !important;
-    height: 28px !important;
+    padding: 6px 10px !important;
+    height: 210px !important;
     width: auto !important;
     font-size: 10px !important;
     background: var(--figma-color-bg-secondary, #f5f5f5);
@@ -3175,7 +3175,7 @@ label {
     display: inline-block;
     background: var(--figma-color-bg-brand, #18a0fb);
     color: #fff;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 600;
     padding: 2px 6px;
     border-radius: 10px;
@@ -3285,7 +3285,7 @@ label {
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 6px;
     padding: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     max-height: 300px;
     overflow-y: auto;
 }
@@ -3297,9 +3297,9 @@ label {
 .settings-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 12px;
-    padding-bottom: 8px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--figma-color-border, #e5e5e5);
 }
 
@@ -3357,7 +3357,7 @@ label {
 }
 
 .settings-option {
-    padding: 8px;
+    padding: 10px;
     background: var(--figma-color-bg, #ffffff);
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 4px;
@@ -3367,7 +3367,7 @@ label {
     align-items: center;
     justify-content: center;
     gap: 2px;
-    font-size: 9px;
+    font-size: 10px;
     transition: all 0.15s;
 }
 
@@ -3388,7 +3388,7 @@ label {
 }
 
 .option-desc {
-    font-size: 8px;
+    font-size: 10px;
     opacity: 0.75;
 }
 
@@ -3407,8 +3407,8 @@ label {
 }
 
 #customSizeGroup input[type="number"] {
-    height: 28px;
-    padding: 6px 8px;
+    height: 210px;
+    padding: 6px 10px;
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 4px;
     font-size: 10px;
@@ -3418,8 +3418,8 @@ label {
 .bg-list-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px;
+    gap: 10px;
+    padding: 10px;
     border-radius: 4px;
     cursor: pointer;
 }
@@ -3481,7 +3481,7 @@ label {
 .bg-typo-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     padding: 4px 0;
 }
 
@@ -3500,12 +3500,12 @@ label {
 .bg-ingest-banner {
     background: var(--figma-color-bg-secondary);
     border-radius: 6px;
-    padding: 8px;
+    padding: 10px;
 }
 
 .bg-tag-pill {
     display: inline-block;
-    padding: 2px 8px;
+    padding: 2px 10px;
     border-radius: 12px;
     font-size: 11px;
     background: var(--figma-color-bg-brand-tertiary);
@@ -3522,7 +3522,7 @@ label {
     color: var(--figma-color-text-brand, #0d99ff);
     border: 1px solid var(--figma-color-border-brand, #0d99ff);
     border-radius: 4px;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.3px;
@@ -3545,7 +3545,7 @@ label {
 
 #authLoginBtn.loading .spinner {
     display: inline-block;
-    margin-right: 8px;
+    margin-right: 10px;
 }
 
 #authLoginBtn.loading .btn-text {
@@ -3577,7 +3577,7 @@ button.secondary.loading .spinner {
 
 
 .brand-item {
-    gap: 8px !important;
+    gap: 10px !important;
     justify-content: flex-start !important;
 }
 
@@ -3590,10 +3590,10 @@ button.secondary.loading .spinner {
 .color-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-    gap: 8px;
-    padding: 8px;
+    gap: 10px;
+    padding: 10px;
     background: var(--figma-color-bg-secondary, #f5f5f5);
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid var(--figma-color-border, #e5e5e5);
     max-height: 250px;
     overflow-y: auto;
@@ -3607,7 +3607,7 @@ button.secondary.loading .spinner {
     justify-content: center;
     padding: 4px;
     background: var(--figma-color-bg, #ffffff);
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid var(--figma-color-border, #e5e5e5);
     height: 52px;
     transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3619,8 +3619,8 @@ button.secondary.loading .spinner {
 }
 
 .color-swatch-medium {
-    width: 28px;
-    height: 28px;
+    width: 210px;
+    height: 210px;
     border-radius: 50%;
     border: 1px solid rgba(0, 0, 0, 0.05);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -3639,7 +3639,7 @@ button.secondary.loading .spinner {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 800;
     border: 1.5px solid white;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -3670,7 +3670,7 @@ button.secondary.loading .spinner {
     width: 100%;
     border: none;
     background: transparent;
-    font-size: 8px;
+    font-size: 10px;
     text-align: center;
     color: var(--figma-color-text-tertiary, #808080);
     padding: 0;
@@ -3707,7 +3707,7 @@ button.secondary.loading .spinner {
 
 .color-role-select {
     font-size: 10px;
-    height: 18px;
+    height: 110px;
     padding: 0 4px;
     border: none;
     background: none;
@@ -3807,9 +3807,9 @@ button.secondary.loading .spinner {
 }
 
 .token-row label {
-    font-size: 9px;
+    font-size: 10px;
     color: var(--figma-color-text-tertiary, #999);
-    min-width: 18px;
+    min-width: 110px;
 }
 
 .token-input {
@@ -3833,7 +3833,7 @@ button.secondary.loading .spinner {
 .shadow-preview-row {
     display: flex;
     gap: 12px;
-    padding: 8px 0;
+    padding: 10px 0;
 }
 
 .shadow-preview {
@@ -3853,7 +3853,7 @@ button.secondary.loading .spinner {
 }
 
 .shadow-preview.lg {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
 }
 
 .shadow-preview.active {
@@ -3879,7 +3879,7 @@ button.secondary.loading .spinner {
     height: 32px;
     font-size: 11px;
     margin-bottom: 0 !important;
-    padding: 0 8px !important;
+    padding: 0 10px !important;
     min-width: 0;
 }
 
@@ -3891,7 +3891,7 @@ button.secondary.loading .spinner {
     flex: 1;
     font-size: 11px;
     color: var(--figma-color-text-secondary, #666);
-    padding: 4px 8px;
+    padding: 4px 10px;
     background: var(--figma-color-bg-secondary, #f5f5f5);
     border-radius: 4px;
     white-space: nowrap;
@@ -3946,7 +3946,7 @@ button.secondary.loading .spinner {
     background: var(--figma-color-bg-secondary, #f5f5f5) !important;
     border: 1px solid var(--figma-color-border, #e5e5e5) !important;
     font-size: 11px !important;
-    padding: 0 8px !important;
+    padding: 0 10px !important;
     border-radius: 6px !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     color: var(--figma-color-text, #333) !important;
@@ -3971,7 +3971,7 @@ button.secondary.loading .spinner {
     height: 36px !important;
     background: #0D99FF !important;
     background: linear-gradient(180deg, #18A0FB 0%, #0D99FF 100%) !important;
-    border-radius: 8px !important;
+    border-radius: 10px !important;
     font-weight: 600 !important;
     font-size: 12px !important;
     letter-spacing: 0.01em;
@@ -3998,7 +3998,7 @@ button.secondary.loading .spinner {
 
 .auth-status {
     font-size: 10px;
-    margin-top: 8px;
+    margin-top: 10px;
     text-align: center;
     color: var(--figma-color-text-secondary, #808080);
 }
@@ -4006,7 +4006,7 @@ button.secondary.loading .spinner {
 .auth-logged-in-card {
     padding: 12px;
     background: var(--figma-color-bg-secondary, #f5f5f5);
-    border-radius: 8px;
+    border-radius: 10px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -4036,7 +4036,7 @@ button.secondary.loading .spinner {
 }
 
 .auth-user-tier {
-    font-size: 9px;
+    font-size: 10px;
     text-transform: uppercase;
     background: var(--figma-color-bg-brand-tertiary, #e5f4ff);
     color: var(--figma-color-text-brand, #0d99ff);
@@ -4047,7 +4047,7 @@ button.secondary.loading .spinner {
 }
 
 .auth-logout-btn {
-    height: 28px !important;
+    height: 210px !important;
     padding: 0 12px !important;
     font-size: 11px !important;
     border-radius: 6px !important;
@@ -4067,7 +4067,7 @@ button.secondary.loading .spinner {
 .auth-credits-info {
     font-size: 11px;
     color: var(--figma-color-text-secondary, #808080);
-    padding-top: 8px;
+    padding-top: 10px;
     border-top: 1px solid var(--figma-color-border, #e5e5e5);
 }
 
@@ -4079,7 +4079,7 @@ button.secondary.loading .spinner {
     border-top-color: white;
     border-radius: 50%;
     animation: auth-spin 0.8s linear infinite;
-    margin-right: 8px;
+    margin-right: 10px;
     display: none;
 }
 
@@ -4126,14 +4126,14 @@ button.secondary.loading .spinner {
     right: 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     z-index: 9999;
     pointer-events: none;
 }
 
 .toast {
     padding: 10px 14px;
-    border-radius: 8px;
+    border-radius: 10px;
     background: var(--figma-color-bg-tertiary, #2c2c2c);
     color: #ffffff;
     font-size: 11px;
@@ -4196,12 +4196,12 @@ button.secondary.loading .spinner {
 
 .overflow-menu {
     position: absolute;
-    bottom: calc(100% + 8px);
+    bottom: calc(100% + 10px);
     right: 0;
     width: 210px;
     background: var(--figma-color-bg, #ffffff);
     border: 1px solid var(--figma-color-border, #e5e5e5);
-    border-radius: 8px;
+    border-radius: 10px;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
     padding: 6px;
     z-index: 1000;
@@ -4220,7 +4220,7 @@ button.secondary.loading .spinner {
 
 @keyframes menu-in {
     from {
-        transform: translateY(8px) scale(0.95);
+        transform: translateY(10px) scale(0.95);
         opacity: 0;
     }
 
@@ -4343,7 +4343,7 @@ button.secondary.loading .spinner {
 }
 
 .tier-badge {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -4392,7 +4392,7 @@ button.secondary.loading .spinner {
 .config-btn-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 10px;
     margin-top: 4px;
 }
 
@@ -4401,7 +4401,7 @@ button.secondary.loading .spinner {
     padding: 0 10px !important;
     background: var(--figma-color-bg, #ffffff) !important;
     border: 1px solid var(--figma-color-border, #e5e5e5) !important;
-    border-radius: 8px !important;
+    border-radius: 10px !important;
     color: var(--figma-color-text, #333333) !important;
     font-size: 11px !important;
     font-weight: 500 !important;
@@ -4443,8 +4443,8 @@ button.secondary.loading .spinner {
 .brand-role-slot {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
+    gap: 10px;
+    padding: 6px 10px;
     background: var(--figma-color-bg, #ffffff);
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 6px;
@@ -4473,7 +4473,7 @@ button.secondary.loading .spinner {
     right: -2px;
     bottom: -2px;
     border: 2px solid var(--figma-color-border-brand, #0d99ff);
-    border-radius: 8px;
+    border-radius: 10px;
     animation: active-pulse 1.5s infinite;
     pointer-events: none;
 }
@@ -4496,8 +4496,8 @@ button.secondary.loading .spinner {
 }
 
 .brand-role-swatch {
-    width: 28px;
-    height: 28px;
+    width: 210px;
+    height: 210px;
     border-radius: 6px;
     border: 1px solid var(--figma-color-border-strong, #d0d0d0);
     flex-shrink: 0;
@@ -4536,7 +4536,7 @@ button.secondary.loading .spinner {
 }
 
 .brand-role-value {
-    font-size: 9px;
+    font-size: 10px;
     font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
     color: var(--figma-color-text-tertiary, #999);
     white-space: nowrap;
@@ -4592,7 +4592,7 @@ button.secondary.loading .spinner {
 }
 
 .brand-extra-label {
-    font-size: 9px;
+    font-size: 10px;
     color: var(--figma-color-text, #333);
     max-width: 70px;
     white-space: nowrap;
@@ -4623,11 +4623,11 @@ button.secondary.loading .spinner {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
     border: 1px solid transparent;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 #jsonRunnerApplyBrandBtn.preset-btn {
@@ -4683,7 +4683,7 @@ button:not(.icon-text-btn):not(.brand-role-swatch) {
 .brand-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     height: 32px;
     padding: 0 6px;
     border-radius: 6px;
@@ -4783,7 +4783,7 @@ button:not(.icon-text-btn):not(.brand-role-swatch) {
     width: 180px;
     background: var(--figma-color-bg, #fff);
     border: 1px solid var(--figma-color-border, #e5e5e5);
-    border-radius: 8px;
+    border-radius: 10px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
     padding: 4px;
     z-index: 100;
@@ -4797,8 +4797,8 @@ button:not(.icon-text-btn):not(.brand-role-swatch) {
     height: 26px !important;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 0 8px !important;
+    gap: 10px;
+    padding: 0 10px !important;
     background: transparent !important;
     border: none !important;
     border-radius: 4px !important;
@@ -4854,8 +4854,8 @@ button:not(.icon-text-btn):not(.brand-role-swatch) {
     background: var(--figma-color-bg, #fff);
     border: 1px solid var(--figma-color-border, #e5e5e5);
     border-radius: 6px;
-    padding: 6px 8px;
-    margin-bottom: 8px;
+    padding: 6px 10px;
+    margin-bottom: 10px;
     z-index: 2;
 }
 

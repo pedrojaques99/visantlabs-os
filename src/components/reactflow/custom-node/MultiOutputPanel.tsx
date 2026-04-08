@@ -19,7 +19,7 @@ export function MultiOutputPanel({ config, prompts, onChange, disabled }: Props)
       {(isSinglePrompt ? [prompts[0] ?? ''] : prompts).map((prompt, i) => (
         <div key={i} className="space-y-0.5">
           {config.behavior === 'model-comparison' && config.models?.[i] && (
-            <p className="text-[9px] font-mono text-brand-cyan/50 uppercase tracking-wide pl-0.5">
+            <p className="text-[10px] font-mono text-brand-cyan/50 uppercase tracking-wide pl-0.5">
               {config.models[i]}
             </p>
           )}

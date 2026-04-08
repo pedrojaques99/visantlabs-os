@@ -38,7 +38,7 @@ export const SuggestedTagsBadges: React.FC<SuggestedTagsBadgesProps> = ({
           type="button"
           onClick={() => onSelect(tag)}
           className={cn(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-wide transition-all duration-200",
+            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wide transition-all duration-200",
             "border border-dashed cursor-pointer group",
             theme === 'dark'
               ? "bg-brand-cyan/5 border-brand-cyan/30 text-brand-cyan/80 hover:bg-brand-cyan/15 hover:border-brand-cyan/50"

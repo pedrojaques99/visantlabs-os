@@ -51,7 +51,7 @@ function normalizeResolution(resolution: string | undefined | null): string | un
   return undefined;
 }
 
-// Helper function to determine if a resolution is high-res (>= 2048px in either dimension)
+// Helper function to determine if a resolution is high-res (>= 20410px in either dimension)
 // Kept for backward compatibility, but prefer using normalizeResolution with getImagePricing
 function isHighResolution(resolution: string | undefined | null): boolean {
   if (!resolution) return false;

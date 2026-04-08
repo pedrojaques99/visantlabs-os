@@ -224,7 +224,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                       {g.identity?.name || g.name || 'Untitled'}
                     </span>
                     {g.folder && (
-                      <span className="text-[9px] text-neutral-500 flex items-center gap-1 mt-0.5">
+                      <span className="text-[10px] text-neutral-500 flex items-center gap-1 mt-0.5">
                         <Folder size={8} />
                         {g.folder}
                       </span>
@@ -232,7 +232,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                   </div>
                   <div className="flex items-center gap-1">
                     {selectedId === g.id && (
-                      <div className="w-1 h-1 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(var(--brand-cyan-rgb),0.5)]" />
+                      <div className="w-1 h-1 rounded-full bg-brand-cyan shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.5)]" />
                     )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -349,7 +349,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                 </p>
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="mt-2 text-[9px] font-mono text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+                  className="mt-2 text-[10px] font-mono text-brand-cyan hover:text-brand-cyan/80 transition-colors"
                 >
                   Clear search
                 </button>
@@ -369,7 +369,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
       <div className="mt-auto space-y-4 pt-6 pb-2">
         <div className="px-2 border-t border-white/[0.03] pt-6 space-y-3">
-          <p className="text-[9px] font-mono text-neutral-600 leading-relaxed uppercase ">
+          <p className="text-[10px] font-mono text-neutral-600 leading-relaxed uppercase ">
             Sync from Branding Machine projects.
           </p>
           <Button

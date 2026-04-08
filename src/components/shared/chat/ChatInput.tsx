@@ -71,13 +71,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         "bg-white/5 border border-white/10 focus-within:border-white/20 focus-within:bg-white/10",
         disabled && "opacity-50 grayscale cursor-not-allowed"
       )}>
-        
+
         {/* Toolbar Top - Subtle */}
         {(showModelSelector && selectedModel && onModelChange) && (
           <div className="flex items-center px-2 py-1.5 border-b border-white/5">
-            <ModelSelector 
-              selectedModel={selectedModel} 
-              onModelChange={onModelChange} 
+            <ModelSelector
+              selectedModel={selectedModel}
+              onModelChange={onModelChange}
               className="!min-w-[120px]"
             />
           </div>
@@ -130,9 +130,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* Disclaimer sutil */}
-      <div className="px-4 text-[9px] uppercase tracking-widest text-white/10 font-mono text-center">
+      <div className="px-4 text-[10px] uppercase tracking-widest text-white/10 font-mono text-center">
         Powered by Gemini • Visant Labs OS
       </div>
     </div>

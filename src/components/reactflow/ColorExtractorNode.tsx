@@ -206,7 +206,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         </NodeLabel>
         {imageUrl ? (
           <div className="relative">
-            <div className="relative w-full h-auto min-h-[128px] bg-neutral-900/50 rounded border border-neutral-700/30 overflow-hidden">
+            <div className="relative w-full h-auto min-h-[1210px] bg-neutral-900/50 rounded border border-neutral-700/30 overflow-hidden">
               <img
                 src={imageUrl}
                 alt={t('canvasNodes.colorExtractorNode.imageToExtractFrom') || "Image to extract colors from"}
@@ -242,7 +242,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         )}
       </div>
 
-      <Tooltip 
+      <Tooltip
         content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} 1 ${t('canvasNodes.promptNode.credits')}`}
         delay={500}
       >

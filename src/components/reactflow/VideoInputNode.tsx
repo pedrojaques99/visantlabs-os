@@ -129,7 +129,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
           className="hidden"
           aria-label={t('common.uploadVideo')}
         />
-        <NodeButton 
+        <NodeButton
           onClick={handleUploadClick}
           onMouseDown={(e) => e.stopPropagation()}
           className="w-full"
@@ -151,7 +151,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
               autoPlay
               muted
               loop
-              className="w-full h-auto min-h-[128px] object-contain rounded border border-[brand-cyan]/30"
+              className="w-full h-auto min-h-[1210px] object-contain rounded border border-[brand-cyan]/30"
               onLoadedMetadata={(e) => {
                 const video = e.target as HTMLVideoElement;
                 if (video.videoWidth > 0 && video.videoHeight > 0) {

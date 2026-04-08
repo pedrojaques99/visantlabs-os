@@ -23,12 +23,12 @@
  */
 
 const BRAND_COLOR_ROLES = [
-  { id: 'primary',    label: 'Primary',    hint: 'Main brand color',      defaultHex: '#6366F1' },
-  { id: 'secondary',  label: 'Secondary',  hint: 'Supporting color',      defaultHex: '#8B5CF6' },
-  { id: 'accent',     label: 'Accent',     hint: 'Highlights & CTAs',     defaultHex: '#F59E0B' },
-  { id: 'background', label: 'Background', hint: 'Page background',      defaultHex: '#FFFFFF' },
-  { id: 'surface',    label: 'Surface',    hint: 'Cards & panels',        defaultHex: '#F5F5F5' },
-  { id: 'text',       label: 'Text',       hint: 'Body copy',             defaultHex: '#111827' },
+  { id: 'primary', label: 'Primary', hint: 'Main brand color', defaultHex: '#6366F1' },
+  { id: 'secondary', label: 'Secondary', hint: 'Supporting color', defaultHex: '#8B5CF6' },
+  { id: 'accent', label: 'Accent', hint: 'Highlights & CTAs', defaultHex: '#F59E0B' },
+  { id: 'background', label: 'Background', hint: 'Page background', defaultHex: '#FFFFFF' },
+  { id: 'surface', label: 'Surface', hint: 'Cards & panels', defaultHex: '#F5F5F5' },
+  { id: 'text', label: 'Text', hint: 'Body copy', defaultHex: '#111827' },
 ];
 
 class BrandColors {
@@ -161,7 +161,7 @@ class BrandColors {
   /** Import from a library swatch. */
   pickFromLibrary(color) {
     const roleToFill = this.activeRole || this._findFirstEmptyRole();
-    
+
     if (roleToFill) {
       this._setRole(roleToFill, color.value, color.name);
       this.activeRole = null; // Clear after filling
@@ -190,7 +190,7 @@ class BrandColors {
     if (!this.availableColorsList) return;
     const list = this.availableColorsList;
     list.innerHTML = '';
-    
+
     // Add header/title
     const header = document.createElement('div');
     header.className = 'available-colors-header';
@@ -207,7 +207,7 @@ class BrandColors {
 
     const grid = document.createElement('div');
     grid.className = 'available-colors-grid';
-    
+
     // Add "Custom Color" option at the start
     const customDiv = document.createElement('div');
     customDiv.className = 'available-color-item custom';
@@ -254,14 +254,14 @@ class BrandColors {
     for (const roleDef of BRAND_COLOR_ROLES) {
       const current = this._getByRole(roleDef.id);
       const isActive = this.activeRole === roleDef.id;
-      
+
       const card = document.createElement('div');
       card.className = 'brand-role-slot' + (current ? ' filled' : ' empty') + (isActive ? ' active' : '');
       card.dataset.role = roleDef.id;
 
       const swatchStyle = current
         ? `background:${current.value};`
-        : `background:repeating-linear-gradient(45deg, var(--figma-color-bg-secondary,#f5f5f5), var(--figma-color-bg-secondary,#f5f5f5) 4px, var(--figma-color-bg,#fff) 4px, var(--figma-color-bg,#fff) 8px);`;
+        : `background:repeating-linear-gradient(45deg, var(--figma-color-bg-secondary,#f5f5f5), var(--figma-color-bg-secondary,#f5f5f5) 4px, var(--figma-color-bg,#fff) 4px, var(--figma-color-bg,#fff) 10px);`;
 
       card.innerHTML = `
         <button class="brand-role-swatch" style="${swatchStyle}" title="${roleDef.hint}">

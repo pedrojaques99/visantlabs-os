@@ -374,7 +374,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                 >
                   <Icon size={12} />
                   <span>{t(`communityPresets.tabs.${type}`) || type}</span>
-                  <span className="ml-1 text-[9px] opacity-60">({count})</span>
+                  <span className="ml-1 text-[10px] opacity-60">({count})</span>
                 </Button>
               );
             })}
@@ -470,7 +470,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
               {filteredPresets.map((preset) => (
                 <div key={`${preset.presetType || 'default'}-${preset.id}`} className="relative">
                   {preset.isOfficial && (
-                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/40 rounded text-[8px] font-mono text-amber-400 uppercase backdrop-blur-sm">
+                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/40 rounded text-[10px] font-mono text-amber-400 uppercase backdrop-blur-sm">
                       <Crown size={8} />
                       <span>{t('canvasNodes.promptNode.presetModal.official') || 'Official'}</span>
                     </div>

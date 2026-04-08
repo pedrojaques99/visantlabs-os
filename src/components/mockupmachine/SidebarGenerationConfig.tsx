@@ -245,17 +245,17 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
         <div className="animate-fade-in justify-center pt-2" >
             {/* 0. Top Navigation / Switch back */}
             <div className="flex items-center justify-between mb-4">
-               <button 
-                onClick={onSwitchToEssential}
-                className="flex items-center gap-1 group text-[9px] font-mono text-neutral-600 hover:text-brand-cyan transition-colors uppercase tracking-widest"
-              >
-                <ChevronLeft size={10} className="group-hover:-translate-x-0.5 transition-transform" />
-                {t('mockup.switchToEssential') || 'ESSENTIAL'}
-              </button>
-              
-              <div className="text-[10px] font-mono text-neutral-800 uppercase tracking-widest font-bold opacity-30">
-                Expert Mode
-              </div>
+                <button
+                    onClick={onSwitchToEssential}
+                    className="flex items-center gap-1 group text-[10px] font-mono text-neutral-600 hover:text-brand-cyan transition-colors uppercase tracking-widest"
+                >
+                    <ChevronLeft size={10} className="group-hover:-translate-x-0.5 transition-transform" />
+                    {t('mockup.switchToEssential') || 'ESSENTIAL'}
+                </button>
+
+                <div className="text-[10px] font-mono text-neutral-800 uppercase tracking-widest font-bold opacity-30">
+                    Expert Mode
+                </div>
             </div>
 
             {/* Design Type + Color swatches - moved above card */}
@@ -287,7 +287,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                         onCheckedChange={() => setDesignType(designType === 'logo' ? 'layout' : 'logo')}
                         className="scale-[0.5] origin-left pointer-events-none"
                     />
-                    <span className="font-bold text-[8px] uppercase tracking-tighter whitespace-nowrap opacity-80">
+                    <span className="font-bold text-[10px] uppercase tracking-tighter whitespace-nowrap opacity-80">
                         {t('mockup.transparentBackground') || 'ISOLAR LOGO'}
                     </span>
                 </div>
@@ -311,9 +311,9 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                 {/* 2. SurpriseMeSelectedTagsDisplay - ONLY visible in Normal Mode */}
                 {!isSurpriseMeMode && (
                     <div className="animate-fade-in-up stagger-2 relative z-[60]">
-                        <SurpriseMeSelectedTagsDisplay 
-                            onRerollAll={() => handleSurpriseMe(false)} 
-                            isGenerating={isSidebarGenerating} 
+                        <SurpriseMeSelectedTagsDisplay
+                            onRerollAll={() => handleSurpriseMe(false)}
+                            isGenerating={isSidebarGenerating}
                             sidebarWidth={sidebarWidth}
                         />
                     </div>
@@ -489,7 +489,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
 
                 {/* 4. Generation Toolbar (Moved to sidebar) */}
                 <div className="mt-6 pt-6 border-t border-white/5 animate-fade-in-up stagger-5">
-                    <SurpriseMeControl 
+                    <SurpriseMeControl
                         onSurpriseMe={handleSurpriseMe}
                         isGeneratingPrompt={isGeneratingPrompt}
                         isDiceAnimating={false}

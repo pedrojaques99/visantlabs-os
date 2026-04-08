@@ -11,6 +11,8 @@ interface MockupContextState {
     aspectRatio: AspectRatio;
     imageProvider: ImageProvider;
     selectedBrandGuideline: string | null;
+    selectedVibeSegment: string | null;
+    selectedVibeStyle: string | null;
 
     // Generation State
     mockups: (string | null)[];
@@ -96,6 +98,8 @@ interface MockupContextActions {
     setAspectRatio: Dispatch<SetStateAction<AspectRatio>>;
     setImageProvider: Dispatch<SetStateAction<ImageProvider>>;
     setSelectedBrandGuideline: Dispatch<SetStateAction<string | null>>;
+    setSelectedVibeSegment: Dispatch<SetStateAction<string | null>>;
+    setSelectedVibeStyle: Dispatch<SetStateAction<string | null>>;
     setMockups: Dispatch<SetStateAction<(string | null)[]>>;
     setIsLoading: Dispatch<SetStateAction<boolean[]>>;
     setHasGenerated: Dispatch<SetStateAction<boolean>>;
@@ -167,6 +171,8 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [resolution, setResolution] = useState<Resolution>('1K');
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
     const [selectedBrandGuideline, setSelectedBrandGuideline] = useState<string | null>(null);
+    const [selectedVibeSegment, setSelectedVibeSegment] = useState<string | null>(null);
+    const [selectedVibeStyle, setSelectedVibeStyle] = useState<string | null>(null);
 
     // Image provider state with localStorage persistence
     const [imageProvider, setImageProviderState] = useState<ImageProvider>(() => {
@@ -267,6 +273,8 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setReferenceImages([]);
         setDesignType('layout');
         setSelectedBrandGuideline(null);
+        setSelectedVibeSegment(null);
+        setSelectedVibeStyle(null);
         setSelectedTags([]);
         setSelectedBrandingTags([]);
         setSelectedLocationTags([]);
@@ -325,6 +333,8 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         aspectRatio, setAspectRatio,
         imageProvider, setImageProvider,
         selectedBrandGuideline, setSelectedBrandGuideline,
+        selectedVibeSegment, setSelectedVibeSegment,
+        selectedVibeStyle, setSelectedVibeStyle,
         mockups, setMockups,
         isLoading, setIsLoading,
         hasGenerated, setHasGenerated,
@@ -385,7 +395,9 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         clearAllTags
     }), [
         uploadedImage, referenceImages, designType,
-        selectedModel, resolution, aspectRatio, imageProvider, selectedBrandGuideline, mockups, isLoading, hasGenerated,
+        selectedModel, resolution, aspectRatio, imageProvider, selectedBrandGuideline, 
+        selectedVibeSegment, selectedVibeStyle,
+        mockups, isLoading, hasGenerated,
         isAnalyzing, isGeneratingPrompt, selectedTags, selectedBrandingTags,
         selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags,
         selectedMaterialTags, selectedColors, suggestedTags,

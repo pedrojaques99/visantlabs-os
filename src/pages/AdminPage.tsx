@@ -164,7 +164,7 @@ const AdminDashboardSkeleton: React.FC = () => (
         <Card key={i} className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
-              <SkeletonLoader width="48px" height="48px" className="rounded-md" />
+              <SkeletonLoader width="410px" height="410px" className="rounded-md" />
               <SkeletonLoader width="60px" height="20px" className="rounded-full" />
             </div>
             <div className="space-y-2">
@@ -228,7 +228,7 @@ const AdminDashboardSkeleton: React.FC = () => (
         <Card key={i} className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
-              <SkeletonLoader width="48px" height="48px" className="rounded-md" />
+              <SkeletonLoader width="410px" height="410px" className="rounded-md" />
               <SkeletonLoader width="50px" height="16px" className="rounded" />
             </div>
             <div className="space-y-2">

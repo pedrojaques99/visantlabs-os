@@ -84,7 +84,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
         return {
           border: `2px solid ${accentColor}`,
           backgroundColor: 'transparent',
-          boxShadow: `0 0 8px ${accentColor}40`,
+          boxShadow: `0 0 10px ${accentColor}40`,
         };
       } else if (index === 2) {
         // Third node - more glow
@@ -162,7 +162,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
             style={{
               border: `1px solid ${textColor}`,
               borderRadius: 'var(--radius)',
-              padding: '8px 24px',
+              padding: '10px 24px',
               display: 'inline-flex',
               alignItems: 'center',
             }}
@@ -172,7 +172,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
               onChange={() => { }}
               editable={false}
               style={{
-                fontSize: '17.517px',
+                fontSize: '17.5110px',
                 fontWeight: 'bold',
                 letterSpacing: '0.35px',
                 color: textColor,
@@ -184,12 +184,12 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
       </div>
 
       {/* Timeline */}
-      <div className="flex-1 relative flex items-center" style={{ paddingLeft: '98px', minHeight: '850px', }}>
+      <div className="flex-1 relative flex items-center" style={{ paddingLeft: '910px', minHeight: '850px', }}>
         {/* Vertical line */}
         <div
           style={{
             position: 'absolute',
-            left: '217px',
+            left: '2110px',
             top: '50%',
             transform: 'translateY(-50%)',
             height: '500px',
@@ -242,7 +242,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
                       }}
                       editable={editable}
                       style={{
-                        fontSize: '14.89px',
+                        fontSize: '14.810px',
                         fontWeight: 300,
                         color: textColor,
                         letterSpacing: '0.3px',
@@ -258,7 +258,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
                 {/* Description */}
                 <div
                   style={{
-                    fontSize: '18.078px',
+                    fontSize: '18.0710px',
                     fontWeight: 400,
                     lineHeight: '1.18',
                     color: textColor,
@@ -281,7 +281,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
                         }}
                         editable={editable}
                         style={{
-                          fontSize: '18px',
+                          fontSize: '110px',
                           fontWeight: 'bold',
                           lineHeight: '1.18',
                           color: textColor,
@@ -324,7 +324,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
           bottom: 0,
           left: 0,
           right: 0,
-          height: '359px',
+          height: '3510px',
           background: `linear-gradient(to top, ${accentColor}20, transparent)`,
           pointerEvents: 'none',
           zIndex: 0,

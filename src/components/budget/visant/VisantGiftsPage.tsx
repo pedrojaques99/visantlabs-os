@@ -260,7 +260,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
             color: textColor,
             position: 'relative',
             display: 'inline-block',
-            paddingBottom: '8px',
+            paddingBottom: '10px',
             borderBottom: `3px solid ${accentColor}`,
           }}
         >

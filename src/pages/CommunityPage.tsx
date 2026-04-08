@@ -129,7 +129,7 @@ export const CommunityPage: React.FC = () => {
 
   // Check if user is admin (you might need to fetch user details or get from context if available)
   const [isAdmin, setIsAdmin] = useState(false); // Placeholder, ideally get from authService/context
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useMediaQuery('(max-width: 7610px)');
 
   const handleLoadWorkflow = async (workflow: CanvasWorkflow) => {
     try {
@@ -375,7 +375,7 @@ export const CommunityPage: React.FC = () => {
         {/* Hero Section */}
         <div className="relative mb-16 min-h-[550px] flex items-center overflow-hidden rounded-3xl border border-white/[0.03] bg-neutral-900/10">
           <BackgroundGlow />
-          
+
           {/* 3D Object - Repositioned for better balance */}
           <div className="absolute right-0 top-0 w-full md:w-1/2 h-full pointer-events-none z-0">
             <Suspense fallback={null}>
@@ -391,7 +391,7 @@ export const CommunityPage: React.FC = () => {
           <div className="relative z-10 w-full max-w-6xl mx-auto px-6 md:px-12 py-16">
             <div className="max-w-2xl">
               {/* Badge - Premium Styling */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-6"
@@ -405,7 +405,7 @@ export const CommunityPage: React.FC = () => {
               </motion.div>
 
               {/* Title - Elegant & Impactful */}
-              <motion.h1 
+              <motion.h1
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
@@ -415,7 +415,7 @@ export const CommunityPage: React.FC = () => {
               </motion.h1>
 
               {/* Description - Refined Typography */}
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
@@ -425,7 +425,7 @@ export const CommunityPage: React.FC = () => {
               </motion.p>
 
               {/* Action Buttons - Consistent & Premium */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
@@ -438,19 +438,19 @@ export const CommunityPage: React.FC = () => {
                   <Plus size={18} />
                   <span>Criar um novo prompt</span>
                 </PremiumButton>
-                
+
                 <div className="flex gap-2">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     onClick={() => navigate('/community/presets')}
                     className="h-12 px-5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 backdrop-blur-md transition-all flex items-center gap-2"
                   >
                     <Globe size={18} className="text-brand-cyan" />
                     <span className="font-manrope font-semibold">Explorar Galeria</span>
                   </Button>
-                  
-                  <Button 
-                    variant="ghost" 
+
+                  <Button
+                    variant="ghost"
                     onClick={() => setShowWorkflowLibrary(true)}
                     className="h-12 px-5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 backdrop-blur-md transition-all flex items-center gap-2"
                   >
@@ -460,7 +460,7 @@ export const CommunityPage: React.FC = () => {
               </motion.div>
 
               {/* Stats - Integrated Grid */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
@@ -543,7 +543,7 @@ export const CommunityPage: React.FC = () => {
                         <span className="text-2xl font-bold font-mono text-white whitespace-nowrap group-hover:text-brand-cyan transition-colors">
                           <CountUp value={category.count} />
                         </span>
-                        <span className="text-[9px] font-bold text-neutral-600 uppercase tracking-widest font-manrope">Presets</span>
+                        <span className="text-[10px] font-bold text-neutral-600 uppercase tracking-widest font-manrope">Presets</span>
                       </div>
                     </div>
 
@@ -734,7 +734,7 @@ export const CommunityPage: React.FC = () => {
                           </p>
                           <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                             <Plus size={10} className="text-brand-cyan" />
-                            <span className="text-[9px] text-neutral-400 font-mono uppercase">Usar como referência</span>
+                            <span className="text-[10px] text-neutral-400 font-mono uppercase">Usar como referência</span>
                           </div>
                         </div>
                       </Link>

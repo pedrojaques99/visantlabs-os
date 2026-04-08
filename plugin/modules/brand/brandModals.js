@@ -27,7 +27,7 @@ function _hexToCmyk(hex) {
 const BrandModals = {
   // ═══ SMART SCAN MODAL ═══
   showSmartScan(items, applyFn) {
-    const esc = (s) => s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+    const esc = (s) => s ? String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : '';
     const categories = [
       { value: 'logo', label: 'Logo' },
       { value: 'font', label: 'Font' },
@@ -42,40 +42,40 @@ const BrandModals = {
           <span class="modal-title">Smart Scan — ${items.length} element${items.length > 1 ? 's' : ''}</span>
           <button class="modal-close" id="smart-scan-close">&times;</button>
         </div>
-        <div class="modal-body" style="padding:8px 12px;max-height:50vh;overflow-y:auto;">`;
+        <div class="modal-body" style="padding:10px 12px;max-height:50vh;overflow-y:auto;">`;
 
     items.forEach((item, i) => {
       const catOptions = categories.map(c =>
         `<option value="${c.value}"${c.value === item.category ? ' selected' : ''}>${c.label}</option>`
       ).join('');
 
-      html += `<div class="smart-scan-item" data-index="${i}" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--figma-color-border,#eee);">`;
+      html += `<div class="smart-scan-item" data-index="${i}" style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--figma-color-border,#eee);">`;
 
       if (item.category === 'color' && item.colorData) {
         html += `<div style="width:24px;height:24px;border-radius:4px;background:${esc(item.colorData.hex)};border:1px solid var(--figma-color-border,#ddd);flex-shrink:0;"></div>`;
       } else if (item.thumbnail) {
         html += `<img src="${item.thumbnail}" style="width:24px;height:24px;border-radius:4px;object-fit:contain;background:var(--figma-color-bg-secondary,#f5f5f5);flex-shrink:0;">`;
       } else {
-        html += `<div style="width:24px;height:24px;border-radius:4px;background:var(--figma-color-bg-secondary,#f5f5f5);display:flex;align-items:center;justify-content:center;font-size:8px;opacity:0.5;flex-shrink:0;">${esc(item.type?.charAt(0) || '?')}</div>`;
+        html += `<div style="width:24px;height:24px;border-radius:4px;background:var(--figma-color-bg-secondary,#f5f5f5);display:flex;align-items:center;justify-content:center;font-size:10px;opacity:0.5;flex-shrink:0;">${esc(item.type?.charAt(0) || '?')}</div>`;
       }
 
       html += `<div style="flex:1;min-width:0;overflow:hidden;">
         <div style="font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(item.name)}</div>`;
       if (item.category === 'font' && item.fontData) {
-        html += `<div style="font-size:8px;opacity:0.5;">${esc(item.fontData.family)} ${esc(item.fontData.style)}</div>`;
+        html += `<div style="font-size:10px;opacity:0.5;">${esc(item.fontData.family)} ${esc(item.fontData.style)}</div>`;
       } else if (item.category === 'color' && item.colorData) {
-        html += `<div style="font-size:8px;opacity:0.5;">${esc(item.colorData.hex)}</div>`;
+        html += `<div style="font-size:10px;opacity:0.5;">${esc(item.colorData.hex)}</div>`;
       } else {
-        html += `<div style="font-size:8px;opacity:0.5;">${item.width}×${item.height}</div>`;
+        html += `<div style="font-size:10px;opacity:0.5;">${item.width}×${item.height}</div>`;
       }
       html += `</div>`;
 
-      html += `<select class="smart-scan-cat" data-index="${i}" style="padding:3px 4px;border-radius:4px;border:1px solid var(--figma-color-border,#e5e5e5);font-size:9px;background:var(--figma-color-bg,#fff);color:var(--figma-color-text,#333);">${catOptions}</select>`;
+      html += `<select class="smart-scan-cat" data-index="${i}" style="padding:3px 4px;border-radius:4px;border:1px solid var(--figma-color-border,#e5e5e5);font-size:10px;background:var(--figma-color-bg,#fff);color:var(--figma-color-text,#333);">${catOptions}</select>`;
       html += `</div>`;
     });
 
     html += `</div>
-        <div style="padding:8px 12px;display:flex;gap:6px;border-top:1px solid var(--figma-color-border,#eee);">
+        <div style="padding:10px 12px;display:flex;gap:6px;border-top:1px solid var(--figma-color-border,#eee);">
           <button class="figma-button figma-button--secondary" id="smart-scan-cancel" style="flex:1;">Cancel</button>
           <button class="figma-button figma-button--primary" id="smart-scan-apply" style="flex:1;background:#0ACF83;border-color:#0ACF83;color:#fff;">Apply</button>
         </div>
@@ -276,17 +276,17 @@ const BrandModals = {
     const showSpacingKeys = isNewTarget ? spacingKeys : diffSpacingKeys;
     const showRadiusKeys = isNewTarget ? radiusKeys : diffRadiusKeys;
 
-    const esc = (s) => s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+    const esc = (s) => s ? String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : '';
     const diffBadge = (diff) => {
       if (!diff) return '';
-      if (diff === 'new') return '<span style="font-size:7px;padding:1px 4px;border-radius:3px;background:#0ACF83;color:#fff;margin-left:4px;">NEW</span>';
-      return '<span style="font-size:7px;padding:1px 4px;border-radius:3px;background:#F7B500;color:#333;margin-left:4px;">CHANGED</span>';
+      if (diff === 'new') return '<span style="font-size:10px;padding:1px 4px;border-radius:3px;background:#0ACF83;color:#fff;margin-left:4px;">NEW</span>';
+      return '<span style="font-size:10px;padding:1px 4px;border-radius:3px;background:#F7B500;color:#333;margin-left:4px;">CHANGED</span>';
     };
     const cb = (id, label, count, checked = true) =>
       `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:3px 0;">
         <input type="checkbox" id="${id}" ${checked ? 'checked' : ''} style="accent-color:#0ACF83;margin:0;">
         <span style="font-size:10px;font-weight:600;color:var(--figma-color-text-secondary,#666);">${label}</span>
-        <span style="font-size:9px;opacity:0.5;margin-left:auto;">${count}</span>
+        <span style="font-size:10px;opacity:0.5;margin-left:auto;">${count}</span>
       </label>`;
 
     let html = `<div class="modal" id="sync-preview-modal">
@@ -299,7 +299,7 @@ const BrandModals = {
 
     html += `<div style="margin-bottom:12px;">
       <label style="font-size:10px;font-weight:600;color:var(--figma-color-text-secondary,#666);display:block;margin-bottom:4px;">Destination guideline</label>
-      <select id="sync-target-select" style="width:100%;padding:6px 8px;border-radius:6px;border:1px solid var(--figma-color-border,#e5e5e5);background:var(--figma-color-bg,#fff);color:var(--figma-color-text,#333);font-size:11px;">`;
+      <select id="sync-target-select" style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--figma-color-border,#e5e5e5);background:var(--figma-color-bg,#fff);color:var(--figma-color-text,#333);font-size:11px;">`;
     for (const g of guidelines) {
       const gId = g._id || g.id;
       const gName = g.identity?.name || 'Unnamed';
@@ -308,11 +308,11 @@ const BrandModals = {
     html += `<option value="__new__">+ Create new</option></select></div>`;
 
     if (showLogos.length > 0) {
-      html += `<div style="margin-bottom:8px;">`;
+      html += `<div style="margin-bottom:10px;">`;
       html += cb('sync-logos', 'Logos', showLogos.length);
       html += `<div id="sync-logos-preview" style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 0 0 22px;">`;
       for (const l of showLogos) {
-        html += `<div style="display:flex;align-items:center;gap:4px;font-size:9px;opacity:0.8;">`;
+        html += `<div style="display:flex;align-items:center;gap:4px;font-size:10px;opacity:0.8;">`;
         if (l.thumbnail) html += `<img src="${l.thumbnail}" style="width:20px;height:20px;border-radius:3px;object-fit:contain;background:var(--figma-color-bg-secondary,#f5f5f5);">`;
         html += `${esc(l.label)}${diffBadge(l._diff)}</div>`;
       }
@@ -320,7 +320,7 @@ const BrandModals = {
     }
 
     if (showColors.length > 0) {
-      html += `<div style="margin-bottom:8px;">`;
+      html += `<div style="margin-bottom:10px;">`;
       html += cb('sync-colors', 'Colors', showColors.length);
       html += `<div id="sync-colors-preview" style="display:flex;flex-wrap:wrap;gap:3px;padding:4px 0 0 22px;">`;
       for (const c of showColors) {
@@ -331,11 +331,11 @@ const BrandModals = {
     }
 
     if (showTypo.length > 0) {
-      html += `<div style="margin-bottom:8px;">`;
+      html += `<div style="margin-bottom:10px;">`;
       html += cb('sync-typography', 'Typography', showTypo.length);
       html += `<div id="sync-typo-preview" style="padding:2px 0 0 22px;">`;
       for (const t of showTypo) {
-        html += `<div style="font-size:9px;padding:1px 0;opacity:0.8;">${esc(t.family)} ${esc(t.style)} <small style="opacity:0.5">${esc(t.role)}</small>${diffBadge(t._diff)}</div>`;
+        html += `<div style="font-size:10px;padding:1px 0;opacity:0.8;">${esc(t.family)} ${esc(t.style)} <small style="opacity:0.5">${esc(t.role)}</small>${diffBadge(t._diff)}</div>`;
       }
       html += `</div></div>`;
     }
@@ -352,7 +352,7 @@ const BrandModals = {
       html += `<div style="text-align:center;padding:12px;opacity:0.5;font-size:10px;">✓ Everything is in sync — no changes to push.</div>`;
     }
 
-    html += `<div style="font-size:8px;color:var(--figma-color-text-secondary,#888);margin:8px 0 4px;padding-top:6px;border-top:1px solid var(--figma-color-border,#eee);">${hasChanges ? 'Only showing items that differ from the webapp.' : 'All local items match the webapp guideline.'}</div>`;
+    html += `<div style="font-size:10px;color:var(--figma-color-text-secondary,#888);margin:10px 0 4px;padding-top:6px;border-top:1px solid var(--figma-color-border,#eee);">${hasChanges ? 'Only showing items that differ from the webapp.' : 'All local items match the webapp guideline.'}</div>`;
 
     html += `<div style="display:flex;gap:6px;margin-top:4px;">
         <button class="figma-button figma-button--secondary" id="sync-preview-cancel" style="flex:1;">Cancel</button>

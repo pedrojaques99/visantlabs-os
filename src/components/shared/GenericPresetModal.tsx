@@ -145,7 +145,7 @@ export function GenericPresetModal<T extends string>({
                     )}
                     {/* Community Badge */}
                     {isCommunity && (
-                        <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-brand-cyan/20 border border-[brand-cyan]/30 rounded text-[8px] font-mono text-brand-cyan">
+                        <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-brand-cyan/20 border border-[brand-cyan]/30 rounded text-[10px] font-mono text-brand-cyan">
                             Community
                         </div>
                     )}

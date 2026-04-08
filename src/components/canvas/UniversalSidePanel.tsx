@@ -254,7 +254,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             )}
             style={{
                 width: `${panelWidth}px`,
-                height: 'calc(100vh - 97px)',
+                height: 'calc(100vh - 910px)',
                 backgroundColor: isLight ? `${sidebarBg}dd` : `${sidebarBg}cc`,
                 color: textColors.primary,
             }}

@@ -210,7 +210,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 // Clear all selected tags for this section
                 selectedTags.forEach(tag => onTagToggle(tag));
               }}
-              className="text-[9px] font-mono px-1.5 py-0.5 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-700/40"
+              className="text-[10px] font-mono px-1.5 py-0.5 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-700/40"
             >
               {t('mockup.clearAll') || 'Clear all'}
             </Button>

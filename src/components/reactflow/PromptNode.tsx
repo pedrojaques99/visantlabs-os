@@ -160,7 +160,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       id: newNodeId,
       type: 'image',
       position: { x, y },
-      data: { 
+      data: {
         mockup: {
           _id: `brand-${Date.now()}`,
           imageUrl: url,
@@ -385,7 +385,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     if (!sourceNode) return false;
 
     const targetHandle = connection.targetHandle;
-    
+
     // Check for text input handle
     if (targetHandle === 'text-input') {
       // Only Text nodes can connect to text input
@@ -489,9 +489,9 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       )}
 
       {/* Header */}
-      <NodeHeader 
-        icon={Pickaxe} 
-        title={t('canvasNodes.promptNode.title')} 
+      <NodeHeader
+        icon={Pickaxe}
+        title={t('canvasNodes.promptNode.title')}
         selected={selected}
         isBrandActive={isBrandActive}
         onToggleBrand={(active) => {
@@ -527,12 +527,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                   <div className="absolute -inset-0.5 rounded-full bg-brand-cyan/20 animate-ping pointer-events-none" />
                 )}
               </div>
-              <span className="text-[9px] uppercase tracking-wider font-bold">
+              <span className="text-[10px] uppercase tracking-wider font-bold">
                 {t('canvasNodes.promptNode.brandConnected') || 'Brand Guidelines'}
               </span>
               <div className="flex items-center gap-1.5 ml-auto">
-                {connectedLogo && <span className="px-1.5 py-0.5 bg-black/20 rounded border border-white/5 text-[8px]">LOGO</span>}
-                {connectedIdentity && <span className="px-1.5 py-0.5 bg-black/20 rounded border border-white/5 text-[8px]">IDENTITY</span>}
+                {connectedLogo && <span className="px-1.5 py-0.5 bg-black/20 rounded border border-white/5 text-[10px]">LOGO</span>}
+                {connectedIdentity && <span className="px-1.5 py-0.5 bg-black/20 rounded border border-white/5 text-[10px]">IDENTITY</span>}
               </div>
             </div>
           </Tooltip>
@@ -615,7 +615,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         {/* Prompt Suggestions */}
         <AnimatePresence>
           {promptSuggestions.length > 0 && (
-            <motion.div 
+            <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -734,7 +734,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
 
       {/* Generate Image Button */}
-      <Tooltip 
+      <Tooltip
         content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
         delay={500}
       >

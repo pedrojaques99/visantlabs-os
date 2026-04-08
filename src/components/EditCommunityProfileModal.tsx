@@ -251,8 +251,8 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               </Button>
             </div>
             <div className="flex items-center gap-2 ml-1">
-              <Badge variant="outline" className="text-[9px] uppercase tracking-tighter py-0">16:9 Aspect</Badge>
-              <Badge variant="outline" className="text-[9px] uppercase tracking-tighter py-0">Max 2MB</Badge>
+              <Badge variant="outline" className="text-[10px] uppercase tracking-tighter py-0">16:9 Aspect</Badge>
+              <Badge variant="outline" className="text-[10px] uppercase tracking-tighter py-0">Max 2MB</Badge>
             </div>
           </div>
 

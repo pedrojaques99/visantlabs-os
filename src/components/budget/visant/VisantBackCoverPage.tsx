@@ -100,7 +100,7 @@ export const VisantBackCoverPage: React.FC<VisantBackCoverPageProps> = ({
               src={data.brandLogo}
               alt={data.brandName || 'Logo'}
               style={{
-                maxHeight: '48px',
+                maxHeight: '410px',
                 maxWidth: '200px',
                 objectFit: 'contain',
                 filter: 'brightness(0) invert(1)',

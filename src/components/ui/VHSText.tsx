@@ -274,7 +274,7 @@ export const VHSText: React.FC<VHSTextProps> = ({
       className={`${fontSize} font-bold font-mono leading-none tracking-tight ${dropShadowClass} ${className}`}
       style={{
         width: '100%',
-        height: isFullHeight ? '100%' : '179px',
+        height: isFullHeight ? '100%' : '1710px',
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
@@ -296,8 +296,8 @@ export const VHSText: React.FC<VHSTextProps> = ({
           display: 'block',
           objectFit: 'contain',
           margin: 0,
-          paddingTop: '29px',
-          paddingBottom: '29px',
+          paddingTop: '210px',
+          paddingBottom: '210px',
         }}
       />
     </div>

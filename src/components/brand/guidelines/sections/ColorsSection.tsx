@@ -253,7 +253,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                     className="h-6 bg-transparent border-none p-0 text-[10px] font-mono text-brand-cyan/70 focus-visible:ring-0 uppercase  placeholder:text-neutral-700"
                     placeholder="#000000"
                   />
-                  <p className="text-[8px] font-mono text-neutral-600 pl-0">
+                  <p className="text-[10px] font-mono text-neutral-600 pl-0">
                     {(() => { try { const cmyk = hexToCmyk(form.watch(`colors.${i}.hex`) || '#000000'); return `CMYK ${cmyk.c}/${cmyk.m}/${cmyk.y}/${cmyk.k}`; } catch { return ''; } })()}
                   </p>
                 </div>
@@ -292,7 +292,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                   <div className="text-center min-w-0 w-full">
                     <p className="text-[11px] font-bold text-white uppercase tracking-tight truncate">{c.name || 'Color'}</p>
                     <p className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">{c.hex}</p>
-                    <p className="text-[9px] font-mono text-neutral-500 mt-1 uppercase">
+                    <p className="text-[10px] font-mono text-neutral-500 mt-1 uppercase">
                       {(() => { const cmyk = c.cmyk || hexToCmyk(c.hex); return `C${cmyk.c} M${cmyk.m} Y${cmyk.y} K${cmyk.k}`; })()}
                     </p>
                   </div>
@@ -315,7 +315,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                     }}
                   >
                     <div className={cn("w-full aspect-square max-w-[56px] rounded-lg border border-dashed border-white/10", p.color)} />
-                    <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500">{p.name}</span>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{p.name}</span>
                   </div>
                 ))}
               </div>
@@ -364,7 +364,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                         style={{ backgroundColor: pair.fg }}
                         title={pair.fgName}
                       />
-                      <span className="text-[8px] text-neutral-600">/</span>
+                      <span className="text-[10px] text-neutral-600">/</span>
                       <div
                         className="w-6 h-6 rounded border border-white/10"
                         style={{ backgroundColor: pair.bg }}
@@ -387,19 +387,19 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                     {/* Badges */}
                     <div className="flex items-center gap-1">
                       {pair.wcagAAA ? (
-                        <span className="px-1.5 py-0.5 text-[8px] font-bold rounded bg-green-500/20 text-green-400 border border-green-500/30">
+                        <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-green-500/20 text-green-400 border border-green-500/30">
                           AAA
                         </span>
                       ) : pair.wcagAA ? (
-                        <span className="px-1.5 py-0.5 text-[8px] font-bold rounded bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30">
+                        <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30">
                           AA
                         </span>
                       ) : pair.largeAA ? (
-                        <span className="px-1.5 py-0.5 text-[8px] font-bold rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                        <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
                           AA Large
                         </span>
                       ) : (
-                        <span className="px-1.5 py-0.5 text-[8px] font-bold rounded bg-red-500/20 text-red-400 border border-red-500/30">
+                        <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-red-500/20 text-red-400 border border-red-500/30">
                           Fail
                         </span>
                       )}

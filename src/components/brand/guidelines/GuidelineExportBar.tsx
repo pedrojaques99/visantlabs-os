@@ -205,7 +205,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
 
   return (
     <div className="flex items-center gap-3 pt-6 border-t border-white/[0.03]">
-      <span className="text-[9px] font-mono text-neutral-700 uppercase tracking-widest mr-2">Export</span>
+      <span className="text-[10px] font-mono text-neutral-700 uppercase tracking-widest mr-2">Export</span>
       <Button
         variant="ghost"
         size="sm"

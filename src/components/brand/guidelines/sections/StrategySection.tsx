@@ -128,7 +128,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                       <div className="flex items-center gap-2">
                         <h4 className="font-bold text-white tracking-tight">{arch.name}</h4>
                         {arch.role && (
-                          <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan uppercase font-bold">{arch.role}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan uppercase font-bold">{arch.role}</span>
                         )}
                       </div>
                       <p className="text-xs text-neutral-400 leading-relaxed">{arch.description}</p>
@@ -156,7 +156,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                       <p className="text-xs text-neutral-400  line-clamp-2">"{persona.bio}"</p>
                       <div className="flex flex-wrap gap-2">
                         {persona.desires?.map((desire, idx) => (
-                          <span key={idx} className="text-[9px] px-2 py-1 rounded-md bg-white/5 border border-white/5 text-neutral-500 whitespace-nowrap">{desire}</span>
+                          <span key={idx} className="text-[10px] px-2 py-1 rounded-md bg-white/5 border border-white/5 text-neutral-500 whitespace-nowrap">{desire}</span>
                         ))}
                       </div>
                     </div>

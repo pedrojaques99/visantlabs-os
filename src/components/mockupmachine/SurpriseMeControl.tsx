@@ -100,8 +100,8 @@ function ToggleRow({
         >
             <div className={cn(
                 "w-8 h-4 rounded-full border transition-all duration-300 relative",
-                checked 
-                    ? "bg-brand-cyan/20 border-brand-cyan/40" 
+                checked
+                    ? "bg-brand-cyan/20 border-brand-cyan/40"
                     : dark ? "bg-neutral-900 border-white/5" : "bg-neutral-100 border-neutral-300"
             )}>
                 <div className={cn(
@@ -240,7 +240,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                 isPrimarySurprise
                                     ? 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90'
                                     : (isPromptReady || autoGenerate
-                                        ? 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90 ring-2 ring-brand-cyan/20 ring-offset-2 ring-offset-black transition-shadow duration-500 shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.15)]' 
+                                        ? 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90 ring-2 ring-brand-cyan/20 ring-offset-2 ring-offset-black transition-shadow duration-500 shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.15)]'
                                         : 'bg-neutral-800 border-white/10 text-neutral-400 hover:text-white hover:bg-neutral-700'),
                                 isPrimarySurprise && isActive && 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black'
                             )
@@ -311,7 +311,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                         {isSurpriseMeMode && (
                             <div className="absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 animate-fade-in">
                                 <span className="h-1.5 w-1.5 rounded-full bg-brand-cyan animate-pool-dot-breathe inline-block" />
-                                <span className="text-[9px] font-mono font-bold text-brand-cyan tracking-[0.15em] uppercase whitespace-nowrap">
+                                <span className="text-[10px] font-mono font-bold text-brand-cyan tracking-[0.15em] uppercase whitespace-nowrap">
                                     {t('mockup.surpriseMeModeActiveTooltip')}
                                 </span>
                             </div>
@@ -419,24 +419,24 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                         {t('mockup.aiSettings') || 'MODELO & AJUSTES'}
                                     </MicroTitle>
                                     {selectedModel && (
-                                        <Badge variant="outline" className="text-[9px] h-5 px-1.5 border-white/10 text-neutral-400 font-mono">
+                                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-white/10 text-neutral-400 font-mono">
                                             {getCreditsRequired(selectedModel, resolution)} 💎 / img
                                         </Badge>
                                     )}
                                 </div>
 
-                                 <div className="space-y-1">
+                                <div className="space-y-1">
                                     <ModelSelector
                                         type="image"
                                         selectedModel={selectedModel || (imageProvider === 'seedream' ? 'seedream-4.5' : GEMINI_MODELS.IMAGE_NB2)}
                                         onModelChange={(m, p) => {
-                                          if (p === 'seedream') {
-                                            if (setImageProvider) setImageProvider('seedream');
-                                            if (setSelectedModel) setSelectedModel(m as any);
-                                          } else {
-                                            if (setImageProvider) setImageProvider('gemini');
-                                            if (setSelectedModel) setSelectedModel(m as any);
-                                          }
+                                            if (p === 'seedream') {
+                                                if (setImageProvider) setImageProvider('seedream');
+                                                if (setSelectedModel) setSelectedModel(m as any);
+                                            } else {
+                                                if (setImageProvider) setImageProvider('gemini');
+                                                if (setSelectedModel) setSelectedModel(m as any);
+                                            }
                                         }}
                                         resolution={resolution}
                                         onSyncResolution={setResolution}
@@ -446,15 +446,15 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
 
                                 {setResolution && (
                                     <div className="space-y-2">
-                                        <MicroTitle as="span" className="text-[9px] ml-1 opacity-50">Resolução / Qualidade</MicroTitle>
-                                        <div className="flex bg-neutral-950/40 rounded-xl p-1 border border-white/5 h-[38px]">
+                                        <MicroTitle as="span" className="text-[10px] ml-1 opacity-50">Resolução / Qualidade</MicroTitle>
+                                        <div className="flex bg-neutral-950/40 rounded-xl p-1 border border-white/5 h-[310px]">
                                             {(imageProvider === 'gemini' ? ['HD', '1K', '2K', '4K'] : ['2K', '4K']).map((res) => (
                                                 <button key={res}
                                                     onClick={() => setResolution(res as Resolution)}
                                                     className={cn(
                                                         "flex-1 text-[10px] font-bold font-mono rounded-lg transition-all uppercase tracking-widest",
-                                                        resolution === res 
-                                                            ? "bg-brand-cyan/10 text-brand-cyan shadow-sm" 
+                                                        resolution === res
+                                                            ? "bg-brand-cyan/10 text-brand-cyan shadow-sm"
                                                             : "text-neutral-500 hover:text-neutral-300"
                                                     )}
                                                 >
@@ -468,21 +468,21 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                 {aspectRatio && setAspectRatio && (
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center ml-1">
-                                            <MicroTitle as="span" className="text-[9px] opacity-50">Proporção</MicroTitle>
-                                            <span className="text-[8px] font-mono text-neutral-600 tracking-widest">{aspectRatio}</span>
+                                            <MicroTitle as="span" className="text-[10px] opacity-50">Proporção</MicroTitle>
+                                            <span className="text-[10px] font-mono text-neutral-600 tracking-widest">{aspectRatio}</span>
                                         </div>
-                                        <div className="flex bg-neutral-950/40 rounded-xl p-1 border border-white/5 h-[38px]">
+                                        <div className="flex bg-neutral-950/40 rounded-xl p-1 border border-white/5 h-[310px]">
                                             {['1:1', '9:16', '16:9', '4:3', '3:4'].map(ratio => (
                                                 <button key={ratio}
                                                     onClick={() => setAspectRatio(ratio as AspectRatio)}
                                                     className={cn(
                                                         "flex-1 flex flex-col items-center justify-center rounded-lg transition-all",
-                                                        aspectRatio === ratio 
-                                                            ? "bg-brand-cyan/10 text-brand-cyan shadow-sm" 
+                                                        aspectRatio === ratio
+                                                            ? "bg-brand-cyan/10 text-brand-cyan shadow-sm"
                                                             : "text-neutral-500 hover:text-neutral-300"
                                                     )}
                                                 >
-                                                    <span className="text-[9px] font-mono font-bold">{ratio}</span>
+                                                    <span className="text-[10px] font-mono font-bold">{ratio}</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -506,7 +506,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                 tooltip={t('mockup.directorModeDescription') || 'Selecione e defina quais tags poderão ser escolhidas ao gerar'}
                             />
 
-                            <div className="pt-2 text-[9px] font-mono text-neutral-700 leading-relaxed uppercase tracking-widest">
+                            <div className="pt-2 text-[10px] font-mono text-neutral-700 leading-relaxed uppercase tracking-widest">
                                 {autoGenerate
                                     ? (t('mockup.autoGenerateActive') || 'Production | Rapid Fire Enabled')
                                     : (t('mockup.autoGenerateInactive') || 'Concept | Prompt Only')}
@@ -533,8 +533,8 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                             {showSettings && (
                                 <div className={cn(
                                     "p-4 rounded-xl bg-neutral-900/95 border border-white/10 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-2 duration-200 z-[110]",
-                                    isInline 
-                                        ? "relative bottom-auto right-auto mb-0 w-full mt-6 bg-transparent border-0 shadow-none backdrop-blur-0 p-0 overflow-visible" 
+                                    isInline
+                                        ? "relative bottom-auto right-auto mb-0 w-full mt-6 bg-transparent border-0 shadow-none backdrop-blur-0 p-0 overflow-visible"
                                         : "absolute bottom-full right-0 mb-3 w-72"
                                 )}>
                                     <div className="space-y-5">
@@ -545,24 +545,24 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                                     {t('mockup.aiSettings') || 'MODELO & AJUSTES'}
                                                 </MicroTitle>
                                                 {selectedModel && (
-                                                    <Badge variant="outline" className="text-[9px] h-5 px-1.5 border-white/10 text-neutral-400 font-mono">
+                                                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-white/10 text-neutral-400 font-mono">
                                                         {getCreditsRequired(selectedModel, resolution)} 💎 / img
                                                     </Badge>
                                                 )}
                                             </div>
 
-                                             <div className="space-y-1">
+                                            <div className="space-y-1">
                                                 <ModelSelector
                                                     type="image"
                                                     selectedModel={selectedModel || (imageProvider === 'seedream' ? 'seedream-4.5' : GEMINI_MODELS.IMAGE_NB2)}
                                                     onModelChange={(m, p) => {
-                                                      if (p === 'seedream') {
-                                                        if (setImageProvider) setImageProvider('seedream');
-                                                        if (setSelectedModel) setSelectedModel(m as any);
-                                                      } else {
-                                                        if (setImageProvider) setImageProvider('gemini');
-                                                        if (setSelectedModel) setSelectedModel(m as any);
-                                                      }
+                                                        if (p === 'seedream') {
+                                                            if (setImageProvider) setImageProvider('seedream');
+                                                            if (setSelectedModel) setSelectedModel(m as any);
+                                                        } else {
+                                                            if (setImageProvider) setImageProvider('gemini');
+                                                            if (setSelectedModel) setSelectedModel(m as any);
+                                                        }
                                                     }}
                                                     resolution={resolution}
                                                     onSyncResolution={setResolution}
@@ -572,7 +572,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
 
                                             {setResolution && (
                                                 <div className="space-y-1">
-                                                    <MicroTitle as="span" className="text-[9px] ml-1">Resolução / Qualidade</MicroTitle>
+                                                    <MicroTitle as="span" className="text-[10px] ml-1">Resolução / Qualidade</MicroTitle>
                                                     <div className="flex gap-1.5 h-[32px]">
                                                         {(imageProvider === 'gemini' ? ['HD', '1K', '2K', '4K'] : ['2K', '4K']).map((res) => (
                                                             <Button variant="ghost" key={res}
@@ -592,8 +592,8 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                             {aspectRatio && setAspectRatio && (
                                                 <div className="space-y-1">
                                                     <div className="flex justify-between items-center ml-1">
-                                                        <MicroTitle as="span" className="text-[9px]">Proporção</MicroTitle>
-                                                        <span className="text-[8px] font-mono text-neutral-500">{aspectRatio}</span>
+                                                        <MicroTitle as="span" className="text-[10px]">Proporção</MicroTitle>
+                                                        <span className="text-[10px] font-mono text-neutral-500">{aspectRatio}</span>
                                                     </div>
                                                     <div className="grid grid-cols-5 gap-1.5">
                                                         {['1:1', '9:16', '16:9', '4:3', '3:4'].map(ratio => (
@@ -604,7 +604,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                                                     aspectRatio === ratio ? "bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40" : "bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300"
                                                                 )}
                                                             >
-                                                                <span className="text-[9px] font-mono">{ratio}</span>
+                                                                <span className="text-[10px] font-mono">{ratio}</span>
                                                             </Button>
                                                         ))}
                                                     </div>
@@ -628,7 +628,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                             tooltip={t('mockup.directorModeDescription') || 'Selecione e defina quais tags poderão ser escolhidas ao gerar'}
                                         />
 
-                                        <div className="pt-2 text-[9px] font-mono text-neutral-600 leading-tight">
+                                        <div className="pt-2 text-[10px] font-mono text-neutral-600 leading-tight">
                                             {autoGenerate
                                                 ? (t('mockup.autoGenerateActive') || 'Imagens serão geradas instantaneamente.')
                                                 : (t('mockup.autoGenerateInactive') || 'Gera apenas o prompt para sua revisão.')}

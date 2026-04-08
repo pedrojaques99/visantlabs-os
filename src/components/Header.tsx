@@ -283,7 +283,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           >
             <Heart size={14} className="md:w-4 md:h-4" strokeWidth={2} />
             {savedCount !== null && savedCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-neutral-800/40 text-neutral-400 text-[8px] md:text-[9px] font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
+              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-neutral-800/40 text-neutral-400 text-[10px] md:text-[10px] font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
                 {savedCount > 99 ? '99+' : savedCount}
               </span>
             )}
@@ -298,7 +298,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           >
             <FilePenLine size={14} className="md:w-4 md:h-4" strokeWidth={2} />
             {brandingsCount !== null && brandingsCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-neutral-800/40 text-neutral-400 text-[8px] md:text-[9px] font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
+              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-neutral-800/40 text-neutral-400 text-[10px] md:text-[10px] font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
                 {brandingsCount > 99 ? '99+' : brandingsCount}
               </span>
             )}

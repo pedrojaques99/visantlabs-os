@@ -149,7 +149,7 @@ export const InstagramExtractorPage: React.FC = () => {
                         "hover:bg-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       )}
                     />
-                    <div className="flex justify-between mt-2 text-[9px] font-mono text-neutral-600 uppercase tracking-tighter px-0.5">
+                    <div className="flex justify-between mt-2 text-[10px] font-mono text-neutral-600 uppercase tracking-tighter px-0.5">
                       <span>Quick</span>
                       <span>Deep Scan</span>
                     </div>
@@ -174,8 +174,8 @@ export const InstagramExtractorPage: React.FC = () => {
         </div>
 
         {/* Extraction Overlay */}
-        <ExtractionOverlay 
-          isVisible={isExtracting} 
+        <ExtractionOverlay
+          isVisible={isExtracting}
           subtitle={`Extracting up to ${limit} posts from @${cleanHandle}`}
         />
 
@@ -271,7 +271,7 @@ export const InstagramExtractorPage: React.FC = () => {
                         </div>
 
                         <div className="absolute top-2 right-2">
-                          <div className="px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-md border border-white/10 text-[9px] font-mono text-white/60">
+                          <div className="px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-md border border-white/10 text-[10px] font-mono text-white/60">
                             #{idx + 1}
                           </div>
                         </div>

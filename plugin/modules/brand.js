@@ -62,7 +62,7 @@ class BrandModule {
         // Actually, let's follow the scan/think pattern: single click = toggle.
         const next = !state.useBrand;
         setState('useBrand', next);
-        
+
         // Optional: still open settings if it's the first time or if they want to configure?
         // User asked for "using brand should be optional", so explicit toggle is priority.
       });
@@ -243,7 +243,7 @@ class BrandModule {
       tab.addEventListener('click', (e) => {
         const category = e.target.getAttribute('data-category');
         setState('activeFontCategory', category);
-        
+
         // Update UI active state
         document.querySelectorAll('.font-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
@@ -297,7 +297,7 @@ class BrandModule {
       const content = document.getElementById(contentId);
       if (content) content.classList.remove('hidden');
     }
-    
+
     // Smooth scroll into view
     setTimeout(() => {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -371,7 +371,7 @@ class BrandModule {
         // Core brand
         if (config.logos) setState('logos', config.logos);
         if (config.typography) setState('typography', config.typography);
-        
+
         // Backward compatibility transition
         if (!config.logos && config.logoLight) {
           setState('logos', [
@@ -593,14 +593,14 @@ class BrandModule {
       name: state.linkedGuideline?.identity?.name || 'Local Brand',
       logos: state.logos,
       typography: state.typography,
-      colors: state.selectedColors instanceof Map 
-        ? Object.fromEntries(state.selectedColors) 
+      colors: state.selectedColors instanceof Map
+        ? Object.fromEntries(state.selectedColors)
         : (state.selectedColors || {}),
       tokens: state.designTokens,
       uiComponents: state.selectedUIComponents,
       _exportedAt: new Date().toISOString()
     };
-    
+
     console.log('[Brand] Exporting JSON...', config);
     downloadJSON(config, `brand-${config.name.toLowerCase().replace(/\s+/g, '-')}.json`);
   }
@@ -644,7 +644,7 @@ class BrandModule {
 
       this._isLoadingConfig = false;
       this.saveLocalBrandConfig(true); // Persist immediately after import
-      
+
       eventBus.emit('chat:assistant-message', `✅ App Brand Configuration **${config.name || 'importada'}** com sucesso!`);
     } catch (err) {
       console.error('[Brand] Import error', err);
@@ -679,21 +679,21 @@ class BrandModule {
 
     // Active state: visually highlighted (the toggle)
     this.brandPill.classList.toggle('active', isActive);
-    
+
     // Status indicator: color the icon or add a dot if configured but inactive
     if (isAvailable) {
-      this.brandPill.style.color = isActive 
-        ? 'var(--figma-color-text-onbrand, #fff)' 
+      this.brandPill.style.color = isActive
+        ? 'var(--figma-color-text-onbrand, #fff)'
         : 'var(--figma-color-text-brand, #0d99ff)';
     } else {
       this.brandPill.style.color = '';
     }
 
     const summary = getBrandSummary();
-    const tooltip = isActive 
-      ? `Branding Ativo (${summary})` 
+    const tooltip = isActive
+      ? `Branding Ativo (${summary})`
       : (isAvailable ? `Branding Desativado (Configurado: ${summary})` : 'Brand não configurada');
-    
+
     this.brandPill.title = tooltip + ' • Botão direito para gerenciar';
   }
 
@@ -717,8 +717,8 @@ class BrandModule {
       row.innerHTML = `
         <button class="brand-row-preview ${isConfigured ? 'is-set' : 'is-empty'}" data-index="${index}" title="${isConfigured ? 'Trocar logo' : 'Escolher da biblioteca'}">
           ${isConfigured && val.thumbnail
-            ? `<img src="${val.thumbnail}" alt="">`
-            : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'}
+          ? `<img src="${val.thumbnail}" alt="">`
+          : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'}
         </button>
         <input type="text" class="brand-row-label" value="${this.escapeHtml(logo.label)}" data-index="${index}" title="Renomear" />
         <details class="brand-row-menu">
@@ -828,8 +828,8 @@ class BrandModule {
         </div>
         <div class="figma-prop-value ${isConfigured ? '' : (isRequired ? 'text-muted-urgent' : 'text-muted')}" style="flex: 1; min-width: 0;">
           ${isConfigured
-            ? `<div class="brand-label" title="${this.escapeHtml(familyName)}">${this.escapeHtml(familyName)}${styleCount ? ` <span style="opacity:0.5;font-size:10px">${styleCount} pesos</span>` : ''}</div>`
-            : (isRequired ? '<strong>Vincule uma família</strong>' : 'Escolher família')}
+          ? `<div class="brand-label" title="${this.escapeHtml(familyName)}">${this.escapeHtml(familyName)}${styleCount ? ` <span style="opacity:0.5;font-size:10px">${styleCount} pesos</span>` : ''}</div>`
+          : (isRequired ? '<strong>Vincule uma família</strong>' : 'Escolher família')}
         </div>
         <div class="row-actions" style="display: flex; gap: 2px;">
           ${isConfigured ? `
@@ -1053,7 +1053,7 @@ class BrandModule {
     for (const entry of filtered.slice(0, 80)) {
       const div = document.createElement('div');
       div.className = 'font-item clickable';
-      div.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 10px 8px; border-radius: 6px; border: 1px solid var(--figma-color-border); margin-bottom: 4px; cursor: pointer;';
+      div.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 10px 10px; border-radius: 6px; border: 1px solid var(--figma-color-border); margin-bottom: 4px; cursor: pointer;';
 
       const left = document.createElement('div');
       left.style.cssText = 'display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1;';
@@ -1146,7 +1146,7 @@ class BrandModule {
         }
         setState('selectedColors', colors);
       }
-      
+
       window.showToast?.(`Marca "${guideline.name}" carregada com sucesso.`, 'success');
     }
   }
@@ -1361,20 +1361,20 @@ class BrandModule {
     if (guideline || state.linkedGuidelineId) {
       if (selectContainer) selectContainer.classList.add('hidden');
       if (linkedContainer) linkedContainer.classList.remove('hidden');
-      
+
       if (linkedName && guideline) {
         linkedName.textContent = guideline.identity?.name || 'Marca vinculada';
       } else if (linkedName && !guideline) {
         linkedName.textContent = 'Carregando marca...';
       }
-      
+
       // Default to hidden unless update detected
       this.brandGuidelineRefreshBtn?.classList.remove('highlighted');
       this.brandGuidelineRefreshBtn?.classList.add('hidden');
     } else {
       if (selectContainer) selectContainer.classList.remove('hidden');
       if (linkedContainer) linkedContainer.classList.add('hidden');
-      
+
       this.brandGuidelineRefreshBtn?.classList.remove('highlighted', 'hidden');
     }
   }
@@ -1391,7 +1391,7 @@ class BrandModule {
       this.brandGuidelineRefreshBtn.classList.add('highlighted');
       this.brandGuidelineRefreshBtn.title = 'Sincronizar com as mudanças identificadas';
     }
-    
+
     window.showToast?.('Mudanças encontradas na cloud. Clique em sincronizar.', 'info');
   }
 
@@ -1403,9 +1403,9 @@ class BrandModule {
     }
 
     if (this.brandGuidelineRefreshBtn) {
-       this.brandGuidelineRefreshBtn.classList.remove('highlighted');
-       this.brandGuidelineRefreshBtn.classList.add('hidden');
-       this.brandGuidelineRefreshBtn.title = 'Busca atualizada';
+      this.brandGuidelineRefreshBtn.classList.remove('highlighted');
+      this.brandGuidelineRefreshBtn.classList.add('hidden');
+      this.brandGuidelineRefreshBtn.title = 'Busca atualizada';
     }
   }
 
@@ -1512,7 +1512,7 @@ class BrandModule {
     }
 
     grid.innerHTML = '';
-    
+
     // Lazy loading implementation: render in batches
     const BATCH_SIZE = 5;
     let currentIndex = 0;
@@ -1520,7 +1520,7 @@ class BrandModule {
     const renderBatch = () => {
       const fragment = document.createDocumentFragment();
       const end = Math.min(currentIndex + BATCH_SIZE, allTypes.length);
-      
+
       for (let i = currentIndex; i < end; i++) {
         const type = allTypes[i];
         const typeKey = type.toLowerCase();
@@ -1568,10 +1568,10 @@ class BrandModule {
 
         fragment.appendChild(row);
       }
-      
+
       grid.appendChild(fragment);
       currentIndex = end;
-      
+
       if (currentIndex < allTypes.length) {
         requestAnimationFrame(renderBatch);
       }

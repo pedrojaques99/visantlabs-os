@@ -107,7 +107,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                     </div>
 
                     {!canAnalyze && !isAnalyzing && !hasAnalyzed && !uploadedImage && (
-                        <p className="text-center text-neutral-600 text-[9px] font-mono uppercase tracking-widest animate-pulse mt-1">
+                        <p className="text-center text-neutral-600 text-[10px] font-mono uppercase tracking-widest animate-pulse mt-1">
                             {t('mockup.uploadRequired') || 'Waiting for design input...'}
                         </p>
                     )}

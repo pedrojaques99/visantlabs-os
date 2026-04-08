@@ -91,7 +91,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                 const isLogo = logos.some(l => l.id === id);
                 return isLogo ? brandGuidelineApi.deleteLogo(guidelineId, id) : brandGuidelineApi.deleteMedia(guidelineId, id);
             }));
-            
+
             onLogosChange(logos.filter(l => !selectedIds.has(l.id)));
             onMediaChange(media.filter(m => !selectedIds.has(m.id)));
             setSelectedIds(new Set());
@@ -157,7 +157,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
 
                 const base64 = await fileToBase64(file);
                 const fileName = file.name.replace(/\.[^/.]+$/, '');
-                
+
                 if (type === 'media') {
                     return brandGuidelineApi.uploadMedia(guidelineId, base64, fileName, file.type);
                 } else {
@@ -213,9 +213,9 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                     </span>
                     <div className="flex gap-2">
                         {selectedIds.size === 1 && (
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={handleRenamePrompt}
                                 className="text-[10px] font-mono h-7 bg-black/40 border-brand-cyan/30 text-white hover:bg-brand-cyan/20"
                             >
@@ -223,17 +223,17 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                 RENAME
                             </Button>
                         )}
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => setSelectedIds(new Set())}
                             className="text-[10px] font-mono hover:bg-white/5 h-7"
                         >
                             Cancel
                         </Button>
-                        <Button 
-                            variant="destructive" 
-                            size="sm" 
+                        <Button
+                            variant="destructive"
+                            size="sm"
                             onClick={handleBulkDelete}
                             disabled={isBulkDeleting}
                             className="text-[10px] h-7 bg-red-500 hover:bg-red-600 font-mono"
@@ -286,19 +286,19 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                             onDragStart={(e) => onAssetDragStart?.(e, logo.url, 'logo')}
                                         />
                                         <span className={cn(
-                                            "absolute bottom-0 left-0 right-0 text-[8px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase",
+                                            "absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase",
                                             isSelected && "bg-brand-cyan text-black font-bold"
                                         )}>
                                             {logo.variant}
                                         </span>
-                                        
+
                                         {/* Asset Click Indicator (Subtle) */}
                                         {onAssetClick && (
                                             <div className="absolute inset-0 bg-brand-cyan/0 group-hover/logo:bg-brand-cyan/5 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-all pointer-events-none">
                                                 <MousePointerClick size={14} className="text-brand-cyan/40" />
                                             </div>
                                         )}
-                                        
+
                                         {/* Selection Checkbox */}
                                         {!readOnly && (
                                             <div className={cn(
@@ -366,7 +366,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                                 />
                                                 {item.label && (
                                                     <span className={cn(
-                                                        "absolute bottom-0 left-0 right-0 text-[8px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 truncate px-1",
+                                                        "absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 truncate px-1",
                                                         isSelected && "bg-brand-cyan text-black font-bold"
                                                     )}>
                                                         {item.label}
@@ -376,12 +376,12 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                         ) : (
                                             <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-black/20">
                                                 <FileText size={20} className="text-neutral-500 mb-1" />
-                                                <span className="text-[8px] font-mono text-neutral-400 text-center px-2 truncate w-full">
+                                                <span className="text-[10px] font-mono text-neutral-400 text-center px-2 truncate w-full">
                                                     {item.label || 'PDF Document'}
                                                 </span>
                                             </div>
                                         )}
-                                        
+
                                         {/* Asset Click Indicator */}
                                         {onAssetClick && item.type === 'image' && (
                                             <div className="absolute inset-0 bg-brand-cyan/0 group-hover/media:bg-brand-cyan/5 flex items-center justify-center opacity-0 group-hover/media:opacity-100 transition-all pointer-events-none">

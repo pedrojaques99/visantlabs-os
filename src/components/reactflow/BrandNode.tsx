@@ -433,11 +433,11 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   className="w-2.5 h-2.5 rounded-sm border border-neutral-700/50"
                   style={{ backgroundColor: color }}
                 />
-                <span className="text-neutral-400 font-mono text-[9px]">{color}</span>
+                <span className="text-neutral-400 font-mono text-[10px]">{color}</span>
               </div>
             ))}
             {colors.length === 0 && (
-              <span className="text-[9px] text-neutral-600">{t('common.noResults') || "None"}</span>
+              <span className="text-[10px] text-neutral-600">{t('common.noResults') || "None"}</span>
             )}
           </div>
         )}
@@ -654,11 +654,11 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {/* Colors */}
                 <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20">
                   <div className="flex items-center justify-between mb-2">
-                    <NodeLabel className="text-[9px]">{t('canvasNodes.brandNode.paletteMatrix') || "Palette"}</NodeLabel>
+                    <NodeLabel className="text-[10px]">{t('canvasNodes.brandNode.paletteMatrix') || "Palette"}</NodeLabel>
                     <NodeButton
                       variant="ghost"
                       size="xs"
-                      className="h-5 text-[9px] px-1.5 text-brand-cyan/70"
+                      className="h-5 text-[10px] px-1.5 text-brand-cyan/70"
                       onClick={manuallyExtractColors}
                       disabled={!logoBase64}
                     >
@@ -676,7 +676,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {/* Typography */}
                 {brandIdentity.typography.primary && (
                   <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20">
-                    <NodeLabel className="text-[9px] mb-1.5">{t('canvasNodes.brandNode.typography') || "Typography"}</NodeLabel>
+                    <NodeLabel className="text-[10px] mb-1.5">{t('canvasNodes.brandNode.typography') || "Typography"}</NodeLabel>
                     <div className="space-y-1">
                       <div className="text-neutral-300 text-[11px]">{brandIdentity.typography.primary}</div>
                       {brandIdentity.typography.secondary && (
@@ -689,13 +689,13 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {/* Personality */}
                 {(brandIdentity.personality.tone || brandIdentity.personality.feeling) && (
                   <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20">
-                    <NodeLabel className="text-[9px] mb-1.5">{t('canvasNodes.brandNode.persona') || "Persona"}</NodeLabel>
+                    <NodeLabel className="text-[10px] mb-1.5">{t('canvasNodes.brandNode.persona') || "Persona"}</NodeLabel>
                     <div className="space-y-1.5 text-[11px] text-neutral-400">
                       {brandIdentity.personality.tone && (
-                        <div><span className="text-neutral-600 text-[9px] font-mono mr-1.5">{t('canvasNodes.brandNode.tone') || "Tone:"}</span>{brandIdentity.personality.tone}</div>
+                        <div><span className="text-neutral-600 text-[10px] font-mono mr-1.5">{t('canvasNodes.brandNode.tone') || "Tone:"}</span>{brandIdentity.personality.tone}</div>
                       )}
                       {brandIdentity.personality.feeling && (
-                        <div><span className="text-neutral-600 text-[9px] font-mono mr-1.5">{t('canvasNodes.brandNode.feeling') || "Feeling:"}</span>{brandIdentity.personality.feeling}</div>
+                        <div><span className="text-neutral-600 text-[10px] font-mono mr-1.5">{t('canvasNodes.brandNode.feeling') || "Feeling:"}</span>{brandIdentity.personality.feeling}</div>
                       )}
                     </div>
                   </div>
@@ -704,15 +704,15 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {/* Visual Elements */}
                 {brandIdentity.visualElements.length > 0 && (
                   <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20">
-                    <NodeLabel className="text-[9px] mb-1.5">{t('canvasNodes.brandNode.visualLanguage') || "Visual Elements"}</NodeLabel>
+                    <NodeLabel className="text-[10px] mb-1.5">{t('canvasNodes.brandNode.visualLanguage') || "Visual Elements"}</NodeLabel>
                     <div className="flex flex-wrap gap-1.5">
                       {brandIdentity.visualElements.slice(0, 8).map((element, idx) => (
-                        <span key={idx} className="px-2 py-0.5 bg-neutral-950/50 rounded text-[9px] text-neutral-400 border border-neutral-700/30">
+                        <span key={idx} className="px-2 py-0.5 bg-neutral-950/50 rounded text-[10px] text-neutral-400 border border-neutral-700/30">
                           {element}
                         </span>
                       ))}
                       {brandIdentity.visualElements.length > 8 && (
-                        <span className="text-neutral-500 text-[9px]">+{brandIdentity.visualElements.length - 8}</span>
+                        <span className="text-neutral-500 text-[10px]">+{brandIdentity.visualElements.length - 8}</span>
                       )}
                     </div>
                   </div>

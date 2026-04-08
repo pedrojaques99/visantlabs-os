@@ -86,7 +86,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
             <div className="flex flex-wrap gap-1.5 mt-1">
               <span
                 className={cn(
-                  'text-[9px] font-mono uppercase self-center mr-1',
+                  'text-[10px] font-mono uppercase self-center mr-1',
                   theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
                 )}
               >

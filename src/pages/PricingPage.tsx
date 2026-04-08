@@ -477,7 +477,7 @@ export const PricingPage: React.FC = () => {
                               </CardTitle>
                             </div>
                             {plan.isByok && (
-                              <Badge className="bg-brand-cyan/20 text-brand-cyan border-none text-[9px] px-2 py-0">
+                              <Badge className="bg-brand-cyan/20 text-brand-cyan border-none text-[10px] px-2 py-0">
                                 BYOK
                               </Badge>
                             )}
@@ -577,9 +577,9 @@ export const PricingPage: React.FC = () => {
               </div>
 
               <div className="flex flex-col gap-3">
-                <a 
-                  href="https://github.com/visantlabs" 
-                  target="_blank" 
+                <a
+                  href="https://github.com/visantlabs"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/40 transition-all group"
                 >
@@ -592,9 +592,9 @@ export const PricingPage: React.FC = () => {
                   <Plus size={16} className="text-neutral-600 group-hover:translate-x-1 transition-transform" />
                 </a>
 
-                <a 
-                  href="https://discord.gg/visantlabs" 
-                  target="_blank" 
+                <a
+                  href="https://discord.gg/visantlabs"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/40 transition-all group"
                 >

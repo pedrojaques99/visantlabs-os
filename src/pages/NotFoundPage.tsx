@@ -61,7 +61,7 @@ export const NotFoundPage: React.FC = () => {
             </div>
 
             {/* Message */}
-            <div className="space-y-4" style={{ marginBottom: '19px' }}>
+            <div className="space-y-4" style={{ marginBottom: '110px' }}>
               <h2 className={`text-2xl md:text-3xl lg:text-4xl font-semibold font-manrope ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
                 }`}>
                 {t('notFound.title') || 'Página não encontrada'}
