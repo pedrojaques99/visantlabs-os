@@ -55,7 +55,7 @@ export const PromptInputTextarea = ({
     <Textarea
       className={cn(
         'w-full resize-y rounded-none border-none p-3 shadow-none outline-none ring-0',
-        'min-h-[48px] max-h-[164px] bg-transparent text-neutral-200 placeholder-neutral-500',
+        'min-h-[410px] max-h-[164px] bg-transparent text-neutral-200 placeholder-neutral-500',
         'focus-visible:ring-0 focus:outline-none',
         className
       )}
@@ -108,13 +108,13 @@ export const PromptInputSubmit = ({
   }
 
   return (
-    <Button variant="brand"       className={cn(
-        'flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5',
-        'bg-brand-cyan text-black font-medium text-sm',
-        'hover:bg-brand-cyan/90 transition-colors',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
-        className
-      )}
+    <Button variant="brand" className={cn(
+      'flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5',
+      'bg-brand-cyan text-black font-medium text-sm',
+      'hover:bg-brand-cyan/90 transition-colors',
+      'disabled:opacity-50 disabled:cursor-not-allowed',
+      className
+    )}
       type="submit"
       disabled={disabled || status === 'submitted' || status === 'streaming'}
       {...props}

@@ -365,12 +365,12 @@ router.get('/api/components-usage', (req: Request, res: Response) => {
                 c.imports > 30
                   ? 'critical'
                   : c.imports > 10
-                  ? 'frequent'
-                  : c.imports > 2
-                  ? 'moderate'
-                  : c.imports > 0
-                  ? 'rare'
-                  : 'unused',
+                    ? 'frequent'
+                    : c.imports > 2
+                      ? 'moderate'
+                      : c.imports > 0
+                        ? 'rare'
+                        : 'unused',
             },
           })),
           topComponents: (metrics.components || []).slice(0, 10),
@@ -445,7 +445,7 @@ router.get('/brand', (req: Request, res: Response) => {
     section {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 1.5rem;
       margin-bottom: 1.5rem;
     }
@@ -735,12 +735,12 @@ router.get('/api/component/:name', (req: Request, res: Response) => {
                   component.imports > 30
                     ? 'critical'
                     : component.imports > 10
-                    ? 'frequent'
-                    : component.imports > 2
-                    ? 'moderate'
-                    : component.imports > 0
-                    ? 'rare'
-                    : 'unused',
+                      ? 'frequent'
+                      : component.imports > 2
+                        ? 'moderate'
+                        : component.imports > 0
+                          ? 'rare'
+                          : 'unused',
               },
             },
           });

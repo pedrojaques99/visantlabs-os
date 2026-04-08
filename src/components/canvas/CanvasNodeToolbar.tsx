@@ -364,7 +364,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         <div className="flex items-center gap-1.5 px-1 py-1">
           <span style={{ color: textColors.subtle }}>{icon}</span>
           <span
-            className="text-[9px] font-semibold uppercase "
+            className="text-[10px] font-semibold uppercase "
             style={{ color: textColors.subtle }}
           >
             {title}
@@ -399,7 +399,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       style={{
         width: `${EXPANDED_WIDTH}px`,
         height: 'auto',
-        maxHeight: 'calc(100vh - 97px)',
+        maxHeight: 'calc(100vh - 910px)',
         backgroundColor: isLight ? `${toolbarBg}dd` : `${toolbarBg}cc`,
         color: textColors.primary,
       }}

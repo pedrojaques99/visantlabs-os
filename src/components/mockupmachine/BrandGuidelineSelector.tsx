@@ -38,7 +38,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
     const filteredGuidelines = useMemo(() => {
         if (!searchQuery.trim()) return guidelines;
         const query = searchQuery.toLowerCase();
-        return guidelines.filter(g => 
+        return guidelines.filter(g =>
             (g.identity?.name || '').toLowerCase().includes(query) ||
             (g.identity?.tagline || '').toLowerCase().includes(query)
         );
@@ -86,24 +86,24 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
             >
                 <div className="flex flex-col items-start gap-1">
                     {!selectedBrandGuideline && (
-                        <MicroTitle className="transition-colors select-none text-[9px] text-neutral-500 group-hover:text-neutral-400 font-mono">
+                        <MicroTitle className="transition-colors select-none text-[10px] text-neutral-500 group-hover:text-neutral-400 font-mono">
                             {t('mockup.optional') || 'OPCIONAL'}
                         </MicroTitle>
                     )}
                     {selectedBrandGuideline ? (
                         <div className="flex items-center gap-2">
-                           {selectedGuidelineObj?.logos?.[0]?.url && (
-                               <div className="w-4 h-4 rounded-sm overflow-hidden border border-white/10 shrink-0">
-                                   <img src={selectedGuidelineObj.logos[0].url} alt="" className="w-full h-full object-cover" />
-                               </div>
-                           )}
-                           <span className="text-[11px] font-mono text-white truncate max-w-[150px] uppercase font-bold tracking-wider">
-                               {selectedGuidelineObj?.identity?.name || 'Selected'}
-                           </span>
+                            {selectedGuidelineObj?.logos?.[0]?.url && (
+                                <div className="w-4 h-4 rounded-sm overflow-hidden border border-white/10 shrink-0">
+                                    <img src={selectedGuidelineObj.logos[0].url} alt="" className="w-full h-full object-cover" />
+                                </div>
+                            )}
+                            <span className="text-[11px] font-mono text-white truncate max-w-[150px] uppercase font-bold tracking-wider">
+                                {selectedGuidelineObj?.identity?.name || 'Selected'}
+                            </span>
                         </div>
                     ) : (
                         <span className="text-[11px] font-mono text-neutral-600 uppercase">
-                           Selecionar Projeto
+                            Selecionar Projeto
                         </span>
                     )}
                 </div>
@@ -128,7 +128,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
                 <div className="flex flex-col gap-4">
                     {/* Search Field */}
                     <div className="px-1">
-                        <SearchBar 
+                        <SearchBar
                             value={searchQuery}
                             onChange={setSearchQuery}
                             placeholder={t('mockup.searchBrand') || 'Buscar marca...'}
@@ -177,8 +177,8 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
                                                     selectedBrandGuideline === g.id ? "border-brand-cyan/40 bg-brand-cyan/5" : "border-white/5 bg-neutral-950/50 group-hover:border-white/10"
                                                 )}>
                                                     {brandLogo?.url ? (
-                                                        <img 
-                                                            src={brandLogo.url} 
+                                                        <img
+                                                            src={brandLogo.url}
                                                             alt={brandName}
                                                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                                                             onError={(e) => {
@@ -198,7 +198,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
                                                 <div className="flex flex-col truncate">
                                                     <span className="truncate font-bold text-[11px] tracking-normal mb-0.5">{brandName}</span>
                                                     {g.identity?.tagline && (
-                                                        <span className="truncate text-[8px] opacity-40 font-sans normal-case tracking-normal">{g.identity.tagline}</span>
+                                                        <span className="truncate text-[10px] opacity-40 font-sans normal-case tracking-normal">{g.identity.tagline}</span>
                                                     )}
                                                 </div>
                                             </div>
@@ -210,7 +210,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
                                                 )}
                                             </div>
                                         </button>
-                                        
+
                                         <button
                                             onClick={(e) => handleEditGuideline(e, g)}
                                             className="absolute right-4 top-1/2 -translate-y-1/2 p-2 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-600 hover:text-white bg-neutral-950/80 rounded-lg border border-white/5"
@@ -224,9 +224,9 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
                             <div className="py-20 flex flex-col items-center justify-center text-neutral-600 gap-3">
                                 <Search size={24} className="opacity-20" />
                                 <span className="text-[10px] font-mono uppercase tracking-widest">{t('mockup.noResults') || 'Nenhuma marca encontrada'}</span>
-                                <button 
+                                <button
                                     onClick={() => setSearchQuery('')}
-                                    className="text-[9px] text-brand-cyan border-b border-brand-cyan/30 leading-none pb-0.5 hover:text-white hover:border-white transition-all cursor-pointer"
+                                    className="text-[10px] text-brand-cyan border-b border-brand-cyan/30 leading-none pb-0.5 hover:text-white hover:border-white transition-all cursor-pointer"
                                 >
                                     Limpar busca
                                 </button>
@@ -237,7 +237,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
                     <div className="pt-2 border-t border-white/5">
                         <button
                             onClick={handleOpenCreate}
-                            className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-brand-cyan text-black hover:bg-brand-cyan/90 transition-all font-mono text-[11px] font-bold uppercase tracking-widest shadow-[0_8px_20px_rgba(var(--brand-cyan-rgb),0.2)]"
+                            className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-brand-cyan text-black hover:bg-brand-cyan/90 transition-all font-mono text-[11px] font-bold uppercase tracking-widest shadow-[0_10px_20px_rgba(var(--brand-cyan-rgb),0.2)]"
                         >
                             <Plus size={16} strokeWidth={3} />
                             {t('mockup.createNewBrandGuideline') || 'ADICIONAR NOVO DNA'}
@@ -256,14 +256,8 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
 
             {selectedBrandGuideline && selectedGuidelineObj && (
                 <div className="mt-2 px-1 flex items-center justify-between opacity-40">
-                    <div className="flex items-center gap-1.5">
-                        <Gem size={8} className="text-brand-cyan" />
-                        <span className="text-[7px] font-mono text-white uppercase tracking-tighter">
-                            Active Context: {selectedGuidelineObj.identity?.name}
-                        </span>
-                    </div>
                     {selectedGuidelineObj._extraction && (
-                        <span className="text-[7px] font-mono text-brand-cyan uppercase tracking-tighter">
+                        <span className="text-[10px] font-mono text-brand-cyan uppercase tracking-tighter">
                             DNA {selectedGuidelineObj._extraction.completeness}%
                         </span>
                     )}

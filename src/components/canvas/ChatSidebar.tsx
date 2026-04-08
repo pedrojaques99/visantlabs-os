@@ -423,7 +423,7 @@ export const ChatSidebar = ({
                   {connectedStrategyData && (
                     <div className="flex flex-wrap gap-1.5">
                       {strategySections.map((s, i) => (
-                        <span key={i} className="text-[9px] px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-md font-mono uppercase backdrop-blur-sm shadow-sm">
+                        <span key={i} className="text-[10px] px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-md font-mono uppercase backdrop-blur-sm shadow-sm">
                           {s}
                         </span>
                       ))}

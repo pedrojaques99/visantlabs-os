@@ -80,14 +80,14 @@ export default function ASCIIFooter({
     <footer className={`relative border-t border-neutral-900/50 bg-background/50 backdrop-blur-sm z-50 ${className}`}>
       {/* Dynamic top line effect */}
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-cyan/20 to-transparent" />
-      
+
       <div className="w-full px-4 sm:px-8 py-3">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 font-mono">
-          
+
           {/* Left: VSN & App Version - Dynamic Scale Text */}
-          <div className="flex items-center gap-3 text-[clamp(9px,1vw,11px)] text-neutral-500 whitespace-nowrap order-2 md:order-1">
+          <div className="flex items-center gap-3 text-[clamp(10px,1vw,11px)] text-neutral-500 whitespace-nowrap order-2 md:order-1">
             <UniversalFooter isDarkMode={isDarkMode} className="text-left" />
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="px-1.5 py-0.5 rounded-sm bg-neutral-900/30 border border-neutral-800/50 flex items-center gap-1.5"
@@ -98,7 +98,7 @@ export default function ASCIIFooter({
           </div>
 
           {/* Center: Dynamic Info & Links - Responsive Wrapping */}
-          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[clamp(9px,1vw,11px)] text-neutral-500 order-1 md:order-2">
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[clamp(10px,1vw,11px)] text-neutral-500 order-1 md:order-2">
             <motion.div whileHover={{ color: '#fff' }} className="flex items-center gap-1.5 transition-colors cursor-default group">
               <Clock size={10} className="group-hover:text-brand-cyan transition-colors" />
               <span className="tabular-nums">{time}</span>
@@ -134,8 +134,8 @@ export default function ASCIIFooter({
           </div>
 
           {/* Right: Menus & Language - Grouped for Desktop */}
-          <div className="flex items-center gap-4 text-[clamp(9px,1vw,11px)] text-neutral-500 order-3">
-            
+          <div className="flex items-center gap-4 text-[clamp(10px,1vw,11px)] text-neutral-500 order-3">
+
             {/* Policies Dropdown */}
             {(onTermsClick || onUsagePolicyClick || onRefundClick) && (
               <div className="relative" data-policies-dropdown>
@@ -148,7 +148,7 @@ export default function ASCIIFooter({
                   <span>{t('footer.legal')}</span>
                   <ChevronDown size={8} className={`transition-transform duration-300 ${isPoliciesMenuOpen ? 'rotate-180' : ''}`} />
                 </motion.button>
-                
+
                 <AnimatePresence>
                   {isPoliciesMenuOpen && (
                     <motion.div
@@ -169,12 +169,12 @@ export default function ASCIIFooter({
                           <Button variant="ghost" onClick={() => handlePolicyClick(onUsagePolicyClick)}
                             className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
                           >
-                             {t('footer.usage')}
+                            {t('footer.usage')}
                           </Button>
                         )}
                         {onRefundClick && (
                           <Button variant="ghost" onClick={() => handlePolicyClick(onRefundClick)}
-                             className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
+                            className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
                           >
                             {t('footer.refund')}
                           </Button>
@@ -217,7 +217,7 @@ export default function ASCIIFooter({
                       <Button variant="ghost" onClick={() => handleLocaleChange('pt-BR')}
                         className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
                       >
-                         {t('footer.portuguese')}
+                        {t('footer.portuguese')}
                       </Button>
                     </div>
                   </motion.div>

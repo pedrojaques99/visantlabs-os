@@ -92,7 +92,7 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
           <GripVertical size={16} />
         </div>
 
-        <div className="flex items-center justify-between px-2 mb-1 min-h-[28px]">
+        <div className="flex items-center justify-between px-2 mb-1 min-h-[210px]">
           <div className="flex items-center gap-2.5">
             {icon && <div className="text-neutral-500 group-hover:text-brand-cyan transition-colors">{icon}</div>}
             {title && <MicroTitle className="text-[11px] uppercase tracking-widest text-neutral-400 font-bold">{title}</MicroTitle>}

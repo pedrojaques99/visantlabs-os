@@ -144,8 +144,8 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                         <div className="flex items-center justify-between mb-2">
                             <label className="text-[10px] font-mono text-neutral-400 font-semibold uppercase ">{t('canvasNodes.chatNode.systemPrompt') || 'System Prompt'}</label>
                             <div className="flex items-center gap-2">
-                                <NodeButton variant="ghost" size="xs" onClick={handleResetSystemPrompt} className="text-[9px]">{t('common.reset') || 'Reset'}</NodeButton>
-                                <NodeButton variant="primary" size="xs" onClick={handleSaveSystemPrompt} className="text-[9px]">{t('common.save') || 'Save'}</NodeButton>
+                                <NodeButton variant="ghost" size="xs" onClick={handleResetSystemPrompt} className="text-[10px]">{t('common.reset') || 'Reset'}</NodeButton>
+                                <NodeButton variant="primary" size="xs" onClick={handleSaveSystemPrompt} className="text-[10px]">{t('common.save') || 'Save'}</NodeButton>
                             </div>
                         </div>
                         <Textarea

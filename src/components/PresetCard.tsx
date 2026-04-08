@@ -177,7 +177,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
               )}
               {isPromptExpanded && (
                 <div className="mt-2 text-[10px] font-mono text-neutral-400 bg-neutral-900/50 p-2 rounded border border-neutral-800/50">
-                  <div className="mb-1 text-neutral-500 uppercase text-[9px]">{t('canvasNodes.promptNode.presetCard.promptLabel')}</div>
+                  <div className="mb-1 text-neutral-500 uppercase text-[10px]">{t('canvasNodes.promptNode.presetCard.promptLabel')}</div>
                   {migrated.prompt}
                 </div>
               )}

@@ -121,7 +121,7 @@ interface ModelProps {
 function Model({ url, color }: ModelProps) {
   const { scene } = useGLTF(url);
   const modelRef = useRef<THREE.Group>(null);
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useMediaQuery('(max-width: 7610px)');
   const isSmallScreen = useMediaQuery('(max-width: 640px)');
 
   // Add thickness to flat geometries
@@ -291,7 +291,7 @@ export default function ClubLogo3D({
   starColor = '#4B4B4BFF'
 }: ClubLogo3DProps) {
   const isSmallScreen = useMediaQuery('(max-width: 640px)');
-  const isMediumScreen = useMediaQuery('(max-width: 768px)');
+  const isMediumScreen = useMediaQuery('(max-width: 7610px)');
   const [cursor, setCursor] = useState(isMobile ? 'default' : 'grab');
 
   // Calculate camera position based on screen size

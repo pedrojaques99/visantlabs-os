@@ -239,7 +239,7 @@
 
   .welcome-screen a {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.5' fill='none' stroke='white' stroke-width='0.5'/%3E%3Ccircle cx='5' cy='5' r='3' fill='%23brand-cyan'/%3E%3C/svg%3E") 5 5, auto !important;
-    text-shadow: 0 0 8px color-mix(in srgb, var(--brand-cyan), transparent 40%), 0 0 16px color-mix(in srgb, var(--brand-cyan), transparent 60%);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--brand-cyan), transparent 40%), 0 0 16px color-mix(in srgb, var(--brand-cyan), transparent 60%);
     transition: text-shadow 0.3s ease;
   }
 
@@ -283,7 +283,7 @@
   }
 
   50% {
-    transform: translateY(-8px);
+    transform: translateY(-10px);
   }
 }
 
@@ -378,8 +378,8 @@
 }
 
 *::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 *::-webkit-scrollbar-track {
@@ -548,7 +548,7 @@
   }
 
   50% {
-    box-shadow: 0 0 0 8px rgba(82, 221, 235, 0.2);
+    box-shadow: 0 0 0 10px rgba(82, 221, 235, 0.2);
   }
 }
 
@@ -562,7 +562,7 @@
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px);
   }
 }
 
@@ -614,8 +614,13 @@
 }
 
 @keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
+  0% {
+    transform: translateY(-100%);
+  }
+
+  100% {
+    transform: translateY(100%);
+  }
 }
 
 .animate-scanline {
@@ -632,7 +637,7 @@
 
   50% {
     opacity: 0.85;
-    box-shadow: 0 0 8px rgba(82, 221, 235, 0.3);
+    box-shadow: 0 0 10px rgba(82, 221, 235, 0.3);
   }
 }
 
@@ -645,7 +650,7 @@
 
   0%,
   100% {
-    filter: drop-shadow(0 0 8px rgba(82, 221, 235, 0.25));
+    filter: drop-shadow(0 0 10px rgba(82, 221, 235, 0.25));
   }
 
   50% {
@@ -696,11 +701,25 @@
 }
 
 /* Staggered Reveal Utils */
-.stagger-1 { animation-delay: 0.1s; }
-.stagger-2 { animation-delay: 0.2s; }
-.stagger-3 { animation-delay: 0.3s; }
-.stagger-4 { animation-delay: 0.4s; }
-.stagger-5 { animation-delay: 0.5s; }
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+
+.stagger-3 {
+  animation-delay: 0.3s;
+}
+
+.stagger-4 {
+  animation-delay: 0.4s;
+}
+
+.stagger-5 {
+  animation-delay: 0.5s;
+}
 
 .reveal-hidden {
   opacity: 0;
@@ -1035,8 +1054,8 @@
 /* Drop Indicator */
 .drop-indicator {
   height: 2px;
-  margin: 4px 8px;
-  box-shadow: 0 0 8px rgba(82, 221, 235, 0.5);
+  margin: 4px 10px;
+  box-shadow: 0 0 10px rgba(82, 221, 235, 0.5);
 }
 
 @keyframes dropPulse {
@@ -1044,7 +1063,7 @@
   0%,
   100% {
     opacity: 0.4;
-    box-shadow: 0 0 8px rgba(82, 221, 235, 0.5);
+    box-shadow: 0 0 10px rgba(82, 221, 235, 0.5);
   }
 
   50% {
@@ -1072,7 +1091,7 @@
   justify-content: center;
   opacity: 0;
   transition: opacity 0.2s ease, background-color 0.2s ease;
-  border-radius: 8px 0 0 0;
+  border-radius: 10px 0 0 0;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -1103,8 +1122,8 @@
 }
 
 .react-flow__resize-control.handle {
-  width: 7px !important;
-  height: 7px !important;
+  width: 10px !important;
+  height: 10px !important;
   border-radius: 50% !important;
   background: #ffffff !important;
   border: 1.5px solid var(--brand-cyan) !important;
@@ -1169,7 +1188,7 @@
   width: 100%;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 7610px) {
   .column-layout {
     gap: 1.5rem;
   }
@@ -1316,8 +1335,8 @@
   .react-flow__node-pdf,
   .react-flow__node-merge,
   .react-flow__node-edit:not(.min-w-\[600px\])) .react-flow__handle:hover:not(.connected):not([data-connected="true"]):not(.react-flow__resize-control) {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   opacity: 0.7;
   background: #777777;
   border: 0.5px solid rgba(119, 119, 119, 0.4);
@@ -1466,16 +1485,16 @@
 
 .react-flow__controls {
   background: transparent;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   border: 0.5px solid rgba(27, 27, 27, 0.15);
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .react-flow__minimap {
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   border: 0.5px solid rgba(82, 221, 235, 0.3);
-  border-radius: 8px;
+  border-radius: 10px;
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
 }
@@ -1806,7 +1825,7 @@ select.w-full.font-mono.node-interactive {
 @keyframes fadeInUpMenu {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
 
   to {
@@ -1944,8 +1963,8 @@ select.w-full.font-mono.node-interactive {
    SONNER TOAST CUSTOM STYLES
    ============================================ */
 [data-sonner-toast] {
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
   border-radius: var(--radius) !important;
   font-family: 'Red Hat Mono', monospace !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -1959,7 +1978,7 @@ select.w-full.font-mono.node-interactive {
 
 [data-sonner-toast]:hover {
   transform: translateY(-2px) scale(1.02) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2) !important;
 }
 
 [data-sonner-toast] [data-title] {

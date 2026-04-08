@@ -253,7 +253,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-950/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 overflow-hidden" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="w-full max-w-xl md:max-w-2xl bg-neutral-950/50 backdrop-blur-3xl border border-white/5 rounded-2xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] relative max-h-full overflow-hidden flex flex-col animate-scale-in">
         <LinearGradientBackground className="rounded-2xl" fullHeight />
-        <Button 
+        <Button
           variant="ghost"
           onClick={onClose}
           className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors z-30 p-2 hover:bg-white/5 rounded-full"
@@ -373,9 +373,9 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                     <div className="text-[10px] sm:text-[11px] font-mono text-brand-cyan/50 uppercase tracking-widest">
                                       ≈ {animatedCredits} {t('pricing.imagesEstimate') || 'Imagens HD'}
                                     </div>
-                                    <button 
+                                    <button
                                       onClick={() => setShowPackageCosts(!showPackageCosts)}
-                                      className="flex items-center gap-1 text-[9px] text-neutral-600 hover:text-brand-cyan transition-colors cursor-pointer uppercase font-mono tracking-widest pl-2 border-l border-neutral-800 ml-2"
+                                      className="flex items-center gap-1 text-[10px] text-neutral-600 hover:text-brand-cyan transition-colors cursor-pointer uppercase font-mono tracking-widest pl-2 border-l border-neutral-800 ml-2"
                                     >
                                       <span>{showPackageCosts ? 'Ver menos' : 'Ver modelos'}</span>
                                       {showPackageCosts ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
@@ -390,7 +390,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                           <span>Modelo / Resolução</span>
                                           <span>Imagens</span>
                                         </div>
-                                        
+
                                         <div className="space-y-1.5">
                                           {[
                                             { label: '2.5 Flash / NB2 1K', cost: 1 },
@@ -484,7 +484,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 setSelectedIndex(index);
                               }}
                               className={`h-2 rounded-md transition-all duration-300 ease-out ${index === selectedIndex
-                                ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
+                                ? 'bg-brand-cyan w-8 shadow-[0_0_10px_rgba(82,221,235,0.4)]'
                                 : 'bg-neutral-600 hover:bg-neutral-500 w-2 hover:scale-125'
                                 }`}
                               aria-label={`Select ${CREDIT_PACKAGES[index].credits} credits package`}
@@ -522,29 +522,29 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] text-center shadow-sm relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 pointer-events-none" />
 
-                                 {/* Popular Badge */}
-                                 {currentPlan.displayOrder === 1 && (
-                                   <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-10">
-                                     <Badge className="bg-brand-cyan text-black font-bold text-[8px] sm:text-[9px] uppercase tracking-widest px-2 sm:px-3 py-0.5 rounded-full">
-                                       {t('pricing.popular') || 'Popular'}
-                                     </Badge>
-                                   </div>
-                                 )}
+                                {/* Popular Badge */}
+                                {currentPlan.displayOrder === 1 && (
+                                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-10">
+                                    <Badge className="bg-brand-cyan text-black font-bold text-[10px] sm:text-[10px] uppercase tracking-widest px-2 sm:px-3 py-0.5 rounded-full">
+                                      {t('pricing.popular') || 'Popular'}
+                                    </Badge>
+                                  </div>
+                                )}
 
-                                 <div className="relative z-10 space-y-4 sm:space-y-6">
-                                   {/* Plan Name */}
-                                   <div>
-                                     <div className="flex items-center justify-center gap-2 mb-1">
-                                       <h3 className="text-xl sm:text-2xl font-bold text-neutral-100 tracking-tight">
-                                         {currentPlan.name}
-                                       </h3>
-                                       {currentPlan.metadata?.storageMB && parseInt(currentPlan.metadata.storageMB) >= 5120 && (
-                                         <Badge className="bg-brand-cyan/20 text-brand-cyan border-none text-[8px] px-1.5 py-0">
-                                           BYOK READY
-                                         </Badge>
-                                       )}
-                                     </div>
-                                   </div>
+                                <div className="relative z-10 space-y-4 sm:space-y-6">
+                                  {/* Plan Name */}
+                                  <div>
+                                    <div className="flex items-center justify-center gap-2 mb-1">
+                                      <h3 className="text-xl sm:text-2xl font-bold text-neutral-100 tracking-tight">
+                                        {currentPlan.name}
+                                      </h3>
+                                      {currentPlan.metadata?.storageMB && parseInt(currentPlan.metadata.storageMB) >= 5120 && (
+                                        <Badge className="bg-brand-cyan/20 text-brand-cyan border-none text-[10px] px-1.5 py-0">
+                                          BYOK READY
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </div>
 
                                   {/* Billing Cycle Toggle - Inside card */}
                                   <div className="flex justify-center">
@@ -572,7 +572,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                           }`}
                                       >
                                         {t('pricing.yearly')}
-                                        <span className={`text-[8px] px-1 py-0.5 rounded-full font-bold  ${billingCycle === 'yearly' ? "bg-black/10" : "bg-brand-cyan/10 text-brand-cyan"
+                                        <span className={`text-[10px] px-1 py-0.5 rounded-full font-bold  ${billingCycle === 'yearly' ? "bg-black/10" : "bg-brand-cyan/10 text-brand-cyan"
                                           }`}>
                                           -16%
                                         </span>
@@ -661,7 +661,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                     setSelectedPlanIndex(index);
                                   }}
                                   className={`h-2 rounded-md transition-all duration-300 ease-out ${index === selectedPlanIndex
-                                    ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
+                                    ? 'bg-brand-cyan w-8 shadow-[0_0_10px_rgba(82,221,235,0.4)]'
                                     : 'bg-neutral-600 hover:bg-neutral-500 w-2 hover:scale-125'
                                     }`}
                                   aria-label={`Select plan ${index + 1}`}
@@ -711,81 +711,81 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                       <div className="bg-neutral-950/20 backdrop-blur-sm border border-neutral-800/30 rounded-xl p-5 sm:p-6 md:p-8 w-full max-w-[280px] sm:max-w-[420px] text-center shadow-sm mb-6 sm:mb-8 md:mb-10">
                         <div className="space-y-4">
                           <div>
-                             {/* Credits Display */}
-                             <div className="flex items-center justify-center mb-3">
-                               <div className="text-6xl sm:text-7xl md:text-8xl font-black text-brand-cyan drop-shadow-[0_0_15px_rgba(82,221,235,0.3)] font-mono leading-none tracking-tighter">
-                                 {totalCreditsAvailable}
-                               </div>
-                             </div>
+                            {/* Credits Display */}
+                            <div className="flex items-center justify-center mb-3">
+                              <div className="text-6xl sm:text-7xl md:text-8xl font-black text-brand-cyan drop-shadow-[0_0_15px_rgba(82,221,235,0.3)] font-mono leading-none tracking-tighter">
+                                {totalCreditsAvailable}
+                              </div>
+                            </div>
 
-                             <MicroTitle className="flex items-center justify-center gap-2 text-neutral-500 uppercase tracking-widest">
-                               <Pickaxe
-                                 size={12}
-                                 className="text-brand-cyan/50 flex-shrink-0"
-                               />
-                               {t('credits.available')}
-                             </MicroTitle>
-                             <div className="flex flex-col items-center gap-2 mt-1">
-                               <div className="flex items-center justify-center gap-1.5">
-                                 <div className="text-[10px] sm:text-[11px] font-mono text-brand-cyan/50 uppercase tracking-widest">
-                                   ≈ {totalCreditsAvailable} {t('pricing.imagesEstimate') || 'Imagens HD'}
-                                 </div>
-                                 <button 
-                                   onClick={() => setShowStatusCosts(!showStatusCosts)}
-                                   className="flex items-center gap-1 text-[9px] text-neutral-600 hover:text-brand-cyan transition-colors cursor-pointer uppercase font-mono tracking-widest pl-2 border-l border-neutral-800 ml-2"
-                                 >
-                                   <span>{showStatusCosts ? 'Ver menos' : 'Ver modelos'}</span>
-                                   {showStatusCosts ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-                                 </button>
-                               </div>
+                            <MicroTitle className="flex items-center justify-center gap-2 text-neutral-500 uppercase tracking-widest">
+                              <Pickaxe
+                                size={12}
+                                className="text-brand-cyan/50 flex-shrink-0"
+                              />
+                              {t('credits.available')}
+                            </MicroTitle>
+                            <div className="flex flex-col items-center gap-2 mt-1">
+                              <div className="flex items-center justify-center gap-1.5">
+                                <div className="text-[10px] sm:text-[11px] font-mono text-brand-cyan/50 uppercase tracking-widest">
+                                  ≈ {totalCreditsAvailable} {t('pricing.imagesEstimate') || 'Imagens HD'}
+                                </div>
+                                <button
+                                  onClick={() => setShowStatusCosts(!showStatusCosts)}
+                                  className="flex items-center gap-1 text-[10px] text-neutral-600 hover:text-brand-cyan transition-colors cursor-pointer uppercase font-mono tracking-widest pl-2 border-l border-neutral-800 ml-2"
+                                >
+                                  <span>{showStatusCosts ? 'Ver menos' : 'Ver modelos'}</span>
+                                  {showStatusCosts ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+                                </button>
+                              </div>
 
-                               {/* Expandable Costs Section */}
-                               {showStatusCosts && (
-                                 <div className="w-full max-w-[300px] mt-2 py-3 px-4 bg-neutral-950/40 rounded-lg border border-neutral-800/30 animate-in fade-in slide-in-from-top-2 duration-300">
-                                   <div className="space-y-2">
-                                     <div className="flex justify-between text-[11px] font-bold uppercase tracking-tight text-neutral-400 border-b border-neutral-800/100 pb-1 mb-2">
-                                       <span>Modelo / Resolução</span>
-                                       <span>Imagens</span>
-                                     </div>
-                                     
-                                     <div className="space-y-1.5">
-                                       {[
-                                         { label: '2.5 Flash / NB2 1K', cost: 1 },
-                                         { label: 'Gemini Pro 1K (HD)', cost: 2 },
-                                         { label: 'Gemini Pro 2K', cost: 3 },
-                                         { label: 'Gemini Pro 3K', cost: 4 },
-                                         { label: 'Gemini Pro 4K', cost: 5 },
-                                         { label: 'Nano Banana 2 2K', cost: 3 },
-                                         { label: 'Nano Banana 2 3K', cost: 4 },
-                                         { label: 'Nano Banana 2 4K', cost: 5 },
-                                       ].map((item, idx) => (
-                                         <div key={idx} className="flex justify-between text-[10px] items-center">
-                                           <span className="text-neutral-500">{item.label}</span>
-                                           <span className="text-brand-cyan font-bold">{Math.floor(totalCreditsAvailable / item.cost)}</span>
-                                         </div>
-                                       ))}
+                              {/* Expandable Costs Section */}
+                              {showStatusCosts && (
+                                <div className="w-full max-w-[300px] mt-2 py-3 px-4 bg-neutral-950/40 rounded-lg border border-neutral-800/30 animate-in fade-in slide-in-from-top-2 duration-300">
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between text-[11px] font-bold uppercase tracking-tight text-neutral-400 border-b border-neutral-800/100 pb-1 mb-2">
+                                      <span>Modelo / Resolução</span>
+                                      <span>Imagens</span>
+                                    </div>
 
-                                       <div className="flex justify-between text-[10px] items-center pt-1 border-t border-neutral-800/50 mt-1">
-                                         <span className="text-neutral-500">Veo 3 (Vídeo)</span>
-                                         <span className="text-brand-cyan font-bold">{Math.floor(totalCreditsAvailable / 15)} Vídeos</span>
-                                       </div>
-                                     </div>
-                                   </div>
-                                 </div>
-                               )}
-                             </div>
-                           </div>
+                                    <div className="space-y-1.5">
+                                      {[
+                                        { label: '2.5 Flash / NB2 1K', cost: 1 },
+                                        { label: 'Gemini Pro 1K (HD)', cost: 2 },
+                                        { label: 'Gemini Pro 2K', cost: 3 },
+                                        { label: 'Gemini Pro 3K', cost: 4 },
+                                        { label: 'Gemini Pro 4K', cost: 5 },
+                                        { label: 'Nano Banana 2 2K', cost: 3 },
+                                        { label: 'Nano Banana 2 3K', cost: 4 },
+                                        { label: 'Nano Banana 2 4K', cost: 5 },
+                                      ].map((item, idx) => (
+                                        <div key={idx} className="flex justify-between text-[10px] items-center">
+                                          <span className="text-neutral-500">{item.label}</span>
+                                          <span className="text-brand-cyan font-bold">{Math.floor(totalCreditsAvailable / item.cost)}</span>
+                                        </div>
+                                      ))}
 
-                           {/* Reset Date */}
-                           {creditsResetDate && (
-                             <div className="pt-6 border-t border-neutral-800/40">
-                               <div className="text-[10px] sm:text-[11px] font-mono text-neutral-500 uppercase tracking-widest text-center">
-                                 {hasActiveSubscription
-                                   ? t('credits.renews', { date: formatDate(creditsResetDate) })
-                                   : t('credits.resets', { date: formatDate(creditsResetDate) })}
-                               </div>
-                             </div>
-                           )}
+                                      <div className="flex justify-between text-[10px] items-center pt-1 border-t border-neutral-800/50 mt-1">
+                                        <span className="text-neutral-500">Veo 3 (Vídeo)</span>
+                                        <span className="text-brand-cyan font-bold">{Math.floor(totalCreditsAvailable / 15)} Vídeos</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Reset Date */}
+                          {creditsResetDate && (
+                            <div className="pt-6 border-t border-neutral-800/40">
+                              <div className="text-[10px] sm:text-[11px] font-mono text-neutral-500 uppercase tracking-widest text-center">
+                                {hasActiveSubscription
+                                  ? t('credits.renews', { date: formatDate(creditsResetDate) })
+                                  : t('credits.resets', { date: formatDate(creditsResetDate) })}
+                              </div>
+                            </div>
+                          )}
 
                           {/* Action Buttons */}
                           <div className="flex flex-col gap-2 mt-4 sm:mt-6">
@@ -841,7 +841,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                     </Button>
                   </div>
                 )}
-               </div>
+              </div>
 
               {/* Modal Community Footer */}
               <div className="pt-8 mt-4 border-t border-neutral-800/20 flex flex-col sm:flex-row items-center justify-between gap-4 opacity-50 hover:opacity-100 transition-opacity">

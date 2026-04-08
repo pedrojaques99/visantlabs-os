@@ -106,7 +106,7 @@ export const CreativeToolbar: React.FC = () => {
   const textData = isText ? (selected!.data as TextLayerData) : null;
   const isLogo = selected?.data.type === 'logo';
   const logoUrl = isLogo ? (selected!.data as any).url : null;
-  
+
   const fonts = (activeGuideline?.typography ?? []).map((t) => t.family).filter(Boolean);
   const logos = activeGuideline?.logos ?? [];
   const media = activeGuideline?.media ?? [];
@@ -215,7 +215,7 @@ export const CreativeToolbar: React.FC = () => {
                 type="color"
                 value={textData.color}
                 onChange={(e) => updateText({ color: e.target.value })}
-                className="w-[18px] h-[18px] rounded cursor-pointer bg-transparent border border-white/20 p-0"
+                className="w-[110px] h-[110px] rounded cursor-pointer bg-transparent border border-white/20 p-0"
               />
             </div>
           )}
@@ -226,12 +226,12 @@ export const CreativeToolbar: React.FC = () => {
 
       {/* ── Spatial alignment (canvas for single, group for multi) ── */}
       <div className="flex items-center gap-0.5">
-        <Btn icon={AlignStartVertical}  onClick={() => alignLayers('left')}     title="Alinhar à esquerda" />
+        <Btn icon={AlignStartVertical} onClick={() => alignLayers('left')} title="Alinhar à esquerda" />
         <Btn icon={AlignCenterHorizontal} onClick={() => alignLayers('center-h')} title="Centralizar horizontalmente" />
-        <Btn icon={AlignEndVertical}    onClick={() => alignLayers('right')}    title="Alinhar à direita" />
-        <Btn icon={AlignStartHorizontal} onClick={() => alignLayers('top')}      title="Alinhar ao topo" />
-        <Btn icon={AlignCenterVertical}  onClick={() => alignLayers('center-v')} title="Centralizar verticalmente" />
-        <Btn icon={AlignEndHorizontal}  onClick={() => alignLayers('bottom')}   title="Alinhar à base" />
+        <Btn icon={AlignEndVertical} onClick={() => alignLayers('right')} title="Alinhar à direita" />
+        <Btn icon={AlignStartHorizontal} onClick={() => alignLayers('top')} title="Alinhar ao topo" />
+        <Btn icon={AlignCenterVertical} onClick={() => alignLayers('center-v')} title="Centralizar verticalmente" />
+        <Btn icon={AlignEndHorizontal} onClick={() => alignLayers('bottom')} title="Alinhar à base" />
       </div>
 
       {/* ── Distribute (3+ selected) ── */}
@@ -240,7 +240,7 @@ export const CreativeToolbar: React.FC = () => {
           <Divider />
           <div className="flex items-center gap-0.5">
             <Btn icon={AlignHorizontalSpaceBetween} onClick={() => distributeLayers('horizontal')} title="Distribuir horizontalmente" />
-            <Btn icon={AlignVerticalSpaceBetween}   onClick={() => distributeLayers('vertical')}   title="Distribuir verticalmente" />
+            <Btn icon={AlignVerticalSpaceBetween} onClick={() => distributeLayers('vertical')} title="Distribuir verticalmente" />
           </div>
         </>
       )}
@@ -250,9 +250,9 @@ export const CreativeToolbar: React.FC = () => {
         <>
           <Divider />
           <div className="flex items-center gap-0.5">
-            <Btn icon={ArrowUpToLine} onClick={() => reorderLayer(selectedLayerIds[0], 'top')}    title="Trazer para frente" />
-            <Btn icon={ArrowUp}       onClick={() => reorderLayer(selectedLayerIds[0], 'up')}     title="Subir uma camada" />
-            <Btn icon={ArrowDown}     onClick={() => reorderLayer(selectedLayerIds[0], 'down')}   title="Descer uma camada" />
+            <Btn icon={ArrowUpToLine} onClick={() => reorderLayer(selectedLayerIds[0], 'top')} title="Trazer para frente" />
+            <Btn icon={ArrowUp} onClick={() => reorderLayer(selectedLayerIds[0], 'up')} title="Subir uma camada" />
+            <Btn icon={ArrowDown} onClick={() => reorderLayer(selectedLayerIds[0], 'down')} title="Descer uma camada" />
             <Btn icon={ArrowDownToLine} onClick={() => reorderLayer(selectedLayerIds[0], 'bottom')} title="Enviar para trás" />
           </div>
         </>

@@ -131,19 +131,19 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
   const selRect =
     isDragging && dragStart && dragCurrent
       ? {
-          left: Math.min(dragStart.x, dragCurrent.x) * canvasWidth,
-          top: Math.min(dragStart.y, dragCurrent.y) * canvasHeight,
-          width: Math.abs(dragCurrent.x - dragStart.x) * canvasWidth,
-          height: Math.abs(dragCurrent.y - dragStart.y) * canvasHeight,
-        }
+        left: Math.min(dragStart.x, dragCurrent.x) * canvasWidth,
+        top: Math.min(dragStart.y, dragCurrent.y) * canvasHeight,
+        width: Math.abs(dragCurrent.x - dragStart.x) * canvasWidth,
+        height: Math.abs(dragCurrent.y - dragStart.y) * canvasHeight,
+      }
       : lassoRegion
-      ? {
+        ? {
           left: lassoRegion.x * canvasWidth,
           top: lassoRegion.y * canvasHeight,
           width: lassoRegion.w * canvasWidth,
           height: lassoRegion.h * canvasHeight,
         }
-      : null;
+        : null;
 
   return (
     <>
@@ -195,7 +195,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                 />
               ))}
               {/* Size label */}
-              <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-neutral-900/90 border border-white/10 rounded text-[9px] font-mono text-neutral-400 whitespace-nowrap">
+              <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-neutral-900/90 border border-white/10 rounded text-[10px] font-mono text-neutral-400 whitespace-nowrap">
                 {Math.round(selRect.width)}x{Math.round(selRect.height)}px
               </div>
             </div>
@@ -247,7 +247,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                   <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
                     Nova Layer
                   </span>
-                  <span className="text-[8px] text-neutral-600 text-center">
+                  <span className="text-[10px] text-neutral-600 text-center">
                     Cria por cima
                   </span>
                 </button>
@@ -259,7 +259,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                   <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
                     Editar com IA
                   </span>
-                  <span className="text-[8px] text-neutral-600 text-center">
+                  <span className="text-[10px] text-neutral-600 text-center">
                     Altera a área
                   </span>
                 </button>
@@ -272,11 +272,11 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setActionMode(null)}
-                    className="text-[9px] font-bold uppercase tracking-widest text-neutral-500 hover:text-white transition-colors"
+                    className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 hover:text-white transition-colors"
                   >
                     ← Voltar
                   </button>
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-brand-cyan">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-brand-cyan">
                     {actionMode === 'layer' ? 'Nova Layer' : 'Editar Área'}
                   </span>
                 </div>

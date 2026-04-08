@@ -114,7 +114,7 @@ class UIManager {
     for (const issue of shown) {
       const row = document.createElement('div');
       const sevColor = issue.severity === 'error' ? '#ef4444' : issue.severity === 'warning' ? '#eab308' : '#64748b';
-      row.style.cssText = `display: flex; gap: 6px; padding: 6px 8px; border-radius: 4px; background: rgba(255,255,255,0.03); cursor: pointer; border-left: 2px solid ${sevColor};`;
+      row.style.cssText = `display: flex; gap: 6px; padding: 6px 10px; border-radius: 4px; background: rgba(255,255,255,0.03); cursor: pointer; border-left: 2px solid ${sevColor};`;
       row.title = 'Clique para focar no canvas';
 
       const body = document.createElement('div');
@@ -125,7 +125,7 @@ class UIManager {
       name.textContent = issue.nodeName;
 
       const msg = document.createElement('div');
-      msg.style.cssText = 'color: var(--figma-color-text-secondary); font-size: 9px; margin-top: 2px;';
+      msg.style.cssText = 'color: var(--figma-color-text-secondary); font-size: 10px; margin-top: 2px;';
       msg.textContent = issue.message + (issue.suggestion ? ` — ${issue.suggestion}` : '');
 
       body.appendChild(name);
@@ -141,7 +141,7 @@ class UIManager {
 
     if (report.issues.length > shown.length) {
       const more = document.createElement('div');
-      more.style.cssText = 'color: var(--figma-color-text-secondary); padding: 4px 8px; font-size: 9px;';
+      more.style.cssText = 'color: var(--figma-color-text-secondary); padding: 4px 10px; font-size: 10px;';
       more.textContent = `+ ${report.issues.length - shown.length} issues adicionais`;
       issuesEl.appendChild(more);
     }
@@ -236,7 +236,7 @@ class UIManager {
       document.querySelectorAll('.overflow-menu').forEach(menu => {
         const triggerId = menu.id.replace('OverflowMenu', 'MoreBtn') || menu.id.replace('Menu', 'Btn');
         const trigger = document.getElementById(triggerId);
-        
+
         if (trigger && !trigger.contains(e.target) && !menu.contains(e.target)) {
           menu.classList.add('hidden');
         }
@@ -393,7 +393,7 @@ class UIManager {
           this.showToast('Você não configurou uma Brand (logos, fontes ou cores). Configure na aba Brand primeiro.', 'error');
           return;
         }
-        
+
         const config = {
           logos: state.logos,
           typography: state.typography,
@@ -406,54 +406,54 @@ class UIManager {
       });
     }
 
-      const varyBtn = document.getElementById('jsonRunnerVaryColorsBtn');
-      if (varyBtn) {
-        varyBtn.addEventListener('click', () => {
-          const colorsObj = state.selectedColors instanceof Map
-            ? Object.fromEntries(state.selectedColors)
-            : (state.selectedColors || {});
-          const brandHexes = Object.values(colorsObj)
-            .map((c) => (c && (c.value || c.hex)) || null)
-            .filter((v) => typeof v === 'string' && v.trim().length > 0);
-          if (brandHexes.length === 0) {
-            this.showToast('Selecione cores na seção COLORS da Brand Guideline primeiro', 'error');
-            return;
-          }
-          this.showToast('🎨 Variando cores da brand...', 'info');
-          parent.postMessage({ pluginMessage: { type: 'VARY_SELECTION_COLORS', brandColors: brandHexes } }, '*');
-        });
-      }
+    const varyBtn = document.getElementById('jsonRunnerVaryColorsBtn');
+    if (varyBtn) {
+      varyBtn.addEventListener('click', () => {
+        const colorsObj = state.selectedColors instanceof Map
+          ? Object.fromEntries(state.selectedColors)
+          : (state.selectedColors || {});
+        const brandHexes = Object.values(colorsObj)
+          .map((c) => (c && (c.value || c.hex)) || null)
+          .filter((v) => typeof v === 'string' && v.trim().length > 0);
+        if (brandHexes.length === 0) {
+          this.showToast('Selecione cores na seção COLORS da Brand Guideline primeiro', 'error');
+          return;
+        }
+        this.showToast('🎨 Variando cores da brand...', 'info');
+        parent.postMessage({ pluginMessage: { type: 'VARY_SELECTION_COLORS', brandColors: brandHexes } }, '*');
+      });
+    }
 
-      // ── Brand Lint ──
-      const brandLintBtn = document.getElementById('jsonRunnerBrandLintBtn');
-      if (brandLintBtn) {
-        brandLintBtn.addEventListener('click', () => {
-          this.showToast('🔍 Auditando brand...', 'info');
-          parent.postMessage({
-            pluginMessage: { type: 'BRAND_LINT', brand: this.getBrandContext() },
-          }, '*');
-        });
-      }
+    // ── Brand Lint ──
+    const brandLintBtn = document.getElementById('jsonRunnerBrandLintBtn');
+    if (brandLintBtn) {
+      brandLintBtn.addEventListener('click', () => {
+        this.showToast('🔍 Auditando brand...', 'info');
+        parent.postMessage({
+          pluginMessage: { type: 'BRAND_LINT', brand: this.getBrandContext() },
+        }, '*');
+      });
+    }
 
-      // ── Brand Lint Auto-Fix ──
-      const brandLintFixBtn = document.getElementById('brandLintFixBtn');
-      if (brandLintFixBtn) {
-        brandLintFixBtn.addEventListener('click', () => {
-          this.showToast('🛠 Aplicando fixes...', 'info');
-          parent.postMessage({
-            pluginMessage: { type: 'BRAND_LINT_FIX', brand: this.getBrandContext() },
-          }, '*');
-        });
-      }
+    // ── Brand Lint Auto-Fix ──
+    const brandLintFixBtn = document.getElementById('brandLintFixBtn');
+    if (brandLintFixBtn) {
+      brandLintFixBtn.addEventListener('click', () => {
+        this.showToast('🛠 Aplicando fixes...', 'info');
+        parent.postMessage({
+          pluginMessage: { type: 'BRAND_LINT_FIX', brand: this.getBrandContext() },
+        }, '*');
+      });
+    }
 
-      // ── Responsive Multiply ──
-      const responsiveBtn = document.getElementById('jsonRunnerResponsiveBtn');
-      if (responsiveBtn) {
-        responsiveBtn.addEventListener('click', () => {
-          this.showToast('📐 Gerando formatos responsivos...', 'info');
-          parent.postMessage({ pluginMessage: { type: 'RESPONSIVE_MULTIPLY' } }, '*');
-        });
-      }
+    // ── Responsive Multiply ──
+    const responsiveBtn = document.getElementById('jsonRunnerResponsiveBtn');
+    if (responsiveBtn) {
+      responsiveBtn.addEventListener('click', () => {
+        this.showToast('📐 Gerando formatos responsivos...', 'info');
+        parent.postMessage({ pluginMessage: { type: 'RESPONSIVE_MULTIPLY' } }, '*');
+      });
+    }
 
     const runBrandGridBtn = document.getElementById('jsonRunnerBrandGridBtn');
     if (runBrandGridBtn) {
@@ -489,12 +489,12 @@ class UIManager {
     if (stickyBtn) {
       stickyBtn.addEventListener('click', () => {
         // Simple prompt to create a design note
-        parent.postMessage({ 
-          pluginMessage: { 
-            type: 'CREATE_STICKY_PROMPT', 
-            name: 'Design Note', 
-            prompt: 'Escreva aqui suas considerações sobre o design para que a IA possa usar como contexto.' 
-          } 
+        parent.postMessage({
+          pluginMessage: {
+            type: 'CREATE_STICKY_PROMPT',
+            name: 'Design Note',
+            prompt: 'Escreva aqui suas considerações sobre o design para que a IA possa usar como contexto.'
+          }
         }, '*');
       });
     }
@@ -569,7 +569,7 @@ class UIManager {
       jsonApplyBrandBtn.addEventListener('click', async () => {
         const textarea = document.getElementById('jsonRunnerInput');
         if (!textarea || !textarea.value.trim()) return;
-        
+
         const brand = state.brandGuideline;
         if (!brand || !brand.id) {
           this.showToast('Selecione uma marca primeiro', 'warning');
@@ -579,9 +579,9 @@ class UIManager {
         try {
           jsonApplyBrandBtn.disabled = true;
           jsonApplyBrandBtn.innerHTML = 'Aplicando...';
-          
+
           const currentJson = JSON.parse(textarea.value);
-          
+
           const result = await apiCall(`/brand-intelligence/${brand.id}/adapt-json`, 'POST', {
             operations: currentJson
           });
@@ -856,7 +856,7 @@ class UIManager {
                 intent: this._lastIntent || null,
                 opCount: msg.count || 0,
                 telemetry: msg.telemetry,
-              }).catch(() => {}); // fire-and-forget; never block UX
+              }).catch(() => { }); // fire-and-forget; never block UX
             } catch (_e) { /* noop */ }
           }
           if (msg.summary) {
@@ -991,12 +991,12 @@ class UIManager {
     const chip = document.getElementById('selectionChip');
     const nameLabel = document.getElementById('selectionName');
     if (!chip || !nameLabel) return;
-    
+
     if (selection && selection.length > 0) {
       const count = selection.length;
       const first = selection[0];
       const label = count > 1 ? `${first.name} +${count - 1}` : first.name;
-      
+
       nameLabel.textContent = label;
       chip.classList.remove('hidden');
     } else {
@@ -1222,11 +1222,11 @@ class UIManager {
   expandCollapsible(targetId) {
     const target = document.getElementById(targetId);
     if (!target) return;
-    
+
     const header = document.querySelector(`.collapsible-header[data-target="${targetId}"]`);
     target.classList.remove('hidden');
     if (header) header.setAttribute('data-collapsed', 'false');
-    
+
     setTimeout(() => {
       target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 100);
@@ -1277,7 +1277,7 @@ class UIManager {
 
     const btn = document.createElement('button');
     btn.className = 'figma-btn figma-btn-secondary';
-    btn.style.cssText = 'margin-top: 6px; font-size: 10px; padding: 4px 8px; display: flex; align-items: center; gap: 4px; width: fit-content;';
+    btn.style.cssText = 'margin-top: 6px; font-size: 10px; padding: 4px 10px; display: flex; align-items: center; gap: 4px; width: fit-content;';
     btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h8M2 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Debug Log`;
 
     btn.addEventListener('click', () => {
@@ -1286,7 +1286,7 @@ class UIManager {
 
       const panel = document.createElement('div');
       panel.className = 'brand-debug-panel';
-      panel.style.cssText = 'margin-top: 8px; background: var(--figma-color-bg-secondary); border: 1px solid var(--figma-color-border); border-radius: 6px; padding: 10px; font-size: 10px; font-family: monospace; max-height: 300px; overflow: auto;';
+      panel.style.cssText = 'margin-top: 10px; background: var(--figma-color-bg-secondary); border: 1px solid var(--figma-color-border); border-radius: 6px; padding: 10px; font-size: 10px; font-family: monospace; max-height: 300px; overflow: auto;';
 
       const r = report;
       const lines = [];
@@ -1345,7 +1345,7 @@ class UIManager {
 
       const copyBtn = document.createElement('button');
       copyBtn.className = 'figma-btn figma-btn-ghost';
-      copyBtn.style.cssText = 'font-size: 9px; padding: 2px 6px;';
+      copyBtn.style.cssText = 'font-size: 10px; padding: 2px 6px;';
       copyBtn.textContent = '📋 Copy';
       copyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1358,7 +1358,7 @@ class UIManager {
 
       const jsonBtn = document.createElement('button');
       jsonBtn.className = 'figma-btn figma-btn-ghost';
-      jsonBtn.style.cssText = 'font-size: 9px; padding: 2px 6px;';
+      jsonBtn.style.cssText = 'font-size: 10px; padding: 2px 6px;';
       jsonBtn.textContent = '{ } JSON';
       jsonBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1598,7 +1598,7 @@ class UIManager {
         name: `Brand Showcase: ${sourceNode.name}`,
         layoutMode: 'VERTICAL',
         primaryAxisSizingMode: 'AUTO',
-        counterAxisSizingMode: 'FIXED', 
+        counterAxisSizingMode: 'FIXED',
         width: 1400,
         itemSpacing: 64,
         paddingTop: 80, paddingRight: 80, paddingBottom: 80, paddingLeft: 80,
@@ -1631,7 +1631,7 @@ class UIManager {
 
     for (const section of sections) {
       const sectionRef = `section_${section.id}`;
-      
+
       // Section Container
       ops.push({
         type: 'CREATE_FRAME',
@@ -1763,8 +1763,8 @@ class UIManager {
     }
 
     const ops = [];
-    const colors = brandColors instanceof Map 
-      ? Array.from(brandColors.values()) 
+    const colors = brandColors instanceof Map
+      ? Array.from(brandColors.values())
       : Object.values(brandColors);
 
     const sizes = [
@@ -1778,7 +1778,7 @@ class UIManager {
     const startY = (pivot.y ?? 0) + (pivot.height ?? 0) + 500;
     const horizontalGap = 100;
     const verticalGap = 150;
-    
+
     let currentRow = 0;
 
     // For each selected component (logo)
@@ -1790,11 +1790,11 @@ class UIManager {
           const hex = color.value || color.hex || '#FFFFFF';
           const variableId = color.variableId; // Use variable ID if synced
           const frameRef = `frame_s_${selIdx}_${size.id}_${colorIdx}`;
-          
+
           // Calculate grid position manually
           const x = startX + colorIdx * (size.w + horizontalGap);
           const y = startY + currentRow * (1080 + verticalGap);
-          
+
           ops.push({
             type: 'CREATE_FRAME',
             ref: frameRef,
@@ -1807,8 +1807,8 @@ class UIManager {
               cornerRadius: 12,
               clipsContent: true,
               layoutMode: 'HORIZONTAL',
-              primaryAxisSizingMode: 'FIXED', 
-              counterAxisSizingMode: 'FIXED', 
+              primaryAxisSizingMode: 'FIXED',
+              counterAxisSizingMode: 'FIXED',
               primaryAxisAlignItems: 'CENTER',
               counterAxisAlignItems: 'CENTER'
             }
@@ -1883,8 +1883,8 @@ class UIManager {
               cornerRadius: 12,
               clipsContent: true,
               layoutMode: 'HORIZONTAL',
-              primaryAxisSizingMode: 'FIXED', 
-              counterAxisSizingMode: 'FIXED', 
+              primaryAxisSizingMode: 'FIXED',
+              counterAxisSizingMode: 'FIXED',
               primaryAxisAlignItems: 'CENTER',
               counterAxisAlignItems: 'CENTER'
             }
@@ -1975,7 +1975,7 @@ class UIManager {
 
     const btn = document.createElement('button');
     btn.className = 'figma-btn figma-btn-secondary';
-    btn.style.cssText = 'margin-top: 6px; font-size: 10px; padding: 4px 8px; display: flex; align-items: center; gap: 4px; width: fit-content; border: 1px solid var(--brand-cyan); color: var(--brand-cyan); background: transparent;';
+    btn.style.cssText = 'margin-top: 6px; font-size: 10px; padding: 4px 10px; display: flex; align-items: center; gap: 4px; width: fit-content; border: 1px solid var(--brand-cyan); color: var(--brand-cyan); background: transparent;';
     btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h8M2 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Debug Log`;
 
     btn.addEventListener('click', () => {
@@ -1984,7 +1984,7 @@ class UIManager {
 
       const panel = document.createElement('div');
       panel.className = 'brand-debug-panel';
-      panel.style.cssText = 'margin-top: 8px; background: var(--figma-color-bg-secondary); border: 1px solid var(--figma-color-border); border-radius: 8px; padding: 10px; font-size: 10px; font-family: monospace; max-height: 300px; overflow: auto; text-align: left;';
+      panel.style.cssText = 'margin-top: 10px; background: var(--figma-color-bg-secondary); border: 1px solid var(--figma-color-border); border-radius: 10px; padding: 10px; font-size: 10px; font-family: monospace; max-height: 300px; overflow: auto; text-align: left;';
 
       const r = report;
       const lines = [];
@@ -2043,7 +2043,7 @@ class UIManager {
 
       const copyBtn = document.createElement('button');
       copyBtn.className = 'figma-btn figma-btn-ghost';
-      copyBtn.style.cssText = 'font-size: 9px; padding: 2px 6px;';
+      copyBtn.style.cssText = 'font-size: 10px; padding: 2px 6px;';
       copyBtn.textContent = '📋 Copy';
       copyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -2056,7 +2056,7 @@ class UIManager {
 
       const jsonBtn = document.createElement('button');
       jsonBtn.className = 'figma-btn figma-btn-ghost';
-      jsonBtn.style.cssText = 'font-size: 9px; padding: 2px 6px;';
+      jsonBtn.style.cssText = 'font-size: 10px; padding: 2px 6px;';
       jsonBtn.textContent = '{ } JSON';
       jsonBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -2069,7 +2069,7 @@ class UIManager {
 
       panel.appendChild(btnRow);
       lastMsg.querySelector('.message-body').appendChild(panel);
-      
+
       const wrap = chatContainer.closest('.chat-messages-wrap') || chatContainer;
       wrap.scrollTop = wrap.scrollHeight;
     });
@@ -2092,7 +2092,7 @@ class UIManager {
     this.closeSettings();
     const analyzeWords = ['Analisando com IA Adaptativa...', 'Mapeando Design System...', 'Interpretando...', 'Decifrando...', 'Processando...'];
     if (window.chatModule) window.chatModule.showTypingBubble(analyzeWords);
-    
+
     try {
       this.showToast('Iniciando Análise Inteligente...', 'info');
 
@@ -2144,7 +2144,7 @@ class UIManager {
       if (mode === 'figma-plugin') {
         const ops = resp.operations || [];
         resultText = JSON.stringify(ops, null, 2);
-        
+
         // Add to Chat for visibility
         if (window.chatModule) {
           window.chatModule.addAssistantMessage(
@@ -2153,19 +2153,19 @@ class UIManager {
             ops
           );
         }
-        
+
         // Automatically apply operations if requested or if we are in plugin mode
-        parent.postMessage({ 
-          pluginMessage: { 
-            type: 'APPLY_OPERATIONS_FROM_API', 
-            operations: ops 
-          } 
+        parent.postMessage({
+          pluginMessage: {
+            type: 'APPLY_OPERATIONS_FROM_API',
+            operations: ops
+          }
         }, '*');
 
       } else {
         resultText = resp.prompt || '';
         this.showToast('Prompt gerado com sucesso!', 'success');
-        
+
         if (window.chatModule) {
           window.chatModule.addAssistantMessage(
             `✦ Análise Visual completa.\n\n**Prompt Sugerido:**\n\n\`${resultText}\``,
@@ -2188,12 +2188,12 @@ class UIManager {
 
       // 4. Create on Figma Canvas if Prompt
       if (mode === 'image-gen' && resp.prompt) {
-        parent.postMessage({ 
-          pluginMessage: { 
-            type: 'CREATE_STICKY_PROMPT', 
+        parent.postMessage({
+          pluginMessage: {
+            type: 'CREATE_STICKY_PROMPT',
             prompt: resp.prompt,
             name: resp.name || 'Image Analysis'
-          } 
+          }
         }, '*');
       }
 

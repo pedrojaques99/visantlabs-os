@@ -280,9 +280,9 @@ export function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thin
 
   const brandColorsInfo = req.selectedBrandColors?.length
     ? req.selectedBrandColors.map(c => {
-        const role = c.role ? ` (${c.role})` : '';
-        return `  - ${c.name}: ${c.value}${role}`;
-      }).join('\n')
+      const role = c.role ? ` (${c.role})` : '';
+      return `  - ${c.name}: ${c.value}${role}`;
+    }).join('\n')
     : 'Nenhuma selecionada';
 
   // Design Tokens info
@@ -302,8 +302,8 @@ export function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thin
   // UI Components info
   const uiComponentsInfo = req.selectedUIComponents && Object.keys(req.selectedUIComponents).length > 0
     ? '\n' + Object.entries(req.selectedUIComponents)
-        .map(([type, comp]) => `  - ${type}: "${comp.name}" (key: "${comp.key}")`)
-        .join('\n')
+      .map(([type, comp]) => `  - ${type}: "${comp.name}" (key: "${comp.key}")`)
+      .join('\n')
     : '';
 
   const isScanPage = !!(req as any).scanPage;
@@ -410,7 +410,7 @@ INSTAGRAM:
 
 OUTRAS REDES:
   - YouTube Thumbnail: 1280×720px
-  - LinkedIn Post: 1200×627px
+  - LinkedIn Post: 1200×6210px
   - Facebook Post: 1200×630px
   - Twitter/X Post: 1600×900px
   - TikTok: 1080×1920px

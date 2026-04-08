@@ -279,7 +279,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
         <div className="p-3 pt-0 animate-fade-in">
           {suggestedTags.length > 0 && (
             <div className="mb-2">
-              <span className="text-[9px] text-brand-cyan/70 mb-1 block">
+              <span className="text-[10px] text-brand-cyan/70 mb-1 block">
                 {t('mockup.suggested') || 'Suggested'}
               </span>
               <div className="flex flex-wrap gap-1.5">

@@ -133,16 +133,7 @@
     "videos": "Videos",
     "videosByModel": "Videos by Model"
   },
-  "mockup": {
-    "searchBrand": "Search brand...",
-    "noResults": "No brand found",
-    "brandContext": "BRAND DNA",
-    "optional": "OPTIONAL",
-    "selectBrandTitle": "SELECT BRAND DNA",
-    "selectBrandDescription": "Choose a brand guideline to contextualize your generations.",
-    "none": "IGNORE CONTEXT",
-    "createNewBrandGuideline": "ADD NEW DNA"
-  },
+  "mockup": {},
   "adminPresets": {
     "batchPasteLabel": "Paste JSON with presets (array of objects)",
     "batchTitle": "Batch Import Mockup Presets",
@@ -2056,6 +2047,9 @@
     "analyzing": "ANALYZING...",
     "analyzingImage": "ANALYZING IMAGE...",
     "aspectRatio": "ASPECT RATIO",
+    "searchBrand": "Search brand...",
+    "noResults": "No brand found",
+    "optional": "OPTIONAL",
     "aspectRatioAutoTooltip": "Auto-determined for Mockup Machine® HD",
     "aspectRatioLandscape": "Landscape",
     "aspectRatioLandscape54": "Landscape",
@@ -2304,6 +2298,8 @@
     "selectModel": "Select model",
     "selectOption": "Select...",
     "selected": "SELECTED",
+    "selectBrandTitle": "SELECT BRAND DNA",
+    "selectBrandDescription": "Choose a brand guideline to contextualize your generations.",
     "seoDescription": "Create realistic mockups in seconds. Upload your design, choose a style, and let our AI do the rest.",
     "seoKeywords": "mockup, ai, mockup generator, design, branding, presentation",
     "seoTitle": "Mockup Machine — Professional AI Mockup Generator",

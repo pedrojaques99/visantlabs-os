@@ -172,33 +172,33 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
             </div>
 
             <div className="space-y-2 text-[10px] font-mono flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                    <input 
-                       type="checkbox" 
-                       checked={formData.isExternal} 
-                       onChange={(e) => setFormData({ ...formData, isExternal: e.target.checked })}
-                       className="rounded border-white/10 bg-white/5 text-brand-cyan"
-                    />
-                    EXTERNAL LINK
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                    <input 
-                       type="checkbox" 
-                       checked={formData.free} 
-                       onChange={(e) => setFormData({ ...formData, free: e.target.checked })}
-                       className="rounded border-white/10 bg-white/5 text-brand-cyan"
-                    />
-                    FREE TOOL
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer text-amber-500">
-                    <input 
-                       type="checkbox" 
-                       checked={formData.isHidden} 
-                       onChange={(e) => setFormData({ ...formData, isHidden: e.target.checked })}
-                       className="rounded border-white/10 bg-white/5 text-amber-500"
-                    />
-                    HIDE APP (ADMIN ONLY)
-                </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isExternal}
+                  onChange={(e) => setFormData({ ...formData, isExternal: e.target.checked })}
+                  className="rounded border-white/10 bg-white/5 text-brand-cyan"
+                />
+                EXTERNAL LINK
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.free}
+                  onChange={(e) => setFormData({ ...formData, free: e.target.checked })}
+                  className="rounded border-white/10 bg-white/5 text-brand-cyan"
+                />
+                FREE TOOL
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-amber-500">
+                <input
+                  type="checkbox"
+                  checked={formData.isHidden}
+                  onChange={(e) => setFormData({ ...formData, isHidden: e.target.checked })}
+                  className="rounded border-white/10 bg-white/5 text-amber-500"
+                />
+                HIDE APP (ADMIN ONLY)
+              </label>
             </div>
           </div>
 
@@ -241,17 +241,17 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
               {formData.thumbnail && (
                 <div className="relative aspect-video rounded-md overflow-hidden border border-white/10 mb-2">
                   <img src={formData.thumbnail} className="w-full h-full object-cover" />
-                  <button 
+                  <button
                     onClick={() => setFormData({ ...formData, thumbnail: '' })}
                     className="absolute top-1 right-1 bg-black/60 px-2 py-0.5 rounded-full text-red-500 hover:bg-black/80 transition-colors"
                   >
-                    <span className="text-[8px] font-bold">REMOVE</span>
+                    <span className="text-[10px] font-bold">REMOVE</span>
                   </button>
                 </div>
               )}
-              <AdminImageUploader 
+              <AdminImageUploader
                 onImageUpload={(img) => setFormData({ ...formData, thumbnail: img.url })}
-                compact 
+                compact
               />
             </div>
           </div>
@@ -261,8 +261,8 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
           <Button variant="ghost" onClick={onClose} disabled={isSaving} className="text-neutral-500 hover:text-white font-mono text-xs">
             CANCEL
           </Button>
-          <Button 
-            onClick={handleSave} 
+          <Button
+            onClick={handleSave}
             disabled={isSaving}
             className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-bold px-8 font-mono text-xs"
           >

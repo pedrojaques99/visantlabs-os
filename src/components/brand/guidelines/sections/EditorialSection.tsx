@@ -56,7 +56,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
         <div className="space-y-6">
           {guideline.guidelines?.voice && (
             <div className="p-5 rounded-2xl bg-brand-cyan/[0.03] border border-brand-cyan/10">
-              <span className="text-[9px] font-mono text-brand-cyan/60 uppercase font-bold block mb-2">Voice & Tone</span>
+              <span className="text-[10px] font-mono text-brand-cyan/60 uppercase font-bold block mb-2">Voice & Tone</span>
               <p className="text-[14px] text-white/90 font-medium leading-relaxed ">"{guideline.guidelines.voice}"</p>
             </div>
           )}
@@ -88,7 +88,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
         {isEditing ? (
           <div className="space-y-5">
             <div className="space-y-1.5">
-              <MicroTitle className="text-[9px] opacity-300 uppercase pl-1">Voice Tone</MicroTitle>
+              <MicroTitle className="text-[10px] opacity-300 uppercase pl-1">Voice Tone</MicroTitle>
               <Input
                 {...form.register('voice')}
                 className="text-xs h-9 bg-neutral-850 border-white/5 focus:border-brand-cyan/30"
@@ -96,7 +96,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
               />
             </div>
             <div className="space-y-1.5">
-              <MicroTitle className="text-[9px] opacity-300 uppercase pl-1">Do's (one per line)</MicroTitle>
+              <MicroTitle className="text-[10px] opacity-300 uppercase pl-1">Do's (one per line)</MicroTitle>
               <Textarea
                 value={dosText}
                 onChange={(e) => setDosText(e.target.value)}
@@ -109,7 +109,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
           <>
             {guideline.guidelines?.voice && (
               <div className="relative group/voice overflow-hidden rounded-xl bg-brand-cyan/[0.02] border border-brand-cyan/10 p-4">
-                <MicroTitle className="block mb-1.5 opacity-50 uppercase text-[8px] font-bold">Voice & Tone</MicroTitle>
+                <MicroTitle className="block mb-1.5 opacity-50 uppercase text-[10px] font-bold">Voice & Tone</MicroTitle>
                 <p className="text-[12px] text-white/90 font-medium leading-relaxed ">"{guideline.guidelines.voice}"</p>
               </div>
             )}

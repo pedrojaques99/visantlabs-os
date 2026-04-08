@@ -92,7 +92,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
             background-color: color-mix(in srgb, var(--bg-primary), transparent 20%);
         }
 
@@ -117,11 +117,11 @@
         .docs-logo::before {
             content: '';
             display: block;
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background-color: var(--accent-color);
-            box-shadow: 0 0 8px var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-color);
         }
 
         .docs-header-controls {
@@ -516,7 +516,7 @@
             }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 7610px) {
             .docs-container {
                 grid-template-columns: 1fr;
                 padding: 1rem;
@@ -549,7 +549,7 @@
 
         /* Scrollbar Styling */
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
         }
 
         ::-webkit-scrollbar-track {

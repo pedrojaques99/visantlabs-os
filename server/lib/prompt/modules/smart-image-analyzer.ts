@@ -74,16 +74,16 @@ IMPORTANTE - MODO WHITE LABEL:
 
 // ============ Figma Plugin Operations Generator ============
 
-export const getFigmaOperationsSystem = (context?: { 
-  availableComponents?: any[], 
+export const getFigmaOperationsSystem = (context?: {
+  availableComponents?: any[],
   brandContext?: string,
-  tokens?: any 
+  tokens?: any
 }) => {
-  const componentsList = context?.availableComponents?.length 
+  const componentsList = context?.availableComponents?.length
     ? `\nCOMPONENTES DISPONÍVEIS NO PROJETO (USE-OS SEMPRE QUE POSSÍVEL):\n${context.availableComponents.map(c => `- ${c.name} (Key: ${c.key || c.id})`).join('\n')}`
     : '';
 
-  const brandContext = context?.brandContext 
+  const brandContext = context?.brandContext
     ? `\nCONTEXTO DE MARCA E TOKENS:\n${context.brandContext}`
     : '';
 
@@ -101,7 +101,7 @@ DIRETRIZES TÉCNICAS (REGRAS DE OURO):
    - Frame principal fixo (ex: 400x800). Sempre nomeie camadas de forma semântica (ex: "Header", "Product Card", "Primary Call-to-Action").
    - DESIGN GUIDELINES (STRICT):
       - NO SHADOWS: Do NOT use drop shadows or effects unless explicitly stated in brand guidelines. Clean, flat design is preferred.
-      - 8PX GRID: All spacing (gap, padding, coordinates) must be multiples of 8.
+      - 10px GRID: All spacing (gap, padding, coordinates) must be multiples of 8.
       - AUTO-LAYOUT: Use vertical/horizontal layout modes in almost all frames. Never overlap text nodes.
       - FONT ACCURACY: 
         1. Identify the font vibe (e.g., Geometric Sans, Humanist Serif, Monospace). 

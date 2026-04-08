@@ -307,7 +307,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                             <p className="text-[10px] text-neutral-200 font-mono truncate" title={img.name}>
                                                 {img.name}
                                             </p>
-                                            <p className="text-[8px] text-[brand-cyan] font-mono uppercase mt-0.5">
+                                            <p className="text-[10px] text-[brand-cyan] font-mono uppercase mt-0.5">
                                                 {img.type}
                                             </p>
                                         </div>

@@ -121,14 +121,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
       // If in bottom half, position above mouse
       if (isBottomHalf) {
-        finalY = y - menuHeight - 8; // 8px offset
+        finalY = y - menuHeight - 8; // 10px offset
         // Ensure menu doesn't go above viewport
         if (finalY < 8) {
           finalY = 8;
         }
       } else {
         // If in top half, position below mouse
-        finalY = y + 8; // 8px offset
+        finalY = y + 8; // 10px offset
         // Ensure menu doesn't go below viewport
         if (finalY + menuHeight > windowHeight - 8) {
           finalY = windowHeight - menuHeight - 8;
@@ -461,7 +461,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
   const GroupLabel: React.FC<{ title: string }> = ({ title }) => (
     <div className="px-3 py-1.5">
-      <span className="text-[9px] font-semibold text-neutral-500 uppercase ">
+      <span className="text-[10px] font-semibold text-neutral-500 uppercase ">
         {title}
       </span>
     </div>

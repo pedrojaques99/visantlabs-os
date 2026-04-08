@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { useMockup } from './MockupContext';
 import { VibeGrid } from './VibeGrid';
-import { MOCKUP_VIBES } from '@/constants/mockupVibes';
 import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { getCombinedVibeConfig } from '@/constants/mockupVibes';
 import { MicroTitle } from '../ui/MicroTitle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
@@ -74,22 +74,37 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
 
   const selectedBrandName = guidelines.find(g => g.id === selectedBrandGuideline)?.identity?.name;
 
-  const [selectedVibeId, setSelectedVibeId] = useState<string | null>(null);
+  const {
+    selectedVibeSegment, setSelectedVibeSegment,
+    selectedVibeStyle, setSelectedVibeStyle
+  } = useMockup();
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const handleSelectVibe = useCallback((vibeId: string) => {
-    setSelectedVibeId(vibeId);
-    const vibe = MOCKUP_VIBES.find(v => v.id === vibeId);
-    if (vibe) {
-      // Inject tags silently
-      setSelectedTags(vibe.config.categoryTags);
-      setSelectedLocationTags(vibe.config.locationTags);
-      setSelectedLightingTags(vibe.config.lightingTags);
-      setSelectedAngleTags(vibe.config.angleTags);
-      setSelectedEffectTags(vibe.config.effectTags);
-      setSelectedMaterialTags(vibe.config.materialTags);
-    }
+  const updateTagsFromVibe = useCallback((segmentId: string | null, styleId: string | null) => {
+    if (!segmentId || !styleId) return;
+
+    const config = getCombinedVibeConfig(segmentId as any, styleId as any);
+
+    setSelectedLocationTags(config.locationTags);
+    setSelectedLightingTags(config.lightingTags);
+    setSelectedAngleTags(config.angleTags);
+    setSelectedEffectTags(config.effectTags);
+    setSelectedMaterialTags(config.materialTags);
   }, [setSelectedTags, setSelectedLocationTags, setSelectedLightingTags, setSelectedAngleTags, setSelectedEffectTags, setSelectedMaterialTags]);
+
+  const handleSelectSegment = useCallback((segmentId: any) => {
+    setSelectedVibeSegment(segmentId);
+    if (selectedVibeStyle) {
+      updateTagsFromVibe(segmentId, selectedVibeStyle);
+    }
+  }, [selectedVibeStyle, setSelectedVibeSegment, updateTagsFromVibe]);
+
+  const handleSelectStyle = useCallback((styleId: any) => {
+    setSelectedVibeStyle(styleId);
+    if (selectedVibeSegment) {
+      updateTagsFromVibe(selectedVibeSegment, styleId);
+    }
+  }, [selectedVibeSegment, setSelectedVibeStyle, updateTagsFromVibe]);
 
 
 
@@ -98,28 +113,28 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
       {/* 1. BRAND SECTION */}
       <AnimatePresence>
         {showBrandConfig && (
-            <motion.section 
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="space-y-4 overflow-hidden"
-            >
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
-                            <Gem size={16} className="text-brand-cyan" />
-                        </div>
-                        <MicroTitle className="text-neutral-200">
-                            {selectedBrandName ? selectedBrandName.toUpperCase() : (t('mockup.brandContext') || 'IDENTIDADE DA MARCA')}
-                        </MicroTitle>
-                    </div>
-                    {/* The Selector itself handles the modal, but we could add a direct + button here if needed. 
-                        However, the selector is already a prominent button now. */}
+          <motion.section
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="space-y-4 overflow-hidden"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
+                  <Gem size={16} className="text-brand-cyan" />
                 </div>
-                <GlassPanel padding="sm" className="bg-neutral-950/20 border-white/5">
-                    <BrandGuidelineSelector />
-                </GlassPanel>
-            </motion.section>
+                <MicroTitle className="text-neutral-200">
+                  {selectedBrandName ? selectedBrandName.toUpperCase() : (t('mockup.brandContext') || 'IDENTIDADE DA MARCA')}
+                </MicroTitle>
+              </div>
+              {/* The Selector itself handles the modal, but we could add a direct + button here if needed. 
+                        However, the selector is already a prominent button now. */}
+            </div>
+            <GlassPanel padding="sm" className="bg-neutral-950/20 border-white/5">
+              <BrandGuidelineSelector />
+            </GlassPanel>
+          </motion.section>
         )}
       </AnimatePresence>
 
@@ -134,18 +149,20 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
               {t('mockup.vibeSelect') || 'ESTILO DO MOCKUP'}
             </MicroTitle>
           </div>
-          <button 
+          <button
             onClick={onSwitchToExpert}
-            className="flex items-center gap-1 group text-[9px] font-mono text-neutral-600 hover:text-brand-cyan transition-colors uppercase tracking-widest"
+            className="flex items-center gap-1 group text-[10px] font-mono text-neutral-600 hover:text-brand-cyan transition-colors uppercase tracking-widest"
           >
             {t('mockup.switchToExpert') || 'EXPERT'}
             <ChevronRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
         <div className="px-0.5">
-          <VibeGrid 
-            selectedVibeId={selectedVibeId} 
-            onSelectVibe={handleSelectVibe} 
+          <VibeGrid
+            selectedSegment={selectedVibeSegment as any}
+            selectedStyle={selectedVibeStyle as any}
+            onSelectSegment={handleSelectSegment}
+            onSelectStyle={handleSelectStyle}
           />
         </div>
       </section>
@@ -172,88 +189,88 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
 
       {/* 4. GENERATION ACTION (TOOLBAR MOVED TO SIDEBAR) */}
       <section className="pt-2 animate-fade-in-up stagger-5 space-y-4">
-        <SurpriseMeControl 
-            onSurpriseMe={onSurpriseMe}
-            isGeneratingPrompt={isGeneratingPrompt}
-            isDiceAnimating={isDiceAnimating}
-            isSurpriseMeMode={isSurpriseMeActive}
-            setIsSurpriseMeMode={() => onSurpriseMe(!isSurpriseMeActive)}
-            autoGenerate={autoGenerate}
-            setAutoGenerate={setAutoGenerate}
-            selectedModel={selectedModel}
-            setSelectedModel={setSelectedModel}
-            imageProvider={imageProvider}
-            setImageProvider={setImageProvider}
-            mockupCount={mockupCount}
-            setMockupCount={setMockupCount}
-            resolution={resolution}
-            setResolution={setResolution}
-            aspectRatio={aspectRatio}
-            setAspectRatio={setAspectRatio}
-            uploadedImage={uploadedImage}
-            onGeneratePrompt={() => onGenerateSmartPrompt(autoGenerate)}
-            onGenerateOutputs={onGenerateOutputs}
-            isGenerateDisabled={!selectedVibeId && !isSurpriseMeActive}
-            isGeneratingOutputs={isGeneratingOutputs}
-            isPromptReady={isPromptReady}
-            variant="inline"
-            hideSettings={true}
+        <SurpriseMeControl
+          onSurpriseMe={onSurpriseMe}
+          isGeneratingPrompt={isGeneratingPrompt}
+          isDiceAnimating={isDiceAnimating}
+          isSurpriseMeMode={isSurpriseMeActive}
+          setIsSurpriseMeMode={() => onSurpriseMe(!isSurpriseMeActive)}
+          autoGenerate={autoGenerate}
+          setAutoGenerate={setAutoGenerate}
+          selectedModel={selectedModel}
+          setSelectedModel={setSelectedModel}
+          imageProvider={imageProvider}
+          setImageProvider={setImageProvider}
+          mockupCount={mockupCount}
+          setMockupCount={setMockupCount}
+          resolution={resolution}
+          setResolution={setResolution}
+          aspectRatio={aspectRatio}
+          setAspectRatio={setAspectRatio}
+          uploadedImage={uploadedImage}
+          onGeneratePrompt={() => onGenerateSmartPrompt(autoGenerate)}
+          onGenerateOutputs={onGenerateOutputs}
+          isGenerateDisabled={(!selectedVibeSegment || !selectedVibeStyle) && !isSurpriseMeActive}
+          isGeneratingOutputs={isGeneratingOutputs}
+          isPromptReady={isPromptReady}
+          variant="inline"
+          hideSettings={true}
         />
 
         {/* 5. GENERATION SETTINGS (ACCORDION) */}
         <div className="pt-4 border-t border-white/5">
-            <button 
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center gap-2 text-[10px] font-mono text-neutral-600 hover:text-neutral-400 transition-colors uppercase tracking-[0.2em] mx-auto group"
-            >
-                <Settings2 size={12} className={cn("transition-transform duration-500", showAdvanced && "rotate-180")} />
-                {showAdvanced ? 'Recolher Ajustes' : 'Ajustes de Geração'}
-            </button>
-            
-            <AnimatePresence>
-                {showAdvanced && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden"
-                    >
-                        <div className="pt-4">
-                            <SurpriseMeControl 
-                                onSurpriseMe={onSurpriseMe}
-                                isGeneratingPrompt={isGeneratingPrompt}
-                                isDiceAnimating={isDiceAnimating}
-                                isSurpriseMeMode={isSurpriseMeActive}
-                                setIsSurpriseMeMode={() => onSurpriseMe(!isSurpriseMeActive)}
-                                autoGenerate={autoGenerate}
-                                setAutoGenerate={setAutoGenerate}
-                                selectedModel={selectedModel}
-                                setSelectedModel={setSelectedModel}
-                                imageProvider={imageProvider}
-                                setImageProvider={setImageProvider}
-                                mockupCount={mockupCount}
-                                setMockupCount={setMockupCount}
-                                resolution={resolution}
-                                setResolution={setResolution}
-                                aspectRatio={aspectRatio}
-                                setAspectRatio={setAspectRatio}
-                                uploadedImage={uploadedImage}
-                                onGeneratePrompt={() => onGenerateSmartPrompt(autoGenerate)}
-                                onGenerateOutputs={onGenerateOutputs}
-                                isGenerateDisabled={!selectedVibeId && !isSurpriseMeActive}
-                                isGeneratingOutputs={isGeneratingOutputs}
-                                isPromptReady={isPromptReady}
-                                variant="inline"
-                                hideActions={true}
-                            />
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="flex items-center gap-2 text-[10px] font-mono text-neutral-600 hover:text-neutral-400 transition-colors uppercase tracking-[0.2em] mx-auto group"
+          >
+            <Settings2 size={12} className={cn("transition-transform duration-500", showAdvanced && "rotate-180")} />
+            {showAdvanced ? 'Recolher Ajustes' : 'Ajustes de Geração'}
+          </button>
+
+          <AnimatePresence>
+            {showAdvanced && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <div className="pt-4">
+                  <SurpriseMeControl
+                    onSurpriseMe={onSurpriseMe}
+                    isGeneratingPrompt={isGeneratingPrompt}
+                    isDiceAnimating={isDiceAnimating}
+                    isSurpriseMeMode={isSurpriseMeActive}
+                    setIsSurpriseMeMode={() => onSurpriseMe(!isSurpriseMeActive)}
+                    autoGenerate={autoGenerate}
+                    setAutoGenerate={setAutoGenerate}
+                    selectedModel={selectedModel}
+                    setSelectedModel={setSelectedModel}
+                    imageProvider={imageProvider}
+                    setImageProvider={setImageProvider}
+                    mockupCount={mockupCount}
+                    setMockupCount={setMockupCount}
+                    resolution={resolution}
+                    setResolution={setResolution}
+                    aspectRatio={aspectRatio}
+                    setAspectRatio={setAspectRatio}
+                    uploadedImage={uploadedImage}
+                    onGeneratePrompt={() => onGenerateSmartPrompt(autoGenerate)}
+                    onGenerateOutputs={onGenerateOutputs}
+                    isGenerateDisabled={(!selectedVibeSegment || !selectedVibeStyle) && !isSurpriseMeActive}
+                    isGeneratingOutputs={isGeneratingOutputs}
+                    isPromptReady={isPromptReady}
+                    variant="inline"
+                    hideActions={true}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
-      
+
     </div>
   );
 };

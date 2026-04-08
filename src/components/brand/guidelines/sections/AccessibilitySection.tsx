@@ -39,7 +39,7 @@ export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guid
       expandedContent={guideline.guidelines?.accessibility ? (
         <div className="space-y-4">
           <div className="p-5 rounded-2xl bg-neutral-950/30 border border-white/[0.04]">
-            <span className="text-[9px] font-mono text-brand-cyan/60 uppercase tracking-widest font-bold block mb-3">Compliance & Vision</span>
+            <span className="text-[10px] font-mono text-brand-cyan/60 uppercase tracking-widest font-bold block mb-3">Compliance & Vision</span>
             <p className="text-[13px] text-neutral-300 leading-relaxed whitespace-pre-wrap">{guideline.guidelines.accessibility}</p>
           </div>
         </div>
@@ -56,7 +56,7 @@ export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guid
       <div className="py-4">
         {isEditing ? (
           <div className="space-y-2 pt-2">
-            <MicroTitle className="text-[9px] opacity-300 uppercase tracking-widest pl-1">Compliance & Vision</MicroTitle>
+            <MicroTitle className="text-[10px] opacity-300 uppercase tracking-widest pl-1">Compliance & Vision</MicroTitle>
             <Textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -66,7 +66,7 @@ export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guid
           </div>
         ) : (
           <div className="space-y-1">
-            <MicroTitle className="text-[9px] text-neutral-700 uppercase tracking-widest flex items-center gap-2">
+            <MicroTitle className="text-[10px] text-neutral-700 uppercase tracking-widest flex items-center gap-2">
               <div className="w-1 h-[1px] bg-neutral-800" />
               Compliance & Vision
             </MicroTitle>

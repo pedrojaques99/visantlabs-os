@@ -45,14 +45,14 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-brand-cyan/30 hover:text-brand-cyan',
                   disabled && 'opacity-50 cursor-not-allowed'
                 )}
-                /* onMouseDown removed to allow node selection */
+              /* onMouseDown removed to allow node selection */
               >
                 <div className={cn(
                   isSquare ? 'w-4 h-4' : isLandscape ? 'w-6 h-3.5' : 'w-3.5 h-6',
                   'border rounded-sm shrink-0',
                   isSelected ? 'border-foreground/60 bg-foreground/20' : 'border-neutral-600/50'
                 )} />
-                <span className="text-[9px] leading-none">{ratio}</span>
+                <span className="text-[10px] leading-none">{ratio}</span>
               </NodeButton>
             );
           })}
@@ -69,7 +69,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             )}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <span className="text-[9px] leading-none">...</span>
+            <span className="text-[10px] leading-none">...</span>
           </NodeButton>
         </div>
 
@@ -107,7 +107,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                       'border rounded-sm shrink-0',
                       isSelected ? 'border-foreground/60 bg-foreground/20' : 'border-neutral-600/50'
                     )} />
-                    <span className="text-[9px] leading-none">{ratio}</span>
+                    <span className="text-[10px] leading-none">{ratio}</span>
                   </NodeButton>
                 );
               })}

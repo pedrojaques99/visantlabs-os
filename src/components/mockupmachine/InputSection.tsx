@@ -226,7 +226,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   }) => (
     <div className={cn(
       "relative flex flex-col p-2 rounded-2xl border transition-all group w-full animate-in fade-in zoom-in-95 duration-500",
-      highlight ? "bg-brand-cyan/[0.02] border-brand-cyan/20 shadow-[0_8px_32px_rgba(var(--brand-cyan-rgb),0.05)]" : "bg-neutral-900/20 border-white/[0.03] hover:border-white/10"
+      highlight ? "bg-brand-cyan/[0.02] border-brand-cyan/20 shadow-[0_10px_32px_rgba(var(--brand-cyan-rgb),0.05)]" : "bg-neutral-900/20 border-white/[0.03] hover:border-white/10"
     )}>
       {/* Image Container */}
       <div className="relative h-64 w-full rounded-xl overflow-hidden flex items-center justify-center group/img-container bg-black/20 p-4">
@@ -266,15 +266,15 @@ export const InputSection: React.FC<InputSectionProps> = ({
       <div className="mt-3 px-2 flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-             <div className={cn("w-1 h-1 rounded-full", highlight ? "bg-brand-cyan animate-pulse" : "bg-neutral-600")} />
-             <p className={cn(
-                "text-[10px] font-mono font-bold uppercase tracking-widest truncate",
-                highlight ? "text-brand-cyan" : "text-neutral-500"
-             )}>
-                {label}
-             </p>
+            <div className={cn("w-1 h-1 rounded-full", highlight ? "bg-brand-cyan animate-pulse" : "bg-neutral-600")} />
+            <p className={cn(
+              "text-[10px] font-mono font-bold uppercase tracking-widest truncate",
+              highlight ? "text-brand-cyan" : "text-neutral-500"
+            )}>
+              {label}
+            </p>
           </div>
-          <p className="text-[9px] font-mono text-neutral-600 tracking-tight opacity-60">
+          <p className="text-[10px] font-mono text-neutral-600 tracking-tight opacity-60">
             {img.mimeType?.split('/')[1]?.toUpperCase() || 'IMG'} • {img.size ? `${(img.size / 1024).toFixed(0)}KB` : '--'}
           </p>
         </div>
@@ -310,8 +310,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/[0.03] pb-6">
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
-            <MicroTitle className="text-neutral-600 font-mono text-[9px] tracking-[0.2em] mb-1">
-               WORKSPACE INITIALIZED
+            <MicroTitle className="text-neutral-600 font-mono text-[10px] tracking-[0.2em] mb-1">
+              WORKSPACE INITIALIZED
             </MicroTitle>
             <p className="text-sm font-bold text-white tracking-tight">
               {t('mockup.filesLoaded', { count: referenceImages.length + 1 }) || `${referenceImages.length + 1} Assets Carregados`}
@@ -326,9 +326,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
               <button
                 onClick={() => onDesignTypeChange('layout')}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-[9px] font-bold font-mono tracking-widest uppercase transition-all",
-                  designType === 'layout' 
-                    ? "bg-white/10 text-white shadow-lg" 
+                  "px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono tracking-widest uppercase transition-all",
+                  designType === 'layout'
+                    ? "bg-white/10 text-white shadow-lg"
                     : "text-neutral-600 hover:text-neutral-400"
                 )}
               >
@@ -337,9 +337,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
               <button
                 onClick={() => onDesignTypeChange('logo')}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-[9px] font-bold font-mono tracking-widest uppercase transition-all",
-                  designType === 'logo' 
-                    ? "bg-brand-cyan/20 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]" 
+                  "px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono tracking-widest uppercase transition-all",
+                  designType === 'logo'
+                    ? "bg-brand-cyan/20 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]"
                     : "text-neutral-600 hover:text-neutral-400"
                 )}
               >
@@ -403,7 +403,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             className="flex flex-col items-center justify-center p-6 rounded-2xl border border-dashed border-white/5 hover:border-white/10 bg-white/[0.01] hover:bg-white/[0.03] transition-all cursor-pointer group"
           >
             <Plus className="text-neutral-700 group-hover:text-neutral-500 mb-2" size={16} />
-            <span className="text-[9px] font-bold font-mono text-neutral-600 group-hover:text-neutral-400 uppercase tracking-widest">+ Add Reference</span>
+            <span className="text-[10px] font-bold font-mono text-neutral-600 group-hover:text-neutral-400 uppercase tracking-widest">+ Add Reference</span>
           </label>
         )}
       </div>

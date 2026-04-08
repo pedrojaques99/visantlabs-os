@@ -180,14 +180,14 @@ export const DesignSystemPage: React.FC = () => {
   const spacingScale = [
     { name: '0', value: '0px', size: 0 },
     { name: '1', value: '0.25rem (4px)', size: 4 },
-    { name: '2', value: '0.5rem (8px)', size: 8 },
+    { name: '2', value: '0.5rem (10px)', size: 8 },
     { name: '3', value: '0.75rem (12px)', size: 12 },
     { name: '4', value: '1rem (16px)', size: 16 },
     { name: '5', value: '1.25rem (20px)', size: 20 },
     { name: '6', value: '1.5rem (24px)', size: 24 },
     { name: '8', value: '2rem (32px)', size: 32 },
     { name: '10', value: '2.5rem (40px)', size: 40 },
-    { name: '12', value: '3rem (48px)', size: 48 },
+    { name: '12', value: '3rem (410px)', size: 48 },
     { name: '16', value: '4rem (64px)', size: 64 },
     { name: '20', value: '5rem (80px)', size: 80 },
   ];
@@ -1425,7 +1425,7 @@ export const DesignSystemPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-xs font-mono text-neutral-500 mb-2">Circular:</p>
-                            <SkeletonLoader width="48px" height="48px" variant="circular" />
+                            <SkeletonLoader width="410px" height="410px" variant="circular" />
                           </div>
                           <div>
                             <p className="text-xs font-mono text-neutral-500 mb-2">Text:</p>
@@ -1843,7 +1843,7 @@ export const DesignSystemPage: React.FC = () => {
                         <div className="font-mono text-sm space-y-2">
                           <div>
                             <span className="text-neutral-400">--node-padding:</span>{' '}
-                            <span className="text-brand-cyan">1.75rem (28px)</span>
+                            <span className="text-brand-cyan">1.75rem (210px)</span>
                           </div>
                           <div>
                             <span className="text-neutral-400">--node-gap:</span>{' '}

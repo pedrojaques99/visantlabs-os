@@ -51,7 +51,7 @@ export const CreativeSetupSidebar: React.FC = () => {
   const { data: guidelines = [] } = useBrandGuidelines();
   const { activeGuideline } = useBrandKit();
   const queryClient = useQueryClient();
-  
+
   const [wizardOpen, setWizardOpen] = useState(false);
   const [showVault, setShowVault] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -124,7 +124,7 @@ export const CreativeSetupSidebar: React.FC = () => {
     return (
       <aside className="w-[360px] h-full bg-neutral-950 border-r border-white/5 flex flex-col p-6 gap-6 overflow-y-auto custom-scrollbar anim-fade-in">
         <header className="flex items-center justify-between">
-          <button 
+          <button
             onClick={() => setShowVault(false)}
             className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-neutral-500 hover:text-white transition-colors"
           >
@@ -162,7 +162,7 @@ export const CreativeSetupSidebar: React.FC = () => {
               <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 px-1">Logos</h3>
               <div className="grid grid-cols-3 gap-2">
                 {selectedGuideline.logos?.map((logo, i) => (
-                  <button 
+                  <button
                     key={i}
                     onClick={() => {
                       setUploadedBackgroundUrl(logo.url!);
@@ -182,7 +182,7 @@ export const CreativeSetupSidebar: React.FC = () => {
               <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 px-1">Brand Media</h3>
               <div className="grid grid-cols-2 gap-2">
                 {selectedGuideline.media?.map((media, i) => (
-                  <button 
+                  <button
                     key={i}
                     onClick={() => {
                       setUploadedBackgroundUrl(media.url!);
@@ -202,7 +202,7 @@ export const CreativeSetupSidebar: React.FC = () => {
               <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 px-1">Cores</h3>
               <div className="flex flex-wrap gap-2 px-1">
                 {selectedGuideline.colors?.map((color, i) => (
-                  <button 
+                  <button
                     key={i}
                     onClick={() => {
                       navigator.clipboard.writeText(color.hex || '');
@@ -222,7 +222,7 @@ export const CreativeSetupSidebar: React.FC = () => {
   }
 
   return (
-    <aside 
+    <aside
       role="region"
       aria-label="Creative Setup"
       className="w-[360px] h-full bg-neutral-950 border-r border-white/5 flex flex-col p-5 gap-5 overflow-y-auto"
@@ -234,11 +234,11 @@ export const CreativeSetupSidebar: React.FC = () => {
             <h1 className="text-white font-bold text-sm tracking-[0.2em] uppercase">
               Visant Labs<span className="text-brand-cyan">®</span>
             </h1>
-            <span className="px-1.5 py-0.5 rounded-full bg-neutral-900 border border-white/5 text-[8px] font-bold text-neutral-600 uppercase">
+            <span className="px-1.5 py-0.5 rounded-full bg-neutral-900 border border-white/5 text-[10px] font-bold text-neutral-600 uppercase">
               v1.1
             </span>
           </div>
-          <p className="text-[9px] text-neutral-600 font-mono mt-1 lowercase tracking-tight">
+          <p className="text-[10px] text-neutral-600 font-mono mt-1 lowercase tracking-tight">
             conceito → sincronia → produção
           </p>
         </div>
@@ -281,7 +281,7 @@ export const CreativeSetupSidebar: React.FC = () => {
           </button>
         </div>
       </div>
-  
+
       <div className="flex flex-col gap-2">
         <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 px-1">
           Ideia
@@ -296,7 +296,7 @@ export const CreativeSetupSidebar: React.FC = () => {
             className="w-full bg-neutral-900/40 border border-white/5 rounded-2xl px-4 py-4 text-sm leading-relaxed text-white placeholder:text-neutral-700 focus:outline-none focus:border-brand-cyan/40 focus:bg-neutral-900/60 transition-all resize-none disabled:opacity-50"
             data-vsn-input="prompt"
           />
-          <div className="absolute bottom-3 right-3 text-[9px] font-mono text-neutral-700 pointer-events-none uppercase tracking-tighter">
+          <div className="absolute bottom-3 right-3 text-[10px] font-mono text-neutral-700 pointer-events-none uppercase tracking-tighter">
             {prompt.length} letras
           </div>
         </div>
@@ -312,16 +312,15 @@ export const CreativeSetupSidebar: React.FC = () => {
               key={opt.id}
               onClick={() => setFormat(opt.id as CreativeFormat)}
               disabled={status !== 'setup'}
-              className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-2 group ${
-                format === opt.id
-                  ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan shadow-lg shadow-brand-cyan/5'
-                  : 'bg-neutral-900/40 border-white/5 text-neutral-500 hover:text-white hover:bg-neutral-900/60 hover:border-white/10'
-              }`}
+              className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-2 group ${format === opt.id
+                ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan shadow-lg shadow-brand-cyan/5'
+                : 'bg-neutral-900/40 border-white/5 text-neutral-500 hover:text-white hover:bg-neutral-900/60 hover:border-white/10'
+                }`}
             >
               <opt.icon size={18} strokeWidth={format === opt.id ? 2 : 1.5} className="transition-transform group-hover:scale-110" />
               <div className="flex flex-col items-center gap-0.5">
                 <span className="text-[11px] font-bold uppercase tracking-wider">{opt.label}</span>
-                <span className="text-[9px] opacity-40 font-mono lowercase tracking-tighter">{opt.sub}</span>
+                <span className="text-[10px] opacity-40 font-mono lowercase tracking-tighter">{opt.sub}</span>
               </div>
             </button>
           ))}
@@ -336,11 +335,10 @@ export const CreativeSetupSidebar: React.FC = () => {
           <button
             onClick={() => setBackgroundMode('ai')}
             disabled={status !== 'setup'}
-            className={`py-2 rounded-xl text-[9px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-              backgroundMode === 'ai'
-                ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-white/5'
-                : 'text-neutral-500 hover:text-neutral-300'
-            }`}
+            className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${backgroundMode === 'ai'
+              ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-white/5'
+              : 'text-neutral-500 hover:text-neutral-300'
+              }`}
           >
             <Diamond size={11} strokeWidth={2} /> IA
           </button>
@@ -354,22 +352,20 @@ export const CreativeSetupSidebar: React.FC = () => {
               setShowVault(true);
             }}
             disabled={status !== 'setup'}
-            className={`py-2 rounded-xl text-[9px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-              backgroundMode === 'brand'
-                ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-white/5'
-                : 'text-neutral-500 hover:text-neutral-300'
-            }`}
+            className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${backgroundMode === 'brand'
+              ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-white/5'
+              : 'text-neutral-500 hover:text-neutral-300'
+              }`}
           >
             <Briefcase size={11} strokeWidth={2} /> Vault
           </button>
           <button
             onClick={() => setBackgroundMode('upload')}
             disabled={status !== 'setup'}
-            className={`py-2 rounded-xl text-[9px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-              backgroundMode === 'upload'
-                ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-white/5'
-                : 'text-neutral-500 hover:text-neutral-300'
-            }`}
+            className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${backgroundMode === 'upload'
+              ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-white/5'
+              : 'text-neutral-500 hover:text-neutral-300'
+              }`}
           >
             <Upload size={11} strokeWidth={2} /> Local
           </button>
@@ -390,17 +386,17 @@ export const CreativeSetupSidebar: React.FC = () => {
                 </div>
               ) : (
                 <div className="relative w-full aspect-video rounded-2xl border border-white/5 overflow-hidden bg-neutral-900/40 hover:border-brand-cyan/30 transition-all shadow-2xl">
-                  <img 
-                    src={getProxiedUrl(uploadedBackgroundUrl)} 
-                    alt="Uploaded Asset" 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                  <img
+                    src={getProxiedUrl(uploadedBackgroundUrl)}
+                    alt="Uploaded Asset"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
                     <Upload size={18} className="text-brand-cyan" />
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-white">Trocar Arquivo</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white">Trocar Arquivo</span>
                   </div>
                   <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
-                    <span className="text-[8px] font-bold uppercase tracking-[0.1em] text-brand-cyan/80">Local File</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan/80">Local File</span>
                   </div>
                 </div>
               )}
@@ -421,21 +417,21 @@ export const CreativeSetupSidebar: React.FC = () => {
                 </div>
               </button>
             ) : (
-              <div 
+              <div
                 onClick={() => setShowVault(true)}
                 className="group cursor-pointer relative w-full aspect-video rounded-2xl border border-white/5 overflow-hidden bg-neutral-900/40 hover:border-brand-cyan/30 transition-all shadow-2xl"
               >
-                <img 
-                  src={getProxiedUrl(uploadedBackgroundUrl)} 
-                  alt="Selected Asset" 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                <img
+                  src={getProxiedUrl(uploadedBackgroundUrl)}
+                  alt="Selected Asset"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
                   <Briefcase size={18} className="text-brand-cyan" />
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-white">Trocar Asset</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white">Trocar Asset</span>
                 </div>
                 <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
-                  <span className="text-[8px] font-bold uppercase tracking-[0.1em] text-brand-cyan/80">Vault Asset</span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan/80">Vault Asset</span>
                 </div>
               </div>
             )}
@@ -477,7 +473,7 @@ export const CreativeSetupSidebar: React.FC = () => {
               </div>
             )}
           </Button>
-          
+
           {!status || status === 'setup' && (
             <div className="flex items-center justify-center gap-1.5 animate-in fade-in slide-in-from-bottom-2">
               <Gem size={10} className="text-brand-cyan opacity-80" />

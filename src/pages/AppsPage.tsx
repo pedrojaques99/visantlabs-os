@@ -56,10 +56,10 @@ export const AppsPage: React.FC = () => {
     setIsLoading(true);
     try {
       const data = await appsService.getAll();
-      
+
       // Map DB apps by their appId for quick lookup
       const dbAppIds = new Set(data.map(app => app.appId));
-      
+
       // Auto-seed missing static apps ONLY if user is admin
       if (isAdmin) {
         const missingApps = staticAppsData.filter(app => !dbAppIds.has(app.id));
@@ -173,142 +173,142 @@ export const AppsPage: React.FC = () => {
         animate="visible"
         className="space-y-16"
       >
-              {appsByCategory.map((category) => (
-                <section key={category.key} className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/[0.02] border border-white/10">
-                      <category.icon size={12} className="text-brand-cyan" />
-                      <MicroTitle className="text-neutral-400">{category.title}</MicroTitle>
+        {appsByCategory.map((category) => (
+          <section key={category.key} className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/[0.02] border border-white/10">
+                <category.icon size={12} className="text-brand-cyan" />
+                <MicroTitle className="text-neutral-400">{category.title}</MicroTitle>
+              </div>
+              <div className="h-px flex-grow bg-white/[0.03]" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {category.apps.map((app) => {
+                const isComingSoon = app.badgeVariant === 'comingSoon';
+                const isPremium = app.badgeVariant === 'premium';
+                const description = app.description || (app as any).desc;
+                const thumbnail = app.thumbnail;
+
+                return (
+                  <motion.div
+                    key={app.id || app.appId}
+                    variants={itemVariants}
+                    onClick={() => openApp(app)}
+                    className={cn(
+                      'group relative rounded-[--radius] overflow-hidden',
+                      'bg-white/[0.02] border border-white/10 backdrop-blur-sm',
+                      'transition-all duration-300',
+                      !isComingSoon
+                        ? 'hover:border-brand-cyan/30 cursor-pointer'
+                        : 'opacity-40 grayscale pointer-events-none',
+                      app.isHidden && 'border-amber-500/20 opacity-60',
+                    )}
+                  >
+                    {app.isHidden && (
+                      <div className="absolute top-0 right-0 z-50 bg-amber-500/90 text-black px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider rounded-bl-md">
+                        Hidden
+                      </div>
+                    )}
+
+                    {/* Thumbnail */}
+                    <div className="aspect-[16/10] relative overflow-hidden bg-neutral-900/40 border-b border-white/[0.03]">
+                      {thumbnail ? (
+                        <img
+                          src={thumbnail}
+                          alt={app.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-neutral-700">
+                          <ImageIcon size={40} strokeWidth={1.2} />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-transparent to-transparent opacity-70 group-hover:opacity-50 transition-opacity" />
+
+                      {isPremium && !hasAccess && (
+                        <div className="absolute top-3 right-3 z-20">
+                          <div className="p-2 rounded-full bg-neutral-950/60 backdrop-blur-md border border-white/10 text-brand-cyan">
+                            <Lock size={12} />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="h-px flex-grow bg-white/[0.03]" />
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {category.apps.map((app) => {
-                      const isComingSoon = app.badgeVariant === 'comingSoon';
-                      const isPremium = app.badgeVariant === 'premium';
-                      const description = app.description || (app as any).desc;
-                      const thumbnail = app.thumbnail;
-
-                      return (
-                        <motion.div
-                          key={app.id || app.appId}
-                          variants={itemVariants}
-                          onClick={() => openApp(app)}
-                          className={cn(
-                            'group relative rounded-[--radius] overflow-hidden',
-                            'bg-white/[0.02] border border-white/10 backdrop-blur-sm',
-                            'transition-all duration-300',
-                            !isComingSoon
-                              ? 'hover:border-brand-cyan/30 cursor-pointer'
-                              : 'opacity-40 grayscale pointer-events-none',
-                            app.isHidden && 'border-amber-500/20 opacity-60',
-                          )}
+                    {/* Admin Controls */}
+                    {isAdmin && (
+                      <div className="absolute top-3 left-3 z-30 flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingApp(app);
+                            setIsDialogOpen(true);
+                          }}
+                          className="p-2 rounded-full bg-neutral-950/60 backdrop-blur-md border border-white/10 text-brand-cyan hover:scale-110 active:scale-95 transition-all"
+                          title="Edit App"
                         >
-                          {app.isHidden && (
-                            <div className="absolute top-0 right-0 z-50 bg-amber-500/90 text-black px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider rounded-bl-md">
-                              Hidden
-                            </div>
-                          )}
-
-                          {/* Thumbnail */}
-                          <div className="aspect-[16/10] relative overflow-hidden bg-neutral-900/40 border-b border-white/[0.03]">
-                            {thumbnail ? (
-                              <img
-                                src={thumbnail}
-                                alt={app.name}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-neutral-700">
-                                <ImageIcon size={40} strokeWidth={1.2} />
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-transparent to-transparent opacity-70 group-hover:opacity-50 transition-opacity" />
-
-                            {isPremium && !hasAccess && (
-                              <div className="absolute top-3 right-3 z-20">
-                                <div className="p-2 rounded-full bg-neutral-950/60 backdrop-blur-md border border-white/10 text-brand-cyan">
-                                  <Lock size={12} />
-                                </div>
-                              </div>
-                            )}
+                          <Edit3 size={12} />
+                        </button>
+                        {app.databaseInfo && (
+                          <div
+                            className="px-2 py-1 rounded-full bg-brand-cyan/5 border border-brand-cyan/20 text-brand-cyan flex items-center gap-1.5"
+                            title={app.databaseInfo}
+                          >
+                            <Database size={10} />
+                            <span className="text-[10px] font-mono font-bold truncate max-w-[80px]">
+                              {app.databaseInfo}
+                            </span>
                           </div>
+                        )}
+                      </div>
+                    )}
 
-                          {/* Admin Controls */}
-                          {isAdmin && (
-                            <div className="absolute top-3 left-3 z-30 flex gap-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingApp(app);
-                                  setIsDialogOpen(true);
-                                }}
-                                className="p-2 rounded-full bg-neutral-950/60 backdrop-blur-md border border-white/10 text-brand-cyan hover:scale-110 active:scale-95 transition-all"
-                                title="Edit App"
-                              >
-                                <Edit3 size={12} />
-                              </button>
-                              {app.databaseInfo && (
-                                <div
-                                  className="px-2 py-1 rounded-full bg-brand-cyan/5 border border-brand-cyan/20 text-brand-cyan flex items-center gap-1.5"
-                                  title={app.databaseInfo}
-                                >
-                                  <Database size={10} />
-                                  <span className="text-[9px] font-mono font-bold truncate max-w-[80px]">
-                                    {app.databaseInfo}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
+                    {/* Body */}
+                    <div className="p-5 space-y-4">
+                      <div className="space-y-1.5">
+                        <h3 className="text-base font-bold text-neutral-200 group-hover:text-brand-cyan transition-colors tracking-tight">
+                          {app.name}
+                        </h3>
+                        <p className="text-[11px] font-mono text-neutral-500 leading-relaxed line-clamp-2 min-h-[32px]">
+                          {description}
+                        </p>
+                      </div>
+
+                      <div className="pt-3 flex items-center justify-between border-t border-white/[0.03]">
+                        <div className="flex gap-2">
+                          {isPremium && !hasAccess ? (
+                            <span className="text-[10px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-md border border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5 flex items-center gap-1.5">
+                              <Lock size={8} /> Premium
+                            </span>
+                          ) : app.badge && (
+                            <span className={cn(
+                              'text-[10px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-md border',
+                              app.badgeVariant === 'featured' && 'border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5',
+                              app.badgeVariant === 'premium' && 'border-brand-cyan/20 text-brand-cyan/80 bg-brand-cyan/5',
+                              app.badgeVariant === 'free' && 'border-white/10 text-neutral-500',
+                              app.badgeVariant === 'comingSoon' && 'border-white/5 text-neutral-600',
+                              app.badgeVariant === 'admin' && 'border-amber-500/30 text-amber-400 bg-amber-500/5',
+                            )}>
+                              {app.badge}
+                            </span>
                           )}
+                        </div>
 
-                          {/* Body */}
-                          <div className="p-5 space-y-4">
-                            <div className="space-y-1.5">
-                              <h3 className="text-base font-bold text-neutral-200 group-hover:text-brand-cyan transition-colors tracking-tight">
-                                {app.name}
-                              </h3>
-                              <p className="text-[11px] font-mono text-neutral-500 leading-relaxed line-clamp-2 min-h-[32px]">
-                                {description}
-                              </p>
-                            </div>
-
-                            <div className="pt-3 flex items-center justify-between border-t border-white/[0.03]">
-                              <div className="flex gap-2">
-                                {isPremium && !hasAccess ? (
-                                  <span className="text-[9px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-md border border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5 flex items-center gap-1.5">
-                                    <Lock size={8} /> Premium
-                                  </span>
-                                ) : app.badge && (
-                                  <span className={cn(
-                                    'text-[9px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-md border',
-                                    app.badgeVariant === 'featured' && 'border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5',
-                                    app.badgeVariant === 'premium' && 'border-brand-cyan/20 text-brand-cyan/80 bg-brand-cyan/5',
-                                    app.badgeVariant === 'free' && 'border-white/10 text-neutral-500',
-                                    app.badgeVariant === 'comingSoon' && 'border-white/5 text-neutral-600',
-                                    app.badgeVariant === 'admin' && 'border-amber-500/30 text-amber-400 bg-amber-500/5',
-                                  )}>
-                                    {app.badge}
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="flex items-center gap-1.5 text-[9px] font-mono text-neutral-600 group-hover:text-brand-cyan transition-colors">
-                                <span className="opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">
-                                  {app.isExternal ? 'Launch' : 'Enter'}
-                                </span>
-                                <ExternalLink size={10} className="translate-x-1 group-hover:translate-x-0 transition-transform" />
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </section>
-              ))}
-        </motion.div>
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono text-neutral-600 group-hover:text-brand-cyan transition-colors">
+                          <span className="opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">
+                            {app.isExternal ? 'Launch' : 'Enter'}
+                          </span>
+                          <ExternalLink size={10} className="translate-x-1 group-hover:translate-x-0 transition-transform" />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </motion.div>
 
       <AppEditDialog
         isOpen={isDialogOpen}

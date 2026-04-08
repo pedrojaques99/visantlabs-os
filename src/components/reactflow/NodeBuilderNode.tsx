@@ -21,10 +21,10 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const CATEGORIES = [
-  { 
-    id: 'gen', 
-    name: 'Generation', 
-    icon: Diamond, 
+  {
+    id: 'gen',
+    name: 'Generation',
+    icon: Diamond,
     color: 'var(--brand-cyan)',
     hints: [
       'Create 4 unique product concepts',
@@ -32,10 +32,10 @@ const CATEGORIES = [
       'Expand prompt into 4 artistic styles'
     ]
   },
-  { 
-    id: 'trans', 
-    name: 'Transform', 
-    icon: Wand2, 
+  {
+    id: 'trans',
+    name: 'Transform',
+    icon: Wand2,
     color: '#a855f7',
     hints: [
       'Apply a futuristic VHS glitch',
@@ -43,10 +43,10 @@ const CATEGORIES = [
       'Upscale to 4K with sharpening'
     ]
   },
-  { 
-    id: 'matrix', 
-    name: 'Matrix', 
-    icon: Grid3x3, 
+  {
+    id: 'matrix',
+    name: 'Matrix',
+    icon: Grid3x3,
     color: '#f97316',
     hints: [
       'Compare 4 different AI models',
@@ -54,10 +54,10 @@ const CATEGORIES = [
       'Create 4 mockup placements'
     ]
   },
-  { 
-    id: 'pipe', 
-    name: 'Pipeline', 
-    icon: GitBranch, 
+  {
+    id: 'pipe',
+    name: 'Pipeline',
+    icon: GitBranch,
     color: '#22c55e',
     hints: [
       'Generate → Analyze → Refine loop',
@@ -74,7 +74,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
+
   const isLoading = nodeData.isLoading ?? false;
   const messages = nodeData.messages ?? [];
   const pendingDefinition = nodeData.pendingDefinition;
@@ -93,11 +93,11 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
   const handleSend = useCallback(async () => {
     const trimmedInput = input.trim();
     if (!trimmedInput || isLoading || !!pendingDefinition || !nodeData.onSendMessage) return;
-    
+
     setInput('');
     // Auto-reset height
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
-    
+
     await nodeData.onSendMessage(id, trimmedInput);
   }, [input, isLoading, pendingDefinition, id, nodeData]);
 
@@ -136,7 +136,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
           </div>
           <div>
             <h3 className="text-[12px] font-bold node-text-primary font-mono tracking-wider">NODE ARCHITECT</h3>
-            <p className="text-[9px] text-neutral-500 font-mono flex items-center gap-1">
+            <p className="text-[10px] text-neutral-500 font-mono flex items-center gap-1">
               {isLoading ? PROCESSING_STEPS[processingStep].label : 'READY TO CONSTRUCT'}
               {isLoading && <span className="w-1 h-1 bg-brand-cyan rounded-full" />}
             </p>
@@ -171,8 +171,8 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                       isActive
                         ? 'bg-brand-cyan/10 border-brand-cyan/30 shadow-[0_0_12px_rgba(0,195,255,0.08)]'
                         : isPast
-                        ? 'bg-neutral-900/30 border-white/5 opacity-40'
-                        : 'bg-transparent border-transparent opacity-20'
+                          ? 'bg-neutral-900/30 border-white/5 opacity-40'
+                          : 'bg-transparent border-transparent opacity-20'
                     )}
                   >
                     <StepIcon
@@ -235,9 +235,9 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                   <p className="text-[11px] font-mono font-bold uppercase tracking-widest" style={{ color: CATEGORIES.find(c => c.id === activeCategory)?.color }}>
                     {CATEGORIES.find(c => c.id === activeCategory)?.name} Presets
                   </p>
-                  <button 
+                  <button
                     onClick={() => setActiveCategory(null)}
-                    className="nodrag nopan text-[9px] font-mono text-neutral-500 hover:text-neutral-300"
+                    className="nodrag nopan text-[10px] font-mono text-neutral-500 hover:text-neutral-300"
                   >
                     Back
                   </button>
@@ -310,7 +310,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                 <p className="text-[10px] text-brand-cyan/60 font-mono leading-tight mt-0.5">{pendingDefinition.description}</p>
               </div>
             </div>
-            
+
             <div className="pt-2 border-t border-brand-cyan/10">
               <button
                 onClick={handleSpawn}
@@ -351,7 +351,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             <Send size={16} />
           </NodeButton>
         </div>
-        <p className="text-[8px] font-mono text-neutral-600 mt-2 text-center uppercase tracking-tighter opacity-50">
+        <p className="text-[10px] font-mono text-neutral-600 mt-2 text-center uppercase tracking-tighter opacity-50">
           Enter to send • Shift+Enter for newline
         </p>
       </div>

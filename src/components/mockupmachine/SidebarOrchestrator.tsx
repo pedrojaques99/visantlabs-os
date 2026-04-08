@@ -226,7 +226,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
               <Gem size={14} className={cn("transition-transform group-hover:scale-110", (showBrandConfig || selectedBrandGuideline) && "fill-current text-brand-cyan")} />
               <span className="text-[10px] font-bold font-mono tracking-widest uppercase">MARCA</span>
               {selectedBrandGuideline && !showBrandConfig && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-brand-cyan rounded-full shadow-[0_0_8px_rgba(var(--brand-cyan-rgb),0.6)]" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-brand-cyan rounded-full shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.6)]" />
               )}
             </button>
           </div>

@@ -177,10 +177,10 @@ export const PublicBrandGuideline: React.FC = () => {
 
   // Intelligent Brand Theme Extraction
   const brandTheme = useMemo(() => {
-    const findByRole = (role: string) => 
+    const findByRole = (role: string) =>
       guideline?.colors?.find(c => c.role?.toUpperCase() === role || c.name?.toUpperCase() === role);
-    
-    const findByMatch = (keywords: string[]) => 
+
+    const findByMatch = (keywords: string[]) =>
       guideline?.colors?.find(c => keywords.some(k => c.name?.toLowerCase().includes(k) || c.role?.toLowerCase().includes(k)));
 
     // Base Brand Tokens
@@ -190,7 +190,7 @@ export const PublicBrandGuideline: React.FC = () => {
     const textToken = findByRole('TEXT') || findByRole('HEADLINE') || findByMatch(['text', 'content', 'body']) || { hex: '#ffffff' };
 
     // Sort palette by luminance to find extremes
-    const paletteByLum = [...(guideline?.colors || [])].sort((a, b) => 
+    const paletteByLum = [...(guideline?.colors || [])].sort((a, b) =>
       getRelativeLuminance(a.hex) - getRelativeLuminance(b.hex)
     );
 
@@ -205,7 +205,7 @@ export const PublicBrandGuideline: React.FC = () => {
     if (theme === 'light') {
       rBg = lightestInPalette;
       // If lightest is too dark for a 'light' base, force white
-      if (getRelativeLuminance(rBg) < 0.8) rBg = '#ffffff'; 
+      if (getRelativeLuminance(rBg) < 0.8) rBg = '#ffffff';
       // Surface is slightly darker than BG
       rSurface = paletteByLum[paletteByLum.length - 2]?.hex || '#f5f5f7';
       rText = darkestInPalette;
@@ -297,9 +297,9 @@ export const PublicBrandGuideline: React.FC = () => {
   };
 
   return (
-    <div 
+    <div
       className="min-h-screen transition-all duration-1000 selection:bg-[var(--accent)]/30 overflow-x-hidden"
-      style={{ 
+      style={{
         '--accent': brandTheme.accent,
         '--accent-rgb': brandTheme.accentRgb,
         '--brand-bg': brandTheme.bg,
@@ -327,8 +327,8 @@ export const PublicBrandGuideline: React.FC = () => {
           >
             <div className={cn(
               "w-1 h-1 rounded-full transition-all duration-300",
-              activeTab === tab.id 
-                ? "h-6 bg-[var(--accent)] shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]" 
+              activeTab === tab.id
+                ? "h-6 bg-[var(--accent)] shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]"
                 : "bg-current opacity-20 group-hover:opacity-60"
             )} />
             <span className="text-[10px] uppercase font-bold tracking-wider font-mono opacity-80 group-hover:opacity-100 transition-opacity">
@@ -365,40 +365,40 @@ export const PublicBrandGuideline: React.FC = () => {
       </div>
 
       <div className="flex gap-2" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
-        <Button 
+        <Button
           onClick={() => setTheme(prev => prev === 'brand' ? 'light' : prev === 'light' ? 'dark' : 'brand')}
-          variant="ghost" 
+          variant="ghost"
           className={cn(
             "h-10 px-4 rounded-full border transition-all duration-500 gap-2 font-mono text-[10px] font-bold uppercase tracking-widest",
-            theme === 'brand' 
-              ? "bg-[var(--accent)] text-black border-transparent shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]" 
+            theme === 'brand'
+              ? "bg-[var(--accent)] text-black border-transparent shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]"
               : theme === 'dark'
-                ? "bg-neutral-900 border-white/5 text-white hover:bg-neutral-800" 
+                ? "bg-neutral-900 border-white/5 text-white hover:bg-neutral-800"
                 : "bg-white border-neutral-200 text-neutral-900 hover:bg-neutral-50 shadow-sm"
           )}
         >
           {theme === 'brand' ? <Diamond size={14} className="animate-pulse" /> : theme === 'light' ? <Sun size={14} /> : <Moon size={14} />}
           {theme}
         </Button>
-        <Button 
-          onClick={handleDownloadJSON} 
-          variant="ghost" 
+        <Button
+          onClick={handleDownloadJSON}
+          variant="ghost"
           className={cn(
             "h-10 w-10 p-0 rounded-full border transition-colors",
-            theme === 'dark' 
-              ? "bg-neutral-900/50 border-white/5 text-neutral-400 hover:text-white" 
+            theme === 'dark'
+              ? "bg-neutral-900/50 border-white/5 text-neutral-400 hover:text-white"
               : "bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm"
           )}
         >
           <Download size={14} />
         </Button>
-        <Button 
-          onClick={handleDownloadCSS} 
-          variant="ghost" 
+        <Button
+          onClick={handleDownloadCSS}
+          variant="ghost"
           className={cn(
             "h-10 w-10 p-0 rounded-full border transition-colors",
-            theme === 'dark' 
-              ? "bg-neutral-900/50 border-white/5 text-neutral-400 hover:text-white" 
+            theme === 'dark'
+              ? "bg-neutral-900/50 border-white/5 text-neutral-400 hover:text-white"
               : "bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm"
           )}
         >
@@ -408,7 +408,7 @@ export const PublicBrandGuideline: React.FC = () => {
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 py-16 md:py-24">
         {/* Dynamic Hero Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
@@ -453,8 +453,8 @@ export const PublicBrandGuideline: React.FC = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
                       "px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
-                      activeTab === tab.id 
-                        ? "bg-[var(--accent)] text-black" 
+                      activeTab === tab.id
+                        ? "bg-[var(--accent)] text-black"
                         : "opacity-40 hover:opacity-100 hover:bg-[var(--brand-text)]/5"
                     )}
                   >
@@ -686,11 +686,11 @@ export const PublicBrandGuideline: React.FC = () => {
                           </p>
                           <div className="flex items-center gap-6 pt-2">
                             <div className="space-y-1">
-                              <span className="text-[9px] font-mono uppercase tracking-widest font-bold opacity-30">Style</span>
+                              <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">Style</span>
                               <p className="text-sm font-bold opacity-70">{font.style || 'Regular'}</p>
                             </div>
                             <div className="space-y-1">
-                              <span className="text-[9px] font-mono uppercase tracking-widest font-bold opacity-30">Base Size</span>
+                              <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">Base Size</span>
                               <p className="text-sm font-bold opacity-70">{font.size || '16'}PX</p>
                             </div>
                           </div>
@@ -728,10 +728,10 @@ export const PublicBrandGuideline: React.FC = () => {
                         className="group relative flex flex-col gap-4"
                       >
                         <div className="relative aspect-[4/3] rounded-3xl p-8 flex items-center justify-center overflow-hidden transition-all duration-500 border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 group-hover:bg-[var(--brand-surface)]/40 group-hover:border-[var(--brand-text)]/10 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
-                          <img 
-                            src={logo.url} 
-                            alt={logo.label || 'Logo'} 
-                            className="w-3/4 h-3/4 object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_15px_25px_rgba(0,0,0,0.2)]" 
+                          <img
+                            src={logo.url}
+                            alt={logo.label || 'Logo'}
+                            className="w-3/4 h-3/4 object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_15px_25px_rgba(0,0,0,0.2)]"
                           />
 
                           {/* Quick Actions */}
@@ -750,7 +750,7 @@ export const PublicBrandGuideline: React.FC = () => {
                         </div>
                         <div className="px-2">
                           <p className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-90">{logo.label || 'Untitled Asset'}</p>
-                          <p className="text-[9px] font-mono uppercase tracking-widest mt-1 opacity-40">{logo.variant} Variant</p>
+                          <p className="text-[10px] font-mono uppercase tracking-widest mt-1 opacity-40">{logo.variant} Variant</p>
                         </div>
                       </motion.div>
                     ))}
@@ -796,7 +796,7 @@ export const PublicBrandGuideline: React.FC = () => {
                           <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
                             <div className="space-y-1">
                               <p className="text-sm font-bold text-white tracking-tight">{item.label || 'Production File'}</p>
-                              <span className="text-[9px] font-mono text-white/50 uppercase tracking-widest">Asset // 0{i + 1}</span>
+                              <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Asset // 0{i + 1}</span>
                             </div>
                           </div>
                         </div>
@@ -826,7 +826,7 @@ export const PublicBrandGuideline: React.FC = () => {
                         <ul className="space-y-4 pt-12">
                           {guideline.guidelines.dos.map((item, i) => (
                             <li key={i} className="flex gap-4 group">
-                              <div className="mt-1.5 w-1 h-1 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.3)]" />
+                              <div className="mt-1.5 w-1 h-1 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]" />
                               <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">{item}</span>
                             </li>
                           ))}
@@ -838,7 +838,7 @@ export const PublicBrandGuideline: React.FC = () => {
                         <ul className="space-y-4 pt-12">
                           {guideline.guidelines.donts.map((item, i) => (
                             <li key={i} className="flex gap-4 group">
-                              <div className="mt-1.5 w-1 h-1 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.3)]" />
+                              <div className="mt-1.5 w-1 h-1 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]" />
                               <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">{item}</span>
                             </li>
                           ))}

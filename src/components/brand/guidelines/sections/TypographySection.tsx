@@ -69,26 +69,26 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
         <div className="space-y-8 p-4">
           {guideline.typography.map((f, i) => (
             <div key={i} className="flex flex-col md:flex-row md:items-center gap-8 p-8 rounded-3xl bg-neutral-950/40 border border-white/[0.03] hover:border-brand-cyan/20 transition-all group overflow-hidden relative">
-               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <Type size={120} className="text-brand-cyan -rotate-12 translate-x-12 translate-y-4" />
               </div>
-              
+
               <div className="flex items-center justify-center shrink-0 w-32 h-32 rounded-2xl bg-white/[0.02] border border-white/[0.05] group-hover:bg-brand-cyan group-hover:text-black transition-all duration-500">
                 <span className="text-7xl font-bold tracking-tighter" style={{ fontFamily: f.family }}>
                   Aa
                 </span>
               </div>
-              
+
               <div className="flex-1 min-w-0 space-y-4 relative z-10">
                 <div className="flex items-center gap-4 flex-wrap">
                   <div className="px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/20">
                     <span className="text-[10px] text-brand-cyan font-bold font-mono uppercase tracking-widest">{f.role || 'Primary'}</span>
                   </div>
                   <div className="px-2 py-1 rounded bg-white/[0.03] border border-white/5">
-                     <span className="text-[10px] text-neutral-500 font-mono italic">{f.size || '16'}px</span>
+                    <span className="text-[10px] text-neutral-500 font-mono italic">{f.size || '16'}px</span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-1">
                   <h3 className="text-2xl font-medium text-white group-hover:text-brand-cyan transition-colors" style={{ fontFamily: f.family }}>
                     {f.family} {f.style || 'Regular'}
@@ -114,22 +114,22 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
           <div className="space-y-4 pt-2">
             {fields.map((field, i) => {
               const currentFamily = form.watch(`typography.${i}.family`);
-              
+
               return (
                 <div key={field.id} className="flex flex-col gap-6 p-6 rounded-2xl bg-white/[0.01] border border-white/[0.04] group/font relative hover:border-brand-cyan/30 transition-all shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div className="flex flex-col lg:flex-row gap-6">
                     {/* Visual Preview Section */}
                     <div className="lg:w-24 shrink-0 flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-neutral-900/50 border border-white/5">
-                       <span className="text-4xl font-bold text-white transition-all duration-500" style={{ fontFamily: currentFamily }}>
+                      <span className="text-4xl font-bold text-white transition-all duration-500" style={{ fontFamily: currentFamily }}>
                         Aa
                       </span>
-                      <MicroTitle className="text-[7px] text-neutral-600 uppercase">{t('mockup.typography.preview')}</MicroTitle>
+                      <MicroTitle className="text-[10px] text-neutral-600 uppercase">{t('mockup.typography.preview')}</MicroTitle>
                     </div>
 
                     <div className="flex-1 space-y-6">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <MicroTitle className="text-[9px] opacity-40 uppercase pl-1 tracking-widest">{t('mockup.typography.role')}</MicroTitle>
+                          <MicroTitle className="text-[10px] opacity-40 uppercase pl-1 tracking-widest">{t('mockup.typography.role')}</MicroTitle>
                           <Input
                             {...form.register(`typography.${i}.role`)}
                             className="bg-neutral-950/80 border-white/5 text-[11px] font-mono text-white focus:border-brand-cyan/30 focus:bg-neutral-950 transition-all h-10 rounded-xl"
@@ -137,7 +137,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                           />
                         </div>
                         <div className="space-y-2">
-                          <MicroTitle className="text-[9px] opacity-40 uppercase pl-1 tracking-widest">{t('mockup.typography.family')}</MicroTitle>
+                          <MicroTitle className="text-[10px] opacity-40 uppercase pl-1 tracking-widest">{t('mockup.typography.family')}</MicroTitle>
                           <GoogleFontPicker
                             value={currentFamily}
                             onChange={(val) => form.setValue(`typography.${i}.family`, val)}
@@ -147,7 +147,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="sm:col-span-2 space-y-2">
-                          <MicroTitle className="text-[9px] opacity-40 uppercase pl-1 tracking-widest">{t('mockup.typography.style')}</MicroTitle>
+                          <MicroTitle className="text-[10px] opacity-40 uppercase pl-1 tracking-widest">{t('mockup.typography.style')}</MicroTitle>
                           <Input
                             {...form.register(`typography.${i}.style`)}
                             className="bg-neutral-950/80 border-white/5 text-[10px] font-mono text-white focus:border-brand-cyan/30 focus:bg-neutral-950 h-10 rounded-xl"
@@ -155,7 +155,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                           />
                         </div>
                         <div className="space-y-2">
-                          <MicroTitle className="text-[9px] opacity-40 uppercase pl-1 tracking-widest">{t('mockup.typography.size')}</MicroTitle>
+                          <MicroTitle className="text-[10px] opacity-40 uppercase pl-1 tracking-widest">{t('mockup.typography.size')}</MicroTitle>
                           <Input
                             type="number"
                             {...form.register(`typography.${i}.size`, { valueAsNumber: true })}
@@ -168,8 +168,8 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                   </div>
 
                   {/* Absolute positioning for remove button - more discreet but accessible */}
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     className="absolute top-2 right-2 h-7 w-7 rounded-full text-neutral-700 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover/font:opacity-100 transition-all"
                     onClick={() => remove(i)}
@@ -180,7 +180,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                 </div>
               );
             })}
-            
+
             <Button
               variant="outline"
               onClick={() => append({ family: 'Inter', role: 'Label', style: 'Regular', size: 12 })}
@@ -196,8 +196,8 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
             {guideline.typography && guideline.typography.length > 0 ? (
               <div className="space-y-1">
                 {guideline.typography.map((f, i) => (
-                  <div 
-                    key={i} 
+                  <div
+                    key={i}
                     className="flex items-center gap-5 p-4 rounded-2xl bg-white/[0.01] hover:bg-white/[0.03] border border-transparent hover:border-white/5 group/row transition-all duration-500 cursor-pointer"
                     onClick={() => setIsEditing(true)}
                   >
@@ -206,7 +206,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                         Aa
                       </span>
                     </div>
-                    
+
                     <div className="flex-1 min-w-0 space-y-0.5">
                       <div className="flex items-center gap-2">
                         <span className="text-[11px] text-brand-cyan font-bold font-mono uppercase tracking-tight">{f.role || 'Primary'}</span>
@@ -219,9 +219,9 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                     </div>
 
                     <div className="opacity-0 group-hover/row:opacity-100 transition-opacity">
-                       <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-700">
-                          <Eye size={14} />
-                       </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-700">
+                        <Eye size={14} />
+                      </Button>
                     </div>
                   </div>
                 ))}

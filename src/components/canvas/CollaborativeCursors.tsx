@@ -169,7 +169,7 @@ export const CollaborativeCursors: React.FC<CollaborativeCursorsProps> = ({
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '10px',
               }}
             >
               {/* Colored cursor circle */}
@@ -187,7 +187,7 @@ export const CollaborativeCursors: React.FC<CollaborativeCursorsProps> = ({
               {/* Name label */}
               <div
                 style={{
-                  padding: '4px 8px',
+                  padding: '4px 10px',
                   backgroundColor: labelColor,
                   color: 'white',
                   borderRadius: 'var(--radius)',
@@ -254,7 +254,7 @@ export const CollaborativeCursors: React.FC<CollaborativeCursorsProps> = ({
               transform: 'translate(-50%, -100%)',
               pointerEvents: 'none',
               zIndex: 1001,
-              marginBottom: '8px',
+              marginBottom: '10px',
             }}
           >
             <div
@@ -268,7 +268,7 @@ export const CollaborativeCursors: React.FC<CollaborativeCursorsProps> = ({
               {/* User name label */}
               <div
                 style={{
-                  padding: '4px 8px',
+                  padding: '4px 10px',
                   backgroundColor: labelColor,
                   color: 'white',
                   borderRadius: 'var(--radius)',
