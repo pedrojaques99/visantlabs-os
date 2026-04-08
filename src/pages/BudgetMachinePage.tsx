@@ -21,9 +21,9 @@ import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { generateBudgetPDF } from '@/utils/generateBudgetPDF';
 import { getTemplateById } from '@/utils/budgetTemplates';
 import { DndContext, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
-import { SEO } from '../components/SEO';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { PageShell } from '../components/ui/PageShell';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 export const BudgetMachinePage: React.FC = () => {
   const { t } = useTranslation();
@@ -532,31 +532,75 @@ export const BudgetMachinePage: React.FC = () => {
     );
   }
 
+  const budgetActions = budgetData && (
+    <div className="flex items-center gap-2">
+      {currentProjectId && (
+        <Tooltip content={t('budget.duplicate') || 'Duplicar'} position="top">
+          <Button
+            onClick={handleDuplicate}
+            variant="ghost"
+            className="p-2 h-9 w-9 text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5 transition-all"
+            aria-label="Duplicate budget"
+          >
+            <Copy size={16} />
+          </Button>
+        </Tooltip>
+      )}
+      <Button
+        onClick={handleSave}
+        disabled={isSaving}
+        variant="ghost"
+        className="h-9 px-4 gap-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
+      >
+        <Save size={14} />
+        {isSaving ? t('budget.saving') : t('budget.save')}
+      </Button>
+      {currentProjectId && (
+        <>
+          <Button
+            onClick={handleGeneratePDF}
+            variant="ghost"
+            className="h-9 px-4 gap-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
+          >
+            <Download size={14} />
+            {t('budget.generatePDF')}
+          </Button>
+          <Button
+            onClick={handleShare}
+            variant="ghost"
+            className="h-9 px-4 gap-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
+          >
+            {linkCopied ? <Check size={14} /> : <Share2 size={14} />}
+            {linkCopied ? 'Copied!' : t('budget.share')}
+          </Button>
+        </>
+      )}
+    </div>
+  );
+
   return (
-    <>
-      <SEO
-        title="Budget Machine"
-        description="Crie e gerencie orçamentos profissionais para seus projetos de design. Templates personalizáveis e geração de PDF."
-        keywords="budget machine, orçamento, orçamento design, templates orçamento, gerenciar orçamento"
-      />
+    <PageShell
+      pageId="budget-machine"
+      seoTitle="Budget Machine"
+      seoDescription="Crie e gerencie orçamentos profissionais para seus projetos de design."
+      title={budgetName || t('budget.title') || 'Budget Machine'}
+      microTitle="Systems // Budget"
+      description={selectedTemplate ? (getTemplateById(selectedTemplate)?.name || selectedTemplate) : "Gerencie seus orçamentos."}
+      breadcrumb={[
+        { label: 'Systems', to: '/apps' },
+        { label: 'Budget Machine' }
+      ]}
+      actions={budgetActions}
+      width="full"
+      noBackground
+    >
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="min-h-full w-full bg-[#0C0C0C] text-neutral-300 pt-10 md:pt-14">
-          {/* Brand Customization Panel - Floating (only panel, button is in header) */}
-          {budgetData && !isCustom && (
-            <BrandCustomizationPanel
-              data={budgetData}
-              budgetId={currentProjectId || undefined}
-              onDataChange={handleBrandDataChange}
-              renderButton={false}
-            />
-          )}
-
-          <div className="relative min-h-[calc(100vh-2.5rem)] md:min-h-[calc(100vh-3.5rem)]">
+        <div className="relative h-[calc(100vh-140px)] w-full overflow-hidden">
             {/* Overlay - Close sidebar when clicking outside */}
             {isSidebarOpen && (
               <div
@@ -565,46 +609,6 @@ export const BudgetMachinePage: React.FC = () => {
               />
             )}
 
-            {/* Preview Side - Full Width */}
-            <div className="w-full h-full overflow-y-auto bg-neutral-100 flex flex-col relative min-h-full">
-              {/* Toggle Sidebar Button */}
-              <Button variant="ghost" onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="fixed top-12 md:top-16 z-50 p-1.5 bg-neutral-950/30 backdrop-blur-sm border border-neutral-700/20 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-neutral-600/30 hover:bg-neutral-950/70 transition-all duration-200 shadow-sm"
-                style={isSidebarOpen
-                  ? (formWidth ? { left: `${formWidth + 16}px` } : { left: '416px' })
-                  : { left: '16px' }
-                }
-                title={isSidebarOpen ? 'Fechar formulário' : 'Abrir formulário'}
-              >
-                {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
-              </Button>
-
-              {/* Save Status Indicator */}
-              {isAuthenticated === true && currentProjectId && (
-                <div className="absolute top-2 right-2 z-10 flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-md shadow-sm border border-neutral-200">
-                  {saveStatus === 'saving' && (
-                    <>
-                      <GlitchLoader size={14} color="brand-cyan" />
-                      <span className="text-xs text-neutral-600">Salvando...</span>
-                    </>
-                  )}
-                  {saveStatus === 'saved' && (
-                    <>
-                      <Check size={14} className="text-green-500" />
-                      <span className="text-xs text-green-600">Salvo</span>
-                    </>
-                  )}
-                  {saveStatus === 'error' && (
-                    <>
-                      <AlertCircle size={14} className="text-red-500" />
-                      <span className="text-xs text-red-600">Erro ao salvar</span>
-                    </>
-                  )}
-                  {saveStatus === 'idle' && (
-                    <span className="text-xs text-neutral-400">Pronto</span>
-                  )}
-                </div>
-              )}
               <BudgetPreview
                 data={budgetData}
                 editable={true}
@@ -617,12 +621,11 @@ export const BudgetMachinePage: React.FC = () => {
                 selectedFieldId={selectedFieldId}
                 isSidebarOpen={isSidebarOpen}
               />
-            </div>
 
             {/* Form Side - Overlay Sidebar */}
             <div
               ref={formContainerRef}
-              className={`fixed top-10 md:top-14 left-0 h-[calc(100vh-2.5rem)] md:h-[calc(100vh-3.5rem)] z-40 bg-[#0C0C0C] border-r border-neutral-800 overflow-hidden flex flex-col transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+              className={`fixed top-[160px] left-0 h-[calc(100vh-160px)] z-40 bg-[#0C0C0C] border-r border-neutral-800 overflow-hidden flex flex-col transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
               style={formWidth ? {
                 width: `${formWidth}px`,
@@ -634,83 +637,13 @@ export const BudgetMachinePage: React.FC = () => {
                 maxWidth: '600px'
               }}
             >
-              {/* Header with actions */}
-              <div className="flex-shrink-0 border-b border-neutral-800 bg-neutral-900 px-4 sm:px-6 py-4">
-                {/* Row 1: Title and Description */}
-                <div className="flex flex-col mb-4">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="text"
-                      value={budgetName || t('budget.title') || 'Budget Machine'}
-                      onChange={(e) => setBudgetName(e.target.value)}
-                      onBlur={async () => {
-                        if (currentProjectId && budgetName.trim() && budgetData) {
-                          try {
-                            await budgetApi.save(budgetData, currentProjectId, budgetName.trim());
-                          } catch (error) {
-                            console.error('Error saving budget name:', error);
-                          }
-                        }
-                      }}
-                      className="flex-1 text-xl sm:text-2xl font-bold text-neutral-200 font-mono bg-transparent border-none outline-none focus:outline-none hover:bg-neutral-950/20 px-2 py-1 rounded transition-colors cursor-text"
-                      placeholder={t('budget.title') || 'Budget Machine'}
-                    />
-                  </div>
-                  {selectedTemplate && (
-                    <p className="text-xs text-neutral-400 font-mono mt-0.5">
-                      {getTemplateById(selectedTemplate)?.name || selectedTemplate}
-                    </p>
-                  )}
-                </div>
-                {/* Row 2: Icons and Buttons */}
-                <div className="flex flex-wrap gap-2 w-full">
-                  {budgetData && !isCustom && (
-                    <BrandCustomizationPanel
-                      data={budgetData}
-                      budgetId={currentProjectId || undefined}
-                      onDataChange={handleBrandDataChange}
-                      renderButton={true}
-                    />
-                  )}
-                  {currentProjectId && (
-                    <Tooltip content={t('budget.duplicate') || 'Duplicar'} position="top">
-                      <Button
-                        onClick={handleDuplicate}
-                        className="flex items-center justify-center p-2 bg-card border border-neutral-800 rounded-md text-neutral-200 hover:text-brand-cyan hover:bg-card/90 hover:border-brand-cyan/50 transition-all duration-300 shadow-lg"
-                        aria-label="Duplicate budget"
-                      >
-                        <Copy size={18} />
-                      </Button>
-                    </Tooltip>
-                  )}
-                  <FormButton
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="flex items-center gap-2"
-                  >
-                    <Save size={16} />
-                    {isSaving ? t('budget.saving') : t('budget.save')}
-                  </FormButton>
-                  {currentProjectId && (
-                    <>
-                      <FormButton
-                        onClick={handleGeneratePDF}
-                        className="flex items-center gap-2"
-                      >
-                        <Download size={16} />
-                        {t('budget.generatePDF')}
-                      </FormButton>
-                      <FormButton
-                        onClick={handleShare}
-                        className="flex items-center gap-2"
-                      >
-                        {linkCopied ? <Check size={16} /> : <Share2 size={16} />}
-                        {linkCopied ? 'Copied!' : t('budget.share')}
-                      </FormButton>
-                    </>
-                  )}
-                </div>
-              </div>
+              {/* Toggle Sidebar Button Inline */}
+               <Button variant="ghost" onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="absolute top-4 right-4 z-50 p-1 bg-neutral-900 border border-neutral-800 rounded-md text-neutral-400 hover:text-white"
+              >
+                <X size={16} />
+              </Button>
+
 
               {/* Form Content */}
               <div className="flex-1 overflow-y-auto min-h-0">
@@ -846,9 +779,8 @@ export const BudgetMachinePage: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
       </DndContext>
-    </>
+    </PageShell>
   );
 };
 

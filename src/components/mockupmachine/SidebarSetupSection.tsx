@@ -8,7 +8,8 @@ import { PremiumButton } from '../ui/PremiumButton';
 import { Button } from '../ui/button';
 import { MicroTitle } from '../ui/MicroTitle';
 import { cn } from '@/lib/utils';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Cpu, Scan } from 'lucide-react';
+import { PremiumGlitchLoader } from '../ui/PremiumGlitchLoader';
 
 interface SidebarSetupSectionProps {
     onImageUpload: (image: UploadedImage) => void;
@@ -18,6 +19,15 @@ interface SidebarSetupSectionProps {
     onAnalyze: () => void;
     onClose?: () => void;
 }
+
+const ANALYSIS_STEPS = [
+    'Scanning Design Structure',
+    'Identifying Core Objects',
+    'Extracting Brand Palette',
+    'Mapping Visual Anchors',
+    'Optimizing Geometry',
+    'Preparing Neural Engine'
+];
 
 export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
     onImageUpload,
@@ -40,15 +50,22 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
     } = useMockup();
 
     const canAnalyze = uploadedImage && !hasAnalyzed;
-    const isTransparent = designType === 'logo';
 
     return (
         <div
             id="section-setup"
-            className="flex flex-col h-full w-full mx-auto gap-4 md:gap-6"
+            className="px-4 mx-auto w-full max-w-4xl"
         >
-            <div className="flex-1 min-h-0 flex flex-col gap-4 md:gap-6">
-                    {/* Upload Section */}
+            <div className="gap-6">
+                {isAnalyzing ? (
+                    <div className="flex flex-col items-center justify-center py-12 px-4 animate-in fade-in duration-500">
+                        <div className="w-auto">
+                            <div className="p-4 rounded-xl bg-neutral-900/30 border border-white/5 backdrop-blur-sm">
+                                <PremiumGlitchLoader steps={ANALYSIS_STEPS} className="w-full" />
+                            </div>
+                        </div>
+                    </div>
+                ) : (
                     <InputSection
                         uploadedImage={uploadedImage}
                         referenceImages={referenceImages}
@@ -61,40 +78,41 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                         onDesignTypeChange={onDesignTypeChange}
                         onScrollToSection={() => { }}
                     />
-            </div>
-
-            {/* Bottom Action Area - More elegant and proportionate */}
-            <div className="w-full pt-6 mt-2 border-t border-white/5 flex flex-col items-center gap-3">
-                <div className="flex items-center gap-3 w-full max-w-6xl">
-                    {onClose && (
-                        <Button
-                            variant="ghost"
-                            onClick={onClose}
-                            className="h-12 px-6 text-neutral-500 hover:text-white hover:bg-white/5 font-mono text-xs uppercase"
-                        >
-                            {t('common.cancel') || 'Fechar'}
-                        </Button>
-                    )}
-                    <PremiumButton
-                        onClick={onAnalyze}
-                        disabled={!canAnalyze}
-                        isLoading={isAnalyzing}
-                        loadingText={t('mockup.analyzing') || 'ANALYZING...'}
-                        icon={ArrowRight}
-                        className="flex-1 h-12 text-sm"
-                    >
-                        {t('mockup.continue') || 'CONTINUE'}
-                    </PremiumButton>
-                </div>
-
-                {!canAnalyze && !isAnalyzing && !hasAnalyzed && !uploadedImage ? (
-                    <MicroTitle as="p" className="text-center opacity-300 text-[9px] uppercase tracking-widest">
-                        {t('mockup.uploadRequired') || 'Upload an image to continue'}
-                    </MicroTitle>
-                ) : (
-                    <div className="h-2" />
                 )}
             </div>
+
+            {/* Bottom Action Area */}
+            {!isAnalyzing && (
+                <div className="w-auto pt-6 border-t border-white/5 flex flex-col items-center gap-3">
+                    <div className="flex items-center gap-3 w-full">
+                        {onClose && (
+                            <Button
+                                variant="ghost"
+                                onClick={onClose}
+                                className="h-12 px-6 text-neutral-500 hover:text-white hover:bg-white/5 font-mono text-[10px] uppercase tracking-widest border border-transparent hover:border-white/10"
+                            >
+                                {t('common.cancel') || 'Fechar'}
+                            </Button>
+                        )}
+                        <PremiumButton
+                            onClick={onAnalyze}
+                            disabled={!canAnalyze}
+                            isLoading={isAnalyzing}
+                            loadingText="INITIALIZING..."
+                            icon={ArrowRight}
+                            className="flex-1 h-12 text-[10px] tracking-[0.2em] font-bold"
+                        >
+                            {t('mockup.continue') || 'CONTINUE SETUP'}
+                        </PremiumButton>
+                    </div>
+
+                    {!canAnalyze && !isAnalyzing && !hasAnalyzed && !uploadedImage && (
+                        <p className="text-center text-neutral-600 text-[9px] font-mono uppercase tracking-widest animate-pulse mt-1">
+                            {t('mockup.uploadRequired') || 'Waiting for design input...'}
+                        </p>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

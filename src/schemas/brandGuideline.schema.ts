@@ -1,9 +1,17 @@
 import { z } from 'zod';
 
+const cmykSchema = z.object({
+  c: z.number().min(0).max(100),
+  m: z.number().min(0).max(100),
+  y: z.number().min(0).max(100),
+  k: z.number().min(0).max(100),
+});
+
 export const colorSchema = z.object({
   name: z.string().min(1),
   hex: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
   role: z.string().optional(),
+  cmyk: cmykSchema.optional(),
 });
 
 export const typographySchema = z.object({

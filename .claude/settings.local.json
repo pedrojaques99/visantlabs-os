@@ -93,7 +93,11 @@
       "Read(//c/Users/Usuario/.claude/plugins/cache/claude-plugins-official/superpowers/**)",
       "Read(//c/Users/Usuario/.claude/plugins/**)",
       "Bash(npm install:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(powershell -NoProfile -Command \"& { echo '6' | pwsh -NoProfile -File scripts/powershell/vsn-exporter.ps1 }\")",
+      "Bash(powershell -NoProfile -Command \"echo '6' | powershell -NoProfile -File scripts\\\\powershell\\\\vsn-exporter.ps1\")",
+      "Bash(pwsh -NoProfile -File scripts/powershell/vsn-exporter.ps1)",
+      "Bash(printf:*)"
     ]
   }
 }

@@ -162,7 +162,7 @@ export const CreativeStudio: React.FC = () => {
   });
 
   return (
-    <div className="flex h-screen bg-black overflow-hidden select-none">
+    <div className="flex h-[calc(100vh-1px)] bg-black overflow-hidden select-none">
       {status === 'editing' ? (
         <CreativeEditorSidebar
           onExport={handleExport}

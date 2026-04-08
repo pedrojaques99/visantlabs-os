@@ -22,6 +22,8 @@ export default defineConfig(({ mode }) => {
           target: 'http://localhost:3001',
           changeOrigin: true,
           secure: false,
+          timeout: 600000,
+          proxyTimeout: 600000,
         }
       }
     },

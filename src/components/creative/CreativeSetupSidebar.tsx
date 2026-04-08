@@ -9,7 +9,7 @@ import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuide
 import { Button } from '@/components/ui/button';
 import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import { generateCreative } from './lib/generateCreative';
-import { ModelSelector } from '@/components/reactflow/shared/ModelSelector';
+import { ModelSelector } from '@/components/shared/ModelSelector';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { Select } from '@/components/ui/select';
 import { toast } from 'sonner';
@@ -90,7 +90,7 @@ export const CreativeSetupSidebar: React.FC = () => {
   };
 
   const canGenerate =
-    !!selectedGuideline && prompt.trim().length > 0 && status === 'setup';
+    !!selectedGuideline && prompt.trim().length > 0 && (status === 'setup' || status === 'generating');
 
   const isExistingBg = (backgroundMode === 'upload' || backgroundMode === 'brand') && !!uploadedBackgroundUrl;
   const creditsRequired = 1 + (isExistingBg ? 0 : getCreditsRequired(modelId || '', resolution, provider));
@@ -445,6 +445,8 @@ export const CreativeSetupSidebar: React.FC = () => {
 
       <div className="flex flex-col gap-1.5 min-h-[70px]">
         <ModelSelector
+          type="image"
+          variant="node"
           selectedModel={modelId}
           onModelChange={(m, p) => setModel(m, p)}
           resolution={resolution}

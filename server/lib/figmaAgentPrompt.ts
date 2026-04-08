@@ -38,8 +38,8 @@ export interface PluginRequest {
   };
   selectedBrandFont?: { id: string; name: string };
   brandFonts?: {
-    primary?: { id: string; name: string } | null;
-    secondary?: { id: string; name: string } | null;
+    primary?: { id: string; name: string; family?: string; style?: string } | null;
+    secondary?: { id: string; name: string; family?: string; style?: string } | null;
   };
   selectedBrandColors?: Array<{ name: string; value: string; role?: string }>;
   availableComponents?: any[];
@@ -265,11 +265,14 @@ export function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thin
   fmtLogo('Accent', logos.accent);
   const logoInfo = logoLines.length > 0 ? '\n' + logoLines.join('\n') : 'Nenhum selecionado';
 
-  // Build font info — support primary + secondary
+  // Build font info — family-first with available weights
   const fonts = req.brandFonts || {};
   const fontLines: string[] = [];
   const fmtFont = (label: string, font: any) => {
-    if (font) fontLines.push(`  ${label}: ${font.name} (ID: "${font.id}")`);
+    if (!font) return;
+    const family = font.family || font.name || '';
+    const weights = font.availableStyles?.length ? ` (pesos: ${font.availableStyles.join(', ')})` : font.style ? ` (${font.style})` : '';
+    fontLines.push(`  ${label}: "${family}"${weights}`);
   };
   fmtFont('Primary (títulos)', fonts.primary || req.selectedBrandFont);
   fmtFont('Secondary (textos)', fonts.secondary);

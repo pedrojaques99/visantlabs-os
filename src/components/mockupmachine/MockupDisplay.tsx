@@ -5,6 +5,7 @@ import type { AspectRatio } from '@/types/types';
 import { InteractiveASCIICopy } from '@/components/ui/InteractiveASCIICopy';
 import { MicroTitle } from '../ui/MicroTitle';
 import { GlassPanel } from '../ui/GlassPanel';
+import { type FeedbackContext } from '@/services/feedbackApi';
 
 interface MockupDisplayProps {
   mockups: (string | null)[];
@@ -30,6 +31,10 @@ interface MockupDisplayProps {
   creditsPerOperation?: number;
   /** When true, sidebar is collapsed and main area uses full width; used for responsive layout. */
   isSidebarCollapsed?: boolean;
+  /** UUID da geração para o RAG loop */
+  generationId?: string | null;
+  /** Contexto da geração para o RAG loop */
+  feedbackContext?: FeedbackContext | (() => FeedbackContext);
 }
 
 export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
@@ -54,7 +59,9 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
   aspectRatio,
   editButtonsDisabled = false,
   creditsPerOperation,
-  isSidebarCollapsed = false
+  isSidebarCollapsed = false,
+  generationId,
+  feedbackContext
 }) => {
   const { t } = useTranslation();
 
@@ -114,6 +121,8 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
           aspectRatio={aspectRatio}
           editButtonsDisabled={editButtonsDisabled}
           creditsPerOperation={creditsPerOperation}
+          generationId={generationId}
+          feedbackContext={feedbackContext}
         />
       </section>
     );
@@ -169,6 +178,8 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
               aspectRatio={aspectRatio}
               editButtonsDisabled={editButtonsDisabled}
               creditsPerOperation={creditsPerOperation}
+              generationId={generationId}
+              feedbackContext={feedbackContext}
             />
           );
         })}

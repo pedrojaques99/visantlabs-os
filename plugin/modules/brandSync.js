@@ -241,6 +241,93 @@ class BrandSyncModule {
 
   // ═══ FIGMA SYNC ═══
 
+  /** Extract tokens from Figma WITHOUT sending to server (preview only) */
+  async previewSync() {
+    if (this._isSyncingFromFigma) {
+      console.log('[BrandSync] Preview blocked: sync already in progress')
+      return null
+    }
+    console.log('[BrandSync] Preview: requesting extraction...')
+    try {
+      const extractedData = await this._requestExtractionIsolated()
+      if (!extractedData) return null
+
+      // Build a human-readable summary of what will be synced
+      const preview = {
+        raw: extractedData,
+        colors: [],
+        typography: [],
+        spacing: {},
+        radius: {},
+        shadows: {},
+        components: [],
+      }
+
+      if (extractedData.variables?.colors) {
+        for (const v of extractedData.variables.colors) {
+          preview.colors.push({ hex: v.value, name: v.name, source: 'variable', figmaId: v.id })
+        }
+      }
+      if (extractedData.styles?.colors) {
+        for (const s of extractedData.styles.colors) {
+          preview.colors.push({ hex: s.value, name: s.name, source: 'style', figmaId: s.id })
+        }
+      }
+      if (extractedData.variables?.numbers) {
+        for (const v of extractedData.variables.numbers) {
+          const nl = v.name.toLowerCase()
+          if (nl.includes('spacing') || nl.includes('gap') || nl.includes('padding') || nl.includes('margin')) {
+            preview.spacing[v.name] = v.value
+          } else if (nl.includes('radius') || nl.includes('corner') || nl.includes('round')) {
+            preview.radius[v.name] = v.value
+          }
+        }
+      }
+      if (extractedData.styles?.text) {
+        for (const s of extractedData.styles.text) {
+          preview.typography.push({ family: s.family, style: s.style, role: s.name, size: s.size, figmaId: s.id })
+        }
+      }
+      if (extractedData.styles?.effects) {
+        for (const s of extractedData.styles.effects) {
+          if (s.shadows) preview.shadows[s.name] = s.shadows
+        }
+      }
+      if (extractedData.components) {
+        preview.components = extractedData.components.map(c => ({ name: c.name, key: c.key }))
+      }
+
+      console.log('[BrandSync] Preview ready:', preview.colors.length, 'colors,', preview.typography.length, 'typography,', Object.keys(preview.spacing).length, 'spacing')
+      return preview
+    } catch (e) {
+      console.error('[BrandSync] Preview extraction failed:', e.message)
+      return null
+    }
+  }
+
+  /** Send previously extracted data to a specific guideline (with optional auto-link) */
+  async syncToGuideline(guidelineId, extractedData) {
+    const token = window.getState('authToken')
+    if (!token) return null
+
+    try {
+      const resp = await window.apiCall(`/brand-guidelines/${guidelineId}/figma-sync`, 'POST', extractedData)
+      if (resp?.guideline) {
+        // If this is the currently selected guideline, update state
+        if (this._selectedId === guidelineId) {
+          window.setState('brandGuideline', resp.guideline)
+          this._saveToCache(guidelineId, resp.guideline)
+        }
+        window.eventBus?.emit('figma:sync-complete', { syncedAt: resp.syncedAt, stats: resp.stats })
+      }
+      return resp
+    } catch (e) {
+      console.error('[BrandSync] Sync to guideline failed:', e.message)
+      window.eventBus?.emit('api:error', { message: `Sync failed: ${e.message}` })
+      return null
+    }
+  }
+
   /** Link a Figma file URL to a guideline */
   async linkFigmaFile(guidelineId, figmaFileUrl) {
     const token = window.getState('authToken')
@@ -347,11 +434,24 @@ class BrandSyncModule {
       const timeout = setTimeout(() => {
         this._extractResolve = null
         reject(new Error('Extraction timeout'))
-      }, 10000)
+      }, 30000)
 
       // Store timeout to clear on success
       this._extractTimeout = timeout
 
+      parent.postMessage({ pluginMessage: { type: 'EXTRACT_FOR_SYNC' } }, '*')
+    })
+  }
+
+  /** Isolated extraction that won't conflict with syncFromFigma's promise */
+  _requestExtractionIsolated() {
+    return new Promise((resolve, reject) => {
+      this._previewResolve = resolve
+      const timeout = setTimeout(() => {
+        this._previewResolve = null
+        reject(new Error('Extraction timeout'))
+      }, 30000)
+      this._previewTimeout = timeout
       parent.postMessage({ pluginMessage: { type: 'EXTRACT_FOR_SYNC' } }, '*')
     })
   }
@@ -375,6 +475,33 @@ class BrandSyncModule {
       this._pushTimeout = timeout
 
       parent.postMessage({ pluginMessage: { type: 'PUSH_TO_FIGMA', guideline: bg } }, '*')
+    })
+  }
+
+  /** Smart scan: analyze multi-selection and classify each node */
+  smartScan() {
+    return new Promise((resolve, reject) => {
+      this._smartScanResolve = resolve
+      const timeout = setTimeout(() => {
+        this._smartScanResolve = null
+        reject(new Error('Smart scan timeout'))
+      }, 15000)
+      this._smartScanTimeout = timeout
+      parent.postMessage({ pluginMessage: { type: 'SMART_SCAN_SELECTION' } }, '*')
+    })
+  }
+
+  /** Export a Figma node as SVG or PNG base64 data URL */
+  exportNodeImage(nodeId, format = 'SVG') {
+    return new Promise((resolve, reject) => {
+      const key = `_exportResolve_${nodeId}`
+      this[key] = resolve
+      const timeout = setTimeout(() => {
+        delete this[key]
+        reject(new Error('Export timeout'))
+      }, 15000)
+      this[`_exportTimeout_${nodeId}`] = timeout
+      parent.postMessage({ pluginMessage: { type: 'EXPORT_NODE_IMAGE', nodeId, format } }, '*')
     })
   }
 
@@ -425,9 +552,14 @@ class BrandSyncModule {
       }
     }
 
-    // Handle extraction result
+    // Handle extraction result — resolve whichever promise is waiting (sync or preview)
     if (msg.type === 'EXTRACT_FOR_SYNC_RESULT') {
-      if (this._extractResolve) {
+      console.log('[BrandSync] Extraction result received. Preview pending:', !!this._previewResolve, 'Sync pending:', !!this._extractResolve)
+      if (this._previewResolve) {
+        clearTimeout(this._previewTimeout)
+        this._previewResolve(msg.data)
+        this._previewResolve = null
+      } else if (this._extractResolve) {
         clearTimeout(this._extractTimeout)
         this._extractResolve(msg.data)
         this._extractResolve = null
@@ -435,12 +567,16 @@ class BrandSyncModule {
     }
 
     if (msg.type === 'EXTRACT_FOR_SYNC_ERROR') {
-      if (this._extractResolve) {
+      if (this._previewResolve) {
+        clearTimeout(this._previewTimeout)
+        this._previewResolve(null)
+        this._previewResolve = null
+      } else if (this._extractResolve) {
         clearTimeout(this._extractTimeout)
         this._extractResolve(null)
         this._extractResolve = null
-        console.error('[BrandSync] Extraction error:', msg.error)
       }
+      console.error('[BrandSync] Extraction error:', msg.error)
     }
 
     // Handle push result
@@ -460,6 +596,32 @@ class BrandSyncModule {
         this._pushResolve = null
         console.error('[BrandSync] Push error:', msg.error)
         window.eventBus?.emit('figma:push-error', { error: msg.error })
+      }
+    }
+
+    // Handle smart scan result
+    if (msg.type === 'SMART_SCAN_RESULT') {
+      if (this._smartScanResolve) {
+        clearTimeout(this._smartScanTimeout)
+        this._smartScanResolve(msg.items || [])
+        this._smartScanResolve = null
+      }
+    }
+
+    // Handle node image export result
+    if (msg.type === 'EXPORT_NODE_IMAGE_RESULT') {
+      const key = `_exportResolve_${msg.nodeId}`
+      const timeoutKey = `_exportTimeout_${msg.nodeId}`
+      if (this[key]) {
+        clearTimeout(this[timeoutKey])
+        if (msg.error) {
+          console.error('[BrandSync] Export error:', msg.error)
+          this[key](null)
+        } else {
+          this[key]({ data: msg.data, format: msg.format })
+        }
+        delete this[key]
+        delete this[timeoutKey]
       }
     }
   }

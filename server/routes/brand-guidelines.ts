@@ -109,17 +109,18 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
 
     const update: Partial<BrandGuideline> = req.body
     const { changeNote } = req.body // Optional user-provided change note
-    const merged: any = {}
+    const merged: Partial<BrandGuideline> = {}
     const fields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections', 'folder', 'strategy', 'orderedBlocks'] as const
 
     for (const field of fields) {
       if (update[field] !== undefined) {
-        merged[field] = update[field]
+        (merged as any)[field] = update[field]
       }
     }
 
+
     // Calculate changed fields for version tracking
-    const changedFields = calculateChangedFields(existing as any, merged)
+    const changedFields = calculateChangedFields(existing as any, merged as any)
 
     // Only save version if something actually changed
     if (changedFields.length > 0) {
@@ -149,10 +150,12 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     extraction.completeness = completeness
     merged.extraction = extraction
 
+    const { id: _id, userId: _userId, ...cleanUpdateData } = merged
     const guideline = await prisma.brandGuideline.update({
       where: { id: existing.id },
-      data: merged,
+      data: cleanUpdateData as any,
     })
+
 
     res.json({ guideline: { ...guideline, _id: guideline.id } })
   } catch (error: any) {
@@ -271,9 +274,21 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
     const merged = mergeBrandGuidelines(existing as any, extracted)
 
     // Track source
-    merged.extraction = merged.extraction || { sources: [], completeness: 0 }
-    merged.extraction.sources.push({ type: source, ref: url || filename, date: new Date().toISOString() })
-    merged.extraction.completeness = calculateCompleteness(merged)
+    if (!merged.extraction) {
+      merged.extraction = { sources: [], completeness: 0 }
+    }
+    const extraction = merged.extraction
+    if (!Array.isArray(extraction.sources)) {
+      extraction.sources = []
+    }
+    
+    extraction.sources.push({ 
+      type: (source as any), 
+      ref: url || filename, 
+      date: new Date().toISOString() 
+    })
+    extraction.completeness = calculateCompleteness(merged)
+
 
     const guideline = await prisma.brandGuideline.update({
       where: { id: existing.id },
@@ -295,8 +310,18 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
       extracted, // what AI found — user can review
     })
   } catch (error: any) {
-    console.error('[Brand Ingest] Error:', error)
-    res.status(500).json({ error: 'Ingestion failed', message: error.message })
+    console.error('[Brand Ingest] CRITICAL ERROR:', {
+      message: error.message,
+      stack: error.stack,
+      guidelineId: req.params.id,
+      userId: req.userId,
+      source: req.body?.source
+    })
+    res.status(500).json({ 
+      error: 'Ingestion failed', 
+      message: error.message || 'Internal server error during brand ingestion',
+      code: error.code || 'UNKNOWN_ERROR'
+    })
   }
 })
 
@@ -505,7 +530,7 @@ router.post('/:id/logos', apiRateLimiter, authenticate, async (req: AuthRequest,
     let logoUrl: string
 
     if (data) {
-      const contentType = 'image/png'
+      const contentType = data.startsWith('data:image/svg') ? 'image/svg+xml' : 'image/png'
       const user = await prisma.user.findUnique({
         where: { id: req.userId },
         select: { subscriptionTier: true, isAdmin: true },
@@ -919,7 +944,7 @@ router.post('/:id/compliance-check', apiRateLimiter, authenticate, async (req: A
     // Run compliance check
     const result = await checkBrandCompliance(
       { colors, text, image, checkContrast, checkColors, checkTone },
-      guideline as unknown as BrandGuideline,
+      guideline as any,
       userApiKey
     )
 

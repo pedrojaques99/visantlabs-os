@@ -44,7 +44,7 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
                     <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
                         {t('brandGuidelines.emptyState')}
                     </h2>
-                    <p className="text-neutral-500 text-sm leading-relaxed max-w-xs mx-auto">
+                    <p className="text-neutral-400 text-sm leading-relaxed max-w-xs mx-auto">
                         Crie e organize suas diretrizes de marca em um único lugar centralizado e profissional.
                     </p>
                 </div>
@@ -75,8 +75,8 @@ const NoSelectionState = () => {
             </div>
 
             <div className="space-y-2">
-                <h3 className="text-neutral-400 font-medium tracking-wide uppercase text-[10px]">Awaiting Selection</h3>
-                <p className="text-neutral-600 text-sm max-w-xs mx-auto">
+                <h3 className="text-neutral-300 font-medium tracking-widest uppercase text-[11px]">Awaiting Selection</h3>
+                <p className="text-neutral-500 text-sm max-w-xs mx-auto">
                     Selecione uma marca no menu lateral para visualizar e editar suas diretrizes.
                 </p>
             </div>
@@ -119,6 +119,13 @@ export const BrandGuidelinesPage: React.FC = () => {
             setActiveSections(g.activeSections);
         } else {
             const sections = ['identity', 'logos', 'colors', 'typography', 'figma'];
+            
+            // Special case for "Feira" - enable Media Kit by default
+            const isFeira = g.folder?.toLowerCase().includes('feira') || g.name?.toLowerCase().includes('feira');
+            if (isFeira) {
+                sections.push('media');
+            }
+
             // Add strategy only if it has content
             if (g.strategy?.manifesto || (g.strategy?.archetypes?.length ?? 0) > 0 || (g.strategy?.personas?.length ?? 0) > 0) {
                 sections.push('strategy');
@@ -308,7 +315,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                     className="flex flex-col items-center justify-center py-40 gap-6"
                                 >
                                     <GlitchLoader size={40} />
-                                    <MicroTitle className="text-neutral-700 text-[9px] animate-pulse uppercase">
+                                    <MicroTitle className="text-white/40 text-[11px] font-mono animate-pulse uppercase tracking-[0.2em]">
                                         Synchronizing Workspace
                                     </MicroTitle>
                                 </motion.div>

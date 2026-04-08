@@ -70,11 +70,11 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
   });
 
   const socialLinks = [
-    { key: 'website', icon: <Globe size={14} />, label: 'Website', value: guideline.identity?.website },
-    { key: 'portfolio', icon: <Briefcase size={14} />, label: 'Portfolio', value: guideline.identity?.portfolio },
-    { key: 'instagram', icon: <Instagram size={14} />, label: 'Instagram', value: guideline.identity?.instagram },
-    { key: 'linkedin', icon: <Linkedin size={14} />, label: 'LinkedIn', value: guideline.identity?.linkedin },
-    { key: 'x', icon: <Twitter size={14} />, label: 'X (Twitter)', value: guideline.identity?.x },
+    { key: 'website', icon: <Globe size={16} />, label: 'Website', value: guideline.identity?.website },
+    { key: 'portfolio', icon: <Briefcase size={16} />, label: 'Portfolio', value: guideline.identity?.portfolio },
+    { key: 'instagram', icon: <Instagram size={16} />, label: 'Instagram', value: guideline.identity?.instagram },
+    { key: 'linkedin', icon: <Linkedin size={16} />, label: 'LinkedIn', value: guideline.identity?.linkedin },
+    { key: 'x', icon: <Twitter size={16} />, label: 'X (Twitter)', value: guideline.identity?.x },
   ].filter(link => link.value);
 
   const primaryLogo = guideline.logos?.find(l => l.variant === 'primary') || guideline.logos?.[0];
@@ -103,70 +103,70 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
         {isEditing ? (
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5 min-w-0">
-              <MicroTitle className="text-[9px] opacity-300 uppercase">Brand Name</MicroTitle>
+              <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">Brand Name</MicroTitle>
               <Input
                 {...form.register('name')}
-                className="h-8 text-sm font-semibold bg-neutral-900/50 border-white/5 text-white placeholder:text-neutral-800 focus:border-brand-cyan/20"
+                className="h-8 text-sm font-semibold bg-neutral-900/50 border-white/5 text-white placeholder:text-neutral-700 focus:border-brand-cyan/20"
                 placeholder="Enter Brand Name"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <MicroTitle className="text-[9px] opacity-300 uppercase">Website</MicroTitle>
+                <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">Website</MicroTitle>
                 <Input
                   {...form.register('website')}
-                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
+                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20"
                   placeholder="https://..."
                 />
               </div>
               <div className="space-y-1.5">
-                <MicroTitle className="text-[9px] opacity-300 uppercase">Portfolio</MicroTitle>
+                <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">Portfolio</MicroTitle>
                 <Input
                   {...form.register('portfolio')}
-                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
+                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20"
                   placeholder="Portfolio URL"
                 />
               </div>
               <div className="space-y-1.5">
-                <MicroTitle className="text-[9px] opacity-300 uppercase">Instagram</MicroTitle>
+                <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">Instagram</MicroTitle>
                 <Input
                   {...form.register('instagram')}
-                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
+                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20"
                   placeholder="@handle or URL"
                 />
               </div>
               <div className="space-y-1.5">
-                <MicroTitle className="text-[9px] opacity-300 uppercase">LinkedIn</MicroTitle>
+                <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">LinkedIn</MicroTitle>
                 <Input
                   {...form.register('linkedin')}
-                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
+                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20"
                   placeholder="LinkedIn Profile"
                 />
               </div>
               <div className="space-y-1.5">
-                <MicroTitle className="text-[9px] opacity-300 uppercase">X (Twitter)</MicroTitle>
+                <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">X (Twitter)</MicroTitle>
                 <Input
                   {...form.register('x')}
-                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
+                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20"
                   placeholder="X Profile"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 min-w-0">
-              <MicroTitle className="text-[9px] opacity-300 uppercase">Tagline</MicroTitle>
+              <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">Tagline</MicroTitle>
               <Input
                 {...form.register('tagline')}
-                className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
+                className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20"
                 placeholder="Brand Tagline"
               />
             </div>
             <div className="space-y-1.5 min-w-0">
-              <MicroTitle className="text-[9px] opacity-300 uppercase">Description</MicroTitle>
+              <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">Description</MicroTitle>
               <Textarea
                 {...form.register('description')}
-                className="min-h-[80px] text-[11px] leading-relaxed bg-neutral-900/50 border-white/5 text-neutral-500 focus:border-brand-cyan/20 py-2"
+                className="min-h-[80px] text-[11px] leading-relaxed bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20 py-2"
                 placeholder="Brand description and values..."
               />
             </div>
@@ -196,7 +196,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
 
                   <div className="flex flex-wrap items-center gap-4 pt-1">
                     {(guideline.identity?.tagline || guideline.tagline) && (
-                      <p className="text-[10px] font-mono text-brand-cyan uppercase opacity-80">
+                      <p className="text-[11px] font-mono text-brand-cyan uppercase tracking-widest opacity-90">
                         {guideline.identity?.tagline || guideline.tagline}
                       </p>
                     )}
@@ -210,7 +210,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
                             href={link.value?.startsWith('http') ? link.value : `https://${link.value}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-neutral-500 hover:text-white transition-colors p-1 hover:bg-white/5 rounded-md"
+                            className="text-neutral-400 hover:text-white transition-colors p-1 hover:bg-white/5 rounded-md"
                             title={link.label}
                           >
                             {link.icon}

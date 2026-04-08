@@ -601,6 +601,16 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       console.log('[Plugin] Branding disabled by user. Using local context ONLY.');
     }
 
+    // ═══ BRANDED SOCIAL POSTS: Resolve effective brand context ═══
+    const effectiveBrandFonts = brandFonts || (brandGuideline?.typography ? {
+      primary: (brandGuideline.typography as any[]).find(t => t.role === 'primary' || t.role === 'heading'),
+      secondary: (brandGuideline.typography as any[]).find(t => t.role === 'secondary' || t.role === 'body'),
+    } : undefined);
+
+    const effectiveBrandColors = selectedBrandColors || (brandGuideline?.colors ? 
+      (brandGuideline.colors as any[]).map(c => ({ name: c.name, value: c.hex, role: c.role })) : 
+      undefined);
+
     // ═══ BRANDED SOCIAL POSTS: Scan templates ═══
     let templateContext = '';
     if (fileId && pluginBridge.getSession(fileId)) {
@@ -697,8 +707,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           selectedLogo,
           brandLogos,
           selectedBrandFont,
-          brandFonts,
-          selectedBrandColors,
+          brandFonts: effectiveBrandFonts,
+          selectedBrandColors: effectiveBrandColors,
           availableComponents,
           availableColorVariables,
           availableFontVariables,
@@ -740,8 +750,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           selectedLogo,
           brandLogos,
           selectedBrandFont,
-          brandFonts,
-          selectedBrandColors,
+          brandFonts: effectiveBrandFonts,
+          selectedBrandColors: effectiveBrandColors,
           availableComponents,
           availableColorVariables,
           availableFontVariables,
@@ -1101,7 +1111,7 @@ import {
   parseAnalyzerResponse,
   IMAGE_CATEGORIES,
   type ImageCategory,
-  FIGMA_OPERATIONS_SYSTEM,
+  getFigmaOperationsSystem,
   FIGMA_OPERATIONS_USER,
   parseFigmaOperationsResponse,
   WHITE_LABEL_INSTRUCTION,
@@ -1376,7 +1386,7 @@ router.post('/prompt-library/:id/rate', authenticate, requireAdmin, async (req: 
  */
 router.post('/smart-analyze', imageAnalysisLimiter, authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const { image, mode = 'image-gen', whiteLabel = false, params, refinements, currentPrompt } = req.body;
+    const { image, mode = 'image-gen', whiteLabel = false, params, refinements, currentPrompt, availableComponents, brandGuideline } = req.body;
     const saveToLib = req.body.saveToLib === true || req.body.saveToLib === 'true';
     const publish = req.body.publish === true || req.body.publish === 'true';
 
@@ -1410,7 +1420,12 @@ router.post('/smart-analyze', imageAnalysisLimiter, authenticate, requireAdmin, 
     }
 
     // Refinement Logic: If refinements are provided, we ask the AI to REWRITE the prompt
-    let systemBase = mode === 'figma-plugin' ? FIGMA_OPERATIONS_SYSTEM : SMART_ANALYZER_SYSTEM;
+    let systemBase = mode === 'figma-plugin' 
+      ? getFigmaOperationsSystem({ 
+          availableComponents, 
+          brandContext: brandGuideline?.guidelines?.voice 
+        }) 
+      : SMART_ANALYZER_SYSTEM;
     let userBase = mode === 'figma-plugin' ? FIGMA_OPERATIONS_USER : SMART_ANALYZER_USER;
 
     if (refinements && Array.isArray(refinements) && refinements.length > 0) {

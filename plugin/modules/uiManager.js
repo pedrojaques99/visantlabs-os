@@ -50,6 +50,104 @@ class UIManager {
   }
 
   /**
+   * Build the brand context payload sent to the plugin side for lint/fix.
+   */
+  getBrandContext() {
+    const colorsObj = state.selectedColors instanceof Map
+      ? Object.fromEntries(state.selectedColors)
+      : (state.selectedColors || {});
+    const colors = Object.values(colorsObj)
+      .map((c) => (c && (c.value || c.hex)) || null)
+      .filter((v) => typeof v === 'string' && v.trim().length > 0);
+    const fontFamilies = (state.typography || [])
+      .map((t) => (t && t.value && (t.value.family || t.value.name)) || null)
+      .filter((v) => typeof v === 'string' && v.trim().length > 0);
+    const tokens = state.designTokens || {};
+    const spacing = tokens.spacing ? Object.values(tokens.spacing).filter((v) => typeof v === 'number') : [];
+    const radius = tokens.radius ? Object.values(tokens.radius).filter((v) => typeof v === 'number') : [];
+    return { colors, fontFamilies, spacing, radius };
+  }
+
+  /**
+   * Render the Brand Lint report panel with score, totals and clickable issues.
+   */
+  renderBrandLintReport(report) {
+    const panel = document.getElementById('brandLintReport');
+    const scoreEl = document.getElementById('brandLintScore');
+    const totalsEl = document.getElementById('brandLintTotals');
+    const issuesEl = document.getElementById('brandLintIssues');
+    const fixBtn = document.getElementById('brandLintFixBtn');
+    if (!panel || !scoreEl || !totalsEl || !issuesEl) return;
+
+    if (!report) {
+      panel.classList.add('hidden');
+      if (fixBtn) fixBtn.classList.add('hidden');
+      return;
+    }
+
+    if (fixBtn) {
+      if (report.issues.length > 0) fixBtn.classList.remove('hidden');
+      else fixBtn.classList.add('hidden');
+    }
+
+    panel.classList.remove('hidden');
+
+    // Score color: red < 60, yellow < 85, green >= 85
+    const score = report.score;
+    let color = '#22c55e';
+    if (score < 60) color = '#ef4444';
+    else if (score < 85) color = '#eab308';
+    scoreEl.textContent = `${score}/100`;
+    scoreEl.style.color = color;
+
+    const t = report.totals;
+    totalsEl.textContent = `${t.nodesScanned} nós  •  ${t.errors} erros  •  ${t.warnings} avisos  •  ${t.infos} infos`;
+
+    issuesEl.innerHTML = '';
+    if (report.issues.length === 0) {
+      issuesEl.innerHTML = '<div style="color: var(--figma-color-text-secondary); padding: 6px; text-align: center;">✨ Sem issues — brand perfeita</div>';
+      return;
+    }
+
+    // Cap to 50 to keep the DOM light; still useful signal.
+    const shown = report.issues.slice(0, 50);
+    for (const issue of shown) {
+      const row = document.createElement('div');
+      const sevColor = issue.severity === 'error' ? '#ef4444' : issue.severity === 'warning' ? '#eab308' : '#64748b';
+      row.style.cssText = `display: flex; gap: 6px; padding: 6px 8px; border-radius: 4px; background: rgba(255,255,255,0.03); cursor: pointer; border-left: 2px solid ${sevColor};`;
+      row.title = 'Clique para focar no canvas';
+
+      const body = document.createElement('div');
+      body.style.cssText = 'flex: 1; min-width: 0;';
+
+      const name = document.createElement('div');
+      name.style.cssText = 'font-weight: 600; color: var(--figma-color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+      name.textContent = issue.nodeName;
+
+      const msg = document.createElement('div');
+      msg.style.cssText = 'color: var(--figma-color-text-secondary); font-size: 9px; margin-top: 2px;';
+      msg.textContent = issue.message + (issue.suggestion ? ` — ${issue.suggestion}` : '');
+
+      body.appendChild(name);
+      body.appendChild(msg);
+      row.appendChild(body);
+
+      row.addEventListener('click', () => {
+        parent.postMessage({ pluginMessage: { type: 'BRAND_LINT_FOCUS', nodeId: issue.nodeId } }, '*');
+      });
+
+      issuesEl.appendChild(row);
+    }
+
+    if (report.issues.length > shown.length) {
+      const more = document.createElement('div');
+      more.style.cssText = 'color: var(--figma-color-text-secondary); padding: 4px 8px; font-size: 9px;';
+      more.textContent = `+ ${report.issues.length - shown.length} issues adicionais`;
+      issuesEl.appendChild(more);
+    }
+  }
+
+  /**
    * Validate and normalize a potentially user-controlled avatar URL.
    * Only allow http/https URLs; return null for anything invalid or unsafe.
    */
@@ -288,6 +386,75 @@ class UIManager {
       });
     }
 
+    const runApplyBrandBtn = document.getElementById('jsonRunnerApplyBrandBtn');
+    if (runApplyBrandBtn) {
+      runApplyBrandBtn.addEventListener('click', () => {
+        if (!isBrandConfigured()) {
+          this.showToast('Você não configurou uma Brand (logos, fontes ou cores). Configure na aba Brand primeiro.', 'error');
+          return;
+        }
+        
+        const config = {
+          logos: state.logos,
+          typography: state.typography,
+          colors: state.selectedColors instanceof Map ? Object.fromEntries(state.selectedColors) : state.selectedColors,
+          tokens: state.designTokens
+        };
+
+        parent.postMessage({ pluginMessage: { type: 'APPLY_BRAND_GUIDELINES', brand: config } }, '*');
+        this.showToast('Aplicando Brand...', 'info');
+      });
+    }
+
+      const varyBtn = document.getElementById('jsonRunnerVaryColorsBtn');
+      if (varyBtn) {
+        varyBtn.addEventListener('click', () => {
+          const colorsObj = state.selectedColors instanceof Map
+            ? Object.fromEntries(state.selectedColors)
+            : (state.selectedColors || {});
+          const brandHexes = Object.values(colorsObj)
+            .map((c) => (c && (c.value || c.hex)) || null)
+            .filter((v) => typeof v === 'string' && v.trim().length > 0);
+          if (brandHexes.length === 0) {
+            this.showToast('Selecione cores na seção COLORS da Brand Guideline primeiro', 'error');
+            return;
+          }
+          this.showToast('🎨 Variando cores da brand...', 'info');
+          parent.postMessage({ pluginMessage: { type: 'VARY_SELECTION_COLORS', brandColors: brandHexes } }, '*');
+        });
+      }
+
+      // ── Brand Lint ──
+      const brandLintBtn = document.getElementById('jsonRunnerBrandLintBtn');
+      if (brandLintBtn) {
+        brandLintBtn.addEventListener('click', () => {
+          this.showToast('🔍 Auditando brand...', 'info');
+          parent.postMessage({
+            pluginMessage: { type: 'BRAND_LINT', brand: this.getBrandContext() },
+          }, '*');
+        });
+      }
+
+      // ── Brand Lint Auto-Fix ──
+      const brandLintFixBtn = document.getElementById('brandLintFixBtn');
+      if (brandLintFixBtn) {
+        brandLintFixBtn.addEventListener('click', () => {
+          this.showToast('🛠 Aplicando fixes...', 'info');
+          parent.postMessage({
+            pluginMessage: { type: 'BRAND_LINT_FIX', brand: this.getBrandContext() },
+          }, '*');
+        });
+      }
+
+      // ── Responsive Multiply ──
+      const responsiveBtn = document.getElementById('jsonRunnerResponsiveBtn');
+      if (responsiveBtn) {
+        responsiveBtn.addEventListener('click', () => {
+          this.showToast('📐 Gerando formatos responsivos...', 'info');
+          parent.postMessage({ pluginMessage: { type: 'RESPONSIVE_MULTIPLY' } }, '*');
+        });
+      }
+
     const runBrandGridBtn = document.getElementById('jsonRunnerBrandGridBtn');
     if (runBrandGridBtn) {
       runBrandGridBtn.addEventListener('click', () => {
@@ -299,6 +466,68 @@ class UIManager {
     if (runSocialBtn) {
       runSocialBtn.addEventListener('click', () => {
         this.generateSocialBrandFrames();
+      });
+    }
+    const runSmartScanBtn = document.getElementById('jsonRunnerSmartScanBtn');
+    if (runSmartScanBtn) {
+      runSmartScanBtn.addEventListener('click', () => {
+        parent.postMessage({ pluginMessage: { type: 'SMART_SCAN_SELECTION' } }, '*');
+        this.showToast('Escaneando seleção...', 'info');
+      });
+    }
+
+    // --- Selection & Layout Utils (Dev Tools) ---
+    const slicesBtn = document.getElementById('devSelectionToSlicesBtn');
+    if (slicesBtn) {
+      slicesBtn.addEventListener('click', () => {
+        parent.postMessage({ pluginMessage: { type: 'SELECTION_TO_SLICES' } }, '*');
+        this.showToast('Preparando carrossel... ✂️', 'info');
+      });
+    }
+
+    const stickyBtn = document.getElementById('devStickyPromptBtn');
+    if (stickyBtn) {
+      stickyBtn.addEventListener('click', () => {
+        // Simple prompt to create a design note
+        parent.postMessage({ 
+          pluginMessage: { 
+            type: 'CREATE_STICKY_PROMPT', 
+            name: 'Design Note', 
+            prompt: 'Escreva aqui suas considerações sobre o design para que a IA possa usar como contexto.' 
+          } 
+        }, '*');
+      });
+    }
+
+    // --- Smart Image Analysis (Dev Tools) ---
+    const devAnalyzeJsonBtn = document.getElementById('devAnalyzeJsonBtn');
+    if (devAnalyzeJsonBtn) {
+      devAnalyzeJsonBtn.addEventListener('click', () => {
+        this.captureAndAnalyzeSelection('figma-plugin');
+      });
+    }
+
+    const devAnalyzePromptBtn = document.getElementById('devAnalyzePromptBtn');
+    if (devAnalyzePromptBtn) {
+      devAnalyzePromptBtn.addEventListener('click', () => {
+        this.captureAndAnalyzeSelection('image-gen');
+      });
+    }
+
+    // Toggle for JSON Operations Runner
+    const jsonToggle = document.getElementById('devJsonRunnerToggle');
+    const jsonContent = document.getElementById('devJsonRunnerContent');
+    const jsonChevron = document.getElementById('devJsonChevron');
+    if (jsonToggle && jsonContent && jsonChevron) {
+      jsonToggle.addEventListener('click', () => {
+        const isHidden = jsonContent.classList.contains('hidden');
+        if (isHidden) {
+          jsonContent.classList.remove('hidden');
+          jsonChevron.classList.add('expanded');
+        } else {
+          jsonContent.classList.add('hidden');
+          jsonChevron.classList.remove('expanded');
+        }
       });
     }
 
@@ -331,6 +560,44 @@ class UIManager {
           this.showToast('JSON formatado', 'success');
         } catch (e) {
           this.showToast('JSON inválido para formatação', 'error');
+        }
+      });
+    }
+
+    const jsonApplyBrandBtn = document.getElementById('jsonRunnerApplyBrandBtn');
+    if (jsonApplyBrandBtn) {
+      jsonApplyBrandBtn.addEventListener('click', async () => {
+        const textarea = document.getElementById('jsonRunnerInput');
+        if (!textarea || !textarea.value.trim()) return;
+        
+        const brand = state.brandGuideline;
+        if (!brand || !brand.id) {
+          this.showToast('Selecione uma marca primeiro', 'warning');
+          return;
+        }
+
+        try {
+          jsonApplyBrandBtn.disabled = true;
+          jsonApplyBrandBtn.innerHTML = 'Aplicando...';
+          
+          const currentJson = JSON.parse(textarea.value);
+          
+          const result = await apiCall(`/brand-intelligence/${brand.id}/adapt-json`, 'POST', {
+            operations: currentJson
+          });
+
+          if (result && result.success && result.operations) {
+            textarea.value = JSON.stringify(result.operations, null, 2);
+            this.showToast('Brand aplicada ao JSON', 'success');
+          } else {
+            throw new Error(result?.error || 'Erro ao adaptar JSON');
+          }
+        } catch (e) {
+          console.error('[JSON Runner] Brand apply failed:', e);
+          this.showToast('Falha: ' + e.message, 'error');
+        } finally {
+          jsonApplyBrandBtn.disabled = false;
+          jsonApplyBrandBtn.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 2v6M2 5h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Aplicar Brand';
         }
       });
     }
@@ -445,6 +712,7 @@ class UIManager {
     // Brand Guideline V2 sync
     window.watchState('brandGuideline', () => {
       if (window.brandSyncModule) window.brandSyncModule.scheduleSave()
+      if (this.lastContextData) this.updateContextInfo(this.lastContextData)
     })
   }
 
@@ -529,7 +797,16 @@ class UIManager {
           break;
         case 'BRAND_GUIDELINE_LOADED':
         case 'BRAND_GUIDELINE_SAVED':
+        case 'EXTRACT_FOR_SYNC_RESULT':
+        case 'EXTRACT_FOR_SYNC_ERROR':
+        case 'PUSH_TO_FIGMA_RESULT':
+        case 'PUSH_TO_FIGMA_ERROR':
+        case 'EXPORT_NODE_IMAGE_RESULT':
+        case 'SMART_SCAN_RESULT':
           if (window.brandSyncModule) window.brandSyncModule.handleMessage(msg)
+          break;
+        case 'BRAND_LINT_REPORT':
+          this.renderBrandLintReport(msg.report);
           break;
         case 'USER_INFO':
           this.handleUserInfo(msg.user);
@@ -565,10 +842,31 @@ class UIManager {
         case 'CALL_API':
           this.callAPI(msg.context);
           break;
+        case 'BRAND_APPLY_DEBUG':
+          this._lastBrandDebug = msg.report;
+          console.log('[Brand Apply Debug Report]', JSON.stringify(msg.report, null, 2));
+          break;
         case 'OPERATIONS_DONE':
           eventBus.emit('chat:loading', false);
+          // Fire-and-forget telemetry: static audit of generated tree → server log.
+          if (msg.telemetry) {
+            try {
+              apiCall('/telemetry/operations', 'POST', {
+                kind: msg.telemetryKind || 'ops',
+                intent: this._lastIntent || null,
+                opCount: msg.count || 0,
+                telemetry: msg.telemetry,
+              }).catch(() => {}); // fire-and-forget; never block UX
+            } catch (_e) { /* noop */ }
+          }
           if (msg.summary) {
             chatModule.addAssistantMessage(`✅ ${msg.summary}`, msg.summaryItems);
+            // If we have a brand debug report, inject the debug button after render
+            if (this._lastBrandDebug) {
+              const report = this._lastBrandDebug;
+              this._lastBrandDebug = null;
+              setTimeout(() => this._injectBrandDebugButton(report), 100);
+            }
           }
           this.toggleUndoBtn(!!msg.canUndo);
           // Clear progress indicator
@@ -668,6 +966,7 @@ class UIManager {
     // Note: chat.js's api:design-generated handler owns all chat rendering (MESSAGE ops, status, loading).
     // Here we only need to call generateDesign (which emits the event) and apply design ops.
     try {
+      this._lastIntent = context.command;
       const operations = await generateDesign(context.command, context);
       // generateDesign already emitted api:design-generated → chat.js handles display.
       // operations is [] if cancelled — no-op is correct here.
@@ -712,12 +1011,19 @@ class UIManager {
     const contextInfo = document.getElementById('contextInfo');
     if (!contextInfo) return;
 
+    this.lastContextData = data;
+
     const items = [];
     if (data.selectedElements > 0)
       items.push(`📍 ${data.selectedElements} elemento(s) selecionado(s)`);
     if (data.componentsCount > 0) items.push(`◇ ${data.componentsCount} componentes`);
     if (data.colorVariables > 0) items.push(`🎨 ${data.colorVariables} cores`);
     if (data.fontVariables > 0) items.push(`🔤 ${data.fontVariables} fontes`);
+
+    const activeBrand = state?.brandGuideline?.identity?.name || state?.brandGuideline?.name || state?.linkedGuideline?.name;
+    if (activeBrand) {
+      items.push(`◎ ${activeBrand}`);
+    }
 
     contextInfo.innerHTML = items.join(' • ') || 'Arquivo carregado';
   }
@@ -959,6 +1265,115 @@ class UIManager {
     if (btn) {
       btn.classList.toggle('hidden', !canUndo);
     }
+  }
+
+  /**
+   * Inject a "Debug Log" button into the last chat message
+   */
+  _injectBrandDebugButton(report) {
+    const msgs = document.querySelectorAll('.chat-message.assistant');
+    const lastMsg = msgs[msgs.length - 1];
+    if (!lastMsg) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'figma-btn figma-btn-secondary';
+    btn.style.cssText = 'margin-top: 6px; font-size: 10px; padding: 4px 8px; display: flex; align-items: center; gap: 4px; width: fit-content;';
+    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h8M2 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Debug Log`;
+
+    btn.addEventListener('click', () => {
+      const existing = lastMsg.querySelector('.brand-debug-panel');
+      if (existing) { existing.remove(); return; }
+
+      const panel = document.createElement('div');
+      panel.className = 'brand-debug-panel';
+      panel.style.cssText = 'margin-top: 8px; background: var(--figma-color-bg-secondary); border: 1px solid var(--figma-color-border); border-radius: 6px; padding: 10px; font-size: 10px; font-family: monospace; max-height: 300px; overflow: auto;';
+
+      const r = report;
+      const lines = [];
+      lines.push('━━ INPUT ━━');
+      lines.push('');
+      lines.push('Typography Slots:');
+      (r.input.typographySlots || []).forEach((t, i) => {
+        const n = t.normalized;
+        const status = n ? `✅ ${n.family} ${n.style}` : `❌ empty`;
+        lines.push(`  [${i}] id="${t.id}" type=${t.valueType} → ${status}`);
+        if (t.raw && !n) lines.push(`      raw: ${JSON.stringify(t.raw)}`);
+      });
+      lines.push('');
+      lines.push('Colors:');
+      (r.input.colors || []).forEach((c, i) => {
+        const hex = c.value || c.hex || '?';
+        lines.push(`  [${i}] ${hex} "${c.name || '-'}" role=${c.role || 'none'}`);
+      });
+
+      lines.push('');
+      lines.push('━━ RESOLVED ━━');
+      lines.push('');
+      const hf = r.resolved.headingFont;
+      const bf = r.resolved.bodyFont;
+      lines.push(`  Heading: ${hf ? hf.family + ' ' + hf.style : '❌ NONE'}`);
+      lines.push(`  Body:    ${bf ? bf.family + ' ' + bf.style : '❌ NONE'}`);
+      lines.push(`  Primary: ${r.resolved.primaryColor || '❌ NONE'}`);
+      lines.push(`  Text:    ${r.resolved.textColor}`);
+      lines.push(`  BG:      ${r.resolved.bgColor}`);
+      lines.push(`  Surface: ${r.resolved.surfaceColor}`);
+      lines.push(`  Accent:  ${r.resolved.accentColor || 'none'}`);
+
+      lines.push('');
+      lines.push('━━ TRAVERSAL ━━');
+      lines.push('');
+      lines.push(`  Nodes: ${r.traversal.nodesVisited}  Text: ${r.traversal.textNodes}  Fill: ${r.traversal.fillNodes}`);
+
+      lines.push('');
+      lines.push('━━ RESULTS ━━');
+      lines.push('');
+      lines.push(`  Fonts applied:     ${r.results.fontsApplied}`);
+      lines.push(`  Fonts failed:      ${r.results.fontsFailed.length}`);
+      if (r.results.fontsFailed.length > 0) {
+        r.results.fontsFailed.forEach(f => lines.push(`    ❌ ${f}`));
+      }
+      lines.push(`  Colors applied:    ${r.results.colorsApplied}`);
+      lines.push(`  Gradients applied: ${r.results.gradientsApplied}`);
+
+      const pre = document.createElement('pre');
+      pre.style.cssText = 'margin: 0; white-space: pre-wrap; word-break: break-all; color: var(--figma-color-text);';
+      pre.textContent = lines.join('\n');
+      panel.appendChild(pre);
+
+      const btnRow = document.createElement('div');
+      btnRow.style.cssText = 'margin-top: 6px; display: flex; gap: 4px;';
+
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'figma-btn figma-btn-ghost';
+      copyBtn.style.cssText = 'font-size: 9px; padding: 2px 6px;';
+      copyBtn.textContent = '📋 Copy';
+      copyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(lines.join('\n')).then(() => {
+          copyBtn.textContent = '✅ Copied!';
+          setTimeout(() => { copyBtn.textContent = '📋 Copy'; }, 1500);
+        });
+      });
+      btnRow.appendChild(copyBtn);
+
+      const jsonBtn = document.createElement('button');
+      jsonBtn.className = 'figma-btn figma-btn-ghost';
+      jsonBtn.style.cssText = 'font-size: 9px; padding: 2px 6px;';
+      jsonBtn.textContent = '{ } JSON';
+      jsonBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(JSON.stringify(report, null, 2)).then(() => {
+          jsonBtn.textContent = '✅ Copied!';
+          setTimeout(() => { jsonBtn.textContent = '{ } JSON'; }, 1500);
+        });
+      });
+      btnRow.appendChild(jsonBtn);
+
+      panel.appendChild(btnRow);
+      lastMsg.appendChild(panel);
+    });
+
+    lastMsg.appendChild(btn);
   }
 
   /**
@@ -1384,7 +1799,7 @@ class UIManager {
             type: 'CREATE_FRAME',
             ref: frameRef,
             props: {
-              name: `${sourceNode.name} | ${color.name || 'Brand'} - ${size.name}`,
+              name: `${sourceNode.name} | ${color.name || 'Brand'}`,
               width: size.w, height: size.h,
               x: x,
               y: y,
@@ -1448,9 +1863,7 @@ class UIManager {
 
         // --- NEW: Transparent variations after the colored ones ---
         const transparentVariants = [
-          ...colors.map(c => ({ name: `${c.name || 'Brand'} Color`, color: c.value || c.hex || '#FFFFFF', variableId: c.variableId })),
-          { name: 'Black Logo', color: '#000000' },
-          { name: 'White Logo', color: '#FFFFFF' }
+          ...colors.map(c => ({ name: `${c.name || 'Brand'} Color`, color: c.value || c.hex || '#FFFFFF', variableId: c.variableId }))
         ];
 
         transparentVariants.forEach((variant, vIdx) => {
@@ -1462,7 +1875,7 @@ class UIManager {
             type: 'CREATE_FRAME',
             ref: frameRef,
             props: {
-              name: `${sourceNode.name} | Transparent - ${variant.name} - ${size.name}`,
+              name: `${sourceNode.name} | Transparent - ${variant.name}`,
               width: size.w, height: size.h,
               x: x,
               y: y,
@@ -1546,6 +1959,252 @@ class UIManager {
       return (yiq >= 128) ? '#000000' : '#FFFFFF';
     } catch (e) {
       return '#000000';
+    }
+  }
+
+  /**
+   * Inject a "Debug Log" button into the last chat message
+   */
+  _injectBrandDebugButton(report) {
+    const chatContainer = document.getElementById('chatMessages');
+    if (!chatContainer) return;
+
+    const msgs = chatContainer.querySelectorAll('.chat-message.assistant');
+    const lastMsg = msgs[msgs.length - 1];
+    if (!lastMsg) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'figma-btn figma-btn-secondary';
+    btn.style.cssText = 'margin-top: 6px; font-size: 10px; padding: 4px 8px; display: flex; align-items: center; gap: 4px; width: fit-content; border: 1px solid var(--brand-cyan); color: var(--brand-cyan); background: transparent;';
+    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h8M2 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Debug Log`;
+
+    btn.addEventListener('click', () => {
+      const existing = lastMsg.querySelector('.brand-debug-panel');
+      if (existing) { existing.remove(); return; }
+
+      const panel = document.createElement('div');
+      panel.className = 'brand-debug-panel';
+      panel.style.cssText = 'margin-top: 8px; background: var(--figma-color-bg-secondary); border: 1px solid var(--figma-color-border); border-radius: 8px; padding: 10px; font-size: 10px; font-family: monospace; max-height: 300px; overflow: auto; text-align: left;';
+
+      const r = report;
+      const lines = [];
+      lines.push('━━ INPUT ━━');
+      lines.push('');
+      lines.push('Typography Slots:');
+      (r.input.typographySlots || []).forEach((t, i) => {
+        const n = t.normalized;
+        const status = n ? `✅ ${n.family} ${n.style}` : `❌ empty`;
+        lines.push(`  [${i}] id="${t.id}" type=${t.valueType} → ${status}`);
+        if (t.raw && !n) lines.push(`      raw: ${JSON.stringify(t.raw)}`);
+      });
+      lines.push('');
+      lines.push('Colors:');
+      (r.input.colors || []).forEach((c, i) => {
+        const hex = c.hex || c.value || '?';
+        lines.push(`  [${i}] ${hex} "${c.name || '-'}" role=${c.role || 'none'}`);
+      });
+
+      lines.push('');
+      lines.push('━━ RESOLVED ━━');
+      lines.push('');
+      const hf = r.resolved.headingFont;
+      const bf = r.resolved.bodyFont;
+      lines.push(`  Heading: ${hf ? hf.family + ' ' + hf.style : '❌ NONE'}`);
+      lines.push(`  Body:    ${bf ? bf.family + ' ' + bf.style : '❌ NONE'}`);
+      lines.push(`  Primary: ${r.resolved.primaryColor || '❌ NONE'}`);
+      lines.push(`  Text:    ${r.resolved.textColor}`);
+      lines.push(`  BG:      ${r.resolved.bgColor}`);
+      lines.push(`  Surface: ${r.resolved.surfaceColor}`);
+      lines.push(`  Accent:  ${r.resolved.accentColor || 'none'}`);
+
+      lines.push('');
+      lines.push('━━ TRAVERSAL ━━');
+      lines.push('');
+      lines.push(`  Nodes: ${r.traversal.nodesVisited}  Text: ${r.traversal.textNodes}  Fill: ${r.traversal.fillNodes}`);
+
+      lines.push('');
+      lines.push('━━ RESULTS ━━');
+      lines.push('');
+      lines.push(`  Fonts applied:     ${r.results.fontsApplied}`);
+      lines.push(`  Fonts failed:      ${r.results.fontsFailed.length}`);
+      if (r.results.fontsFailed.length > 0) {
+        r.results.fontsFailed.forEach(f => lines.push(`    ❌ ${f}`));
+      }
+      lines.push(`  Colors applied:    ${r.results.colorsApplied}`);
+      lines.push(`  Gradients applied: ${r.results.gradientsApplied}`);
+
+      const pre = document.createElement('pre');
+      pre.style.cssText = 'margin: 0; white-space: pre-wrap; word-break: break-all; color: var(--figma-color-text);';
+      pre.textContent = lines.join('\n');
+      panel.appendChild(pre);
+
+      const btnRow = document.createElement('div');
+      btnRow.style.cssText = 'margin-top: 6px; display: flex; gap: 4px;';
+
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'figma-btn figma-btn-ghost';
+      copyBtn.style.cssText = 'font-size: 9px; padding: 2px 6px;';
+      copyBtn.textContent = '📋 Copy';
+      copyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(lines.join('\n')).then(() => {
+          copyBtn.textContent = '✅ Copied!';
+          setTimeout(() => { copyBtn.textContent = '📋 Copy'; }, 1500);
+        });
+      });
+      btnRow.appendChild(copyBtn);
+
+      const jsonBtn = document.createElement('button');
+      jsonBtn.className = 'figma-btn figma-btn-ghost';
+      jsonBtn.style.cssText = 'font-size: 9px; padding: 2px 6px;';
+      jsonBtn.textContent = '{ } JSON';
+      jsonBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(JSON.stringify(report, null, 2)).then(() => {
+          jsonBtn.textContent = '✅ Copied!';
+          setTimeout(() => { jsonBtn.textContent = '{ } JSON'; }, 1500);
+        });
+      });
+      btnRow.appendChild(jsonBtn);
+
+      panel.appendChild(btnRow);
+      lastMsg.querySelector('.message-body').appendChild(panel);
+      
+      const wrap = chatContainer.closest('.chat-messages-wrap') || chatContainer;
+      wrap.scrollTop = wrap.scrollHeight;
+    });
+
+    lastMsg.querySelector('.message-body').appendChild(btn);
+  }
+
+  /**
+   * Capture current selection as image and analyze it using the "Deep Analysis" engine.
+   * Reuse logic from SmartAnalyzerPage.tsx
+   */
+  async captureAndAnalyzeSelection(mode = 'figma-plugin') { // Default to plugin mode for adaptive generation
+    const selection = state.selectionDetails || [];
+    if (selection.length === 0) {
+      this.showToast('Selecione algo no Figma primeiro para analisar.', 'info');
+      return;
+    }
+
+    // Switch to Chat tab to show feedback
+    this.closeSettings();
+    const analyzeWords = ['Analisando com IA Adaptativa...', 'Mapeando Design System...', 'Interpretando...', 'Decifrando...', 'Processando...'];
+    if (window.chatModule) window.chatModule.showTypingBubble(analyzeWords);
+    
+    try {
+      this.showToast('Iniciando Análise Inteligente...', 'info');
+
+      // 1. Export as PNG
+      if (!window.brandSyncModule) {
+        throw new Error('Módulo brandSync não encontrado.');
+      }
+
+      const exportResult = await window.brandSyncModule.exportNodeImage('selection', 'PNG');
+      if (!exportResult || !exportResult.data) {
+        throw new Error('Falha ao capturar imagem da seleção.');
+      }
+
+      const imageInput = {
+        base64: exportResult.data.split(',')[1], // remove prefix
+        mimeType: 'image/png'
+      };
+
+      // 2. Prepare context for Adaptive Intelligence
+      const brandContext = state.linkedGuideline || state.brandGuideline;
+      const components = state.designSystem?.components ? Object.values(state.designSystem.components) : [];
+
+      // 3. Call API
+      const resp = await window.apiCall('/plugin/smart-analyze', 'POST', {
+        image: imageInput,
+        mode,
+        brandGuideline: brandContext,
+        availableComponents: components,
+        params: mode === 'image-gen' ? {
+          intensity: 'balanced',
+          visualStyle: 'auto',
+          aspectRatio: 'auto'
+        } : {
+          useAutoLayout: true,
+          useSemanticNaming: true,
+          useTokens: true,
+          gridSnap: 8
+        }
+      });
+
+      if (!resp || !resp.success) {
+        throw new Error(resp?.error || 'Erro na análise da imagem.');
+      }
+
+      // 4. Process Result
+      const resultArea = document.getElementById('jsonRunnerInput');
+      let resultText = '';
+
+      if (mode === 'figma-plugin') {
+        const ops = resp.operations || [];
+        resultText = JSON.stringify(ops, null, 2);
+        
+        // Add to Chat for visibility
+        if (window.chatModule) {
+          window.chatModule.addAssistantMessage(
+            `✦ Análise Adaptativa completa. Mapeados **${ops.length}** componentes e estilos do seu Design System.`,
+            null,
+            ops
+          );
+        }
+        
+        // Automatically apply operations if requested or if we are in plugin mode
+        parent.postMessage({ 
+          pluginMessage: { 
+            type: 'APPLY_OPERATIONS_FROM_API', 
+            operations: ops 
+          } 
+        }, '*');
+
+      } else {
+        resultText = resp.prompt || '';
+        this.showToast('Prompt gerado com sucesso!', 'success');
+        
+        if (window.chatModule) {
+          window.chatModule.addAssistantMessage(
+            `✦ Análise Visual completa.\n\n**Prompt Sugerido:**\n\n\`${resultText}\``,
+            null,
+            null
+          );
+        }
+      }
+
+      // Update Dev Tool Runner
+      if (resultArea) {
+        resultArea.value = resultText;
+        const jsonContent = document.getElementById('devJsonRunnerContent');
+        if (jsonContent) {
+          jsonContent.classList.remove('hidden');
+          const chevron = document.getElementById('devJsonChevron');
+          if (chevron) chevron.style.transform = 'rotate(90deg)';
+        }
+      }
+
+      // 4. Create on Figma Canvas if Prompt
+      if (mode === 'image-gen' && resp.prompt) {
+        parent.postMessage({ 
+          pluginMessage: { 
+            type: 'CREATE_STICKY_PROMPT', 
+            prompt: resp.prompt,
+            name: resp.name || 'Image Analysis'
+          } 
+        }, '*');
+      }
+
+    } catch (err) {
+      console.error('[Analyze] Error:', err);
+      this.showToast('Erro na análise: ' + (err.message || 'Falha desconhecida'), 'error');
+      if (window.chatModule) {
+        window.chatModule.addErrorMessage(`Erro na análise: ${err.message}`);
+      }
+    } finally {
+      if (window.chatModule) window.chatModule.removeTypingBubble();
     }
   }
 }

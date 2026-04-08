@@ -9,20 +9,22 @@ const WORDS = [
   'Sincronizando', 'Sintetizando', 'Conceituando'
 ];
 
-const GLITCH_CHARS = '*•□/-®▸◆○~#%&';
+const GLITCH_CHARS = '*•□./-®';
 const REVEAL_CHARS = 'abcdefghijklmnopqrstuvwxyz*•-□';
 
 interface PremiumGlitchLoaderProps {
   className?: string;
   color?: string;
+  steps?: string[];
 }
 
 export const PremiumGlitchLoader: React.FC<PremiumGlitchLoaderProps> = ({
   className = '',
-  color = '#00e5ff'
+  color = '#7e7e7eff',
+  steps = WORDS
 }) => {
   const [glitch, setGlitch] = useState('****');
-  const [word, setWord] = useState(WORDS[0]);
+  const [word, setWord] = useState(steps[0]);
   const [dots, setDots] = useState('.');
   const [timer, setTimer] = useState('0:00');
 
@@ -51,16 +53,22 @@ export const PremiumGlitchLoader: React.FC<PremiumGlitchLoaderProps> = ({
   };
 
   useEffect(() => {
+    // Sync word if steps change
+    setWord(steps[0]);
+    wordIdxRef.current = 0;
+  }, [steps]);
+
+  useEffect(() => {
     // Glitch chars every 150ms
     const glitchInterval = setInterval(() => {
-      const g = Array.from({ length: 4 }, () => randChar(GLITCH_CHARS)).join('');
+      const g = Array.from({ length: 2 }, () => randChar(GLITCH_CHARS)).join('');
       setGlitch(g);
     }, 150);
 
     // Dots every 380ms
     let dotCount = 1;
     const dotsInterval = setInterval(() => {
-      dotCount = dotCount >= 3 ? 1 : dotCount + 1;
+      dotCount = dotCount >= 1 ? 0 : dotCount + 1;
       setDots('.'.repeat(dotCount));
     }, 380);
 
@@ -72,8 +80,8 @@ export const PremiumGlitchLoader: React.FC<PremiumGlitchLoaderProps> = ({
       setTimer(`${min}:${String(s).padStart(2, '0')}`);
 
       if (sec > 0 && sec % 3 === 0) {
-        wordIdxRef.current = (wordIdxRef.current + 1) % WORDS.length;
-        glitchReveal(WORDS[wordIdxRef.current]);
+        wordIdxRef.current = (wordIdxRef.current + 1) % steps.length;
+        glitchReveal(steps[wordIdxRef.current]);
       }
     }, 1000);
 
@@ -82,13 +90,13 @@ export const PremiumGlitchLoader: React.FC<PremiumGlitchLoaderProps> = ({
       clearInterval(dotsInterval);
       clearInterval(timerInterval);
     }
-  }, []);
+  }, [steps]);
 
   return (
-    <div className={`flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-widest ${className}`} style={{ color }}>
+    <div className={`flex items-center gap-3 font-mono text-[11px] font-bold uppercase ${className}`} style={{ color }}>
       <span className="opacity-40">{glitch}</span>
-      <span className="min-w-[100px] text-white">{word}</span>
-      <span className="ml-auto text-[9px] opacity-30 tabular-nums">{timer}</span>
+      <span className="min-w-[120px] text-white">{word}{dots}</span>
+      <span className="ml-auto text-[10px] opacity-50 tabular-nums">{timer}</span>
     </div>
   )
 }

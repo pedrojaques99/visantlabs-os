@@ -24,7 +24,7 @@ REGRAS:
 - Máximo 150 palavras
 - Inglês (modelos de imagem funcionam melhor)
 - Termos técnicos de UI/UX
-- Adjetivos visuais (rounded, shadowed, gradient, etc.)
+- Adjetivos visuais (rounded, flat, glassmorphism, gradient, etc.)
 - Sem explicações, apenas o prompt final`;
 
 export const UI_DESCRIBE_USER = `Descreva esta UI e gere um prompt para recriar esta imagem em outro modelo de geração.`;

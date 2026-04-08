@@ -18,6 +18,7 @@ export interface BrandGuidelineColor {
   hex: string
   name: string
   role?: string // "background", "text", "accent", "cta"
+  cmyk?: { c: number; m: number; y: number; k: number } // 0-100 each
 }
 
 export interface BrandGuidelineTypography {
@@ -51,9 +52,44 @@ export interface BrandGuidelineGuidelines {
 }
 
 export interface BrandGuidelineExtraction {
-  sources: Array<{ type: 'url' | 'pdf' | 'image' | 'json' | 'manual'; ref?: string; date: string }>
+  sources: Array<{ type: 'url' | 'pdf' | 'image' | 'images' | 'json' | 'manual' | 'branding_machine'; ref?: string; date: string }>
   completeness: number // 0-100
 }
+
+export interface BrandArchetype {
+  name: string
+  role?: 'primary' | 'secondary'
+  description: string
+  image?: string
+  examples?: string[]
+}
+
+export interface BrandPersona {
+  name: string
+  age?: number
+  occupation?: string
+  traits?: string[]
+  bio?: string
+  desires?: string[]
+  painPoints?: string[]
+  image?: string
+}
+
+export interface BrandToneOfVoiceValue {
+  title: string
+  description: string
+  example: string
+}
+
+export interface BrandGuidelineStrategy {
+  manifesto?: string
+  archetypes?: BrandArchetype[]
+  personas?: BrandPersona[]
+  voiceValues?: BrandToneOfVoiceValue[]
+  positioning?: string[]
+}
+
+
 
 export interface BrandGuideline {
   id?: string
@@ -66,14 +102,21 @@ export interface BrandGuideline {
   media?: BrandGuidelineMedia[]
   tokens?: BrandGuidelineTokens
   guidelines?: BrandGuidelineGuidelines
+  strategy?: BrandGuidelineStrategy
   extraction?: BrandGuidelineExtraction
   updatedAt?: string
   // Organization
   folder?: string
+  // UI preferences
+  activeSections?: string[]
+  orderedBlocks?: string[]
   // Public sharing
   publicSlug?: string
   isPublic?: boolean
+  currentVersion?: number
 }
+
+
 
 /**
  * Calculate completeness percentage based on filled sections.

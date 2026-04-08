@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Globe, Diamond, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette, FolderOpen, Wand2, Figma } from 'lucide-react';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
-import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
+import { Globe, Diamond, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette, FolderOpen, Wand2, Figma, Github, Workflow } from 'lucide-react';
+import { PageShell } from '../components/ui/PageShell';
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getAllCommunityPresets, getCommunityStats, clearCommunityPresetsCache } from '../services/communityPresetsService';
 import { mockupApi } from '../services/mockupApi';
 import { cn } from '../lib/utils';
-import { Github } from 'lucide-react';
 import { getGithubUrl } from '../config/branding';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { GlassPanel } from '../components/ui/GlassPanel';
@@ -23,7 +21,6 @@ import { toast } from 'sonner';
 import { workflowApi } from '../services/workflowApi';
 import type { CanvasWorkflow } from '../services/workflowApi';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
-import { Workflow } from 'lucide-react';
 import { Button } from '@/components/ui/button'
 import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 
@@ -354,29 +351,26 @@ export const CommunityPage: React.FC = () => {
   }, [t]);
 
   return (
-    <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-x-hidden">
+    <PageShell
+      pageId="community"
+      seoTitle={t('communityPresets.title')}
+      seoDescription={t('communityPresets.subtitle')}
+      title={t('communityPresets.title')}
+      microTitle="Systems // Community"
+      description={t('communityPresets.subtitle')}
+      breadcrumb={[
+        { label: t('apps.home'), to: '/' },
+        { label: t('communityPresets.title') }
+      ]}
+      hideHeader // We're using a custom hero section instead of the default header
+    >
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-gradient-to-b from-brand-cyan/5 via-transparent to-transparent opacity-50" />
         <div className="absolute top-[10%] left-[10%] w-[400px] h-[400px] bg-brand-cyan/[0.02] blur-[150px] rounded-full" />
         <div className="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-indigo-500/[0.01] blur-[150px] rounded-full" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 pt-8 pb-16 md:pb-24 relative z-10">
-        <div className="mb-8">
-          <BreadcrumbWithBack to="/">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/">{t('apps.home')}</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{t('communityPresets.title')}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </BreadcrumbWithBack>
-        </div>
+      <div className="relative z-10">
 
         {/* Hero Section */}
         <div className="relative mb-16 min-h-[550px] flex items-center overflow-hidden rounded-3xl border border-white/[0.03] bg-neutral-900/10">
@@ -832,7 +826,7 @@ export const CommunityPage: React.FC = () => {
           t={t}
         />
       </div>
-    </div>
+    </PageShell>
   );
 };
 

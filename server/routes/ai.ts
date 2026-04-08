@@ -467,6 +467,7 @@ router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: 
       angleTags,
       lightingTags,
       effectTags,
+      materialTags,
       selectedColors,
       aspectRatio,
       generateText,
@@ -476,6 +477,9 @@ router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: 
       negativePrompt,
       additionalPrompt,
       instructions,
+      brandGuidelineId,
+      vibeId,
+      learnFromHistory,
     } = req.body;
 
     if (!designType) {
@@ -490,6 +494,32 @@ router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: 
       // User doesn't have API key, will use system key
     }
 
+    // Fetch brand guideline if id provided (ownership-checked)
+    let brandGuideline: any = null;
+    if (brandGuidelineId && typeof brandGuidelineId === 'string') {
+      try {
+        const bg = await prisma.brandGuideline.findFirst({
+          where: { id: brandGuidelineId, userId: req.userId! },
+        });
+        if (bg) {
+          brandGuideline = {
+            id: bg.id,
+            identity: bg.identity as any,
+            logos: bg.logos as any,
+            colors: bg.colors as any,
+            typography: bg.typography as any,
+            tags: bg.tags as any,
+            media: bg.media as any,
+            tokens: bg.tokens as any,
+            guidelines: bg.guidelines as any,
+            strategy: (bg as any).strategy,
+          };
+        }
+      } catch (err) {
+        console.warn('[generate-smart-prompt] failed to load brand guideline:', err);
+      }
+    }
+
     const result = await generateSmartPrompt({
       baseImage: baseImage || null,
       designType,
@@ -499,6 +529,7 @@ router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: 
       angleTags: angleTags || [],
       lightingTags: lightingTags || [],
       effectTags: effectTags || [],
+      materialTags: materialTags || [],
       selectedColors: selectedColors || [],
       aspectRatio: aspectRatio || '16:9',
       generateText: generateText || false,
@@ -508,6 +539,10 @@ router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: 
       negativePrompt: negativePrompt || '',
       additionalPrompt: additionalPrompt || '',
       instructions: instructions || '',
+      brandGuideline,
+      userId: req.userId,
+      vibeId: typeof vibeId === 'string' ? vibeId : undefined,
+      learnFromHistory: learnFromHistory !== false,
     }, userApiKey);
 
     // Track total tokens

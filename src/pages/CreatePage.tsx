@@ -5,12 +5,16 @@ import { CreativeStudio } from '@/components/creative/CreativeStudio';
 import { creativeProjectApi } from '@/services/creativeProjectApi';
 import { loadCreativeIntoStore } from '@/components/creative/lib/persistCreative';
 import { useCreativeStore } from '@/components/creative/store/creativeStore';
+import { PageShell } from '@/components/ui/PageShell';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const CreatePage: React.FC = () => {
   const [params, setParams] = useSearchParams();
+  const { t } = useTranslation();
   const projectId = params.get('project');
   const loadedRef = useRef<string | null>(null);
   const currentCreativeId = useCreativeStore((s) => s.creativeId);
+  const projectName = useCreativeStore((s) => s.projectName);
 
   useEffect(() => {
     // 1. Sync Store -> URL: If we have a persisted ID in store but not in URL, update URL
@@ -46,5 +50,23 @@ export const CreatePage: React.FC = () => {
       });
   }, [projectId, currentCreativeId, setParams]);
 
-  return <CreativeStudio />;
+  return (
+    <PageShell
+      pageId="creative-studio"
+      title={projectName || t('creative.studio.title') || "Creative Studio"}
+      width="full"
+      noBackground
+      seoTitle={`${projectName || 'Creative Studio'} | Visant Studio`}
+      seoDescription="Professional AI-driven design studio for brand-aware creative generation."
+      breadcrumb={[
+        { label: t('apps.home') || 'Home', to: '/' },
+        { label: t('canvas.title') || 'Canvas', to: '/canvas' },
+        { label: 'Creative Studio' }
+      ]}
+      hideHeader
+      contentClassName="p-0"
+    >
+      <CreativeStudio />
+    </PageShell>
+  );
 };

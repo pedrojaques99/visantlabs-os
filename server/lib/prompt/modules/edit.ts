@@ -11,15 +11,15 @@ Use o nodeId dos elementos selecionados para editar:
 - SET_STROKE: { nodeId, strokes: [...], strokeWeight }
 - SET_CORNER_RADIUS: { nodeId, cornerRadius }
 - SET_TEXT_CONTENT: { nodeId, content, fontFamily?, fontStyle?, fontSize? }
-- SET_TEXT_STYLE: { nodeId, fontSize?, fontFamily?, fills? }
+- SET_TEXT_STYLE: { nodeId, fontSize?, fontFamily?, fontStyle?, fills? }
 - SET_AUTO_LAYOUT: { nodeId, layoutMode, itemSpacing? }
 - SET_OPACITY: { nodeId, opacity } (0 a 1)
 - RENAME: { nodeId, name }`;
 
-export const EDIT_EXAMPLE = `EXEMPLO (mudar cor e texto):
+export const EDIT_EXAMPLE = `EXEMPLO (mudar cor e fonte):
 [
   {"type":"SET_FILL","nodeId":"123:456","fills":[{"type":"SOLID","color":{"r":0.2,"g":0.4,"b":1}}]},
-  {"type":"SET_TEXT_CONTENT","nodeId":"123:789","content":"Novo texto","fontFamily":"Inter","fontStyle":"Bold"}
+  {"type":"SET_TEXT_STYLE","nodeId":"123:789","fontFamily":"Montserrat","fontStyle":"Bold","fontSize":24}
 ]`;
 
 export const TEXT_EDIT_WARNING = `TEXTO: Use nodeId do no TEXT, nao do frame pai.

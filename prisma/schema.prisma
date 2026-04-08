@@ -15,7 +15,7 @@ model User {
   email                String    @unique
   name                 String?
   picture              String?
-  username             String?   @unique // Optional unique username for profile URLs
+  username             String?   // Optional unique username for profile URLs (handled by sparse index)
   bio                  String?   // User bio/description
   coverImageUrl        String?   // Header cover image URL (stored in R2)
   instagram            String?   // Instagram profile URL
@@ -38,7 +38,7 @@ model User {
   taxId                String?   // CPF/CNPJ para pagamentos PIX
   stripeSubscriptionId String?
   subscriptionEndDate  DateTime?
-  referralCode         String?   @unique
+  referralCode         String?   // Handled by sparse index manually
   referredBy           String?   @db.ObjectId
   referralCount        Int       @default(0)
   isAdmin              Boolean   @default(false)
@@ -170,6 +170,19 @@ model MockupExample {
   @@map("mockup_examples")
 }
 
+model MockupPattern {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  prompt       String   @unique
+  designType   String   @default("blank")
+  tags         String[]
+  rating       Int      @default(0) // Contagem de thumbs up únicos
+  isOfficial   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("mockup_patterns")
+}
+
 model BudgetProject {
   id                String    @id @default(auto()) @map("_id") @db.ObjectId
   userId            String    @db.ObjectId
@@ -188,7 +201,7 @@ model BudgetProject {
   brandLogo         String?   // base64 ou URL R2
   brandBackgroundColor String? // Cor de fundo da marca
   brandAccentColor  String?   // Cor de destaque da marca
-  shareId           String?   @unique // ID único para compartilhamento
+  shareId           String?   // Handled by sparse index manually
   data              Json      // JSON completo para backup/flexibilidade
   // Campos para layout empresarial
   timeline          Json?     // Array de TimelineMilestone
@@ -238,7 +251,7 @@ model CanvasProject {
   nodes           Json     // Array de nodes do React Flow
   edges           Json     // Array de edges do React Flow
   drawings        Json?    // Array de drawings (freehand, shapes, text)
-  shareId         String?  @unique // ID único para compartilhamento
+  shareId         String?   // Handled by sparse index manually
   isCollaborative Boolean  @default(false) // Se o projeto está em modo colaborativo
   canEdit         String[] @default([]) // IDs de usuários que podem editar
   canView         String[] @default([]) // IDs de usuários que podem visualizar
@@ -481,7 +494,7 @@ model BrandGuideline {
   folder     String?   // User-defined folder for grouping guidelines
 
   // Public sharing
-  publicSlug String?  @unique
+  publicSlug String?    // Handled by sparse index manually
   isPublic   Boolean  @default(false)
 
   // Version tracking

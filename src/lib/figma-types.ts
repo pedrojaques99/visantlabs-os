@@ -162,8 +162,8 @@ export type FigmaOperation =
       fontFamily?: string;
       fontStyle?: string;
       fontSize?: number;
-      lineHeight?: { value: number; unit: 'PIXELS' | 'PERCENT' | 'AUTO' };
-      letterSpacing?: { value: number; unit: 'PIXELS' | 'PERCENT' };
+      lineHeight?: string | { value: number; unit: 'PIXELS' | 'PERCENT' | 'AUTO' };
+      letterSpacing?: string | { value: number; unit: 'PIXELS' | 'PERCENT' };
       textAlignHorizontal?: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED';
       textAlignVertical?: 'TOP' | 'CENTER' | 'BOTTOM';
       textAutoResize?: 'NONE' | 'WIDTH_AND_HEIGHT' | 'HEIGHT' | 'TRUNCATE';
@@ -208,6 +208,8 @@ export type FigmaOperation =
       layoutMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL';
       primaryAxisSizingMode?: 'FIXED' | 'AUTO';
       counterAxisSizingMode?: 'FIXED' | 'AUTO';
+      x?: number;
+      y?: number;
       primaryAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'SPACE_BETWEEN';
       counterAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'BASELINE';
       itemSpacing?: number;
@@ -234,6 +236,24 @@ export type FigmaOperation =
     name?: string;
     width?: number;
     height?: number;
+    x?: number;
+    y?: number;
+    opacity?: number;
+  }
+  | {
+    type: 'CREATE_ICON';
+    ref?: string;
+    parentRef?: string;
+    parentNodeId?: string;
+    props: {
+      icon: string; // e.g. "mdi:home", "lucide:check"
+      size?: number;
+      color?: FigmaPaint[];
+      x?: number;
+      y?: number;
+      name?: string;
+      opacity?: number;
+    };
   }
   | {
     type: 'CREATE_LINE';
@@ -385,6 +405,9 @@ export type FigmaOperation =
   | { type: 'UNGROUP'; nodeId: string }
   | { type: 'DETACH_INSTANCE'; nodeId: string }
   | { type: 'DELETE_NODE'; nodeId: string }
+  | { type: 'SELECT_AND_ZOOM'; nodeId: string }
+  | { type: 'CREATE_STICKY_PROMPT'; prompt: string; name: string }
+  | { type: 'UNDO_LAST_BATCH' }
   | { type: 'RECOLOR_NODE'; ref?: string; nodeId?: string; props: { fills: FigmaPaint[] } }
   // ═══ FASE 4: Polish & Advanced Features ═══
   | {
@@ -395,11 +418,15 @@ export type FigmaOperation =
     sourceScope?: 'page' | 'file'; // Onde buscar (default: 'file')
     parentRef?: string;
     parentNodeId?: string;
-    overrides?: {
+    props: {
       name?: string;
       fills?: FigmaPaint[];
       width?: number;
       height?: number;
+      layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
+      layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
+      isMask?: boolean;
+      opacity?: number;
     };
     textOverrides?: Array<{ name: string; content: string }>;
   }
@@ -409,11 +436,14 @@ export type FigmaOperation =
     sourceNodeId: string;
     parentRef?: string;
     parentNodeId?: string;
-    overrides?: {
+    props?: {
       name?: string;
       fills?: FigmaPaint[];
       width?: number;
       height?: number;
+      layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
+      layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
+      opacity?: number;
     };
     textOverrides?: Array<{ name: string; content: string }>;
   }
@@ -643,6 +673,7 @@ export interface BrandGuidelineColor {
   hex: string
   name: string
   role?: string
+  cmyk?: { c: number; m: number; y: number; k: number }
 }
 
 export interface BrandGuidelineTypography {
@@ -651,6 +682,7 @@ export interface BrandGuidelineTypography {
   role: string
   size?: number
   lineHeight?: number
+  availableStyles?: string[]
 }
 export interface BrandArchetype {
   name: string
@@ -729,13 +761,14 @@ export interface BrandGuideline {
     voiceValues?: BrandToneOfVoiceValue[]
   }
   _extraction?: {
-    sources: Array<{ type: 'url' | 'pdf' | 'image' | 'json' | 'manual'; ref?: string; date: string }>
+    sources: Array<{ type: 'url' | 'pdf' | 'image' | 'images' | 'json' | 'manual' | 'branding_machine'; ref?: string; date: string }>
     completeness: number
   }
   extraction?: { // Keep this for backend compatibility if it uses "extraction"
-    sources: Array<{ type: 'url' | 'pdf' | 'image' | 'json' | 'manual'; ref?: string; date: string }>
+    sources: Array<{ type: 'url' | 'pdf' | 'image' | 'images' | 'json' | 'manual' | 'branding_machine'; ref?: string; date: string }>
     completeness: number
   }
+
   updatedAt?: string
   orderedBlocks?: string[]
   activeSections?: string[]
@@ -819,6 +852,7 @@ export type UIMessage =
   | { type: 'SAVE_GUIDELINE'; guideline: BrandGuideline }
   | { type: 'DELETE_GUIDELINE'; id: string }
   | { type: 'SELECT_AND_ZOOM'; nodeId: string }
+  | { type: 'CREATE_STICKY_PROMPT'; prompt: string; name: string }
   // Image generation
   | { type: 'PASTE_GENERATED_IMAGE'; imageData: string; prompt: string; width?: number; height?: number; isUrl?: boolean }
   // Mentions
@@ -864,7 +898,9 @@ export type UIMessage =
   }
   // Figma Sync
   | { type: 'EXTRACT_FOR_SYNC' }
-  | { type: 'PUSH_TO_FIGMA'; guideline: BrandGuideline };
+  | { type: 'PUSH_TO_FIGMA'; guideline: BrandGuideline }
+  | { type: 'SMART_SCAN_SELECTION' }
+  | { type: 'EXPORT_NODE_IMAGE'; nodeId: string; format: 'SVG' | 'PNG' };
 
 // ── Sandbox → UI messages ──
 
@@ -915,4 +951,6 @@ export type PluginMessage =
   | { type: 'EXTRACT_FOR_SYNC_RESULT'; data: any }
   | { type: 'EXTRACT_FOR_SYNC_ERROR'; error: string }
   | { type: 'PUSH_TO_FIGMA_RESULT'; created: number; updated: number }
-  | { type: 'PUSH_TO_FIGMA_ERROR'; error: string };
+  | { type: 'PUSH_TO_FIGMA_ERROR'; error: string }
+  | { type: 'SMART_SCAN_RESULT'; items: any[]; error?: string }
+  | { type: 'EXPORT_NODE_IMAGE_RESULT'; nodeId: string; data?: string; format?: string; error?: string };

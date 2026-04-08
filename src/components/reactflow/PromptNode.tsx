@@ -22,7 +22,7 @@ import { PromptContextMenu } from './contextmenu/PromptContextMenu';
 import { MockupPresetModal } from '@/components/MockupPresetModal';
 import { getPresetByIdSync } from '@/services/unifiedPresetService';
 import { NodeButton } from './shared/node-button';
-import { ModelSelector } from './shared/ModelSelector';
+import { ModelSelector } from '../shared/ModelSelector';
 import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
 import { toast } from 'sonner';
 import { useBrandKit } from '@/contexts/BrandKitContext';
@@ -648,6 +648,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       {/* Settings Section - Compact */}
       <div className="node-margin space-y-[var(--node-gap)]">
         <ModelSelector
+          type="image"
+          variant="node"
           selectedModel={model}
           onModelChange={(newModel, provider) => {
             setModel(newModel);

@@ -61,7 +61,22 @@ export const brandSharedService = {
           voice: brandingData.posicionamento || '',
           dos: [],
           donts: [],
+      },
+      // Strategy
+      strategy: {
+        archetypes: brandingData.archetypes ? [
+          brandingData.archetypes.primary && { name: brandingData.archetypes.primary.title, description: brandingData.archetypes.primary.description || '' },
+          brandingData.archetypes.secondary && { name: brandingData.archetypes.secondary.title, description: brandingData.archetypes.secondary.description || '' }
+        ].filter(Boolean) as any[] : [],
+        personas: brandingData.persona ? [{
+          name: 'Target Persona',
+          bio: brandingData.persona.demographics || '',
+          traits: [...(brandingData.persona.pains || []), ...(brandingData.persona.desires || [])].filter(Boolean) as string[]
+        }] : [],
+        positioning: brandingData.posicionamento ? [brandingData.posicionamento] : []
       }
     };
+
+
   }
 };

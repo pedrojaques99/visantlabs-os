@@ -47,7 +47,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
           {Object.entries(guideline.tags).map(([cat, vals]: any) => (
             <div key={cat} className="space-y-3">
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-bold font-mono text-brand-cyan/70 uppercase">{cat}</span>
+                <span className="text-[11px] font-bold font-mono text-brand-cyan uppercase tracking-widest">{cat}</span>
                 <div className="h-[1px] flex-1 bg-white/[0.03]" />
               </div>
               <div className="flex flex-wrap gap-2">
@@ -97,7 +97,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
               Object.entries(guideline.tags).map(([cat, vals]: any) => (
                 <div key={cat} className="space-y-2.5">
                   <div className="flex items-center gap-3">
-                    <span className="text-[9px] font-bold font-mono text-brand-cyan/60 uppercase shrink-0">{cat}</span>
+                    <span className="text-[11px] font-bold font-mono text-brand-cyan uppercase tracking-widest shrink-0">{cat}</span>
                     <div className="h-[1px] flex-1 bg-white/[0.03]" />
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -105,7 +105,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                       <motion.span
                         key={`${cat}-${j}`}
                         whileHover={{ y: -1, backgroundColor: 'rgba(var(--brand-cyan-rgb), 0.08)', borderColor: 'rgba(var(--brand-cyan-rgb), 0.3)' }}
-                        className="px-3 py-1.5 rounded-lg bg-neutral-900/40 border border-white/[0.03] text-[10px] text-neutral-300 transition-all cursor-default font-medium tracking-tight flex items-center gap-2 group/tag"
+                        className="px-3 py-1.5 rounded-lg bg-neutral-900/40 border border-white/[0.03] text-[11px] text-neutral-200 transition-all cursor-default font-medium tracking-tight flex items-center gap-2 group/tag"
                       >
                         <div className="w-1 h-1 rounded-full bg-brand-cyan/30 group-hover/tag:bg-brand-cyan transition-colors" />
                         {v}

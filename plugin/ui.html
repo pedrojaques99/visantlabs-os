@@ -196,6 +196,20 @@
                       </svg>
                     </button>
                     <div id="brandHubOverflowMenu" class="overflow-menu header-overflow-menu hidden">
+                      <button class="menu-item" id="brandSmartScanBtn">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M1 3.5V2a1 1 0 011-1h1.5M8.5 1H10a1 1 0 011 1v1.5M11 8.5V10a1 1 0 01-1 1H8.5M3.5 11H2a1 1 0 01-1-1V8.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                          <circle cx="6" cy="6" r="2" stroke="currentColor" stroke-width="1.2"/>
+                        </svg>
+                        Smart Scan da seleção
+                      </button>
+                      <button class="menu-item" id="brandFigmaSyncBtn">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 6h8M6 2v8M3 3l6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        </svg>
+                        Enviar para Webapp
+                      </button>
+                      <div class="menu-divider"></div>
                       <button class="menu-item" id="brandGuidelineRefreshBtn">
                         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                           <path d="M10 6a4 4 0 01-7.5 2M2 6a4 4 0 017.5-2M10 2v2.5H7.5M2 10V7.5h2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -228,22 +242,32 @@
                 </div>
               </div>
               <div id="brandApiContent" class="collapsible-content">
-                <div class="figma-prop-row" style="gap: 6px; margin-top: 8px;">
+                <div id="brandSelectContainer" class="figma-prop-row" style="gap: 6px; margin-top: 8px;">
                   <select id="brandGuidelineSelect" class="figma-select" style="flex: 1;">
                     <option value="">— Selecione uma marca —</option>
                   </select>
-                  <button class="figma-icon-btn" id="brandGuidelineOpenBtn" title="Abrir no webapp" style="display: none;">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M9 6.5v3a.5.5 0 01-.5.5h-6a.5.5 0 01-.5-.5v-6a.5.5 0 01.5-.5h3M7 2h3v3M5.5 6.5L10 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
                 </div>
-                <div id="brandGuidelineStatus" class="brand-status text-muted">
-                  <span class="status-dot"></span>
-                  <span class="status-text">Não vinculado</span>
+                <div id="brandLinkedContainer" class="figma-prop-row hidden" style="gap: 6px; margin-top: 8px; align-items: center; justify-content: space-between; background: var(--figma-color-bg-secondary); padding: 6px 8px; border-radius: 6px;">
+                  <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                    <span class="status-dot" style="background: rgb(31, 165, 17);"></span>
+                    <span id="brandLinkedName" style="font-weight: 500; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Marca vinculada</span>
+                  </div>
+                  <div style="display: flex; gap: 4px;">
+                    <button class="figma-icon-btn" id="brandGuidelineOpenBtn" title="Abrir no webapp">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M9 6.5v3a.5.5 0 01-.5.5h-6a.5.5 0 01-.5-.5v-6a.5.5 0 01.5-.5h3M7 2h3v3M5.5 6.5L10 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                    <button class="figma-icon-btn" id="brandGuidelineUnlinkBtn" title="Desvincular">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2.5 3h7M4 3V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V3m1 0v6a1 1 0 01-1 1h-5a1 1 0 01-1-1V3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+
 
             <!-- Logo Section -->
             <div class="figma-prop-section collapsible" id="logoSection">
@@ -271,12 +295,12 @@
               <div class="figma-prop-header collapsible-header" data-target="colorsContent">
                 <span class="figma-prop-title">Colors</span>
                 <div style="display: flex; gap: 4px; align-items: center;">
-                  <button class="figma-icon-btn" id="colorImportBtn" title="Importar do arquivo" onclick="event.stopPropagation()">
+                  <button class="figma-icon-btn" id="colorImportBtn" title="Importar da biblioteca do arquivo" onclick="event.stopPropagation()">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                       <path d="M2 2h8a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1zM4 2v1M8 2v1" stroke="currentColor" stroke-width="1.2"/>
                     </svg>
                   </button>
-                  <button class="figma-icon-btn" id="colorAddBtn" title="Adicionar cor" onclick="event.stopPropagation()">
+                  <button class="figma-icon-btn" id="colorAddBtn" title="Adicionar cor extra" onclick="event.stopPropagation()">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                       <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
                     </svg>
@@ -287,22 +311,9 @@
                 </div>
               </div>
               <div id="colorsContent" class="collapsible-content">
-                <div id="colorAddRow" class="color-add-row hidden" style="margin-top: 8px;">
-                  <input type="color" id="colorPickerInput" value="#6366F1" title="Escolher cor">
-                  <input type="text" id="colorNameInput" class="figma-input" placeholder="Nome da cor" style="flex: 1; margin-bottom: 0;">
-                  <button class="figma-icon-btn" id="colorConfirmBtn" title="Adicionar">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-                  <button class="figma-icon-btn" id="colorCancelBtn" title="Cancelar">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                    </svg>
-                  </button>
-                </div>
                 <div id="availableColorsList" class="available-colors-list hidden"></div>
-                <div class="color-grid" id="colorGrid" style="margin-top: 8px;"></div>
+                <div class="brand-role-grid" id="colorGrid"></div>
+                <div id="colorExtrasList" class="brand-extras-list hidden"></div>
               </div>
             </div>
 
@@ -311,7 +322,7 @@
               <div class="figma-prop-header collapsible-header" data-target="typographyContent">
                 <span class="figma-prop-title">Typography</span>
                 <div style="display: flex; gap: 4px; align-items: center;">
-                  <button class="figma-icon-btn" id="fontAddPropBtn" title="Adicionar variante" onclick="event.stopPropagation()">
+                  <button class="figma-icon-btn" id="fontAddPropBtn" title="Adicionar família" onclick="event.stopPropagation()">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                       <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
                     </svg>
@@ -337,7 +348,6 @@
                 </svg>
               </div>
               <div id="designTokensContent" class="collapsible-content">
-                <!-- Spacing -->
                 <div class="token-group">
                   <span class="token-group-label">Spacing</span>
                   <div class="token-row">
@@ -393,6 +403,27 @@
               <div id="uiComponentsContent" class="collapsible-content">
                 <!-- Dynamic components list -->
                 <div id="componentsGrid"></div>
+              </div>
+            </div>
+
+            <!-- Design Intelligence Section -->
+            <div class="figma-prop-section collapsible" id="brandIntelligenceSection">
+              <div class="figma-prop-header collapsible-header" data-target="brandIntelligenceContent">
+                <span class="figma-prop-title">Design Intelligence</span>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                  <button class="figma-icon-btn" id="intelSyncReferenceBtn" title="Analisar seleção e salvar como referência" onclick="event.stopPropagation()">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  </button>
+                  <svg class="collapse-icon" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div id="brandIntelligenceContent" class="collapsible-content section-empty">
+                <div id="brandIntelList" class="brand-intel-grid" style="margin-top: 8px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;"></div>
+                <div id="brandIntelEmpty" class="empty-state">
+                  Selecione um layout e clique em ↑ para salvar como referência e extrair dicas de design.
+                </div>
               </div>
             </div>
 
@@ -608,10 +639,7 @@
           <!-- Utility Actions -->
           <div class="figma-prop-section">
             <div class="figma-prop-header">
-              <span class="figma-prop-title">Manutenção</span>
-            </div>
-            <div style="padding: 0 12px 12px;">
-              <button class="secondary" id="clearChatBtn" style="width: 100%; justify-content: center; gap: 8px;">
+                <button class="secondary" id="clearChatBtn" style="width: 100%; justify-content: center; gap: 8px;">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 3h7M4 3V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V3m1 0v6a1 1 0 01-1 1h-5a1 1 0 01-1-1V3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
                 Limpar Histórico do Chat
               </button>
@@ -620,55 +648,143 @@
 
         </div>
       </div>
+
       <!-- ================= TAB: DEV ================= -->
       <div id="tab-dev" class="tab-content hidden">
         <div class="figma-prop-panel">
+          
+          <!-- 1. AI Intelligence (Gemini) -->
           <div class="figma-prop-section">
             <div class="figma-prop-header">
-              <span class="figma-prop-title">JSON Runner (Direct API)</span>
+              <span class="figma-prop-title">AI Intelligence (Gemini)</span>
+              <span class="badge" style="font-size: 8px; background: var(--figma-color-bg-brand-tertiary); color: var(--figma-color-text-brand);">SMART</span>
             </div>
-            <div style="padding: 0 12px 12px;">
-              <p style="font-size: 11px; color: var(--figma-color-text-secondary); margin-bottom: 12px; line-height: 1.4;">
-                Cole o JSON de operações para executar diretamente no canvas via <code class="inline-code">APPLY_OPERATIONS</code>.
-              </p>
+            <div style="padding: 8px 12px 12px; display: grid; gap: 8px;">
+              <button id="jsonRunnerSmartScanBtn" class="preset-btn" style="background: var(--figma-color-bg-secondary); border: 1px solid var(--figma-color-border); font-weight: 600;">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M7 4.5v5M4.5 7h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                Smart Scan Selection
+              </button>
               
-              <div class="json-editor-container" style="border: 1px solid var(--figma-color-border); border-radius: 8px; overflow: hidden; background: #1e1e1e; margin-bottom: 12px;">
-                <div class="json-editor-toolbar" style="display: flex; justify-content: flex-end; padding: 6px 8px; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1); gap: 8px;">
-                  <button class="icon-text-btn" id="jsonRunnerFormatBtn" title="Formatar JSON" style="background:transparent; color: #aaa; font-size: 10px; width: auto; height: 24px; padding: 0 8px; border: 1px solid rgba(255,255,255,0.1);">
-                    <svg width="10" height="10" viewBox="0 0 14 14" fill="none" style="margin-right: 4px;"><path d="M2 3h10M2 7h10M2 11h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-                    Formatar
-                  </button>
-                  <button class="icon-text-btn" id="jsonRunnerClearBtn" title="Limpar" style="background:transparent; color: #aaa; font-size: 10px; width: auto; height: 24px; padding: 0 8px; border: 1px solid rgba(255,255,255,0.1);">
-                    <svg width="10" height="10" viewBox="0 0 14 14" fill="none" style="margin-right: 4px;"><path d="M2 3h10M4 3V2a1 1 0 011-1h4a1 1 0 011 1v1M3.5 3l.5 9a1 1 0 001 1h4a1 1 0 001-1l.5-9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-                    Limpar
-                  </button>
-                </div>
-                <textarea id="jsonRunnerInput" placeholder='[{"type": "CREATE_RECTANGLE", ...}]' style="height: 300px !important; font-family: 'Monaco', 'Menlo', 'Cascadia Code', monospace; font-size: 11px; margin-bottom: 0; background: transparent; border: none; color: #d4d4d4; padding: 12px; line-height: 1.5; outline: none; box-shadow: none !important;"></textarea>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button id="devAnalyzeJsonBtn" class="preset-btn" title="Analyze selection to JSON Operations">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M10 3a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1h6zM4 2a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H4z" fill="currentColor"/><path d="M5 5h4M5 7h4M5 9h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  Analyze to JSON
+                </button>
+                <button id="devAnalyzePromptBtn" class="preset-btn" title="Analyze selection to Image Prompt">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="3" width="10" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><circle cx="5" cy="6" r="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 9l2-2 3 3 2-2 1 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Analyze to Prompt
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Brand Automation -->
+          <div class="figma-prop-section">
+            <div class="figma-prop-header">
+              <span class="figma-prop-title">Brand Automation</span>
+            </div>
+            <div style="padding: 8px 12px 12px; display: grid; gap: 8px;">
+              <button id="jsonRunnerApplyBrandBtn" class="preset-btn" style="background: #000; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.2); height: 38px;">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L8.8 5.2L13 7L8.8 8.8L7 13L5.2 8.8L1 7L5.2 5.2L7 1Z" fill="currentColor"/></svg>
+                Aplicar Brand Guidelines
+              </button>
+
+              <!-- Intelligent Color Variation -->
+              <button id="jsonRunnerVaryColorsBtn" class="preset-btn" style="background: var(--figma-color-bg-brand); color: #fff; height: 32px; font-weight: 600; border: none; margin-bottom: 4px;">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2a5 5 0 100 10A5 5 0 007 2z" stroke="currentColor" stroke-width="1.2"/><path d="M7 4.5v5M4.5 7h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                Variar Cores Inteligente
+              </button>
+
+              <!-- Brand Lint + Responsive Multiply -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button id="jsonRunnerBrandLintBtn" class="preset-btn" title="Auditar seleção contra a brand (score + issues)">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13L9.3 8.3 10.8 13 7 10.2 3.2 13l1.5-4.7L1 5.5h4.5L7 1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+                  Brand Lint
+                </button>
+                <button id="jsonRunnerResponsiveBtn" class="preset-btn" title="Multiplicar frame em formatos responsivos">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="5" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="7" y="5" width="6" height="4" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
+                  Responsive
+                </button>
               </div>
 
-              <button id="jsonRunnerBrandGridBtn" style="width: 100%; height: 40px; font-weight: 600; font-size: 12px; gap: 8px; background: #FF6000; color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(255, 96, 0, 0.25); margin-bottom: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none;">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right: 4px;">
-                  <path d="M2 3h10M2 7h10M2 11h5" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-                </svg>
-                Gerar Brand Grid (Selection)
-              </button>
+              <!-- Brand Lint report panel -->
+              <div id="brandLintReport" class="hidden" style="margin-top: 4px; padding: 10px; border: 1px solid var(--figma-color-border); border-radius: 6px; background: var(--figma-color-bg-secondary); font-size: 10px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                  <span style="font-weight: 600; color: var(--figma-color-text);">Brand Score</span>
+                  <span id="brandLintScore" style="font-weight: 700; font-size: 14px;">—</span>
+                </div>
+                <div id="brandLintTotals" style="color: var(--figma-color-text-secondary); margin-bottom: 8px;"></div>
+                <div id="brandLintIssues" style="max-height: 180px; overflow-y: auto; display: grid; gap: 4px;"></div>
+                <button id="brandLintFixBtn" class="preset-btn hidden" style="margin-top: 8px; width: 100%; background: #22c55e; color: #fff; border: none; height: 30px; font-weight: 600;">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5L9.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Auto-Fix Issues
+                </button>
+              </div>
 
-              <button id="jsonRunnerSocialFramesBtn" style="width: 100%; height: 40px; font-weight: 600; font-size: 12px; gap: 8px; background: #FF6000; color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(255, 96, 0, 0.25); margin-bottom: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none;">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right: 4px;">
-                  <rect x="2" y="3" width="10" height="6" rx="1" stroke="white" stroke-width="1.2"/>
-                  <rect x="5" y="10" width="4" height="2" rx="0.5" stroke="white" stroke-width="1.2"/>
-                </svg>
-                Gerar Brand Frames (16:9 & 1:1)
-              </button>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button id="jsonRunnerBrandGridBtn" class="preset-btn">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3h10M2 7h10M2 11h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  Brand Grid
+                </button>
+                <button id="jsonRunnerSocialFramesBtn" class="preset-btn">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="3" width="10" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="5" y="10" width="4" height="2" rx="0.5" stroke="currentColor" stroke-width="1.2"/></svg>
+                  Social Frames
+                </button>
+              </div>
+            </div>
+          </div>
 
-              <button id="jsonRunnerExecuteBtn" style="width: 100%; height: 40px; font-weight: 600; font-size: 12px; gap: 8px; background: var(--figma-color-bg-brand); color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(13, 153, 255, 0.25); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none;">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right: 4px;">
-                  <path d="M4 3l7 4-7 4V3z" fill="white"/>
-                </svg>
-                Executar Individual Operations
+          <!-- 3. Layout & Assets -->
+          <div class="figma-prop-section">
+            <div class="figma-prop-header">
+              <span class="figma-prop-title">Layout & Assets</span>
+            </div>
+            <div style="padding: 8px 12px 12px; display: grid; gap: 8px;">
+               <button id="devSelectionToSlicesBtn" class="preset-btn" title="Create Slide Slices for Instagram Carousels (Seamless)">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3h10M2 7h10M2 11h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M5 2v10M9 2v10" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 2"/></svg>
+                Carousel Slices Helper
+              </button>
+              
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button id="devStickyPromptBtn" class="preset-btn" title="Create a persistent AI analysis note on canvas">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 2h8a1 1 0 011 1v8l-3 3h-5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="1.2"/><path d="M9 12v-3h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Sticky Note
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Developer Tools -->
+          <div class="figma-prop-section">
+            <div class="figma-prop-header" id="devJsonRunnerToggle" style="cursor: pointer; user-select: none; border-top: 1px solid var(--figma-color-border); padding-top: 16px; margin-top: 8px;">
+              <span class="figma-prop-title" style="display: flex; align-items: center; gap: 6px;">
+                <svg id="devJsonChevron" width="10" height="10" viewBox="0 0 10 10" fill="none" style="transition: transform 0.2s;"><path d="M3 2l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Advanced: JSON Operations Runner
+              </span>
+            </div>
+            <div id="devJsonRunnerContent" class="hidden" style="padding: 0 12px 12px;">
+              <p style="font-size: 10px; color: var(--figma-color-text-secondary); margin: 4px 0 12px; line-height: 1.4;">
+                Execute design operations directly.
+              </p>
+              
+              <div class="json-editor-container" style="border: 1px solid var(--figma-color-border); border-radius: 6px; overflow: hidden; background: #1e1e1e; margin-bottom: 8px;">
+                <div class="json-editor-toolbar" style="display: flex; justify-content: flex-end; padding: 4px 6px; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1); gap: 6px;">
+                  <button class="icon-text-btn" id="jsonRunnerApplyBrandBtn" title="Aplicar Brand" style="background:#2a446333; color: var(--figma-color-text-brand); font-size: 9px; width: auto; height: 20px; padding: 0 6px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 4px;">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 2v6M2 5h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    Aplicar Brand
+                  </button>
+                  <button class="icon-text-btn" id="jsonRunnerFormatBtn" title="Formatar" style="background:transparent; color: #888; font-size: 9px; width: auto; height: 20px; padding: 0 6px; border: 1px solid rgba(255,255,255,0.1);">Formatar</button>
+                  <button class="icon-text-btn" id="jsonRunnerClearBtn" title="Limpar" style="background:transparent; color: #888; font-size: 9px; width: auto; height: 20px; padding: 0 6px; border: 1px solid rgba(255,255,255,0.1);">Limpar</button>
+                </div>
+                <textarea id="jsonRunnerInput" placeholder='[{"type": "CREATE_RECTANGLE", ...}]' style="height: 120px !important; font-family: monospace; font-size: 10px; margin-bottom: 0; background: transparent; border: none; color: #d4d4d4; padding: 8px; line-height: 1.4; outline: none;"></textarea>
+              </div>
+
+              <button id="jsonRunnerExecuteBtn" style="width: 100%; height: 32px; font-weight: 600; font-size: 11px; background: var(--figma-color-bg-brand); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none;">
+                Run Operations
               </button>
             </div>
           </div>
+
         </div>
       </div>
 
@@ -677,18 +793,24 @@
 
   <!-- MODALS -->
   <div id="componentModal" class="modal hidden">
-    <div class="modal-content">
+    <div class="modal-content modal-content--library">
       <div class="modal-header">
-        <span class="modal-title">Selecionar Componente</span>
-        <button class="figma-icon-btn modal-close" id="closeComponentModal" style="font-size: 16px;">×</button>
+        <span class="modal-title" id="componentModalTitle">Escolher da Biblioteca</span>
+        <div style="display:flex; gap:4px; align-items:center;">
+          <button class="figma-icon-btn" id="showFoldersBtn" title="Alternar pastas / lista" aria-pressed="false">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 3a.5.5 0 01.5-.5h2.5l1 1h4.5a.5.5 0 01.5.5v5a.5.5 0 01-.5.5h-8a.5.5 0 01-.5-.5V3z" stroke="currentColor" stroke-width="1.2"/></svg>
+          </button>
+          <button class="figma-icon-btn modal-close" id="closeComponentModal" title="Fechar">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="modal-body">
-        <div class="figma-prop-header" style="padding: 0 0 8px 0; height: auto;">
-          <button class="secondary" id="showFoldersBtn" style="width: auto;" title="Alternar visualização de pastas">📁
-            Pastas / Lista</button>
+      <div class="modal-body modal-body--library">
+        <div class="library-search-bar">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 8l2.5 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <input type="text" id="componentSearch" placeholder="Buscar componentes…" />
         </div>
         <div id="libraryContent">
-          <input type="text" id="componentSearch" placeholder="Buscar componentes..." style="margin-bottom: 6px;" />
           <div id="componentsLibrary" class="components-library modal-library-list"></div>
         </div>
       </div>
@@ -698,7 +820,7 @@
   <div id="fontModal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
-        <span class="modal-title">Escolher Fonte</span>
+        <span class="modal-title">Escolher Família Tipográfica</span>
         <button class="figma-icon-btn modal-close" id="closeFontModal" style="font-size: 16px;">×</button>
       </div>
       <div class="modal-body">
@@ -736,8 +858,8 @@
   <script src="./modules/api.js"></script>
   <script src="./modules/designSystem.js"></script>
   <script src="./modules/brandSync.js"></script>
-  <script src="./modules/brandUI.js"></script>
   <script src="./modules/chat.js"></script>
+  <script src="./modules/brandIntelligence.js"></script>
   <script src="./modules/brand.js"></script>
   <script src="./modules/library.js"></script>
   <script src="./modules/uiManager.js"></script>

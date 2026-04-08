@@ -5,24 +5,15 @@ import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { CreditPackagesModal } from '../components/CreditPackagesModal';
 import { TransactionsModal } from '../components/TransactionsModal';
 import { EditProfileModal } from '../components/EditProfilePage';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { PageShell } from '../components/ui/PageShell';
 import { authService, type User as UserType } from '../services/authService';
 import { subscriptionService, type SubscriptionStatus } from '../services/subscriptionService';
 import { referralService, type ReferralStats } from '../services/referralService';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { toast } from 'sonner';
-import { SEO } from '../components/SEO';
 import { Card, CardContent } from '../components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
-import {
-  BreadcrumbWithBack,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "../components/ui/BreadcrumbWithBack";
 import { BackButton } from "../components/ui/BackButton";
 import { ApiSettings } from '../components/profile/ApiSettings';
 import { ProfileOverview } from '../components/profile/ProfileOverview';
@@ -219,63 +210,34 @@ export const ProfilePage: React.FC = () => {
 
   if (!user || isAuthenticated === false) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-400 font-mono mb-4">
-            {t('profile.notAuthenticated') || 'Please sign in to view your profile'}
-          </p>
-          <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
+      <PageShell pageId="profile-auth-error" width="5xl" title={t('profile.notAuthenticated') || 'Acesso Restrito'}>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <p className="text-red-400 font-mono mb-4">
+              {t('profile.notAuthenticated') || 'Please sign in to view your profile'}
+            </p>
+            <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
+          </div>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <>
-      <SEO
-        title={t('profile.seoTitle')}
-        description={t('profile.seoDescription')}
-        noindex={true}
-      />
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
-        <div className="fixed inset-0 z-0">
-        </div>
-        <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
-
-          {/* Header Card */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
-            <CardContent className="p-4 md:p-6">
-              <div className="mb-4">
-                <BreadcrumbWithBack to="/">
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link to="/">{t('apps.home')}</Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>{t('profile.breadcrumb') || 'Profile'}</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </BreadcrumbWithBack>
-              </div>
-
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
-                    <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-neutral-300">
-                      {t('profile.title') || 'Perfil'}
-                    </h1>
-                  </div>
-                  <p className="text-neutral-500 font-mono text-sm md:text-base ml-9 md:ml-11">
-                    {t('profile.subtitle') || 'Gerencie sua conta e assinatura'}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <PageShell
+      pageId="profile"
+      width="5xl"
+      seoTitle={t('profile.seoTitle')}
+      seoDescription={t('profile.seoDescription')}
+      title={t('profile.title') || 'Perfil'}
+      description={t('profile.subtitle') || 'Gerencie sua conta e assinatura'}
+      microTitle="User // Account"
+      breadcrumb={[
+        { label: t('apps.home'), to: '/' },
+        { label: t('profile.breadcrumb') || 'Profile' }
+      ]}
+    >
+      <div className="space-y-6">
 
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono flex items-center gap-2">
@@ -327,26 +289,25 @@ export const ProfilePage: React.FC = () => {
             </TabsContent>
           </Tabs>
 
-        </div>
-
-        <CreditPackagesModal
-          isOpen={isCreditPackagesModalOpen}
-          onClose={() => setIsCreditPackagesModalOpen(false)}
-          subscriptionStatus={subscriptionStatus}
-        />
-        <TransactionsModal
-          isOpen={isTransactionsModalOpen}
-          onClose={() => setIsTransactionsModalOpen(false)}
-        />
-        <EditProfileModal
-          isOpen={isEditProfileModalOpen}
-          onClose={() => {
-            setIsEditProfileModalOpen(false);
-            authService.invalidateCache();
-            window.location.reload();
-          }}
-        />
       </div>
-    </>
+
+      <CreditPackagesModal
+        isOpen={isCreditPackagesModalOpen}
+        onClose={() => setIsCreditPackagesModalOpen(false)}
+        subscriptionStatus={subscriptionStatus}
+      />
+      <TransactionsModal
+        isOpen={isTransactionsModalOpen}
+        onClose={() => setIsTransactionsModalOpen(false)}
+      />
+      <EditProfileModal
+        isOpen={isEditProfileModalOpen}
+        onClose={() => {
+          setIsEditProfileModalOpen(false);
+          authService.invalidateCache();
+          window.location.reload();
+        }}
+      />
+    </PageShell>
   );
 };
