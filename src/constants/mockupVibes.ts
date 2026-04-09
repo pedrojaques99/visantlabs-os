@@ -52,7 +52,7 @@ export const VIBE_SEGMENTS: { id: VibeSegment; name: string; icon: string }[] = 
   { id: 'saas', name: 'SaaS', icon: 'Cloud' },
   { id: 'finance', name: 'Finance', icon: 'BarChart' },
   { id: 'fashion', name: 'Fashion', icon: 'ShoppingBag' },
-  { id: 'sport', name: 'Sport', icon: 'Zap' },
+  { id: 'sport', name: 'Sport', icon: 'Trophy' },
   { id: 'saúde', name: 'Saúde', icon: 'Activity' },
   { id: 'advocacia', name: 'Advocacia', icon: 'Scale' },
   { id: 'construção', name: 'Construção', icon: 'HardHat' },
@@ -63,7 +63,7 @@ export const VIBE_STYLES: { id: VibeStyle; name: string; icon: string }[] = [
   { id: 'elegante', name: 'Elegante', icon: 'Gem' },
   { id: 'artesanal', name: 'Artesanal', icon: 'Scissors' },
   { id: 'pop', name: 'Pop', icon: 'Palette' },
-  { id: 'energic', name: 'Energic', icon: 'Flashlight' },
+  { id: 'energic', name: 'Energic', icon: 'Zap' },
   { id: 'natural', name: 'Natural', icon: 'Leaf' },
   { id: 'industrial', name: 'Industrial', icon: 'Factory' },
 ];

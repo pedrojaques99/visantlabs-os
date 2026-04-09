@@ -431,6 +431,8 @@ export interface AnalyzeMockupSetupResult {
   lighting: string[];
   effects: string[];
   materials: string[];
+  detectedLanguage?: string | null;
+  detectedText?: string | null;
   inputTokens?: number;
   outputTokens?: number;
 }
@@ -496,6 +498,8 @@ export const analyzeMockupSetup = async (
             lighting: { type: Type.ARRAY, items: { type: Type.STRING } },
             effects: { type: Type.ARRAY, items: { type: Type.STRING } },
             materials: { type: Type.ARRAY, items: { type: Type.STRING } },
+            detectedLanguage: { type: Type.STRING },
+            detectedText: { type: Type.STRING },
           },
         },
       },
@@ -551,6 +555,8 @@ export const analyzeMockupSetup = async (
         lighting: validatedTags.lighting || [],
         effects: validatedTags.effects || [],
         materials: validatedTags.materials || [],
+        detectedLanguage: result.detectedLanguage || null,
+        detectedText: result.detectedText || null,
         inputTokens,
         outputTokens,
       };
@@ -600,6 +606,8 @@ interface SmartPromptParams {
   vibeId?: string;
   /** Se true, consulta Pinecone por exemplos similares e injeta como few-shot. Default: true. */
   learnFromHistory?: boolean;
+  /** Idioma detectado na análise da imagem (opcional). */
+  detectedLanguage?: string | null;
 }
 
 export interface SmartPromptResult {
@@ -706,7 +714,7 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
       .replace('[REMOVE_TEXT]', isBlankMockup ? 'No' : (params.removeText ? 'Yes' : 'No'))
       .replace('[WITH_HUMAN]', params.withHuman ? 'Yes' : 'No')
       .replace('[ADDITIONAL_PROMPT]', params.additionalPrompt || 'Not specified')
-      .replace('[INSTRUCTIONS]', params.instructions || 'Not specified')
+      .replace('[INSTRUCTIONS]', (params.instructions || '') + (params.detectedLanguage?.toLowerCase().includes('pt') ? ' CRITICAL: The text in the design is in Portuguese (Brazil). Ensure the environment, background elements, and overall composition feel authentic to a Brazilian context and culture. Avoid generic global styles.' : ''))
       .replace('[ASPECT_RATIO]', params.aspectRatio)
       .replace('[NEGATIVE_PROMPT]', params.negativePrompt || 'Not specified');
 

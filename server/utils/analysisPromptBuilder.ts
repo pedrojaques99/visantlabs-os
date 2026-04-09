@@ -122,6 +122,10 @@ Analise a imagem fornecida e sugira as melhores tags para cada categoria para cr
    - Considere o tipo de produto e o estilo visual
    - Exemplos: Wood, Metal, Glass, Fabric, Leather, etc.
 
+8. **Detecção de Idioma e Cultura:**
+   - Identifique o idioma predominante de qualquer texto presente na imagem.
+   - Identifique elementos culturais implícitos no design (ex: se for PT-BR, o as sugestões de locais devem remeter ao Brasil).
+
 **FORMATO DE RESPOSTA:**
 Retorne APENAS um objeto JSON válido com esta estrutura exata:
 {
@@ -131,7 +135,9 @@ Retorne APENAS um objeto JSON válido com esta estrutura exata:
   "angles": ["tag1", "tag2"],
   "lighting": ["tag1", "tag2"],
   "effects": ["tag1", "tag2"],
-  "materials": ["tag1", "tag2"]
+  "materials": ["tag1", "tag2"],
+  "detectedLanguage": "idioma detectado (ex: pt-BR, en-US) ou null",
+  "detectedText": "resumo breve do texto detectado ou null"
 }
 
 **REGRAS CRÍTICAS:**

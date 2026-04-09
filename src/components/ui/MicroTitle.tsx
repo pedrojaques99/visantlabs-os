@@ -11,7 +11,7 @@ export const MicroTitle = React.forwardRef<HTMLElement, MicroTitleProps>(
       <Component
         ref={ref as any}
         className={cn(
-          "text-[12px] font-mono text-neutral-500 uppercase text-left",
+          "text-[12px] font-mono text-neutral-500 text-left",
           className
         )}
         {...props}

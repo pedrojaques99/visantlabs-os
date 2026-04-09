@@ -13,7 +13,7 @@ import { GlassPanel } from '../ui/GlassPanel';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button'
 import { useGenerationFeedback } from '@/hooks/useGenerationFeedback';
-import { type FeedbackContext } from '@/services/feedbackApi';
+import { type FeedbackContext, type FeedbackRating } from '@/services/feedbackApi';
 
 export interface MockupCardProps {
     base64Image: string | null;
@@ -44,6 +44,11 @@ export interface MockupCardProps {
     generationId?: string | null;
     /** Contexto da geração para o RAG loop */
     feedbackContext?: FeedbackContext | (() => FeedbackContext);
+    /** Controlled feedback rating — lifted state for sync across views */
+    feedbackRating?: FeedbackRating | null;
+    /** Called when feedback rating changes */
+    onFeedbackRatingChange?: (rating: FeedbackRating | null) => void;
+    isGeneratingPrompt?: boolean;
 }
 
 export const MockupCard: React.FC<MockupCardProps> = React.memo(({
@@ -72,7 +77,10 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
     className,
     style,
     generationId,
-    feedbackContext
+    feedbackContext,
+    feedbackRating,
+    onFeedbackRatingChange,
+    isGeneratingPrompt = false,
 }) => {
     const { t } = useTranslation();
     const [showReImaginePanel, setShowReImaginePanel] = useState(false);
@@ -104,11 +112,13 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
         translationKeyPrefix: 'canvas',
     });
     
-    // RAG Logic Hook
+    // RAG Logic Hook — controlled when parent provides feedbackRating
     const feedback = useGenerationFeedback({
         generationId,
         feature: 'mockup',
         context: feedbackContext || {},
+        controlledRating: feedbackRating,
+        onRatingChange: onFeedbackRatingChange,
     });
 
     const handleToggleLike = mockupId && onLikeStateChange ? handleToggleLikeHook : onToggleLike;
@@ -142,6 +152,13 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:scale-110 transition-transform duration-700">
                         <GlitchPickaxe />
                     </div>
+                    {isGeneratingPrompt && (
+                        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-center animate-pulse">
+                            <span className="text-[10px] font-mono font-bold text-brand-cyan tracking-[0.2em] uppercase">
+                                Preparing Prompt
+                            </span>
+                        </div>
+                    )}
                 </div>
             )}
 

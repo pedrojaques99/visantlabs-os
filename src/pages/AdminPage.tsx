@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { ShieldCheck, RefreshCw, Users, Settings, ChevronUp, ChevronDown, Search, TrendingUp, TrendingDown, User, Image, CreditCard, HardDrive, UserPlus, Link2, Database, DollarSign, Palette, Type, ShoppingCart, History, RotateCcw, X } from 'lucide-react';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts"
+import { ShieldCheck, RefreshCw, Users, Settings, ChevronUp, ChevronDown, Search, TrendingUp, TrendingDown, User, Image, CreditCard, HardDrive, UserPlus, Link2, Database, DollarSign, Palette, Type, ShoppingCart, History, RotateCcw, X, ThumbsUp, ThumbsDown, BarChart2, ChevronRight } from 'lucide-react';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, LineChart, Line, Tooltip, ResponsiveContainer, Legend } from "recharts"
 
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
@@ -253,6 +253,32 @@ export const AdminPage: React.FC = () => {
   const [data, setData] = useState<AdminResponse | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<string>('overview');
+
+  // Feedback & RAG tab state
+  const [feedbackStats, setFeedbackStats] = useState<any>(null);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackFeatureFilter, setFeedbackFeatureFilter] = useState<string>('all');
+  const [downvotesExpanded, setDownvotesExpanded] = useState(false);
+
+  const fetchFeedbackStats = async (feature = 'all') => {
+    const token = authService.getToken();
+    if (!token) return;
+    setFeedbackLoading(true);
+    try {
+      const params = new URLSearchParams({ days: '30' });
+      if (feature !== 'all') params.set('feature', feature);
+      const resp = await fetch(`/api/admin/feedback/stats?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!resp.ok) throw new Error('Failed to fetch feedback stats');
+      setFeedbackStats(await resp.json());
+    } catch (err) {
+      console.error('[AdminPage] feedback stats error:', err);
+      toast.error('Failed to load feedback stats');
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
 
   // Usage History Modal State
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -902,6 +928,9 @@ export const AdminPage: React.FC = () => {
                   navigate('/design-system');
                 } else {
                   setActiveTab(val);
+                  if (val === 'feedback-rag' && !feedbackStats) {
+                    fetchFeedbackStats(feedbackFeatureFilter);
+                  }
                 }
               }}
               className="space-y-6"
@@ -973,6 +1002,10 @@ export const AdminPage: React.FC = () => {
                       <TabsTrigger value="design-system" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <Palette className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         {t('admin.designSystem')}
+                      </TabsTrigger>
+                      <TabsTrigger value="feedback-rag" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                        <BarChart2 className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
+                        Feedback & RAG
                       </TabsTrigger>
                     </TabsList>
 
@@ -1985,6 +2018,376 @@ export const AdminPage: React.FC = () => {
                       </CardContent>
                     </Card>
                   </>
+                )}
+              </TabsContent>
+
+              {/* ── Feedback & RAG ─────────────────────────────────────── */}
+              <TabsContent value="feedback-rag" className={`space-y-6 ${activeTab === 'feedback-rag' ? 'admin-tab-enter' : ''}`}>
+                {/* Feature filter + refresh row */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <select
+                    value={feedbackFeatureFilter}
+                    onChange={(e) => {
+                      setFeedbackFeatureFilter(e.target.value);
+                      fetchFeedbackStats(e.target.value);
+                    }}
+                    className="bg-neutral-900 border border-neutral-800 text-neutral-200 text-xs font-mono rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-cyan"
+                  >
+                    {['all', 'mockup', 'branding', 'canvas', 'creative', 'brand-intelligence', 'node-builder', 'chat', 'image-gen'].map(f => (
+                      <option key={f} value={f}>{f === 'all' ? 'All Features' : f}</option>
+                    ))}
+                  </select>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => fetchFeedbackStats(feedbackFeatureFilter)}
+                    disabled={feedbackLoading}
+                    className="border-neutral-800/50 hover:bg-neutral-800/50 h-9 w-9 p-0"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${feedbackLoading ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
+
+                {feedbackLoading && !feedbackStats ? (
+                  <div className="flex items-center justify-center py-20">
+                    <RotateCcw className="h-8 w-8 text-brand-cyan animate-spin" />
+                  </div>
+                ) : feedbackStats ? (
+                  <>
+                    {/* KPI Cards */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                        <CardContent className="p-5">
+                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">Approval Rate</p>
+                          <p className="text-4xl font-bold text-brand-cyan">{feedbackStats.overall.approvalRate.toFixed(1)}%</p>
+                          <p className="text-xs text-neutral-500 mt-1">{feedbackStats.overall.total} total ratings (30d)</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                        <CardContent className="p-5">
+                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">Thumbs Up</p>
+                          <p className="text-4xl font-bold text-emerald-400">{feedbackStats.overall.up}</p>
+                          <p className="text-xs text-neutral-500 mt-1">vectorization-eligible</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                        <CardContent className="p-5">
+                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">Thumbs Down</p>
+                          <p className="text-4xl font-bold text-red-400">{feedbackStats.overall.down}</p>
+                          <p className="text-xs text-neutral-500 mt-1">Mongo-only, review below</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                        <CardContent className="p-5">
+                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">Vectorized (proxy)</p>
+                          <p className="text-4xl font-bold text-purple-400">{feedbackStats.vectorizedCount}</p>
+                          <p className="text-xs text-neutral-500 mt-1">up-rated docs in window</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Daily time series */}
+                    {feedbackStats.timeSeries.length > 0 && (
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-mono text-neutral-300">Daily Feedback (30d)</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={220}>
+                            <LineChart data={feedbackStats.timeSeries} margin={{ top: 4, right: 16, bottom: 4, left: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
+                              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#737373', fontFamily: 'monospace' }} tickFormatter={v => v.slice(5)} />
+                              <YAxis tick={{ fontSize: 10, fill: '#737373' }} allowDecimals={false} />
+                              <Tooltip contentStyle={{ background: '#171717', border: '1px solid #404040', borderRadius: 8 }} labelStyle={{ color: '#a3a3a3', fontSize: 11 }} />
+                              <Legend wrapperStyle={{ fontSize: 11 }} />
+                              <Line type="monotone" dataKey="up" stroke="#22d3ee" strokeWidth={2} dot={false} name="Up" />
+                              <Line type="monotone" dataKey="down" stroke="#f87171" strokeWidth={2} dot={false} name="Down" />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Feature breakdown table */}
+                    {feedbackStats.featureStats.length > 0 && (
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-mono text-neutral-300">Feature Breakdown</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <Table>
+                            <TableHeader>
+                              <TableRow className="border-neutral-800 hover:bg-transparent">
+                                <TableHead><MicroTitle as="span" className="uppercase">Feature</MicroTitle></TableHead>
+                                <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
+                                <TableHead><MicroTitle as="span" className="uppercase">Down</MicroTitle></TableHead>
+                                <TableHead><MicroTitle as="span" className="uppercase">Total</MicroTitle></TableHead>
+                                <TableHead><MicroTitle as="span" className="uppercase">Approval %</MicroTitle></TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {feedbackStats.featureStats.map((row: any) => (
+                                <TableRow key={row.feature} className="border-neutral-800/50 hover:bg-white/5">
+                                  <TableCell className="font-mono text-xs text-neutral-200">{row.feature}</TableCell>
+                                  <TableCell className="text-emerald-400 text-xs font-mono">{row.up}</TableCell>
+                                  <TableCell className="text-red-400 text-xs font-mono">{row.down}</TableCell>
+                                  <TableCell className="text-xs font-mono text-neutral-400">{row.total}</TableCell>
+                                  <TableCell>
+                                    <Badge className={`text-xs font-mono ${row.approvalRate >= 70 ? 'bg-emerald-900/40 text-emerald-400 border-emerald-800' : row.approvalRate >= 40 ? 'bg-yellow-900/40 text-yellow-400 border-yellow-800' : 'bg-red-900/40 text-red-400 border-red-800'}`}>
+                                      {row.approvalRate.toFixed(1)}%
+                                    </Badge>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Models / Design Types / Vibes / Brand Guidelines — 4 compact tables */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Models */}
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-mono text-neutral-300">Top Models by Approval</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          {feedbackStats.modelStats.length === 0 ? (
+                            <p className="text-xs text-neutral-500 font-mono p-4">No data yet (min 5 ratings required)</p>
+                          ) : (
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="border-neutral-800 hover:bg-transparent">
+                                  <TableHead><MicroTitle as="span" className="uppercase">Model</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">Down</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">%</MicroTitle></TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {feedbackStats.modelStats.map((r: any) => (
+                                  <TableRow key={r.model} className="border-neutral-800/50 hover:bg-white/5">
+                                    <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">{r.model}</TableCell>
+                                    <TableCell className="text-emerald-400 text-xs font-mono">{r.up}</TableCell>
+                                    <TableCell className="text-red-400 text-xs font-mono">{r.down}</TableCell>
+                                    <TableCell className="text-xs font-mono text-brand-cyan">{r.approvalRate?.toFixed(1)}%</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Design Types */}
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-mono text-neutral-300">Top Design Types</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          {feedbackStats.designTypeStats.length === 0 ? (
+                            <p className="text-xs text-neutral-500 font-mono p-4">No data yet (min 5 ratings required)</p>
+                          ) : (
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="border-neutral-800 hover:bg-transparent">
+                                  <TableHead><MicroTitle as="span" className="uppercase">Type</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">Down</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">%</MicroTitle></TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {feedbackStats.designTypeStats.map((r: any) => (
+                                  <TableRow key={r.designType} className="border-neutral-800/50 hover:bg-white/5">
+                                    <TableCell className="font-mono text-xs text-neutral-300">{r.designType}</TableCell>
+                                    <TableCell className="text-emerald-400 text-xs font-mono">{r.up}</TableCell>
+                                    <TableCell className="text-red-400 text-xs font-mono">{r.down}</TableCell>
+                                    <TableCell className="text-xs font-mono text-brand-cyan">{r.approvalRate?.toFixed(1)}%</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Vibes */}
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-mono text-neutral-300">Top Vibes</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          {feedbackStats.vibeStats.length === 0 ? (
+                            <p className="text-xs text-neutral-500 font-mono p-4">No data yet (min 5 ratings required)</p>
+                          ) : (
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="border-neutral-800 hover:bg-transparent">
+                                  <TableHead><MicroTitle as="span" className="uppercase">Vibe</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">Down</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">%</MicroTitle></TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {feedbackStats.vibeStats.map((r: any) => (
+                                  <TableRow key={r.vibeId} className="border-neutral-800/50 hover:bg-white/5">
+                                    <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">{r.vibeId}</TableCell>
+                                    <TableCell className="text-emerald-400 text-xs font-mono">{r.up}</TableCell>
+                                    <TableCell className="text-red-400 text-xs font-mono">{r.down}</TableCell>
+                                    <TableCell className="text-xs font-mono text-brand-cyan">{r.approvalRate?.toFixed(1)}%</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Brand Guidelines */}
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-mono text-neutral-300">Top Brand Guidelines</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          {feedbackStats.brandGuidelineStats.length === 0 ? (
+                            <p className="text-xs text-neutral-500 font-mono p-4">No data yet</p>
+                          ) : (
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="border-neutral-800 hover:bg-transparent">
+                                  <TableHead><MicroTitle as="span" className="uppercase">Guideline ID</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">Down</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">Total</MicroTitle></TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {feedbackStats.brandGuidelineStats.map((r: any) => (
+                                  <TableRow key={r.brandGuidelineId} className="border-neutral-800/50 hover:bg-white/5">
+                                    <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">{r.brandGuidelineId}</TableCell>
+                                    <TableCell className="text-emerald-400 text-xs font-mono">{r.up}</TableCell>
+                                    <TableCell className="text-red-400 text-xs font-mono">{r.down}</TableCell>
+                                    <TableCell className="text-xs font-mono text-neutral-400">{r.total}</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Tags sections */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Tags mais utilizadas */}
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm font-mono text-neutral-300">Tags mais utilizadas</CardTitle>
+                          <CardDescription className="text-xs text-neutral-500">Top 20 by usage count</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex flex-wrap gap-2">
+                            {feedbackStats.tagsMostUsed.length === 0 ? (
+                              <p className="text-xs text-neutral-500 font-mono">No tag data yet</p>
+                            ) : feedbackStats.tagsMostUsed.map((t: any, i: number) => (
+                              <div key={i} className="flex items-center gap-1">
+                                <Badge className={`text-xs font-mono gap-1 ${t.category === 'branding' ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30' : t.category === 'category' ? 'bg-purple-900/30 text-purple-300 border-purple-800/50' : 'bg-amber-900/30 text-amber-300 border-amber-800/50'}`}>
+                                  {t.tag}
+                                  <span className="opacity-60">×{t.count}</span>
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Tags mais votadas */}
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm font-mono text-neutral-300">Tags mais votadas</CardTitle>
+                          <CardDescription className="text-xs text-neutral-500">Top 20 by approval rate (min 3 ratings)</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex flex-wrap gap-2">
+                            {feedbackStats.tagsMostUpvoted.length === 0 ? (
+                              <p className="text-xs text-neutral-500 font-mono">No data yet (min 3 ratings required)</p>
+                            ) : feedbackStats.tagsMostUpvoted.map((t: any, i: number) => (
+                              <div key={i} className="flex items-center gap-1">
+                                <Badge className={`text-xs font-mono gap-1 ${t.category === 'branding' ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30' : t.category === 'category' ? 'bg-purple-900/30 text-purple-300 border-purple-800/50' : 'bg-amber-900/30 text-amber-300 border-amber-800/50'}`}>
+                                  {t.tag}
+                                  <span className="opacity-60">{t.approvalRate.toFixed(0)}% ({t.up}↑{t.down}↓)</span>
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Recent downvotes */}
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <CardHeader className="pb-2 cursor-pointer" onClick={() => setDownvotesExpanded(e => !e)}>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-sm font-mono text-neutral-300 flex items-center gap-2">
+                            <ThumbsDown className="h-4 w-4 text-red-400" />
+                            Recent Thumbs Down (last 20) — manual curation queue
+                          </CardTitle>
+                          <ChevronRight className={`h-4 w-4 text-neutral-500 transition-transform ${downvotesExpanded ? 'rotate-90' : ''}`} />
+                        </div>
+                      </CardHeader>
+                      {downvotesExpanded && (
+                        <CardContent className="p-0">
+                          {feedbackStats.recentDownvotes.length === 0 ? (
+                            <p className="text-xs text-neutral-500 font-mono p-4">No downvotes in this window</p>
+                          ) : (
+                            <div className="overflow-x-auto">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow className="border-neutral-800 hover:bg-transparent">
+                                    <TableHead><MicroTitle as="span" className="uppercase">Prompt</MicroTitle></TableHead>
+                                    <TableHead><MicroTitle as="span" className="uppercase">Feature</MicroTitle></TableHead>
+                                    <TableHead><MicroTitle as="span" className="uppercase">Model</MicroTitle></TableHead>
+                                    <TableHead><MicroTitle as="span" className="uppercase">Tags</MicroTitle></TableHead>
+                                    <TableHead><MicroTitle as="span" className="uppercase">Date</MicroTitle></TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {feedbackStats.recentDownvotes.map((r: any, i: number) => (
+                                    <TableRow key={r.generationId || i} className="border-neutral-800/50 hover:bg-white/5">
+                                      <TableCell className="font-mono text-xs text-neutral-400 max-w-[200px]">
+                                        <span title={r.prompt}>{r.prompt ? r.prompt.slice(0, 80) + (r.prompt.length > 80 ? '…' : '') : '—'}</span>
+                                      </TableCell>
+                                      <TableCell className="text-xs font-mono text-neutral-300">{r.feature}</TableCell>
+                                      <TableCell className="text-xs font-mono text-neutral-400 max-w-[100px] truncate">{r.model || '—'}</TableCell>
+                                      <TableCell className="text-xs">
+                                        {r.tags ? Object.entries(r.tags).flatMap(([, arr]: any) => arr || []).slice(0, 3).map((tag: string, j: number) => (
+                                          <Badge key={j} className="mr-1 text-[10px] bg-neutral-800 text-neutral-400 border-neutral-700">{tag}</Badge>
+                                        )) : '—'}
+                                      </TableCell>
+                                      <TableCell className="text-xs font-mono text-neutral-500">
+                                        {r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-BR') : '—'}
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          )}
+                        </CardContent>
+                      )}
+                    </Card>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-20 gap-3 text-neutral-500">
+                    <BarChart2 className="h-10 w-10" />
+                    <p className="font-mono text-sm">Click refresh to load feedback analytics</p>
+                    <Button size="sm" onClick={() => fetchFeedbackStats(feedbackFeatureFilter)} className="bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/20">
+                      Load Stats
+                    </Button>
+                  </div>
                 )}
               </TabsContent>
             </Tabs>

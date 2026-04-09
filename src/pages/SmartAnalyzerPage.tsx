@@ -1004,7 +1004,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                   {(isGenerating || isGeneratingVariations || generatedImage || generatedVariations.length > 0) && (
                     <div className="space-y-6">
                       <div className="flex items-center justify-between pl-1">
-                        <h4 className="text-[10px] font-mono uppercase tracking-[0.3em] text-brand-cyan flex items-center gap-3">
+                        <h4 className="text-[10px] font-mono uppercase tracking-[0.1em] text-brand-cyan flex items-center gap-3">
                           <span className="w-2 h-2 rounded-full bg-brand-cyan" />
                           {generatedVariations.length > 0 ? "Visual Variations Suite" : "Generated Visual Synthesis"}
                         </h4>
@@ -1083,7 +1083,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                     <GlassPanel padding="lg" className="rounded-3xl border-neutral-800/60 bg-neutral-950/40 relative group">
                       <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-6">
-                          <h3 className="text-[10px] font-mono uppercase tracking-[0.3em] text-neutral-500 flex items-center gap-2">
+                          <h3 className="text-[10px] font-mono uppercase tracking-[0.1em] text-neutral-500 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-brand-cyan" />
                             Creative Prompt Blueprint
                           </h3>
@@ -1199,7 +1199,7 @@ export const SmartAnalyzerPage: React.FC = () => {
 
                       {/* Prompt Suggestions/Refinements */}
                       <div className="mt-12 space-y-6 pt-8 border-t border-white/5">
-                        <h4 className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-600 font-bold pl-1 flex items-center gap-2">
+                        <h4 className="text-[10px] font-mono uppercase tracking-[0.1em] text-neutral-600 font-bold pl-1 flex items-center gap-2">
                           <Plus size={10} /> Dynamic Refinements
                         </h4>
                         <div className="flex flex-wrap gap-2">
@@ -1240,7 +1240,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             <Button
                               variant="ghost"
                               onClick={() => setActiveSuggestions([])}
-                              className="h-10 px-4 text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-600 hover:text-white"
+                              className="h-10 px-4 text-[10px] font-mono uppercase tracking-[0.1em] text-neutral-600 hover:text-white"
                             >
                               <RefreshCw size={10} className="mr-2" />
                               Reset

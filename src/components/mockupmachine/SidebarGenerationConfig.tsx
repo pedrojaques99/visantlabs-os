@@ -13,6 +13,7 @@ import { SurpriseMeSelectedTagsDisplay } from './SurpriseMeSelectedTagsDisplay';
 import { AnalyzedSummaryCard } from './AnalyzedSummaryCard';
 import type { UploadedImage } from '@/types/types';
 import { SurpriseMeControl } from './SurpriseMeControl';
+import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { PresetsControl } from './PresetsControl';
 import { PromptSection } from './PromptSection';
@@ -145,6 +146,8 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
         setSeed,
         seedLocked,
         setSeedLocked,
+        detectedLanguage,
+        detectedText,
     } = useMockup();
 
     const [isAdvancedOptionsOpen, setIsAdvancedOptionsOpen] = useState(isSurpriseMeMode);
@@ -253,9 +256,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                     {t('mockup.switchToEssential') || 'ESSENTIAL'}
                 </button>
 
-                <div className="text-[10px] font-mono text-neutral-800 uppercase tracking-widest font-bold opacity-30">
-                    Expert Mode
-                </div>
+                <BrandGuidelineSelector variant="minimal" />
             </div>
 
             {/* Design Type + Color swatches - moved above card */}
@@ -305,6 +306,8 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                         onStartOver={resetAll}
                         onReplaceImage={onReplaceImage}
                         onReferenceImagesChange={onReferenceImagesChange}
+                        detectedLanguage={detectedLanguage}
+                        detectedText={detectedText}
                     />
                 </div>
 

@@ -8,7 +8,7 @@ import { PremiumButton } from '../ui/PremiumButton';
 import { Button } from '../ui/button';
 import { MicroTitle } from '../ui/MicroTitle';
 import { cn } from '@/lib/utils';
-import { ArrowRight, Cpu, Scan } from 'lucide-react';
+import { ArrowRight, Cpu, Scan, X } from 'lucide-react';
 import { PremiumGlitchLoader } from '../ui/PremiumGlitchLoader';
 
 interface SidebarSetupSectionProps {
@@ -54,12 +54,27 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
     return (
         <div
             id="section-setup"
-            className="px-4 mx-auto w-full max-w-4xl"
+            className="px-4 mx-auto w-full max-w-4xl relative"
         >
-            <div className="gap-6">
+            {/* Top Close/Clear Action */}
+            <div className="absolute top-0 right-[-20px]">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                        onStartOver();
+                        if (onClose) onClose();
+                    }}
+                    className="h-8 w-8 rounded-full text-neutral-500 hover:text-white hover:bg-neutral-800/50 transition-all border border-transparent hover:border-white/10"
+                    title="Clear Session"
+                >
+                    <X size={16} />
+                </Button>
+            </div>
+            <div className="flex-1 py-6">
                 {isAnalyzing ? (
                     <div className="flex flex-col items-center justify-center py-12 px-4 animate-in fade-in duration-500">
-                        <div className="w-auto">
+                        <div className="w-full max-w-sm">
                             <div className="p-4 rounded-xl bg-neutral-900/30 border border-white/5 backdrop-blur-sm">
                                 <PremiumGlitchLoader steps={ANALYSIS_STEPS} className="w-full" />
                             </div>
@@ -83,12 +98,15 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
 
             {/* Bottom Action Area */}
             {!isAnalyzing && (
-                <div className="w-auto pt-6 border-t border-white/5 flex flex-col items-center gap-3">
+                <div className="w-full py-6 border-t border-white/5 flex flex-col items-center gap-3">
                     <div className="flex items-center gap-3 w-full">
                         {onClose && (
                             <Button
                                 variant="ghost"
-                                onClick={onClose}
+                                onClick={() => {
+                                    onStartOver();
+                                    onClose();
+                                }}
                                 className="h-12 px-6 text-neutral-500 hover:text-white hover:bg-white/5 font-mono text-[10px] uppercase tracking-widest border border-transparent hover:border-white/10"
                             >
                                 {t('common.cancel') || 'Fechar'}
@@ -100,7 +118,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                             isLoading={isAnalyzing}
                             loadingText="INITIALIZING..."
                             icon={ArrowRight}
-                            className="flex-1 h-12 text-[10px] tracking-[0.2em] font-bold"
+                            className="flex-1 h-12 text-[10px] tracking-[0.1em] font-bold"
                         >
                             {t('mockup.continue') || 'CONTINUE SETUP'}
                         </PremiumButton>

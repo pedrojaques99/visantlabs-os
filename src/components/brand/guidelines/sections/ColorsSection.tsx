@@ -337,7 +337,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <ShieldCheck size={12} className="text-brand-cyan" />
-                  <span className="text-[11px] font-mono text-neutral-300 uppercase tracking-[0.2em]">
+                  <span className="text-[11px] font-mono text-neutral-300 uppercase tracking-[0.1em]">
                     WCAG Contrast Matrix
                   </span>
                 </div>

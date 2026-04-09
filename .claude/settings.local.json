@@ -97,7 +97,10 @@
       "Bash(powershell -NoProfile -Command \"& { echo '6' | pwsh -NoProfile -File scripts/powershell/vsn-exporter.ps1 }\")",
       "Bash(powershell -NoProfile -Command \"echo '6' | powershell -NoProfile -File scripts\\\\powershell\\\\vsn-exporter.ps1\")",
       "Bash(pwsh -NoProfile -File scripts/powershell/vsn-exporter.ps1)",
-      "Bash(printf:*)"
+      "Bash(printf:*)",
+      "Bash(cat)",
+      "Bash(chmod +x /tmp/audit.sh)",
+      "Bash(/tmp/audit.sh)"
     ]
   }
 }

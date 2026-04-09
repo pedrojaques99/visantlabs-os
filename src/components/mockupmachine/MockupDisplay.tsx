@@ -5,7 +5,7 @@ import type { AspectRatio } from '@/types/types';
 import { InteractiveASCIICopy } from '@/components/ui/InteractiveASCIICopy';
 import { MicroTitle } from '../ui/MicroTitle';
 import { GlassPanel } from '../ui/GlassPanel';
-import { type FeedbackContext } from '@/services/feedbackApi';
+import { type FeedbackContext, type FeedbackRating } from '@/services/feedbackApi';
 
 interface MockupDisplayProps {
   mockups: (string | null)[];
@@ -31,10 +31,15 @@ interface MockupDisplayProps {
   creditsPerOperation?: number;
   /** When true, sidebar is collapsed and main area uses full width; used for responsive layout. */
   isSidebarCollapsed?: boolean;
-  /** UUID da geração para o RAG loop */
-  generationId?: string | null;
+  /** Array de IDs de geração para o RAG loop */
+  generationIds?: (string | null)[];
+  isGeneratingPrompt?: boolean;
   /** Contexto da geração para o RAG loop */
   feedbackContext?: FeedbackContext | (() => FeedbackContext);
+  /** Map of index -> feedback rating (controlled, synced with FullScreenViewer) */
+  feedbackRatings?: Map<number, FeedbackRating | null>;
+  /** Called when a card's feedback rating changes */
+  onFeedbackRatingChange?: (index: number, rating: FeedbackRating | null) => void;
 }
 
 export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
@@ -60,8 +65,10 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
   editButtonsDisabled = false,
   creditsPerOperation,
   isSidebarCollapsed = false,
-  generationId,
-  feedbackContext
+  generationIds,
+  feedbackContext,
+  feedbackRatings,
+  onFeedbackRatingChange,
 }) => {
   const { t } = useTranslation();
 
@@ -73,8 +80,9 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
     return (likedIndices as Set<number>).has(index);
   };
 
-  const hasContent = mockups.some(m => m !== null) || isLoading.some(Boolean);
-  const isSingleImage = mockups.length === 1;
+  const isCurrentlyGeneratingPrompt = isGeneratingPrompt;
+  const hasContent = mockups.some(m => m !== null) || isLoading.some(Boolean) || isCurrentlyGeneratingPrompt;
+  const isSingleImage = mockups.length === 1 && !isCurrentlyGeneratingPrompt;
 
   if (!hasContent) {
     return (
@@ -121,8 +129,10 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
           aspectRatio={aspectRatio}
           editButtonsDisabled={editButtonsDisabled}
           creditsPerOperation={creditsPerOperation}
-          generationId={generationId}
+          generationId={generationIds?.[0]}
           feedbackContext={feedbackContext}
+          feedbackRating={feedbackRatings?.get(0) ?? null}
+          onFeedbackRatingChange={onFeedbackRatingChange ? (r) => onFeedbackRatingChange(0, r) : undefined}
         />
       </section>
     );
@@ -178,11 +188,30 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
               aspectRatio={aspectRatio}
               editButtonsDisabled={editButtonsDisabled}
               creditsPerOperation={creditsPerOperation}
-              generationId={generationId}
+              generationId={generationIds?.[index]}
               feedbackContext={feedbackContext}
+              feedbackRating={feedbackRatings?.get(index) ?? null}
+              onFeedbackRatingChange={onFeedbackRatingChange ? (r) => onFeedbackRatingChange(index, r) : undefined}
             />
           );
         })}
+
+        {/* Placeholder card during prompt generation */}
+        {isGeneratingPrompt && (
+          <MockupCard
+            key="prompt-generating"
+            className="min-w-0 w-full"
+            base64Image={null}
+            isLoading={true}
+            isRedrawing={false}
+            onRedraw={() => {}}
+            onView={() => {}}
+            onNewAngle={() => {}}
+            onNewBackground={() => {}}
+            aspectRatio={aspectRatio}
+            isGeneratingPrompt={true}
+          />
+        )}
       </div>
     </section>
   );

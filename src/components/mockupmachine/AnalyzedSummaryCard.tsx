@@ -19,6 +19,8 @@ interface AnalyzedSummaryCardProps {
     onReplaceImage?: (image: UploadedImage) => void;
     onReferenceImagesChange?: (images: UploadedImage[]) => void;
     isGenerating?: boolean;
+    detectedLanguage?: string | null;
+    detectedText?: string | null;
 }
 
 export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
@@ -26,9 +28,10 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
     referenceImages = [],
     selectedBrandingTags: _selectedBrandingTags,
     onStartOver: _onStartOver,
-    onReplaceImage,
     onReferenceImagesChange,
     isGenerating = false,
+    detectedLanguage,
+    detectedText: _detectedText,
 }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
@@ -139,6 +142,18 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                 <SkeletonText loading={isGenerating}>
                                     <span className="text-[12px] font-mono text-neutral-500 uppercase tracking-widest">Empty</span>
                                 </SkeletonText>
+                            </div>
+                        )}
+                        
+                        {/* Detected Language Badge */}
+                        {detectedLanguage && !isAnalyzing && (
+                            <div className="absolute top-2 left-2 z-20 pointer-events-none">
+                                <div className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/80 backdrop-blur-md rounded border border-brand-cyan/30 shadow-lg animate-fade-in">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
+                                    <span className="text-[9px] font-mono text-brand-cyan/90 uppercase tracking-widest">
+                                        {detectedLanguage}
+                                    </span>
+                                </div>
                             </div>
                         )}
 

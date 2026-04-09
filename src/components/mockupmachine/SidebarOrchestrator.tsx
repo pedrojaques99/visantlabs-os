@@ -8,6 +8,7 @@ import { useSidebarEffects } from '@/hooks/useSidebarEffects';
 import { SidebarSetupSection } from './SidebarSetupSection';
 import { SidebarGenerationConfig } from './SidebarGenerationConfig';
 import { EssentialSidebar } from './EssentialSidebar';
+import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { MicroTitle } from '../ui/MicroTitle';
 
 interface SidebarOrchestratorProps {
@@ -63,7 +64,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   isCollapsed = false,
 }) => {
   const { t } = useTranslation();
-  const [showBrandConfig, setShowBrandConfig] = React.useState(false);
 
   const {
     uploadedImage,
@@ -212,23 +212,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-brand-cyan shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.5)] animate-pulse" />
             </div>
-
-            <button
-              onClick={() => setShowBrandConfig(!showBrandConfig)}
-              className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all duration-300 group relative",
-                showBrandConfig
-                  ? "bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.15)]"
-                  : "bg-neutral-900/50 border-white/5 text-neutral-600 hover:text-neutral-400 hover:border-white/10",
-                selectedBrandGuideline && !showBrandConfig && "border-brand-cyan/20 text-neutral-400"
-              )}
-            >
-              <Gem size={14} className={cn("transition-transform group-hover:scale-110", (showBrandConfig || selectedBrandGuideline) && "fill-current text-brand-cyan")} />
-              <span className="text-[10px] font-bold font-mono tracking-widest uppercase">MARCA</span>
-              {selectedBrandGuideline && !showBrandConfig && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-brand-cyan rounded-full shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.6)]" />
-              )}
-            </button>
           </div>
         )}
 
@@ -241,6 +224,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                 onStartOver={onStartOver}
                 onDesignTypeChange={onDesignTypeChange}
                 onAnalyze={onAnalyze}
+                onClose={onCloseMobile}
               />
             </div>
           ) : (
@@ -256,7 +240,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                 isSurpriseMeActive={isSurpriseMeMode}
                 authenticationRequiredMessage={authenticationRequiredMessage}
                 generateOutputsButtonRef={generateOutputsButtonRef}
-                showBrandConfig={showBrandConfig}
                 isPromptReady={isPromptReady}
               />
             ) : (

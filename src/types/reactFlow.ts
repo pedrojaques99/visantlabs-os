@@ -2,6 +2,7 @@ import type { Node, Edge } from '@xyflow/react';
 import type { CustomNodeDefinition, MultiOutputConfig } from './customNode';
 import type { Mockup } from '../services/mockupApi';
 import type { GeminiModel, SeedreamModel, ImageProvider, Resolution, AspectRatio, DesignType, UploadedImage, GenerationMode } from './types';
+import type { FeedbackRating } from '../services/feedbackApi';
 import type { SubscriptionStatus } from '../services/subscriptionService';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 
@@ -37,6 +38,10 @@ export interface ImageNodeData extends BaseNodeData {
   onUpdateData?: (nodeId: string, newData: Partial<ImageNodeData>) => void;
   onBrandKit?: (nodeId: string, presetIds: string[]) => void;
   addTextNode?: (customPosition?: { x: number; y: number }, initialText?: string, isFlowPosition?: boolean) => string | undefined;
+  /** UUID da geração — atrelado ao feedback 👍/👎 (RAG loop). */
+  generationId?: string | null;
+  /** Rating persistido como SSoT no canvas save. */
+  feedbackRating?: FeedbackRating | null;
 }
 
 // Merge Node - combines connected images
@@ -350,6 +355,10 @@ export interface OutputNodeData extends BaseNodeData {
   onResize?: (nodeId: string, width: number, height: number) => void;
   onUpdateData?: (nodeId: string, newData: Partial<OutputNodeData>) => void;
   addTextNode?: (customPosition?: { x: number; y: number }, initialText?: string, isFlowPosition?: boolean) => string | undefined;
+  /** UUID da geração — atrelado ao feedback 👍/👎 (RAG loop). */
+  generationId?: string | null;
+  /** Rating persistido como SSoT no canvas save. */
+  feedbackRating?: FeedbackRating | null;
 }
 
 // Brand Identity extracted from logo and PDF

@@ -13,6 +13,7 @@ import { NodeImageContainer } from './shared/NodeImageContainer';
 import { NodePlaceholder } from './shared/NodePlaceholder';
 import { NodeActionBar } from './shared/NodeActionBar';
 import { ImageNodeActionButtons } from './shared/ImageNodeActionButtons';
+import { NodeFeedbackButtons } from './shared/NodeFeedbackButtons';
 import { isSafeUrl } from '@/utils/imageUtils';
 import { useNodeDownload } from './shared/useNodeDownload';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -430,6 +431,13 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             showDescribe={true}
             translationKeyPrefix="canvasNodes.outputNode"
             t={t}
+          />
+          <NodeFeedbackButtons
+            generationId={nodeData.generationId ?? null}
+            feature="canvas"
+            context={() => ({ imageUrl: mediaUrl ?? undefined })}
+            rating={nodeData.feedbackRating ?? null}
+            onRatingChange={(rating) => nodeData.onUpdateData?.(String(id), { feedbackRating: rating })}
           />
         </NodeActionBar>
       )}

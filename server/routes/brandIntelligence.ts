@@ -1,5 +1,6 @@
 // server/routes/brandIntelligence.ts
 import express from 'express';
+import { randomUUID } from 'crypto';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { BrandIntelligenceService } from '../services/brandIntelligenceService.js';
@@ -93,7 +94,8 @@ router.post('/:id/sync', apiRateLimiter, authenticate, async (req: AuthRequest, 
       guideline: {
         ...updatedGuideline,
         _id: updatedGuideline.id
-      }
+      },
+      generationId: randomUUID(), // UUID for RAG feedback loop (👍/👎)
     });
 
   } catch (error: any) {

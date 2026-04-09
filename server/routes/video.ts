@@ -654,6 +654,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       creditsDeducted: actualCreditsDeducted,
       creditsRemaining,
       isAdmin,
+      generationId: crypto.randomUUID(), // UUID for RAG feedback loop (👍/👎)
     };
 
     console.log(`${logPrefix} [RESPONSE] Sending response`, {

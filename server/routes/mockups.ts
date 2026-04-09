@@ -1,4 +1,5 @@
 import express from 'express';
+import { randomUUID } from 'crypto';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
@@ -1292,6 +1293,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       width: width || undefined,
       height: height || undefined,
       requestId, // Track request ID for feedback linking
+      generationId: randomUUID(), // UUID for RAG feedback loop (👍/👎)
     });
   } catch (error: any) {
     // Always release lock on error if it was acquired

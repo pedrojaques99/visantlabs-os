@@ -10,7 +10,7 @@ const LogoMesh = ({ scale = 2.8, isMobile = false }: { scale?: number, isMobile?
 
     // Rotation and interaction are now handled by PresentationControls and Float
     // to avoid conflicts with manual useFrame updates
-    useFrame(() => {});
+    useFrame(() => { });
 
     useEffect(() => {
         if (scene) {
@@ -52,7 +52,7 @@ const LogoMesh = ({ scale = 2.8, isMobile = false }: { scale?: number, isMobile?
 const MouseLight = ({ isMobile = false }: { isMobile?: boolean }) => {
     const mainLightRef = useRef<THREE.PointLight>(null);
     const secondaryLightRef = useRef<THREE.PointLight>(null);
-    
+
     useFrame((state) => {
         // Main cyan light follows mouse closely
         if (mainLightRef.current) {
@@ -60,7 +60,7 @@ const MouseLight = ({ isMobile = false }: { isMobile?: boolean }) => {
             mainLightRef.current.position.y = THREE.MathUtils.lerp(mainLightRef.current.position.y, state.mouse.y * 6, isMobile ? 0.05 : 0.1);
             mainLightRef.current.position.z = 5;
         }
-        
+
         // Secondary white light follows mouse with a lag for more dynamic reflections
         if (secondaryLightRef.current) {
             secondaryLightRef.current.position.x = THREE.MathUtils.lerp(secondaryLightRef.current.position.x, state.mouse.x * -4, 0.03);
@@ -71,20 +71,20 @@ const MouseLight = ({ isMobile = false }: { isMobile?: boolean }) => {
 
     return (
         <>
-            <pointLight 
-                ref={mainLightRef} 
-                intensity={isMobile ? 20 : 40} 
-                color="#52ddeb" 
-                distance={15} 
-                decay={2} 
+            <pointLight
+                ref={mainLightRef}
+                intensity={isMobile ? 20 : 40}
+                color="#52ddeb"
+                distance={15}
+                decay={2}
             />
             {!isMobile && (
-                <pointLight 
-                    ref={secondaryLightRef} 
-                    intensity={15} 
-                    color="#ffffff" 
-                    distance={10} 
-                    decay={1} 
+                <pointLight
+                    ref={secondaryLightRef}
+                    intensity={15}
+                    color="#ffffff"
+                    distance={10}
+                    decay={1}
                 />
             )}
         </>
@@ -109,7 +109,7 @@ export const VisantLogo3D: React.FC = () => {
         >
             <Suspense fallback={
                 <Html center>
-                    <div className="text-white font-mono text-[10px] uppercase tracking-[0.2em] opacity-30 animate-pulse flex flex-col items-center gap-2 whitespace-nowrap">
+                    <div className="text-white font-mono text-[10px] uppercase tracking-[0.1em] opacity-30 animate-pulse flex flex-col items-center gap-2 whitespace-nowrap">
                         <div className="w-4 h-[1px] bg-white/50" />
                         LOADING SYSTEM
                     </div>

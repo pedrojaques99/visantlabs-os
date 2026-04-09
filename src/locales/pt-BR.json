@@ -138,16 +138,6 @@
     "videos": "Vídeos",
     "videosByModel": "Vídeos por Modelo"
   },
-  "mockup": {
-    "searchBrand": "Buscar marca...",
-    "noResults": "Nenhuma marca encontrada",
-    "brandContext": "DNA DA MARCA",
-    "optional": "OPCIONAL",
-    "selectBrandTitle": "SELECIONAR DNA DA MARCA",
-    "selectBrandDescription": "Escolha um guia de marca para contextualizar suas gerações.",
-    "none": "IGNORAR CONTEXTO",
-    "createNewBrandGuideline": "ADICIONAR NOVO DNA"
-  },
   "adminPresets": {
     "batchPasteLabel": "Cole o JSON com os presets (array de objetos)",
     "batchTitle": "Importar Batch de Mockup Presets",
@@ -2380,6 +2370,13 @@
     "selectModel": "Selecionar modelo",
     "selectOption": "Selecione...",
     "selected": "SELECIONADO",
+    "searchBrand": "Buscar marca...",
+    "segmentTitle": "SEGMENTO",
+    "noResults": "Nenhuma marca encontrada",
+    "optional": "OPCIONAL",
+    "selectBrandTitle": "SELECIONAR DNA DA MARCA",
+    "selectBrandDescription": "Escolha um guia de marca para contextualizar suas gerações.",
+    "brandButton": "MARCA",
     "seoDescription": "Crie mockups realistas em segundos. Envie seu design, escolha um estilo e deixe nossa IA fazer o resto.",
     "seoKeywords": "mockup, ia, gerador de mockup, design, branding, apresentação",
     "seoTitle": "Mockup Machine — Gerador de Mockups Profissionais com IA",

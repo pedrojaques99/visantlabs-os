@@ -16,10 +16,15 @@ import { SearchBar } from '../ui/SearchBar';
 import { useMemo } from 'react';
 
 interface BrandGuidelineSelectorProps {
+    variant?: 'default' | 'minimal';
     asButton?: boolean;
 }
 
-export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ asButton }) => {
+export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
+    variant = 'default',
+    asButton = false
+}) => {
+    const isMinimal = variant === 'minimal' || asButton;
     const { t } = useTranslation();
     const { theme } = useTheme();
     const { user } = useLayout();
@@ -73,49 +78,64 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({ 
     if (!canSelectBrand) return null;
 
     return (
-        <div className="flex flex-col relative w-full">
-            <Button
-                variant="ghost"
-                type="button"
-                onClick={() => setIsSelectionModalOpen(true)}
-                className={cn(
-                    "w-full p-4 flex items-center justify-between group transition-all duration-300",
-                    "bg-neutral-900/40 hover:bg-neutral-900/60 border border-white/5 hover:border-white/10 rounded-xl",
-                    selectedBrandGuideline && "border-brand-cyan/20 bg-brand-cyan/[0.02]"
-                )}
-            >
-                <div className="flex flex-col items-start gap-1">
-                    {!selectedBrandGuideline && (
-                        <MicroTitle className="transition-colors select-none text-[10px] text-neutral-500 group-hover:text-neutral-400 font-mono">
-                            {t('mockup.optional') || 'OPCIONAL'}
-                        </MicroTitle>
+        <div className={cn("relative", isMinimal ? "inline-flex" : "flex flex-col w-full")}>
+            {isMinimal ? (
+                <button
+                    onClick={() => setIsSelectionModalOpen(true)}
+                    className={cn(
+                        "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 font-mono text-[9px] uppercase tracking-wider group",
+                        selectedBrandGuideline 
+                            ? "bg-brand-cyan text-black border-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.3)]" 
+                            : "bg-neutral-900/60 border-white/10 text-brand-cyan hover:bg-brand-cyan hover:text-black hover:border-brand-cyan"
                     )}
-                    {selectedBrandGuideline ? (
-                        <div className="flex items-center gap-2">
-                            {selectedGuidelineObj?.logos?.[0]?.url && (
-                                <div className="w-4 h-4 rounded-sm overflow-hidden border border-white/10 shrink-0">
-                                    <img src={selectedGuidelineObj.logos[0].url} alt="" className="w-full h-full object-cover" />
-                                </div>
-                            )}
-                            <span className="text-[11px] font-mono text-white truncate max-w-[150px] uppercase font-bold tracking-wider">
-                                {selectedGuidelineObj?.identity?.name || 'Selected'}
+                >
+                    <Gem size={10} className={cn("transition-colors", selectedBrandGuideline ? "text-black" : "text-brand-cyan group-hover:text-black")} />
+                    <span>{selectedBrandGuideline ? selectedGuidelineObj?.identity?.name : (t('mockup.brandButton') || 'MARCA')}</span>
+                </button>
+            ) : (
+                <Button
+                    variant="ghost"
+                    type="button"
+                    onClick={() => setIsSelectionModalOpen(true)}
+                    className={cn(
+                        "w-full p-4 flex items-center justify-between group transition-all duration-300",
+                        "bg-neutral-900/40 hover:bg-neutral-900/60 border border-white/5 hover:border-white/10 rounded-xl",
+                        selectedBrandGuideline && "border-brand-cyan/20 bg-brand-cyan/[0.02]"
+                    )}
+                >
+                    <div className="flex flex-col items-start gap-1">
+                        {!selectedBrandGuideline && (
+                            <MicroTitle className="transition-colors select-none text-[10px] text-neutral-500 group-hover:text-neutral-400 font-mono">
+                                {t('mockup.optional') || 'OPCIONAL'}
+                            </MicroTitle>
+                        )}
+                        {selectedBrandGuideline ? (
+                            <div className="flex items-center gap-2">
+                                {selectedGuidelineObj?.logos?.[0]?.url && (
+                                    <div className="w-4 h-4 rounded-sm overflow-hidden border border-white/10 shrink-0">
+                                        <img src={selectedGuidelineObj.logos[0].url} alt="" className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+                                <span className="text-[11px] font-mono text-white truncate max-w-[150px] uppercase font-bold tracking-wider">
+                                    {selectedGuidelineObj?.identity?.name || 'Selected'}
+                                </span>
+                            </div>
+                        ) : (
+                            <span className="text-[11px] font-mono text-neutral-600 uppercase">
+                                Selecionar Projeto
                             </span>
-                        </div>
-                    ) : (
-                        <span className="text-[11px] font-mono text-neutral-600 uppercase">
-                            Selecionar Projeto
-                        </span>
-                    )}
-                </div>
+                        )}
+                    </div>
 
-                <div className="flex items-center gap-2">
-                    {isLoading ? (
-                        <Loader2 size={14} className="animate-spin text-neutral-500" />
-                    ) : (
-                        <ChevronRight size={14} className="text-neutral-600 group-hover:text-white transition-all transform group-hover:translate-x-0.5" />
-                    )}
-                </div>
-            </Button>
+                    <div className="flex items-center gap-2">
+                        {isLoading ? (
+                            <Loader2 size={14} className="animate-spin text-neutral-500" />
+                        ) : (
+                            <ChevronRight size={14} className="text-neutral-600 group-hover:text-white transition-all transform group-hover:translate-x-0.5" />
+                        )}
+                    </div>
+                </Button>
+            )}
 
             {/* Selection Modal */}
             <Modal

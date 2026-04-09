@@ -512,7 +512,7 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-10">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-1">
-                  <MicroTitle className="text-brand-cyan/60 tracking-[0.2em]">Curadoria</MicroTitle>
+                  <MicroTitle className="text-brand-cyan/60 tracking-[0.1em]">Curadoria</MicroTitle>
                   <h2 className="text-3xl font-bold text-white font-manrope tracking-tight">Explorar por Categoria</h2>
                 </div>
                 <Link

@@ -43,7 +43,7 @@ export const ExtractionOverlay: React.FC<ExtractionOverlayProps> = ({
             >
               <div className="space-y-8">
                 <div className="text-center space-y-2">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-[0.2em]">
+                  <h3 className="text-sm font-bold text-white uppercase tracking-[0.1em]">
                     {title}
                   </h3>
                   <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
