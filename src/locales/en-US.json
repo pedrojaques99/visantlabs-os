@@ -133,7 +133,6 @@
     "videos": "Videos",
     "videosByModel": "Videos by Model"
   },
-  "mockup": {},
   "adminPresets": {
     "batchPasteLabel": "Paste JSON with presets (array of objects)",
     "batchTitle": "Batch Import Mockup Presets",
@@ -2309,6 +2308,9 @@
     "setupStepDesignType": "Design Type",
     "setupStepUpload": "Upload",
     "setupSteps": "Setup steps",
+    "segmentTitle": "SEGMENT",
+    "brandButton": "BRAND",
+    "segmentDescription": "Choose a segment to contextualize your generations.",
     "showSidebar": "Show sidebar",
     "simplify": "SIMPLIFY",
     "simplifyTooltip": "Simplify to a basic prompt",

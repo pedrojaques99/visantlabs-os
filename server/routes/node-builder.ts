@@ -66,7 +66,7 @@ router.post('/generate', authenticate, async (req: AuthRequest, res) => {
       response = { type: 'question', text };
     }
 
-    res.json(response);
+    res.json({ ...response, generationId: crypto.randomUUID() }); // generationId for RAG feedback loop
   } catch (err) {
     console.error('[node-builder/generate]', err);
     res.status(500).json({ error: 'Failed to process' });

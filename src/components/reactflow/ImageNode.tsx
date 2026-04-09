@@ -17,6 +17,7 @@ import { NodeContainer } from './shared/NodeContainer';
 import { NodeImageContainer } from './shared/NodeImageContainer';
 import { NodeActionBar } from './shared/NodeActionBar';
 import { ImageNodeActionButtons } from './shared/ImageNodeActionButtons';
+import { NodeFeedbackButtons } from './shared/NodeFeedbackButtons';
 import { useNodeDownload } from './shared/useNodeDownload';
 import { MockupPresetModal } from '../MockupPresetModal';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -456,6 +457,18 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             showDescribe={true}
             translationKeyPrefix="canvasNodes.imageNode"
             t={t}
+          />
+          <NodeFeedbackButtons
+            generationId={nodeData.generationId ?? (mockup as any)?.generationId ?? null}
+            feature="canvas"
+            context={() => ({
+              imageUrl,
+              prompt: mockup?.prompt,
+              tags: mockup?.tags,
+              brandingTags: mockup?.brandingTags,
+            })}
+            rating={nodeData.feedbackRating ?? null}
+            onRatingChange={(rating) => nodeData.onUpdateData?.(String(id), { feedbackRating: rating })}
           />
         </NodeActionBar>
       )}

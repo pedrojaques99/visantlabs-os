@@ -137,7 +137,7 @@ export const CreativeSetupSidebar: React.FC = () => {
 
         <section className="flex flex-col gap-4">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white">Adicionar Asset</h2>
+            <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-white">Adicionar Asset</h2>
           </div>
           <label className="cursor-pointer group">
             <input type="file" className="hidden" accept="image/*" onChange={handleVaultUpload} disabled={isUploading} />
@@ -231,7 +231,7 @@ export const CreativeSetupSidebar: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <h1 className="text-white font-bold text-sm tracking-[0.2em] uppercase">
+            <h1 className="text-white font-bold text-sm tracking-[0.1em] uppercase">
               Visant Labs<span className="text-brand-cyan">®</span>
             </h1>
             <span className="px-1.5 py-0.5 rounded-full bg-neutral-900 border border-white/5 text-[10px] font-bold text-neutral-600 uppercase">
@@ -468,7 +468,7 @@ export const CreativeSetupSidebar: React.FC = () => {
               <div className="flex flex-col items-center gap-0.5">
                 <div className="flex items-center gap-2">
                   <Diamond size={18} className="group-hover:rotate-12 transition-transform" />
-                  <span className="uppercase tracking-[0.2em]">Ignite</span>
+                  <span className="uppercase tracking-[0.1em]">Ignite</span>
                 </div>
               </div>
             )}

@@ -21,9 +21,9 @@ import { captureCanvasThumbnail } from './lib/captureThumbnail';
 import { getPreviewDimensions } from './lib/formatDimensions';
 import { isPersistedId } from './lib/layerUtils';
 import { Link } from 'react-router-dom';
-import { 
-  BreadcrumbWithBack, BreadcrumbItem, BreadcrumbLink, 
-  BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator 
+import {
+  BreadcrumbWithBack, BreadcrumbItem, BreadcrumbLink,
+  BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator
 } from '@/components/ui/BreadcrumbWithBack';
 import { toast } from 'sonner';
 
@@ -34,14 +34,14 @@ export const CreativeStudio: React.FC = () => {
     groupSelected, ungroupSelected, backgroundSelected,
     activeTool, setActiveTool
   } = useCreativeStore();
-  
+
   const creativeId = useCreativeStore((s) => s.creativeId);
   const projectName = useCreativeStore((s) => s.projectName);
   const prompt = useCreativeStore((s) => s.prompt);
   const layers = useCreativeStore((s) => s.layers);
   const overlay = useCreativeStore((s) => s.overlay);
   const backgroundUrl = useCreativeStore((s) => s.backgroundUrl);
-  
+
   const { undo, redo } = useCreativeStore.temporal.getState();
   const { colors, allGuidelines } = useBrandKit();
 
@@ -178,7 +178,7 @@ export const CreativeStudio: React.FC = () => {
         ref={containerRef}
         className="flex-1 relative flex flex-col items-center justify-center overflow-hidden bg-neutral-950/50"
       >
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         />
@@ -187,32 +187,31 @@ export const CreativeStudio: React.FC = () => {
         {status === 'editing' && (
           <div className="absolute top-4 right-6 z-40 flex items-center gap-3">
             <div className="flex items-center gap-px bg-neutral-900/60 border border-white/10 rounded-full p-1 group">
-               <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 group/btn">
-                  <Paintbrush size={12} className="text-brand-cyan group-hover/btn:rotate-12 transition-transform" /> Variar Cores
-               </button>
-               <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 group/btn">
-                  <ImageIcon size={12} className="text-emerald-400 group-hover/btn:-rotate-12 transition-transform" /> Variar Imagens
-               </button>
-               <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 group/btn">
-                  <TypeIcon size={12} className="text-amber-400 group-hover/btn:scale-110 transition-transform" /> Variar Copy
-               </button>
+              <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 group/btn">
+                <Paintbrush size={12} className="text-brand-cyan group-hover/btn:rotate-12 transition-transform" /> Variar Cores
+              </button>
+              <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 group/btn">
+                <ImageIcon size={12} className="text-emerald-400 group-hover/btn:-rotate-12 transition-transform" /> Variar Imagens
+              </button>
+              <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 group/btn">
+                <TypeIcon size={12} className="text-amber-400 group-hover/btn:scale-110 transition-transform" /> Variar Copy
+              </button>
             </div>
             <button
-               onClick={() => setActiveTool(activeTool === 'lasso' ? 'select' : 'lasso')}
-               className={`px-4 py-2 rounded-full border text-[10px] font-bold uppercase tracking-[0.2em] transition-all flex items-center gap-2 shadow-lg ${
-                 activeTool === 'lasso'
-                   ? 'border-brand-cyan/60 bg-brand-cyan/20 text-brand-cyan shadow-brand-cyan/10'
-                   : 'border-white/10 bg-neutral-900/60 text-neutral-400 hover:text-white hover:border-white/20'
-               }`}
-               title="Laço — selecionar região para editar com IA"
+              onClick={() => setActiveTool(activeTool === 'lasso' ? 'select' : 'lasso')}
+              className={`px-4 py-2 rounded-full border text-[10px] font-bold uppercase tracking-[0.1em] transition-all flex items-center gap-2 shadow-lg ${activeTool === 'lasso'
+                  ? 'border-brand-cyan/60 bg-brand-cyan/20 text-brand-cyan shadow-brand-cyan/10'
+                  : 'border-white/10 bg-neutral-900/60 text-neutral-400 hover:text-white hover:border-white/20'
+                }`}
+              title="Laço — selecionar região para editar com IA"
             >
-               <Scan size={12} /> Laço
+              <Scan size={12} /> Laço
             </button>
             <button
-               onClick={() => setStatus('setup')}
-               className="px-5 py-2 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-cyan hover:bg-brand-cyan/20 hover:border-brand-cyan/40 transition-all flex items-center gap-2 shadow-lg shadow-brand-cyan/5"
+              onClick={() => setStatus('setup')}
+              className="px-5 py-2 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan hover:bg-brand-cyan/20 hover:border-brand-cyan/40 transition-all flex items-center gap-2 shadow-lg shadow-brand-cyan/5"
             >
-               <Sparkles size={12} /> Gerar Novo
+              <Sparkles size={12} /> Gerar Novo
             </button>
           </div>
         )}
@@ -263,11 +262,10 @@ export const CreativeStudio: React.FC = () => {
               return (
                 <div
                   key={page.id}
-                  className={`relative shrink-0 transition-all duration-500 ease-out group/frame ${
-                    isActive
+                  className={`relative shrink-0 transition-all duration-500 ease-out group/frame ${isActive
                       ? 'z-10'
                       : 'opacity-40 hover:opacity-70 cursor-pointer'
-                  }`}
+                    }`}
                   onClick={() => !isActive && setActivePageIndex(idx)}
                 >
                   {/* Remove frame button */}
@@ -284,9 +282,8 @@ export const CreativeStudio: React.FC = () => {
                     </button>
                   )}
                   {/* Frame label */}
-                  <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-medium tracking-wider uppercase ${
-                    isActive ? 'text-brand-cyan' : 'text-neutral-600'
-                  }`}>
+                  <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-medium tracking-wider uppercase ${isActive ? 'text-brand-cyan' : 'text-neutral-600'
+                    }`}>
                     {idx + 1}/{pages.length}
                   </div>
                   <CreativeCanvas

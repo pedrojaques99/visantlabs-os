@@ -2136,5 +2136,265 @@ router.get('/users/:id/history', adminUsersLimiter, validateAdmin, async (req: A
   }
 });
 
+/**
+ * GET /api/admin/feedback/stats
+ * Admin-only. Aggregates generation_feedback (Mongo) into analytics for the RAG dashboard.
+ * Query params: ?feature=<optional>&days=<default 30>
+ *
+ * Note: `vectorizedCount` is a proxy (count of rating==='up' docs); actual Pinecone
+ * upsert is fire-and-forget and not tracked per-document in Mongo.
+ */
+router.get('/feedback/stats', validateAdmin, async (req: AuthRequest, res) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    const col = db.collection('generation_feedback');
+
+    const daysRaw = parseInt(String(req.query.days || 30), 10);
+    const days = isValidPositiveInt(daysRaw, 1, 365) ? daysRaw : 30;
+    const featureFilter = ensureString(req.query.feature as string | undefined);
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const baseMatch: Record<string, any> = { createdAt: { $gte: since } };
+    if (featureFilter && featureFilter !== 'all') baseMatch.feature = featureFilter;
+
+    const [
+      featureStats,
+      timeSeries,
+      modelStats,
+      designTypeStats,
+      vibeStats,
+      brandGuidelineStats,
+      tagsMostUsed,
+      tagsMostUpvoted,
+      vectorizedCount,
+      recentDownvotes,
+    ] = await Promise.all([
+      // 1. Totals per feature × rating
+      col.aggregate([
+        { $match: baseMatch },
+        { $group: { _id: { feature: '$feature', rating: '$rating' }, count: { $sum: 1 } } },
+        { $group: {
+          _id: '$_id.feature',
+          up: { $sum: { $cond: [{ $eq: ['$_id.rating', 'up'] }, '$count', 0] } },
+          down: { $sum: { $cond: [{ $eq: ['$_id.rating', 'down'] }, '$count', 0] } },
+        }},
+        { $project: {
+          feature: '$_id', up: 1, down: 1, _id: 0,
+          total: { $add: ['$up', '$down'] },
+          approvalRate: { $cond: [{ $gt: [{ $add: ['$up', '$down'] }, 0] },
+            { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, 0] },
+        }},
+        { $sort: { total: -1 } },
+      ]).toArray(),
+
+      // 3. Time series daily
+      col.aggregate([
+        { $match: baseMatch },
+        { $group: {
+          _id: { date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, rating: '$rating' },
+          count: { $sum: 1 },
+        }},
+        { $group: {
+          _id: '$_id.date',
+          up: { $sum: { $cond: [{ $eq: ['$_id.rating', 'up'] }, '$count', 0] } },
+          down: { $sum: { $cond: [{ $eq: ['$_id.rating', 'down'] }, '$count', 0] } },
+        }},
+        { $project: { date: '$_id', up: 1, down: 1, _id: 0 } },
+        { $sort: { date: 1 } },
+      ]).toArray(),
+
+      // 4. Top models by approval (min 5 ratings)
+      col.aggregate([
+        { $match: { ...baseMatch, 'context.model': { $exists: true, $ne: '' } } },
+        { $group: {
+          _id: '$context.model',
+          up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+          down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+        }},
+        { $project: {
+          model: '$_id', up: 1, down: 1, _id: 0,
+          total: { $add: ['$up', '$down'] },
+          approvalRate: { $cond: [{ $gte: [{ $add: ['$up', '$down'] }, 5] },
+            { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, null] },
+        }},
+        { $match: { approvalRate: { $ne: null } } },
+        { $sort: { approvalRate: -1 } },
+        { $limit: 10 },
+      ]).toArray(),
+
+      // 5. Top design types by approval (min 5)
+      col.aggregate([
+        { $match: { ...baseMatch, 'context.designType': { $exists: true, $ne: '' } } },
+        { $group: {
+          _id: '$context.designType',
+          up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+          down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+        }},
+        { $project: {
+          designType: '$_id', up: 1, down: 1, _id: 0,
+          total: { $add: ['$up', '$down'] },
+          approvalRate: { $cond: [{ $gte: [{ $add: ['$up', '$down'] }, 5] },
+            { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, null] },
+        }},
+        { $match: { approvalRate: { $ne: null } } },
+        { $sort: { approvalRate: -1 } },
+        { $limit: 10 },
+      ]).toArray(),
+
+      // 6. Top vibes by approval (min 5)
+      col.aggregate([
+        { $match: { ...baseMatch, 'context.vibeId': { $exists: true, $ne: '' } } },
+        { $group: {
+          _id: '$context.vibeId',
+          up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+          down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+        }},
+        { $project: {
+          vibeId: '$_id', up: 1, down: 1, _id: 0,
+          total: { $add: ['$up', '$down'] },
+          approvalRate: { $cond: [{ $gte: [{ $add: ['$up', '$down'] }, 5] },
+            { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, null] },
+        }},
+        { $match: { approvalRate: { $ne: null } } },
+        { $sort: { approvalRate: -1 } },
+        { $limit: 10 },
+      ]).toArray(),
+
+      // 7. Top brand guidelines by approval
+      col.aggregate([
+        { $match: { ...baseMatch, 'context.brandGuidelineId': { $exists: true, $ne: '' } } },
+        { $group: {
+          _id: '$context.brandGuidelineId',
+          up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+          down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+        }},
+        { $project: { brandGuidelineId: '$_id', up: 1, down: 1, _id: 0, total: { $add: ['$up', '$down'] } } },
+        { $sort: { total: -1 } },
+        { $limit: 10 },
+      ]).toArray(),
+
+      // 8. Tags most used (flatten branding/category/location)
+      col.aggregate([
+        { $match: baseMatch },
+        { $facet: {
+          branding: [
+            { $unwind: '$context.tags.branding' },
+            { $group: { _id: '$context.tags.branding', count: { $sum: 1 } } },
+            { $project: { tag: '$_id', category: { $literal: 'branding' }, count: 1, _id: 0 } },
+          ],
+          category: [
+            { $unwind: '$context.tags.category' },
+            { $group: { _id: '$context.tags.category', count: { $sum: 1 } } },
+            { $project: { tag: '$_id', category: { $literal: 'category' }, count: 1, _id: 0 } },
+          ],
+          location: [
+            { $unwind: '$context.tags.location' },
+            { $group: { _id: '$context.tags.location', count: { $sum: 1 } } },
+            { $project: { tag: '$_id', category: { $literal: 'location' }, count: 1, _id: 0 } },
+          ],
+        }},
+        { $project: { all: { $concatArrays: ['$branding', '$category', '$location'] } } },
+        { $unwind: '$all' },
+        { $replaceRoot: { newRoot: '$all' } },
+        { $sort: { count: -1 } },
+        { $limit: 20 },
+      ]).toArray(),
+
+      // 9. Tags most upvoted (ratio-based, min 3 ratings)
+      col.aggregate([
+        { $match: baseMatch },
+        { $facet: {
+          branding: [
+            { $unwind: '$context.tags.branding' },
+            { $group: {
+              _id: '$context.tags.branding',
+              up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+              down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+            }},
+            { $project: { tag: '$_id', category: { $literal: 'branding' }, up: 1, down: 1,
+              total: { $add: ['$up', '$down'] },
+              approvalRate: { $cond: [{ $gte: [{ $add: ['$up', '$down'] }, 3] },
+                { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, null] }, _id: 0 } },
+            { $match: { approvalRate: { $ne: null } } },
+          ],
+          category: [
+            { $unwind: '$context.tags.category' },
+            { $group: {
+              _id: '$context.tags.category',
+              up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+              down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+            }},
+            { $project: { tag: '$_id', category: { $literal: 'category' }, up: 1, down: 1,
+              total: { $add: ['$up', '$down'] },
+              approvalRate: { $cond: [{ $gte: [{ $add: ['$up', '$down'] }, 3] },
+                { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, null] }, _id: 0 } },
+            { $match: { approvalRate: { $ne: null } } },
+          ],
+          location: [
+            { $unwind: '$context.tags.location' },
+            { $group: {
+              _id: '$context.tags.location',
+              up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+              down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+            }},
+            { $project: { tag: '$_id', category: { $literal: 'location' }, up: 1, down: 1,
+              total: { $add: ['$up', '$down'] },
+              approvalRate: { $cond: [{ $gte: [{ $add: ['$up', '$down'] }, 3] },
+                { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, null] }, _id: 0 } },
+            { $match: { approvalRate: { $ne: null } } },
+          ],
+        }},
+        { $project: { all: { $concatArrays: ['$branding', '$category', '$location'] } } },
+        { $unwind: '$all' },
+        { $replaceRoot: { newRoot: '$all' } },
+        { $sort: { approvalRate: -1 } },
+        { $limit: 20 },
+      ]).toArray(),
+
+      // 10. Vectorized count proxy (rating=up docs — Pinecone upsert is fire-and-forget)
+      col.countDocuments({ ...baseMatch, rating: 'up' }),
+
+      // 11. Recent thumbs-down sample (last 20)
+      col.find({ ...baseMatch, rating: 'down' })
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .project({
+          generationId: 1, feature: 1, createdAt: 1,
+          prompt: '$context.prompt',
+          tags: '$context.tags',
+          designType: '$context.designType',
+          model: '$context.model',
+          _id: 0,
+        })
+        .toArray(),
+    ]);
+
+    // 2. Overall totals (computed from featureStats)
+    const totalUp = (featureStats as any[]).reduce((s: number, r: any) => s + (r.up || 0), 0);
+    const totalDown = (featureStats as any[]).reduce((s: number, r: any) => s + (r.down || 0), 0);
+    const totalAll = totalUp + totalDown;
+    const overallApprovalRate = totalAll > 0 ? (totalUp / totalAll) * 100 : 0;
+
+    return res.json({
+      overall: { approvalRate: overallApprovalRate, up: totalUp, down: totalDown, total: totalAll },
+      featureStats,
+      timeSeries,
+      modelStats,
+      designTypeStats,
+      vibeStats,
+      brandGuidelineStats,
+      tagsMostUsed,
+      tagsMostUpvoted,
+      vectorizedCount,
+      recentDownvotes,
+      meta: { days, feature: featureFilter || 'all' },
+    });
+  } catch (error: any) {
+    console.error('[admin] feedback/stats error:', error);
+    return res.status(500).json({ error: 'Failed to fetch feedback stats' });
+  }
+});
+
 export default router;
 

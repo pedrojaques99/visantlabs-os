@@ -7,7 +7,7 @@ import { getCombinedVibeConfig } from '@/constants/mockupVibes';
 import { MicroTitle } from '../ui/MicroTitle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
-import { Gem, Wand2, ChevronRight, Settings2, Diamond } from 'lucide-react';
+import { Gem, Wand2, ChevronRight, Settings2, Diamond, MessageSquareText } from 'lucide-react';
 import { toast } from 'sonner';
 import { SurpriseMeControl } from './SurpriseMeControl';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,7 +25,6 @@ interface EssentialSidebarProps {
   onGenerateOutputs: () => void;
   generateOutputsButtonRef?: React.RefObject<HTMLButtonElement>;
   authenticationRequiredMessage: string;
-  showBrandConfig?: boolean;
   isPromptReady?: boolean;
 }
 
@@ -40,7 +39,6 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
   onGenerateOutputs,
   generateOutputsButtonRef,
   authenticationRequiredMessage,
-  showBrandConfig = false,
   isPromptReady = false
 }) => {
   const { t } = useTranslation();
@@ -108,35 +106,24 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
 
 
 
+  const [showInstructions, setShowInstructions] = useState(!!instructions);
+
   return (
-    <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-right-4 duration-700">
-      {/* 1. BRAND SECTION */}
-      <AnimatePresence>
-        {showBrandConfig && (
-          <motion.section
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="space-y-4 overflow-hidden"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
-                  <Gem size={16} className="text-brand-cyan" />
-                </div>
-                <MicroTitle className="text-neutral-200">
-                  {selectedBrandName ? selectedBrandName.toUpperCase() : (t('mockup.brandContext') || 'IDENTIDADE DA MARCA')}
-                </MicroTitle>
-              </div>
-              {/* The Selector itself handles the modal, but we could add a direct + button here if needed. 
-                        However, the selector is already a prominent button now. */}
-            </div>
-            <GlassPanel padding="sm" className="bg-neutral-950/20 border-white/5">
-              <BrandGuidelineSelector />
-            </GlassPanel>
-          </motion.section>
-        )}
-      </AnimatePresence>
+    <div className="flex flex-col gap-6 sm:gap-8 lg:gap-10 animate-in fade-in slide-in-from-right-4 duration-700">
+      {/* 1. BRAND SELECTION */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center shadow-inner">
+            <Gem size={14} className={cn("transition-colors", selectedBrandGuideline ? "text-brand-cyan" : "text-neutral-600")} />
+          </div>
+          {selectedBrandName && (
+            <MicroTitle className="text-neutral-400">
+              {selectedBrandName}
+            </MicroTitle>
+          )}
+        </div>
+        <BrandGuidelineSelector variant="minimal" />
+      </div>
 
       {/* 2. STYLE SECTION (VIBES) */}
       <section className="space-y-4">
@@ -167,24 +154,48 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
         </div>
       </section>
 
-      {/* 3. PROMPT/INSTRUCTIONS SECTION */}
       <section className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
-            <Diamond size={16} className="text-brand-cyan/80" />
+        <div className="flex items-center justify-between group/header">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
+              <Diamond size={16} className={cn("transition-colors", showInstructions ? "text-brand-cyan" : "text-neutral-600")} />
+            </div>
+            <MicroTitle className={cn("transition-colors", showInstructions ? "text-neutral-200" : "text-neutral-500")}>
+              {t('mockup.scenarioDetails') || 'DETALHES DO CENÁRIO'}
+            </MicroTitle>
           </div>
-          <MicroTitle className="text-neutral-200">
-            {t('mockup.scenarioDetails') || 'DETALHES DO CENÁRIO'}
-          </MicroTitle>
+          <button
+            onClick={() => setShowInstructions(!showInstructions)}
+            className={cn(
+               "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
+               showInstructions 
+                 ? "bg-brand-cyan/20 border border-brand-cyan/30 text-brand-cyan" 
+                 : "bg-neutral-900 border border-white/5 text-neutral-600 hover:text-neutral-400 hover:border-white/10"
+            )}
+            title={showInstructions ? t('common.hide') : t('common.show')}
+          >
+            <MessageSquareText size={14} className={cn("transition-transform duration-300", showInstructions && "scale-110")} />
+          </button>
         </div>
-        <div className="px-0.5">
-          <textarea
-            value={instructions}
-            onChange={(e) => setInstructions(e.target.value)}
-            placeholder={t('mockup.scenarioPlaceholder') || 'Ex: No topo de uma montanha, iluminação de pôr do sol, estilo cinematográfico...'}
-            className="w-full h-24 bg-neutral-950/40 border border-white/5 rounded-xl p-4 text-[11px] font-mono text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/30 focus:bg-neutral-950/60 transition-all resize-none"
-          />
-        </div>
+        
+        <AnimatePresence>
+          {showInstructions && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="px-0.5 overflow-hidden"
+            >
+              <textarea
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+                placeholder={t('mockup.scenarioPlaceholder') || 'Ex: No topo de uma montanha, iluminação de pôr do sol, estilo cinematográfico...'}
+                className="w-full h-24 bg-neutral-950/40 border border-white/5 rounded-xl p-4 text-[11px] font-mono text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/30 focus:bg-neutral-950/60 transition-all resize-none"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
       {/* 4. GENERATION ACTION (TOOLBAR MOVED TO SIDEBAR) */}
@@ -221,7 +232,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
         <div className="pt-4 border-t border-white/5">
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-2 text-[10px] font-mono text-neutral-600 hover:text-neutral-400 transition-colors uppercase tracking-[0.2em] mx-auto group"
+            className="flex items-center gap-2 text-[10px] font-mono text-neutral-600 hover:text-neutral-400 transition-colors uppercase tracking-[0.1em] mx-auto group"
           >
             <Settings2 size={12} className={cn("transition-transform duration-500", showAdvanced && "rotate-180")} />
             {showAdvanced ? 'Recolher Ajustes' : 'Ajustes de Geração'}

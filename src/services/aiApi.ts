@@ -21,6 +21,8 @@ export interface MockupSetupAnalysis {
   effects: string[];
   materials: string[];
   designType: 'logo' | 'layout';
+  detectedLanguage?: string | null;
+  detectedText?: string | null;
 }
 
 export interface RefineSuggestionsParams {
@@ -161,6 +163,8 @@ export const aiApi = {
     vibeId?: string;
     /** Se false, pula o RAG de exemplos aprendidos. Default: true. */
     learnFromHistory?: boolean;
+    /** Idioma detectado na análise da imagem. */
+    detectedLanguage?: string | null;
   }): Promise<{
     prompt: string;
     inputTokens?: number;

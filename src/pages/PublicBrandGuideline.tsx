@@ -251,7 +251,7 @@ export const PublicBrandGuideline: React.FC = () => {
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 flex flex-col items-center gap-4">
           <GlitchLoader size={40} />
-          <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em]">Decrypting Brand Assets</MicroTitle>
+          <MicroTitle className="text-neutral-600 uppercase tracking-[0.1em]">Decrypting Brand Assets</MicroTitle>
         </motion.div>
       </div>
     );
@@ -420,7 +420,7 @@ export const PublicBrandGuideline: React.FC = () => {
 
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-12">
             <div className="space-y-6">
-              <MicroTitle className="text-[var(--accent)] tracking-[0.3em] font-bold opacity-60">
+              <MicroTitle className="text-[var(--accent)] tracking-[0.1em] font-bold opacity-60">
                 {guideline.identity?.tagline || 'Brand Guidelines'}
               </MicroTitle>
               <h1 className="text-6xl md:text-8xl font-black font-manrope tracking-tight leading-[0.9]">

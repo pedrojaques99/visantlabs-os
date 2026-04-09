@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { useNavigate, useBlocker, useLocation } from 'react-router-dom';
+import { useNavigate, useBlocker, useLocation, useSearchParams } from 'react-router-dom';
 import { Menu, PanelLeftOpen, Pickaxe, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImageUploader } from '../components/ui/ImageUploader';
@@ -17,6 +17,7 @@ import { getCreditsRequired } from '@/utils/creditCalculator';
 import { subscriptionService } from '../services/subscriptionService';
 import { authService } from '../services/authService';
 import { mockupApi } from '../services/mockupApi';
+import type { FeedbackRating } from '../services/feedbackApi';
 import { useLayout } from '@/hooks/useLayout';
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../types/types';
 import { toast } from 'sonner';
@@ -34,6 +35,7 @@ import type { AmbiencePreset } from '../types/ambiencePresets';
 import type { LuminancePreset } from '../types/luminancePresets';
 import type { SurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
 import { MockupProvider, useMockup } from '../components/mockupmachine/MockupContext';
+import { getCombinedVibeConfig, type VibeSegment, type VibeStyle } from '@/constants/mockupVibes';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useCreditValidation } from '@/hooks/useCreditValidation';
@@ -77,6 +79,7 @@ const MockupMachinePageContent: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { subscriptionStatus, isAuthenticated, isCheckingAuth, onSubscriptionModalOpen, onCreditPackagesModalOpen, setSubscriptionStatus, registerUnsavedOutputsHandler, registerResetHandler } = useLayout();
 
   const {
@@ -145,6 +148,14 @@ const MockupMachinePageContent: React.FC = () => {
     setSeed,
     seedLocked,
     setSeedLocked,
+    generationIds,
+    setGenerationIds,
+    selectedVibeSegment,
+    selectedVibeStyle,
+    detectedLanguage,
+    setDetectedLanguage,
+    detectedText,
+    setDetectedText,
   } = useMockup();
 
   // Custom hooks for common operations (after getting mockupCount from context)
@@ -162,6 +173,14 @@ const MockupMachinePageContent: React.FC = () => {
   const [autoMode, setAutoMode] = useState<'idle' | 'prompt-only' | 'prompt-and-generate'>('idle');
   const [savedIndices, setSavedIndices] = useState<Set<number>>(new Set());
   const [mockupLikedStatus, setMockupLikedStatus] = useState<Map<number, boolean>>(new Map()); // Map index -> isLiked
+  const [feedbackRatings, setFeedbackRatings] = useState<Map<number, FeedbackRating | null>>(new Map());
+  const handleFeedbackRatingChange = useCallback((index: number, rating: FeedbackRating | null) => {
+    setFeedbackRatings(prev => {
+      const next = new Map(prev);
+      if (rating === null) next.delete(index); else next.set(index, rating);
+      return next;
+    });
+  }, []);
   const [savedMockupIds, setSavedMockupIds] = useState<Map<number, string>>(new Map()); // Map index -> mockup ID
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [isDiceAnimating, setIsDiceAnimating] = useState(false);
@@ -213,8 +232,7 @@ const MockupMachinePageContent: React.FC = () => {
   const generateOutputsButtonRef = useRef<HTMLButtonElement>(null);
   const hasRestoredStateRef = useRef(false);
   const generatedSmartPromptRef = useRef<string | null>(null);
-  /** UUID da última geração de smart prompt — usado pra atrelar feedback 👍/👎. */
-  const lastGenerationIdRef = useRef<string | null>(null);
+
 
   const getFeedbackContext = useCallback(() => ({
     prompt: promptPreview,
@@ -456,33 +474,70 @@ const MockupMachinePageContent: React.FC = () => {
     }
   }, [location.state, getTagsHash]);
 
-  // Derived: prompt is ready if we have a prompt and tags haven't changed since generation
-  const handleOpenFullScreen = (index: number) => setFullScreenImageIndex(index);
-  const handleCloseFullScreen = () => setFullScreenImageIndex(null);
+  // Restore fullscreen view from URL ?view=generationId param (shareable)
+  useEffect(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam !== null) {
+      const index = generationIds.findIndex(id => id === viewParam);
+      if (index !== -1 && index < mockups.length && mockups[index]) {
+        setFullScreenImageIndex(index);
+      }
+    }
+  }, [generationIds]); // Re-check when generationIds populate
 
-  const prepareForNewMockupSlot = useCallback(() => {
+  // Derived: prompt is ready if we have a prompt and tags haven't changed since generation
+  const handleOpenFullScreen = useCallback((index: number) => {
+    setFullScreenImageIndex(index);
+    const genId = generationIds[index];
+    if (genId) {
+      setSearchParams(prev => { prev.set('view', genId); return prev; }, { replace: true });
+    }
+  }, [setFullScreenImageIndex, setSearchParams, generationIds]);
+
+  const handleCloseFullScreen = useCallback(() => {
+    setFullScreenImageIndex(null);
+    setSearchParams(prev => { prev.delete('view'); return prev; }, { replace: true });
+  }, [setFullScreenImageIndex, setSearchParams]);
+
+  const prepareForNewMockupSlot = useCallback((count: number = 1) => {
+    if (count <= 0) return 0;
+    
     // Close fullscreen modal immediately
     handleCloseFullScreen();
 
-    // Ensure we stay on MockupMachinePage
+    // Ensure we follow the workspace flow and collapse sidebar if needed later
     if (!hasGenerated) {
       setHasGenerated(true);
     }
 
-    // Open sidebar on mobile if it's closed
-    if (!isSidebarVisibleMobile) {
-      setIsSidebarVisibleMobile(true);
-    }
+    // Capture current length
+    const previousLength = mockups.length;
 
-    // Calculate new index before appending
-    const newIndex = mockups.length;
+    // Prepend new slots — consistent with runGeneration's appendMode (which is actually prepend)
+    const newSlots = Array(count).fill(null);
+    const newLoadingSlots = Array(count).fill(true);
+    
+    setMockups(prev => {
+        // If we already have a fresh loading placeholder at the start, don't double add
+        const alreadyLoading = prev.length >= count && prev.slice(0, count).every(m => m === null) && isLoading.slice(0, count).every(l => l === true);
+        if (alreadyLoading) return prev;
+        return [...newSlots, ...prev];
+    });
+    
+    setIsLoading(prev => {
+        const alreadyLoading = mockups.length >= count && mockups.slice(0, count).every(m => m === null) && prev.slice(0, count).every(l => l === true);
+        if (alreadyLoading) return prev;
+        return [...newLoadingSlots, ...prev];
+    });
+    
+    setGenerationIds(prev => {
+        const currentGenId = prev[0] ?? null;
+        const newIds = Array(count).fill(currentGenId);
+        return [...newIds, ...prev];
+    });
 
-    // Append new slot
-    setMockups(prev => [...prev, null]);
-    setIsLoading(prev => [...prev, true]);
-
-    return newIndex;
-  }, [handleCloseFullScreen, hasGenerated, isSidebarVisibleMobile, mockups.length]);
+    return 0; // The new items are at the beginning
+  }, [handleCloseFullScreen, hasGenerated, mockups, isLoading]);
 
   const isPromptReady = useMemo(() => {
 
@@ -727,7 +782,11 @@ const MockupMachinePageContent: React.FC = () => {
 
         // Track generationId for feedback system
         if (result.requestId) {
-          lastGenerationIdRef.current = result.requestId;
+          setGenerationIds(prev => {
+            const newIds = [...prev];
+            newIds[index] = result.requestId || null;
+            return newIds;
+          });
         }
 
         // Image successfully generated - set it in state (prefer URL; if only base64, try client-side upload)
@@ -828,16 +887,46 @@ const MockupMachinePageContent: React.FC = () => {
 
         // Insert available slots at the beginning
         setMockups(prev => {
-          const newMockups = [...prev];
-          // Add new slots at the beginning
-          const newSlots = Array(mockupCount).fill(null);
-          return [...newSlots, ...newMockups];
+          // If we already have fresh loading placeholders (e.g. from handleSurpriseMe), reuse them
+          const alreadyHasLoadingSlots = prev.length >= mockupCount && 
+                                        prev.slice(0, mockupCount).every(m => m === null) && 
+                                        isLoading.slice(0, mockupCount).every(l => l === true);
+          
+          if (alreadyHasLoadingSlots && appendMode) {
+              return prev;
+          }
+
+          if (appendMode) {
+            const newMockups = [...prev];
+            const newSlots = Array(mockupCount).fill(null);
+            return [...newSlots, ...newMockups];
+          }
+          return prev;
         });
 
         setIsLoading(prev => {
-          const newLoading = [...prev];
-          const newSlots = Array(mockupCount).fill(true);
-          return [...newSlots, ...newLoading];
+          // If we already have fresh loading placeholders, reuse them
+          const alreadyHasLoadingSlots = mockups.length >= mockupCount && 
+                                        mockups.slice(0, mockupCount).every(m => m === null) && 
+                                        prev.slice(0, mockupCount).every(l => l === true);
+                                          
+          if (alreadyHasLoadingSlots && appendMode) {
+              return prev;
+          }
+
+          if (appendMode) {
+            const newLoading = [...prev];
+            const newSlots = Array(mockupCount).fill(true);
+            return [...newSlots, ...newLoading];
+          }
+          return prev;
+        });
+
+        // Expand generationIds to match — new slots inherit current genId
+        setGenerationIds(prev => {
+          const currentGenId = prev[0] ?? null;
+          const newSlots = Array(mockupCount).fill(currentGenId);
+          return [...newSlots, ...prev];
         });
 
         setPromptSuggestions([]);
@@ -998,6 +1087,7 @@ const MockupMachinePageContent: React.FC = () => {
         additionalPrompt: additionalPrompt,
         instructions: instructions,
         brandGuidelineId: selectedBrandGuideline || undefined,
+        detectedLanguage: detectedLanguage,
       });
 
       // Handle both old string format and new object format
@@ -1039,10 +1129,11 @@ const MockupMachinePageContent: React.FC = () => {
       setPromptPreview(finalPrompt);
       generatedSmartPromptRef.current = finalPrompt; // Store for use in auto-generate
       
-      // Store generation ID for feedback (👍/👎)
-      if (typeof smartPromptResult === 'object' && smartPromptResult.generationId) {
-        lastGenerationIdRef.current = smartPromptResult.generationId;
-      }
+      // Store generation ID for feedback (👍/👎) — fallback to client-side UUID if server didn't provide one
+      const genId = (typeof smartPromptResult === 'object' && smartPromptResult.generationId)
+        ? smartPromptResult.generationId
+        : crypto.randomUUID();
+      setGenerationIds(Array(mockupCount).fill(genId));
       
       promptTagsSnapshotRef.current = getTagsHash(); // Save snapshot for isPromptReady derivation
       setIsSmartPromptActive(true);
@@ -1154,6 +1245,7 @@ const MockupMachinePageContent: React.FC = () => {
     setSavedIndices(new Set());
     setSavedMockupIds(new Map());
     setMockupLikedStatus(new Map());
+    setFeedbackRatings(new Map());
     setUploadedImage(null);
     setInstructions('');
     // Clear localStorage when resetting
@@ -1226,6 +1318,8 @@ const MockupMachinePageContent: React.FC = () => {
       setSuggestedLightingTags(analysis.lighting);
       setSuggestedEffectTags(analysis.effects);
       setSuggestedMaterialTags(analysis.materials);
+      setDetectedLanguage(analysis.detectedLanguage || null);
+      setDetectedText(analysis.detectedText || null);
       // Design type is now manually selected by user, not auto-set from analysis
 
       if (imageToUse.base64) {
@@ -1285,296 +1379,204 @@ const MockupMachinePageContent: React.FC = () => {
   }, [handleAnalyze]);
 
   const handleSurpriseMe = useCallback(async (autoGenerate: boolean = false) => {
-    // Ensure model is selected (default to gemini-2.5-flash-image if not set)
-    const modelToUse = selectedModel || GEMINI_MODELS.FLASH;
-    if (!selectedModel) {
-      setSelectedModel(GEMINI_MODELS.FLASH);
+    // If auto-generating, prepare slots immediately so user sees "generating" cards while prompt is being created
+    if (autoGenerate) {
+        prepareForNewMockupSlot(mockupCount);
+    } else if (mockups.length === 0 || (mockups.length === 1 && mockups[0] === null)) {
+        setMockups([null]);
+        setIsLoading([true]);
     }
 
-    // Ensure designType is set (default to 'logo' if not set, since Surprise Me works best with a type)
-    const designTypeToUse = designType || 'logo';
-    if (!designType) {
-      setDesignType('logo');
-    }
+    // Ensure model is selected
+    if (!selectedModel) setSelectedModel(GEMINI_MODELS.FLASH);
 
-    // Keep existing branding tags - don't change them
-    // Use current branding tags from state
+    // Ensure designType is set
+    if (!designType) setDesignType('logo');
+
     const brandingTagsToUse = selectedBrandingTags.length > 0 ? selectedBrandingTags : [];
 
-    // Use pool from Context when Pool Mode is active, otherwise use empty arrays (no restrictions)
-    const selectedTagsSettings: SurpriseMeSelectedTags = isSurpriseMeMode ? surpriseMePool : {
-      selectedCategoryTags: [],
-      selectedLocationTags: [],
-      selectedAngleTags: [],
-      selectedLightingTags: [],
-      selectedEffectTags: [],
-      selectedMaterialTags: [],
-    };
+    // Helper: pick random item from array
+    const rand = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
-    // 1. Categories: Prioritize AI suggestions
-    let selectedCategory: string;
-    const aiSuggestedCategories = suggestedTags || [];
-    const userAllowedCategories = selectedTagsSettings.selectedCategoryTags;
+    // ─── VIBE-AWARE PATH ───
+    // When user selected segment + style, use getCombinedVibeConfig as the
+    // art direction foundation. Only randomize the PRODUCT (category).
+    const hasVibeDirection = !!(selectedVibeSegment && selectedVibeStyle);
 
-    // First filter AI suggestions by user's "Surprise Me" settings
-    const filteredAiCategories = aiSuggestedCategories.filter(tag =>
-      userAllowedCategories.length === 0 || userAllowedCategories.includes(tag)
-    );
-
-    if (filteredAiCategories.length > 0) {
-      selectedCategory = filteredAiCategories[Math.floor(Math.random() * filteredAiCategories.length)];
-    } else {
-      // Fallback: Use available dynamic tags instead of static list
-      // filtered by user settings if any
-      const poolToUse = userAllowedCategories.length > 0
-        ? availableMockupTags.filter(tag => userAllowedCategories.includes(tag))
-        : availableMockupTags;
-
-      // If pool is empty (edge case), fallback to full list
-      const finalPool = poolToUse.length > 0 ? poolToUse : availableMockupTags;
-
-      selectedCategory = finalPool[Math.floor(Math.random() * finalPool.length)];
-    }
-    setSelectedTags([selectedCategory]);
-
-    // 2. Location: Prioritize AI suggestions
-    let selectedBackground: string;
-    const aiSuggestedLocations = suggestedLocationTags || [];
-    const userAllowedLocations = selectedTagsSettings.selectedLocationTags;
-
-    // First filter AI suggestions by user's "Surprise Me" settings
-    const filteredAiLocations = aiSuggestedLocations.filter(tag =>
-      userAllowedLocations.length === 0 || userAllowedLocations.includes(tag)
-    );
-
-    if (filteredAiLocations.length > 0) {
-      selectedBackground = filteredAiLocations[Math.floor(Math.random() * filteredAiLocations.length)];
-    } else {
-      // Fallback: Pick based on branding but respect user selection
-      const suitableBackgrounds = getBackgroundsForBranding(brandingTagsToUse);
-      const filteredBackgrounds = suitableBackgrounds.filter(bg =>
-        bg !== 'Nature landscape' && (
-          userAllowedLocations.length === 0 ||
-          userAllowedLocations.includes(bg)
-        )
+    if (hasVibeDirection) {
+      const vibeConfig = getCombinedVibeConfig(
+        selectedVibeSegment as VibeSegment,
+        selectedVibeStyle as VibeStyle,
       );
 
-      // Add preferred options if not already included
-      const preferredOptions = ['Light Box', 'Minimalist Studio'];
+      console.log('[SurpriseMe] Using vibe direction:', selectedVibeSegment, '×', selectedVibeStyle);
 
-      // Filter preferred options by user allowed list if set
-      const filteredPreferredOptions = userAllowedLocations.length > 0
-        ? preferredOptions.filter(opt => userAllowedLocations.includes(opt))
-        : preferredOptions;
+      // 1. Category (product) — always randomize, vibe doesn't dictate product
+      const aiCategories = suggestedTags || [];
+      const categoryPool = aiCategories.length > 0 ? aiCategories : availableMockupTags;
+      setSelectedTags([rand(categoryPool)]);
 
-      // Ensure we have something to pick from
-      const optionsToUse = filteredPreferredOptions.length > 0 ? filteredPreferredOptions : preferredOptions;
-
-      const backgroundsToUse = filteredBackgrounds.length > 0
-        ? [...new Set([...optionsToUse, ...filteredBackgrounds])]
-        : [...new Set([...optionsToUse, ...suitableBackgrounds])];
-
-      // Final availability check with full location list fallback
-      const finalBackgrounds = backgroundsToUse.length > 0
-        ? backgroundsToUse
-        : availableLocationTags; // Fallback to all dynamic locations
-
-      selectedBackground = finalBackgrounds[Math.floor(Math.random() * finalBackgrounds.length)];
-    }
-    setSelectedLocationTags([selectedBackground]);
-
-    // 3. Presets and Tags: Prioritize AI suggestions for Angle, Lighting, Effect, etc.
-    let selectedPresets: {
-      angle?: AnglePreset;
-      texture?: TexturePreset;
-      ambience?: AmbiencePreset;
-      luminance?: LuminancePreset;
-    } = {};
-
-    try {
-      const { determineArchetypeFromBranding, getRandomArchetype } = await import('@/utils/promptHelpers');
-      const [allAnglePresets, allTexturePresets, allAmbiencePresets, allLuminancePresets] = await Promise.all([
-        getAllAnglePresetsAsync().catch(() => [] as AnglePreset[]),
-        getAllTexturePresetsAsync().catch(() => [] as TexturePreset[]),
-        getAllAmbiencePresetsAsync().catch(() => [] as AmbiencePreset[]),
-        getAllLuminancePresetsAsync().catch(() => [] as LuminancePreset[]),
-      ]);
-
-      // --- ARCHETYPE LOGIC START ---
-      // Determine archetype based on branding OR random chance
-      let currentArchetype = determineArchetypeFromBranding(brandingTagsToUse);
-
-      // 20% chance to ignore branding and pick a random archetype for variety
-      // OR if no branding tags provided
-      if (!currentArchetype || Math.random() < 0.2) {
-        currentArchetype = getRandomArchetype();
-      }
-
-      console.log('[SurpriseMe] Selected Archetype:', currentArchetype.name);
-
-      // Helper to pick a tag from archetype preference (80% chance) or random (20% chance)
-      const pickTagWithVariety = (archetypeTags: string[], availableTags: string[], userAllowedTags: string[] = []): string => {
-        const shouldUseArchetype = Math.random() < 0.8;
-        let pool = availableTags;
-
-        // Filter by user allowed tags if any
-        if (userAllowedTags.length > 0) {
-          pool = pool.filter(t => userAllowedTags.includes(t));
+      // 2. Apply vibe tags with slight variety (pick 1-2 from each vibe pool)
+      const pickFromVibe = (vibeTags: string[], allAvailable: readonly string[]) => {
+        if (vibeTags.length === 0) return [];
+        // 80% chance: pick from vibe pool. 20%: pick from full pool for variety
+        if (Math.random() < 0.8 || allAvailable.length === 0) {
+          return [rand(vibeTags)];
         }
-
-        if (shouldUseArchetype && archetypeTags && archetypeTags.length > 0) {
-          // Try to find archetype tags that are also in the allowed pool
-          const archetypePool = archetypeTags.filter(t =>
-            userAllowedTags.length === 0 || userAllowedTags.includes(t)
-          );
-
-          if (archetypePool.length > 0) {
-            return archetypePool[Math.floor(Math.random() * archetypePool.length)];
-          }
-        }
-
-        // Fallback to random from pool
-        return pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : "";
+        return [rand([...allAvailable])];
       };
 
-      // SELECT LOCATION
-      const userAllowedLocations = selectedTagsSettings.selectedLocationTags;
-      if (currentArchetype.visuals.locations) {
-        selectedBackground = pickTagWithVariety(currentArchetype.visuals.locations, AVAILABLE_LOCATION_TAGS, userAllowedLocations);
-      }
-      setSelectedLocationTags([selectedBackground || selectRandomBackground(brandingTagsToUse)]);
+      setSelectedLocationTags(pickFromVibe(vibeConfig.locationTags, AVAILABLE_LOCATION_TAGS));
+      setSelectedLightingTags(pickFromVibe(vibeConfig.lightingTags, AVAILABLE_LIGHTING_TAGS));
+      setSelectedAngleTags(pickFromVibe(vibeConfig.angleTags, AVAILABLE_ANGLE_TAGS));
+      setSelectedEffectTags(Math.random() < 0.6 ? pickFromVibe(vibeConfig.effectTags, AVAILABLE_EFFECT_TAGS) : []);
+      setSelectedMaterialTags(designType === 'logo' ? pickFromVibe(vibeConfig.materialTags, AVAILABLE_MATERIAL_TAGS) : []);
 
-      // SELECT LIGHTING
-      const userAllowedLighting = selectedTagsSettings.selectedLightingTags;
-      let lightingTag = "";
-      if (currentArchetype.visuals.lighting) {
-        lightingTag = pickTagWithVariety(currentArchetype.visuals.lighting, AVAILABLE_LIGHTING_TAGS, userAllowedLighting);
-      }
-      if (!lightingTag) {
-        // Fallback
-        const availableLighting = userAllowedLighting.length > 0 ? userAllowedLighting : AVAILABLE_LIGHTING_TAGS;
-        lightingTag = availableLighting[Math.floor(Math.random() * availableLighting.length)];
-      }
-      setSelectedLightingTags([lightingTag]);
+    } else {
+      // ─── LEGACY ARCHETYPE PATH (no vibe selected) ───
+      // Use pool from Context when Pool Mode is active
+      const selectedTagsSettings: SurpriseMeSelectedTags = isSurpriseMeMode ? surpriseMePool : {
+        selectedCategoryTags: [],
+        selectedLocationTags: [],
+        selectedAngleTags: [],
+        selectedLightingTags: [],
+        selectedEffectTags: [],
+        selectedMaterialTags: [],
+      };
 
-      // SELECT EFFECT (Optional - 50% chance)
-      const userAllowedEffects = selectedTagsSettings.selectedEffectTags;
-      if (Math.random() < 0.5) {
-        let effectTag = "";
-        if (currentArchetype.visuals.effects) {
-          effectTag = pickTagWithVariety(currentArchetype.visuals.effects, AVAILABLE_EFFECT_TAGS, userAllowedEffects);
-        }
-        if (!effectTag) {
-          const availableEffects = userAllowedEffects.length > 0 ? userAllowedEffects : AVAILABLE_EFFECT_TAGS;
-          effectTag = availableEffects[Math.floor(Math.random() * availableEffects.length)];
-        }
-        setSelectedEffectTags([effectTag]);
-      } else {
-        setSelectedEffectTags([]);
-      }
-
-      // SELECT MATERIAL (If Logo)
-      if (designType === 'logo') {
-        const userAllowedMaterials = selectedTagsSettings.selectedMaterialTags;
-        let materialTag = "";
-        if (currentArchetype.visuals.materials) {
-          materialTag = pickTagWithVariety(currentArchetype.visuals.materials, AVAILABLE_MATERIAL_TAGS, userAllowedMaterials);
-        }
-        if (!materialTag) {
-          const availableMaterials = userAllowedMaterials.length > 0 ? userAllowedMaterials : AVAILABLE_MATERIAL_TAGS;
-          materialTag = availableMaterials[Math.floor(Math.random() * availableMaterials.length)];
-        }
-        setSelectedMaterialTags([materialTag]);
-      }
-
-      // SELECT ANGLE (Random but consistent)
-      const userAllowedAngles = selectedTagsSettings.selectedAngleTags;
-      const availableAngles = userAllowedAngles.length > 0 ? userAllowedAngles : AVAILABLE_ANGLE_TAGS;
-      const angleTag = availableAngles[Math.floor(Math.random() * availableAngles.length)];
-      setSelectedAngleTags([angleTag]);
-
-      // --- ARCHETYPE LOGIC END ---
-
-      // Fallback filtering for presets (keeping existing logic for safety)
-      const filteredAnglePresets = filterPresetsByBranding(allAnglePresets, brandingTagsToUse);
-      const filteredTexturePresets = filterPresetsByBranding(allTexturePresets, brandingTagsToUse);
-      const filteredAmbiencePresets = filterPresetsByBranding(allAmbiencePresets, brandingTagsToUse);
-      const filteredLuminancePresets = filterPresetsByBranding(allLuminancePresets, brandingTagsToUse);
-
-      if (filteredAnglePresets.length > 0 && Math.random() < 0.4) {
-        selectedPresets.angle = filteredAnglePresets[Math.floor(Math.random() * filteredAnglePresets.length)];
-      }
-      if (filteredTexturePresets.length > 0 && Math.random() < 0.3) {
-        selectedPresets.texture = filteredTexturePresets[Math.floor(Math.random() * filteredTexturePresets.length)];
-      }
-      if (filteredAmbiencePresets.length > 0 && Math.random() < 0.5) {
-        selectedPresets.ambience = filteredAmbiencePresets[Math.floor(Math.random() * filteredAmbiencePresets.length)];
-      }
-      if (filteredLuminancePresets.length > 0 && Math.random() < 0.5) {
-        selectedPresets.luminance = filteredLuminancePresets[Math.floor(Math.random() * filteredLuminancePresets.length)];
-      }
-    } catch (error) {
-      console.warn('Failed to load presets, using fallback logic:', error);
-    }
-
-    // Helper for picking tags (prioritizing AI suggestions)
-    const pickTag = (suggested: string[], availableFromSettings: string[], allAvailable: string[], probability: number) => {
-      if (Math.random() > probability) return null;
-
-      // Filter suggested by settings
-      const filteredSuggested = suggested.filter(tag =>
-        availableFromSettings.length === 0 || availableFromSettings.includes(tag)
+      // 1. Category
+      const aiSuggestedCategories = suggestedTags || [];
+      const userAllowedCategories = selectedTagsSettings.selectedCategoryTags;
+      const filteredAiCategories = aiSuggestedCategories.filter(tag =>
+        userAllowedCategories.length === 0 || userAllowedCategories.includes(tag)
       );
 
-      if (filteredSuggested.length > 0) {
-        return filteredSuggested[Math.floor(Math.random() * filteredSuggested.length)];
+      let selectedCategory: string;
+      if (filteredAiCategories.length > 0) {
+        selectedCategory = rand(filteredAiCategories);
+      } else {
+        const poolToUse = userAllowedCategories.length > 0
+          ? availableMockupTags.filter(tag => userAllowedCategories.includes(tag))
+          : availableMockupTags;
+        selectedCategory = rand(poolToUse.length > 0 ? poolToUse : availableMockupTags);
       }
+      setSelectedTags([selectedCategory]);
 
-      // Fallback to settings-allowed tags
-      if (availableFromSettings.length > 0) {
-        return availableFromSettings[Math.floor(Math.random() * availableFromSettings.length)];
+      // 2. Location
+      let selectedBackground: string;
+      const aiSuggestedLocations = suggestedLocationTags || [];
+      const userAllowedLocations = selectedTagsSettings.selectedLocationTags;
+      const filteredAiLocations = aiSuggestedLocations.filter(tag =>
+        userAllowedLocations.length === 0 || userAllowedLocations.includes(tag)
+      );
+
+      if (filteredAiLocations.length > 0) {
+        selectedBackground = rand(filteredAiLocations);
+      } else {
+        const suitableBackgrounds = getBackgroundsForBranding(brandingTagsToUse);
+        const filteredBackgrounds = suitableBackgrounds.filter(bg =>
+          bg !== 'Nature landscape' && (userAllowedLocations.length === 0 || userAllowedLocations.includes(bg))
+        );
+        const preferredOptions = ['Light Box', 'Minimalist Studio'];
+        const filteredPreferred = userAllowedLocations.length > 0
+          ? preferredOptions.filter(opt => userAllowedLocations.includes(opt))
+          : preferredOptions;
+        const optionsToUse = filteredPreferred.length > 0 ? filteredPreferred : preferredOptions;
+        const backgroundsToUse = filteredBackgrounds.length > 0
+          ? [...new Set([...optionsToUse, ...filteredBackgrounds])]
+          : [...new Set([...optionsToUse, ...suitableBackgrounds])];
+        const finalBackgrounds = backgroundsToUse.length > 0 ? backgroundsToUse : availableLocationTags;
+        selectedBackground = rand(finalBackgrounds);
       }
+      setSelectedLocationTags([selectedBackground]);
 
-      // Final fallback
-      return allAvailable[Math.floor(Math.random() * allAvailable.length)];
-    };
+      // 3. Archetype-based tag selection
+      try {
+        const { determineArchetypeFromBranding, getRandomArchetype } = await import('@/utils/promptHelpers');
+        let currentArchetype = determineArchetypeFromBranding(brandingTagsToUse);
+        if (!currentArchetype || Math.random() < 0.2) {
+          currentArchetype = getRandomArchetype();
+        }
+        console.log('[SurpriseMe] Selected Archetype:', currentArchetype.name);
 
-    const userAllowedAngles = selectedTagsSettings.selectedAngleTags;
-    const userAllowedLightings = selectedTagsSettings.selectedLightingTags;
-    const userAllowedEffects = selectedTagsSettings.selectedEffectTags;
-    const userAllowedMaterials = selectedTagsSettings.selectedMaterialTags;
+        const pickTagWithVariety = (archetypeTags: string[], availableTags: string[], userAllowed: string[] = []): string => {
+          let pool = userAllowed.length > 0 ? availableTags.filter(t => userAllowed.includes(t)) : availableTags;
+          if (Math.random() < 0.8 && archetypeTags.length > 0) {
+            const archetypePool = archetypeTags.filter(t => userAllowed.length === 0 || userAllowed.includes(t));
+            if (archetypePool.length > 0) return rand(archetypePool);
+          }
+          return pool.length > 0 ? rand(pool) : "";
+        };
 
-    const randomAngle = selectedPresets.angle ? null : pickTag(suggestedAngleTags || [], userAllowedAngles, AVAILABLE_ANGLE_TAGS, 0.5);
-    const randomLighting = selectedPresets.luminance ? null : pickTag(suggestedLightingTags || [], userAllowedLightings, AVAILABLE_LIGHTING_TAGS, 0.6);
-    const randomEffect = pickTag(suggestedEffectTags || [], userAllowedEffects, AVAILABLE_EFFECT_TAGS, 0.4);
-    const randomMaterial = pickTag(suggestedMaterialTags || [], userAllowedMaterials, AVAILABLE_MATERIAL_TAGS, 0.3);
+        if (currentArchetype.visuals.locations) {
+          selectedBackground = pickTagWithVariety(currentArchetype.visuals.locations, AVAILABLE_LOCATION_TAGS, userAllowedLocations);
+        }
+        setSelectedLocationTags([selectedBackground || selectRandomBackground(brandingTagsToUse)]);
 
-    setSelectedAngleTags(randomAngle ? [randomAngle] : []);
-    setSelectedLightingTags(randomLighting ? [randomLighting] : []);
-    setSelectedEffectTags(randomEffect ? [randomEffect] : []);
-    setSelectedMaterialTags(randomMaterial ? [randomMaterial] : []);
+        const userAllowedLighting = selectedTagsSettings.selectedLightingTags;
+        let lightingTag = currentArchetype.visuals.lighting
+          ? pickTagWithVariety(currentArchetype.visuals.lighting, AVAILABLE_LIGHTING_TAGS, userAllowedLighting) : "";
+        if (!lightingTag) {
+          const pool = userAllowedLighting.length > 0 ? userAllowedLighting : AVAILABLE_LIGHTING_TAGS;
+          lightingTag = rand(pool);
+        }
+        setSelectedLightingTags([lightingTag]);
+
+        const userAllowedEffects = selectedTagsSettings.selectedEffectTags;
+        if (Math.random() < 0.5) {
+          let effectTag = currentArchetype.visuals.effects
+            ? pickTagWithVariety(currentArchetype.visuals.effects, AVAILABLE_EFFECT_TAGS, userAllowedEffects) : "";
+          if (!effectTag) {
+            const pool = userAllowedEffects.length > 0 ? userAllowedEffects : AVAILABLE_EFFECT_TAGS;
+            effectTag = rand(pool);
+          }
+          setSelectedEffectTags([effectTag]);
+        } else {
+          setSelectedEffectTags([]);
+        }
+
+        if (designType === 'logo') {
+          const userAllowedMaterials = selectedTagsSettings.selectedMaterialTags;
+          let materialTag = currentArchetype.visuals.materials
+            ? pickTagWithVariety(currentArchetype.visuals.materials, AVAILABLE_MATERIAL_TAGS, userAllowedMaterials) : "";
+          if (!materialTag) {
+            const pool = userAllowedMaterials.length > 0 ? userAllowedMaterials : AVAILABLE_MATERIAL_TAGS;
+            materialTag = rand(pool);
+          }
+          setSelectedMaterialTags([materialTag]);
+        }
+
+        const userAllowedAngles = selectedTagsSettings.selectedAngleTags;
+        const angPool = userAllowedAngles.length > 0 ? userAllowedAngles : AVAILABLE_ANGLE_TAGS;
+        setSelectedAngleTags([rand(angPool)]);
+      } catch (error) {
+        console.warn('[SurpriseMe] Archetype fallback:', error);
+        // Simple random fallback
+        setSelectedLightingTags([rand([...AVAILABLE_LIGHTING_TAGS])]);
+        setSelectedAngleTags([rand([...AVAILABLE_ANGLE_TAGS])]);
+        setSelectedEffectTags(Math.random() < 0.4 ? [rand([...AVAILABLE_EFFECT_TAGS])] : []);
+        setSelectedMaterialTags(designType === 'logo' ? [rand([...AVAILABLE_MATERIAL_TAGS])] : []);
+      }
+    }
+
     setSelectedColors([]);
 
-    // Reset prompt and manual edit state so auto-generation can proceed
+    // Reset prompt state for auto-generation
     setPromptPreview('');
     promptTagsSnapshotRef.current = null;
     setIsPromptManuallyEdited(false);
-
     setIsAllCategoriesOpen(true);
     setIsAdvancedOpen(true);
 
-    // Alternar o checkbox "generate human" de forma aleatória
     const randomWithHuman = Math.random() < 0.5;
     setWithHuman(randomWithHuman);
 
-    // Always generate prompt automatically
-    // The autoGenerate checkbox only controls if outputs are also generated automatically
-    // Optimized: Minimal delay to trigger auto generation flows
+    // Trigger auto generation
     setTimeout(() => {
       promptTagsSnapshotRef.current = null;
       setAutoMode(autoGenerate ? 'prompt-and-generate' : 'prompt-only');
     }, 100);
-  }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups, isSurpriseMeMode, surpriseMePool]);
+  }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups, isSurpriseMeMode, surpriseMePool, selectedVibeSegment, selectedVibeStyle]);
 
   const handleSurpriseMeWithDice = useCallback((autoGen: boolean) => {
     setIsDiceAnimating(true);
@@ -2014,6 +2016,7 @@ const MockupMachinePageContent: React.FC = () => {
       // Auto-trigger generation if mode is active
       if (autoGenerate) {
         const hasExistingOutputs = mockups.some(m => m !== null);
+        if (hasExistingOutputs) prepareForNewMockupSlot(mockupCount); // Immediate feedback
         await runGeneration(undefined, generatedSmartPromptRef.current || undefined, hasExistingOutputs);
         setIsSidebarVisibleMobile(false);
       }
@@ -2212,15 +2215,19 @@ const MockupMachinePageContent: React.FC = () => {
     const removeMockupAndAdjustIndices = () => {
       setMockups(prev => prev.filter((_, i) => i !== index));
       setIsLoading(prev => prev.filter((_, i) => i !== index));
+      setGenerationIds(prev => prev.filter((_, i) => i !== index));
 
       // Adjust fullScreenImageIndex: close modal if viewing deleted mockup, adjust index if viewing later mockup
       if (fullScreenImageIndex !== null) {
         if (fullScreenImageIndex === index) {
-          // Close modal if viewing the deleted mockup
-          setFullScreenImageIndex(null);
+          handleCloseFullScreen();
         } else if (fullScreenImageIndex > index) {
-          // Adjust index if viewing a mockup after the deleted one
-          setFullScreenImageIndex(fullScreenImageIndex - 1);
+          const newIndex = fullScreenImageIndex - 1;
+          setFullScreenImageIndex(newIndex);
+          const newGenId = generationIds.filter((_, i) => i !== index)[newIndex];
+          if (newGenId) {
+            setSearchParams(prev => { prev.set('view', newGenId); return prev; }, { replace: true });
+          }
         }
       }
 
@@ -2262,6 +2269,16 @@ const MockupMachinePageContent: React.FC = () => {
             newMap.set(savedIndex - 1, isLiked);
           }
           // Skip the deleted index
+        });
+        return newMap;
+      });
+
+      // Adjust feedbackRatings: same shift logic
+      setFeedbackRatings(prev => {
+        const newMap = new Map<number, FeedbackRating | null>();
+        prev.forEach((rating, ratedIndex) => {
+          if (ratedIndex < index) newMap.set(ratedIndex, rating);
+          else if (ratedIndex > index) newMap.set(ratedIndex - 1, rating);
         });
         return newMap;
       });
@@ -2617,6 +2634,8 @@ Generate the new mockup image with the requested changes applied.`;
     const shouldGenerateImages = autoMode === 'prompt-and-generate';
     setAutoMode('idle'); // Reset immediately to prevent re-triggers
 
+    if (shouldGenerateImages) prepareForNewMockupSlot(mockupCount);
+    
     handleGenerateSmartPrompt().then(() => {
       if (shouldGenerateImages) {
         // Use the ref value to ensure we use the prompt just generated, avoiding stale state issues
@@ -2823,6 +2842,7 @@ Generate the new mockup image with the requested changes applied.`;
                     <MockupDisplay
                       mockups={mockups}
                       isLoading={isLoading}
+                      isGeneratingPrompt={isGeneratingPrompt}
                       isSidebarCollapsed={isSidebarCollapsed}
                       onRedraw={handleRedrawClick}
                       onView={handleOpenFullScreen}
@@ -2833,6 +2853,7 @@ Generate the new mockup image with the requested changes applied.`;
                       savedIndices={savedIndices}
                       savedMockupIds={savedMockupIds}
                       onToggleLike={handleToggleLike}
+                      onLikeStateChange={handleLikeStateChange}
                       likedIndices={mockupLikedStatus}
                       onRemove={handleRemoveMockup}
                       prompt={promptPreview}
@@ -2842,8 +2863,10 @@ Generate the new mockup image with the requested changes applied.`;
                       aspectRatio={aspectRatio as '16:9' | '4:3' | '1:1'}
                       editButtonsDisabled={isEditOperationDisabled}
                       creditsPerOperation={creditsNeededForEdit}
-                      generationId={lastGenerationIdRef.current}
+                      generationIds={generationIds}
                       feedbackContext={getFeedbackContext}
+                      feedbackRatings={feedbackRatings}
+                      onFeedbackRatingChange={handleFeedbackRatingChange}
                     />
                   </div>
                 </div>
@@ -2883,6 +2906,10 @@ Generate the new mockup image with the requested changes applied.`;
           isLiked={mockupLikedStatus.get(fullScreenImageIndex) ?? false}
           editButtonsDisabled={isEditOperationDisabled}
           creditsPerOperation={creditsNeededForEdit}
+          generationId={generationIds[fullScreenImageIndex]}
+          feedbackContext={getFeedbackContext}
+          feedbackRating={feedbackRatings.get(fullScreenImageIndex) ?? null}
+          onFeedbackRatingChange={(r) => handleFeedbackRatingChange(fullScreenImageIndex, r)}
         />
       )}
 

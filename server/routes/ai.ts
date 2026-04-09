@@ -480,6 +480,7 @@ router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: 
       brandGuidelineId,
       vibeId,
       learnFromHistory,
+      detectedLanguage,
     } = req.body;
 
     if (!designType) {
@@ -543,6 +544,7 @@ router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: 
       userId: req.userId,
       vibeId: typeof vibeId === 'string' ? vibeId : undefined,
       learnFromHistory: learnFromHistory !== false,
+      detectedLanguage: typeof detectedLanguage === 'string' ? detectedLanguage : undefined,
     }, userApiKey);
 
     // Track total tokens

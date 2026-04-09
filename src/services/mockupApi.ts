@@ -298,7 +298,7 @@ export const mockupApi = {
     uniqueId?: string | number; // Optional unique identifier for parallel batch requests (e.g., slot index)
     brandGuidelineId?: string; // Optional brand guideline ID for context injection
     seed?: number; // Optional seed for deterministic generation
-  }): Promise<{ imageBase64?: string; imageUrl?: string; seed?: number; modelUsed?: string; creditsDeducted: number; creditsRemaining: number; isAdmin: boolean }> {
+  }): Promise<{ imageBase64?: string; imageUrl?: string; requestId?: string; seed?: number; modelUsed?: string; creditsDeducted: number; creditsRemaining: number; isAdmin: boolean; generationId?: string }> {
     // Generate unique request ID for tracking
     const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -528,7 +528,7 @@ export const mockupApi = {
           resolution: params.resolution,
         });
 
-        return result;
+        return { ...result, requestId: result.requestId || requestId };
       } finally {
         // Remove from in-flight requests when done (success or error)
         inFlightRequests.delete(requestKey);

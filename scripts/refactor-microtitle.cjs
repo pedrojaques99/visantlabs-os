@@ -2,7 +2,7 @@
  * refactor-microtitle.cjs
  *
  * Replaces hardcoded MicroTitle patterns (text-[10px] tracking-widest uppercase
- * or tracking-[0.2em]) with the MicroTitle component.
+ * or tracking-[0.1em]) with the MicroTitle component.
  *
  * Strategy: Finds <span> or <p> or <h*> or <div> tags whose className contains
  * the MicroTitle pattern and replaces the tag + className with <MicroTitle>.
@@ -75,7 +75,7 @@ const MICRO_CLASSES = [
   'text-neutral-500',
   'uppercase',
   'tracking-widest',
-  'tracking-[0.2em]',
+  'tracking-[0.1em]',
 ];
 
 let stats = { found: 0, modified: 0, files: [] };

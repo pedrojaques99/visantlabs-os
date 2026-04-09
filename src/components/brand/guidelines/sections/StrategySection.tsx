@@ -295,7 +295,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                 <div className="w-12 h-12 flex items-center justify-center rounded-xl text-neutral-500 border border-white/5 bg-neutral-900/50">
                   <p.icon size={20} strokeWidth={1} />
                 </div>
-                <span className="pt-4 text-center text-[11px] font-mono tracking-[0.2em] uppercase w-full text-neutral-400">{p.label}</span>
+                <span className="pt-4 text-center text-[11px] font-mono tracking-[0.1em] uppercase w-full text-neutral-400">{p.label}</span>
               </div>
             ))}
           </div>

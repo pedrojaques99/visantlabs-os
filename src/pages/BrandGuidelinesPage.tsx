@@ -119,7 +119,7 @@ export const BrandGuidelinesPage: React.FC = () => {
             setActiveSections(g.activeSections);
         } else {
             const sections = ['identity', 'logos', 'colors', 'typography', 'figma'];
-            
+
             // Special case for "Feira" - enable Media Kit by default
             const isFeira = g.folder?.toLowerCase().includes('feira') || g.name?.toLowerCase().includes('feira');
             if (isFeira) {
@@ -187,7 +187,7 @@ export const BrandGuidelinesPage: React.FC = () => {
     }, []);
 
     return (
-        <div 
+        <div
             className="brand-guidelines-root"
             data-vsn-page="brand-guidelines"
             data-vsn-component="brand-explorer"
@@ -202,7 +202,7 @@ export const BrandGuidelinesPage: React.FC = () => {
             <div className="min-h-screen bg-transparent relative z-10 flex">
                 {/* Desktop Sidebar */}
                 {!isLoading && guidelines.length > 0 && (
-                    <aside 
+                    <aside
                         role="navigation"
                         aria-label="Brand Guidelines Selection"
                         className="hidden lg:flex flex-col fixed top-10 md:top-14 left-0 bottom-0 w-[260px] xl:w-[280px] border-r border-white/10 bg-neutral-950/80 backdrop-blur-xl z-30"
@@ -220,7 +220,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                 )}
 
                 {/* Main Content Area */}
-                <main 
+                <main
                     role="main"
                     aria-label="Brand Guideline Content"
                     className={cn(
@@ -315,7 +315,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                     className="flex flex-col items-center justify-center py-40 gap-6"
                                 >
                                     <GlitchLoader size={40} />
-                                    <MicroTitle className="text-white/40 text-[11px] font-mono animate-pulse uppercase tracking-[0.2em]">
+                                    <MicroTitle className="text-white/40 text-[11px] font-mono animate-pulse uppercase tracking-[0.1em]">
                                         Synchronizing Workspace
                                     </MicroTitle>
                                 </motion.div>

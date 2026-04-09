@@ -17,11 +17,13 @@
  *     <ThumbsDown />
  *   </button>
  *
- * Estado otimista: marca visualmente antes do server responder. Em erro,
- * reverte e mostra toast (se `sonner` estiver disponível).
+ * Estado otimista: marca visualmente antes do server responder. Em sucesso
+ * ou erro, dispara toast via sonner. Suporta modo controlled (parent owns
+ * state via `controlledRating` + `onRatingChange`) para sync cross-view.
  */
 
 import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { feedbackApi, type FeedbackContext, type FeedbackFeature, type FeedbackRating } from '../services/feedbackApi';
 
 export interface UseGenerationFeedbackParams {
@@ -32,6 +34,10 @@ export interface UseGenerationFeedbackParams {
   context: FeedbackContext | (() => FeedbackContext);
   /** Callback opcional após persistência bem-sucedida. */
   onPersisted?: (rating: FeedbackRating) => void;
+  /** Controlled rating — single source of truth from parent. */
+  controlledRating?: FeedbackRating | null;
+  /** Called when rating changes (for lifting state up). */
+  onRatingChange?: (rating: FeedbackRating | null) => void;
 }
 
 export interface UseGenerationFeedbackReturn {
@@ -48,8 +54,21 @@ const resolveContext = (
 export function useGenerationFeedback(
   params: UseGenerationFeedbackParams,
 ): UseGenerationFeedbackReturn {
-  const [rating, setRating] = useState<FeedbackRating | null>(null);
+  const isControlled = params.controlledRating !== undefined;
+  const [internalRating, setInternalRating] = useState<FeedbackRating | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Controlled mode: parent owns the state. Uncontrolled: local state.
+  const rating = isControlled ? (params.controlledRating ?? null) : internalRating;
+
+  const updateRating = useCallback((next: FeedbackRating | null) => {
+    if (isControlled) {
+      params.onRatingChange?.(next);
+    } else {
+      setInternalRating(next);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isControlled, params.onRatingChange]);
 
   const submit = useCallback(
     async (nextRating: FeedbackRating, reason?: string) => {
@@ -64,7 +83,7 @@ export function useGenerationFeedback(
       }
 
       const previous = rating;
-      setRating(nextRating); // optimistic
+      updateRating(nextRating); // optimistic
       setIsLoading(true);
 
       try {
@@ -77,36 +96,42 @@ export function useGenerationFeedback(
         });
 
         if (!result.success) {
-          setRating(previous);
+          updateRating(previous);
+          toast.error('Failed to send feedback', { duration: 2000 });
         } else {
+          toast.success(nextRating === 'up' ? 'Thanks for the feedback! 👍' : 'Thanks for the feedback! 👎', { duration: 2000 });
           params.onPersisted?.(nextRating);
         }
       } catch (err) {
         console.warn('[useGenerationFeedback] submit failed:', err);
-        setRating(previous);
+        updateRating(previous);
       } finally {
         setIsLoading(false);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rating, params.generationId, params.feature],
+    [rating, params.generationId, params.feature, updateRating],
   );
 
   const reset = useCallback(async () => {
     if (!params.generationId) return;
     const previous = rating;
-    setRating(null); // optimistic
+    updateRating(null); // optimistic
     setIsLoading(true);
     try {
       const res = await feedbackApi.remove(params.generationId);
-      if (!res.success) setRating(previous);
+      if (!res.success) {
+        updateRating(previous);
+      } else {
+        toast.success('Feedback removed', { duration: 2000 });
+      }
     } catch {
-      setRating(previous);
+      updateRating(previous);
     } finally {
       setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rating, params.generationId]);
+  }, [rating, params.generationId, updateRating]);
 
   return { rating, isLoading, submit, reset };
 }

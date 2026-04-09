@@ -1,4 +1,5 @@
 import express from 'express';
+import { randomUUID } from 'crypto';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
@@ -430,6 +431,7 @@ router.post('/generate-step', mockupRateLimiter, authenticate, checkSubscription
       creditsDeducted: actualCreditsDeducted,
       creditsRemaining: totalCreditsRemaining,
       isAdmin,
+      generationId: randomUUID(), // UUID for RAG feedback loop (👍/👎)
     });
   } catch (error: any) {
     console.error('Error generating branding step:', error);

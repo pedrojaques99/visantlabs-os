@@ -224,9 +224,9 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                 className={cn(
                     'relative flex items-center justify-center rounded-xl border transition-all duration-300 font-bold',
                     'focus:outline-none focus:ring-2 focus:ring-brand-cyan/50',
-                    'h-14 backdrop-blur-md',
-                    label ? 'flex-row px-5 gap-2.5' : 'w-14 items-center justify-center',
-                    variant === 'surpriseMe' && label && 'min-w-[140px]',
+                    'h-12 md:h-14 backdrop-blur-md',
+                    label ? 'flex-row px-3 md:px-5 gap-2 md:gap-2.5' : 'w-12 md:w-14 items-center justify-center',
+                    variant === 'surpriseMe' && label && 'min-w-[120px] md:min-w-[140px]',
 
                     // White state (for Prompt) - Modern subtle shadow
                     !disabled && isPrompt
@@ -265,12 +265,12 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                 </div>
                 {label && (
                     <span className={cn(
-                        'flex items-center gap-1.5 text-xs font-mono uppercase tracking-[0.12em] whitespace-nowrap text-center leading-tight transition-colors font-bold',
+                        'flex items-center gap-1.5 text-[10px] md:text-xs font-mono uppercase tracking-[0.12em] whitespace-nowrap text-center leading-tight transition-colors font-bold',
                         !disabled && (isPrimaryAction || isPrompt || isActive) ? 'text-black' : (dark ? 'text-neutral-400' : 'text-neutral-600')
                     )}>
                         {label}
                         {creditsCount != null && creditsCount > 0 && (
-                            <span className="text-[11px] font-semibold opacity-90">
+                            <span className="text-[9px] md:text-[11px] font-semibold opacity-90">
                                 {creditsCount} 💎
                             </span>
                         )}
@@ -295,14 +295,14 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         <GlassPanel
             className={cn(
                 'transition-all duration-300 origin-center flex flex-col items-center mx-auto',
-                'scale-80 md:scale-100 pointer-events-auto',
-                isInline ? 'w-full bg-transparent border-0 shadow-none backdrop-blur-0' : 'w-fit max-w-full'
+                'w-full sm:w-fit pointer-events-auto px-2 sm:px-0',
+                isInline ? 'bg-transparent border-0 shadow-none backdrop-blur-0' : 'max-w-full'
             )}
         >
             <div
                 className={cn(
-                    "flex items-center gap-2 select-none relative w-full",
-                    'justify-between'
+                    "flex items-center gap-4 select-none relative w-full",
+                    'justify-center'
                 )}
             >
                 {!hideActions && (
@@ -322,7 +322,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                             {renderButton(
                                 () => onSurpriseMe(autoGenerate),
                                 isGeneratingPrompt || isDiceAnimating,
-                                <Dices size={20} className={cn("transition-transform duration-700", isDiceAnimating && "rotate-[360deg]")} />,
+                                <Dices size={18} className={cn("md:w-5 md:h-5 transition-transform duration-700", isDiceAnimating && "rotate-[360deg]")} />,
                                 isSurpriseMeMode,
                                 surpriseTooltip(),
                                 autoGenerate ? creditsSurpriseMe : 0,
@@ -520,13 +520,13 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                             <Tooltip content={t('mockup.aiSettings') || "Configurações de geração"} position="top">
                                 <Button variant="ghost" onClick={() => setShowSettings(!showSettings)}
                                     className={cn(
-                                        "flex items-center justify-center w-14 h-14 rounded-xl border transition-all duration-200",
+                                        "flex items-center justify-center w-12 md:w-14 h-12 md:h-14 rounded-xl border transition-all duration-200",
                                         showSettings
                                             ? "bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan"
                                             : "bg-neutral-900/50 border-white/5 text-neutral-500 hover:bg-neutral-800 hover:text-neutral-300"
                                     )}
                                 >
-                                    <Settings size={20} className={cn("transition-transform duration-300", showSettings && "rotate-90")} />
+                                    <Settings size={18} className={cn("md:w-5 md:h-5 transition-transform duration-300", showSettings && "rotate-90")} />
                                 </Button>
                             </Tooltip>
 
