@@ -1,6 +1,8 @@
 param(
     [string]$Path = ".",
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$Merge,
+    [switch]$Convert
 )
 
 # --- CONFIGURAÇÃO ---
@@ -119,25 +121,28 @@ function Extrair-PNGs-Para-Raiz {
 function Juntar-PDFs {
     Write-Host "Juntando PDFs (ordem inteligente por nome)..." -ForegroundColor Magenta
 
-    # Busca PDFs recursivamente
-    $pdfs = Get-ChildItem -Path $Path -Filter "*.pdf" -Recurse
+    # Prioriza arquivos soltos na pasta atual, se nao encontrar, tenta recursivo
+    $pdfs = Get-ChildItem -Path $Path -Filter "*.pdf" -File
+    if ($pdfs.Count -lt 2) {
+        Write-Host "    [i] Poucos PDFs na raiz. Buscando recursivamente..." -ForegroundColor DarkGray
+        $pdfs = Get-ChildItem -Path $Path -Filter "*.pdf" -Recurse
+    }
 
     if ($pdfs.Count -lt 2) {
         Write-Host "    [!] Menos de 2 PDFs encontrados. Nada a juntar." -ForegroundColor Yellow
         return
     }
 
-    # Ordenacao natural: extrai numeros do inicio do nome para sort correto
-    $sorted = $pdfs | Sort-Object {
-        $name = $_.BaseName
-        # Extrai prefixo numerico se existir (ex: "01_intro" -> 1, "10_cap" -> 10)
-        if ($name -match '^\d+') { [int]$Matches[0] } else { [int]::MaxValue }
-    }, { $_.BaseName }
+    # Ordenacao Natural Inteligente (1, 2, 10 em vez de 1, 10, 2)
+    # Funciona com qualquer numero no nome (Ex: Pagina_1, Pagina_10, Cap1_Part2)
+    $sorted = $pdfs | Sort-Object { 
+        [regex]::Replace($_.Name, '\d+', { $args[0].Value.PadLeft(20, '0') }) 
+    }
 
-    Write-Host "    Ordem de merge:" -ForegroundColor Gray
+    Write-Host "    Sequencia encontrada:" -ForegroundColor Gray
     $i = 1
     foreach ($pdf in $sorted) {
-        Write-Host "    $i. $($pdf.Name)" -ForegroundColor DarkGray
+        Write-Host "    $($i.ToString().PadLeft(2)) | $($pdf.Name)" -ForegroundColor DarkGray
         $i++
     }
 
@@ -145,28 +150,112 @@ function Juntar-PDFs {
     $output = Join-Path $Path "$parentName-merged.pdf"
 
     if ($DryRun) {
-        Write-Host "    [DRY-RUN] Geraria: $output" -ForegroundColor DarkYellow
+        Write-Host ""
+        Write-Host "    [DRY-RUN] O arquivo seria gerado em: $output" -ForegroundColor DarkYellow
         return
     }
 
-    # Verifica se qpdf esta disponivel
+    # Verifica se qpdf esta disponivel (ou busca em caminhos comuns)
     $qpdf = Get-Command qpdf -ErrorAction SilentlyContinue
     if (-not $qpdf) {
+        $commonPaths = @(
+            "C:\Program Files\qpdf*\bin\qpdf.exe",
+            "C:\Program Files (x86)\qpdf*\bin\qpdf.exe",
+            "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\qpdf.qpdf*\**\qpdf.exe"
+        )
+        foreach ($p in $commonPaths) {
+            $found = Get-ChildItem -Path $p -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($found) { $qpdf = $found.FullName; break }
+        }
+    }
+
+    if (-not $qpdf) {
+        Write-Host ""
         Write-Host "    [!] qpdf nao encontrado. Instale com: winget install qpdf" -ForegroundColor Red
-        Write-Host "    Ou: choco install qpdf" -ForegroundColor Red
+        Write-Host "    O merge requer esta ferramenta validada." -ForegroundColor Red
         return
     }
 
+    Write-Host "`n    Mesclando..." -ForegroundColor Magenta -NoNewline
+    
     $inputFiles = ($sorted | ForEach-Object { "`"$($_.FullName)`"" }) -join " "
-    $cmd = "qpdf --empty --pages $inputFiles -- `"$output`""
-    Invoke-Expression $cmd
+    $cmd = "& `"$qpdf`" --empty --pages $inputFiles -- `"$output`""
+    
+    try {
+        Invoke-Expression $cmd
+        Write-Host " Pronto!" -ForegroundColor Green
+    } catch {
+        Write-Host " Erro!" -ForegroundColor Red
+        Write-Host "    $($_.Exception.Message)" -ForegroundColor DarkRed
+    }
 
     if (Test-Path $output) {
         $size = [math]::Round((Get-Item $output).Length / 1MB, 1)
         Write-Host "    [OK] Gerado: $output (${size}MB)" -ForegroundColor Green
     } else {
-        Write-Host "    [!] Erro ao gerar PDF." -ForegroundColor Red
+        Write-Host "    [!] Falha ao gerar arquivo final." -ForegroundColor Red
     }
+}
+
+function Converter-Para-SVG {
+    Write-Host "Convertendo Vetores (AI/EPS) para SVG (Figma Ready)..." -ForegroundColor Yellow
+
+    $files = Get-ChildItem -Path $Path -Include "*.ai", "*.eps" -File -Recurse
+    if ($files.Count -eq 0) {
+        Write-Host "    [!] Nenhum arquivo .ai ou .eps encontrado." -ForegroundColor DarkYellow
+        return
+    }
+
+    # Busca Inkscape
+    $inkscape = Get-Command inkscape -ErrorAction SilentlyContinue
+    if (-not $inkscape) {
+        $inkPaths = @(
+            "C:\Program Files\Inkscape\bin\inkscape.exe",
+            "C:\Program Files\Inkscape\inkscape.exe",
+            "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Inkscape.Inkscape*\**\inkscape.exe"
+        )
+        foreach ($p in $inkPaths) {
+            $found = Get-ChildItem -Path $p -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($found) { $inkscape = $found.FullName; break }
+        }
+    }
+
+    if (-not $inkscape) {
+        Write-Host "    [!] Inkscape nao encontrado. Ele eh necessario para conversao de alta fidelidade." -ForegroundColor Red
+        return
+    }
+
+    $svgDir = Join-Path $Path "SVG_Export"
+    if (-not $DryRun -and -not (Test-Path $svgDir)) { New-Item $svgDir -ItemType Directory -Force | Out-Null }
+
+    Write-Host "    Processando $($files.Count) arquivos..." -ForegroundColor DarkGray
+    foreach ($file in $files) {
+        $outPath = Join-Path $svgDir ($file.BaseName + ".svg")
+        Write-Host "    [->] $($file.Name)... " -NoNewline -ForegroundColor White
+        
+        if ($DryRun) {
+            Write-Host "Simulado" -ForegroundColor DarkYellow
+            continue
+        }
+
+        # Comando para Plain SVG + Converter Texto em Caminho (Fidelity)
+        $cmd = "& `"$inkscape`" --export-plain-svg --export-text-to-path --export-type=svg --export-filename=`"$outPath`" `"$($file.FullName)`""
+        try {
+            Invoke-Expression $cmd | Out-Null
+            
+            # Otimizacao extra com SVGO se disponivel
+            if (Get-Command svgo -ErrorAction SilentlyContinue) {
+                svgo `"$outPath`" --multipass --quiet
+            }
+
+            Write-Host "OK (Cleaned)" -ForegroundColor Green
+            $script:Counters.Vetor++
+        } catch {
+            Write-Host "Erro" -ForegroundColor Red
+        }
+    }
+
+    Write-Host "    [OK] Exportado para: $svgDir" -ForegroundColor Green
 }
 
 function Show-Resumo {
@@ -202,7 +291,21 @@ function Show-Header {
     Write-Host ""
 }
 
-# --- MENU DE EXECUÇÃO ---
+# --- EXECUCAO AUTOMATICA (SWITCHES) ---
+
+if ($Merge) {
+    Show-Header
+    Juntar-PDFs
+    exit
+}
+
+if ($Convert) {
+    Show-Header
+    Converter-Para-SVG
+    exit
+}
+
+# --- MENU DE EXECUCAO ---
 
 Show-Header
 Write-Host "    [1] " -NoNewline; Write-Host "Organizar Avatares/Icons/Square" -ForegroundColor White
@@ -211,13 +314,14 @@ Write-Host "    [3] " -NoNewline; Write-Host "Separar por Extensão (PDF/AI/SVG)
 Write-Host "    [4] " -NoNewline; Write-Host "Extrair PNGs para a Raiz" -ForegroundColor White
 Write-Host "    [5] " -NoNewline; Write-Host "Organizar TUDO (Completo)" -ForegroundColor Cyan
 Write-Host "    [6] " -NoNewline; Write-Host "Juntar PDFs em um unico arquivo" -ForegroundColor Magenta
-Write-Host "    [7] " -NoNewline; Write-Host "Sair" -ForegroundColor Gray
+Write-Host "    [7] " -NoNewline; Write-Host "Converter AI/EPS para SVG (Figma Ready)" -ForegroundColor Yellow
+Write-Host "    [8] " -NoNewline; Write-Host "Sair" -ForegroundColor Gray
 Write-Host ""
 Write-Host "    --------------------------------------------" -ForegroundColor Gray
 
 $escolha = Read-Host "Escolha uma opção"
 
-if ($escolha -eq "7") { exit }
+if ($escolha -eq "8") { exit }
 
 switch ($escolha) {
     "1" { Organizar-Avatar }
@@ -226,10 +330,11 @@ switch ($escolha) {
     "4" { Extrair-PNGs-Para-Raiz }
     "5" { Organizar-Avatar; Organizar-Transparentes; Organizar-Vetor; Extrair-PNGs-Para-Raiz }
     "6" { Juntar-PDFs }
+    "7" { Converter-Para-SVG }
     default { Write-Host "`n    [!] Opção inválida." -ForegroundColor Red; Start-Sleep -Seconds 1 }
 }
 
-if ($escolha -match "^[1-6]$") {
+if ($escolha -match "^[1-7]$") {
     Show-Resumo
     pause
 }

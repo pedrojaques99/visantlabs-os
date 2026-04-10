@@ -100,7 +100,9 @@
       "Bash(printf:*)",
       "Bash(cat)",
       "Bash(chmod +x /tmp/audit.sh)",
-      "Bash(/tmp/audit.sh)"
+      "Bash(/tmp/audit.sh)",
+      "Bash(npm list:*)",
+      "Bash(pkill -f \"vite\\\\|tsx\")"
     ]
   }
 }

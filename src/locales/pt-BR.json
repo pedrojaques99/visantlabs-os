@@ -241,8 +241,8 @@
     },
     "home": "Início",
     "instagramExtractor": {
-      "description": "Extraia imagens em alta resolução de qualquer perfil público do Instagram.",
-      "name": "Instagram Extractor"
+      "description": "Extraia imagens HD do Google, URL, Instagram ou Documentos.",
+      "name": "Extrator Universal"
     },
     "mockupMachine": {
       "description": "Gere mockups profissionais com IA",
