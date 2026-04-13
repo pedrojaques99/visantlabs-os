@@ -6,6 +6,7 @@ import { BrandGuidelineSection } from './BrandGuidelineSection';
 import { DesignSystemSection } from './DesignSystemSection';
 import { ComponentLibrarySection } from './ComponentLibrarySection';
 import { BrandIntelligenceSection } from './BrandIntelligenceSection';
+import { BrandOperationsSection } from './BrandOperationsSection';
 import { IllustratorExportSection } from '../illustrator/IllustratorExportSection';
 import { Separator } from '@/components/ui/separator';
 
@@ -16,6 +17,9 @@ export function BrandTab() {
       <Separator />
 
       <BrandIntelligenceSection />
+      <Separator />
+
+      <BrandOperationsSection />
       <Separator />
 
       <BrandLogoSection />

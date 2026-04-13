@@ -40,7 +40,15 @@ export function useFigmaMessages() {
 
         case 'SMART_SCAN_RESULT': {
           if (msg.items) {
-            usePluginStore.setState({ pendingAttachments: msg.items });
+            // Show SmartScan modal with categorized results
+            usePluginStore.setState({
+              pendingAttachments: msg.items,
+              showSmartScanModal: true,
+              smartScanResults: msg.items
+            });
+            storeState.showToast(`Found ${msg.items.length} elements`, 'success');
+          } else {
+            storeState.showToast('No elements found', 'warning');
           }
           break;
         }
@@ -189,7 +197,10 @@ export function useFigmaMessages() {
 
         case 'COMPONENT_CAPTURED':
         case 'SELECTION_LOGO_RESULT': {
-          // Component captured, no action needed
+          if (msg.component) {
+            usePluginStore.setState({ selectedLogo: msg.component });
+            storeState.showToast('Logo captured', 'success');
+          }
           break;
         }
 
@@ -252,7 +263,8 @@ export function useFigmaMessages() {
 
         case 'SELECTION_FONT_RESULT': {
           if (msg.font) {
-
+            usePluginStore.setState({ selectedFont: msg.font });
+            storeState.showToast(`Selected font: ${msg.font.family}`, 'success');
           }
           break;
         }
@@ -288,12 +300,19 @@ export function useFigmaMessages() {
 
         // ═══ Brand Intelligence ═══
         case 'BRAND_LINT_REPORT': {
-
+          if (msg.report) {
+            usePluginStore.setState({ brandLintReport: msg.report });
+            const issueCount = msg.report.issues?.length || 0;
+            storeState.showToast(`Brand lint: ${issueCount} issues found`, issueCount > 0 ? 'warning' : 'success');
+          }
           break;
         }
 
         case 'BRAND_APPLY_DEBUG': {
-
+          if (msg.debug) {
+            console.log('Brand Apply Debug:', msg.debug);
+            storeState.showToast('Brand applied', 'success');
+          }
           break;
         }
 
@@ -306,7 +325,14 @@ export function useFigmaMessages() {
         }
 
         case 'ILLUSTRATOR_CODE_READY': {
-
+          if (msg.code) {
+            // Copy code to clipboard
+            navigator.clipboard.writeText(msg.code).then(() => {
+              storeState.showToast('Illustrator code copied to clipboard!', 'success');
+            }).catch(() => {
+              storeState.showToast('Failed to copy code', 'error');
+            });
+          }
           break;
         }
 
