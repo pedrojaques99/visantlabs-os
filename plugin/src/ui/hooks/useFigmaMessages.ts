@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { usePluginStore } from '../store';
+import { apiUrl } from '../config';
 import type { UIMessage, PluginMessage } from '@/lib/figma-types';
 
 export function useFigmaMessages() {
@@ -14,7 +15,7 @@ export function useFigmaMessages() {
     // Get current store state to use in handler
     const currentStore = usePluginStore.getState();
 
-    const handleMessage = (event: MessageEvent) => {
+    const handleMessage = async (event: MessageEvent) => {
       const msg = event.data?.pluginMessage as PluginMessage | undefined;
       if (!msg?.type) return;
 
@@ -327,8 +328,45 @@ export function useFigmaMessages() {
 
         // ═══ API Calls ═══
         case 'CALL_API': {
-          // Gemini API call is being routed - message is relay from server
+          // Call backend API with context from sandbox
+          const context = msg.context || msg.payload;
+          if (!context) break;
 
+          try {
+            // Show thinking indicator
+            storeState.showToast('Calling Gemini...', 'info');
+
+            const response = await fetch(apiUrl('/plugin'), {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(storeState.authToken ? { Authorization: `Bearer ${storeState.authToken}` } : {})
+              },
+              body: JSON.stringify(context)
+            });
+
+            if (!response.ok) {
+              const error = await response.json().catch(() => ({ error: response.statusText }));
+              throw new Error(error.error || `API error: ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            // Add AI response to chat
+            const assistantMessage = {
+              id: `msg-${Date.now()}`,
+              role: 'assistant' as const,
+              content: result.text || result.response || 'Response received',
+              timestamp: Date.now(),
+              operations: result.operations
+            };
+
+            storeState.addChatMessage(assistantMessage);
+            storeState.showToast('Response received', 'success');
+          } catch (err) {
+            console.error('API call failed:', err);
+            storeState.showToast(`API error: ${(err as Error).message}`, 'error');
+          }
           break;
         }
 
