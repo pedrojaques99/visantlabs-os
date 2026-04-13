@@ -81,11 +81,14 @@ const allAllowedOrigins = [...new Set([...allowedOrigins, ...claudeOrigins, ...d
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl) or 'null' origin (Figma plugin iframes)
-    if (!origin || origin === 'null') return callback(null, true);
+    if (!origin || origin === 'null') {
+      // Return the origin as-is so cors package sets Access-Control-Allow-Origin header
+      return callback(null, origin || '*');
+    }
 
     // Check if origin is in allowed list
     if (allAllowedOrigins.includes(origin)) {
-      callback(null, true);
+      callback(null, origin);
     } else {
       // In development, allow localhost and ngrok
       if (process.env.NODE_ENV !== 'production') {
@@ -94,12 +97,12 @@ app.use(cors({
           origin.startsWith('http://127.0.0.1:') ||
           origin.includes('ngrok')
         ) {
-          return callback(null, true);
+          return callback(null, origin);
         }
       }
       // In production, allow all (API is protected by auth)
       if (process.env.NODE_ENV === 'production') {
-        callback(null, true);
+        callback(null, origin);
       } else {
         console.warn(`⚠️  CORS blocked origin: ${origin}`);
         callback(new Error('Not allowed by CORS'));
