@@ -1,15 +1,16 @@
 /**
  * Plugin configuration and constants
  * Update API_BASE_URL to match your server environment
+ *
+ * For development: http://localhost:3000 (default)
+ * For production: set window.__VISANT_API_URL__ before plugin loads
  */
 
-// Get API base URL from environment or use default
-// For local development: http://localhost:3000
-// For production: https://api.visant.com
+// Get API base URL - defaults to localhost:3000 for development
+// In production, set window.__VISANT_API_URL__ = 'https://your-domain.com'
 export const API_BASE_URL =
-  typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'http://localhost:3000'
-    : (import.meta.env.VITE_API_URL || 'https://api.visant.com');
+  (typeof window !== 'undefined' && (window as any).__VISANT_API_URL__) ||
+  'http://localhost:3000';
 
 /**
  * Construct full API URL from relative path
