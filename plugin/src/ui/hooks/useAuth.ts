@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { usePluginStore } from '../store';
 import { useFigmaMessages } from './useFigmaMessages';
+import { apiUrl } from '../config';
 
 export function useAuth() {
   const { authToken, authEmail, setAuthToken, setAuthEmail, updateCredits, showToast } = usePluginStore();
@@ -15,7 +16,7 @@ export function useAuth() {
     async (email: string, password: string, rememberMe = true) => {
       try {
         // Call API endpoint para login
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch(apiUrl('/auth/login'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -40,7 +41,7 @@ export function useAuth() {
 
           // Fetch credits
           try {
-            const creditsResponse = await fetch('/api/auth/status', {
+            const creditsResponse = await fetch(apiUrl('/auth/status'), {
               headers: {
                 Authorization: `Bearer ${data.token}`,
                 'Content-Type': 'application/json'
@@ -87,7 +88,7 @@ export function useAuth() {
     if (!authToken) return false;
 
     try {
-      const response = await fetch('/api/auth/status', {
+      const response = await fetch(apiUrl('/auth/status'), {
         headers: {
           Authorization: `Bearer ${authToken}`,
           'Content-Type': 'application/json'
