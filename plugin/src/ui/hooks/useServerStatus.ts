@@ -7,11 +7,13 @@ export function useServerStatus() {
   useEffect(() => {
     const checkServer = async () => {
       try {
-        const response = await fetch(apiUrl('/health'), {
+        // Use /auth/status endpoint instead of /health to avoid CORS preflight issues
+        const response = await fetch(apiUrl('/auth/status'), {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
-        setIsConnected(response.ok);
+        // Server is connected if we get any response (even 401 is fine - means server is running)
+        setIsConnected(response.status !== 0);
       } catch (err) {
         setIsConnected(false);
       }
@@ -20,8 +22,8 @@ export function useServerStatus() {
     // Check immediately
     checkServer();
 
-    // Check every 5 seconds
-    const interval = setInterval(checkServer, 5000);
+    // Check every 10 seconds (less aggressive)
+    const interval = setInterval(checkServer, 10000);
     return () => clearInterval(interval);
   }, []);
 
