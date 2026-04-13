@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useFigmaMessages } from '../../hooks/useFigmaMessages';
+import { ServerDebugPanel } from './ServerDebugPanel';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,9 @@ export function DevTab() {
 
   return (
     <div className="space-y-4 max-w-2xl">
+      {/* Server Debug Panel */}
+      <ServerDebugPanel />
+
       <div className="space-y-2 border border-border rounded-lg p-3">
         <h3 className="text-xs font-mono uppercase font-semibold flex items-center gap-1">
           <Zap size={12} />
