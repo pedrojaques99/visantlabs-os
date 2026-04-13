@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { usePluginStore } from '../store';
+import { apiUrl } from '../config';
 
 export function useApi() {
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -24,7 +25,10 @@ export function useApi() {
       }
 
       try {
-        const response = await fetch(endpoint, {
+        // Convert relative API paths to full URLs
+        const url = endpoint.startsWith('http') ? endpoint : apiUrl(endpoint.replace(/^\/api/, ''));
+
+        const response = await fetch(url, {
           ...options,
           headers,
           signal: abortControllerRef.current.signal
