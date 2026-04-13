@@ -40,7 +40,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleKeyDown(e as any);
+      handleSend();
     }
     mentions.handleKeyDown(e);
   };
