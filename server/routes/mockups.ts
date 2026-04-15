@@ -174,9 +174,9 @@ async function deductCreditsAtomically(
     throw new Error('User not found');
   }
 
-  const totalCreditsEarnedBefore = userBefore.totalCreditsEarned || 0;
-  const monthlyCreditsBefore = userBefore.monthlyCredits || 20;
-  const creditsUsedBefore = userBefore.creditsUsed || 0;
+  const totalCreditsEarnedBefore = userBefore.totalCreditsEarned ?? 0;
+  const monthlyCreditsBefore = userBefore.monthlyCredits ?? 20;
+  const creditsUsedBefore = userBefore.creditsUsed ?? 0;
   const monthlyCreditsRemainingBefore = Math.max(0, monthlyCreditsBefore - creditsUsedBefore);
   const totalCreditsBefore = totalCreditsEarnedBefore + monthlyCreditsRemainingBefore;
 
@@ -265,9 +265,9 @@ async function deductCreditsAtomically(
       throw new Error('User not found');
     }
 
-    const currentTotalEarned = currentUser.totalCreditsEarned || 0;
-    const currentMonthlyCredits = currentUser.monthlyCredits || 20;
-    const currentCreditsUsed = currentUser.creditsUsed || 0;
+    const currentTotalEarned = currentUser.totalCreditsEarned ?? 0;
+    const currentMonthlyCredits = currentUser.monthlyCredits ?? 20;
+    const currentCreditsUsed = currentUser.creditsUsed ?? 0;
     const currentMonthlyRemaining = Math.max(0, currentMonthlyCredits - currentCreditsUsed);
     const currentTotal = currentTotalEarned + currentMonthlyRemaining;
 
@@ -289,9 +289,9 @@ async function deductCreditsAtomically(
     }
   }
 
-  const totalCreditsEarnedAfter = result.totalCreditsEarned || 0;
-  const creditsUsedAfter = result.creditsUsed || 0;
-  const monthlyCreditsAfter = result.monthlyCredits || 20;
+  const totalCreditsEarnedAfter = result.totalCreditsEarned ?? 0;
+  const creditsUsedAfter = result.creditsUsed ?? 0;
+  const monthlyCreditsAfter = result.monthlyCredits ?? 20;
   const monthlyCreditsRemainingAfter = Math.max(0, monthlyCreditsAfter - creditsUsedAfter);
   const totalCreditsAfter = totalCreditsEarnedAfter + monthlyCreditsRemainingAfter;
 
@@ -586,7 +586,7 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, next
 
     // Use find() with sort instead of aggregation for better performance with indexes
     const mockups = await db.collection('mockups')
-      .find({ userId: req.userId })
+      .find({ userId: new ObjectId(req.userId) })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -633,7 +633,7 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
     const db = getDb();
     const mockup = await db.collection('mockups').findOne({
       _id: new ObjectId(req.params.id),
-      userId: req.userId
+      userId: new ObjectId(req.userId)
     });
 
     if (!mockup) {
@@ -1811,7 +1811,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
     });
 
     const result = await db.collection('mockups').updateOne(
-      { _id: new ObjectId(req.params.id), userId: req.userId },
+      { _id: new ObjectId(req.params.id), userId: new ObjectId(req.userId) },
       { $set: updateData }
     );
 
@@ -1827,9 +1827,10 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
     }
 
     // Verify the update by fetching the updated mockup (only once)
+    // Fixed: convert req.userId to ObjectId since mockups are stored with ObjectId by Prisma
     const updatedMockup = await db.collection('mockups').findOne({
       _id: new ObjectId(req.params.id),
-      userId: req.userId
+      userId: new ObjectId(req.userId)
     });
 
     // Use structured logging to avoid format string vulnerability

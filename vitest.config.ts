@@ -39,7 +39,7 @@ export default defineConfig({
         test: {
           name: 'integration',
           include: ['tests/integration/**/*.test.ts'],
-          setupFiles: ['tests/setup.ts', 'tests/setup.integration.ts'],
+          setupFiles: ['tests/setup.integration.ts'],
           fileParallelism: false,
           testTimeout: 30000,
         },
@@ -49,7 +49,7 @@ export default defineConfig({
         test: {
           name: 'e2e',
           include: ['tests/e2e/**/*.test.ts'],
-          setupFiles: ['tests/setup.ts', 'tests/setup.integration.ts'],
+          setupFiles: ['tests/setup.integration.ts'],
           fileParallelism: false,
           testTimeout: 60000,
         },

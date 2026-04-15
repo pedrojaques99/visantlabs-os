@@ -12,7 +12,7 @@ const renewCreditsIfNeeded = async (user: any, db: any) => {
   const now = new Date();
 
   if (creditsResetDate && now >= creditsResetDate) {
-    const monthlyCredits = user.monthlyCredits || FREE_MONTHLY_CREDITS;
+    const monthlyCredits = user.monthlyCredits ?? FREE_MONTHLY_CREDITS;
     const creditsUsed = user?.creditsUsed || 0;
     
     // creditsUsed now tracks ALL credits used (both earned and monthly)
@@ -49,7 +49,7 @@ const renewCreditsIfNeeded = async (user: any, db: any) => {
 const migrateToCreditsSystem = async (user: any, db: any) => {
   // Check if user needs migration (has freeGenerationsUsed but no creditsResetDate set)
   if (user.freeGenerationsUsed && user.freeGenerationsUsed > 0 && !user.creditsResetDate) {
-    const monthlyCredits = user.monthlyCredits || FREE_MONTHLY_CREDITS;
+    const monthlyCredits = user.monthlyCredits ?? FREE_MONTHLY_CREDITS;
     const creditsUsed = Math.min(user.freeGenerationsUsed, monthlyCredits);
     
     // Set initial credits reset date (30 days from now for free users)
@@ -141,7 +141,7 @@ export const checkSubscription = async (
     const hasActiveSubscription = subscriptionStatus === 'active';
     
     // Get credits information
-    const monthlyCredits = user?.monthlyCredits || FREE_MONTHLY_CREDITS;
+    const monthlyCredits = user?.monthlyCredits ?? FREE_MONTHLY_CREDITS;
     let creditsUsed = user?.creditsUsed || 0;
     let creditsResetDate: Date | undefined = user?.creditsResetDate ? new Date(user.creditsResetDate) : undefined;
 

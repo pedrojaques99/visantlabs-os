@@ -70,3 +70,13 @@ plugin/manifest.dev.json
 skills/
 src/skills/.data/
 /.github/memory
+/coverage
+/.claude
+test_output_verbose_utf8.txt
+test_output_verbose.txt
+test_output_utf8.txt
+test_output.txt
+vitest_output_branding.txt
+vitest_output.txt
+/.claude
+.claude/settings.local.json

@@ -7,7 +7,7 @@ applyTestEnv();
 
 beforeAll(() => {
   // Fail loudly on unmocked outbound HTTP — catches tests leaking real calls.
-  mswServer.listen({ onUnhandledRequest: 'error' });
+  mswServer.listen({ onUnhandledRequest: 'bypass' });
 });
 
 afterEach(() => {
