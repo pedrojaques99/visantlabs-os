@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useFigmaMessages } from './useFigmaMessages';
+import { usePluginStore } from '../store';
 
 export interface MentionItem {
   id: string;
@@ -13,6 +14,16 @@ export function useMentions(inputRef: React.RefObject<HTMLTextAreaElement>) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [filterText, setFilterText] = useState('');
   const { send } = useFigmaMessages();
+  const mentionElements = usePluginStore(s => s.mentionElements);
+
+  useEffect(() => {
+    if (mentionElements.length > 0) {
+      const filtered = filterText
+        ? mentionElements.filter((el: any) => el.name?.toLowerCase().includes(filterText.toLowerCase()))
+        : mentionElements;
+      setItems(filtered.map((el: any) => ({ id: el.id, name: el.name, type: el.type || 'frame' })));
+    }
+  }, [mentionElements, filterText]);
 
   const checkForMention = useCallback(() => {
     if (!inputRef.current) return;

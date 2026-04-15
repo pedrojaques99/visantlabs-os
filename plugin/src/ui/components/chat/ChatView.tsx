@@ -4,12 +4,13 @@ import { useChatSend } from '../../hooks/useChatSend';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { TypingIndicator } from './TypingIndicator';
+import { Sparkles } from 'lucide-react';
 
 export function ChatView() {
   const { chatHistory } = usePluginStore();
   const { sendMessage } = useChatSend();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const isLoading = chatHistory.length > 0 && chatHistory[chatHistory.length - 1]?.role === 'user';
+  const isGenerating = usePluginStore(s => s.isGenerating);
 
   useEffect(() => {
     // Auto-scroll to bottom
@@ -26,21 +27,15 @@ export function ChatView() {
         {chatHistory.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center max-w-xs space-y-3">
-              <div className="w-12 h-12 rounded-full bg-brand-cyan/10 flex items-center justify-center mx-auto">
-                <span className="text-xl">✨</span>
-              </div>
               <p className="text-sm text-muted-foreground">
                 Descreva o que deseja criar e o Visant Copilot irá gerar designs no Figma.
-              </p>
-              <p className="text-xs text-muted-foreground/60">
-                Use as opções acima para ativar Think Mode, Brand Guidelines e Page Scan.
               </p>
             </div>
           </div>
         ) : (
           <>
             <MessageList messages={chatHistory} />
-            {isLoading && <TypingIndicator />}
+            {isGenerating && <TypingIndicator />}
           </>
         )}
       </div>

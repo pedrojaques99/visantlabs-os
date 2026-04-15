@@ -16,6 +16,7 @@ import { checkBrandCompliance, type ComplianceCheckInput } from '../services/com
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
 import { calculateChangedFields, createSnapshot, generateChangeNote, generateDiff, formatVersionListItem } from '../lib/versionUtils.js'
 import { extractFigmaFileKey, isValidFigmaUrl } from '../lib/figmaUtils.js'
+import { BrandGuidelineSchema, BrandGuidelinePatchSchema } from '../../src/lib/brandGuidelineSchema.js'
 
 const router = express.Router()
 
@@ -54,7 +55,11 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
   try {
     if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
 
-    const data: Partial<BrandGuideline> = req.body
+    const parsed = BrandGuidelineSchema.safeParse(req.body)
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid brand guideline payload', issues: parsed.error.issues })
+    }
+    const data: Partial<BrandGuideline> = parsed.data as any
     const completeness = calculateCompleteness(data)
 
     const guideline = await prisma.brandGuideline.create({
@@ -107,7 +112,11 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
 
     if (!existing) return res.status(404).json({ error: 'Not found' })
 
-    const update: Partial<BrandGuideline> = req.body
+    const parsed = BrandGuidelinePatchSchema.safeParse(req.body)
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid brand guideline patch', issues: parsed.error.issues })
+    }
+    const update: Partial<BrandGuideline> = parsed.data as any
     const { changeNote } = req.body // Optional user-provided change note
     const merged: Partial<BrandGuideline> = {}
     const fields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections', 'folder', 'strategy', 'orderedBlocks'] as const
@@ -525,31 +534,62 @@ router.post('/:id/logos', apiRateLimiter, authenticate, async (req: AuthRequest,
     })
     if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
 
-    const { data, url, variant = 'primary', label } = req.body
+    const {
+      data, url, variant = 'primary', label,
+      source, thumbnailData, thumbnailUrl: incomingThumbUrl, format,
+      figmaKey, figmaNodeId, figmaFileKey,
+    } = req.body
     const logoId = crypto.randomUUID()
-    let logoUrl: string
+    let logoUrl: string | undefined
+    let thumbnailUrl: string | undefined = incomingThumbUrl
 
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { subscriptionTier: true, isAdmin: true },
+    })
+
+    // Primary media (uploaded file or explicit URL)
     if (data) {
-      const contentType = data.startsWith('data:image/svg') ? 'image/svg+xml' : 'image/png'
-      const user = await prisma.user.findUnique({
-        where: { id: req.userId },
-        select: { subscriptionTier: true, isAdmin: true },
-      })
-
+      const ct = data.startsWith('data:image/svg') ? 'image/svg+xml'
+        : data.startsWith('data:application/pdf') ? 'application/pdf'
+        : data.startsWith('data:image/jpeg') ? 'image/jpeg'
+        : 'image/png'
       logoUrl = await uploadBrandMedia(
-        data, req.userId, guideline.id, `logo-${logoId}`, contentType,
+        data, req.userId, guideline.id, `logo-${logoId}`, ct,
         user?.subscriptionTier || undefined, user?.isAdmin || undefined,
       )
     } else if (url) {
       logoUrl = url
-    } else {
-      return res.status(400).json({ error: 'Either data (base64) or url is required' })
     }
 
-    const validVariants = ['primary', 'dark', 'light', 'icon', 'custom'] as const
-    const safeVariant = validVariants.includes(variant) ? variant : 'custom'
+    // Thumbnail (always rasterized PNG) — required for Figma-linked logos and PDFs
+    if (thumbnailData && !thumbnailUrl) {
+      thumbnailUrl = await uploadBrandMedia(
+        thumbnailData, req.userId, guideline.id, `logo-${logoId}-thumb`, 'image/png',
+        user?.subscriptionTier || undefined, user?.isAdmin || undefined,
+      )
+    }
 
-    const newLogo: BrandGuidelineLogo = { id: logoId, url: logoUrl, variant: safeVariant, label }
+    if (!logoUrl && !thumbnailUrl && !figmaKey && !figmaNodeId) {
+      return res.status(400).json({ error: 'Provide data, url, thumbnailData, or a figma reference' })
+    }
+
+    const validVariants = ['primary', 'dark', 'light', 'icon', 'accent', 'custom'] as const
+    const safeVariant = validVariants.includes(variant) ? variant : 'custom'
+    const safeSource = source === 'figma' ? 'figma' : 'upload'
+
+    const newLogo: BrandGuidelineLogo = {
+      id: logoId,
+      url: logoUrl ?? thumbnailUrl ?? '',
+      variant: safeVariant,
+      label,
+      ...(thumbnailUrl ? { thumbnailUrl } : {}),
+      ...(format ? { format } : {}),
+      source: safeSource,
+      ...(figmaKey ? { figmaKey } : {}),
+      ...(figmaNodeId ? { figmaNodeId } : {}),
+      ...(figmaFileKey ? { figmaFileKey } : {}),
+    } as BrandGuidelineLogo
     const existingLogos = (guideline.logos as unknown as BrandGuidelineLogo[] | null) || []
     const updatedLogos = [...existingLogos, newLogo]
 

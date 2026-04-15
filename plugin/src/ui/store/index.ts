@@ -38,7 +38,7 @@ export const usePluginStore = create<PluginStore>()(
     // Auth
     authToken: null,
     authEmail: null,
-    credits: { used: 0, limit: 10 },
+    credits: { used: 0, limit: 0 },
     canGenerate: true,
 
     // Brand Guidelines
@@ -47,6 +47,22 @@ export const usePluginStore = create<PluginStore>()(
     designTokens: {},
     linkedGuideline: null,
     savedGuidelineIds: [],
+
+    // Plugin features
+    userInfo: null,
+    mentionElements: [],
+    apiKey: null,
+    anthropicApiKey: null,
+    showSmartScanModal: false,
+    smartScanResults: null,
+    selectedFont: null,
+    brandLintReport: null,
+    extractSyncData: null,
+    exportedImage: null,
+    isGenerating: false,
+
+    brandHydrationTick: 0,
+    brandHydrationAtMs: 0,
 
     // Image Generation
     selectedFrameSize: 'fullscreen',
@@ -117,15 +133,6 @@ export const usePluginStore = create<PluginStore>()(
         state.activeView = view;
       }),
 
-    updateBrandLogo: (slot, src) =>
-      set((state) => {
-        const logo = state.logos.find((l) => l.name === slot);
-        if (logo) {
-          logo.src = src;
-          logo.loaded = true;
-        }
-      }),
-
     updateTypography: (slot, data) =>
       set((state) => {
         const typo = state.typography.find((t) => t.name === slot);
@@ -136,12 +143,16 @@ export const usePluginStore = create<PluginStore>()(
 
     addSelectedColor: (role, color) =>
       set((state) => {
-        state.selectedColors.set(role, color);
+        const newMap = new Map(state.selectedColors);
+        newMap.set(role, color);
+        state.selectedColors = newMap as any; // Cast as any if TS gets confused with proxies
       }),
 
     removeSelectedColor: (role) =>
       set((state) => {
-        state.selectedColors.delete(role);
+        const newMap = new Map(state.selectedColors);
+        newMap.delete(role);
+        state.selectedColors = newMap as any;
       }),
 
     setAllComponents: (components) =>
@@ -182,7 +193,40 @@ export const usePluginStore = create<PluginStore>()(
             s.toastMessage = undefined;
           });
         }, 3000);
-      })
+      }),
+
+    setUserInfo: (user) =>
+      set((state) => { state.userInfo = user; }),
+
+    setMentionElements: (elements) =>
+      set((state) => { state.mentionElements = elements; }),
+
+    setApiKey: (key) =>
+      set((state) => { state.apiKey = key; }),
+
+    setAnthropicApiKey: (key) =>
+      set((state) => { state.anthropicApiKey = key; }),
+
+    setSmartScanModal: (show, results) =>
+      set((state) => {
+        state.showSmartScanModal = show;
+        if (results !== undefined) state.smartScanResults = results;
+      }),
+
+    setSelectedFont: (font) =>
+      set((state) => { state.selectedFont = font; }),
+
+    setBrandLintReport: (report) =>
+      set((state) => { state.brandLintReport = report; }),
+
+    setExtractSyncData: (data) =>
+      set((state) => { state.extractSyncData = data; }),
+
+    setExportedImage: (data) =>
+      set((state) => { state.exportedImage = data; }),
+
+    setIsGenerating: (generating) =>
+      set((state) => { state.isGenerating = generating; })
   }))
 );
 

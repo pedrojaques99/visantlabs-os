@@ -204,9 +204,10 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                   "transition-all duration-150",
                   "flex items-center justify-start gap-2",
                   "border-l-2 border-transparent",
-                  isFocused && "bg-neutral-800/60 border-neutral-600",
+                  "text-neutral-400",
+                  isFocused && "bg-neutral-800/60 border-neutral-600 text-neutral-200",
                   isSelected && "bg-foreground/10 text-foreground border-l border-foreground/50",
-                  !isSelected && !isFocused && "text-neutral-400 hover:bg-neutral-800/40 hover:text-neutral-200 hover:border-neutral-700"
+                  !isSelected && !isFocused && "hover:bg-neutral-800/40 hover:text-neutral-200 hover:border-neutral-700"
                 )}
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0 pointer-events-none">

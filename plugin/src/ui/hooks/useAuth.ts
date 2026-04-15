@@ -16,7 +16,7 @@ export function useAuth() {
     async (email: string, password: string, rememberMe = true) => {
       try {
         // Call API endpoint para login
-        const response = await fetch(apiUrl('/auth/login'), {
+        const response = await fetch(apiUrl('/auth/signin'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -41,16 +41,16 @@ export function useAuth() {
 
           // Fetch credits
           try {
-            const creditsResponse = await fetch(apiUrl('/auth/status'), {
+            const creditsResponse = await fetch(apiUrl('/plugin/auth/status'), {
               headers: {
                 Authorization: `Bearer ${data.token}`,
                 'Content-Type': 'application/json'
               }
             });
             if (creditsResponse.ok) {
-              const credits = await creditsResponse.json();
-              if (credits?.credits) {
-                updateCredits(credits.credits);
+              const status = await creditsResponse.json();
+              if (typeof status?.creditsUsed === 'number' && typeof status?.monthlyCredits === 'number') {
+                updateCredits({ used: status.creditsUsed, limit: status.monthlyCredits });
               }
             }
           } catch (err) {
@@ -70,6 +70,22 @@ export function useAuth() {
     [setAuthToken, setAuthEmail, updateCredits, send, showToast]
   );
 
+  const loginWithGoogle = useCallback(async () => {
+    try {
+      const response = await fetch(apiUrl('/auth/google'));
+      if (response.ok) {
+        const { authUrl } = await response.json();
+        if (authUrl) {
+          window.parent.postMessage({ pluginMessage: { type: 'OPEN_EXTERNAL_URL', url: authUrl } }, 'https://www.figma.com');
+          showToast('Login window opened in browser', 'info');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to get Google auth URL:', err);
+      showToast('OAuth error', 'error');
+    }
+  }, [showToast]);
+
   const logout = useCallback(() => {
     // Clear local state
     setAuthToken(null);
@@ -88,7 +104,7 @@ export function useAuth() {
     if (!authToken) return false;
 
     try {
-      const response = await fetch(apiUrl('/auth/status'), {
+      const response = await fetch(apiUrl('/plugin/auth/status'), {
         headers: {
           Authorization: `Bearer ${authToken}`,
           'Content-Type': 'application/json'
@@ -97,10 +113,10 @@ export function useAuth() {
 
       if (response.ok) {
         const data = await response.json();
-        if (data?.credits) {
-          updateCredits(data.credits);
+        if (typeof data?.creditsUsed === 'number' && typeof data?.monthlyCredits === 'number') {
+          updateCredits({ used: data.creditsUsed, limit: data.monthlyCredits });
         }
-        return true;
+        return !!data?.authenticated;
       }
       if (response.status === 401) {
         logout();
@@ -115,6 +131,7 @@ export function useAuth() {
 
   return {
     login,
+    loginWithGoogle,
     logout,
     checkStatus,
     isAuthenticated: !!authToken,

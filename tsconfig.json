@@ -26,6 +26,9 @@
       ],
       "@server/*": [
         "./server/*"
+      ],
+      "@shared/*": [
+        "./shared/*"
       ]
     },
     "allowImportingTsExtensions": true,

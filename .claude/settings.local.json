@@ -102,7 +102,24 @@
       "Bash(chmod +x /tmp/audit.sh)",
       "Bash(/tmp/audit.sh)",
       "Bash(npm list:*)",
-      "Bash(pkill -f \"vite\\\\|tsx\")"
+      "Bash(pkill -f \"vite\\\\|tsx\")",
+      "Bash(npm info:*)",
+      "Bash(chmod +x Z:/Cursor/visantlabs-os/test-migration.sh)",
+      "Bash(bash Z:/Cursor/visantlabs-os/test-migration.sh)",
+      "Bash(bash test-migration.sh)",
+      "Bash(netstat -ano)",
+      "Bash(pkill -f \"node.*server\")",
+      "Bash(pkill -f \"npm.*dev\")",
+      "Bash(chmod +x /tmp/plugin-audit.sh)",
+      "Bash(bash /tmp/plugin-audit.sh)",
+      "Read(//tmp/**)",
+      "Bash(find:*)",
+      "Bash(sed -n '975,1030p' Z:/Cursor/visantlabs-os/server/routes/plugin.ts)",
+      "Bash(sed -n '975,1030p' Z:/Cursor/visantlabs-os/server/index.ts)",
+      "Bash(rm ui.css ui-refactored.js scripts/watch.js)",
+      "Bash(rm -rf modules)",
+      "Bash(cat z:/Cursor/visantlabs-os/vitest.config.*)",
+      "Bash(Z:)"
     ]
   }
 }

@@ -1,6 +1,14 @@
 import express from 'express';
 import { getDb } from '../db/mongodb.js';
 import { rateLimit } from 'express-rate-limit';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf8'));
+const startTime = Date.now();
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -13,6 +21,17 @@ const apiRateLimiter = rateLimit({
 });
 
 const router = express.Router();
+
+// General health check
+router.get('/', apiRateLimiter, (_req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    version: pkg.version,
+    uptime: Math.floor((Date.now() - startTime) / 1000),
+    env: process.env.NODE_ENV || 'development'
+  });
+});
 
 // Database health check
 router.get('/db', apiRateLimiter, async (req, res) => {

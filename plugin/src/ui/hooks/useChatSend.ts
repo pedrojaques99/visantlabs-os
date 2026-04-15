@@ -24,12 +24,13 @@ export function useChatSend() {
       };
 
       store.addChatMessage(userMessage);
+      store.setIsGenerating(true);
 
       try {
         // Send message to sandbox with context
-        const msg: UIMessage = {
+        const msg: any = {
           type: 'GENERATE_WITH_CONTEXT',
-          content,
+          command: content,
           thinkMode: store.thinkMode,
           useBrand: store.useBrand,
           attachments: store.pendingAttachments,

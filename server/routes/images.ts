@@ -86,20 +86,8 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
       // Prioritize clean, production-ready assets
       // Exclude stock clusters, watermarks, commercial patterns, and paid stock sites
       const negativeOperators = [
-        // Stock sites
-        '-stock', '-shutterstock', '-adobestock', '-alamy', '-dreamstime', '-getty',
-        '-istock', '-fotolia', '-pond5', '-clipart.com', '-123rf', '-canstock',
-        // Watermarks & marks
-        '-watermark', '-watermarked', '-tarja', '-mark',
-        // Commercial/template content
-        '-template', '-flyer', '-poster', '-brochure', '-leaflet', '-pamphlet',
-        '-mockup', '-facebook cover', '-instagram post', '-social media',
-        // Text-heavy graphics
-        '-infographic', '-presentation', '-slide', '-graphic design',
-        // Paid/commercial indicators
-        '-"buy now"', '-"for sale"', '-price', '-"add to cart"', '-subscription',
-        // Remove unless explicitly requested
-        ...(designerParams?.type !== 'clipart' ? ['-clipart', '-illustration', '-vector', '-cartoon', '-drawing'] : [])
+        '-stock', '-watermark', '-template', '-mockup', '-flyer',
+        ...(designerParams?.type !== 'clipart' ? ['-clipart', '-vector', '-cartoon'] : [])
       ];
 
       finalQuery = `${safeQuery} ${negativeOperators.join(' ')}`;

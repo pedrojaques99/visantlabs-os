@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { apiUrl, API_BASE_URL } from '../../config';
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { RpcPilotPanel } from './RpcPilotPanel';
 
 /**
  * Server Debug Panel - Diagnose connectivity issues
@@ -51,7 +52,7 @@ export function ServerDebugPanel() {
 
   const testAuthStatus = async () => {
     await runTest('authStatus', async () => {
-      return fetch(apiUrl('/auth/status'), {
+      return fetch(apiUrl('/plugin/auth/status'), {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -60,7 +61,7 @@ export function ServerDebugPanel() {
 
   const testAuthLogin = async () => {
     await runTest('authLogin', async () => {
-      return fetch(apiUrl('/auth/login'), {
+      return fetch(apiUrl('/auth/signin'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: 'test@test.com', password: 'test' })
@@ -81,6 +82,8 @@ export function ServerDebugPanel() {
   };
 
   return (
+    <div className="space-y-4">
+    <RpcPilotPanel />
     <div className="space-y-4 max-w-2xl bg-red-950/20 border border-red-800 rounded p-4">
       <h3 className="text-sm font-bold text-red-400 flex items-center gap-2">
         <AlertCircle size={14} />
@@ -138,7 +141,7 @@ export function ServerDebugPanel() {
               {testResults.authLogin.status === 'loading' && <Loader2 size={12} className="animate-spin" />}
               {testResults.authLogin.status === 'success' && <CheckCircle2 size={12} className="text-green-500" />}
               {testResults.authLogin.status === 'error' && <AlertCircle size={12} className="text-red-500" />}
-              POST /auth/login
+              POST /auth/signin
             </div>
             {testResults.authLogin.message && (
               <div className={`text-xs mt-1 ${testResults.authLogin.status === 'success' ? 'text-green-400' : 'text-red-400'}`}>
@@ -194,6 +197,7 @@ export function ServerDebugPanel() {
           <li>If timeout → Backend está lento ou travado, reinicie</li>
         </ul>
       </div>
+    </div>
     </div>
   );
 }

@@ -660,6 +660,8 @@ export type FontVariable = {
   name: string;
   family?: string;
   style?: string;
+  fontSize?: number;
+  lineHeight?: number;
 };
 
 export type AvailableLayer = {
@@ -843,6 +845,7 @@ export type UIMessage =
   }
   | { type: 'DELETE_SELECTION' }
   | { type: 'OPEN_EXTERNAL'; url: string }
+  | { type: 'OPEN_EXTERNAL_URL'; url: string }
   | { type: 'SAVE_API_KEY'; key: string }
   | { type: 'GET_API_KEY' }
   | { type: 'SAVE_ANTHROPIC_KEY'; key: string }
@@ -900,7 +903,22 @@ export type UIMessage =
   | { type: 'EXTRACT_FOR_SYNC' }
   | { type: 'PUSH_TO_FIGMA'; guideline: BrandGuideline }
   | { type: 'SMART_SCAN_SELECTION' }
-  | { type: 'EXPORT_NODE_IMAGE'; nodeId: string; format: 'SVG' | 'PNG' };
+  | { type: 'EXPORT_NODE_IMAGE'; nodeId: string; format: 'SVG' | 'PNG' }
+  // Brand Intelligence & Operations
+  | { type: 'APPLY_BRAND_GUIDELINES'; brand: any }
+  | { type: 'VARY_SELECTION_COLORS'; brandColors?: string[] }
+  | { type: 'SELECTION_TO_SLICES' }
+  | { type: 'BRAND_LINT'; brand?: any }
+  | { type: 'BRAND_LINT_FOCUS'; nodeId: string }
+  | { type: 'BRAND_LINT_FIX'; brand?: any }
+  | { type: 'RESPONSIVE_MULTIPLY'; formats?: Array<{ id: string; label: string; width: number; height: number }> }
+  // Grid / Others
+  | { type: 'GENERATE_BRAND_GRID'; sections?: any }
+  | { type: 'GENERATE_SOCIAL_FRAMES'; brandColors?: string[] }
+  // Export & Illustrator
+  | { type: 'ILLUSTRATOR_EXPORT' }
+  | { type: 'COPY_ILLUSTRATOR_CODE' }
+  | { type: 'IMPORT_SELECTION_COMPONENTS' };
 
 // ── Sandbox → UI messages ──
 

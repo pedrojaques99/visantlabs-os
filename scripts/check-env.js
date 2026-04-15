@@ -9,6 +9,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
+const maskValue = (value) => {
+  if (!value) return '';
+  if (value.length <= 8) return '********';
+  return value.substring(0, 4) + '...' + value.substring(value.length - 4);
+};
+
 const requiredVars = [
   'GEMINI_API_KEY',
   'MONGODB_URI',
@@ -78,43 +84,41 @@ for (const varName of requiredVars) {
     hasErrors = true;
   } else {
     // Validações específicas
+    let isWarning = false;
     if (varName === 'MONGODB_URI') {
       if (!value.startsWith('mongodb://') && !value.startsWith('mongodb+srv://')) {
         console.log(`⚠️  ${varName}: Formato pode estar incorreto (deve começar com mongodb:// ou mongodb+srv://)`);
-        warnings.push(varName);
-      } else {
-        console.log(`✅ ${varName}: Definida`);
+        isWarning = true;
       }
     } else if (varName === 'GOOGLE_CLIENT_ID') {
       if (!value.includes('.apps.googleusercontent.com')) {
         console.log(`⚠️  ${varName}: Formato pode estar incorreto`);
-        warnings.push(varName);
-      } else {
-        console.log(`✅ ${varName}: Definida`);
+        isWarning = true;
       }
     } else if (varName === 'GOOGLE_CLIENT_SECRET') {
-      if (value.startsWith('GOCSPX-')) {
-        console.log(`✅ ${varName}: Definida`);
-      } else {
+      if (!value.startsWith('GOCSPX-')) {
         console.log(`⚠️  ${varName}: Formato pode estar incorreto (deve começar com GOCSPX-)`);
-        warnings.push(varName);
+        isWarning = true;
       }
     } else if (varName === 'JWT_SECRET') {
       if (value === 'your-secret-key-change-in-production') {
         console.log(`⚠️  ${varName}: Usando valor padrão - ALTERE PARA PRODUÇÃO!`);
-        warnings.push(varName);
-      } else {
-        console.log(`✅ ${varName}: Definida`);
+        isWarning = true;
       }
     } else if (varName === 'GOOGLE_REDIRECT_URI') {
       if (!value.includes('/api/auth/google/callback')) {
         console.log(`⚠️  ${varName}: Deve terminar com /api/auth/google/callback`);
-        warnings.push(varName);
-      } else {
-        console.log(`✅ ${varName}: Definida`);
+        isWarning = true;
       }
+    }
+
+    if (isWarning) {
+      warnings.push(varName);
     } else {
-      console.log(`✅ ${varName}: Definida`);
+      // Secret masking for logs
+      const isPublic = ['PORT', 'GOOGLE_REDIRECT_URI', 'MONGODB_DB_NAME'].includes(varName);
+      const displayValue = isPublic ? value : maskValue(value);
+      console.log(`✅ ${varName}: Definida (${displayValue})`);
     }
   }
 }

@@ -1,0 +1,14 @@
+@import "../src/index.css";
+
+@source "../plugin/src/ui/**/*.tsx";
+@source "../src/components/ui/button.tsx";
+@source "../src/components/ui/input.tsx";
+@source "../src/components/ui/textarea.tsx";
+@source "../src/components/ui/select.tsx";
+@source "../src/components/ui/dialog.tsx";
+@source "../src/components/ui/tabs.tsx";
+@source "../src/components/ui/badge.tsx";
+@source "../src/components/ui/switch.tsx";
+@source "../src/components/ui/card.tsx";
+@source "../src/components/ui/separator.tsx";
+@source "../src/components/ui/tooltip.tsx";

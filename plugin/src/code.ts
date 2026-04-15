@@ -48,8 +48,13 @@ import {
   lintBrandAdherence,
   focusNode,
   fixBrandIssues,
-  multiplyResponsive
+  multiplyResponsive,
+  generateBrandGrid,
+  generateSocialFrames,
+  importLogoCandidates
 } from './handlers/index';
+import { dispatch } from './handlers/registry';
+import { isEnvelope } from '@shared/protocol';
 
 // ═══ Initialize UI ═══
 figma.showUI(__html__, { width: 420, height: 680, themeColors: true, title: 'Visant Copilot' });
@@ -67,11 +72,22 @@ if (currentUser) {
   });
 }
 
-// ═══ Selection change listener ═══
-figma.on('selectionchange', notifyContextChange);
+// ═══ Selection change listener (Debounced) ═══
+let selectionTimeout: number | undefined;
+figma.on('selectionchange', () => {
+  if (selectionTimeout) clearTimeout(selectionTimeout);
+  selectionTimeout = setTimeout(notifyContextChange, 150) as any;
+});
 
 // ═══ Message handler ═══
 figma.ui.onmessage = async (msg: UIMessage) => {
+
+  // ── New protocol (shared/protocol.ts): envelope → dispatch → result ──
+  if (isEnvelope(msg as any)) {
+    const result = await dispatch(msg as any);
+    figma.ui.postMessage(result);
+    return;
+  }
 
   // ── Agent Operations (WebSocket from server) ──
   if (msg.type === 'AGENT_OPS') {
@@ -313,6 +329,11 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
+  if (msg.type === 'OPEN_EXTERNAL_URL') {
+    figma.openExternal(msg.url);
+    return;
+  }
+
   if (msg.type === 'USE_SELECTION_AS_FONT') {
     const selection = figma.currentPage.selection;
     let fontInfo = null;
@@ -320,13 +341,18 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     if (selection.length > 0) {
       const node = selection[0];
       if (node.type === 'TEXT') {
-        const font = node.fontName as FontName;
-        // Return family-level info — let UI resolve available styles from allFonts
+        const textNode = node as TextNode;
+        const font = textNode.fontName as FontName;
+        const fontSize = typeof textNode.fontSize !== 'symbol' ? textNode.fontSize : undefined;
+        const lh = typeof textNode.lineHeight !== 'symbol' ? textNode.lineHeight : undefined;
+
         fontInfo = {
           id: font.family,
           name: font.family,
           family: font.family,
-          style: font.style
+          style: font.style,
+          fontSize,
+          lineHeight: lh?.unit === 'PIXELS' ? lh.value : undefined
         };
       }
     }
@@ -338,6 +364,68 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   if (msg.type === 'CAPTURE_COMPONENT_SELECTION') {
     const comp = await getComponentFromSelection();
     postToUI({ type: 'COMPONENT_CAPTURED', component: comp });
+    return;
+  }
+
+  // ── Import Components from Selection (Library synchronization) ──
+  if (msg.type === 'IMPORT_SELECTION_COMPONENTS') {
+    const selection = figma.currentPage.selection;
+    if (selection.length === 0) {
+      figma.notify('Selecione instâncias no canvas primeiro para importar para a Library.');
+      return;
+    }
+    
+    const components: any[] = [];
+    const seen = new Set<string>();
+    
+    // Preserve existing components
+    const existingComps = await getComponentsInCurrentFile();
+    for (const c of existingComps) {
+      components.push(c);
+      seen.add(c.id);
+    }
+    
+    let addedCount = 0;
+    
+    // Process selection
+    for (const node of selection) {
+      if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
+        if (!seen.has(node.id)) {
+           seen.add(node.id);
+           components.push({
+             id: node.id,
+             name: node.name,
+             key: node.key,
+             folderPath: []
+           });
+           addedCount++;
+        }
+      } else if (node.type === 'INSTANCE') {
+        try {
+           const main = await (node as InstanceNode).getMainComponentAsync();
+           if (main && !seen.has(main.id)) {
+             seen.add(main.id);
+             components.push({
+               id: main.id,
+               name: main.name,
+               key: main.key,
+               folderPath: []
+             });
+             addedCount++;
+           }
+        } catch {}
+      }
+    }
+    
+    if (addedCount > 0) {
+      postToUI({ type: 'COMPONENTS_LOADED', components });
+      figma.notify(`Importou ${addedCount} componente(s) vinculado(s) com sucesso!`);
+      // Start thumbnail generation for newly added components
+      const newComps = components.filter(c => !existingComps.some(ec => ec.id === c.id));
+      exportComponentThumbnails(newComps).catch(() => {});
+    } else {
+      figma.notify('Nenhum componente novo encontrado na seleção.');
+    }
     return;
   }
 
@@ -646,6 +734,38 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
+  // ── Brand Grid ──
+  if ((msg as any).type === 'GENERATE_BRAND_GRID') {
+    try {
+      const sections = (msg as any).sections;
+      await generateBrandGrid(sections);
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Import Logo Candidates from library ──
+  if ((msg as any).type === 'IMPORT_LOGO_CANDIDATES') {
+    try {
+      await importLogoCandidates((msg as any).maxWidth);
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Social Brand Frames ──
+  if ((msg as any).type === 'GENERATE_SOCIAL_FRAMES') {
+    try {
+      const brandColors = (msg as any).brandColors || [];
+      await generateSocialFrames(brandColors);
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
   // ── Responsive Multiplier ──
   if ((msg as any).type === 'RESPONSIVE_MULTIPLY') {
     try {
@@ -653,6 +773,132 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       await multiplyResponsive(formats);
     } catch (err) {
       postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Illustrator Exporter (PNG + SVG) ──
+  if ((msg as any).type === 'ILLUSTRATOR_EXPORT') {
+    const selection = figma.currentPage.selection;
+    const frames = selection.filter(n => n.type === 'FRAME') as FrameNode[];
+    if (frames.length === 0) { figma.notify("Selecione um Frame."); return; }
+
+    const batch: any[] = [];
+
+    for (const node of frames) {
+      try {
+        const uniqueName = node.name.replace(/[\/\\?%*:|"<>]/g, '-');
+
+        // 1 & 2: VECTORS (SVG) - Clone 1: hide images, keep vectors and text
+        const vectorClone = node.clone();
+        const hideImages = (n: SceneNode) => {
+          const hasImage = 'fills' in n && Array.isArray(n.fills) && n.fills.some((f: any) => f.type === 'IMAGE');
+          if (hasImage) {
+             n.visible = false;
+          }
+          if ('children' in n) {
+             for (const child of n.children) hideImages(child);
+          }
+        };
+        hideImages(vectorClone);
+        // Export SVG
+        const svgBytes = await vectorClone.exportAsync({ format: 'SVG' });
+
+        // 3: RASTERS (PNG) - Clone 2: hide vectors, keep only images
+        const rasterClone = node.clone();
+        const hideVectors = (n: SceneNode) => {
+          const hasImage = 'fills' in n && Array.isArray(n.fills) && n.fills.some((f: any) => f.type === 'IMAGE');
+          if (!hasImage && !('children' in n)) {
+             // Hide pure vectors/text
+             n.visible = false;
+          } else if (!hasImage && 'children' in n && n.children.length === 0) {
+             n.visible = false;
+          }
+          if ('children' in n) for (const child of n.children) hideVectors(child);
+        };
+        hideVectors(rasterClone);
+        // Export PNG at 3x
+        const pngBytes = await rasterClone.exportAsync({ format: 'PNG', constraint: { type: 'SCALE', value: 3 } });
+
+        // 5: Delete clones
+        vectorClone.remove();
+        rasterClone.remove();
+
+        // 4: Output 2 files
+        batch.push({
+          name: uniqueName,
+          png: pngBytes,
+          svg: svgBytes
+        });
+      } catch (e: any) {
+        figma.notify("Erro no export: " + e.message);
+      }
+    }
+
+    postToUI({
+      type: 'ILLUSTRATOR_EXPORT_BATCH',
+      items: batch,
+      count: batch.length
+    });
+    return;
+  }
+
+  if (msg.type === 'COPY_ILLUSTRATOR_CODE') {
+    const selection = figma.currentPage.selection;
+    if (selection.length === 0) { figma.notify("Selecione algo."); return; }
+    const node = selection[0];
+    const width = 'width' in node ? node.width : 800;
+    const height = 'height' in node ? node.height : 600;
+
+    let script = `// Visant AI - Quick Illustrator Copy (Vectors Only)\n`;
+    script += `var doc = app.documents.add(DocumentColorSpace.RGB, ${width}, ${height});\n\n`;
+
+    const process = (n: SceneNode) => {
+      let code = "";
+      const x = n.x, y = n.y, w = 'width' in n ? n.width : 0, h = 'height' in n ? n.height : 0, top = height - y;
+      if (n.type === 'RECTANGLE' || n.type === 'ELLIPSE' || n.type === 'TEXT') {
+        code += `(function(){\n`;
+        if (n.type === 'RECTANGLE') code += `  var item = doc.pathItems.rectangle(${top}, ${x}, ${w}, ${h});\n`;
+        else if (n.type === 'ELLIPSE') code += `  var item = doc.pathItems.ellipse(${top}, ${x}, ${w}, ${h});\n`;
+        else if (n.type === 'TEXT') {
+          code += `  var item = doc.textFrames.add(); item.contents = "${n.characters.replace(/"/g, '\\"')}";\n`;
+          code += `  item.top = ${top}; item.left = ${x};\n`;
+          if ('fontSize' in n && typeof n.fontSize === 'number') code += `  item.textRange.characterAttributes.size = ${n.fontSize};\n`;
+        }
+        if ('fills' in n && (n.fills as any).length > 0 && (n.fills as any)[0].type === 'SOLID') {
+          const c = (n.fills as any)[0].color;
+          code += `  var c = new RGBColor(); c.red=${Math.round(c.r*255)}; c.green=${Math.round(c.g*255)}; c.blue=${Math.round(c.b*255)}; item.fillColor = c; item.filled = true;\n`;
+        }
+        code += `})();\n\n`;
+      }
+      if ('children' in n) for (const child of n.children) code += process(child);
+      return code;
+    };
+    script += process(node);
+    postToUI({ type: 'ILLUSTRATOR_CODE_READY', code: script });
+    return;
+  }
+
+  if (msg.type === 'GET_SELECTION_FILL') {
+    const selection = figma.currentPage.selection;
+    if (selection.length === 0) {
+      figma.notify('Select an object with a solid fill.');
+      return;
+    }
+    const node = selection[0];
+    if ('fills' in node && Array.isArray(node.fills)) {
+      const solidFill = node.fills.find(f => f.type === 'SOLID' && f.visible !== false);
+      if (solidFill) {
+        const r = Math.round(solidFill.color.r * 255);
+        const g = Math.round(solidFill.color.g * 255);
+        const b = Math.round(solidFill.color.b * 255);
+        const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
+        postToUI({ type: 'SELECTION_FILL_RESULT', hex, name: node.name });
+      } else {
+        figma.notify('No solid fill found on selection.');
+      }
+    } else {
+      figma.notify('Selected object does not support fills.');
     }
     return;
   }

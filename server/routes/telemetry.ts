@@ -2,6 +2,8 @@ import express from 'express';
 import { rateLimit } from 'express-rate-limit';
 import fs from 'fs/promises';
 import path from 'path';
+import { getTelemetrySink } from '../lib/telemetry-sink.js';
+import { logger } from '../lib/logger.js';
 
 /**
  * Telemetry route — essentialist log of plugin output quality.
@@ -92,21 +94,17 @@ router.post('/operations', limiter, async (req, res) => {
     }
     const safeKind = kind === 'brand' ? 'brand' : 'ops';
 
-    await fs.mkdir(TELEMETRY_DIR, { recursive: true });
-    const file = todayFile();
+    const md = formatEntry({ kind: safeKind, intent: intent ?? null, opCount: Number(opCount) || 0, telemetry });
+    const date = new Date().toISOString().slice(0, 10);
 
-    // Init file with date header if new
-    try {
-      await fs.access(file);
-    } catch {
-      const header = `# Telemetry · ${path.basename(file, '.md')}\n\nStatic audit of plugin-generated trees. One entry per applyOperations() batch.\n\n`;
-      await fs.writeFile(file, header, 'utf8');
-    }
-
-    await fs.appendFile(file, formatEntry({ kind: safeKind, intent: intent ?? null, opCount: Number(opCount) || 0, telemetry }), 'utf8');
+    await getTelemetrySink().append({
+      markdown: md,
+      payload: { kind: safeKind, intent: intent ?? null, opCount: Number(opCount) || 0, telemetry },
+      date,
+    });
     res.json({ ok: true });
   } catch (err) {
-    console.error('[telemetry] failed:', err);
+    logger.error({ err }, 'telemetry.write.failed');
     res.status(500).json({ error: 'telemetry write failed' });
   }
 });
@@ -158,7 +156,7 @@ router.get('/summary', limiter, async (req, res) => {
       topViolations: ranked.map(([rule, count]) => ({ rule, count })),
     });
   } catch (err) {
-    console.error('[telemetry] summary failed:', err);
+    logger.error({ err }, 'telemetry.summary.failed');
     res.status(500).json({ error: 'summary failed' });
   }
 });

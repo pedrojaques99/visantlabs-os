@@ -28,6 +28,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
     referenceImages = [],
     selectedBrandingTags: _selectedBrandingTags,
     onStartOver: _onStartOver,
+    onReplaceImage,
     onReferenceImagesChange,
     isGenerating = false,
     detectedLanguage,

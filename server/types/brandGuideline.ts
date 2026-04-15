@@ -10,8 +10,14 @@ export interface BrandGuidelineIdentity {
 export interface BrandGuidelineLogo {
   id: string
   url: string
-  variant: 'primary' | 'dark' | 'light' | 'icon' | 'custom'
+  variant: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom'
   label?: string
+  source?: 'upload' | 'figma'
+  thumbnailUrl?: string
+  format?: string
+  figmaKey?: string
+  figmaFileKey?: string
+  figmaNodeId?: string
 }
 
 export interface BrandGuidelineColor {

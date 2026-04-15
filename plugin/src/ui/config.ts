@@ -1,16 +1,7 @@
-/**
- * Plugin configuration and constants
- * Update API_BASE_URL to match your server environment
- *
- * For development: http://localhost:3000 (default)
- * For production: set window.__VISANT_API_URL__ before plugin loads
- */
-
-// Get API base URL - defaults to localhost:3000 for development
-// In production, set window.__VISANT_API_URL__ = 'https://your-domain.com'
+// Get API base URL - defaults to localhost:3001 for development
 export const API_BASE_URL =
   (typeof window !== 'undefined' && (window as any).__VISANT_API_URL__) ||
-  'http://localhost:3000';
+  'http://localhost:3001';
 
 /**
  * Construct full API URL from relative path

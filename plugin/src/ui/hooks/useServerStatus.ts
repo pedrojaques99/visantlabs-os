@@ -8,7 +8,7 @@ export function useServerStatus() {
     const checkServer = async () => {
       try {
         // Use /auth/status endpoint instead of /health to avoid CORS preflight issues
-        const response = await fetch(apiUrl('/auth/status'), {
+        const response = await fetch(apiUrl('/plugin/auth/status'), {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });

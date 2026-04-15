@@ -2,12 +2,14 @@ import React, { useEffect } from 'react';
 import { usePluginStore } from './store';
 import { useFigmaMessages } from './hooks/useFigmaMessages';
 import { useAuth } from './hooks/useAuth';
+import { useIllustratorExport } from './hooks/useIllustratorExport';
 import { AppShell } from './components/layout/AppShell';
 
 export function App() {
   const { activeView, authToken } = usePluginStore();
   const { send } = useFigmaMessages();
   const { checkStatus } = useAuth();
+  useIllustratorExport();
 
   useEffect(() => {
     // Initialize on mount
