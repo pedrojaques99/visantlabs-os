@@ -944,9 +944,9 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
       return res.status(400).json({ error: 'Edges array is required' });
     }
 
-    // Clean expired base64 images and add timestamps to new ones
-    let processedNodes = cleanExpiredBase64Images(nodes);
-    processedNodes = addBase64Timestamps(processedNodes);
+    // Add timestamps to new base64 images and then clean expired ones
+    let processedNodes = addBase64Timestamps(nodes);
+    processedNodes = cleanExpiredBase64Images(processedNodes);
 
     // Process nodes for R2 upload (if configured)
     const canvasId = `temp-${Date.now()}`; // Temporary ID, will be replaced after creation
@@ -1059,9 +1059,9 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     }
 
     if (nodes !== undefined && Array.isArray(nodes)) {
-      // Clean expired base64 images and add timestamps to new ones
-      processedNodes = cleanExpiredBase64Images(nodes);
-      processedNodes = addBase64Timestamps(processedNodes);
+      // Add timestamps to new base64 images and then clean expired ones
+      processedNodes = addBase64Timestamps(nodes);
+      processedNodes = cleanExpiredBase64Images(processedNodes);
 
       // Process nodes to upload base64 images to R2 and replace with URLs
       try {

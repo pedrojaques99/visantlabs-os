@@ -14,11 +14,13 @@ let mongoServer: MongoMemoryReplSet | null = null;
 export async function startTestMongo(): Promise<string> {
   if (mongoServer) return mongoServer.getUri();
   mongoServer = await MongoMemoryReplSet.create({
-    replSet: { count: 1, storageEngine: 'wiredTiger' },
+    replSet: { name: 'rs0', count: 1, storageEngine: 'wiredTiger' },
   });
-  const uri = mongoServer.getUri();
+  // mongodb-memory-server Uri usually ends in /?replicaSet=... - we need a db name
+  const uri = mongoServer.getUri().replace('/?', '/test?');
   process.env.MONGODB_URI = uri;
   process.env.DATABASE_URL = uri;
+  process.env.MONGODB_DB_NAME = 'test';
   return uri;
 }
 

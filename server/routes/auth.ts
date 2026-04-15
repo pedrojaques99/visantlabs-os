@@ -69,7 +69,7 @@ const ensureReferralCode = async (userId: string): Promise<string> => {
 
   while (!isUnique && attempts < maxAttempts) {
     code = generateReferralCode();
-    const existing = await prisma.user.findUnique({
+    const existing = await prisma.user.findFirst({
       where: { referralCode: code },
       select: { id: true },
     });

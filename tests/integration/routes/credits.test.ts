@@ -29,8 +29,8 @@ describe('GET /api/usage/history', () => {
 
     const res = await agent.get('/api/usage/history').set('Authorization', bearer(token));
     expect(res.status).toBe(200);
-    // Array or { history: [] } — don't over-specify
-    const history = Array.isArray(res.body) ? res.body : res.body?.history ?? res.body?.items;
+    // Array or { history: [], records: [] } — don't over-specify
+    const history = Array.isArray(res.body) ? res.body : res.body?.history ?? res.body?.items ?? res.body?.records;
     expect(history).toBeDefined();
   });
 });

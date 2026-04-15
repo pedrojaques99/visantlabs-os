@@ -12,6 +12,7 @@ import type {
 import type { GeminiModel, SeedreamModel, ImageProvider, Resolution } from '@/types/types';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { trackCreativeEvent, shallowDiff } from '@/lib/creativeEvents';
+import { calculateBoundingBox, type Rect } from '@/lib/pixel';
 
 interface CreativeStore {
   // Setup
@@ -335,10 +336,12 @@ export const useCreativeStore = create<CreativeStore>()(
           const selectedLayers = state.layers.filter(l => selectedIds.includes(l.id));
           
           // Basic bounding box calculation
-          const minX = Math.min(...selectedLayers.map(l => l.data.position.x));
-          const minY = Math.min(...selectedLayers.map(l => l.data.position.y));
-          const maxX = Math.max(...selectedLayers.map(l => l.data.position.x + (l.data.size?.w || 0)));
-          const maxY = Math.max(...selectedLayers.map(l => l.data.position.y + (l.data.size?.h || 0)));
+          const bbox = calculateBoundingBox(selectedLayers.map(l => ({
+            x: l.data.position.x,
+            y: l.data.position.y,
+            w: l.data.size?.w || 0,
+            h: l.data.size?.h || 0
+          })));
 
           const groupId = nextLayerId();
           const newGroup: CreativeLayer = {
@@ -348,8 +351,8 @@ export const useCreativeStore = create<CreativeStore>()(
             data: {
               type: 'group',
               children: selectedIds,
-              position: { x: minX, y: minY },
-              size: { w: maxX - minX, h: maxY - minY },
+              position: { x: bbox.x, y: bbox.y },
+              size: { w: bbox.w, h: bbox.h },
             }
           };
 
@@ -404,24 +407,24 @@ export const useCreativeStore = create<CreativeStore>()(
 
             const isSingle = selected.length === 1;
 
-            const bounds = {
-              minX: Math.min(...selected.map((l) => l.data.position.x)),
-              maxX: Math.max(...selected.map((l) => l.data.position.x + (l.data.size?.w || 0))),
-              minY: Math.min(...selected.map((l) => l.data.position.y)),
-              maxY: Math.max(...selected.map((l) => l.data.position.y + (l.data.size?.h || 0))),
-            };
+            const bbox = calculateBoundingBox(selected.map(l => ({
+              x: l.data.position.x,
+              y: l.data.position.y,
+              w: l.data.size?.w || 0,
+              h: l.data.size?.h || 0
+            })));
 
             return {
               layers: state.layers.map((l) => {
                 if (!ids.includes(l.id)) return l;
                 const pos = { x: l.data.position.x, y: l.data.position.y };
 
-                if (axis === 'left') pos.x = isSingle ? 0 : bounds.minX;
-                else if (axis === 'right') pos.x = isSingle ? 1 - (l.data.size?.w || 0) : bounds.maxX - (l.data.size?.w || 0);
-                else if (axis === 'center-h') pos.x = isSingle ? (1 - (l.data.size?.w || 0)) / 2 : (bounds.minX + bounds.maxX) / 2 - (l.data.size?.w || 0) / 2;
-                else if (axis === 'top') pos.y = isSingle ? 0 : bounds.minY;
-                else if (axis === 'bottom') pos.y = isSingle ? 1 - (l.data.size?.h || 0) : bounds.maxY - (l.data.size?.h || 0);
-                else if (axis === 'center-v') pos.y = isSingle ? (1 - (l.data.size?.h || 0)) / 2 : (bounds.minY + bounds.maxY) / 2 - (l.data.size?.h || 0) / 2;
+                if (axis === 'left') pos.x = isSingle ? 0 : bbox.x;
+                else if (axis === 'right') pos.x = isSingle ? 1 - (l.data.size?.w || 0) : bbox.x + bbox.w - (l.data.size?.w || 0);
+                else if (axis === 'center-h') pos.x = isSingle ? (1 - (l.data.size?.w || 0)) / 2 : (bbox.x + bbox.x + bbox.w) / 2 - (l.data.size?.w || 0) / 2;
+                else if (axis === 'top') pos.y = isSingle ? 0 : bbox.y;
+                else if (axis === 'bottom') pos.y = isSingle ? 1 - (l.data.size?.h || 0) : bbox.y + bbox.h - (l.data.size?.h || 0);
+                else if (axis === 'center-v') pos.y = isSingle ? (1 - (l.data.size?.h || 0)) / 2 : (bbox.y + bbox.y + bbox.h) / 2 - (l.data.size?.h || 0) / 2;
 
                 return { ...l, data: { ...l.data, position: pos } as CreativeLayerData };
               }),

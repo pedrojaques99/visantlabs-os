@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import Moveable from "react-moveable";
 import Selecto from "react-selecto";
 import { useCreativeStore } from "./store/creativeStore";
+import { normalizePoint, normalizeSize } from "@/lib/pixel";
 
 interface Props {
   canvasWidth: number;
@@ -68,8 +69,8 @@ export const CreativeMoveable: React.FC<Props> = ({
       target.style.width = "";
       target.style.height = "";
       updateLayer(id, {
-        position: { x: left / canvasWidth, y: top / canvasHeight },
-        size: { w: width / canvasWidth, h: height / canvasHeight },
+        position: normalizePoint({ x: left, y: top }, { w: canvasWidth, h: canvasHeight }),
+        size: normalizeSize({ w: width, h: height }, { w: canvasWidth, h: canvasHeight }),
       });
     },
     [canvasWidth, canvasHeight, updateLayer]

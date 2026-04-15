@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 const maxHistorySize = 50;
 
 // Helper function to remove functions from an object recursively
-const removeFunctions = (obj: any): any => {
+export const removeFunctions = (obj: any): any => {
   if (obj === null || obj === undefined) {
     return obj;
   }
@@ -38,7 +38,7 @@ const removeFunctions = (obj: any): any => {
 
 // Efficient deep clone - uses structuredClone if available, otherwise falls back to JSON
 // Strips functions before cloning since structuredClone can't clone them
-const deepClone = <T>(obj: T): T => {
+export const deepClone = <T>(obj: T): T => {
   const cleaned = removeFunctions(obj);
 
   if (typeof structuredClone !== 'undefined') {
@@ -68,9 +68,11 @@ type HistoryAction =
   | { type: 'UNDO' }
   | { type: 'REDO' };
 
+export type { HistoryEntry, HistoryState, HistoryAction };
+
 const initialState: HistoryState = { entries: [], index: -1 };
 
-function historyReducer(state: HistoryState, action: HistoryAction): HistoryState {
+export function historyReducer(state: HistoryState, action: HistoryAction): HistoryState {
   switch (action.type) {
     case 'INIT':
       return { entries: [action.entry], index: 0 };

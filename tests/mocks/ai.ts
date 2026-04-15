@@ -8,8 +8,29 @@ import { http, HttpResponse } from 'msw';
  */
 export const aiHandlers = [
   // Gemini generateContent
-  http.post('https://generativelanguage.googleapis.com/v1beta/models/:model\\:generateContent', () =>
-    HttpResponse.json({
+  http.post('https://generativelanguage.googleapis.com/v1beta/models/:model\\:generateContent', async ({ request }) => {
+    const body: any = await request.json().catch(() => ({}));
+    const isImageRequest = request.url.includes('image') || body?.generationConfig?.responseModalities?.includes('IMAGE');
+    
+    if (isImageRequest) {
+      return HttpResponse.json({
+        candidates: [
+          {
+            content: {
+              parts: [
+                { inlineData: { data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', mimeType: 'image/png' } }
+              ],
+              role: 'model'
+            },
+            finishReason: 'STOP',
+            index: 0,
+          },
+        ],
+        usageMetadata: { promptTokenCount: 50, candidatesTokenCount: 100, totalTokenCount: 150 },
+      });
+    }
+
+    return HttpResponse.json({
       candidates: [
         {
           content: { parts: [{ text: 'mocked-gemini-response' }], role: 'model' },
@@ -18,8 +39,8 @@ export const aiHandlers = [
         },
       ],
       usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5, totalTokenCount: 15 },
-    })
-  ),
+    });
+  }),
 
   // OpenAI chat completions
   http.post('https://api.openai.com/v1/chat/completions', () =>

@@ -46,105 +46,85 @@ async function deductCreditsAtomically(userId: string, creditsToDeduct: number):
   }
 
   // Check if user is admin - admins don't have credits deducted
-  const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-  if (!user) {
+  const userBefore = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+  if (!userBefore) {
     throw new Error('User not found');
   }
 
-  if (user.isAdmin === true) {
+  if (userBefore.isAdmin === true) {
     // Admin users - return user without deducting credits
-    return { success: true, updatedUser: user };
+    return { success: true, updatedUser: userBefore };
   }
 
-  // STANDARDIZED: Use totalCreditsEarned FIRST, then monthlyCredits
-  // This matches the order used in mockups.ts for consistency
-  const monthlyCredits = user.monthlyCredits || 20;
-  const creditsUsed = user.creditsUsed || 0;
-  const monthlyCreditsRemaining = Math.max(0, monthlyCredits - creditsUsed);
-  const totalCreditsEarned = user.totalCreditsEarned || 0;
-  const totalCredits = totalCreditsEarned + monthlyCreditsRemaining;
+  const totalCreditsEarnedBefore = userBefore.totalCreditsEarned ?? 0;
+  const monthlyCreditsBefore = userBefore.monthlyCredits ?? 20;
+  const creditsUsedBefore = userBefore.creditsUsed ?? 0;
+  const monthlyCreditsRemainingBefore = Math.max(0, monthlyCreditsBefore - creditsUsedBefore);
+  const totalCreditsBefore = totalCreditsEarnedBefore + monthlyCreditsRemainingBefore;
 
   // Check if user has enough credits
-  if (totalCredits < creditsToDeduct) {
-    throw new Error(`Insufficient credits. Required: ${creditsToDeduct}, Available: ${totalCredits}`);
+  if (totalCreditsBefore < creditsToDeduct) {
+    throw new Error(`Insufficient credits. Required: ${creditsToDeduct}, Available: ${totalCreditsBefore}`);
   }
 
-  // First, try to deduct from totalCreditsEarned if available
-  if (totalCreditsEarned >= creditsToDeduct) {
-    const result = await db.collection('users').findOneAndUpdate(
-      {
-        _id: new ObjectId(userId),
-        $expr: { $gte: ['$totalCreditsEarned', creditsToDeduct] }
-      },
-      [
-        {
-          $set: {
-            totalCreditsEarned: { $subtract: ['$totalCreditsEarned', creditsToDeduct] }
-            // Don't increment creditsUsed when using earned credits only
-          }
-        }
-      ] as any[],
-      { returnDocument: 'after' }
-    );
-
-    if (result) {
-      return { success: true, updatedUser: result };
-    }
-  }
-
-  // If totalCreditsEarned is not sufficient, use both earned and monthly credits
-  // Calculate how much to use from each source
-  const fromEarned = Math.min(totalCreditsEarned, creditsToDeduct);
+  // Calculate deduction strategy: use earned credits first, then monthly
+  const fromEarned = Math.min(totalCreditsEarnedBefore, creditsToDeduct);
   const fromMonthly = creditsToDeduct - fromEarned;
 
-  const result2 = await db.collection('users').findOneAndUpdate(
+  // FIXED: Use simple $inc operation which is atomic and reliable
+  // This avoids the issue where aggregation pipelines execute but return null
+  const updateOperation: any = {};
+
+  if (fromEarned > 0) {
+    updateOperation.totalCreditsEarned = -fromEarned;
+  }
+  if (fromMonthly > 0) {
+    updateOperation.creditsUsed = fromMonthly;
+  }
+
+  // Only proceed if we have something to update
+  if (Object.keys(updateOperation).length === 0) {
+    throw new Error('No credits to deduct - calculation error');
+  }
+
+  // Use findOneAndUpdate with $inc for atomic operation
+  // The condition ensures we only update if user still has enough credits
+  const result = await db.collection('users').findOneAndUpdate(
     {
       _id: new ObjectId(userId),
-      $expr: {
-        $gte: [
-          {
-            $add: [
-              { $ifNull: ['$totalCreditsEarned', 0] },
-              {
-                $max: [
-                  0,
-                  {
-                    $subtract: [
-                      { $ifNull: ['$monthlyCredits', 20] },
-                      { $ifNull: ['$creditsUsed', 0] }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          creditsToDeduct
-        ]
-      }
-    },
-    [
-      {
-        $set: {
-          // Subtract from earned credits if needed
-          totalCreditsEarned: fromEarned > 0
-            ? { $max: [0, { $subtract: [{ $ifNull: ['$totalCreditsEarned', 0] }, fromEarned] }] }
-            : { $ifNull: ['$totalCreditsEarned', 0] },
-          // Increment creditsUsed by the amount used from monthly credits
-          creditsUsed: fromMonthly > 0
-            ? { $add: [{ $ifNull: ['$creditsUsed', 0] }, fromMonthly] }
-            : { $ifNull: ['$creditsUsed', 0] }
+      // Atomic conditions to prevent over-deduction
+      ...(fromEarned > 0 ? { totalCreditsEarned: { $gte: fromEarned } } : {}),
+      ...(fromMonthly > 0 ? {
+        $expr: {
+          $gte: [
+            { $subtract: [{ $ifNull: ['$monthlyCredits', 20] }, { $ifNull: ['$creditsUsed', 0] }] },
+            fromMonthly
+          ]
         }
-      }
-    ] as any[],
+      } : {})
+    },
+    { $inc: updateOperation },
     { returnDocument: 'after' }
   );
 
-  if (result2?.value) {
-    return { success: true, updatedUser: result2.value };
+  // If update failed (no matching document), verify current state
+  if (!result) {
+    // Re-fetch user to check current state
+    const currentUser = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+    if (!currentUser) {
+      throw new Error('User not found');
+    }
+
+    const currentTotalEarned = currentUser.totalCreditsEarned ?? 0;
+    const currentMonthlyCredits = currentUser.monthlyCredits ?? 20;
+    const currentCreditsUsed = currentUser.creditsUsed ?? 0;
+    const currentMonthlyRemaining = Math.max(0, currentMonthlyCredits - currentCreditsUsed);
+    const currentTotal = currentTotalEarned + currentMonthlyRemaining;
+
+    throw new Error(`Atomic update failed. Please try again. Current available: ${currentTotal}`);
   }
 
-  // Insufficient credits (this should never be reached due to atomic check above)
-  throw new Error(`Insufficient credits. Required: ${creditsToDeduct}, Available: ${totalCredits}`);
+  return { success: true, updatedUser: result };
 }
 
 // Helper function to refund credits if generation fails
@@ -504,9 +484,9 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
     const subscriptionStatus = user.subscriptionStatus || 'free';
     const hasActiveSubscription = subscriptionStatus === 'active';
     const freeGenerationsUsed = user.freeGenerationsUsed || 0;
-    const creditsUsed = user.creditsUsed || 0;
-    const monthlyCredits = user.monthlyCredits || 20;
-    const totalCreditsEarned = user.totalCreditsEarned || 0;
+    const creditsUsed = user.creditsUsed ?? 0;
+    const monthlyCredits = user.monthlyCredits ?? 20;
+    const totalCreditsEarned = user.totalCreditsEarned ?? 0;
     const monthlyCreditsRemaining = Math.max(0, monthlyCredits - creditsUsed);
 
     if (success) {
@@ -613,9 +593,9 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
         // Reload user to get updated values after credit deduction
         const updatedUser = await db.collection('users').findOne({ _id: new ObjectId(userId) });
         if (updatedUser) {
-          responseCreditsUsed = updatedUser.creditsUsed || creditsUsed;
-          responseTotalCreditsEarned = updatedUser.totalCreditsEarned || totalCreditsEarned;
-          responseMonthlyCreditsRemaining = Math.max(0, (updatedUser.monthlyCredits || monthlyCredits) - responseCreditsUsed);
+          responseCreditsUsed = updatedUser.creditsUsed ?? creditsUsed;
+          responseTotalCreditsEarned = updatedUser.totalCreditsEarned ?? totalCreditsEarned;
+          responseMonthlyCreditsRemaining = Math.max(0, (updatedUser.monthlyCredits ?? monthlyCredits) - responseCreditsUsed);
         }
       }
 

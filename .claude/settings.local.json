@@ -119,7 +119,11 @@
       "Bash(rm ui.css ui-refactored.js scripts/watch.js)",
       "Bash(rm -rf modules)",
       "Bash(cat z:/Cursor/visantlabs-os/vitest.config.*)",
-      "Bash(Z:)"
+      "Bash(Z:)",
+      "Bash(powershell *)",
+      "Bash(winget install *)",
+      "Bash(winget search *)",
+      "Bash(Select-Object -First 60)"
     ]
   }
 }
