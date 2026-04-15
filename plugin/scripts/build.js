@@ -31,7 +31,8 @@ async function build() {
       jsxImportSource: 'react',
       absWorkingDir: ROOT,
       alias: {
-        '@': path.join(ROOT, 'src')
+        '@': path.join(ROOT, 'src'),
+        '@shared': path.join(ROOT, 'shared')
       },
       minify: !isDev,
       sourcemap: isDev,
@@ -71,7 +72,7 @@ async function build() {
 
     // Step 3: Assemble self-contained HTML
     const htmlContent = `<!DOCTYPE html>
-<html>
+<html class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -100,9 +101,9 @@ body {
   <div id="root"></div>
   <script>
     // Set API URL before React app loads
-    // In development: http://localhost:3000
+    // In development: http://localhost:3001
     // In production: set via environment variable
-    window.__VISANT_API_URL__ = '${process.env.VISANT_API_URL || 'http://localhost:3000'}';
+    window.__VISANT_API_URL__ = '${process.env.VISANT_API_URL || 'http://localhost:3001'}';
   </script>
   <script>
 ${jsContent}
@@ -120,7 +121,7 @@ ${jsContent}
       setup(build) {
         build.onLoad({ filter: /code\.ts$/ }, async (args) => {
           let code = await fs.promises.readFile(args.path, 'utf-8');
-          code = code.replace(/__html__/g, JSON.stringify(htmlContent));
+          code = code.replace(/__html__/g, () => JSON.stringify(htmlContent));
           return { contents: code, loader: 'ts' };
         });
       }
@@ -137,6 +138,9 @@ ${jsContent}
       minify: !isDev,
       sourcemap: isDev,
       plugins: [htmlPlugin],
+      alias: {
+        '@shared': path.join(ROOT, 'shared')
+      },
       external: [],
       logLevel: 'info'
     });

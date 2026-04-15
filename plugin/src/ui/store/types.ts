@@ -19,8 +19,17 @@ export interface SelectionDetail {
 
 export interface LogoSlot {
   name: 'light' | 'dark' | 'accent';
-  src?: string;
+  src?: string;                 // preview URL for <img> (thumbnailUrl ?? url)
   loaded?: boolean;
+  id?: string;                  // server-side logo id
+  source?: 'upload' | 'figma';
+  url?: string;                 // uploaded media URL (svg/png/pdf)
+  thumbnailUrl?: string;        // rasterized preview
+  format?: string;
+  figmaKey?: string;
+  figmaFileKey?: string;
+  figmaNodeId?: string;
+  label?: string;
 }
 
 export interface TypographySlot {
@@ -130,12 +139,30 @@ export interface PluginStore {
   selectedResolution: string;
   selectedModel: string;
 
+  // Plugin features
+  userInfo: { id: string; name: string; photoUrl?: string } | null;
+  mentionElements: any[];
+  apiKey: string | null;
+  anthropicApiKey: string | null;
+  showSmartScanModal: boolean;
+  smartScanResults: any | null;
+  selectedFont: { family: string; style?: string; fontSize?: number; lineHeight?: number } | null;
+  brandLintReport: any | null;
+  extractSyncData: any | null;
+  exportedImage: any | null;
+  isGenerating: boolean;
+
+  // Internal: increments each time the brand state is hydrated from server.
+  // Used by useBrandAutoSync to suppress echo writes.
+  brandHydrationTick: number;
+  brandHydrationAtMs: number;
+
   // UI State
   activeView: 'main' | 'settings';
   activeTab: 'brand' | 'config' | 'dev';
   openPanel: string | null;
   toastMessage?: string;
-  toastType?: 'success' | 'error' | 'info';
+  toastType?: 'success' | 'error' | 'info' | 'warning';
 
   // Actions
   updateSelection: (selection: SelectionDetail[]) => void;
@@ -149,7 +176,6 @@ export interface PluginStore {
   setScanPage: (enabled: boolean) => void;
   setActiveTab: (tab: 'brand' | 'config' | 'dev') => void;
   setActiveView: (view: 'main' | 'settings') => void;
-  updateBrandLogo: (slot: 'light' | 'dark' | 'accent', src: string) => void;
   updateTypography: (slot: 'primary' | 'secondary', data: Partial<TypographySlot>) => void;
   addSelectedColor: (role: string, color: ColorEntry) => void;
   removeSelectedColor: (role: string) => void;
@@ -158,5 +184,15 @@ export interface PluginStore {
   setShowFolders: (show: boolean) => void;
   setBrandGuideline: (guideline: BrandGuideline | null) => void;
   setDesignSystem: (ds: DesignSystem | null) => void;
-  showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
+  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  setUserInfo: (user: { id: string; name: string; photoUrl?: string }) => void;
+  setMentionElements: (elements: any[]) => void;
+  setApiKey: (key: string | null) => void;
+  setAnthropicApiKey: (key: string | null) => void;
+  setSmartScanModal: (show: boolean, results?: any) => void;
+  setSelectedFont: (font: { family: string; style?: string } | null) => void;
+  setBrandLintReport: (report: any) => void;
+  setExtractSyncData: (data: any) => void;
+  setExportedImage: (data: any) => void;
+  setIsGenerating: (generating: boolean) => void;
 }

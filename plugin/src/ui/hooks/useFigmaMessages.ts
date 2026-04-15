@@ -1,37 +1,42 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback } from 'react';
 import { usePluginStore } from '../store';
 import { apiUrl } from '../config';
 import type { UIMessage, PluginMessage } from '@/lib/figma-types';
+import type { ColorEntry } from '../store/types';
+
+// Module-level refcount — ensures exactly ONE window listener regardless of
+// how many components call useFigmaMessages(). Prevents duplicate handling
+// (e.g. N chat bubbles per API response when N hooks are mounted).
+let listenerRefCount = 0;
+let activeListener: ((event: MessageEvent) => void) | null = null;
 
 export function useFigmaMessages() {
-  const messageHandlerRef = useRef<((event: MessageEvent) => void) | null>(null);
-  const store = usePluginStore();
-
   const send = useCallback((msg: UIMessage) => {
     parent.postMessage({ pluginMessage: msg }, 'https://www.figma.com');
   }, []);
 
   useEffect(() => {
-    // Get current store state to use in handler
-    const currentStore = usePluginStore.getState();
-
     const handleMessage = async (event: MessageEvent) => {
-      const msg = event.data?.pluginMessage as PluginMessage | undefined;
-      if (!msg?.type) return;
+      // The PluginMessage discriminated union only covers a subset of the
+      // ~45 message types actually exchanged at runtime. Treat the payload as
+      // loose inside the switch — per-case reads are explicit about their fields.
+      const raw = event.data?.pluginMessage as PluginMessage | undefined;
+      if (!raw?.type) return;
+      const msg = raw as any;
 
-      // Dispatch message to store based on type
       const storeState = usePluginStore.getState();
-      switch (msg.type) {
+      switch (msg.type as string) {
         // ═══ Context & Selection ═══
         case 'CONTEXT_UPDATED':
         case 'ENRICHED_CONTEXT': {
-          if (msg.selection) {
-            storeState.updateSelection(msg.selection);
+          const sel = (msg as any).selectionDetails ?? (msg as any).selection;
+          if (sel) {
+            storeState.updateSelection(sel);
           }
           break;
         }
 
-        case 'SELECTION_CHANGED': {
+        case 'SELECTION_CHANGED': { 
           if (msg.nodes) {
             storeState.updateSelection(msg.nodes);
           }
@@ -56,16 +61,18 @@ export function useFigmaMessages() {
         // ═══ Operations & Results ═══
         case 'OPERATIONS_RESULT':
         case 'OPERATIONS_DONE': {
-          if (msg.operations) {
-            const chatMessage = {
-              id: `msg-${Date.now()}`,
-              role: 'assistant' as const,
-              content: msg.message || 'Operations applied successfully',
-              timestamp: Date.now(),
-              operations: msg.operations
-            };
-            storeState.addChatMessage(chatMessage);
-          }
+          const ops = msg.operations;
+          const content =
+            msg.message ||
+            msg.summary ||
+            (typeof msg.count === 'number' ? `${msg.count} operations applied` : 'Operations applied successfully');
+          storeState.addChatMessage({
+            id: `msg-${Date.now()}`,
+            role: 'assistant' as const,
+            content,
+            timestamp: Date.now(),
+            operations: ops
+          });
           break;
         }
 
@@ -102,24 +109,27 @@ export function useFigmaMessages() {
         }
 
         case 'AUTH_TOKEN_LOADED': {
-          if (msg.authToken) {
-            storeState.setAuthToken(msg.authToken);
-          }
-          if (msg.authEmail) {
-            storeState.setAuthEmail(msg.authEmail);
-          }
+          const token = msg.authToken ?? msg.token;
+          if (token) storeState.setAuthToken(token);
+          if (msg.authEmail) storeState.setAuthEmail(msg.authEmail);
           break;
         }
 
-        case 'API_KEY_SAVED':
-        case 'API_KEY_LOADED': {
+        case 'API_KEY_SAVED': {
           storeState.showToast('API key saved', 'success');
           break;
         }
+        case 'API_KEY_LOADED': {
+          if (msg.key) storeState.setApiKey(msg.key);
+          break;
+        }
 
-        case 'ANTHROPIC_KEY_SAVED':
-        case 'ANTHROPIC_KEY_LOADED': {
+        case 'ANTHROPIC_KEY_SAVED': {
           storeState.showToast('Anthropic key saved', 'success');
+          break;
+        }
+        case 'ANTHROPIC_KEY_LOADED': {
+          if (msg.key) storeState.setAnthropicApiKey(msg.key);
           break;
         }
 
@@ -143,14 +153,30 @@ export function useFigmaMessages() {
         case 'BRAND_GUIDELINE_SAVED':
         case 'GUIDELINE_SAVED': {
           storeState.showToast('Brand guideline saved', 'success');
+          parent.postMessage({ pluginMessage: { type: 'GET_GUIDELINES' } }, 'https://www.figma.com');
           break;
         }
 
         case 'LOCAL_BRAND_LOADED': {
-          if (msg.brand) {
+          const brand = msg.brand ?? msg.config;
+          if (brand) {
+            const colorsMap = new Map<string, ColorEntry>();
+            const raw = brand.colors;
+            if (Array.isArray(raw)) {
+              raw.forEach((c: any, i: number) => {
+                if (!c?.hex) return;
+                const role = c.role || c.name || `color-${i}`;
+                colorsMap.set(role, { role, hex: c.hex, name: c.name });
+              });
+            } else if (raw && typeof raw === 'object') {
+              Object.entries(raw).forEach(([role, v]: [string, any]) => {
+                const hex = typeof v === 'string' ? v : v?.hex;
+                if (hex) colorsMap.set(role, { role, hex, name: v?.name });
+              });
+            }
             usePluginStore.setState({
-              logos: msg.brand.logos || [],
-              selectedColors: new Map(Object.entries(msg.brand.colors || {}))
+              logos: brand.logos || [],
+              selectedColors: colorsMap
             });
           }
           break;
@@ -195,14 +221,11 @@ export function useFigmaMessages() {
           break;
         }
 
+        // SELECTION_LOGO_RESULT is consumed directly by useLogoUpload.
+        // COMPONENT_CAPTURED has no active consumer — kept as no-op for sandbox safety.
         case 'COMPONENT_CAPTURED':
-        case 'SELECTION_LOGO_RESULT': {
-          if (msg.component) {
-            usePluginStore.setState({ selectedLogo: msg.component });
-            storeState.showToast('Logo captured', 'success');
-          }
+        case 'SELECTION_LOGO_RESULT':
           break;
-        }
 
         // ═══ Variables ═══
         case 'FONT_VARIABLES_LOADED': {
@@ -231,7 +254,8 @@ export function useFigmaMessages() {
 
         case 'VARIABLE_DEFS_RESULT': {
           if (msg.variables) {
-
+            const current = usePluginStore.getState();
+            usePluginStore.setState({ designTokens: { ...current.designTokens, variables: msg.variables } });
           }
           break;
         }
@@ -246,7 +270,7 @@ export function useFigmaMessages() {
 
         case 'USER_INFO': {
           if (msg.user) {
-
+            storeState.setUserInfo(msg.user);
           }
           break;
         }
@@ -255,8 +279,9 @@ export function useFigmaMessages() {
         case 'EXPORT_NODE_IMAGE_RESULT': {
           if (msg.error) {
             storeState.showToast(`Export failed: ${msg.error}`, 'error');
-          } else {
-
+          } else if (msg.data) {
+            storeState.setExportedImage(msg.data);
+            storeState.showToast('Image exported', 'success');
           }
           break;
         }
@@ -271,14 +296,15 @@ export function useFigmaMessages() {
 
         case 'ELEMENTS_FOR_MENTIONS': {
           if (msg.elements) {
-
+            storeState.setMentionElements(msg.elements);
           }
           break;
         }
 
         case 'EXTRACT_FOR_SYNC_RESULT': {
           if (msg.data) {
-
+            storeState.setExtractSyncData(msg.data);
+            storeState.showToast('Figma data extracted', 'success');
           }
           break;
         }
@@ -318,8 +344,9 @@ export function useFigmaMessages() {
 
         // ═══ Screenshots & Export ═══
         case 'SCREENSHOT_RESULT': {
-          if (msg.data) {
-
+          const payload = msg.data ?? (msg.base64 ? { base64: msg.base64, nodeId: msg.nodeId } : null);
+          if (payload) {
+            storeState.setExportedImage({ type: 'screenshot', ...payload });
           }
           break;
         }
@@ -336,19 +363,10 @@ export function useFigmaMessages() {
           break;
         }
 
-        // ═══ Design Context ═══
-        case 'DESIGN_CONTEXT_RESULT': {
-
-          break;
-        }
-
-        case 'SEARCH_DS_RESULT': {
-
-          break;
-        }
-
+        // ═══ Design Context (consumed by operation engine, stored for debugging) ═══
+        case 'DESIGN_CONTEXT_RESULT':
+        case 'SEARCH_DS_RESULT':
         case 'CODE_CONNECT_RESULT': {
-
           break;
         }
 
@@ -359,7 +377,7 @@ export function useFigmaMessages() {
           if (!context) break;
 
           try {
-            // Show thinking indicator
+            storeState.setIsGenerating(true);
             storeState.showToast('Calling Gemini...', 'info');
 
             const response = await fetch(apiUrl('/plugin'), {
@@ -378,20 +396,41 @@ export function useFigmaMessages() {
 
             const result = await response.json();
 
-            // Add AI response to chat
-            const assistantMessage = {
+            // Backend returns { operations, message, ... }. The assistant's
+            // spoken text lives in ops where type === 'MESSAGE'; the rest are
+            // design operations the sandbox will apply.
+            const ops: any[] = Array.isArray(result.operations) ? result.operations : [];
+            const messageOps = ops.filter((o) => o?.type === 'MESSAGE' && o.content);
+            const designOps = ops.filter((o) => o?.type !== 'MESSAGE');
+            const spokenText = messageOps.map((o) => String(o.content)).join('\n\n');
+            const content =
+              spokenText ||
+              result.text ||
+              result.response ||
+              result.message ||
+              (designOps.length > 0 ? `Generated ${designOps.length} operation(s)` : 'Done');
+
+            storeState.addChatMessage({
               id: `msg-${Date.now()}`,
               role: 'assistant' as const,
-              content: result.text || result.response || 'Response received',
+              content,
               timestamp: Date.now(),
-              operations: result.operations
-            };
+              operations: designOps
+            });
 
-            storeState.addChatMessage(assistantMessage);
-            storeState.showToast('Response received', 'success');
+            if (designOps.length > 0) {
+              // Send ops back to sandbox for execution via Figma API
+              parent.postMessage(
+                { pluginMessage: { type: 'APPLY_OPERATIONS_FROM_API', operations: designOps } },
+                'https://www.figma.com'
+              );
+              storeState.showToast(`Applying ${designOps.length} operation(s)…`, 'info');
+            }
           } catch (err) {
             console.error('API call failed:', err);
             storeState.showToast(`API error: ${(err as Error).message}`, 'error');
+          } finally {
+            storeState.setIsGenerating(false);
           }
           break;
         }
@@ -408,12 +447,19 @@ export function useFigmaMessages() {
       }
     };
 
-    messageHandlerRef.current = handleMessage;
-    window.addEventListener('message', handleMessage);
+    listenerRefCount++;
+    if (!activeListener) {
+      activeListener = handleMessage;
+      window.addEventListener('message', handleMessage);
+    }
 
     return () => {
-      window.removeEventListener('message', handleMessage);
-      messageHandlerRef.current = null;
+      listenerRefCount--;
+      if (listenerRefCount <= 0 && activeListener) {
+        window.removeEventListener('message', activeListener);
+        activeListener = null;
+        listenerRefCount = 0;
+      }
     };
   }, []);
 

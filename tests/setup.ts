@@ -1,16 +1,20 @@
-import { beforeAll, afterEach, afterAll } from 'vitest';
+import { beforeAll, afterAll, afterEach, vi } from 'vitest';
+import { applyTestEnv } from './helpers/env.js';
+import { mswServer } from './mocks/server.js';
 
-// Global test setup
+// Must run before any server module is imported.
+applyTestEnv();
+
 beforeAll(() => {
-  // Set test environment variables
-  process.env.NODE_ENV = 'test';
+  // Fail loudly on unmocked outbound HTTP — catches tests leaking real calls.
+  mswServer.listen({ onUnhandledRequest: 'error' });
 });
 
 afterEach(() => {
-  // Clean up mocks after each test
+  mswServer.resetHandlers();
   vi.clearAllMocks();
 });
 
 afterAll(() => {
-  // Global cleanup
+  mswServer.close();
 });

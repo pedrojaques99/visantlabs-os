@@ -12,8 +12,15 @@ import { detectAbuse, recordSignupAttempt } from '../utils/abuseDetection.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
 import { signupSchema, signinSchema, forgotPasswordSchema, resetPasswordSchema, formatZodError } from '../utils/schemas.js';
 import { isValidEmail } from '../utils/validation.js';
+import { bruteForceGuard } from '../middleware/bruteForceGuard.js';
 
 const router = express.Router();
+
+const getEmailFromBody = (req: express.Request) =>
+  typeof req.body?.email === 'string' ? req.body.email : undefined;
+const signinBackoff = bruteForceGuard(getEmailFromBody);
+const signupBackoff = bruteForceGuard(getEmailFromBody);
+const forgotBackoff = bruteForceGuard(getEmailFromBody);
 
 // Normalize redirect URI to remove trailing slashes
 const getRedirectUri = () => {
@@ -585,7 +592,7 @@ router.get('/verify', verifyRateLimiter, async (req, res) => {
 
 // Email/Password Sign Up
 // CAPTCHA middleware removed - CAPTCHA is disabled
-router.post('/signup', signupRateLimiter, async (req, res) => {
+router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
   const ipAddress = getClientIp(req);
   let signupSuccessful = false;
 
@@ -741,7 +748,7 @@ router.post('/signup', signupRateLimiter, async (req, res) => {
 });
 
 // Email/Password Sign In
-router.post('/signin', signinRateLimiter, async (req, res) => {
+router.post('/signin', signinRateLimiter, signinBackoff, async (req, res) => {
   try {
     const parsed = signinSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -818,7 +825,7 @@ router.post('/logout', apiRateLimiter, (req, res) => {
 });
 
 // Forgot Password - Request password reset
-router.post('/forgot-password', passwordResetRateLimiter, async (req, res) => {
+router.post('/forgot-password', passwordResetRateLimiter, forgotBackoff, async (req, res) => {
   try {
     const parsed = forgotPasswordSchema.safeParse(req.body);
     if (!parsed.success) {

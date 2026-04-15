@@ -1,0 +1,41 @@
+# Visant Labs OS
+
+> AI-powered canvas-based design tool with mockup generation, branding, and budget management.
+
+## Project Structure
+- `/server`: Express.js backend. Entry point: `index.ts`. App logic: `app.ts`.
+- `/src`: React frontend. Uses Vite, Tailwind CSS, and Framer Motion.
+- `/plugin`: Figma plugin implementation (React UI + Figma Handlers).
+- `/prisma`: Database schema (MongoDB).
+- `/tests`: Vitest suites (Unit, Integration, E2E).
+
+## Key Technologies
+- **Runtime**: Node.js (ESM).
+- **Frontend**: React 19, Vite, Tailwind 4.
+- **Backend**: Express, Prisma, MongoDB.
+- **AI**: Gemini (Google AI SDK).
+- **Auth**: JWT, bcryptjs, Auth0/Google.
+- **Payment**: Stripe, AbacatePay.
+- **Collaboration**: Liveblocks.
+
+## Getting Started
+1. `npm install`
+2. `cp env.example .env.local`
+3. `npm run dev:all`
+
+## Guidelines for AI Agents
+- The project follows a "Cockpit" design philosophy: dark, premium, dashboard-like.
+- All backend routes are located in `/server/routes`.
+- Figma handlers are in `/plugin/src/handlers`.
+- Use `zod` for all data validation.
+- Prefer `tsx watch` for server development.
+
+## API Architecture
+- Common prefix: `/api` (normalized in Vercel).
+- Health checks: `/api/health`.
+- AI services: `/api/ai`.
+- Database access via Prisma Client.
+
+## Telemetry
+Logs of plugin operations are stored in `.agent/telemetry/YYYY-MM-DD.md`.
+Use this to analyze LLM-generated design quality.
