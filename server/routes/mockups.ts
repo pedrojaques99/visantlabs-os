@@ -16,6 +16,8 @@ import { safeFetch, getErrorMessage } from '../utils/securityValidation.js';
 import { ensureOptionalBoolean, ensureString, isValidObjectId, sanitizeLogValue } from '../utils/validation.js';
 import { rateLimit } from 'express-rate-limit';
 import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
+import { redisClient } from '../lib/redis.js';
+import { CACHE_TTL, CacheKey, hashQuery } from '../lib/cache-utils.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -1060,6 +1062,16 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       }
     }
 
+    // Cache check before generation
+    const mockupCacheKey = CacheKey.mockupGen(req.userId!, hashQuery(finalPromptText, model + (resolution || '') + (aspectRatio || '')));
+    const cachedMockup = await redisClient.get(mockupCacheKey);
+
+    if (cachedMockup && !req.body.skipCache) {
+      const cached = JSON.parse(cachedMockup);
+      console.log(`[Cache] HIT mockup:${mockupCacheKey.slice(0, 20)}`);
+      return res.json({ ...cached, fromCache: true });
+    }
+
     // Generate mockup image using selected provider
     // Note: We only generate one image per request
     let imageBase64: string;
@@ -1280,9 +1292,8 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       });
     }
 
-    // Return generated image
-    // Prefer imageUrl if available to save bandwidth
-    res.json({
+    // Cache the result before sending
+    const responseData = {
       imageBase64: imageUrl ? undefined : imageBase64,
       imageUrl,
       seed: usedSeed,
@@ -1292,9 +1303,19 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       isAdmin,
       width: width || undefined,
       height: height || undefined,
-      requestId, // Track request ID for feedback linking
-      generationId: randomUUID(), // UUID for RAG feedback loop (👍/👎)
-    });
+      requestId,
+      generationId: randomUUID(),
+    };
+
+    await redisClient.setex(
+      mockupCacheKey,
+      CACHE_TTL.MOCKUP_GEN,
+      JSON.stringify(responseData)
+    );
+    console.log(`[Cache] SET mockup:${mockupCacheKey.slice(0, 20)} (7d)`);
+
+    // Return generated image
+    res.json(responseData);
   } catch (error: any) {
     // Always release lock on error if it was acquired
     if (lockKey) {

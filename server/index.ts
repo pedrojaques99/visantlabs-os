@@ -30,6 +30,7 @@ try {
 import { createApp } from './app.js';
 import { connectToMongoDB } from './db/mongodb.js';
 import { initPluginWebSocket } from './routes/plugin.js';
+import { initRedis } from './lib/redis.js';
 import { logger } from './lib/logger.js';
 
 const app = createApp();
@@ -95,6 +96,11 @@ if (!process.env.VERCEL) {
     testPrismaConnection().catch(() => {
       console.warn('⚠️  Prisma connection test failed, but server will start anyway');
     });
+
+    const redisConnected = await initRedis();
+    if (!redisConnected) {
+      console.warn('⚠️  Redis connection failed, continuing without cache');
+    }
 
     const server = app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);

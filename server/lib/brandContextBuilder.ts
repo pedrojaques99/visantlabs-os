@@ -12,6 +12,8 @@
 
 import type { BrandGuideline } from '../../src/lib/figma-types.js';
 import type { TokenRegistry } from './tokenRegistry.js';
+import { redisClient } from './redis.js';
+import { CACHE_TTL, CacheKey } from './cache-utils.js';
 
 // ═══════════════════════════════════════════
 // Hex to RGB conversion utility
@@ -327,4 +329,37 @@ export function buildEnforcedPrompt(registry: TokenRegistry): string {
   }
 
   return lines.join('\n');
+}
+
+// ═══════════════════════════════════════════
+// Cache Wrapper for buildBrandContext
+// ═══════════════════════════════════════════
+const originalBuildBrandContext = buildBrandContext;
+
+export async function buildBrandContextCached(
+  bg: BrandGuideline,
+  options?: {
+    includeLogos?: boolean;
+    includeMedia?: boolean;
+    compact?: boolean;
+  }
+): Promise<string> {
+  const format = JSON.stringify(options) || 'default';
+  const cacheKey = CacheKey.brandContext(bg.id, format);
+  const cached = await redisClient.get(cacheKey);
+
+  if (cached) {
+    console.log(`[Cache] HIT context:${bg.id.slice(0, 8)}`);
+    return cached;
+  }
+
+  const result = originalBuildBrandContext(bg, options);
+  await redisClient.setex(
+    cacheKey,
+    CACHE_TTL.BRAND_CTX,
+    result
+  );
+  console.log(`[Cache] SET context:${bg.id.slice(0, 8)} (24h)`);
+
+  return result;
 }
