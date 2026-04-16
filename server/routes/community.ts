@@ -24,6 +24,8 @@ const uploadImageRateLimiter = rateLimit({
   legacyHeaders: false,
 });
 import { ensureString, isSafeId, sanitizeMongoQuery } from '../utils/validation.js';
+import { redisClient } from '../lib/redis.js';
+import { CACHE_TTL, CacheKey, hashQuery } from '../lib/cache-utils.js';
 
 const router = express.Router();
 
@@ -214,6 +216,14 @@ router.post('/presets', apiRateLimiter, authenticate, async (req: AuthRequest, r
 // Get public approved community presets (with optional auth for likes)
 router.get('/presets/public', apiRateLimiter, async (req, res) => {
   try {
+    // Cache check (public endpoint, cache without user context)
+    const cacheKey = CacheKey.presetSearch('all', 'public', 1);
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      console.log('[Cache] HIT preset:all:public');
+      return res.json(JSON.parse(cached));
+    }
+
     await connectToMongoDB();
     const db = getDb();
 
@@ -278,6 +288,14 @@ router.get('/presets/public', apiRateLimiter, async (req, res) => {
         grouped[migrated.presetType].push(presetWithLikes);
       }
     });
+
+    // Cache result for 7 days
+    await redisClient.setex(
+      cacheKey,
+      CACHE_TTL.PRESET_SEARCH,
+      JSON.stringify(grouped)
+    );
+    console.log('[Cache] SET preset:all:public (7d)');
 
     return res.json(grouped);
   } catch (error) {

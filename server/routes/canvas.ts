@@ -6,6 +6,8 @@ import { compressPdfSimple } from '../utils/pdfCompression.js';
 import { validateAdminOrPremium, requireEditAccess, requireViewAccess } from '../middleware/canvasAuth.js';
 import { Liveblocks } from '@liveblocks/node';
 import { rateLimit } from 'express-rate-limit';
+import { redisClient } from '../lib/redis.js';
+import { CACHE_TTL, CacheKey } from '../lib/cache-utils.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -789,6 +791,14 @@ router.get('/shared/:shareId', apiRateLimiter, async (req, res) => {
   try {
     const { shareId } = req.params;
 
+    // Cache check for public shared projects
+    const cacheKey = CacheKey.sharePublic(shareId);
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      console.log(`[Cache] HIT share:${shareId.slice(0, 8)}`);
+      return res.json(JSON.parse(cached));
+    }
+
     console.log('[Canvas] Fetching shared project with shareId:', shareId);
 
     const project = await prisma.canvasProject.findFirst({
@@ -810,13 +820,23 @@ router.get('/shared/:shareId', apiRateLimiter, async (req, res) => {
       cleanedNodes = cleanExpiredBase64Images(cleanedNodes);
     }
 
-    res.json({
+    const responseData = {
       project: {
         ...project,
         _id: project.id,
         nodes: cleanedNodes,
       }
-    });
+    };
+
+    // Cache shared project for 7 days
+    await redisClient.setex(
+      cacheKey,
+      CACHE_TTL.SHARE_PUBLIC,
+      JSON.stringify(responseData)
+    );
+    console.log(`[Cache] SET share:${shareId.slice(0, 8)} (7d)`);
+
+    res.json(responseData);
   } catch (error: any) {
     console.error('Error fetching shared project:', error);
     res.status(500).json({
