@@ -9,6 +9,8 @@ import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth.js';
 import { getUserIdFromToken } from '../utils/auth.js';
 import { isSafeId, ensureString } from '../utils/validation.js';
 import { rateLimit } from 'express-rate-limit';
+import { redisClient } from '../lib/redis.js';
+import { CACHE_TTL, CacheKey, hashObject } from '../lib/cache-utils.js';
 import {
   buildSystemPrompt,
   buildSystemPromptV2,
@@ -601,6 +603,11 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       console.log('[Plugin] Branding disabled by user. Using local context ONLY.');
     }
 
+    // Cache check for plugin context
+    const contextHash = hashObject({ command, fileId, brandGuidelineId, designSystem });
+    const pluginCacheKey = CacheKey.pluginContext(fileId || 'public', brandGuidelineId || 'none', contextHash);
+    const cachedContext = await redisClient.get(pluginCacheKey);
+
     // ═══ BRANDED SOCIAL POSTS: Resolve effective brand context ═══
     const effectiveBrandFonts = brandFonts || (brandGuideline?.typography ? {
       primary: (brandGuideline.typography as any[]).find(t => t.role === 'primary' || t.role === 'heading'),
@@ -952,7 +959,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     );
 
     // Return validated operations to apply
-    res.json({
+    const responseData = {
       success: true,
       operations: validOps,
       message: `Generated ${validOps.length} operation(s)${warnings.length > 0 ? ` (${warnings.length} filtered)` : ''}`,
@@ -960,7 +967,17 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       warnings: warnings.length > 0 ? warnings : undefined,
       usage: usage || undefined,
       durationMs,
-    });
+    };
+
+    // Cache plugin context for 1 hour
+    await redisClient.setex(
+      pluginCacheKey,
+      CACHE_TTL.PLUGIN_CTX,
+      JSON.stringify(responseData)
+    );
+    console.log(`[Cache] SET plugin:${fileId?.slice(0, 8)}:${brandGuidelineId?.slice(0, 8)} (1h)`);
+
+    res.json(responseData);
 
     // Deduct credit after successful response (non-blocking, only for authenticated non-BYOK users)
     const isByokUser = !!(userApiKey || userAnthropicKey);
