@@ -346,20 +346,29 @@ export async function buildBrandContextCached(
 ): Promise<string> {
   const format = JSON.stringify(options) || 'default';
   const cacheKey = CacheKey.brandContext(bg.id, format);
-  const cached = await redisClient.get(cacheKey);
 
-  if (cached) {
-    console.log(`[Cache] HIT context:${bg.id.slice(0, 8)}`);
-    return cached;
+  try {
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      console.log(`[Cache] HIT context:${bg.id.slice(0, 8)}`);
+      return cached;
+    }
+  } catch (err) {
+    console.warn(`[Cache] Redis GET failed, skipping cache:`, (err as Error).message);
   }
 
   const result = originalBuildBrandContext(bg, options);
-  await redisClient.setex(
-    cacheKey,
-    CACHE_TTL.BRAND_CTX,
-    result
-  );
-  console.log(`[Cache] SET context:${bg.id.slice(0, 8)} (24h)`);
+
+  try {
+    await redisClient.setex(
+      cacheKey,
+      CACHE_TTL.BRAND_CTX,
+      result
+    );
+    console.log(`[Cache] SET context:${bg.id.slice(0, 8)} (24h)`);
+  } catch (err) {
+    console.warn(`[Cache] Redis SET failed:`, (err as Error).message);
+  }
 
   return result;
 }

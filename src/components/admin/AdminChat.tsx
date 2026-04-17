@@ -170,9 +170,19 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                 setIsIngesting(false);
             }
 
-            // 3. Add user message
+            // 3. Add user message with attachments
             const now = new Date().toISOString();
-            const userMsg: AdminChatMessage = { role: 'user', content: currentInput, timestamp: now };
+            const attachments = currentFiles.map(file => ({
+                type: (file.type === 'application/pdf' ? 'pdf' : 'image') as 'image' | 'pdf',
+                dataUrl: URL.createObjectURL(file),
+                name: file.name,
+            }));
+            const userMsg: AdminChatMessage = {
+                role: 'user',
+                content: currentInput || (currentFiles.length > 0 ? `📎 ${currentFiles.map(f => f.name).join(', ')}` : ''),
+                timestamp: now,
+                attachments: attachments.length > 0 ? attachments : undefined
+            };
             setMessages(prev => [...prev, userMsg]);
             setInput('');
             setAttachedFiles([]);
@@ -180,18 +190,24 @@ export const AdminChat: React.FC<AdminChatProps> = ({
 
             // 4. Send message to session
             try {
-                const { reply, action, actionResult } = await adminChatApi.sendMessage(sessionId, currentInput);
+                const { reply, action, actionResult, creativeProjects, toolsUsed, generationId } = await adminChatApi.sendMessage(sessionId, currentInput);
 
                 setMessages(prev => [...prev, {
                     role: 'assistant',
                     content: reply,
                     timestamp: new Date().toISOString(),
                     action,
-                    actionResult
+                    actionResult,
+                    creativeProjects,
+                    generationId
                 }]);
 
                 if (action) {
                     console.log('Admin Action detected:', action, actionResult);
+                }
+
+                if (toolsUsed && toolsUsed.length > 0) {
+                    console.log('Tools used:', toolsUsed);
                 }
 
                 await refetchSessions();
@@ -353,11 +369,15 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                             {/* Messages Area */}
                             <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-thin">
                                 {messages.map((msg, i) => (
-                                    <ChatMessage 
+                                    <ChatMessage
                                         key={i}
                                         role={msg.role as any}
                                         content={msg.content}
                                         t={t}
+                                        attachments={msg.attachments}
+                                        creativeProjects={msg.creativeProjects}
+                                        generationId={msg.generationId}
+                                        feature="admin-chat"
                                     />
                                 ))}
                                 {isLoading && (
