@@ -15,12 +15,24 @@ const getAuthHeaders = () => {
     };
 };
 
+export interface CreativeProjectRef {
+    creativeProjectId: string;
+    imageUrl: string;
+    editUrl: string;
+    prompt: string;
+    creditsDeducted: number;
+    creditsRemaining: number;
+}
+
 export interface AdminChatMessage {
     role: 'user' | 'assistant';
     content: string;
     timestamp: string;
     action?: string;
     actionResult?: any;
+    attachments?: Array<{ type: 'image' | 'pdf'; dataUrl: string; name: string; }>;
+    creativeProjects?: CreativeProjectRef[];
+    generationId?: string;
 }
 
 export interface AdminChatSession {
@@ -39,6 +51,9 @@ export interface AdminChatSendMessageResult {
     action?: string;
     actionResult?: any;
     sessionId: string;
+    generationId?: string;
+    toolsUsed?: string[];
+    creativeProjects?: CreativeProjectRef[];
 }
 
 export const adminChatApi = {

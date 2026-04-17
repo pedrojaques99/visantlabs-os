@@ -284,6 +284,9 @@ model CreativeProject {
   // Preview
   thumbnailUrl    String?
 
+  // AdminChat integration — link back to chat session for bidirectional editing
+  adminChatSessionId String?
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -291,6 +294,7 @@ model CreativeProject {
 
   @@index([userId])
   @@index([brandId])
+  @@index([adminChatSessionId])
   @@index([createdAt])
   @@map("creative_projects")
 }

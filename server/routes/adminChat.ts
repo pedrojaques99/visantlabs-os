@@ -4,13 +4,13 @@ import { validateAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { chatWithAIContext } from '../services/geminiService.js';
 import { knowledgeService } from '../services/knowledgeService.js';
-import { buildBrandContextCached, buildBrandContextJSON } from '../lib/brandContextBuilder.js';
-import { parsePdf, parseUrl, parseImage } from '../lib/brand-parse.js';
+import { buildBrandContextCached } from '../lib/brandContextBuilder.js';
+import { parseUrl } from '../lib/brand-parse.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { prisma } from '../db/prisma.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
-import { generateMockupIdeas, generateMarketResearch } from '../services/brandingService.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { ADMIN_CHAT_TOOLS, executeAdminChatTool } from '../services/adminChatTools.js';
 
 const router = express.Router();
 
@@ -36,6 +36,15 @@ interface ChatMessage {
   timestamp: string;
   action?: string;
   actionResult?: any;
+  creativeProjects?: Array<{
+    creativeProjectId: string;
+    imageUrl: string;
+    editUrl: string;
+    prompt: string;
+    creditsDeducted?: number;
+    creditsRemaining?: number;
+  }>;
+  generationId?: string;
 }
 
 interface AdminChatSession {
@@ -52,51 +61,8 @@ interface AdminChatSession {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function detectAction(reply: string): { type: string; params: any } | null {
-  const match = reply.match(/\[ACTION:\s*(\w+)\s+(\{[\s\S]*?\})\]/);
-  if (!match) return null;
-  try {
-    return { type: match[1], params: JSON.parse(match[2]) };
-  } catch {
-    return null;
-  }
-}
-
 function stripAction(reply: string): string {
   return reply.replace(/\[ACTION:\s*\w+\s+\{[\s\S]*?\}\]/g, '').trim();
-}
-
-async function executeAction(
-  action: { type: string; params: any },
-  session: AdminChatSession,
-  userId: string,
-  userApiKey?: string
-): Promise<any> {
-  switch (action.type) {
-    case 'generate_image': {
-      const { result } = await generateMockupIdeas(
-        action.params.prompt || '',
-        { prompt: action.params.prompt } as any,
-        []
-      );
-      return { type: 'mockup_ideas', ideas: result };
-    }
-    case 'branding_step': {
-      const step = action.params.step || 1;
-      const { result } = await generateMarketResearch(action.params.prompt || '', []);
-      return { type: 'branding_step', step, result };
-    }
-    case 'export_brand_context': {
-      if (!session.brandGuidelineId) return null;
-      const guideline = await prisma.brandGuideline.findFirst({
-        where: { id: session.brandGuidelineId, userId },
-      });
-      if (!guideline) return null;
-      return { type: 'brand_context', context: buildBrandContextJSON(guideline as any) };
-    }
-    default:
-      return null;
-  }
 }
 
 function buildSystemPrompt(
@@ -120,11 +86,13 @@ ${memoryStr}
 
 ${brandContext ? `CONTEXTO DE MARCA:\n${brandContext}\n` : ''}
 ${ragContext ? `DOCUMENTOS INGERIDOS (use como base):\n${ragContext}\n` : ''}
-Quando o usuário pedir geração de imagem, ideias de mockup ou step de branding, inclua EXATAMENTE ao final da resposta:
-[ACTION: generate_image {"prompt": "descreva aqui"}]
-[ACTION: branding_step {"step": 1, "prompt": "descreva aqui"}]
-[ACTION: export_brand_context {}]
-Inclua apenas um ACTION por resposta e apenas quando for claramente solicitado.`;
+
+FERRAMENTAS DISPONÍVEIS:
+- Use "generate_or_update_mockup" quando o usuário pedir mockups, designs, protótipos ou variações de layouts.
+  Inclua na chamada: prompt descritivo, brandGuidelineId (se disponível), modelo (gemini-2.0-flash ou gemini-2.0-pro), resolução, aspect ratio.
+
+Quando apropriado, use as ferramentas para entregar resultados práticos além da análise textual.`;
+
 }
 
 function toGeminiHistory(messages: ChatMessage[]) {
@@ -329,45 +297,80 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
     // 4. Histórico no formato Gemini (últimas 20 msgs)
     const geminiHistory = toGeminiHistory(session.messages);
 
-    // 5. Chat via geminiService
-    const { text: rawReply } = await chatWithAIContext(
+    // 5. Chat via geminiService with tool support
+    const { text: rawReply, toolCalls } = await chatWithAIContext(
       message,
       '', // context vai no systemInstruction
       geminiHistory,
-      { apiKey: userApiKey, model: GEMINI_MODELS.TEXT, systemInstruction }
+      {
+        apiKey: userApiKey,
+        model: GEMINI_MODELS.TEXT,
+        systemInstruction,
+        tools: ADMIN_CHAT_TOOLS
+      }
     );
 
-    // 6. Detectar e executar action
-    const action = detectAction(rawReply);
-    const reply = stripAction(rawReply);
-    let actionResult: any = undefined;
-    if (action) {
-      try {
-        actionResult = await executeAction(action, session, req.userId!, userApiKey);
-      } catch (e: any) {
-        console.error('[AdminChat] Action error:', e.message);
+    // 6. Execute tool calls if any
+    let reply = rawReply;
+    let creativeProjects: any[] = [];
+    const toolsUsed: string[] = [];
+
+    if (toolCalls && toolCalls.length > 0) {
+      console.log(`[AdminChat] LLM called ${toolCalls.length} tool(s)`);
+
+      for (const call of toolCalls) {
+        try {
+          const toolResult = await executeAdminChatTool(call.name, call.args, req.userId!, session._id);
+          console.log(`[AdminChat] Tool ${call.name} executed successfully`);
+
+          if (call.name === 'generate_or_update_mockup' && toolResult.success) {
+            creativeProjects.push({
+              creativeProjectId: toolResult.creativeProjectId,
+              imageUrl: toolResult.imageUrl,
+              editUrl: toolResult.editUrl,
+              prompt: toolResult.prompt,
+              creditsDeducted: toolResult.creditsDeducted,
+              creditsRemaining: toolResult.creditsRemaining
+            });
+          }
+          toolsUsed.push(call.name);
+        } catch (e: any) {
+          console.error(`[AdminChat] Error executing tool ${call.name}:`, e.message);
+        }
       }
     }
 
-    // 7. Gerar título da sessão na primeira mensagem
+    // 7. Clean up any residual action markers (legacy format cleanup)
+    reply = stripAction(reply);
+
+    // 8. Gerar título da sessão na primeira mensagem
     if (session.messages.length === 0) {
       session.title = message.slice(0, 60);
     }
 
-    // 8. Persistir mensagens
+    // 9. Gerar ID único pra feedback
+    const generationId = uuidv4();
+
+    // 10. Persistir mensagens com creative projects
     const now = new Date().toISOString();
     session.messages.push({ role: 'user', content: message, timestamp: now });
     session.messages.push({
       role: 'assistant',
       content: reply,
       timestamp: now,
-      action: action?.type,
-      actionResult,
+      creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined,
+      generationId
     });
 
     await saveSession(session);
 
-    res.json({ reply, action: action?.type, actionResult, sessionId: session._id });
+    res.json({
+      reply,
+      sessionId: session._id,
+      generationId,
+      toolsUsed: toolsUsed.length > 0 ? toolsUsed : undefined,
+      creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined
+    });
   } catch (err: any) {
     console.error('[AdminChat] Message error:', err);
     res.status(500).json({ error: err.message });

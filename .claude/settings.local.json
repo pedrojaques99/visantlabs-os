@@ -139,7 +139,10 @@
       "Bash(taskkill /PID 40584 /F /T)",
       "Bash(tsx test-parse.ts)",
       "Bash(npm exec *)",
-      "Bash(awk '{print $NF}')"
+      "Bash(awk '{print $NF}')",
+      "Bash(npm view *)",
+      "mcp__claude_ai_Context7__query-docs",
+      "Bash(awk -F\"'\" '{print $2}')"
     ]
   }
 }
