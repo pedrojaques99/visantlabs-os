@@ -1634,23 +1634,37 @@ export const getMultimodalEmbedding = async (
 
 /**
  * Generic chat with context helper.
- * Can be used by any route with an optional system instruction.
+ * Can be used by any route with an optional system instruction and tools.
  */
 export const chatWithAIContext = async (
   query: string,
   context: string,
   history: any[] = [],
-  options: { apiKey?: string; model?: string; systemInstruction?: string } = {}
+  options: { apiKey?: string; model?: string; systemInstruction?: string; tools?: any } = {}
 ): Promise<any> => {
-  const { apiKey, model: requestedModel, systemInstruction: requestedSystemInstruction } = options;
+  const { apiKey, model: requestedModel, systemInstruction: requestedSystemInstruction, tools } = options;
   return withRetry(async () => {
     const ai = getAI(apiKey);
-    
+
     // Use the provided niche instruction or fallback to the generic intelligent one
     const systemInstruction = requestedSystemInstruction || `${GENERIC_SYSTEM_PROMPT}\n\nUTILIZE O CONTEXTO ABAIXO:\n${context}`;
 
     // Basic input sanitization - strip angle brackets to prevent HTML/script injection
     const sanitizedQuery = query.substring(0, 4000).replace(/[<>]/g, '');
+
+    const config: any = {
+      systemInstruction,
+    };
+
+    // Add tools config if provided
+    if (tools) {
+      config.tools = tools;
+      config.toolConfig = {
+        functionCallingConfig: {
+          mode: 'AUTO',
+        },
+      };
+    }
 
     const response = await ai.models.generateContent({
       model: requestedModel || GEMINI_MODELS.TEXT,
@@ -1658,13 +1672,28 @@ export const chatWithAIContext = async (
         ...history,
         { parts: [{ text: sanitizedQuery }] }
       ],
-      config: {
-        systemInstruction,
-      }
+      config,
     });
 
+    // Check for function calls in the response
+    const toolCalls: any[] = [];
+    let responseText = response.text;
+
+    const candidate = (response as any).candidates?.[0];
+    if (candidate?.content?.parts) {
+      for (const part of candidate.content.parts) {
+        if (part.functionCall) {
+          toolCalls.push({
+            name: part.functionCall.name,
+            args: part.functionCall.args,
+          });
+        }
+      }
+    }
+
     return {
-      text: response.text,
+      text: responseText,
+      toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
       inputTokens: (response as any).usageMetadata?.promptTokenCount,
       outputTokens: (response as any).usageMetadata?.candidatesTokenCount
     };

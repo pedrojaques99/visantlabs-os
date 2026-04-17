@@ -52,6 +52,8 @@ const BrandGuidelinesPage = lazyWithRetry(() => import('./pages/BrandGuidelinesP
 const PublicBrandGuideline = lazyWithRetry(() => import('./pages/PublicBrandGuideline').then(m => ({ default: m.PublicBrandGuideline })));
 const BrandingExpertPage = lazyWithRetry(() => import('./pages/BrandingExpertPage').then(m => ({ default: m.BrandingExpertPage })));
 const CreatePage = lazyWithRetry(() => import('./pages/CreatePage').then(m => ({ default: m.CreatePage })));
+const AdminChatPage = lazyWithRetry(() => import('./pages/AdminChatPage').then(m => ({ default: m.AdminChatPage })));
+
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
@@ -104,9 +106,11 @@ const App: React.FC = () => {
                 <Route path="/waitlist" element={<WaitlistPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin/chat" element={<AdminChatPage />} />
                 <Route path="/admin/presets" element={<AdminPresetsPage />} />
                 <Route path="/admin/products" element={<AdminProductsPage />} />
                 <Route path="/admin/smart-analyzer" element={<SmartAnalyzerPage />} />
+
                 <Route path="/create" element={<CreatePage />} />
                 <Route path="/create/projects" element={<CreativeProjectsPage />} />
                 <Route path="/community" element={<CommunityPage />} />

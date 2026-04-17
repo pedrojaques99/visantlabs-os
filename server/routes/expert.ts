@@ -5,6 +5,7 @@ import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { rateLimit } from 'express-rate-limit';
 import { redisClient } from '../lib/redis.js';
 import { CACHE_TTL, CacheKey, hashQuery } from '../lib/cache-utils.js';
+import { prisma } from '../db/prisma.js';
 
 const expertRateLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -39,7 +40,7 @@ router.post('/ingest', expertRateLimiter, authenticate, async (req: AuthRequest,
 
     // Invalidate expert RAG cache for this project
     if (projectId) {
-      await redisClient.del(`expert:*:${projectId}:*`);
+      await redisClient.del(`expert:*:${projectId}:*`).catch(() => null);
       console.log(`[Cache] INVALIDATE expert:*:${projectId}:*`);
     }
 
@@ -56,16 +57,24 @@ router.post('/ingest', expertRateLimiter, authenticate, async (req: AuthRequest,
  */
 router.post('/chat', expertRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
-    const { query, history, projectId, model } = req.body;
+    const { query, history, projectId, model, brandGuidelineId } = req.body;
 
     if (!query) {
       return res.status(400).json({ error: 'Query is required' });
     }
 
     // Cache check
-    const queryHash = hashQuery(query, JSON.stringify(history || []));
-    const cacheKey = CacheKey.expertRag(req.userId!, projectId || 'default', queryHash);
-    const cached = await redisClient.get(cacheKey);
+    let cached = null;
+    let queryHash = '';
+    let cacheKey = '';
+
+    try {
+      queryHash = hashQuery(query, JSON.stringify(history || []));
+      cacheKey = CacheKey.expertRag(req.userId!, projectId || 'default', queryHash);
+      cached = await redisClient.get(cacheKey);
+    } catch (cacheError) {
+      console.warn('[Redis] Cache lookup failed, continuing with RAG:', cacheError);
+    }
 
     if (cached) {
       console.log(`[Cache] HIT expert:${queryHash.slice(0, 8)}`);
@@ -79,28 +88,98 @@ router.post('/chat', expertRateLimiter, authenticate, async (req: AuthRequest, r
       // Logic for system key fallback is handled in geminiService
     }
 
+    let brandContext = '';
+    if (brandGuidelineId) {
+      try {
+        const guideline = await prisma.brandGuideline.findUnique({
+          where: { id: brandGuidelineId }
+        });
+
+        if (guideline && guideline.userId === req.userId!) {
+          brandContext = formatBrandGuidelineContext(guideline);
+          console.log(`[Expert] Using brand guidelines: ${guideline.identity?.name || 'Unnamed'}`);
+        }
+      } catch (e) {
+        console.warn('[Expert] Error loading brand guidelines:', e);
+      }
+    }
+
     const result = await knowledgeService.expertChat({
       query,
       userId: req.userId!,
       projectId,
       history,
       userApiKey,
-      model
+      model,
+      brandContext
     });
 
     // Cache set
-    await redisClient.setex(
-      cacheKey,
-      CACHE_TTL.EXPERT_RAG,
-      JSON.stringify(result)
-    );
-    console.log(`[Cache] SET expert:${queryHash.slice(0, 8)} (24h)`);
+    if (queryHash && cacheKey) {
+      try {
+        await redisClient.setex(
+          cacheKey,
+          CACHE_TTL.EXPERT_RAG,
+          JSON.stringify(result)
+        );
+        console.log(`[Cache] SET expert:${queryHash.slice(0, 8)} (24h)`);
+      } catch (cacheError) {
+        console.warn('[Redis] Cache store failed:', cacheError);
+      }
+    }
 
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Expert chat error:', error);
+    // Handle specific configuration errors with better status codes
+    if (error.message && error.message.includes('CONFIGURAÇÃO_AUSENTE')) {
+      return res.status(503).json({ 
+        error: 'Serviço temporariamente indisponível', 
+        message: 'A base de conhecimento (RAG) não está configurada corretamente. Verifique as chaves de API do Pinecone.' 
+      });
+    }
     next(error);
   }
 });
+
+function formatBrandGuidelineContext(guideline: any): string {
+  const parts: string[] = [];
+
+  if (guideline.identity?.name) {
+    parts.push(`**BRAND NAME**: ${guideline.identity.name}`);
+  }
+
+  if (guideline.identity?.tagline) {
+    parts.push(`**TAGLINE**: ${guideline.identity.tagline}`);
+  }
+
+  if (guideline.colors?.length) {
+    const colorList = guideline.colors
+      .map((c: any) => `- ${c.name || 'Unnamed'}: ${c.hex || c.rgb || 'N/A'}`)
+      .join('\n');
+    parts.push(`**PRIMARY COLORS**:\n${colorList}`);
+  }
+
+  if (guideline.typography?.length) {
+    const typeList = guideline.typography
+      .map((t: any) => `- ${t.name || 'Unnamed'}: ${t.fontFamily || 'N/A'}`)
+      .join('\n');
+    parts.push(`**TYPOGRAPHY**:\n${typeList}`);
+  }
+
+  if (guideline.strategy?.positioning) {
+    parts.push(`**POSITIONING**: ${guideline.strategy.positioning}`);
+  }
+
+  if (guideline.strategy?.targetAudience) {
+    parts.push(`**TARGET AUDIENCE**: ${guideline.strategy.targetAudience}`);
+  }
+
+  if (guideline.guidelines?.voiceTone) {
+    parts.push(`**VOICE & TONE**: ${guideline.guidelines.voiceTone}`);
+  }
+
+  return `\n\n━━ BRAND GUIDELINES CONTEXT ━━\n${parts.join('\n')}\n━━━━━━━━━━━━━━━━━━━━━━━\n`;
+}
 
 export default router;

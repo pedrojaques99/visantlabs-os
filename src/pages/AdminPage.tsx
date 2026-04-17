@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { ShieldCheck, RefreshCw, Users, Settings, ChevronUp, ChevronDown, Search, TrendingUp, TrendingDown, User, Image, CreditCard, HardDrive, UserPlus, Link2, Database, DollarSign, Palette, Type, ShoppingCart, History, RotateCcw, X, ThumbsUp, ThumbsDown, BarChart2, ChevronRight } from 'lucide-react';
+import { ShieldCheck, RefreshCw, Users, Settings, ChevronUp, ChevronDown, Search, TrendingUp, TrendingDown, User, Image, CreditCard, HardDrive, UserPlus, Link2, Database, DollarSign, Palette, Type, ShoppingCart, History, RotateCcw, X, ThumbsUp, ThumbsDown, BarChart2, ChevronRight, MessageSquare } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, LineChart, Line, Tooltip, ResponsiveContainer, Legend } from "recharts"
 
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
@@ -924,6 +924,8 @@ export const AdminPage: React.FC = () => {
                   navigate('/admin/presets');
                 } else if (val === 'products') {
                   navigate('/admin/products');
+                } else if (val === 'admin-chat') {
+                  navigate('/admin/chat');
                 } else if (val === 'design-system') {
                   navigate('/design-system');
                 } else {
@@ -998,6 +1000,10 @@ export const AdminPage: React.FC = () => {
                       <TabsTrigger value="products" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         {t('admin.products') || 'Produtos'}
+                      </TabsTrigger>
+                      <TabsTrigger value="admin-chat" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                        <MessageSquare className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
+                        Chat Estratégico
                       </TabsTrigger>
                       <TabsTrigger value="design-system" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <Palette className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />

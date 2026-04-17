@@ -10,6 +10,8 @@ import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedCh
 import { uploadCanvasVideo, isR2Configured } from '../services/r2Service.js';
 import { calculateVideoCost } from '../../src/utils/pricing.js';
 import { rateLimit } from 'express-rate-limit';
+import { redisClient } from '../lib/redis.js';
+import { CacheKey, CACHE_TTL, hashObject } from '../lib/cache-utils.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -330,6 +332,20 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       nodeId: nodeId || 'not provided',
     });
 
+    // Validate prompt early
+    if (!prompt || prompt.trim().length === 0) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    // 🟢 CACHE CHECK BEFORE credit lock — avoid unnecessary credit deductions
+    const hash = hashObject({ prompt, model, seed: usedSeed });
+    const cacheKey = CacheKey.videoGen(req.userId!, hash);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT video:${hash.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
+    }
+
     // CRITICAL: Check for duplicate recent requests to prevent multiple credit deductions
     const db = getDb();
 
@@ -400,14 +416,6 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       lockKey,
       lockId: lockInsertResult.insertedId,
     });
-
-    // Validate prompt
-    if (!prompt || prompt.trim().length === 0) {
-      if (lockKey) {
-        await db.collection('credit_locks').deleteOne({ lockKey, requestId });
-      }
-      return res.status(400).json({ error: 'Prompt is required' });
-    }
 
     // Calculate credits required based on model (30 for fast, 80 for standard)
     const baseCreditsToDeduct = getVideoCreditsRequired(model);
@@ -665,6 +673,9 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       creditsDeducted: actualCreditsDeducted,
       creditsRemaining,
     });
+
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.VIDEO_GEN, JSON.stringify(response)).catch(() => {});
 
     // Create usage record for video generation
     try {

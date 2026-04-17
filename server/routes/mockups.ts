@@ -1064,7 +1064,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
 
     // Cache check before generation
     const mockupCacheKey = CacheKey.mockupGen(req.userId!, hashQuery(finalPromptText, model + (resolution || '') + (aspectRatio || '')));
-    const cachedMockup = await redisClient.get(mockupCacheKey);
+    const cachedMockup = await redisClient.get(mockupCacheKey).catch(() => null);
 
     if (cachedMockup && !req.body.skipCache) {
       const cached = JSON.parse(cachedMockup);

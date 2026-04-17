@@ -9,6 +9,8 @@ import { LRUCache } from 'lru-cache';
 import { uploadImage, isR2Configured } from '../services/r2Service.js';
 import { authenticate } from '../middleware/auth.js';
 import { mediaSessionCache } from '../lib/mediaSessionCache.js';
+import { redisClient } from '../lib/redis.js';
+import { CacheKey, CACHE_TTL, hashQuery, hashObject } from '../lib/cache-utils.js';
 
 const execPromise = promisify(exec);
 
@@ -118,13 +120,23 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
 
     // Cache check
     const userId = (req as any).userId || 'guest';
-    const cacheKey = `search-${userId}-${mode}-${finalQuery}-${limit}-${tbs}`;
+    const cacheHash = hashQuery(finalQuery, `${mode}-${limit}-${tbs}`);
+    const redisCacheKey = CacheKey.imageSearch(userId, cacheHash);
 
     // Track session user
     mediaSessionCache.trackQuery(userId, safeQuery, mode);
 
-    const cached = extractionCache.get(cacheKey);
-    if (cached) return res.json({ success: true, count: cached.length, images: cached, fromCache: true });
+    // 🟢 CACHE CHECK (Redis first, then local LRU)
+    const redisCache = await redisClient.get(redisCacheKey).catch(() => null);
+    if (redisCache) {
+      const cached = JSON.parse(redisCache);
+      return res.json({ success: true, count: cached.length, images: cached, fromCache: true });
+    }
+
+    // Fall back to local LRU
+    const lruCacheKey = `search-${userId}-${mode}-${finalQuery}-${limit}-${tbs}`;
+    const lruCached = extractionCache.get(lruCacheKey);
+    if (lruCached) return res.json({ success: true, count: lruCached.length, images: lruCached, fromCache: true });
 
     console.log(`🔍 [Serper] Searching: "${finalQuery}" (Mode: ${mode}, tbs: ${tbs})`);
 
@@ -247,7 +259,9 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
     // Perform sort by resolution (HD first)
     results.sort((a: any, b: any) => (b.width * b.height) - (a.width * a.height));
 
-    extractionCache.set(cacheKey, results);
+    // 💾 CACHE SET (Redis + local LRU)
+    await redisClient.setex(redisCacheKey, CACHE_TTL.IMAGE_SEARCH, JSON.stringify(results)).catch(() => {});
+    extractionCache.set(lruCacheKey, results);
 
     // Add to user session history
     mediaSessionCache.addToHistory(userId, {
@@ -283,9 +297,19 @@ router.post('/extract-url', authenticate, apiRateLimiter, async (req: Request, r
 
     const targetUrl = urlValidation.url!;
     const userId = (req as any).userId || 'guest';
-    const cacheKey = `url-${userId}-${targetUrl}-${limit}`;
-    const cached = extractionCache.get(cacheKey);
-    if (cached) return res.json({ success: true, count: cached.length, images: cached, fromCache: true });
+    const cacheHash = hashQuery(targetUrl, String(limit));
+    const redisCacheKey = CacheKey.imageExtract(userId, cacheHash);
+
+    // 🟢 CACHE CHECK (Redis first, then local LRU)
+    const redisCache = await redisClient.get(redisCacheKey).catch(() => null);
+    if (redisCache) {
+      const cached = JSON.parse(redisCache);
+      return res.json({ success: true, count: cached.length, images: cached, fromCache: true });
+    }
+
+    const lruCacheKey = `url-${userId}-${targetUrl}-${limit}`;
+    const lruCached = extractionCache.get(lruCacheKey);
+    if (lruCached) return res.json({ success: true, count: lruCached.length, images: lruCached, fromCache: true });
 
     console.log(`🌐 [Firecrawl] Extracting from: ${targetUrl}`);
 
@@ -312,7 +336,7 @@ router.post('/extract-url', authenticate, apiRateLimiter, async (req: Request, r
 
     const content = await response.json();
     const html = content.data?.rawHtml || '';
-    
+
     // Security: Parse HTML securely (regex for src only)
     const imgRegex = /<img[^>]+src="([^">]+)"/g;
     const foundUrls = new Set<string>();
@@ -324,7 +348,7 @@ router.post('/extract-url', authenticate, apiRateLimiter, async (req: Request, r
         const urlObj = new URL(targetUrl);
         src = `${urlObj.protocol}//${urlObj.host}${src}`;
       }
-      
+
       // Filter out tiny UI elements, icons, base64 data strings (to avoid bloat)
       if (src.startsWith('http') && !src.includes('base64') && !src.endsWith('.svg')) {
         foundUrls.add(src);
@@ -338,7 +362,9 @@ router.post('/extract-url', authenticate, apiRateLimiter, async (req: Request, r
       height: 0
     }));
 
-    extractionCache.set(cacheKey, results);
+    // 💾 CACHE SET (Redis + local LRU)
+    await redisClient.setex(redisCacheKey, CACHE_TTL.IMAGE_SEARCH, JSON.stringify(results)).catch(() => {});
+    extractionCache.set(lruCacheKey, results);
     return res.json({ success: true, count: results.length, images: results });
   } catch (error: any) {
     console.error('Extraction error:', error);
@@ -412,16 +438,32 @@ router.post('/instagram-extract', authenticate, apiRateLimiter, async (req: Requ
 
     // Check cache first (per user session)
     const userId = (req as any).userId || 'guest';
-    const cacheKey = `${userId}-${username}-${limit}`;
+    const cacheHash = hashQuery(username, String(limit));
+    const redisCacheKey = CacheKey.instagramExtract(userId, cacheHash);
 
     // Track session user
     mediaSessionCache.trackQuery(userId, username, 'instagram');
 
-    const cachedData = instaCache.get(cacheKey);
+    // 🟢 CACHE CHECK (Redis first, then local LRU)
+    const redisCache = await redisClient.get(redisCacheKey).catch(() => null);
+    if (redisCache) {
+      const cachedData = JSON.parse(redisCache);
+      console.log(`ℹ️ Returning cached Instagram extraction for: ${username}`);
+      return res.json({
+        success: true,
+        username,
+        count: cachedData.length,
+        images: cachedData,
+        fromCache: true
+      });
+    }
+
+    const lruCacheKey = `${userId}-${username}-${limit}`;
+    const cachedData = instaCache.get(lruCacheKey);
     if (cachedData) {
       console.log(`ℹ️ Returning cached Instagram extraction for: ${username}`);
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         username,
         count: cachedData.length,
         images: cachedData,
@@ -559,8 +601,9 @@ DO NOT include any text, markdown, or explanation. ONLY JSON.`;
       caption: item.caption || '',
     }));
 
-    // Store in cache
-    instaCache.set(cacheKey, results);
+    // 💾 CACHE SET (Redis + local LRU)
+    await redisClient.setex(redisCacheKey, CACHE_TTL.INSTAGRAM, JSON.stringify(results)).catch(() => {});
+    instaCache.set(lruCacheKey, results);
 
     // Add to user session history
     mediaSessionCache.addToHistory(userId, {

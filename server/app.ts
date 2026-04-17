@@ -45,6 +45,8 @@ import docsRoutes from './routes/docs.js';
 import surpriseMeRoutes from './routes/surprise-me.js';
 import brandIntelligenceRoutes from './routes/brandIntelligence.js';
 import rpcRoutes from './routes/rpc.js';
+import adminChatRoutes from './routes/adminChat.js';
+import chatRoutes from './routes/chat.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
@@ -55,13 +57,6 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { authenticateApiKey } from './middleware/apiKeyAuth.js';
 
-/**
- * Build the Express application.
- *
- * Pure construction — no side effects (no .listen, no DB connects, no env
- * validation). Callers (server/index.ts for prod, tests for supertest) decide
- * when/how to bring the app online.
- */
 export function createApp() {
   const app = express();
   app.set('trust proxy', 1);
@@ -145,8 +140,8 @@ export function createApp() {
   app.use(`${routePrefix}/payments/webhook`, express.raw({ type: 'application/json' }));
   app.use(`${routePrefix}/liveblocks/webhook`, express.raw({ type: 'application/json' }));
 
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+  app.use(express.json({ limit: '300mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '300mb' }));
 
   // Correlation ID + request-scoped Pino logger (X-Request-Id in/out)
   app.use(requestContext);
@@ -217,6 +212,8 @@ export function createApp() {
     ['/surprise-me', surpriseMeRoutes],
     ['/brand-intelligence', brandIntelligenceRoutes],
     ['/expert', expertRoutes],
+    ['/admin-chat', adminChatRoutes],
+    ['/chat', chatRoutes],
     ['/telemetry', telemetryRoutes],
     ['/rpc', rpcRoutes],
   ];

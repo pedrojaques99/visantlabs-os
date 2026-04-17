@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button'
 
 interface Props {
@@ -29,6 +29,7 @@ interface State {
   isChunkError: boolean;
   retryCount: number;
   isRetrying: boolean;
+  isCopied?: boolean;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -157,6 +158,26 @@ export class ErrorBoundary extends Component<Props, State> {
     window.location.href = '/';
   };
 
+  handleCopyError = () => {
+    const errorMessage = this.state.error?.message || 'Unknown error';
+    const errorStack = this.state.errorInfo?.componentStack || '';
+    const fullError = `Error: ${errorMessage}\n\nStack:\n${errorStack}`;
+
+    navigator.clipboard.writeText(fullError).then(() => {
+      this.setState({ isCopied: true });
+      setTimeout(() => {
+        this.setState({ isCopied: false });
+      }, 2000);
+    }).catch(() => {
+      // Fallback: just copy the message
+      navigator.clipboard.writeText(errorMessage);
+      this.setState({ isCopied: true });
+      setTimeout(() => {
+        this.setState({ isCopied: false });
+      }, 2000);
+    });
+  };
+
   handleRetryChunk = async () => {
     // Clear caches and reload
     if (typeof window !== 'undefined' && 'caches' in window) {
@@ -253,6 +274,24 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
 
             <div className="flex flex-col sm:flex-row gap-3">
+              {!isChunkError && (
+                <Button variant="outline"
+                  onClick={this.handleCopyError}
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
+                >
+                  {this.state.isCopied ? (
+                    <>
+                      <Check className="h-4 w-4 text-green-400" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Copy for LLM
+                    </>
+                  )}
+                </Button>
+              )}
               {isChunkError ? (
                 <>
                   <Button variant="brand"

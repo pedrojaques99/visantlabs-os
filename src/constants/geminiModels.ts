@@ -9,7 +9,7 @@ export const GEMINI_MODELS = {
   /** Gemini 3.1 Flash Lite - Most cost-efficient high-volume model */
   FLASH_3_LITE: 'gemini-3.1-flash-lite-preview' as const,
   /** High-end intelligence for branding strategy & complex reasoning */
-  PRO_2_0: 'gemini-2.0-pro-exp-02-05' as const,
+  PRO_2_0: 'gemini-3.1-pro-preview' as const,
   /** Nano Banana 1 — Fast, multimodal, and reliable for most tasks */
   FLASH_2_5: 'gemini-2.5-flash' as const,
   /** Image generation models */
@@ -153,7 +153,6 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
 export const CHAT_MODELS: string[] = [
   GEMINI_MODELS.PRO_3_1,
   GEMINI_MODELS.FLASH_3,
-  GEMINI_MODELS.PRO_2_0,
   GEMINI_MODELS.FLASH_2_5,
 ];
 

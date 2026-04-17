@@ -102,9 +102,17 @@ if (!process.env.VERCEL) {
       console.warn('⚠️  Redis connection failed, continuing without cache');
     }
 
-    const server = app.listen(PORT, () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📝 Make sure MONGODB_URI is configured in your .env file`);
+    });
+
+    // Allow port reuse immediately (prevents EADDRINUSE after restart)
+    server.on('error', (err: any) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} already in use. Try killing the process or wait 30 seconds.`);
+        process.exit(1);
+      }
     });
 
     server.timeout = 600000;

@@ -218,7 +218,7 @@ router.get('/presets/public', apiRateLimiter, async (req, res) => {
   try {
     // Cache check (public endpoint, cache without user context)
     const cacheKey = CacheKey.presetSearch('all', 'public', 1);
-    const cached = await redisClient.get(cacheKey);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
     if (cached) {
       console.log('[Cache] HIT preset:all:public');
       return res.json(JSON.parse(cached));
