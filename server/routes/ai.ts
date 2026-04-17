@@ -4,6 +4,8 @@ import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
 import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { redisClient, isRedisHealthy } from '../lib/redis.js';
+import { CacheKey, CACHE_TTL, hashQuery, hashObject } from '../lib/cache-utils.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -46,6 +48,15 @@ router.post('/improve-prompt', apiRateLimiter, authenticate, async (req: AuthReq
       return res.status(400).json({ error: 'Prompt is required' });
     }
 
+    // 🟢 CACHE CHECK
+    const hash = hashQuery(prompt);
+    const cacheKey = CacheKey.aiText('improve', req.userId!, hash);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT ai:improve:${hash.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
+    }
+
     // Try to use user's API key first, fallback to system key
     let userApiKey: string | undefined;
     try {
@@ -55,6 +66,9 @@ router.post('/improve-prompt', apiRateLimiter, authenticate, async (req: AuthReq
     }
 
     const result = await improvePrompt(prompt, userApiKey);
+
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
 
     // Track usage asynchronously
     (async () => {
@@ -106,14 +120,6 @@ router.post('/describe-image', apiRateLimiter, authenticate, async (req: AuthReq
       return res.status(400).json({ error: 'Image is required' });
     }
 
-    // Try to use user's API key first, fallback to system key
-    let userApiKey: string | undefined;
-    try {
-      userApiKey = await getGeminiApiKey(req.userId!);
-    } catch (error) {
-      // User doesn't have API key, will use system key
-    }
-
     // Normalize image input - can be base64 string or UploadedImage object
     let imageInput: UploadedImage | string;
     if (typeof image === 'string') {
@@ -124,7 +130,27 @@ router.post('/describe-image', apiRateLimiter, authenticate, async (req: AuthReq
       return res.status(400).json({ error: 'Invalid image format' });
     }
 
+    // 🟢 CACHE CHECK
+    const imageHash = hashQuery(typeof imageInput === 'string' ? imageInput : (imageInput as any).base64 || (imageInput as any).url);
+    const cacheKey = CacheKey.aiText('describe', req.userId!, imageHash);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT ai:describe:${imageHash.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
+    }
+
+    // Try to use user's API key first, fallback to system key
+    let userApiKey: string | undefined;
+    try {
+      userApiKey = await getGeminiApiKey(req.userId!);
+    } catch (error) {
+      // User doesn't have API key, will use system key
+    }
+
     const result = await describeImage(imageInput, userApiKey);
+
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.AI_IMAGE_ANALYSIS, JSON.stringify(result)).catch(() => {});
 
     // Track usage asynchronously
     (async () => {
@@ -183,6 +209,15 @@ router.post('/suggest-categories', apiRateLimiter, authenticate, async (req: Aut
       return res.status(400).json({ error: 'Branding tags must be an array' });
     }
 
+    // 🟢 CACHE CHECK
+    const hash = hashObject({ baseImage, brandingTags });
+    const cacheKey = CacheKey.aiText('categories', req.userId!, hash);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT ai:categories:${hash.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
+    }
+
     // Try to use user's API key first, fallback to system key
     let userApiKey: string | undefined;
     try {
@@ -192,6 +227,9 @@ router.post('/suggest-categories', apiRateLimiter, authenticate, async (req: Aut
     }
 
     const result = await suggestCategories(baseImage as UploadedImage, brandingTags, userApiKey);
+
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
 
     // Track usage asynchronously
     (async () => {
@@ -259,6 +297,15 @@ router.post('/refine-suggestions', refineSuggestionsLimiter, authenticate, async
       return res.status(400).json({ error: 'changedCategory is required' });
     }
 
+    // 🟢 CACHE CHECK
+    const hash = hashObject({ imageDescription, selectedTags, changedCategory });
+    const cacheKey = CacheKey.aiText('refine', req.userId!, hash);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT ai:refine:${hash.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
+    }
+
     // Get user's API key if available
     let userApiKey: string | undefined;
     try {
@@ -283,6 +330,9 @@ router.post('/refine-suggestions', refineSuggestionsLimiter, authenticate, async
       changedCategory,
       availableTags,
     }, userApiKey);
+
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
 
     // Track usage asynchronously (lightweight tracking)
     (async () => {
@@ -339,6 +389,15 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
 
     if (!baseImage || (!baseImage.base64 && !baseImage.url) || !baseImage.mimeType) {
       return res.status(400).json({ error: 'Base image is required' });
+    }
+
+    // 🟢 CACHE CHECK
+    const hash = hashObject({ baseImage, instructions, userContext });
+    const cacheKey = CacheKey.aiText('setup', req.userId!, hash);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT ai:setup:${hash.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
     }
 
     // Run API key and tags fetch in parallel to reduce latency
@@ -435,6 +494,9 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
       }
     })();
 
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
+
     if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: res.json', ((Date.now() - t0) / 1000).toFixed(2) + 's');
     res.json(result);
   } catch (error: any) {
@@ -485,6 +547,20 @@ router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: 
 
     if (!designType) {
       return res.status(400).json({ error: 'Design type is required' });
+    }
+
+    // 🟢 CACHE CHECK
+    const hash = hashObject({
+      designType, brandingTags, categoryTags, locationTags, angleTags, lightingTags,
+      effectTags, materialTags, selectedColors, aspectRatio, generateText, withHuman,
+      enhanceTexture, removeText, negativePrompt, additionalPrompt, instructions,
+      brandGuidelineId, vibeId, learnFromHistory, detectedLanguage,
+    });
+    const cacheKey = CacheKey.aiText('smartprompt', req.userId!, hash);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT ai:smartprompt:${hash.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
     }
 
     // Try to use user's API key first, fallback to system key
@@ -547,6 +623,9 @@ router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: 
       detectedLanguage: typeof detectedLanguage === 'string' ? detectedLanguage : undefined,
     }, userApiKey);
 
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
+
     // Track total tokens
     (async () => {
       try {
@@ -578,6 +657,15 @@ router.post('/suggest-prompt-variations', apiRateLimiter, authenticate, async (r
       return res.status(400).json({ error: 'Prompt is required' });
     }
 
+    // 🟢 CACHE CHECK
+    const hash = hashQuery(prompt);
+    const cacheKey = CacheKey.aiText('variations', req.userId!, hash);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT ai:variations:${hash.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
+    }
+
     // Try to use user's API key first, fallback to system key
     let userApiKey: string | undefined;
     try {
@@ -587,6 +675,9 @@ router.post('/suggest-prompt-variations', apiRateLimiter, authenticate, async (r
     }
 
     const result = await suggestPromptVariations(prompt, userApiKey);
+
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
 
     // Track usage asynchronously
     (async () => {
@@ -642,6 +733,15 @@ router.post('/change-object', apiRateLimiter, authenticate, async (req: AuthRequ
       return res.status(400).json({ error: 'New object description is required' });
     }
 
+    // 🟢 CACHE CHECK
+    const hash = hashObject({ baseImage, newObject, model, resolution });
+    const cacheKey = CacheKey.aiText('changeobj', req.userId!, hash);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT ai:changeobj:${hash.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
+    }
+
     // Try to use user's API key first, fallback to system key
     let userApiKey: string | undefined;
     try {
@@ -658,6 +758,9 @@ router.post('/change-object', apiRateLimiter, authenticate, async (req: AuthRequ
       undefined, // onRetry
       userApiKey
     );
+
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.AI_IMAGE_GEN, JSON.stringify({ imageBase64 })).catch(() => {});
 
     // Track total generations
     (async () => {
@@ -691,6 +794,15 @@ router.post('/apply-theme', apiRateLimiter, authenticate, async (req: AuthReques
       return res.status(400).json({ error: 'Themes array is required' });
     }
 
+    // 🟢 CACHE CHECK
+    const hash = hashObject({ baseImage, themes, model, resolution });
+    const cacheKey = CacheKey.aiText('theme', req.userId!, hash);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT ai:theme:${hash.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
+    }
+
     // Try to use user's API key first, fallback to system key
     let userApiKey: string | undefined;
     try {
@@ -707,6 +819,9 @@ router.post('/apply-theme', apiRateLimiter, authenticate, async (req: AuthReques
       undefined, // onRetry
       userApiKey
     );
+
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.AI_IMAGE_GEN, JSON.stringify({ imageBase64 })).catch(() => {});
 
     // Track total generations
     (async () => {

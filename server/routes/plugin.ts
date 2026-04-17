@@ -606,7 +606,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     // Cache check for plugin context
     const contextHash = hashObject({ command, fileId, brandGuidelineId, designSystem });
     const pluginCacheKey = CacheKey.pluginContext(fileId || 'public', brandGuidelineId || 'none', contextHash);
-    const cachedContext = await redisClient.get(pluginCacheKey);
+    const cachedContext = await redisClient.get(pluginCacheKey).catch(() => null);
 
     // ═══ BRANDED SOCIAL POSTS: Resolve effective brand context ═══
     const effectiveBrandFonts = brandFonts || (brandGuideline?.typography ? {
@@ -974,7 +974,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       pluginCacheKey,
       CACHE_TTL.PLUGIN_CTX,
       JSON.stringify(responseData)
-    );
+    ).catch(() => null);
     console.log(`[Cache] SET plugin:${fileId?.slice(0, 8)}:${brandGuidelineId?.slice(0, 8)} (1h)`);
 
     res.json(responseData);

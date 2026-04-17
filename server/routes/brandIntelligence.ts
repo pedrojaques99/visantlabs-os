@@ -6,6 +6,8 @@ import { prisma } from '../db/prisma.js';
 import { BrandIntelligenceService } from '../services/brandIntelligenceService.js';
 import { uploadBrandMedia } from '../services/r2Service.js';
 import { rateLimit } from 'express-rate-limit';
+import { redisClient } from '../lib/redis.js';
+import { CacheKey, CACHE_TTL, CacheInvalidation } from '../lib/cache-utils.js';
 
 const router = express.Router();
 const intelligenceService = new BrandIntelligenceService();
@@ -88,6 +90,12 @@ router.post('/:id/sync', apiRateLimiter, authenticate, async (req: AuthRequest, 
       }
     });
 
+    // 🗑️ INVALIDATE cache on brand edit
+    const invalidationKeys = CacheInvalidation.onBrandEdit(id);
+    for (const pattern of invalidationKeys) {
+      await redisClient.del(pattern).catch(() => {});
+    }
+
     res.json({
       success: true,
       analysis,
@@ -110,6 +118,14 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     const { id } = req.params;
     if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
 
+    // 🟢 CACHE CHECK
+    const cacheKey = CacheKey.brandIntel(id);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT brand-intel:${id.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
+    }
+
     const guideline = await prisma.brandGuideline.findFirst({
       where: { id, userId: req.userId },
     });
@@ -119,10 +135,15 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     const media = (guideline.media as any[]) || [];
     const references = media.filter(m => m.type === 'reference');
 
-    res.json({
+    const result = {
       references,
       guidelines: guideline.guidelines
-    });
+    };
+
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.BRAND_INTEL, JSON.stringify(result)).catch(() => {});
+
+    res.json(result);
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to fetch brand intelligence' });
   }

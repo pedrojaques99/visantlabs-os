@@ -1,5 +1,6 @@
 import { getMultimodalEmbedding, chatWithAIContext } from './geminiService.js';
 import { vectorService, VectorMetadata } from './vectorService.js';
+import { parsePdf } from '../lib/brand-parse.js';
 import { v4 as uuidv4 } from 'uuid';
 import { PDFDocument } from 'pdf-lib';
 
@@ -32,62 +33,69 @@ export const knowledgeService = {
     metadata: Partial<VectorMetadata>;
   }) {
     const { userId, projectId, parts, metadata } = params;
-    
+
     console.log(`[EliteRAG] ingestContent: userId=${userId}, projectId=${projectId}, partsCount=${parts.length}`);
-    
-    // 1. Detect PDF for High-Fidelity Multimodal Chunking
+    console.log(`[EliteRAG] Parts structure:`, JSON.stringify(parts.map(p => ({
+      hasInlineData: !!p.inlineData,
+      mimeType: p.inlineData?.mimeType,
+      dataType: typeof p.inlineData?.data,
+      dataLength: p.inlineData?.data?.length || 'N/A',
+      hasText: !!p.text,
+    })), null, 2));
+
+    // 1. Detect PDF for text extraction + chunking
     const pdfPart = parts.find(p => p.inlineData?.mimeType === 'application/pdf');
-    
+
     if (pdfPart) {
-      console.log(`[EliteRAG] PDF detectado: ${metadata.fileName || 'desconhecido'}`);
+      console.log(`[KnowledgeService] PDF detectado: ${metadata.fileName || 'desconhecido'}`);
       const inputBuffer = Buffer.from(pdfPart.inlineData.data, 'base64');
-      
-      console.log(`[EliteRAG] Tamanho do buffer: ${inputBuffer.length} bytes`);
-      
-      // Split into segments of 5 pages to maintain visual resolution
-      const pdfSegments = await splitPDF(inputBuffer, 5);
-      console.log(`[EliteRAG] PDF dividido em ${pdfSegments.length} segmentos.`);
-      
+
+      console.log(`[KnowledgeService] Tamanho do buffer: ${inputBuffer.length} bytes`);
+
+      // Extract text from PDF
+      const chunks = await parsePdf(inputBuffer, metadata.fileName);
+      console.log(`[KnowledgeService] PDF parseado em ${chunks.length} chunks de texto.`);
+
       const results = [];
-      
-      for (let i = 0; i < pdfSegments.length; i++) {
+
+      for (let i = 0; i < chunks.length; i++) {
         try {
-          const segmentBuffer = pdfSegments[i];
-          const base64Segment = segmentBuffer.toString('base64');
-          
-          console.log(`[EliteRAG] Processando bloco ${i+1}/${pdfSegments.length}...`);
-          
-          // Generate multimodal embedding for the visual chunk (text + images + layout)
+          const chunk = chunks[i];
+          console.log(`[KnowledgeService] Gerando embedding para chunk ${i+1}/${chunks.length}...`);
+
+          // Generate embedding for the text chunk
           const { embedding } = await getMultimodalEmbedding([{
-            inlineData: {
-              data: base64Segment,
-              mimeType: 'application/pdf'
-            }
+            text: chunk.text
           }]);
-          
+
+          if (!embedding || embedding.length === 0) {
+            console.error(`[KnowledgeService] Embedding vazio para chunk ${i+1}. Pulando...`);
+            continue;
+          }
+
           const id = uuidv4();
           const chunkMetadata: VectorMetadata = {
             ...metadata,
-            text: `Bloco visual de páginas ${i * 5 + 1} a ${(i + 1) * 5}`,
+            text: chunk.text.substring(0, 1000), // Store truncated text as metadata
             chunkIndex: i,
-            totalChunks: pdfSegments.length,
-            processedAs: 'multimodal_chunk_v3.1',
+            totalChunks: chunks.length,
+            processedAs: 'pdf_text_chunks',
             userId,
             projectId,
             timestamp: new Date().toISOString(),
           };
-          
-          console.log(`[EliteRAG] Upserting to Pinecone: id=${id} (dim=${embedding.length})`);
+
+          console.log(`[KnowledgeService] Upserting to Pinecone: id=${id} (dim=${embedding.length})`);
           await vectorService.upsert(id, embedding, chunkMetadata);
           results.push(id);
         } catch (chunkError: any) {
-          console.error(`[EliteRAG] Erro no bloco ${i+1}:`, chunkError);
-          throw new Error(`Erro ao processar as páginas ${i*5+1}-${(i+1)*5}: ${chunkError.message}`);
+          console.error(`[KnowledgeService] Erro no chunk ${i+1}:`, chunkError);
+          throw new Error(`Erro ao processar chunk ${i+1}: ${chunkError.message}`);
         }
       }
-      
-      console.log(`[EliteRAG] Ingestão concluída: ${results.length} vetores.`);
-      return { ids: results, processedAs: 'high_fidelity_multimodal_segments', count: pdfSegments.length };
+
+      console.log(`[KnowledgeService] Ingestão PDF concluída: ${results.length} vetores.`);
+      return { ids: results, processedAs: 'pdf_text_chunks', count: results.length };
     }
 
     console.log(`[EliteRAG] Tipo multimodal padrão/genérico.`);
@@ -141,12 +149,13 @@ export const knowledgeService = {
     history?: any[];
     userApiKey?: string;
     model?: string;
+    brandContext?: string;
   }) {
-    const { query, userId, projectId, history, userApiKey, model } = params;
-    
+    const { query, userId, projectId, history, userApiKey, model, brandContext } = params;
+
     // 1. Get context
     const context = await this.getContext(query, userId, projectId);
-    
+
     // 2. Chat with Gemini using niche Branding instructions
     const brandingSystemInstruction = `Você é o Especialista em Branding e Estratégia da Visant Labs.
 Sua missão é ajudar o usuário a aplicar a metodologia Visant de branding de forma rigorosa, criativa e estratégica.
@@ -158,8 +167,9 @@ DIRETRIZES:
 4. JAMAIS utilize emojis.
 5. Responda no idioma do usuário.
 
+${brandContext || ''}
 UTILIZE O CONTEXTO ABAIXO:
-\${context}`;
+${context}`;
 
     return await chatWithAIContext(query, context, history, {
       apiKey: userApiKey,

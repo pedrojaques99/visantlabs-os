@@ -793,7 +793,7 @@ router.get('/shared/:shareId', apiRateLimiter, async (req, res) => {
 
     // Cache check for public shared projects
     const cacheKey = CacheKey.sharePublic(shareId);
-    const cached = await redisClient.get(cacheKey);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
     if (cached) {
       console.log(`[Cache] HIT share:${shareId.slice(0, 8)}`);
       return res.json(JSON.parse(cached));

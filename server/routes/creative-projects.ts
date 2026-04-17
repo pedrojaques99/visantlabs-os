@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
+import { redisClient } from '../lib/redis.js';
+import { CacheKey, CACHE_TTL, CacheInvalidation } from '../lib/cache-utils.js';
 
 /**
  * Creative Projects — CRUD for persisted Creative Studio documents.
@@ -43,6 +45,14 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     if (!req.userId) return res.status(401).json({ error: 'Unauthenticated' });
 
+    // 🟢 CACHE CHECK
+    const cacheKey = CacheKey.projectList(req.userId);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT projects:list:${req.userId.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
+    }
+
     const brandId = typeof req.query.brandId === 'string' ? req.query.brandId : undefined;
     const limit = Math.min(Number(req.query.limit) || 60, 200);
 
@@ -64,7 +74,12 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
       },
     });
 
-    res.json({ projects: projects.map((p) => ({ ...p, _id: p.id })) });
+    const result = { projects: projects.map((p) => ({ ...p, _id: p.id })) };
+
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.CREATIVE_PROJECTS, JSON.stringify(result)).catch(() => {});
+
+    res.json(result);
   } catch (err: any) {
     console.error('[creative-projects GET /] error:', err);
     res.status(500).json({ error: 'Failed to list creative projects' });
@@ -76,11 +91,25 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
   try {
     if (!req.userId) return res.status(401).json({ error: 'Unauthenticated' });
 
+    // 🟢 CACHE CHECK
+    const cacheKey = CacheKey.projectDetail(req.userId, req.params.id);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT projects:${req.userId.slice(0, 8)}:${req.params.id.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
+    }
+
     const project = await prisma.creativeProject.findFirst({
       where: { id: req.params.id, userId: req.userId },
     });
     if (!project) return res.status(404).json({ error: 'Not found' });
-    res.json({ project: mapId(project) });
+
+    const result = { project: mapId(project) };
+
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.CREATIVE_PROJECTS, JSON.stringify(result)).catch(() => {});
+
+    res.json(result);
   } catch (err: any) {
     console.error('[creative-projects GET /:id] error:', err);
     res.status(500).json({ error: 'Failed to fetch creative project' });
@@ -110,6 +139,13 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
         thumbnailUrl: body.thumbnailUrl || null,
       },
     });
+
+    // 🗑️ INVALIDATE user list cache
+    const invalidationKeys = CacheInvalidation.onProjectMutation(req.userId);
+    for (const pattern of invalidationKeys) {
+      await redisClient.del(pattern).catch(() => {});
+    }
+
     res.status(201).json({ project: mapId(project) });
   } catch (err: any) {
     console.error('[creative-projects POST /] error:', err);
@@ -142,6 +178,13 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
         ...(body.thumbnailUrl !== undefined && { thumbnailUrl: body.thumbnailUrl || null }),
       },
     });
+
+    // 🗑️ INVALIDATE user list and detail cache
+    const invalidationKeys = CacheInvalidation.onProjectMutation(req.userId, req.params.id);
+    for (const pattern of invalidationKeys) {
+      await redisClient.del(pattern).catch(() => {});
+    }
+
     res.json({ project: mapId(project) });
   } catch (err: any) {
     console.error('[creative-projects PUT /:id] error:', err);
@@ -161,6 +204,13 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
     if (!existing) return res.status(404).json({ error: 'Not found' });
 
     await prisma.creativeProject.delete({ where: { id: existing.id } });
+
+    // 🗑️ INVALIDATE user list and detail cache
+    const invalidationKeys = CacheInvalidation.onProjectMutation(req.userId, req.params.id);
+    for (const pattern of invalidationKeys) {
+      await redisClient.del(pattern).catch(() => {});
+    }
+
     res.json({ ok: true });
   } catch (err: any) {
     console.error('[creative-projects DELETE /:id] error:', err);

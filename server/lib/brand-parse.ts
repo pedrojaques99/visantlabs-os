@@ -1,4 +1,5 @@
 // server/lib/brand-parse.ts
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
 
 export interface ParsedChunk {
   text: string
@@ -24,17 +25,30 @@ export async function parseUrl(url: string): Promise<ParsedChunk[]> {
 }
 
 export async function parsePdf(buffer: Buffer, filename?: string): Promise<ParsedChunk[]> {
-  const pdfModule = (await import('pdf-parse')) as any
-  const pdfFunc = pdfModule.PDFParse || pdfModule.default || pdfModule
-  if (typeof pdfFunc !== 'function') {
-    throw new Error('Could not find PDF parsing function in pdf-parse module')
+  try {
+    // Convert Buffer to Uint8Array for pdfjs-dist compatibility
+    const uint8Array = new Uint8Array(buffer)
+    const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise
+    let fullText = ''
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i)
+      const textContent = await page.getTextContent()
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ')
+      fullText += pageText + '\n'
+    }
+
+    return chunkText(fullText || '', 2000).map(chunk => ({
+      text: chunk,
+      source: filename || 'uploaded.pdf',
+      type: 'pdf' as const,
+    }))
+  } catch (error: any) {
+    console.error('[ParsePDF] Error:', error.message)
+    throw new Error(`Failed to parse PDF: ${error.message}`)
   }
-  const data = await pdfFunc(buffer)
-  return chunkText(data.text || '', 2000).map(chunk => ({
-    text: chunk,
-    source: filename || 'uploaded.pdf',
-    type: 'pdf' as const,
-  }))
 }
 
 export function parseImage(filename: string): ParsedChunk[] {

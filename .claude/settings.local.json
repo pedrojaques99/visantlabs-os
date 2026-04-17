@@ -123,7 +123,23 @@
       "Bash(powershell *)",
       "Bash(winget install *)",
       "Bash(winget search *)",
-      "Bash(Select-Object -First 60)"
+      "Bash(Select-Object -First 60)",
+      "Bash(awk '{print $2}')",
+      "Bash(xargs kill *)",
+      "Bash(netstat -tuln)",
+      "Bash(PORT=3001 npm run dev:server)",
+      "Bash(pkill -9 -f \"tsx\\\\|node\")",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(xargs -r kill -9)",
+      "Bash(pkill -f \"tsx watch server\")",
+      "Bash(taskkill /F /IM tsx.exe)",
+      "Bash(netstat -tlnp)",
+      "Bash(taskkill /PID 40584 /F)",
+      "Bash(kill -9 40584)",
+      "Bash(taskkill /PID 40584 /F /T)",
+      "Bash(tsx test-parse.ts)",
+      "Bash(npm exec *)",
+      "Bash(awk '{print $NF}')"
     ]
   }
 }
