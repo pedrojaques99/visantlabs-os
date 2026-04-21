@@ -14,8 +14,8 @@ export type GeminiModel =
   // Text/chat models
   | typeof GEMINI_MODELS.PRO_2_0
   | typeof GEMINI_MODELS.FLASH_2_5
-  | typeof GEMINI_MODELS.PRO_1_5
-  | typeof GEMINI_MODELS.FLASH_1_5
+  | typeof GEMINI_MODELS.PRO_3_1
+  | typeof GEMINI_MODELS.FLASH_3_LITE
   | typeof GEMINI_MODELS.TEXT
   // Image generation models
   | typeof GEMINI_MODELS.IMAGE_FLASH

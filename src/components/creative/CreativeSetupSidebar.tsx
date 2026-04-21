@@ -17,6 +17,7 @@ import { getCreditsRequired } from '@/utils/creditCalculator';
 import { useQueryClient } from '@tanstack/react-query';
 import { Gem } from 'lucide-react';
 import type { CreativeFormat } from './store/creativeTypes';
+import type { GeminiModel, SeedreamModel } from '@/types/types';
 
 const FORMAT_OPTS = [
   { id: '1:1', label: 'Quadrado', icon: Square, sub: 'Feed Social' },
@@ -444,7 +445,7 @@ export const CreativeSetupSidebar: React.FC = () => {
           type="image"
           variant="node"
           selectedModel={modelId}
-          onModelChange={(m, p) => setModel(m, p)}
+          onModelChange={(m, p) => setModel(m as GeminiModel | SeedreamModel, p!)}
           resolution={resolution}
           onSyncResolution={setResolution}
           disabled={status !== 'setup'}

@@ -4,6 +4,7 @@
       "text": "Independent Brazilian agency. Experimentation laboratory creating personalized solutions for graphic designers and entrepreneurs.",
       "title": "About Visant"
     },
+    "exploreApps": "EXPLORE APPS",
     "founders": {
       "pedroJaques": "Pedro Jaques",
       "pedroXavier": "Pedro Xavier",
@@ -13,6 +14,7 @@
       "alt": "Visant Labs",
       "url": "/og-image.png"
     },
+    "labsApps": "LABS APPS //",
     "links": {
       "alphaTests": "Alpha Tests",
       "portfolio": "Agency Portfolio",
@@ -29,13 +31,15 @@
       "title": "About Visant Labs®"
     },
     "tagline": "Experimentation Laboratory",
-    "title": "VISANT"
+    "title": "VISANT",
+    "visantStudio": "Visant Studio"
   },
   "admin": {
     "accessDenied": "Access denied. You must be an administrator.",
     "accessDeniedFull": "Access denied. You must be an administrator to access this page.",
     "activeLinks": "Active Links",
     "activeSubscriptions": "Active Subscriptions",
+    "analysisCost": "Analysis Cost",
     "apiCost": "API Cost",
     "apiCostColumn": "API Cost",
     "authRequired": "You must be authenticated to access this page.",
@@ -85,7 +89,7 @@
     "outputTokens": "Output Tokens",
     "panelSubtitle": "View users, subscriptions and credits in real time",
     "panelTitle": "Admin Panel",
-    "presets": "Presets",
+    "presetsSubtitle": "Manage mockup presets.",
     "products": "Products",
     "profit": "Profit",
     "promptGenTotal": "Prompt Gen Total",
@@ -123,7 +127,6 @@
     "unknown": "Unknown",
     "usDollar": "US Dollar",
     "used": "Used",
-    "user": "User",
     "userGrowth": "User Growth",
     "userList": "User List",
     "users": "Users",
@@ -131,13 +134,14 @@
     "usersRegistered": "{count} users registered",
     "usersWithActivePlan": "Users with active plan",
     "videos": "Videos",
-    "videosByModel": "Videos by Model"
+    "videosByModel": "Videos by Model",
+    "saveError": "Save Error",
+    "saveSuccess": "Save Success"
   },
   "adminPresets": {
     "batchPasteLabel": "Paste JSON with presets (array of objects)",
     "batchTitle": "Batch Import Mockup Presets",
     "batchUpload": "Batch Upload",
-    "close": "Close",
     "confirmPopulate": "Are you sure you want to populate {count} presets from tags?",
     "createSuccess": "Preset created successfully",
     "createTitle": "Create New Preset",
@@ -183,7 +187,12 @@
     "validateJson": "Validate JSON",
     "validationError": "JSON validation error.",
     "viewGrid": "Grid",
-    "viewTable": "Table"
+    "viewTable": "Table",
+    "select": "Select",
+    "clickToEdit": "Click To Edit",
+    "failedToCreatePreset": "Failed To Create Preset",
+    "reference": "Reference",
+    "removeImage": "Remove Image"
   },
   "apps": {
     "asciiVortex": {
@@ -272,7 +281,6 @@
     "backendNotRunning": "Backend não está rodando! Por favor, inicie o servidor com: npm run dev:server ou npm run dev:all",
     "bySigningUp": "By signing up, you agree to our",
     "checkEmailInstructions": "Check your inbox and follow the instructions to reset your password.",
-    "community": "Community",
     "completeCaptcha": "Please complete the CAPTCHA verification.",
     "configuration": "Configuration",
     "confirmPassword": "Confirm Password",
@@ -309,7 +317,6 @@
     "passwordsDoNotMatch": "Passwords do not match",
     "privacyPolicy": "Privacy Policy",
     "processing": "Processing authentication...",
-    "profile": "Profile",
     "redirectingToLogin": "Redirecting to login...",
     "resetEmailSent": "Password reset email sent!",
     "resetEmailSentMessage": "If an account with that email exists, a password reset link has been sent.",
@@ -397,7 +404,6 @@
     "allSectionsGeneratedSuccess": "All sections generated successfully!",
     "approveContinue": "Approve & Continue",
     "backToPreviousStep": "Back to Previous Step",
-    "cancel": "Cancel",
     "cancelEdit": "Cancel Edit",
     "collapse": "Collapse",
     "colorPalettes": "Color Palettes",
@@ -415,7 +421,6 @@
     "describeYourBrandDescription": "Enter a detailed description of your brand, product, or business idea. We'll analyze it step by step to create a comprehensive branding strategy.",
     "desires": "Desires",
     "dragToReorder": "Drag to reorder",
-    "edit": "Edit",
     "editProjectName": "Edit project name",
     "errors": {
       "enterBrandDescription": "Please enter a brand description",
@@ -446,18 +451,17 @@
     "mockupIdeas": "Mockup Ideas",
     "moodCanvasSummary": "MoodCanvas Summary",
     "myBrandings": {
-      "cancel": "Cancel",
       "confirmDelete": "Are you sure you want to delete this project? This action cannot be undone.",
       "confirmDeleteTitle": "Delete Project",
       "createFirst": "Create Your First Project",
       "createNew": "Create New",
-      "delete": "Delete",
       "deleted": "Project deleted successfully",
       "emptyDescription": "Create your first branding project to see it here.",
       "emptyTitle": "NO PROJECTS YET",
       "errors": {
         "failedToDelete": "Failed to delete project",
-        "failedToLoad": "Failed to load branding projects"
+        "failedToLoad": "Failed to load branding projects",
+        "invalidProjectId": "Invalid Project Id"
       },
       "noProjects": "No projects yet",
       "seoDescription": "Manage your branding projects.",
@@ -476,7 +480,6 @@
     "regenerate": "Regenerate",
     "requires": "Requires",
     "resize": "Resize",
-    "save": "Save",
     "saveProject": "Save Project",
     "saving": "Saving...",
     "sectionNotGenerated": "This section hasn't been generated yet",
@@ -500,7 +503,8 @@
       "publicoAlvo": "Target Audience",
       "references": "References",
       "swotAnalysis": "SWOT Analysis",
-      "visualElements": "Visual Elements"
+      "visualElements": "Visual Elements",
+      "moodboard": "Moodboard"
     },
     "strengths": "Strengths",
     "subtitle": "Complete branding analysis in 10 steps",
@@ -515,10 +519,12 @@
     "visualDirection": "Visual Direction",
     "visualElements": "Visual Elements",
     "weaknesses": "Weaknesses",
-    "whatPersonaDesires": "What does the persona really desire?"
+    "whatPersonaDesires": "What does the persona really desire?",
+    "aiSuggestions": "Ai Suggestions",
+    "feedbackGiven": "Feedback Given",
+    "thumbsUp": "Thumbs Up"
   },
   "budget": {
-    "addColor": "Add Color",
     "addDeliverable": "Add Deliverable",
     "addFAQ": "Add FAQ",
     "addGiftOption": "Add Gift",
@@ -546,14 +552,12 @@
     "createNew": "Create New Budget",
     "day": "Day",
     "defaultTemplates": "Default Templates",
-    "delete": "Delete",
     "deleted": "Budget deleted successfully",
     "deliverableDescription": "Brief Description",
     "deliverableName": "Deliverable Name",
     "deliverables": "Deliverables",
     "downloadPDF": "Download PDF",
     "duplicate": "Duplicate",
-    "edit": "Edit",
     "emptyDescription": "Create your first budget to see it here.",
     "emptyTitle": "NO BUDGETS YET",
     "endDate": "End Date",
@@ -594,10 +598,7 @@
     "methodType": "Type",
     "milestoneDescription": "Description",
     "milestoneTitle": "Title",
-    "myBudgets": {
-      "seoDescription": "Manage your professional budgets.",
-      "seoTitle": "My Budgets"
-    },
+    "myBudgets": "My Budgets",
     "myPdfTemplates": "My PDF Templates",
     "noBudgets": "No budgets yet",
     "noGiftOptions": "No gift options added yet",
@@ -690,7 +691,8 @@
     "view": "View",
     "website": "Website",
     "whatsapp": "WhatsApp",
-    "year": "Budget Year"
+    "year": "Budget Year",
+    "duplicated": "Duplicated"
   },
   "canvas": {
     "addedToFavorites": "Added to favorites",
@@ -802,7 +804,23 @@
     "storageQuotaExceeded": "Storage quota exceeded. Please clear some data and try again.",
     "title": "Canvas",
     "unsavedCanvasProject": "You have an unsaved Canvas project. Would you like to save it as a new project?",
-    "untitled": "Untitled"
+    "untitled": "Untitled",
+    "assetAdded": "Asset Added",
+    "download": "Download",
+    "hideGrid": "Hide Grid",
+    "noImagesToExport": "No Images To Export",
+    "exportingImages": "Exporting Images",
+    "exportComplete": "Export Complete",
+    "exportFailed": "Export Failed",
+    "textPasted": "Text Pasted",
+    "pasteFailed": "Paste Failed",
+    "deleteChatNode": "Delete Chat Node",
+    "deleteChatNodeMessage": "Delete Chat Node Message",
+    "cancel": "Cancel",
+    "searchProjects": "Search Projects",
+    "noProjectsFound": "No Projects Found",
+    "noProjectsMatchSearch": "No Projects Match Search",
+    "clearSearch": "Clear Search"
   },
   "canvasBottomToolbar": {
     "color": "Color",
@@ -854,7 +872,6 @@
       "pdfConnected": "PDF Connected",
       "pdfUploadedR2": "PDF uploaded (R2)",
       "pdfUploadedSuccessfully": "PDF uploaded successfully!",
-      "pleaseSelectImageFile": "Please select an image file",
       "pleaseUploadLogoFirst": "Please upload a logo first",
       "pleaseUploadPdfOrPngFirst": "Please upload a PDF or PNG identity guide first",
       "promptCopied": "Prompt copied to clipCanvas!",
@@ -881,7 +898,6 @@
       "output": "Output",
       "paletteMatrix": "Palette Matrix",
       "persona": "Persona",
-      "pleaseSelectImageFile": "Please select an image file",
       "pleaseUploadLogoFirst": "Please upload a logo first",
       "pleaseUploadPdfOrPngFirst": "Please upload a PDF or PNG identity guide first",
       "refineFromLogo": "Refine from Logo",
@@ -893,7 +909,6 @@
       "visualLanguage": "Visual Language"
     },
     "brandingProjectSelectModal": {
-      "cancel": "Cancel",
       "createNewProject": "Create New Project",
       "failedToLoadProjects": "Failed to load projects",
       "loadingProjects": "Loading projects...",
@@ -901,7 +916,8 @@
       "noProjectsFoundMatchingSearch": "No projects found matching your search",
       "searchProjects": "Search projects...",
       "selectBrandingProject": "Select Branding Project",
-      "untitled": "Untitled"
+      "untitled": "Untitled",
+      "searchProjectsPlaceholder": "Search Projects Placeholder"
     },
     "chatNode": {
       "and": "and",
@@ -931,7 +947,6 @@
       "nextCreditIn": "Next credit in",
       "quickActions": "Quick Actions",
       "resetToDefault": "Reset to Default",
-      "save": "Save",
       "section": "section",
       "sections": "sections",
       "startConversationWithAI": "Start a conversation with the AI.",
@@ -947,7 +962,8 @@
       "textContext": "Text Context",
       "thinking": "Thinking...",
       "title": "Chat Node",
-      "typeYourMessage": "Type your message..."
+      "typeYourMessage": "Type your message...",
+      "openAsPanel": "Open As Panel"
     },
     "colorExtractorNode": {
       "clickToCopy": "Click to copy hex code",
@@ -976,7 +992,8 @@
       "selectAtLeastOneTag": "Select at least one tag to generate",
       "selectTags": "Select tags for your prompt",
       "tagsSelected": "tags selected",
-      "title": "Director"
+      "title": "Director",
+      "analyze": "Analyze"
     },
     "drawingNode": {
       "drawing": "Drawing",
@@ -988,7 +1005,8 @@
     "editNode": {
       "defaultPrompt": "Apply the requested changes to this image while maintaining its overall composition and quality.",
       "editedResult": "Edited result",
-      "title": "Mockup Machine"
+      "title": "Mockup Machine",
+      "comingSoon": "Coming Soon"
     },
     "editNodeControls": {
       "editHandlerNotAvailable": "Edit handler not available. Please try refreshing the page."
@@ -997,12 +1015,9 @@
       "addToFavorites": "Add to favorites",
       "analyzingImage": "Analyzing image...",
       "brandKit": "Brand Kit",
-      "cancelButton": "Cancel",
       "clearDescription": "Clear description",
       "collapse": "Collapse",
       "copyDescription": "Copy description",
-      "delete": "Delete",
-      "deleteButton": "Delete",
       "deleteMockup": "Delete Mockup",
       "deleteMockupMessage": "Are you sure you want to delete this mockup? This action cannot be undone.",
       "describeImageWithAI": "Describe image with AI",
@@ -1010,7 +1025,6 @@
       "descriptionCleared": "Description cleared",
       "descriptionCopied": "Description copied to clipCanvas!",
       "downloadImage": "Download Image",
-      "edit": "Edit",
       "expand": "Expand",
       "failedToUpdateLikeStatus": "Failed to update like status. Please try again.",
       "fileSizeExceedsLimitMessage": "File size exceeds 10MB limit. Please choose a smaller image.",
@@ -1021,17 +1035,28 @@
       "removeFromFavorites": "Remove from favorites",
       "uploadImage": "Upload an image",
       "uploadImageTitle": "Upload Image",
-      "viewFullScreen": "View Full Screen"
+      "viewFullScreen": "View Full Screen",
+      "pleaseSelectImageFile": "Please Select Image File",
+      "imageInput": "Image Input",
+      "removeImage": "Remove Image",
+      "canvasImage": "Canvas Image",
+      "failedToSaveImage": "Failed To Save Image",
+      "failedToFindCurrentNode": "Failed To Find Current Node",
+      "invalidNodePosition": "Invalid Node Position",
+      "failedToCreateTextNode": "Failed To Create Text Node"
     },
     "logoNode": {
       "failedToProcessLogo": "Failed to process logo image",
       "fileSizeExceedsLimit": "File size exceeds 10MB limit",
       "logoAltText": "Logo",
       "logoUploadedSuccessfully": "Logo uploaded successfully!",
-      "pleaseSelectImageFile": "Please select an image file",
       "removeLogo": "Remove logo",
       "title": "Logo Node",
-      "uploadLogo": "Upload Logo"
+      "uploadLogo": "Upload Logo",
+      "deleteTitle": "Delete Title",
+      "deleteMessage": "Delete Message",
+      "deleteButton": "Delete Button",
+      "cancelButton": "Cancel Button"
     },
     "luminanceNode": {
       "title": "Luminance Preset",
@@ -1091,7 +1116,6 @@
       "title": "Mockup Preset"
     },
     "nodeContextMenu": {
-      "delete": "Delete",
       "duplicate": "Duplicate",
       "savePrompt": "Save Prompt",
       "title": "Node Actions"
@@ -1114,7 +1138,8 @@
     "pdfNode": {
       "pdfUploadedSuccessfully": "PDF uploaded successfully!",
       "pleaseSelectPdfFile": "Please select a PDF file",
-      "title": "PDF Node"
+      "title": "PDF Node",
+      "uploadPdf": "Upload Pdf"
     },
     "promptNode": {
       "aiSuggestions": "AI Suggestions",
@@ -1158,33 +1183,37 @@
         "title": "Select Mockup Preset",
         "titleMulti": "Select Mockup Presets ({selected}/{max})"
       },
-      "presets": "Presets",
       "promptPlaceholder": "Describe the image you want to generate...",
       "referenceImages": "Reference Images",
       "resolution": "Resolution",
-      "save": "Save",
       "savePrompt": "Save Prompt",
       "savedPromptName": "Saved Prompt",
       "suggestPrompts": "Get prompt suggestions",
       "suggestions": "Suggestions",
       "textDirectionFromBrandCore": "Text Direction (from BrandCore)",
       "textInput": "Text",
-      "title": "Prompt Node"
+      "title": "Prompt Node",
+      "creditsRequired": "Credits Required",
+      "brandConnected": "Brand Connected",
+      "selectModel": "Select Model"
     },
     "shaderNode": {
       "connectImage": "Connect an image or video",
       "inputImage": "Input Image",
-      "uploadImageOrVideo": "Upload Image or Video"
+      "uploadImageOrVideo": "Upload Image or Video",
+      "processingVideo": "Processing Video",
+      "applyingShader": "Applying Shader"
     },
     "shared": {
-      "imageDownloaded": "Image downloaded!"
+      "imageDownloaded": "Image downloaded!",
+      "downloading": "Downloading",
+      "downloadFailed": "Download Failed"
     },
     "strategyNode": {
       "analyze": "Analyze",
       "analyzing": "Analyzing...",
       "brandDescription": "Brand Description",
       "brandDescriptionPlaceholder": "Enter brand description...",
-      "cancel": "Cancel",
       "cancelGeneration": "Cancel generation",
       "chooseOption": "Choose an option",
       "collapseAll": "Collapse All",
@@ -1207,7 +1236,6 @@
       "projectName": "Project Name",
       "projectNamePlaceholder": "Enter project name...",
       "reAnalyze": "Re-analyze",
-      "save": "Save",
       "section": "Section",
       "sectionDeleted": "{section} deleted",
       "sections": {
@@ -1223,7 +1251,8 @@
       },
       "selectExistingProject": "Select Existing Project",
       "strategySavedSuccessfully": "Strategy saved successfully",
-      "title": "Strategy Node"
+      "title": "Strategy Node",
+      "generatingAllSections": "Generating All Sections"
     },
     "textNode": {
       "aiHint": "Click the wand to enhance with AI",
@@ -1251,12 +1280,15 @@
       "imageSavedSuccessfully": "Image saved successfully!",
       "inputImage": "Input Image",
       "pleaseUseImageFromR2": "Please use an image from R2 storage",
-      "title": "Upscale"
+      "title": "Upscale",
+      "upscaling": "Upscaling",
+      "upscale": "Upscale"
     },
     "videoInputNode": {
       "title": "Video Input",
       "uploadVideo": "Upload Video",
-      "uploadedVideo": "Uploaded Video"
+      "uploadedVideo": "Uploaded Video",
+      "removeVideo": "Remove Video"
     },
     "videoNode": {
       "title": "Veo Video",
@@ -1271,7 +1303,6 @@
       "startFrame": "Start Frame",
       "endFrame": "End Frame",
       "inputVideo": "Input Video",
-      "reference": "Reference",
       "input": "Input",
       "connectedToTextNode": "Connected to TextNode",
       "describeVideo": "Describe your video...",
@@ -1294,7 +1325,6 @@
     },
     "savePromptModal": {
       "add": "Add",
-      "cancel": "Cancel",
       "connectedToTextNode": "Connected to TextNode",
       "description": "Description (optional)",
       "descriptionPlaceholder": "A brief description of what this prompt does...",
@@ -1360,6 +1390,7 @@
   },
   "common": {
     "add": "ADD",
+    "analysing": "Analysing...",
     "authenticationRequired": "Authentication required",
     "back": "Back",
     "breadcrumb": "Profile",
@@ -1396,6 +1427,7 @@
     "connected": "connected",
     "month": "Month",
     "noImage": "No Image",
+    "nodeCreated": "Node created successfully",
     "notAuthenticated": "Please sign in to view your profile",
     "pictureUploadError": "Failed to upload profile picture",
     "pictureUploadSuccess": "Profile picture updated successfully",
@@ -1409,6 +1441,7 @@
     "resetView": "Reset view (0)",
     "rotate": "Rotate (R)",
     "save": "Save",
+    "search": "Search",
     "selectImageFile": "Please select an image file",
     "shaderResult": "Shader result",
     "submit": "Submit",
@@ -1445,7 +1478,12 @@
     "year": "year",
     "yesterday": "Yesterday",
     "zoomIn": "Zoom In (+)",
-    "zoomOut": "Zoom Out (-)"
+    "zoomOut": "Zoom Out (-)",
+    "hide": "Hide",
+    "show": "Show",
+    "yes": "Yes",
+    "no": "No",
+    "presetSelected": "Preset Selected"
   },
   "community": {
     "failedToDuplicateWorkflow": "Failed to duplicate workflow",
@@ -1456,20 +1494,17 @@
     "viewProfile": "View {name}'s mockups and presets",
     "website": "Website",
     "workflowDuplicated": "Workflow duplicated to your library",
-    "youtube": "YouTube"
+    "youtube": "YouTube",
+    "title": "Title"
   },
   "communityPresets": {
     "actions": {
-      "cancel": "Cancel",
-      "delete": "Delete",
       "duplicate": "Duplicate",
       "duplicateButton": "Duplicate",
       "duplicateConfirm": "Duplicate Preset",
       "duplicateMessage": "Are you sure you want to duplicate this preset? It will be added to your personal collection.",
-      "edit": "Edit",
       "like": "Like",
       "refresh": "Refresh",
-      "save": "Save",
       "unlike": "Unlike"
     },
     "addExample": "Add Example",
@@ -1484,9 +1519,10 @@
       "all": "All",
       "ambience": "Ambience",
       "angle": "Angle",
+      "branding": "Branding",
+      "effect": "Effect",
       "luminance": "Luminance",
       "mockup": "Mockup",
-      "presets": "Presets",
       "texture": "Texture",
       "themes": "Themes",
       "title": "Categories"
@@ -1515,7 +1551,6 @@
       "failedToLoad": "Failed to load presets",
       "failedToToggleLike": "Failed to update like status",
       "failedToUpdate": "Failed to update preset",
-      "failedToUploadImage": "Failed to upload image",
       "invalidImage": "Invalid image format",
       "missingFields": "Please fill in all required fields",
       "mustBeAuthenticated": "You must be authenticated to view presets",
@@ -1526,15 +1561,19 @@
     "filters": {
       "collapse": "Collapse",
       "show": "Show filters",
-      "title": "Filters"
+      "title": "Filters",
+      "all": "All",
+      "official": "Official",
+      "community": "Community"
     },
     "messages": {
-      "imageUploaded": "Image uploaded successfully!",
       "presetCreated": "Preset created successfully!",
       "presetDeleteConfirm": "Are you sure you want to delete this preset? This action cannot be undone.",
       "presetDeleted": "Preset deleted successfully!",
       "presetDuplicated": "Preset duplicated successfully",
-      "presetUpdated": "Preset updated successfully!"
+      "presetUpdated": "Preset updated successfully!",
+      "presetApplied": "Preset Applied",
+      "presetImported": "Preset Imported"
     },
     "modelOptional": "Model (optional)",
     "myPresets": "My Presets",
@@ -1555,7 +1594,6 @@
     "pressEnterToAddTags": "Press Enter or click Add to create tags",
     "promptRequired": "Prompt (required)",
     "referenceImage": "Reference Image",
-    "referenceImageAlt": "Reference",
     "referenceImageManual": "Reference Image URL (manual)",
     "referenceImageUrlPlaceholder": "https://...",
     "removeExample": "Remove",
@@ -1563,8 +1601,7 @@
     "search": {
       "clear": "Clear search",
       "noResults": "No presets found for",
-      "placeholder": "Search presets...",
-      "title": "Search"
+      "placeholder": "Search presets..."
     },
     "setIdBeforeUpload": "Set Preset ID before uploading image",
     "sidebarTitle": "My Presets",
@@ -1590,14 +1627,14 @@
       "mug": "Mug",
       "notebook": "Notebook",
       "poster": "Poster",
-      "presets": "Presets",
       "runner-squeeze": "Runner",
       "social-post": "Social Post",
       "sp": "Billboard SP",
       "storefront-window": "Storefront",
       "texture": "Texture",
       "themes": "Themes",
-      "tshirt": "T-Shirt"
+      "tshirt": "T-Shirt",
+      "my": "My"
     },
     "tags": {
       "add": "Add",
@@ -1613,7 +1650,11 @@
     "useCase": "Use Case",
     "useCasePlaceholder": "Describe when and how to use this prompt",
     "viewAll": "All",
-    "viewMy": "My Presets"
+    "viewMy": "My Presets",
+    "searchPlaceholder": "Search Placeholder",
+    "buttons": {
+      "create": "Create"
+    }
   },
   "configuration": {
     "apiKeyPlaceholder": "Enter your Gemini API key",
@@ -1636,17 +1677,19 @@
     "subtitle": "Manage your API keys and external connections",
     "title": "Configuration",
     "updateHint": "To update, just paste your new key above.",
-    "warning": "Your API key is encrypted and stored securely. Only you can access it."
+    "warning": "Your API key is encrypted and stored securely. Only you can access it.",
+    "seedreamApiKey": "Seedream Api Key",
+    "seedreamPlaceholder": "Seedream Placeholder",
+    "deleteSeedream": "Delete Seedream",
+    "deleteSeedreamConfirm": "Delete Seedream Confirm"
   },
   "confirmationModal": {
-    "defaultCancel": "Cancel",
     "defaultConfirm": "Continue",
     "defaultTitle": "Confirm Action"
   },
   "creditRechargeSuccess": {
     "creditsPurchased": "Credits purchased",
     "getStarted": "Start Creating",
-    "loading": "Loading...",
     "previousCredits": "Previous credits",
     "subtitle": "Your credits have been added to your account",
     "support": "Need help? Contact us.",
@@ -1659,7 +1702,6 @@
     "available": "Available",
     "buyCredits": "Buy",
     "freeGenerationsUsed": "Free Generations Used",
-    "loading": "Loading...",
     "manualCredits": "Manual Credits",
     "monthlyUsage": "Monthly Usage",
     "notificationRemaining": "{remaining} credit{plural} remaining",
@@ -1669,7 +1711,8 @@
     "resets": "Resets {date}",
     "storage": "Storage",
     "title": "CREDITS",
-    "used": "Used"
+    "used": "Used",
+    "noSubscription": "No Subscription"
   },
   "creditsPackages": {
     "buy": "Buy",
@@ -1681,6 +1724,12 @@
     "viewPlans": "View subscription plans"
   },
   "designSystem": {
+    "actions": {
+      "addToLibrary": "Add to Library",
+      "duplicate": "Duplicate",
+      "like": "Like",
+      "unlike": "Unlike"
+    },
     "colors": {
       "chart": {
         "description": "Colors used for data visualization",
@@ -1694,7 +1743,6 @@
     "commandPalette": {
       "noResults": "No results found",
       "placeholder": "Search components, colors, typography...",
-      "search": "Search",
       "searchShortcut": "Search (Ctrl+K)",
       "section": "Section",
       "tab": "Tab"
@@ -1779,9 +1827,56 @@
       "textarea": {
         "description": "Multiline text input",
         "title": "Textarea"
+      },
+      "searchbar": {
+        "title": "Title",
+        "description": "Description"
+      },
+      "tags": {
+        "title": "Title",
+        "description": "Description"
+      },
+      "premiumButton": {
+        "title": "Title",
+        "description": "Description"
+      },
+      "glassPanel": {
+        "title": "Title",
+        "description": "Description"
+      },
+      "microTitle": {
+        "title": "Title",
+        "description": "Description"
       }
     },
+    "deleteConfirmation": {
+      "message": "Are you sure you want to delete this workflow? This action cannot be undone.",
+      "title": "Delete Workflow"
+    },
     "description": "Documentation of design tokens, components, and patterns",
+    "edit": {
+      "category": "Category",
+      "description": "Edit your canvas as a reusable workflow template",
+      "descriptionPlaceholder": "Describe what this workflow does...",
+      "makePublic": "Make Public",
+      "makePublicHint": "Share this workflow with the community (requires approval)",
+      "name": "Workflow Name",
+      "namePlaceholder": "e.g. Visual Identity Workflow",
+      "save": "Save Workflow",
+      "saving": "Saving...",
+      "tags": "Tags",
+      "tagsHint": "Separate tags with commas",
+      "tagsPlaceholder": "e.g. branding, logo, identity (comma separated)",
+      "title": "Edit Workflow"
+    },
+    "errors": {
+      "failedToDelete": "Failed to delete workflow",
+      "failedToDuplicate": "Failed to duplicate workflow",
+      "failedToLoad": "Failed to load workflows",
+      "failedToSave": "Failed to save workflow",
+      "failedToToggleLike": "Failed to update like",
+      "mustBeAuthenticated": "You must be logged in to perform this action"
+    },
     "home": {
       "colorsDescription": "Color palette and tokens",
       "componentsDescription": "Reusable UI components",
@@ -1798,6 +1893,13 @@
       "usageExample": "<Button variant=\"default\">Click me</Button>",
       "welcome": "Welcome to the Design System"
     },
+    "messages": {
+      "deleted": "Workflow deleted",
+      "duplicated": "Workflow added to your library!",
+      "liked": "Workflow liked!",
+      "saved": "Workflow saved successfully!",
+      "unliked": "Workflow unliked"
+    },
     "modal": {
       "confirmed": "Confirmed!",
       "exampleMessage": "This is an example of the ConfirmationModal component.",
@@ -1807,6 +1909,21 @@
       "next": "Next",
       "previous": "Previous",
       "title": "Navigation"
+    },
+    "saveDialog": {
+      "category": "Category",
+      "description": "Save your canvas as a reusable workflow template",
+      "descriptionPlaceholder": "Describe what this workflow does...",
+      "makePublic": "Make Public",
+      "makePublicHint": "Share this workflow with the community (requires approval)",
+      "name": "Workflow Name",
+      "namePlaceholder": "e.g. Visual Identity Workflow",
+      "save": "Save Workflow",
+      "saving": "Saving...",
+      "tags": "Tags",
+      "tagsHint": "Separate tags with commas",
+      "tagsPlaceholder": "e.g. branding, logo, identity (comma separated)",
+      "title": "Save Workflow"
     },
     "seo": {
       "description": "Design system documentation for Visant Labs",
@@ -1823,12 +1940,17 @@
         "title": "Spacing Scale"
       }
     },
+    "stats": {
+      "edges": "{count} edges",
+      "nodes": "{count} nodes"
+    },
     "tabs": {
       "colors": "Colors",
       "components": "Components",
       "home": "Home",
       "spacing": "Spacing",
-      "typography": "Typography"
+      "typography": "Typography",
+      "patterns": "Patterns"
     },
     "title": "Design System",
     "typography": {
@@ -1844,15 +1966,11 @@
     "workflows": {
       "actions": {
         "addToLibrary": "Add to Library",
-        "delete": "Delete",
         "duplicate": "Duplicate",
-        "edit": "Edit",
         "like": "Like",
         "unlike": "Unlike"
       },
       "deleteConfirmation": {
-        "cancel": "Cancel",
-        "confirm": "Delete",
         "message": "Are you sure you want to delete '{workflowName}'? This action cannot be undone.",
         "title": "Delete Workflow"
       },
@@ -1864,15 +1982,18 @@
         "failedToToggleLike": "Failed to toggle like",
         "mustBeAuthenticated": "You must be logged in to like workflows"
       },
+      "importWorkflow": "Import Workflow",
       "library": {
+        "createNewWorkflow": "Create New Workflow",
+        "createWorkflow": "Create Workflow",
         "description": "Browse and load reusable workflow templates",
+        "loadWorkflow": "Load Workflow",
         "noCommunityWorkflows": "No community workflows available",
         "noResults": "No workflows found",
         "noWorkflows": "No workflows yet",
         "search": "Search workflows...",
         "tabs": {
           "all": "All",
-          "community": "Community",
           "my": "My Workflows"
         },
         "title": "Workflow Library"
@@ -1890,6 +2011,12 @@
       "stats": {
         "edges": "{count} edges",
         "nodes": "{count} nodes"
+      }
+    },
+    "patterns": {
+      "setupContainer": {
+        "title": "Title",
+        "description": "Description"
       }
     }
   },
@@ -1924,13 +2051,15 @@
     "paymentLinkNotConfigured": "Payment link not configured for this currency",
     "promptGenerationFailed": "Prompt generation failed. Please try again.",
     "promptGenerationTimeout": "Prompt generation timed out. Please try again.",
-    "rateLimit": "The AI is very popular right now! Please wait about 10 minutes and try again. This helps us ensure fair access for everyone. 🤖",
+    "rateLimit": "The AI is very popular right now! Please wait about 10 minutes and try again. This helps us ensure fair access for everyone. 💎�",
     "storageLimitExceeded": "Storage limit exceeded. You are using {used} of {limit}. This file ({fileSize}) would exceed your limit.",
     "storageLimitExceededDescription": "Please delete some files or upgrade your plan to continue uploading.",
     "storageLimitExceededGB": "Storage limit exceeded. You are using {used} MB of {limit} GB. This file ({fileSize} MB) would exceed your limit.",
     "storageLimitExceededMB": "Storage limit exceeded. You are using {used} MB of {limit} MB. This file ({fileSize} MB) would exceed your limit.",
     "subscriptionRequired": "Subscription required. Please upgrade to continue generating mockups.",
-    "unableToProcessImage": "Unable to process the uploaded image. Please try a different image or check if the file is corrupted."
+    "unableToProcessImage": "Unable to process the uploaded image. Please try a different image or check if the file is corrupted.",
+    "imageUploadFailed": "Image Upload Failed",
+    "uploadFailed": "Upload Failed"
   },
   "footer": {
     "english": "English",
@@ -1990,7 +2119,7 @@
     "promptGeneratedSuccessfully": "Prompt generated successfully!",
     "promptGenerationFailed": "Prompt generation failed. Please try again.",
     "promptGenerationTimeout": "Prompt generation timed out. Please try again.",
-    "rateLimit": "The AI is very popular right now! Please wait about 10 minutes and try again. This helps us ensure fair access for everyone. 🤖",
+    "rateLimit": "The AI is very popular right now! Please wait about 10 minutes and try again. This helps us ensure fair access for everyone. 💎�",
     "requestTimeout": "Request timed out.",
     "requestTimeoutSuggestion": "The AI service is taking longer than expected. This may be due to high load. Your credits have not been deducted. Please try again.",
     "resetAnyway": "Discard",
@@ -2012,11 +2141,14 @@
     "unsavedOutputRemoveMessage": "This output is not saved. If you remove it, you will lose it permanently. Are you sure?",
     "unsavedOutputsMessage": "You have {count} unsaved output{plural}. If you discard, you will lose them permanently. Are you sure?",
     "unsavedOutputsTitle": "Unsaved Outputs",
-    "yourNextBillingCycle": "your next billing cycle"
+    "yourNextBillingCycle": "your next billing cycle",
+    "selectDesignTypeFirst": "Select Design Type First",
+    "unsavedChangesMessage": "Unsaved Changes Message"
   },
   "mockup": {
     "addCustomCategoryHint": "Personalize your mockup",
     "addCustomCategoryLabel": "Add custom category...",
+    "addCustomTag": "Add custom tag...",
     "addImage": "Add Image",
     "addMore": "Add More",
     "addMoreReferences": "ADD_REFERENCE",
@@ -2043,6 +2175,7 @@
       "optimizing suggestions"
     ],
     "analyzeImage": "ANALYZE IMAGE",
+    "analyzeProject": "Analyze Project",
     "analyzing": "ANALYZING...",
     "analyzingImage": "ANALYZING IMAGE...",
     "aspectRatio": "ASPECT RATIO",
@@ -2075,9 +2208,7 @@
     "blankMockup": "Blank Mockup",
     "brandGuideline": "Brand Guideline",
     "brandNamePlaceholder": "e.g., Acme Corp",
-    "brandWizardCancel": "Cancel",
     "brandWizardDescription": "Create a brand guideline with optional auto-extraction from your website.",
-    "brandWizardEdit": "Edit",
     "brandWizardEditDescription": "Update brand details. Change the URL to re-extract brand intelligence.",
     "brandWizardEditSuccess": "Brand Guideline updated successfully",
     "brandWizardEditTitle": "Edit Brand Guideline",
@@ -2086,7 +2217,6 @@
     "brandWizardErrorIngest": "Created, but extraction failed. You can add details manually.",
     "brandWizardExtracting": "Extracting brand intelligence...",
     "brandWizardNameLabel": "Brand Name",
-    "brandWizardSave": "Save",
     "brandWizardSubmit": "Extract & Create",
     "brandWizardSubmitNoUrl": "Create",
     "brandWizardSuccess": "Brand Guideline created successfully",
@@ -2161,7 +2291,6 @@
     "designTypeQuestion": "Is this a logo or layout?",
     "directorModeDescription": "Select and define which tags can be chosen when generating",
     "directorModeLabel": "Director Mode",
-    "download": "Download",
     "editIdentity": "Edit identity",
     "editIdentityDescription": "Edit the identity of the design",
     "editInstructions": "Edit instructions",
@@ -2184,6 +2313,7 @@
     "generatingPrompt": "GENERATING PROMPT...",
     "generatingPromptShort": "PROMPT...",
     "generationConfig": "CUSTOMIZE YOUR MOCKUP",
+    "identity": "IDENTITY",
     "imageFormatTip": "Tip: Generated images use the same size and aspect ratio as the uploaded image. Try uploading an image with your desired format.",
     "inPool": "in pool",
     "includeHumanInteraction": "Include human interaction",
@@ -2198,7 +2328,9 @@
     "loadingImage": "Loading image...",
     "location": "LOCATION",
     "mainFile": "MAIN_FILE",
+    "mainImageLabel": "DESIGN",
     "material": "MATERIAL",
+    "materialCategory": "MATERIAL",
     "maxReferenceImages": "Maximum 3 reference images reached",
     "mediaKit": {
       "addLogo": "Add logo",
@@ -2213,7 +2345,10 @@
       "noMedia": "No media assets yet",
       "title": "Media Kit",
       "uploadError": "Failed to upload media",
-      "uploadSuccess": "Media uploaded successfully"
+      "uploadSuccess": "Media uploaded successfully",
+      "vaultEmpty": "Vault is empty",
+      "bulkDeleteSuccess": "Bulk Delete Success",
+      "bulkDeleteError": "Bulk Delete Error"
     },
     "modelSelection": "0. MODEL_SELECTION_",
     "modelSelectionDescription": "Choose your AI model for generation.",
@@ -2272,6 +2407,7 @@
     "promptSynced": "Synced",
     "promptOutOfSync": "Out of Sync",
     "redrawTooltip": "Re-draw (Generate a new variation)",
+    "referenceAreaLabel": "REFERENCE",
     "referenceImageAlt": "Reference image",
     "referenceImages": "Reference Images",
     "referenceImagesLabel": "REFERENCE_IMAGES ({count}/3)",
@@ -2337,11 +2473,34 @@
     "surpriseMeSettings": "Surprise Me Settings",
     "surpriseMeSettingsTooltip": "Configure which tags to choose in Surprise Me",
     "surpriseMeTooltip": "Randomly select branding, categories, and styles for quick inspiration!",
+    "tagAlreadyExists": "Tag already exists",
     "transparentBackground": "Transparent background",
+    "typeLayout": "LAYOUT",
+    "typeLogo": "LOGO",
     "uploadMainFile": "UPLOAD_MAIN_FILE",
     "uploadRequired": "Upload required",
     "uploadedDesignAlt": "Uploaded design",
-    "visualEffects": "VISUAL_EFFECTS"
+    "visualEffects": "VISUAL_EFFECTS",
+    "openMediaLibrary": "Open Media Library",
+    "suggested": "Suggested",
+    "angle": "Angle",
+    "lighting": "Lighting",
+    "effect": "Effect",
+    "generatedPrompt": "Generated Prompt",
+    "clearAllTags": "Clear All Tags",
+    "addInstructions": "Add Instructions",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "tags": "Tags",
+    "presetSaveError": "Preset Save Error",
+    "presetLoaded": "Preset Loaded",
+    "removeInstructionHint": "Remove Instruction Hint",
+    "switchToEssential": "Switch To Essential",
+    "generatePromptFirst": "Generate Prompt First",
+    "generateAll": "Generate All",
+    "vibeTitle": "Vibe Title",
+    "selectModelToGenerate": "Select Model To Generate",
+    "title": "Title"
   },
   "mockupsPage": {
     "cannotConnectServer": "Cannot connect to server. Please check your connection and try again.",
@@ -2350,7 +2509,6 @@
     "noMatchesFound": "NO MATCHES FOUND",
     "noMockupsYet": "NO MOCKUPS YET",
     "retry": "Retry",
-    "search": "Search",
     "searchPlaceholder": "Search...",
     "tryAdjustingSearch": "Try adjusting your search or filter."
   },
@@ -2396,7 +2554,8 @@
     "taxIdPlaceholder": "Enter your CPF or CNPJ",
     "taxIdRequired": "Required to process PIX payment",
     "title": "Pay with PIX",
-    "waiting": "Waiting for payment..."
+    "waiting": "Waiting for payment...",
+    "paymentExpired": "Payment Expired"
   },
   "pricing": {
     "allPlansInclude": "All plans include access to our mockup generation tools",
@@ -2412,10 +2571,11 @@
       "feature2": "Basic features",
       "feature3": "No credit card required"
     },
-    "loading": "Loading...",
+    "monthly": "Monthly",
     "noPlansFound": "No plans available at the moment.",
     "oneTimePayment": "One-time payment",
     "perMonth": "/month",
+    "perYear": "/year",
     "popular": "POPULAR",
     "premium": "PREMIUM",
     "premiumPlanFeatures": {
@@ -2449,7 +2609,16 @@
       "label": "BYOK Ready",
       "description": "Ideal for developers and power users who prefer using their own API key."
     },
-    "title": "PRICING"
+    "title": "PRICING",
+    "yearly": "Yearly",
+    "yearlyDiscount": "-16%",
+    "storage": {
+      "byokTitle": "Byok Title",
+      "byokDescription": "Byok Description",
+      "subscriptionNote": "Subscription Note"
+    },
+    "included": "Included",
+    "selectPlan": "Select Plan"
   },
   "privacy": {
     "backToHome": "Back to Home",
@@ -2732,9 +2901,7 @@
     "title": "Privacy Policy — Visant Labs Mockup Machine"
   },
   "profile": {
-    "authenticationRequired": "Authentication required",
     "backToProfile": "Back to profile overview",
-    "breadcrumb": "Profile",
     "completeProfile": "Complete your profile details",
     "currentEmail": "Signed in as",
     "edge": "edge",
@@ -2751,10 +2918,8 @@
     "googleLinkError": "Failed to link Google account",
     "googleLinkSuccess": "Google account linked successfully!",
     "googleLinked": "Google Linked",
-    "imageSizeLimit": "Image too large. Limit is 5MB",
     "invalidLinkRequest": "Invalid link request. Please try again.",
     "linkingGoogle": "Linking...",
-    "loadError": "Failed to load profile",
     "manageSubscription": "Manage",
     "myBrandings": "My Brandings",
     "myBudgets": "My Budgets",
@@ -2765,26 +2930,13 @@
     "noSubscriptionData": "Subscription data unavailable.",
     "node": "node",
     "nodes": "nodes",
-    "notAuthenticated": "Please sign in to view your profile",
-    "pictureUploadError": "Failed to upload profile picture",
-    "pictureUploadSuccess": "Profile picture updated successfully",
     "pictureUrl": "Profile Picture URL",
     "portalError": "Failed to open subscription management. Please try again.",
-    "selectImageFile": "Please select an image file",
     "seoDescription": "Manage your profile and settings",
-    "seoTitle": "Profile",
     "subscription": "Subscription",
     "subscriptionDescription": "Manage your subscription, billing, and payment methods",
-    "subtitle": "Manage your account and subscription",
-    "tabs": {
-      "configuration": "Configuration",
-      "history": "History",
-      "overview": "Dashboard"
-    },
-    "title": "Profile",
     "totalCreditsUsed": "USED",
     "updateError": "Failed to update profile",
-    "updateSuccess": "Profile updated successfully",
     "uploadFailed": "Upload failed",
     "uploadPicture": "Click to upload picture",
     "viewAllTransactions": "Transactions",
@@ -3015,7 +3167,6 @@
   "subscription": {
     "allFreeGenerationsUsed": "All free generations used ({used} / 3)",
     "cancelAnytime": "Cancel anytime",
-    "checkoutCanceled": "Checkout was canceled",
     "creditsPerInterval": "{credits} credits per {interval}",
     "failedToLoad": "Failed to load subscription information",
     "freeGenerationsRemaining": "Free generations remaining: {remaining} / 3",
@@ -3032,7 +3183,8 @@
     "tierFeatures": "{tier} tier features",
     "upgrade": "Upgrade",
     "upgradeTo": "UPGRADE TO {tier}",
-    "upgradeToPremium": "UPGRADE TO PREMIUM"
+    "upgradeToPremium": "UPGRADE TO PREMIUM",
+    "portalError": "Portal Error"
   },
   "subscriptionStatus": {
     "active": "Active",
@@ -3441,7 +3593,6 @@
   },
   "tutorial": {
     "categoriesHint": "You can also configure by selecting categories and tags",
-    "close": "Close",
     "createMockup": "Create Mockup",
     "createNewMockup": "Start by creating a new mockup",
     "fullGuide": "Full Guide",
@@ -3773,21 +3924,16 @@
   "workflows": {
     "actions": {
       "addToLibrary": "Add to Library",
-      "delete": "Delete",
       "duplicate": "Duplicate",
-      "edit": "Edit",
       "like": "Like",
       "unlike": "Unlike"
     },
     "deleteConfirmation": {
-      "cancel": "Cancel",
-      "confirm": "Delete",
       "message": "Are you sure you want to delete this workflow? This action cannot be undone.",
       "title": "Delete Workflow"
     },
     "edit": {
       "all": "All",
-      "cancel": "Cancel",
       "category": "Category",
       "description": "Edit your canvas as a reusable workflow template",
       "descriptionPlaceholder": "Describe what this workflow does...",
@@ -3800,7 +3946,8 @@
       "tags": "Tags",
       "tagsHint": "Separate tags with commas",
       "tagsPlaceholder": "e.g., branding, logo, identity (comma-separated)",
-      "title": "Edit Workflow"
+      "title": "Edit Workflow",
+      "visibility": "Visibility"
     },
     "errors": {
       "failedToDelete": "Failed to delete workflow",
@@ -3822,7 +3969,6 @@
       "search": "Search workflows...",
       "tabs": {
         "all": "All",
-        "community": "Community",
         "my": "My Workflows"
       },
       "title": "Workflow Library"
@@ -3837,7 +3983,6 @@
     },
     "saveDialog": {
       "all": "All",
-      "cancel": "Cancel",
       "category": "Category",
       "description": "Save your canvas as a reusable workflow template",
       "descriptionPlaceholder": "Describe what this workflow does...",
@@ -3850,11 +3995,27 @@
       "tags": "Tags",
       "tagsHint": "Separate tags with commas",
       "tagsPlaceholder": "e.g., branding, logo, identity (comma-separated)",
-      "title": "Save Workflow"
+      "title": "Save Workflow",
+      "nodes": "Nodes",
+      "connections": "Connections"
     },
     "stats": {
       "edges": "{count} connections",
       "nodes": "{count} nodes"
+    },
+    "loadWorkflow": "Load Workflow",
+    "saveWorkflow": "Save Workflow",
+    "visibility": {
+      "public": "Public",
+      "private": "Private"
     }
+  },
+  "creative": {
+    "studio": {
+      "title": "Title"
+    }
+  },
+  "mockups": {
+    "title": "Title"
   }
 }

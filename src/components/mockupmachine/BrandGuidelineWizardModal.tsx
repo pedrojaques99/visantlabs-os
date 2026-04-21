@@ -9,10 +9,11 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Loader2, FileText, X, ShieldCheck, Image as ImageIcon, Upload, Plus } from 'lucide-react';
 import { MicroTitle } from '../ui/MicroTitle';
-import { pdfToBase64, validatePdfFile } from '@/utils/pdfUtils';
+import { validatePdfFile } from '@/utils/pdfUtils';
+import { buildBrandIngestPayload } from '@/hooks/queries/useBrandImport';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { fileToBase64, validateFile } from '@/utils/fileUtils';
+import { validateFile } from '@/utils/fileUtils';
 
 interface BrandGuidelineWizardModalProps {
     isOpen: boolean;
@@ -256,27 +257,14 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 setIsSubmitting(false);
                 setIsIngesting(true);
                 try {
-                    const payload: any = {
-                        source: pdfFile ? 'pdf' : 'images', // 'pdf' takes precedence for text extraction, but backend and gemini will use both
-                        filename: pdfFile?.name || `${imageFiles.length}_images.zip`
-                    };
-
-                    if (pdfFile) {
-                        payload.data = await pdfToBase64(pdfFile);
+                    const inputFiles: File[] = [];
+                    if (pdfFile) inputFiles.push(pdfFile);
+                    inputFiles.push(...imageFiles);
+                    const payload = await buildBrandIngestPayload(inputFiles);
+                    if (payload) {
+                        await brandGuidelineApi.ingest(workingId, payload);
+                        toast.success(t('mockup.brandWizardSuccessWithExtraction'));
                     }
-
-                    if (imageFiles.length > 0) {
-                        const base64Images = await Promise.all(
-                            imageFiles.map(async (file) => {
-                                const result = await fileToBase64(file);
-                                return `data:${result.mimeType};base64,${result.base64}`;
-                            })
-                        );
-                        payload.images = base64Images;
-                    }
-
-                    await brandGuidelineApi.ingest(workingId, payload);
-                    toast.success(t('mockup.brandWizardSuccessWithExtraction'));
                 } catch (err) {
                     console.error('Ingestion error:', err);
                     toast.error(t('mockup.brandWizardErrorIngest'));
@@ -304,7 +292,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         : isSubmitting
             ? null
             : isEditMode
-                ? t('mockup.brandWizardSave')
+                ? t('common.save')
                 : (hasUrl || pdfFile || imageFiles.length > 0)
                     ? t('mockup.brandWizardSubmit')
                     : t('mockup.brandWizardSubmitNoUrl');
@@ -326,7 +314,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                         disabled={isSubmitting || isIngesting}
                         className="px-4 py-2 text-sm font-mono text-neutral-400 hover:text-white transition-colors disabled:opacity-50"
                     >
-                        {t('mockup.brandWizardCancel')}
+                        {t('common.cancel')}
                     </Button>
                     <Button variant="brand"
                         type="submit"

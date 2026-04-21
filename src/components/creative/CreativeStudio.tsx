@@ -1,8 +1,5 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-import {
-  Sparkles, Paintbrush, Type as TypeIcon,
-  Image as ImageIcon, Plus, Layers, X, Scan
-} from 'lucide-react';
+import { Diamond, Paintbrush, Type as TypeIcon, Image as ImageIcon, Plus, Layers, X, Scan } from 'lucide-react';
 import { useCreativeStore } from './store/creativeStore';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useQueryClient } from '@tanstack/react-query';
@@ -211,7 +208,7 @@ export const CreativeStudio: React.FC = () => {
               onClick={() => setStatus('setup')}
               className="px-5 py-2 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan hover:bg-brand-cyan/20 hover:border-brand-cyan/40 transition-all flex items-center gap-2 shadow-lg shadow-brand-cyan/5"
             >
-              <Sparkles size={12} /> Gerar Novo
+              <Diamond size={12} /> Gerar Novo
             </button>
           </div>
         )}

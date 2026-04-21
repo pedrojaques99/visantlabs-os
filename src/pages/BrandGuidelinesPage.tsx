@@ -135,6 +135,7 @@ export const BrandGuidelinesPage: React.FC = () => {
             if (g.tokens && (Object.keys(g.tokens.spacing || {}).length > 0 || Object.keys(g.tokens.radius || {}).length > 0)) sections.push('tokens');
             if (g.guidelines?.voice || (g.guidelines?.dos?.length ?? 0) > 0) sections.push('editorial');
             if (g.guidelines?.accessibility) sections.push('accessibility');
+            if ((g.knowledgeFiles?.length ?? 0) > 0) sections.push('knowledge');
             setActiveSections([...new Set(sections)]);
         }
     }, []);

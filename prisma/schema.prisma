@@ -51,6 +51,9 @@ model User {
   storageProductId     String?   // Active storage plan product ID (e.g., 'storage_pro')
   storageSubscriptionEnd DateTime? // When standalone storage subscription expires (null = lifetime or tier-based)
   canvasSettings       Json?     // User settings for the canvas (colors, grid, etc.)
+  llmProvider          String    @default("gemini") // "gemini" | "ollama" — user's preferred LLM
+  ollamaUrl            String?   // User's Ollama endpoint (e.g. http://host:11434) when llmProvider="ollama"
+  ollamaModel          String?   // User's preferred Ollama model (default: llama3.1)
   totalGenerations     Int       @default(0) // Track total images generated across all apps
   totalTokensUsed      Int       @default(0) // Track total tokens used across all apps
   createdAt            DateTime  @default(now())
@@ -493,6 +496,10 @@ model BrandGuideline {
 
   // Extraction metadata
   extraction Json?   // { sources[], completeness }
+
+  // Knowledge base (ingested via admin chat, feeds RAG for this brand)
+  // Array<{id, fileName, source: 'pdf'|'image'|'url'|'text', vectorIds: string[], addedByUserId, addedAt}>
+  knowledgeFiles Json?
 
   // Organization
   folder     String?   // User-defined folder for grouping guidelines

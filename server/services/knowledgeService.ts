@@ -1,4 +1,5 @@
-import { getMultimodalEmbedding, chatWithAIContext } from './geminiService.js';
+import { getMultimodalEmbedding } from './geminiService.js';
+import { chatWithLLM } from './llmRouter.js';
 import { vectorService, VectorMetadata } from './vectorService.js';
 import { parsePdf } from '../lib/brand-parse.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -171,7 +172,7 @@ ${brandContext || ''}
 UTILIZE O CONTEXTO ABAIXO:
 ${context}`;
 
-    return await chatWithAIContext(query, context, history, {
+    return await chatWithLLM(query, context, history, {
       apiKey: userApiKey,
       model,
       systemInstruction: brandingSystemInstruction

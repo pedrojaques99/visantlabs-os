@@ -1,19 +1,4 @@
-import { authService } from './authService';
-
-const getApiBaseUrl = () => {
-    const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
-    return viteApiUrl || '/api';
-};
-
-const API_BASE_URL = getApiBaseUrl();
-
-const getAuthHeaders = () => {
-    const token = authService.getToken();
-    return {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-    };
-};
+import { chatApiRequest } from '@/lib/chat/client';
 
 export interface CreativeProjectRef {
     creativeProjectId: string;
@@ -24,6 +9,31 @@ export interface CreativeProjectRef {
     creditsRemaining: number;
 }
 
+export interface ToolCallRecord {
+    id: string;
+    name: string;
+    status: 'running' | 'done' | 'error';
+    args?: any;
+    startedAt: string;
+    endedAt?: string;
+    errorMessage?: string;
+    summary?: string;
+}
+
+export interface PendingBrandKnowledgeApproval {
+    id: string;
+    sessionId: string;
+    brandGuidelineId: string;
+    title: string;
+    content: string;
+    reason?: string;
+    requestedByUserId: string;
+    requestedAt: string;
+    status: 'pending' | 'approved' | 'rejected';
+    resolvedByUserId?: string;
+    resolvedAt?: string;
+}
+
 export interface AdminChatMessage {
     role: 'user' | 'assistant';
     content: string;
@@ -32,6 +42,7 @@ export interface AdminChatMessage {
     actionResult?: any;
     attachments?: Array<{ type: 'image' | 'pdf'; dataUrl: string; name: string; }>;
     creativeProjects?: CreativeProjectRef[];
+    toolCalls?: ToolCallRecord[];
     generationId?: string;
 }
 
@@ -42,6 +53,7 @@ export interface AdminChatSession {
     brandGuidelineId?: string;
     attachments: any[];
     messages: AdminChatMessage[];
+    pendingApprovals?: PendingBrandKnowledgeApproval[];
     createdAt: string;
     updatedAt: string;
 }
@@ -53,101 +65,78 @@ export interface AdminChatSendMessageResult {
     sessionId: string;
     generationId?: string;
     toolsUsed?: string[];
+    toolCalls?: ToolCallRecord[];
     creativeProjects?: CreativeProjectRef[];
 }
 
 export const adminChatApi = {
-    /**
-     * List all admin chat sessions
-     */
     async listSessions(): Promise<AdminChatSession[]> {
-        const response = await fetch(`${API_BASE_URL}/admin-chat/sessions`, {
-            method: 'GET',
-            headers: getAuthHeaders(),
+        const { sessions } = await chatApiRequest<{ sessions: AdminChatSession[] }>('/admin-chat/sessions', {
+            errorMessage: 'Failed to list admin chat sessions',
         });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to list admin chat sessions');
-        }
-
-        const data = await response.json();
-        return data.sessions;
+        return sessions;
     },
 
-    /**
-     * Create a new admin chat session
-     */
     async createSession(brandGuidelineId?: string): Promise<AdminChatSession> {
-        const response = await fetch(`${API_BASE_URL}/admin-chat/sessions`, {
+        const { session } = await chatApiRequest<{ session: AdminChatSession }>('/admin-chat/sessions', {
             method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ brandGuidelineId }),
+            body: { brandGuidelineId },
+            errorMessage: 'Failed to create admin chat session',
         });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to create admin chat session');
-        }
-
-        const data = await response.json();
-        return data.session;
+        return session;
     },
 
-    /**
-     * Get a specific admin chat session
-     */
     async getSession(sessionId: string): Promise<AdminChatSession> {
-        const response = await fetch(`${API_BASE_URL}/admin-chat/sessions/${sessionId}`, {
-            method: 'GET',
-            headers: getAuthHeaders(),
+        const { session } = await chatApiRequest<{ session: AdminChatSession }>(`/admin-chat/sessions/${sessionId}`, {
+            errorMessage: 'Failed to get admin chat session',
         });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to get admin chat session');
-        }
-
-        const data = await response.json();
-        return data.session;
+        return session;
     },
 
-    /**
-     * Delete an admin chat session
-     */
+    async updateBrand(sessionId: string, brandGuidelineId: string | undefined): Promise<AdminChatSession> {
+        const { session } = await chatApiRequest<{ session: AdminChatSession }>(`/admin-chat/sessions/${sessionId}/brand`, {
+            method: 'PATCH',
+            body: { brandGuidelineId: brandGuidelineId || null },
+            errorMessage: 'Failed to update session brand',
+        });
+        return session;
+    },
+
     async deleteSession(sessionId: string): Promise<void> {
-        const response = await fetch(`${API_BASE_URL}/admin-chat/sessions/${sessionId}`, {
+        await chatApiRequest<void>(`/admin-chat/sessions/${sessionId}`, {
             method: 'DELETE',
-            headers: getAuthHeaders(),
+            errorMessage: 'Failed to delete admin chat session',
         });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to delete admin chat session');
-        }
     },
 
-    /**
-     * Send a message to an admin chat session
-     */
     async sendMessage(sessionId: string, message: string): Promise<AdminChatSendMessageResult> {
-        const response = await fetch(`${API_BASE_URL}/admin-chat/sessions/${sessionId}/message`, {
+        return chatApiRequest<AdminChatSendMessageResult>(`/admin-chat/sessions/${sessionId}/message`, {
             method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ message }),
+            body: { message },
+            errorMessage: 'Failed to send message to admin chat',
         });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to send message to admin chat');
-        }
-
-        return await response.json();
     },
 
-    /**
-     * Ingest/Upload document to an admin chat session
-     */
+    async approvePending(
+        sessionId: string,
+        pendingId: string
+    ): Promise<{ pending: PendingBrandKnowledgeApproval; knowledgeFile?: any }> {
+        return chatApiRequest(`/admin-chat/sessions/${sessionId}/pendings/${pendingId}/approve`, {
+            method: 'POST',
+            errorMessage: 'Failed to approve pending',
+        });
+    },
+
+    async rejectPending(
+        sessionId: string,
+        pendingId: string
+    ): Promise<{ pending: PendingBrandKnowledgeApproval }> {
+        return chatApiRequest(`/admin-chat/sessions/${sessionId}/pendings/${pendingId}/reject`, {
+            method: 'POST',
+            errorMessage: 'Failed to reject pending',
+        });
+    },
+
     async uploadToSession(
         sessionId: string,
         source: 'pdf' | 'image' | 'url' | 'text',
@@ -155,17 +144,10 @@ export const adminChatApi = {
         url?: string,
         filename?: string
     ): Promise<any> {
-        const response = await fetch(`${API_BASE_URL}/admin-chat/sessions/${sessionId}/upload`, {
+        return chatApiRequest(`/admin-chat/sessions/${sessionId}/upload`, {
             method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ source, url, data, filename }),
+            body: { source, url, data, filename },
+            errorMessage: 'Failed to upload document to admin chat',
         });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to upload document to admin chat');
-        }
-
-        return await response.json();
-    }
+    },
 };

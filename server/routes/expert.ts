@@ -97,7 +97,7 @@ router.post('/chat', expertRateLimiter, authenticate, async (req: AuthRequest, r
 
         if (guideline && guideline.userId === req.userId!) {
           brandContext = formatBrandGuidelineContext(guideline);
-          console.log(`[Expert] Using brand guidelines: ${guideline.identity?.name || 'Unnamed'}`);
+          console.log(`[Expert] Using brand guidelines: ${(guideline.identity as { name?: string } | null)?.name || 'Unnamed'}`);
         }
       } catch (e) {
         console.warn('[Expert] Error loading brand guidelines:', e);

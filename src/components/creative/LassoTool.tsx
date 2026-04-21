@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useCreativeStore } from './store/creativeStore';
-import { Sparkles, Plus, X, Loader2 } from 'lucide-react';
+import { Diamond, Plus, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { mockupApi } from '@/services/mockupApi';
 import { canvasApi } from '@/services/canvasApi';
@@ -223,7 +223,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles size={14} className="text-brand-cyan" />
+                <Diamond size={14} className="text-brand-cyan" />
                 <span className="text-[11px] font-bold uppercase tracking-widest text-white">
                   Editar Região
                 </span>
@@ -255,7 +255,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                   onClick={() => setActionMode('edit')}
                   className="flex flex-col items-center gap-2 p-3 rounded-lg border border-white/5 bg-neutral-800/50 hover:border-brand-cyan/40 hover:bg-brand-cyan/5 transition-all group"
                 >
-                  <Sparkles size={18} className="text-neutral-400 group-hover:text-brand-cyan transition-colors" />
+                  <Diamond size={18} className="text-neutral-400 group-hover:text-brand-cyan transition-colors" />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
                     Editar com IA
                   </span>
@@ -302,7 +302,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                     <Loader2 size={14} className="animate-spin" />
                   ) : (
                     <>
-                      <Sparkles size={12} />
+                      <Diamond size={12} />
                       {actionMode === 'layer' ? 'Gerar Layer' : 'Aplicar Edição'}
                     </>
                   )}

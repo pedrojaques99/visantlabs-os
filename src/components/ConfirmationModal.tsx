@@ -101,7 +101,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
             >
-              {cancelText || t('confirmationModal.defaultCancel')}
+              {cancelText || t('common.cancel')}
             </Button>
             <Button variant="ghost"
               onClick={() => {

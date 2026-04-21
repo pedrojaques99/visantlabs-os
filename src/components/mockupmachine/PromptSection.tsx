@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
-import { Info, Pickaxe, Wand2, ArrowLeftRight, PlusIcon } from 'lucide-react';
+import { Info, Pickaxe, Diamond, ArrowLeftRight, PlusIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -369,7 +369,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             <span className="text-[10px] uppercase font-mono tracking-wider mr-1 text-brand-cyan">⚙️ Regras Injetadas:</span>
             <span className={cn("text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>🚫 No External Text</span>
             <span className={cn("text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>📸 Focus Original Design</span>
-            <span className={cn("text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>🧍‍♂️ No Humans Interaction</span>
+            <span className={cn("text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>💎�‍♂️ No Humans Interaction</span>
           </div>
         </div>
       )}

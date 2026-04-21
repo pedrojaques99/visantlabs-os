@@ -143,7 +143,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         ) : avatarUrl ? (
                             <img
                                 src={avatarUrl}
-                                alt={user.name || t('profile.title')}
+                                alt={user.name || t('common.profile')}
                                 className="w-full h-full object-cover"
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                             />

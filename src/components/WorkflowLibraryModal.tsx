@@ -234,7 +234,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                             )}
                         >
                             <Globe size={12} />
-                            {t('workflows.library.tabs.community') || 'Community'}
+                            {t('common.community') || 'Community'}
                         </Button>
 
                         {isAuthenticated && (
@@ -355,8 +355,8 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                         t('workflows.deleteConfirmation.message') ||
                         `Are you sure you want to delete "${deleteConfirmation.workflowName}"? This action cannot be undone.`
                     }
-                    confirmText={t('workflows.deleteConfirmation.confirm') || 'Delete'}
-                    cancelText={t('workflows.deleteConfirmation.cancel') || 'Cancel'}
+                    confirmText={t('common.delete') || 'Delete'}
+                    cancelText={t('common.cancel') || 'Cancel'}
                     onConfirm={() => handleDelete(deleteConfirmation.workflowId)}
                     onClose={() => setDeleteConfirmation(null)}
                     variant="danger"

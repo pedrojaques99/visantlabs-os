@@ -1,15 +1,7 @@
 import React, { useRef } from 'react';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
-import {
-  AlignLeft, AlignCenter, AlignRight, Bold, Trash2, Layers, Copy,
-  AlignStartVertical, AlignCenterHorizontal, AlignEndVertical,
-  AlignStartHorizontal, AlignCenterVertical, AlignEndHorizontal,
-  AlignHorizontalSpaceBetween, AlignVerticalSpaceBetween,
-  ArrowUp, ArrowDown, ArrowUpToLine, ArrowDownToLine,
-  Group, Ungroup, Image as ImageIcon, RefreshCcw,
-  Upload, Sparkles, X
-} from 'lucide-react';
+import { AlignLeft, AlignCenter, AlignRight, Bold, Trash2, Layers, Copy, AlignStartVertical, AlignCenterHorizontal, AlignEndVertical, AlignStartHorizontal, AlignCenterVertical, AlignEndHorizontal, AlignHorizontalSpaceBetween, AlignVerticalSpaceBetween, ArrowUp, ArrowDown, ArrowUpToLine, ArrowDownToLine, Group, Ungroup, Image as ImageIcon, RefreshCcw, Upload, Diamond, X } from 'lucide-react';
 import type { TextLayerData } from './store/creativeTypes';
 import type { LucideIcon } from 'lucide-react';
 
@@ -77,7 +69,7 @@ export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
       <Btn icon={Upload} onClick={() => fileRef.current?.click()} title="Trocar fundo" />
       {backgroundUrl && (
-        <Btn icon={Sparkles} onClick={() => onEditAI?.()} title="Editar com IA" />
+        <Btn icon={Diamond} onClick={() => onEditAI?.()} title="Editar com IA" />
       )}
       <Divider />
       <Btn icon={X} onClick={() => setBackgroundSelected(false)} title="Fechar" />

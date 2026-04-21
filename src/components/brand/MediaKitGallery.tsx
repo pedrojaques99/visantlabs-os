@@ -19,7 +19,7 @@ interface MediaItem {
 interface LogoItem {
     id: string;
     url: string;
-    variant: 'primary' | 'dark' | 'light' | 'icon' | 'custom';
+    variant: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom';
     label?: string;
 }
 

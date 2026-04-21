@@ -5,7 +5,7 @@ import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { useDynamicSuggestions } from '@/hooks/useDynamicSuggestions';
 import { translateTag } from '@/utils/localeUtils';
-import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3, Settings2, Wand2 } from 'lucide-react';
+import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3, Settings2, Diamond } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { MockupTagCategory } from '@/services/mockupTagService';
@@ -264,7 +264,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
                     : 'text-brand-cyan hover:bg-neutral-100'
                 )}
               >
-                <Wand2 size={12} className="text-brand-cyan" />
+                <Diamond size={12} className="text-brand-cyan" />
                 <span className="truncate">Adicionar "{searchQuery.trim()}"</span>
               </Button>
             )}

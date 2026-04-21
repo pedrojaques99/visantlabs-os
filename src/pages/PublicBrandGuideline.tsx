@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { SEO } from '@/components/SEO';
@@ -6,7 +6,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Palette,
   Type,
@@ -17,7 +17,6 @@ import {
   Search,
   Compass,
   Diamond,
-  User,
   ChevronLeft,
   Sun,
   Moon,
@@ -27,8 +26,14 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { Input } from '@/components/ui/input';
+import {
+  BrandReadOnlyView,
+  type BrandViewSection,
+  extractBrandTheme,
+  getRelativeLuminance,
+  toCSSVariables,
+} from '@/components/brand/BrandReadOnlyView';
 
-// Helper to download blob
 function downloadBlob(content: string, filename: string, type: string) {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
@@ -39,7 +44,6 @@ function downloadBlob(content: string, filename: string, type: string) {
   URL.revokeObjectURL(url);
 }
 
-// Global helper to trigger actual file download from URL
 async function triggerDownload(url: string, filename: string) {
   try {
     const response = await fetch(url);
@@ -52,45 +56,13 @@ async function triggerDownload(url: string, filename: string) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(blobUrl);
-  } catch (err) {
-    // Fallback if fetch fails (e.g. CORS)
+  } catch {
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
     a.target = '_blank';
     a.click();
   }
-}
-
-// Accessibility Helpers
-function getRelativeLuminance(hex: string): number {
-  const h = hex.replace('#', '').padEnd(6, '0');
-  const rgb = [
-    parseInt(h.substring(0, 2), 16) / 255,
-    parseInt(h.substring(2, 4), 16) / 255,
-    parseInt(h.substring(4, 6), 16) / 255
-  ].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
-  return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
-}
-
-function getContrastRatio(l1: number, l2: number): number {
-  const brightest = Math.max(l1, l2);
-  const darkest = Math.min(l1, l2);
-  return (brightest + 0.05) / (darkest + 0.05);
-}
-
-function toCSSVariables(g: BrandGuideline): string {
-  const lines: string[] = [':root {'];
-  g.colors?.forEach(c => {
-    const name = (c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    lines.push(`  --color-${name}: ${c.hex};`);
-  });
-  g.typography?.forEach(t => {
-    const role = (t.role || 'font').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    lines.push(`  --font-${role}: '${t.family}', sans-serif;`);
-  });
-  lines.push('}');
-  return lines.join('\n');
 }
 
 export const PublicBrandGuideline: React.FC = () => {
@@ -134,117 +106,7 @@ export const PublicBrandGuideline: React.FC = () => {
     toast.success('Downloaded as CSS');
   };
 
-  const handleCopyColor = useCallback((hex: string) => {
-    navigator.clipboard.writeText(hex);
-    toast.success(`Copied ${hex}`);
-  }, []);
-
-  // Batch download with throttling to avoid overwhelming the browser
-  const handleBatchDownload = useCallback(async (items: Array<{ url: string; label?: string; variant?: string }>) => {
-    toast.info(`Downloading ${items.length} assets...`);
-    for (const item of items) {
-      const safeName = (item.label || item.variant || 'asset').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-      const ext = item.url.split('.').pop()?.split('?')[0] || 'png';
-      await triggerDownload(item.url, `${safeName}.${ext}`);
-      await new Promise(resolve => setTimeout(resolve, 150)); // throttle
-    }
-    toast.success(`Downloaded ${items.length} assets`);
-  }, []);
-
-  // Filtering Logic (memoized for performance)
-  const filteredColors = useMemo(() =>
-    guideline?.colors?.filter(c =>
-      c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.hex.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [],
-    [guideline?.colors, searchTerm]
-  );
-
-  const filteredLogos = useMemo(() =>
-    guideline?.logos?.filter(l =>
-      l.label?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      l.variant.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [],
-    [guideline?.logos, searchTerm]
-  );
-
-  const filteredMedia = useMemo(() =>
-    guideline?.media?.filter(m =>
-      m.label?.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [],
-    [guideline?.media, searchTerm]
-  );
-
-  // Intelligent Brand Theme Extraction
-  const brandTheme = useMemo(() => {
-    const findByRole = (role: string) =>
-      guideline?.colors?.find(c => c.role?.toUpperCase() === role || c.name?.toUpperCase() === role);
-
-    const findByMatch = (keywords: string[]) =>
-      guideline?.colors?.find(c => keywords.some(k => c.name?.toLowerCase().includes(k) || c.role?.toLowerCase().includes(k)));
-
-    // Base Brand Tokens
-    const accentToken = findByRole('PRIMARY') || findByRole('ACCENT') || findByMatch(['brand', 'primary', 'accent', 'main']) || { hex: '#00E5FF' };
-    const bgToken = findByRole('BACKGROUND') || findByRole('BG') || findByMatch(['background', 'canvas', 'bg']) || { hex: '#0a0a0a' };
-    const surfaceToken = findByRole('SURFACE') || findByRole('CARD') || findByMatch(['surface', 'card', 'neutral', 'off']) || { hex: '#141414' };
-    const textToken = findByRole('TEXT') || findByRole('HEADLINE') || findByMatch(['text', 'content', 'body']) || { hex: '#ffffff' };
-
-    // Sort palette by luminance to find extremes
-    const paletteByLum = [...(guideline?.colors || [])].sort((a, b) =>
-      getRelativeLuminance(a.hex) - getRelativeLuminance(b.hex)
-    );
-
-    const lightestInPalette = paletteByLum[paletteByLum.length - 1]?.hex || '#ffffff';
-    const darkestInPalette = paletteByLum[0]?.hex || '#050505';
-
-    // Resolve base colors
-    let rBg = bgToken.hex;
-    let rSurface = surfaceToken.hex;
-    let rText = textToken.hex;
-
-    if (theme === 'light') {
-      rBg = lightestInPalette;
-      // If lightest is too dark for a 'light' base, force white
-      if (getRelativeLuminance(rBg) < 0.8) rBg = '#ffffff';
-      // Surface is slightly darker than BG
-      rSurface = paletteByLum[paletteByLum.length - 2]?.hex || '#f5f5f7';
-      rText = darkestInPalette;
-    } else if (theme === 'dark') {
-      rBg = darkestInPalette;
-      // If darkest is too light for a 'dark' base, force black
-      if (getRelativeLuminance(rBg) > 0.2) rBg = '#050505';
-      // Surface is slightly lighter than BG
-      rSurface = paletteByLum[1]?.hex || '#111111';
-      rText = lightestInPalette;
-    }
-
-    // Acessibilidade Audit: Check contrast between bg and text
-    const bgLum = getRelativeLuminance(rBg);
-    let textLum = getRelativeLuminance(rText);
-    let contrast = getContrastRatio(bgLum, textLum);
-
-    // If contrast < 4.5 (WCAG AA), intelligently fix it
-    if (contrast < 4.5) {
-      rText = bgLum > 0.5 ? '#000000' : '#ffffff';
-    }
-
-    const toRgb = (hex: string) => {
-      const h = hex.replace('#', '').padEnd(6, '0');
-      const r = parseInt(h.substring(0, 2), 16) || 0;
-      const g = parseInt(h.substring(2, 4), 16) || 0;
-      const b = parseInt(h.substring(4, 6), 16) || 0;
-      return `${r}, ${g}, ${b}`;
-    };
-
-    return {
-      accent: accentToken.hex,
-      accentRgb: toRgb(accentToken.hex),
-      bg: rBg,
-      surface: rSurface,
-      text: rText,
-      isCustomBg: theme === 'brand' && (!!findByRole('BACKGROUND') || !!findByMatch(['background', 'bg']))
-    };
-  }, [guideline?.colors, theme]);
+  const brandTheme = useMemo(() => extractBrandTheme(guideline, theme), [guideline, theme]);
 
   if (isLoading) {
     return (
@@ -287,14 +149,24 @@ export const PublicBrandGuideline: React.FC = () => {
     { id: 'media', label: 'Library', icon: Palette },
   ];
 
-  const sectionVariants: Variants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" }
+  const visibleSections = useMemo<BrandViewSection[]>(() => {
+    switch (activeTab) {
+      case 'identity':
+        return ['identity', 'guidelines'];
+      case 'strategy':
+        return ['manifesto', 'archetypes', 'personas', 'voiceValues', 'guidelines'];
+      case 'colors':
+        return ['colors'];
+      case 'typography':
+        return ['typography'];
+      case 'logos':
+        return ['logos'];
+      case 'media':
+        return ['media'];
+      default:
+        return ['identity', 'manifesto', 'archetypes', 'personas', 'voiceValues', 'colors', 'typography', 'logos', 'media', 'guidelines'];
     }
-  };
+  }, [activeTab]);
 
   return (
     <div
@@ -466,391 +338,16 @@ export const PublicBrandGuideline: React.FC = () => {
           </GlassPanel>
         </div>
 
-        {/* Main Sections */}
-        <div className="flex flex-col gap-24">
-          <AnimatePresence mode="popLayout">
-            {/* Identity Section */}
-            {(activeTab === 'all' || activeTab === 'identity') && (
-              <motion.section id="identity" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-                <div className="flex flex-col gap-10">
-                  <h2 className="text-4xl font-bold font-manrope opacity-90">Identity</h2>
-                  {guideline.identity?.description && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                      <div className="md:col-span-2">
-                        <p className="text-lg md:text-xl leading-relaxed font-light opacity-70">
-                          {guideline.identity.description}
-                        </p>
-                      </div>
-                      <div className="space-y-8">
-                        {guideline.identity?.tagline && (
-                          <div className="space-y-2">
-                            <span className="text-[10px] font-mono opacity-40 uppercase tracking-widest">Brand Tagline</span>
-                            <p className="text-sm font-bold uppercase opacity-80">{guideline.identity.tagline}</p>
-                          </div>
-                        )}
-                        <div className="space-y-2">
-                          <span className="text-[10px] font-mono opacity-40 uppercase tracking-widest">Primary Objective</span>
-                          <p className="text-sm font-bold opacity-80">Standardize Visual & Strategic Communications</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </motion.section>
-            )}
-
-            {/* Strategic Branding Section */}
-            {(activeTab === 'all' || activeTab === 'strategy') && guideline.strategy && (
-              <motion.section id="strategy" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="space-y-32">
-                {/* Manifest - Full Screen Style */}
-                {guideline.strategy.manifesto && (
-                  <div className="space-y-12">
-                    <div className="flex items-center gap-4">
-                      <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
-                      <MicroTitle className="text-[var(--accent)]/60 tracking-wider">[Manifesto]</MicroTitle>
-                    </div>
-                    <div className="relative group">
-                      <div className="absolute -inset-8 bg-[var(--accent)]/[0.02] blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                      <h3 className="text-4xl md:text-6xl font-bold tracking-tight font-manrope leading-[1.1] opacity-90">
-                        {guideline.strategy.manifesto.split('\n')[0]}
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-16">
-                        {guideline.strategy.manifesto.split('\n').slice(1).map((para, i) => (
-                          <p key={i} className="text-lg md:text-xl leading-relaxed font-light opacity-60">
-                            {para}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Archetypes - Tarot Style */}
-                {guideline.strategy.archetypes && guideline.strategy.archetypes.length > 0 && (
-                  <div className="space-y-16">
-                    <h2 className="text-4xl font-bold font-manrope opacity-90">Archetypes</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      {guideline.strategy.archetypes.map((arch, i) => (
-                        <div key={i} className="group relative rounded-[40px] p-12 flex flex-col md:flex-row gap-12 items-center overflow-hidden min-h-[400px] transition-colors bg-[var(--brand-surface)]/40 border-[var(--brand-text)]/5 hover:border-[var(--brand-text)]/10">
-                          <div className="w-full md:w-1/2 aspect-[3/4] rounded-2xl border-[3px] p-4 flex flex-col items-center justify-between relative transition-all duration-500 border-[var(--brand-text)]/20 bg-[var(--brand-bg)] shadow-2xl group-hover:rotate-2">
-                            <div className="w-full text-center border-b border-[var(--brand-text)]/10 pb-2 flex items-center justify-center px-2">
-                              <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">{arch.name}</span>
-                            </div>
-                            <div className="flex-1 flex items-center justify-center py-8">
-                              {arch.image ? <img src={arch.image} className="w-full object-contain" /> : <Diamond size={64} className="opacity-10" />}
-                            </div>
-                          </div>
-                          <div className="flex-1 space-y-6">
-                            <h4 className="text-3xl font-bold tracking-tight opacity-90">{arch.name}</h4>
-                            <p className="text-lg font-light leading-relaxed opacity-60">
-                              {arch.description}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Personas - Gustavo Style */}
-                {guideline.strategy.personas && guideline.strategy.personas.length > 0 && (
-                  <div className="space-y-16">
-                    <h2 className="text-4xl font-bold font-manrope opacity-90">Personas</h2>
-                    <div className="grid grid-cols-1 gap-12">
-                      {guideline.strategy.personas.map((persona, i) => (
-                        <GlassPanel key={i} padding="lg" className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10">
-                          <div className="flex flex-col md:flex-row gap-12">
-                            <div className="w-full md:w-1/3 aspect-square rounded-[32px] overflow-hidden border border-[var(--brand-text)]/10 shadow-2xl">
-                              {persona.image ? <img src={persona.image} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-black/20 flex items-center justify-center opacity-30"><User size={64} /></div>}
-                            </div>
-                            <div className="flex-1 space-y-8">
-                              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                                <div className="space-y-1">
-                                  <h4 className="text-4xl font-bold opacity-90">{persona.name}, {persona.age}</h4>
-                                  <div className="flex flex-wrap gap-2 pt-2">
-                                    {persona.traits?.map((trait, idx) => (
-                                      <span key={idx} className="px-3 py-1 rounded-full border border-[var(--brand-text)]/10 bg-[var(--brand-text)]/5 text-[10px] font-bold uppercase tracking-widest opacity-60">{trait}</span>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="h-[1px] w-full bg-[var(--brand-text)]/10" />
-
-                              <div className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  {persona.desires?.map((desire, idx) => (
-                                    <div key={idx} className="p-6 rounded-2xl border border-[var(--brand-text)]/5 bg-[var(--brand-surface)]/60 hover:border-[var(--brand-text)]/10 transition-all">
-                                      <p className="text-sm leading-relaxed font-light opacity-60">{desire}</p>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-
-                              {persona.bio && (
-                                <div className="p-6 rounded-2xl border border-[var(--brand-text)]/5 bg-[var(--brand-text)]/[0.02]">
-                                  <p className="text-sm font-light leading-relaxed opacity-60">"{persona.bio}"</p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </GlassPanel>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Tone of Voice - Cards Style */}
-                {guideline.strategy.voiceValues && guideline.strategy.voiceValues.length > 0 && (
-                  <div className="space-y-16">
-                    <h2 className="text-4xl font-bold font-manrope opacity-90">Tone of Voice</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {guideline.strategy.voiceValues.map((v, i) => (
-                        <div key={i} className="relative group p-8 rounded-[32px] border transition-all duration-500 overflow-hidden min-h-[400px] flex flex-col bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:bg-[var(--brand-surface)]/40 hover:border-[var(--brand-text)]/10">
-                          <div className="absolute top-0 left-0 w-16 h-16 rounded-br-[32px] flex items-center justify-center text-xl font-bold bg-[var(--brand-text)]/5 opacity-20">{i + 1}</div>
-                          <div className="mt-12 space-y-8 flex-1">
-                            <h4 className="text-2xl font-bold opacity-90">{v.title}</h4>
-                            <p className="text-sm leading-relaxed opacity-60 transition-colors">{v.description}</p>
-                            <div className="p-4 rounded-xl border mt-auto bg-[var(--brand-text)]/[0.02] border-[var(--brand-text)]/5 shadow-inner">
-                              <p className="text-xs font-medium leading-relaxed italic opacity-80">"{v.example}"</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </motion.section>
-            )}
-
-            {/* Colors Section */}
-            {(activeTab === 'all' || activeTab === 'colors') && guideline.colors && guideline.colors.length > 0 && (
-              <motion.section id="colors" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-                <div className="space-y-12">
-                  <div className="flex items-end justify-between border-b border-[var(--brand-text)]/10 pb-12">
-                    <h2 className="text-4xl font-bold font-manrope opacity-90">Color Palette</h2>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                    {filteredColors.map((color, i) => (
-                      <motion.div
-                        key={i}
-                        layout
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        onClick={() => handleCopyColor(color.hex)}
-                        className="group cursor-pointer space-y-3"
-                      >
-                        <div className="relative aspect-square rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-all group-hover:scale-105 group-hover:border-[var(--accent)]/30 shadow-2xl">
-                          <div className="absolute inset-0" style={{ backgroundColor: color.hex }} />
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
-                            <span className="text-[10px] font-mono text-white opacity-60">COPY HEX</span>
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold truncate uppercase tracking-tight opacity-90">{color.name || 'Untitled'}</p>
-                          <p className="text-[10px] font-mono opacity-40 uppercase flex items-center gap-2">
-                            {color.hex}
-                            <div className="w-1 h-1 rounded-full bg-current opacity-20" />
-                            {color.role || 'Accent'}
-                          </p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              </motion.section>
-            )}
-
-            {/* Typography Section */}
-            {(activeTab === 'all' || activeTab === 'typography') && guideline.typography && guideline.typography.length > 0 && (
-              <motion.section id="typography" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-                <div className="space-y-12">
-                  <div className="flex items-end justify-between border-b border-[var(--brand-text)]/10 pb-12">
-                    <h2 className="text-4xl font-bold font-manrope opacity-90">Typography</h2>
-                  </div>
-                  <div className="grid grid-cols-1 gap-8">
-                    {guideline.typography.map((font, i) => (
-                      <div key={i} className="group flex flex-col md:flex-row md:items-center gap-8 md:gap-16 p-8 rounded-3xl border transition-all bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:border-[var(--brand-text)]/10">
-                        <div className="text-7xl md:text-8xl font-bold tracking-tighter w-40 text-center shrink-0 opacity-90" style={{ fontFamily: font.family }}>Aa</div>
-                        <div className="flex-1 space-y-4">
-                          <div className="flex items-center gap-4">
-                            <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase font-black tracking-widest border bg-[var(--brand-text)]/5 text-[var(--brand-text)] border-[var(--brand-text)]/10">
-                              {font.role}
-                            </span>
-                            <span className="text-xs font-mono font-medium opacity-40">{font.family}</span>
-                          </div>
-                          <p className="text-4xl md:text-5xl tracking-tight leading-none opacity-80" style={{ fontFamily: font.family }}>
-                            The quick brown fox jumps over the lazy dog.
-                          </p>
-                          <div className="flex items-center gap-6 pt-2">
-                            <div className="space-y-1">
-                              <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">Style</span>
-                              <p className="text-sm font-bold opacity-70">{font.style || 'Regular'}</p>
-                            </div>
-                            <div className="space-y-1">
-                              <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">Base Size</span>
-                              <p className="text-sm font-bold opacity-70">{font.size || '16'}PX</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.section>
-            )}
-
-            {/* Logos Section */}
-            {(activeTab === 'all' || activeTab === 'logos') && guideline.logos && guideline.logos.length > 0 && (
-              <motion.section id="logos" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-                <div className="space-y-12">
-                  <div className="flex items-end justify-between border-b border-[var(--brand-text)]/10 pb-12">
-                    <h2 className="text-4xl font-bold font-manrope opacity-90">Logo Assets</h2>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-[10px] font-mono opacity-40 hover:opacity-100 hover:text-[var(--accent)] gap-2"
-                      onClick={() => handleBatchDownload(filteredLogos)}
-                    >
-                      <Download size={12} />
-                      Export {filteredLogos.length} Assets
-                    </Button>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {filteredLogos.map((logo, i) => (
-                      <motion.div
-                        key={i}
-                        layout
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className="group relative flex flex-col gap-4"
-                      >
-                        <div className="relative aspect-[4/3] rounded-3xl p-8 flex items-center justify-center overflow-hidden transition-all duration-500 border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 group-hover:bg-[var(--brand-surface)]/40 group-hover:border-[var(--brand-text)]/10 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
-                          <img
-                            src={logo.url}
-                            alt={logo.label || 'Logo'}
-                            className="w-3/4 h-3/4 object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_15px_25px_rgba(0,0,0,0.2)]"
-                          />
-
-                          {/* Quick Actions */}
-                          <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                            <Button
-                              className="w-full h-10 rounded-xl text-[10px] font-bold uppercase tracking-wider gap-2 shadow-lg transition-all bg-[var(--accent)] text-black hover:scale-[1.02]"
-                              onClick={() => {
-                                const safeName = (logo.label || logo.variant || 'logo').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-                                const ext = logo.url.split('.').pop()?.split('?')[0] || 'png';
-                                triggerDownload(logo.url, `${safeName}.${ext}`);
-                              }}
-                            >
-                              <Download size={14} /> Download
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="px-2">
-                          <p className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-90">{logo.label || 'Untitled Asset'}</p>
-                          <p className="text-[10px] font-mono uppercase tracking-widest mt-1 opacity-40">{logo.variant} Variant</p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              </motion.section>
-            )}
-
-            {/* Media Section */}
-            {(activeTab === 'all' || activeTab === 'media') && guideline.media && guideline.media.length > 0 && (
-              <motion.section id="media" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-                <div className="space-y-12">
-                  <div className={cn("flex items-end justify-between border-b pb-12", theme === 'dark' ? "border-white/5" : "border-neutral-200")}>
-                    <h2 className={cn("text-4xl font-bold font-manrope", theme === 'dark' ? "text-white" : "text-neutral-900")}>Media Library</h2>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filteredMedia.map((item, i) => (
-                      <motion.div
-                        key={i}
-                        layout
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className="group relative flex flex-col gap-4"
-                      >
-                        <div className="relative aspect-[16/10] rounded-3xl overflow-hidden border border-white/[0.04] shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-white/10">
-                          <img src={item.url} alt={item.label || 'Media'} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
-
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                            <Button
-                              size="icon"
-                              className="w-14 h-14 rounded-full bg-[var(--accent)] text-black shadow-[0_0_30px_rgba(var(--accent-rgb),0.5)] active:scale-90 transition-all"
-                              onClick={() => {
-                                const safeName = (item.label || 'media').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-                                const ext = item.url.split('.').pop()?.split('?')[0] || 'png';
-                                triggerDownload(item.url, `${safeName}.${ext}`);
-                              }}
-                            >
-                              <Download size={24} />
-                            </Button>
-                          </div>
-
-                          <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
-                            <div className="space-y-1">
-                              <p className="text-sm font-bold text-white tracking-tight">{item.label || 'Production File'}</p>
-                              <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Asset // 0{i + 1}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              </motion.section>
-            )}
-
-            {/* Strategy / Editorial Section */}
-            {(activeTab === 'all' || activeTab === 'identity' || activeTab === 'strategy') && (guideline.guidelines?.voice || (guideline.guidelines?.dos?.length || 0) > 0) && (
-              <motion.section id="editorial" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
-                  <div className="space-y-8">
-                    <h2 className="text-4xl font-bold font-manrope opacity-90">Guidelines</h2>
-                    {guideline.guidelines?.voice && (
-                      <div className="p-8 rounded-3xl bg-[var(--brand-text)]/[0.03] border border-[var(--brand-text)]/[0.05]">
-                        <p className="text-lg md:text-xl font-serif italic leading-relaxed opacity-60">"{guideline.guidelines.voice}"</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
-                    {guideline.guidelines?.dos && (
-                      <div className="space-y-6">
-                        <ul className="space-y-4 pt-12">
-                          {guideline.guidelines.dos.map((item, i) => (
-                            <li key={i} className="flex gap-4 group">
-                              <div className="mt-1.5 w-1 h-1 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]" />
-                              <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {guideline.guidelines?.donts && (
-                      <div className="space-y-6">
-                        <ul className="space-y-4 pt-12">
-                          {guideline.guidelines.donts.map((item, i) => (
-                            <li key={i} className="flex gap-4 group">
-                              <div className="mt-1.5 w-1 h-1 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]" />
-                              <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </motion.section>
-            )}
-          </AnimatePresence>
-        </div>
+        <BrandReadOnlyView
+          guideline={guideline}
+          sections={visibleSections}
+          searchTerm={searchTerm}
+          onAssetClick={(url, _type, item) => {
+            const safeName = (item.label || item.variant || 'asset').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+            const ext = url.split('.').pop()?.split('?')[0] || 'png';
+            triggerDownload(url, `${safeName}.${ext}`);
+          }}
+        />
 
         {/* Dynamic Footer */}
         <footer className="mt-40 pt-20 border-t border-[var(--brand-text)]/10 text-center space-y-8">

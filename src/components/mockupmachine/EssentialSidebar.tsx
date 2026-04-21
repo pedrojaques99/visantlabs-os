@@ -7,7 +7,7 @@ import { getCombinedVibeConfig } from '@/constants/mockupVibes';
 import { MicroTitle } from '../ui/MicroTitle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
-import { Gem, Wand2, ChevronRight, Settings2, Diamond, MessageSquareText } from 'lucide-react';
+import { Gem, Diamond, ChevronRight, Settings2, MessageSquareText } from 'lucide-react';
 import { toast } from 'sonner';
 import { SurpriseMeControl } from './SurpriseMeControl';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -130,7 +130,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
-              <Wand2 size={16} className="text-brand-cyan" />
+              <Diamond size={16} className="text-brand-cyan" />
             </div>
             <MicroTitle className="text-neutral-200">
               {t('mockup.vibeSelect') || 'ESTILO DO MOCKUP'}

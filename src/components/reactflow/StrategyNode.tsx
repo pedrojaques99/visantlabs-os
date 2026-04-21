@@ -1038,7 +1038,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               }}
                 disabled={!hasData || isGenerating}
                 className="bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan font-semibold nodrag nopan"
-                title={t('canvasNodes.strategyNode.save')}
+                title={t('common.save')}
               >
                 <Save size={14} />
               </NodeButton>
@@ -1131,7 +1131,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   className="flex-1 px-3 py-2.5 gap-3 border-red-500/50 text-red-400 hover:bg-red-500/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-all nodrag nopan"
                 >
                   <XCircle size={14} />
-                  <span>{t('canvasNodes.strategyNode.cancel')}</span>
+                  <span>{t('common.cancel')}</span>
                 </NodeButton>
                 <div className="flex-1 px-3 py-2.5 bg-brand-cyan/20 border border-brand-cyan/40 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
                   <GlitchLoader size={14} color="brand-cyan" />

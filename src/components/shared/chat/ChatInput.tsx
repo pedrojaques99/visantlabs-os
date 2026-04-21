@@ -64,42 +64,32 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
+  const hasModelSelector = showModelSelector && selectedModel && onModelChange;
+
   return (
     <div className={cn("group w-full flex flex-col gap-1.5", className)}>
       <div className={cn(
-        "relative flex flex-col w-full rounded-xl transition-all duration-300",
+        "relative flex flex-col w-full rounded-2xl transition-all duration-300",
         "bg-white/5 border border-white/10 focus-within:border-white/20 focus-within:bg-white/10",
         disabled && "opacity-50 grayscale cursor-not-allowed"
       )}>
+        <Textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled || isLoading || isIngesting}
+          className={cn(
+            "flex-1 min-h-[44px] resize-none bg-transparent border-none focus:ring-0 px-4 pt-3 pb-1 text-sm",
+            "placeholder:text-white/20 text-white/90 scrollbar-none"
+          )}
+          style={{ height: `${minHeight}px` }}
+        />
 
-        {/* Toolbar Top - Subtle */}
-        {(showModelSelector && selectedModel && onModelChange) && (
-          <div className="flex items-center px-2 py-1.5 border-b border-white/5">
-            <ModelSelector
-              selectedModel={selectedModel}
-              onModelChange={onModelChange}
-              className="!min-w-[120px]"
-            />
-          </div>
-        )}
-
-        {/* Input Area */}
-        <div className="flex items-end p-2 gap-2">
-          <Textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            disabled={disabled || isLoading || isIngesting}
-            className={cn(
-              "flex-1 min-h-[44px] resize-none bg-transparent border-none focus:ring-0 p-2 text-sm",
-              "placeholder:text-white/20 text-white/90 scrollbar-none"
-            )}
-            style={{ height: `${minHeight}px` }}
-          />
-
-          <div className="flex items-center gap-1.5 mb-1">
+        {/* Bottom action row — attach (left) + model + send (right) */}
+        <div className="flex items-center justify-between px-2 pb-2 gap-2">
+          <div className="flex items-center">
             {showAttach && onAttachClick && (
               <Button
                 variant="ghost"
@@ -107,9 +97,20 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 className="h-8 w-8 text-white/30 hover:text-white hover:bg-white/5"
                 onClick={onAttachClick}
                 disabled={isLoading || isIngesting}
+                aria-label="Anexar arquivo"
               >
                 <Paperclip size={18} />
               </Button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {hasModelSelector && (
+              <ModelSelector
+                selectedModel={selectedModel!}
+                onModelChange={onModelChange!}
+                className="!min-w-[120px]"
+              />
             )}
 
             <Button
@@ -120,6 +121,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 "bg-white/10 hover:bg-white text-white hover:text-black",
                 (!value.trim() && !isIngesting) && "opacity-0 scale-90 translate-x-2 pointer-events-none"
               )}
+              aria-label="Enviar"
             >
               {isLoading || isIngesting ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -132,8 +134,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       </div>
 
       {/* Disclaimer sutil */}
-      <div className="px-4 text-[10px] uppercase tracking-widest text-white/10 font-mono text-center">
-        Powered by Gemini • Visant Labs OS
+      <div className="px-4 text-xs text-white/20 text-center">
+        Powered by Gemini · Visant Labs OS
       </div>
     </div>
   );

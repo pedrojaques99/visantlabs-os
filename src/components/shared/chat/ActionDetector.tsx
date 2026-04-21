@@ -1,5 +1,5 @@
 import React from 'react';
-import { Diamond, Wand2, Layers, Target, FileText, Plus } from 'lucide-react';
+import { Diamond, Layers, Target, FileText, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ interface ActionDetectorProps {
 
 const getActionIcon = (type: DetectedAction['type']) => {
   switch (type) {
-    case 'prompt': return <Wand2 size={10} />;
+    case 'prompt': return <Diamond size={10} />;
     case 'mockup': return <Layers size={10} />;
     case 'strategy': return <Target size={10} />;
     case 'text': return <FileText size={10} />;

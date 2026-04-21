@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useAutoScrollToBottom } from '@/hooks/chat/useAutoScrollToBottom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { useQuery } from '@tanstack/react-query';
@@ -56,7 +57,6 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
     const [toolsBeingUsed, setToolsBeingUsed] = useState<string[]>([]);
 
     const scrollRef = useRef<HTMLDivElement>(null);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Load sessions
@@ -67,13 +67,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
       gcTime: 60000,
     });
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages, isLoading]);
+    const messagesEndRef = useAutoScrollToBottom<HTMLDivElement>([messages, isLoading]);
 
     const createNewSession = async () => {
         try {
@@ -103,7 +97,8 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
             // Convert to ExpertChatMessage format
             const convertedMessages: ExpertChatMessage[] = session.messages.map(msg => ({
                 role: msg.role === 'user' ? 'user' : 'model',
-                parts: [{ text: msg.content }]
+                parts: [{ text: msg.content }],
+                generationId: msg.generationId,
             }));
 
             // Add initial greeting if no messages
@@ -221,7 +216,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
             // 4. Send message to session
             try {
                 setToolsBeingUsed([]);
-                const { reply, toolsUsed } = await chatApi.sendMessage(sessionId, currentInput);
+                const { reply, toolsUsed, generationId } = await chatApi.sendMessage(sessionId, currentInput);
 
                 if (toolsUsed?.length) {
                     setToolsBeingUsed(toolsUsed);
@@ -229,7 +224,8 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
 
                 setMessages(prev => [...prev, {
                     role: 'model',
-                    parts: [{ text: reply }]
+                    parts: [{ text: reply }],
+                    generationId,
                 }]);
 
                 // Clear tools feedback after a delay
@@ -381,7 +377,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                             mode === 'modal' ? "rounded-none md:rounded-r-2xl border-0 md:border-l md:border-white/5" : "rounded-none md:rounded-2xl border-none md:border"
                         )} padding="none">
                             {/* Header */}
-                            <div className="flex items-center justify-between p-3 md:p-4 border-b border-white/5 bg-white/5 gap-3">
+                            <div className="flex items-center justify-between p-5 md:px-8 border-b border-white/5 bg-white/5 gap-3">
                                 <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
                                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-brand-gradient flex items-center justify-center text-white shadow-lg shrink-0">
                                         <Diamond size={16} className="md:w-[20px]" />
@@ -417,13 +413,15 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                             </div>
 
                             {/* Messages */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin overflow-x-hidden" ref={scrollRef}>
+                            <div className="flex-1 overflow-y-auto p-8 md:px-12 md:py-10 space-y-8 scrollbar-thin overflow-x-hidden" ref={scrollRef}>
                                 {messages.map((msg, i) => (
-                                    <ChatMessage 
+                                    <ChatMessage
                                         key={i}
                                         role={msg.role as any}
                                         content={msg.parts[0].text}
                                         t={t}
+                                        generationId={msg.generationId}
+                                        feature="chat"
                                     />
                                 ))}
                                 {isLoading && (
@@ -447,7 +445,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                             </div>
 
                             {/* Footer / Input - Native Feel */}
-                            <div className="p-2 md:p-4 border-t border-white/5 bg-neutral-950/40 relative z-30 pb-[env(safe-area-inset-bottom,16px)]">
+                            <div className="p-4 md:px-10 md:py-8 border-t border-white/5 bg-neutral-950/40 relative z-30 pb-[env(safe-area-inset-bottom,16px)]">
                                 {/* Attached Files */}
                                 {attachedFiles.length > 0 && (
                                     <div className="flex flex-wrap gap-2 mb-2 px-1">

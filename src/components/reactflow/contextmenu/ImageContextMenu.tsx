@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Download, Maximize2, Copy, Wand2, X, Trash2, Copy as CopyIcon, FileText, Upload, ExternalLink } from 'lucide-react';
+import { Heart, Download, Maximize2, Copy, Diamond, X, Trash2, Copy as CopyIcon, FileText, Upload, ExternalLink } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
 import { downloadImage } from '@/utils/imageUtils';
@@ -251,7 +251,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         }}
           className="w-full px-2 py-1.5 text-left text-sm text-brand-cyan hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md font-semibold"
         >
-          <Wand2 size={16} className="text-brand-cyan flex-shrink-0" />
+          <Diamond size={16} className="text-brand-cyan flex-shrink-0" />
           <span className="text-[11px] tracking-wide flex-1 text-left">Edit with Prompt</span>
         </Button>
 

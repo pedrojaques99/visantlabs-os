@@ -19,6 +19,7 @@ export type FeedbackFeature =
   | 'brand-intelligence'
   | 'node-builder'
   | 'chat'
+  | 'admin-chat'
   | 'image-gen';
 
 /**

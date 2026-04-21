@@ -508,25 +508,31 @@ export const useCreativeStore = create<CreativeStore>()(
     {
       name: 'vsn-creative-setup-cache',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
-        brandId: state.brandId,
-        prompt: state.prompt,
-        format: state.format,
-        backgroundMode: state.backgroundMode,
-        uploadedBackgroundUrl: state.uploadedBackgroundUrl,
-        modelId: state.modelId,
-        provider: state.provider,
-        resolution: state.resolution,
-        // Editor state — survives refresh until cloud save completes
-        status: state.status,
-        creativeId: state.creativeId,
-        projectName: state.projectName,
-        backgroundUrl: state.backgroundUrl,
-        overlay: state.overlay,
-        layers: state.layers,
-        pages: state.pages,
-        activePageIndex: state.activePageIndex,
-      }),
+      partialize: (state) => {
+        // Blob URLs (blob:... from URL.createObjectURL) die with the page — persisting
+        // them causes ERR_FILE_NOT_FOUND on reload. Drop them; the user re-uploads.
+        const dropBlob = (u: string | null | undefined) =>
+          u && u.startsWith('blob:') ? null : u ?? null;
+        return {
+          brandId: state.brandId,
+          prompt: state.prompt,
+          format: state.format,
+          backgroundMode: state.backgroundMode,
+          uploadedBackgroundUrl: dropBlob(state.uploadedBackgroundUrl),
+          modelId: state.modelId,
+          provider: state.provider,
+          resolution: state.resolution,
+          // Editor state — survives refresh until cloud save completes
+          status: state.status,
+          creativeId: state.creativeId,
+          projectName: state.projectName,
+          backgroundUrl: dropBlob(state.backgroundUrl),
+          overlay: state.overlay,
+          layers: state.layers,
+          pages: state.pages,
+          activePageIndex: state.activePageIndex,
+        };
+      },
     }
   )
 );

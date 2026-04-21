@@ -12,7 +12,7 @@ import { MicroTitle } from '../ui/MicroTitle';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Sparkles, MessageSquare, Share2 } from 'lucide-react';
+import { Diamond, MessageSquare, Share2 } from 'lucide-react';
 import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { useMockup } from '@/hooks/useMockup';
 import { MockupCard } from './MockupCard';
@@ -338,7 +338,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               onChange={(e) => mockupContext.setInstructions(e.target.value)}
             />
             <div className="absolute bottom-3 right-3 flex items-center gap-2 pointer-events-none">
-              <Sparkles size={12} className="text-brand-cyan opacity-40" />
+              <Diamond size={12} className="text-brand-cyan opacity-40" />
               <span className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest">Context Engine Active</span>
             </div>
           </div>

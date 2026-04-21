@@ -112,7 +112,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                     icon={MessageSquare}
                     title={t('canvasNodes.chatNode.title')}
                     selected={isSelected}
-                    className="p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm node-margin-0"
+                    className="p-6 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm node-margin-0"
                 >
                     <div className="flex items-center gap-4">
                         <ModelSelector
@@ -157,7 +157,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 )}
 
                 {/* Messages */}
-                <div ref={messagesAreaRef} className="flex-1 p-4 overflow-y-auto space-y-4 scroll-smooth">
+                <div ref={messagesAreaRef} className="flex-1 p-8 overflow-y-auto space-y-8 scroll-smooth">
                     {messages.length === 0 ? (
                         <div className="text-center py-12 text-neutral-500">
                             <MessageSquare size={32} className="mx-auto mb-4 opacity-40" />
@@ -174,6 +174,8 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                                 onCreateNode={nodeData.onCreateNode}
                                 t={t}
                                 showAvatar={false}
+                                generationId={msg.generationId}
+                                feature="chat"
                             />
                         ))
                     )}
@@ -181,7 +183,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 </div>
 
                 {/* Context & Input */}
-                <div className="p-4 border-t border-neutral-700/30 bg-neutral-900/60 backdrop-blur-sm space-y-3">
+                <div className="p-8 border-t border-neutral-700/30 bg-neutral-900/60 backdrop-blur-sm space-y-5">
                     {hasContext && (
                         <div className="flex items-center justify-between pb-3 border-b border-neutral-700/20">
                             <div className="flex gap-2">

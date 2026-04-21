@@ -187,7 +187,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         placeholder={t('canvasNodes.promptNode.selectModel') || 'Select Model'}
         className={cn(
           type === 'chat' && "!bg-transparent border-white/5 hover:border-white/10 !px-2 !py-0.5 h-auto",
-          type === 'chat' && "text-[10px] font-mono tracking-wider opacity-60 hover:opacity-100 transition-opacity",
+          type === 'chat' && "text-xs opacity-70 hover:opacity-100 transition-opacity",
           className
         )}
       />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, FileText, ChevronDown, ChevronUp, Edit, Pickaxe, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, MapPin, RefreshCw, Pencil, Heart, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { X, FileText, ChevronDown, ChevronUp, Edit, Pickaxe, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, MapPin, RefreshCw, Pencil, Heart, ThumbsUp, ThumbsDown, Download } from 'lucide-react';
 import type { Mockup } from '../services/mockupApi';
 import { getImageUrl, isSafeUrl } from '@/utils/imageUtils';
 import { translateTag } from '@/utils/localeUtils';
@@ -128,6 +128,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
   const [showReImaginePanel, setShowReImaginePanel] = useState(false);
   const [localIsLiked, setLocalIsLiked] = useState(isLiked);
   const [isConvertingImage, setIsConvertingImage] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Sync local liked state with prop
   useEffect(() => {
@@ -154,6 +155,30 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
         onLikeStateChange(newLikedState);
       }
       onToggleLike();
+    }
+  };
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    if (!safeImageUrl || isDownloading) return;
+    e.stopPropagation();
+    setIsDownloading(true);
+    try {
+      const response = await fetch(safeImageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `visant-image-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Fallback
+      window.open(safeImageUrl, '_blank');
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -355,6 +380,17 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
             {/* Like + Feedback buttons - top right corner */}
             <div className="absolute top-4 right-4 flex items-center gap-2 z-30">
+              {/* Download Button */}
+              {hasImage && !isLoading && (
+                <Button variant="ghost" onClick={handleDownload}
+                  disabled={isDownloading}
+                  className="p-2 rounded-md bg-neutral-950/70 text-neutral-400 hover:text-white hover:bg-neutral-950/60 transition-all backdrop-blur-sm border border-white/5"
+                  title={t('common.download') || "Download"}
+                >
+                  {isDownloading ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
+                </Button>
+              )}
+
               {/* RAG Feedback (thumbs up/down) */}
               {generationId && (
                 <div className="flex items-center gap-1 rounded-lg bg-neutral-950/70 backdrop-blur-sm border border-white/5 p-1">

@@ -16,7 +16,7 @@ export function withTelemetry<F extends (env: Envelope) => Promise<Result>>(
       op: env.op,
       ms: r.ms,
       ok: r.ok,
-      errorCode: r.ok ? undefined : r.error.code,
+      errorCode: 'error' in r ? r.error.code : undefined,
       t: Date.now(),
     });
     return r;

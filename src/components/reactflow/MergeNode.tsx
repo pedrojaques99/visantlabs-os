@@ -1,6 +1,6 @@
 import React, { useState, memo, useEffect, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, type Node, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Wrench, Wand2, Diamond } from 'lucide-react';
+import { Wrench, Diamond } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { MergeNodeData } from '@/types/reactFlow';
@@ -195,7 +195,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
-                  <Wand2 size={14} className="group-hover/prompt:rotate-12 transition-transform" />
+                  <Diamond size={14} className="group-hover/prompt:rotate-12 transition-transform" />
                   <span className="font-semibold tracking-tight">{t('canvasNodes.mergeNode.generatePrompt') || 'Generate Prompt'}</span>
                 </div>
               )}
@@ -229,9 +229,9 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
             variant="node"
             selectedModel={model}
             onModelChange={(newModel, provider) => {
-              setModel(newModel);
+              setModel(newModel as GeminiModel | SeedreamModel);
               if (data.onUpdateData) {
-                data.onUpdateData(id, { model: newModel, provider });
+                data.onUpdateData(id, { model: newModel as GeminiModel | SeedreamModel, provider });
               }
             }}
             disabled={isLoading || isGeneratingPrompt}

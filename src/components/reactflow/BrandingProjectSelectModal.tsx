@@ -191,7 +191,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
           <Button variant="ghost" onClick={onClose}
             className="px-4 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 rounded-md text-sm font-mono transition-colors"
           >
-            {t('canvasNodes.brandingProjectSelectModal.cancel') || 'Cancel'}
+            {t('common.cancel') || 'Cancel'}
           </Button>
         </div>
       </div>

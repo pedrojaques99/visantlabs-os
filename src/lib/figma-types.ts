@@ -730,7 +730,7 @@ export interface BrandGuideline {
   logos?: Array<{
     id: string
     url: string
-    variant: 'primary' | 'dark' | 'light' | 'icon' | 'custom'
+    variant: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom'
     label?: string
   }>
   colors?: BrandGuidelineColor[]
@@ -774,6 +774,15 @@ export interface BrandGuideline {
   updatedAt?: string
   orderedBlocks?: string[]
   activeSections?: string[]
+  // Knowledge base (files ingested via admin chat, feeds RAG for this brand)
+  knowledgeFiles?: Array<{
+    id: string
+    fileName: string
+    source: 'pdf' | 'image' | 'url' | 'text'
+    vectorIds: string[]
+    addedByUserId: string
+    addedAt: string
+  }>
   // Organization
   folder?: string
   // Public sharing
@@ -918,7 +927,8 @@ export type UIMessage =
   // Export & Illustrator
   | { type: 'ILLUSTRATOR_EXPORT' }
   | { type: 'COPY_ILLUSTRATOR_CODE' }
-  | { type: 'IMPORT_SELECTION_COMPONENTS' };
+  | { type: 'IMPORT_SELECTION_COMPONENTS' }
+  | { type: 'GET_SELECTION_FILL' };
 
 // ── Sandbox → UI messages ──
 

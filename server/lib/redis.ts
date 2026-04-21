@@ -10,7 +10,16 @@ const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
   lazyConnect: true,
 });
 
+// Throttle noisy repeated errors (same message fires on every reconnect attempt
+// and every queued command after connection is down). One log per minute per message.
+const lastLoggedAt = new Map<string, number>();
+const LOG_THROTTLE_MS = 60_000;
 redis.on('error', (err) => {
+  const key = err.message;
+  const now = Date.now();
+  const prev = lastLoggedAt.get(key) ?? 0;
+  if (now - prev < LOG_THROTTLE_MS) return;
+  lastLoggedAt.set(key, now);
   console.warn('[Redis] Connection failed, graceful degradation enabled', err.message);
 });
 

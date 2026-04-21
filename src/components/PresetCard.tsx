@@ -222,7 +222,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                   onEdit?.();
                 }}
                   className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300"
-                  title={t('communityPresets.actions.edit')}
+                  title={t('common.edit')}
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>
@@ -235,7 +235,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                   onEdit?.();
                 }}
                   className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300"
-                  title={t('communityPresets.actions.edit')}
+                  title={t('common.edit')}
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>
@@ -246,7 +246,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                   onDelete?.();
                 }}
                   className="p-1.5 text-neutral-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-300"
-                  title={t('communityPresets.actions.delete')}
+                  title={t('common.delete')}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

@@ -18,6 +18,7 @@ const getAuthHeaders = () => {
 export interface ExpertChatMessage {
     role: 'user' | 'model';
     parts: { text: string }[];
+    generationId?: string;
 }
 
 export const expertApi = {

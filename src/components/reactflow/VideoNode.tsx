@@ -276,7 +276,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       if (index === 1) return t('canvasNodes.videoNode.inputVideo') || 'Input Video';
     }
     if (mode === GenerationMode.REFERENCES) {
-      return `${t('canvasNodes.videoNode.reference') || 'Reference'} ${index}`;
+      return `${t('common.reference') || 'Reference'} ${index}`;
     }
     return `${t('canvasNodes.videoNode.input') || 'Input'} ${index}`;
   }, [mode, t]);

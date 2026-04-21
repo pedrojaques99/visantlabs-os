@@ -64,7 +64,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
   if (isEditing) {
     return (
       <div className="flex items-center gap-1 opacity-300 transition-opacity duration-200">
-        <Tooltip content={t('branding.save') || 'Save'} position="top">
+        <Tooltip content={t('common.save') || 'Save'} position="top">
           <Button variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
@@ -130,7 +130,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
         </Tooltip>
       )}
       {canEdit && (
-        <Tooltip content={t('branding.edit') || 'Edit'} position="top">
+        <Tooltip content={t('common.edit') || 'Edit'} position="top">
           <Button variant="ghost"
             onClick={(e) => {
               e.stopPropagation();

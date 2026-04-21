@@ -214,6 +214,61 @@ export async function hasSeedreamApiKey(): Promise<boolean> {
   }
 }
 
+// ═══ LLM Preferences (Gemini vs Ollama) ═══
+
+export interface LlmPreferences {
+  llmProvider: 'gemini' | 'ollama';
+  ollamaUrl: string;
+  ollamaModel: string;
+}
+
+export async function getLlmPreferences(): Promise<LlmPreferences> {
+  const token = authService.getToken();
+  if (!token) return { llmProvider: 'gemini', ollamaUrl: '', ollamaModel: '' };
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/settings/llm-preferences`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) return { llmProvider: 'gemini', ollamaUrl: '', ollamaModel: '' };
+    const data = await response.json();
+    return {
+      llmProvider: data.llmProvider === 'ollama' ? 'ollama' : 'gemini',
+      ollamaUrl: data.ollamaUrl || '',
+      ollamaModel: data.ollamaModel || '',
+    };
+  } catch {
+    return { llmProvider: 'gemini', ollamaUrl: '', ollamaModel: '' };
+  }
+}
+
+export async function saveLlmPreferences(prefs: Partial<LlmPreferences>): Promise<LlmPreferences> {
+  const token = authService.getToken();
+  if (!token) throw new Error('Authentication required');
+
+  const response = await fetch(`${API_BASE_URL}/users/settings/llm-preferences`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(prefs),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Failed to save LLM preferences' }));
+    throw new Error(errorData.error || errorData.message || 'Failed to save LLM preferences');
+  }
+
+  const data = await response.json();
+  return {
+    llmProvider: data.llmProvider === 'ollama' ? 'ollama' : 'gemini',
+    ollamaUrl: data.ollamaUrl || '',
+    ollamaModel: data.ollamaModel || '',
+  };
+}
+
 // ═══ Figma Token ═══
 
 export async function saveFigmaToken(figmaToken: string): Promise<{ figmaUser: { id: string; email: string; handle: string } }> {

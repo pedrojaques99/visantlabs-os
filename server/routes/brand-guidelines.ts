@@ -12,6 +12,7 @@ import { mergeBrandGuidelines } from '../lib/brand-merge.js'
 import { uploadBrandMedia, deleteImage } from '../services/r2Service.js'
 import { brandSharedService } from '../services/brandSharedService.js'
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js'
+import { vectorService } from '../services/vectorService.js'
 import { checkBrandCompliance, type ComplianceCheckInput } from '../services/complianceService.js'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
 import { calculateChangedFields, createSnapshot, generateChangeNote, generateDiff, formatVersionListItem } from '../lib/versionUtils.js'
@@ -1557,6 +1558,69 @@ router.post('/figma-preview-url', apiRateLimiter, authenticate, async (req: Auth
   } catch (error: any) {
     console.error('[Figma Preview URL] Error:', error)
     res.status(500).json({ error: 'Failed to fetch Figma data', message: error.message })
+  }
+})
+
+// ═══ KNOWLEDGE FILES (RAG universe for this brand) ═══
+// Files are ingested by admin chat when a brandGuidelineId is linked.
+// Stored as JSON array on the guideline; vectors live in Pinecone keyed by vectorIds.
+
+interface KnowledgeFile {
+  id: string;
+  fileName: string;
+  source: 'pdf' | 'image' | 'url' | 'text';
+  vectorIds: string[];
+  addedByUserId: string;
+  addedAt: string;
+}
+
+router.get('/:id/knowledge', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true, knowledgeFiles: true },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Not found' })
+
+    const files = (guideline.knowledgeFiles as unknown as KnowledgeFile[] | null) || []
+    res.json({ files })
+  } catch (error: any) {
+    console.error('Error listing knowledge files:', error)
+    res.status(500).json({ error: 'Failed to list knowledge files' })
+  }
+})
+
+router.delete('/:id/knowledge/:fileId', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true, knowledgeFiles: true },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Not found' })
+
+    const files = (guideline.knowledgeFiles as unknown as KnowledgeFile[] | null) || []
+    const target = files.find(f => f.id === req.params.fileId)
+    if (!target) return res.status(404).json({ error: 'Knowledge file not found' })
+
+    // Best-effort delete from Pinecone (don't fail the whole op if one vector deletion errors)
+    await Promise.allSettled(
+      (target.vectorIds || []).map(vid => vectorService.delete(vid))
+    )
+
+    const remaining = files.filter(f => f.id !== req.params.fileId)
+    await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { knowledgeFiles: remaining as any },
+    })
+
+    res.json({ success: true, remaining: remaining.length })
+  } catch (error: any) {
+    console.error('Error deleting knowledge file:', error)
+    res.status(500).json({ error: 'Failed to delete knowledge file' })
   }
 })
 

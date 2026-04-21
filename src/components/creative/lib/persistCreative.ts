@@ -46,12 +46,19 @@ export async function updateCreativeFromStore(
  * and do not emit a spurious ai_generate event.
  */
 export function loadCreativeIntoStore(project: CreativeProject) {
-  // If loading a project without pages (legacy), wrap it in a page
+  // Server may persist `layers` as a JSON string (adminChatTools creates with
+  // JSON.stringify([])). Normalize to array so the editor doesn't blow up.
+  const layers = Array.isArray(project.layers)
+    ? project.layers
+    : (typeof project.layers === 'string'
+        ? (JSON.parse(project.layers || '[]') as typeof project.layers)
+        : []);
+
   const pages = project.pages || [
     {
       id: 'page_1',
       format: project.format,
-      layers: project.layers,
+      layers,
       backgroundUrl: project.backgroundUrl,
       overlay: project.overlay,
     },
@@ -65,10 +72,13 @@ export function loadCreativeIntoStore(project: CreativeProject) {
     projectName: project.name,
     backgroundUrl: project.backgroundUrl,
     overlay: project.overlay,
-    layers: project.layers,
+    layers,
     pages: pages as any,
     activePageIndex: project.activePageIndex || 0,
     selectedLayerIds: [],
     status: 'editing',
+    // Sync setup-sidebar fields so background is visible if user hits "Gerar Novo"
+    uploadedBackgroundUrl: project.backgroundUrl,
+    backgroundMode: project.backgroundUrl ? 'upload' : 'ai',
   });
 }

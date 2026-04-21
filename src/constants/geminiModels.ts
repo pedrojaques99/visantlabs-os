@@ -87,18 +87,6 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     inputTokenLimit: 1_000_000,
     providerDomain: 'google.com',
   },
-  [GEMINI_MODELS.PRO_2_0]: {
-    label: 'Gemini 2.0 Pro',
-    emoji: '🧠',
-    maxHandles: 4,
-    maxRefImages: 5,
-    defaultResolution: undefined,
-    supportsImageConfig: false,
-    supportsThinking: true,
-    supportsSearchGrounding: true,
-    inputTokenLimit: 2_000_000,
-    providerDomain: 'google.com',
-  },
   [GEMINI_MODELS.FLASH_2_5]: {
     label: 'Nano Banana 1',
     emoji: '🍌',

@@ -36,10 +36,18 @@ export function useDeleteGuideline() {
   });
 }
 
+export interface BrandIngestPayload {
+  source: 'pdf' | 'images' | 'url' | string;
+  url?: string;
+  data?: string;
+  images?: string[];
+  filename?: string;
+}
+
 export function useIngestGuideline() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: { source: string; url?: string } }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: BrandIngestPayload }) =>
       brandGuidelineApi.ingest(id, payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.all });

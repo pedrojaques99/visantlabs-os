@@ -131,7 +131,7 @@ export function createClient(opts: ClientOptions): Client {
     };
     const channel = ROUTE[op];
     const result = channel === 'http' ? await viaHttp(env) : await viaFigma(env);
-    if (!result.ok) {
+    if ('error' in result) {
       const err = new Error(result.error.message);
       (err as any).code = result.error.code;
       throw err;

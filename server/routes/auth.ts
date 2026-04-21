@@ -100,7 +100,7 @@ const processReferralRewards = async (newUserId: string, referralCode?: string) 
 
   try {
     // Find the referrer by code
-    const referrer = await prisma.user.findUnique({
+    const referrer = await prisma.user.findFirst({
       where: { referralCode },
       select: { id: true, monthlyCredits: true, totalCreditsEarned: true },
     });

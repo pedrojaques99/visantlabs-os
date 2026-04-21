@@ -292,7 +292,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                         onClick={onClose}
                         className="px-4 py-2 bg-transparent hover:bg-neutral-800 border border-neutral-700 rounded-md text-neutral-300 text-sm transition-colors"
                     >
-                        {t('canvasNodes.savePromptModal.cancel') || 'Cancel'}
+                        {t('common.cancel') || 'Cancel'}
                     </Button>
                     <Button variant="brand"
                         onClick={handleSave}
