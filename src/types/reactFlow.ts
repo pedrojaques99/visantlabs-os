@@ -715,6 +715,7 @@ export interface ChatNodeData extends BaseNodeData {
     role: 'user' | 'assistant';
     content: string;
     timestamp: number;
+    generationId?: string;
     contextUsed?: {
       hasImages: boolean;
       hasStrategyData: boolean;

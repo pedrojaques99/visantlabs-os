@@ -1,26 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import {
-  Image as ImageIcon,
-  Camera,
-  Palette,
-  FileText,
-  Target,
-  Dna,
-  Upload,
-  FileText as FileTextIcon,
-  MessageSquare,
-  ChevronLeft,
-  ChevronRight,
-  Layers,
-  Wand2,
-  Building2,
-  Plus,
-  Grid3x3,
-  Pickaxe,
-  X,
-  Compass,
-  Blocks,
-} from 'lucide-react';
+import { Image as ImageIcon, Camera, Palette, FileText, Target, Dna, Upload, FileText as FileTextIcon, MessageSquare, ChevronLeft, ChevronRight, Layers, Diamond, Building2, Plus, Grid3x3, Pickaxe, X, Compass, Blocks,  } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/utils';
@@ -482,7 +461,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
               <Section
                 title={t('canvasToolbar.categories.core')}
                 tools={coreTools}
-                icon={<Wand2 size={12} />}
+                icon={<Diamond size={12} />}
               />
             )}
 

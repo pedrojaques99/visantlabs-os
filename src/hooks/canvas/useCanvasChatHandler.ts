@@ -326,12 +326,14 @@ export const useCanvasChatHandler = ({
       // Call chat service with custom system prompt if available
       const response = await sendChatMessage(apiMessages, context, undefined, chatData.systemPrompt);
 
-      // Add assistant response
+      // Add assistant response (client-side generationId — canvas chat calls Gemini
+      // directly from the browser, so there's no server round-trip to mint one).
       const assistantMessage = {
         id: `msg-${Date.now()}-assistant`,
         role: 'assistant' as const,
         content: response,
         timestamp: Date.now(),
+        generationId: (globalThis.crypto?.randomUUID?.() ?? `gen-${Date.now()}-${Math.random().toString(36).slice(2)}`),
       };
 
       // Limit history to last 20 messages to prevent payload issues

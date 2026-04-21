@@ -18,6 +18,7 @@ export const CACHE_TTL = {
   FIGMA_GEN: 60 * 60,                // 1h — figma canvas context volatile
   IMAGE_SEARCH: 7 * 24 * 60 * 60,    // 7d — image search results
   INSTAGRAM: 24 * 60 * 60,           // 24h — instagram extractions
+  ADMIN_CHAT_SESSION: 60 * 60,       // 1h — session hot cache (invalidated on save)
 } as const;
 
 export function hashQuery(text: string, extra?: string): string {
@@ -79,6 +80,10 @@ export const CacheKey = {
   // P2: Figma
   figmaGen: (userId: string, hash: string) =>
     `figma:gen:${userId}:${hash}`,
+
+  // Admin chat sessions
+  adminChatSession: (sessionId: string) =>
+    `admin-chat:session:${sessionId}`,
 } as const;
 
 export const CacheInvalidation = {

@@ -598,7 +598,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               setShowDeleteModal(true);
             }}
               className="bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-colors backdrop-blur-sm border border-red-500/30"
-              title={t('canvasNodes.imageNode.delete')}
+              title={t('common.delete')}
               onMouseDown={(e) => e.stopPropagation()}
             >
               <Trash2 size={12} strokeWidth={2} />
@@ -668,8 +668,8 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
         }}
         title={t('canvasNodes.imageNode.deleteMockup')}
         message={t('canvasNodes.imageNode.deleteMockupMessage')}
-        confirmText={t('canvasNodes.imageNode.deleteButton')}
-        cancelText={t('canvasNodes.imageNode.cancelButton')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         variant="danger"
       />
     </NodeContainer>

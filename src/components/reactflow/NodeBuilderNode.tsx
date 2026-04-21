@@ -1,10 +1,7 @@
 import React, { useState, useRef, useEffect, memo, useCallback } from 'react';
+import { useAutoScrollToBottom } from '@/hooks/chat/useAutoScrollToBottom';
 import { type NodeProps } from '@xyflow/react';
-import {
-  Blocks, Diamond, CheckCircle2, RotateCcw, Send,
-  Wand2, Grid3x3, GitBranch, Zap, MessageSquare, Plus,
-  ChevronRight, Brain, Cpu, Layers
-} from 'lucide-react';
+import { Blocks, Diamond, CheckCircle2, RotateCcw, Send, Grid3x3, GitBranch, Zap, MessageSquare, Plus, ChevronRight, Brain, Cpu, Layers } from 'lucide-react';
 
 const PROCESSING_STEPS = [
   { icon: Brain, label: 'ANALYZING INTENT...' },
@@ -35,7 +32,7 @@ const CATEGORIES = [
   {
     id: 'trans',
     name: 'Transform',
-    icon: Wand2,
+    icon: Diamond,
     color: '#a855f7',
     hints: [
       'Apply a futuristic VHS glitch',
@@ -72,7 +69,6 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
   const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const isLoading = nodeData.isLoading ?? false;
@@ -80,9 +76,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
   const pendingDefinition = nodeData.pendingDefinition;
   const [processingStep, setProcessingStep] = useState(0);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages.length, isLoading]);
+  const messagesEndRef = useAutoScrollToBottom<HTMLDivElement>([messages.length, isLoading]);
 
   useEffect(() => {
     if (!isLoading) { setProcessingStep(0); return; }

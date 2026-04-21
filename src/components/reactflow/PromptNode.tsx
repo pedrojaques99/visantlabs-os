@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Position, type NodeProps, useReactFlow, NodeResizer, useNodes } from '@xyflow/react';
-import { Pickaxe, Image as ImageIcon, Wand2, Save, BookOpen, Palette, Diamond, Settings, ChevronRight } from 'lucide-react';
+import { Pickaxe, Image as ImageIcon, Diamond, Save, BookOpen, Palette, Settings, ChevronRight } from 'lucide-react';
 import { SeedControl } from './shared/SeedControl';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { PromptNodeData } from '@/types/reactFlow';
@@ -605,7 +605,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 {isSuggestingPrompts ? (
                   <GlitchLoader size={14} color="currentColor" />
                 ) : (
-                  <Wand2 size={14} />
+                  <Diamond size={14} />
                 )}
               </NodeButton>
             </Tooltip>
@@ -652,9 +652,9 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           variant="node"
           selectedModel={model}
           onModelChange={(newModel, provider) => {
-            setModel(newModel);
+            setModel(newModel as GeminiModel | SeedreamModel);
             if (nodeData.onUpdateData) {
-              nodeData.onUpdateData(id, { model: newModel, provider });
+              nodeData.onUpdateData(id, { model: newModel as GeminiModel | SeedreamModel, provider });
             }
           }}
           resolution={resolution}

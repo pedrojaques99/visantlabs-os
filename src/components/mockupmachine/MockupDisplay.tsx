@@ -66,6 +66,7 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
   creditsPerOperation,
   isSidebarCollapsed = false,
   generationIds,
+  isGeneratingPrompt,
   feedbackContext,
   feedbackRatings,
   onFeedbackRatingChange,

@@ -607,9 +607,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               variant="node"
               selectedModel={model}
               onModelChange={(newModel, provider) => {
-                setModel(newModel);
+                setModel(newModel as GeminiModel | SeedreamModel);
                 if (data.onUpdateData) {
-                  data.onUpdateData(id, { model: newModel, provider });
+                  data.onUpdateData(id, { model: newModel as GeminiModel | SeedreamModel, provider });
                 }
               }}
               resolution={resolution}

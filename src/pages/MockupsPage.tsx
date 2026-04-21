@@ -278,7 +278,7 @@ export const MockupsPage: React.FC = () => {
     <div className="relative flex-shrink-0">
       <Button variant="ghost" onClick={() => setShowSearch(!showSearch)}
         className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-950/20"
-        title={t('mockupsPage.search')}
+        title={t('common.search')}
       >
         <Search size={22} />
       </Button>

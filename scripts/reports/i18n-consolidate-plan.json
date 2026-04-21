@@ -1,0 +1,743 @@
+{
+  "mode": "apply",
+  "targetNamespace": "common",
+  "excludedNamespaces": [
+    "tags",
+    "apps"
+  ],
+  "generatedAt": "2026-04-18T02:36:31.630Z",
+  "stats": {
+    "totalRewrites": 85,
+    "filesAffected": 33,
+    "occurrencesInSrc": 80,
+    "keysWithNoSrcUsage": 29,
+    "warnings": 16
+  },
+  "warnings": [
+    {
+      "oldKey": "admin.presetsTitle",
+      "newKey": "common.presets",
+      "reason": "last segment mismatch: presetstitle → presets"
+    },
+    {
+      "oldKey": "canvasNodes.brandCore.pleaseSelectImageFile",
+      "newKey": "common.selectImageFile",
+      "reason": "last segment mismatch: pleaseselectimagefile → selectimagefile"
+    },
+    {
+      "oldKey": "canvasNodes.brandNode.pleaseSelectImageFile",
+      "newKey": "common.selectImageFile",
+      "reason": "last segment mismatch: pleaseselectimagefile → selectimagefile"
+    },
+    {
+      "oldKey": "canvasNodes.imageNode.cancelButton",
+      "newKey": "common.cancel",
+      "reason": "last segment mismatch: cancelbutton → cancel"
+    },
+    {
+      "oldKey": "canvasNodes.imageNode.deleteButton",
+      "newKey": "common.delete",
+      "reason": "last segment mismatch: deletebutton → delete"
+    },
+    {
+      "oldKey": "canvasNodes.logoNode.pleaseSelectImageFile",
+      "newKey": "common.selectImageFile",
+      "reason": "last segment mismatch: pleaseselectimagefile → selectimagefile"
+    },
+    {
+      "oldKey": "communityPresets.messages.imageUploaded",
+      "newKey": "common.imageUploadedSuccess",
+      "reason": "last segment mismatch: imageuploaded → imageuploadedsuccess"
+    },
+    {
+      "oldKey": "communityPresets.referenceImageAlt",
+      "newKey": "common.reference",
+      "reason": "last segment mismatch: referenceimagealt → reference"
+    },
+    {
+      "oldKey": "confirmationModal.defaultCancel",
+      "newKey": "common.cancel",
+      "reason": "last segment mismatch: defaultcancel → cancel"
+    },
+    {
+      "oldKey": "designSystem.deleteConfirmation.confirm",
+      "newKey": "common.delete",
+      "reason": "last segment mismatch: confirm → delete"
+    },
+    {
+      "oldKey": "designSystem.workflows.deleteConfirmation.confirm",
+      "newKey": "common.delete",
+      "reason": "last segment mismatch: confirm → delete"
+    },
+    {
+      "oldKey": "mockup.brandWizardCancel",
+      "newKey": "common.cancel",
+      "reason": "last segment mismatch: brandwizardcancel → cancel"
+    },
+    {
+      "oldKey": "mockup.brandWizardEdit",
+      "newKey": "common.edit",
+      "reason": "last segment mismatch: brandwizardedit → edit"
+    },
+    {
+      "oldKey": "mockup.brandWizardSave",
+      "newKey": "common.save",
+      "reason": "last segment mismatch: brandwizardsave → save"
+    },
+    {
+      "oldKey": "profile.updateSuccess",
+      "newKey": "common.profileUpdatedSuccess",
+      "reason": "last segment mismatch: updatesuccess → profileupdatedsuccess"
+    },
+    {
+      "oldKey": "workflows.deleteConfirmation.confirm",
+      "newKey": "common.delete",
+      "reason": "last segment mismatch: confirm → delete"
+    }
+  ],
+  "byTarget": {
+    "common.cancel": {
+      "value": "Cancel",
+      "sources": [
+        "branding.cancel",
+        "branding.myBrandings.cancel",
+        "canvasNodes.brandingProjectSelectModal.cancel",
+        "canvasNodes.imageNode.cancelButton",
+        "canvasNodes.savePromptModal.cancel",
+        "canvasNodes.strategyNode.cancel",
+        "communityPresets.actions.cancel",
+        "confirmationModal.defaultCancel",
+        "designSystem.deleteConfirmation.cancel",
+        "designSystem.edit.cancel",
+        "designSystem.saveDialog.cancel",
+        "designSystem.workflows.deleteConfirmation.cancel",
+        "mockup.brandWizardCancel",
+        "workflows.deleteConfirmation.cancel",
+        "workflows.edit.cancel",
+        "workflows.saveDialog.cancel"
+      ]
+    },
+    "common.delete": {
+      "value": "Delete",
+      "sources": [
+        "branding.myBrandings.delete",
+        "budget.delete",
+        "canvasNodes.imageNode.delete",
+        "canvasNodes.imageNode.deleteButton",
+        "canvasNodes.nodeContextMenu.delete",
+        "communityPresets.actions.delete",
+        "designSystem.actions.delete",
+        "designSystem.deleteConfirmation.confirm",
+        "designSystem.workflows.actions.delete",
+        "designSystem.workflows.deleteConfirmation.confirm",
+        "workflows.actions.delete",
+        "workflows.deleteConfirmation.confirm"
+      ]
+    },
+    "common.edit": {
+      "value": "Edit",
+      "sources": [
+        "branding.edit",
+        "budget.edit",
+        "canvasNodes.imageNode.edit",
+        "communityPresets.actions.edit",
+        "designSystem.actions.edit",
+        "designSystem.workflows.actions.edit",
+        "mockup.brandWizardEdit",
+        "workflows.actions.edit"
+      ]
+    },
+    "common.save": {
+      "value": "Save",
+      "sources": [
+        "branding.save",
+        "canvasNodes.chatNode.save",
+        "canvasNodes.promptNode.save",
+        "canvasNodes.strategyNode.save",
+        "communityPresets.actions.save",
+        "mockup.brandWizardSave"
+      ]
+    },
+    "common.presets": {
+      "value": "Presets",
+      "sources": [
+        "admin.presets",
+        "admin.presetsTitle",
+        "canvasNodes.promptNode.presets",
+        "communityPresets.categories.presets",
+        "communityPresets.tabs.presets"
+      ]
+    },
+    "common.profile": {
+      "value": "Profile",
+      "sources": [
+        "auth.profile",
+        "profile.breadcrumb",
+        "profile.seoTitle",
+        "profile.title"
+      ]
+    },
+    "common.selectImageFile": {
+      "value": "Please select an image file",
+      "sources": [
+        "canvasNodes.brandCore.pleaseSelectImageFile",
+        "canvasNodes.brandNode.pleaseSelectImageFile",
+        "canvasNodes.logoNode.pleaseSelectImageFile",
+        "profile.selectImageFile"
+      ]
+    },
+    "common.community": {
+      "value": "Community",
+      "sources": [
+        "auth.community",
+        "designSystem.workflows.library.tabs.community",
+        "workflows.library.tabs.community"
+      ]
+    },
+    "common.search": {
+      "value": "Search",
+      "sources": [
+        "communityPresets.search.title",
+        "designSystem.commandPalette.search",
+        "mockupsPage.search"
+      ]
+    },
+    "common.loading": {
+      "value": "Loading...",
+      "sources": [
+        "creditRechargeSuccess.loading",
+        "credits.loading",
+        "pricing.loading"
+      ]
+    },
+    "common.close": {
+      "value": "Close",
+      "sources": [
+        "adminPresets.close",
+        "tutorial.close"
+      ]
+    },
+    "common.reference": {
+      "value": "Reference",
+      "sources": [
+        "canvasNodes.videoNode.reference",
+        "communityPresets.referenceImageAlt"
+      ]
+    },
+    "common.user": {
+      "value": "User",
+      "sources": [
+        "admin.user"
+      ]
+    },
+    "common.addColor": {
+      "value": "Add Color",
+      "sources": [
+        "budget.addColor"
+      ]
+    },
+    "common.failedToUploadImage": {
+      "value": "Failed to upload image",
+      "sources": [
+        "communityPresets.errors.failedToUploadImage"
+      ]
+    },
+    "common.imageUploadedSuccess": {
+      "value": "Image uploaded successfully!",
+      "sources": [
+        "communityPresets.messages.imageUploaded"
+      ]
+    },
+    "common.download": {
+      "value": "Download",
+      "sources": [
+        "mockup.download"
+      ]
+    },
+    "common.authenticationRequired": {
+      "value": "Authentication required",
+      "sources": [
+        "profile.authenticationRequired"
+      ]
+    },
+    "common.imageSizeLimit": {
+      "value": "Image too large. Limit is 5MB",
+      "sources": [
+        "profile.imageSizeLimit"
+      ]
+    },
+    "common.loadError": {
+      "value": "Failed to load profile",
+      "sources": [
+        "profile.loadError"
+      ]
+    },
+    "common.notAuthenticated": {
+      "value": "Please sign in to view your profile",
+      "sources": [
+        "profile.notAuthenticated"
+      ]
+    },
+    "common.pictureUploadError": {
+      "value": "Failed to upload profile picture",
+      "sources": [
+        "profile.pictureUploadError"
+      ]
+    },
+    "common.pictureUploadSuccess": {
+      "value": "Profile picture updated successfully",
+      "sources": [
+        "profile.pictureUploadSuccess"
+      ]
+    },
+    "common.subtitle": {
+      "value": "Manage your account and subscription",
+      "sources": [
+        "profile.subtitle"
+      ]
+    },
+    "common.tabs.configuration": {
+      "value": "Configuration",
+      "sources": [
+        "profile.tabs.configuration"
+      ]
+    },
+    "common.tabs.history": {
+      "value": "History",
+      "sources": [
+        "profile.tabs.history"
+      ]
+    },
+    "common.tabs.overview": {
+      "value": "Dashboard",
+      "sources": [
+        "profile.tabs.overview"
+      ]
+    },
+    "common.profileUpdatedSuccess": {
+      "value": "Profile updated successfully",
+      "sources": [
+        "profile.updateSuccess"
+      ]
+    },
+    "common.checkoutCanceled": {
+      "value": "Checkout was canceled",
+      "sources": [
+        "subscription.checkoutCanceled"
+      ]
+    }
+  },
+  "files": {
+    "src\\components\\AuthButton.tsx": [
+      {
+        "oldKey": "auth.community",
+        "newKey": "common.community",
+        "count": 1
+      },
+      {
+        "oldKey": "auth.profile",
+        "newKey": "common.profile",
+        "count": 1
+      }
+    ],
+    "src\\components\\branding\\SectionActions.tsx": [
+      {
+        "oldKey": "branding.edit",
+        "newKey": "common.edit",
+        "count": 1
+      },
+      {
+        "oldKey": "branding.save",
+        "newKey": "common.save",
+        "count": 1
+      }
+    ],
+    "src\\components\\budget\\BudgetTemplateSelector.tsx": [
+      {
+        "oldKey": "budget.delete",
+        "newKey": "common.delete",
+        "count": 2
+      },
+      {
+        "oldKey": "budget.edit",
+        "newKey": "common.edit",
+        "count": 2
+      }
+    ],
+    "src\\components\\canvas\\ChatSidebar.tsx": [
+      {
+        "oldKey": "canvasNodes.chatNode.save",
+        "newKey": "common.save",
+        "count": 1
+      }
+    ],
+    "src\\components\\CommunityPresetModal.tsx": [
+      {
+        "oldKey": "communityPresets.actions.cancel",
+        "newKey": "common.cancel",
+        "count": 1
+      },
+      {
+        "oldKey": "communityPresets.actions.save",
+        "newKey": "common.save",
+        "count": 1
+      },
+      {
+        "oldKey": "communityPresets.errors.failedToUploadImage",
+        "newKey": "common.failedToUploadImage",
+        "count": 2
+      },
+      {
+        "oldKey": "communityPresets.messages.imageUploaded",
+        "newKey": "common.imageUploadedSuccess",
+        "count": 1
+      },
+      {
+        "oldKey": "communityPresets.referenceImageAlt",
+        "newKey": "common.reference",
+        "count": 1
+      }
+    ],
+    "src\\components\\ConfirmationModal.tsx": [
+      {
+        "oldKey": "confirmationModal.defaultCancel",
+        "newKey": "common.cancel",
+        "count": 1
+      }
+    ],
+    "src\\components\\EditProfilePage.tsx": [
+      {
+        "oldKey": "profile.loadError",
+        "newKey": "common.loadError",
+        "count": 2
+      },
+      {
+        "oldKey": "profile.notAuthenticated",
+        "newKey": "common.notAuthenticated",
+        "count": 1
+      },
+      {
+        "oldKey": "profile.updateSuccess",
+        "newKey": "common.profileUpdatedSuccess",
+        "count": 1
+      }
+    ],
+    "src\\components\\mockupmachine\\BrandGuidelineWizardModal.tsx": [
+      {
+        "oldKey": "mockup.brandWizardCancel",
+        "newKey": "common.cancel",
+        "count": 1
+      },
+      {
+        "oldKey": "mockup.brandWizardSave",
+        "newKey": "common.save",
+        "count": 1
+      }
+    ],
+    "src\\components\\mockupmachine\\MockupCard.tsx": [
+      {
+        "oldKey": "mockup.download",
+        "newKey": "common.download",
+        "count": 1
+      }
+    ],
+    "src\\components\\PresetCard.tsx": [
+      {
+        "oldKey": "communityPresets.actions.delete",
+        "newKey": "common.delete",
+        "count": 1
+      },
+      {
+        "oldKey": "communityPresets.actions.edit",
+        "newKey": "common.edit",
+        "count": 2
+      }
+    ],
+    "src\\components\\profile\\ProfileOverview.tsx": [
+      {
+        "oldKey": "profile.title",
+        "newKey": "common.profile",
+        "count": 1
+      }
+    ],
+    "src\\components\\reactflow\\BrandingProjectSelectModal.tsx": [
+      {
+        "oldKey": "canvasNodes.brandingProjectSelectModal.cancel",
+        "newKey": "common.cancel",
+        "count": 1
+      }
+    ],
+    "src\\components\\reactflow\\contextmenu\\NodeContextMenu.tsx": [
+      {
+        "oldKey": "canvasNodes.nodeContextMenu.delete",
+        "newKey": "common.delete",
+        "count": 1
+      }
+    ],
+    "src\\components\\reactflow\\contextmenu\\PromptContextMenu.tsx": [
+      {
+        "oldKey": "canvasNodes.nodeContextMenu.delete",
+        "newKey": "common.delete",
+        "count": 1
+      }
+    ],
+    "src\\components\\reactflow\\ImageNode.tsx": [
+      {
+        "oldKey": "canvasNodes.imageNode.cancelButton",
+        "newKey": "common.cancel",
+        "count": 1
+      },
+      {
+        "oldKey": "canvasNodes.imageNode.deleteButton",
+        "newKey": "common.delete",
+        "count": 1
+      }
+    ],
+    "src\\components\\reactflow\\OutputNode.tsx": [
+      {
+        "oldKey": "canvasNodes.imageNode.cancelButton",
+        "newKey": "common.cancel",
+        "count": 1
+      },
+      {
+        "oldKey": "canvasNodes.imageNode.deleteButton",
+        "newKey": "common.delete",
+        "count": 1
+      }
+    ],
+    "src\\components\\reactflow\\SavePromptModal.tsx": [
+      {
+        "oldKey": "canvasNodes.savePromptModal.cancel",
+        "newKey": "common.cancel",
+        "count": 1
+      }
+    ],
+    "src\\components\\reactflow\\StrategyNode.tsx": [
+      {
+        "oldKey": "canvasNodes.strategyNode.cancel",
+        "newKey": "common.cancel",
+        "count": 1
+      },
+      {
+        "oldKey": "canvasNodes.strategyNode.save",
+        "newKey": "common.save",
+        "count": 1
+      }
+    ],
+    "src\\components\\reactflow\\UpscaleBicubicNode.tsx": [
+      {
+        "oldKey": "canvasNodes.imageNode.cancelButton",
+        "newKey": "common.cancel",
+        "count": 1
+      },
+      {
+        "oldKey": "canvasNodes.imageNode.delete",
+        "newKey": "common.delete",
+        "count": 1
+      },
+      {
+        "oldKey": "canvasNodes.imageNode.deleteButton",
+        "newKey": "common.delete",
+        "count": 1
+      }
+    ],
+    "src\\components\\reactflow\\VideoNode.tsx": [
+      {
+        "oldKey": "canvasNodes.videoNode.reference",
+        "newKey": "common.reference",
+        "count": 1
+      }
+    ],
+    "src\\components\\Tutorial.tsx": [
+      {
+        "oldKey": "tutorial.close",
+        "newKey": "common.close",
+        "count": 1
+      }
+    ],
+    "src\\components\\WorkflowCard.tsx": [
+      {
+        "oldKey": "workflows.actions.delete",
+        "newKey": "common.delete",
+        "count": 1
+      },
+      {
+        "oldKey": "workflows.actions.edit",
+        "newKey": "common.edit",
+        "count": 1
+      }
+    ],
+    "src\\components\\WorkflowLibraryModal.tsx": [
+      {
+        "oldKey": "workflows.deleteConfirmation.cancel",
+        "newKey": "common.cancel",
+        "count": 1
+      },
+      {
+        "oldKey": "workflows.deleteConfirmation.confirm",
+        "newKey": "common.delete",
+        "count": 1
+      },
+      {
+        "oldKey": "workflows.library.tabs.community",
+        "newKey": "common.community",
+        "count": 1
+      }
+    ],
+    "src\\pages\\AdminPage.tsx": [
+      {
+        "oldKey": "admin.presets",
+        "newKey": "common.presets",
+        "count": 1
+      },
+      {
+        "oldKey": "admin.user",
+        "newKey": "common.user",
+        "count": 1
+      }
+    ],
+    "src\\pages\\AdminPresetsPage.tsx": [
+      {
+        "oldKey": "adminPresets.close",
+        "newKey": "common.close",
+        "count": 1
+      }
+    ],
+    "src\\pages\\BrandingMachinePage.tsx": [
+      {
+        "oldKey": "branding.cancel",
+        "newKey": "common.cancel",
+        "count": 1
+      }
+    ],
+    "src\\pages\\CommunityPage.tsx": [
+      {
+        "oldKey": "communityPresets.categories.presets",
+        "newKey": "common.presets",
+        "count": 1
+      }
+    ],
+    "src\\pages\\CommunityPresetsPage.tsx": [
+      {
+        "oldKey": "communityPresets.actions.cancel",
+        "newKey": "common.cancel",
+        "count": 1
+      },
+      {
+        "oldKey": "communityPresets.actions.edit",
+        "newKey": "common.edit",
+        "count": 2
+      }
+    ],
+    "src\\pages\\DesignSystemPage.tsx": [
+      {
+        "oldKey": "designSystem.commandPalette.search",
+        "newKey": "common.search",
+        "count": 1
+      }
+    ],
+    "src\\pages\\MockupsPage.tsx": [
+      {
+        "oldKey": "mockupsPage.search",
+        "newKey": "common.search",
+        "count": 1
+      }
+    ],
+    "src\\pages\\MyBrandingsPage.tsx": [
+      {
+        "oldKey": "branding.cancel",
+        "newKey": "common.cancel",
+        "count": 1
+      },
+      {
+        "oldKey": "branding.myBrandings.delete",
+        "newKey": "common.delete",
+        "count": 1
+      }
+    ],
+    "src\\pages\\MyBudgetsPage.tsx": [
+      {
+        "oldKey": "budget.delete",
+        "newKey": "common.delete",
+        "count": 2
+      },
+      {
+        "oldKey": "budget.edit",
+        "newKey": "common.edit",
+        "count": 1
+      }
+    ],
+    "src\\pages\\ProfilePage.tsx": [
+      {
+        "oldKey": "profile.authenticationRequired",
+        "newKey": "common.authenticationRequired",
+        "count": 1
+      },
+      {
+        "oldKey": "profile.breadcrumb",
+        "newKey": "common.profile",
+        "count": 1
+      },
+      {
+        "oldKey": "profile.imageSizeLimit",
+        "newKey": "common.imageSizeLimit",
+        "count": 1
+      },
+      {
+        "oldKey": "profile.loadError",
+        "newKey": "common.loadError",
+        "count": 2
+      },
+      {
+        "oldKey": "profile.notAuthenticated",
+        "newKey": "common.notAuthenticated",
+        "count": 2
+      },
+      {
+        "oldKey": "profile.pictureUploadError",
+        "newKey": "common.pictureUploadError",
+        "count": 3
+      },
+      {
+        "oldKey": "profile.pictureUploadSuccess",
+        "newKey": "common.pictureUploadSuccess",
+        "count": 1
+      },
+      {
+        "oldKey": "profile.selectImageFile",
+        "newKey": "common.selectImageFile",
+        "count": 1
+      },
+      {
+        "oldKey": "profile.seoTitle",
+        "newKey": "common.profile",
+        "count": 1
+      },
+      {
+        "oldKey": "profile.subtitle",
+        "newKey": "common.subtitle",
+        "count": 1
+      },
+      {
+        "oldKey": "profile.tabs.configuration",
+        "newKey": "common.tabs.configuration",
+        "count": 1
+      },
+      {
+        "oldKey": "profile.tabs.history",
+        "newKey": "common.tabs.history",
+        "count": 1
+      },
+      {
+        "oldKey": "profile.tabs.overview",
+        "newKey": "common.tabs.overview",
+        "count": 1
+      },
+      {
+        "oldKey": "profile.title",
+        "newKey": "common.profile",
+        "count": 1
+      }
+    ]
+  }
+}

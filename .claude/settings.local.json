@@ -142,7 +142,10 @@
       "Bash(awk '{print $NF}')",
       "Bash(npm view *)",
       "mcp__claude_ai_Context7__query-docs",
-      "Bash(awk -F\"'\" '{print $2}')"
+      "Bash(awk -F\"'\" '{print $2}')",
+      "Bash(echo \"exit: $?\")",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(awk 'NR==352,/^          <\\\\/AnimatePresence>$/' Z:/Cursor/visantlabs-os/src/pages/PublicBrandGuideline.tsx)"
     ]
   }
 }

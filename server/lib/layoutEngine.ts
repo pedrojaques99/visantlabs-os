@@ -140,7 +140,7 @@ export function resolveLayout(
       ref: 'cloned',
       sourceNodeId: template.id,
       ...(parentNodeId && { parentNodeId }),
-      overrides: { name: intent.content.title || template.name },
+      props: { name: intent.content.title || template.name },
       ...(textOverrides.length > 0 && { textOverrides }),
     };
 

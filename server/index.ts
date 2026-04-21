@@ -30,6 +30,7 @@ try {
 import { createApp } from './app.js';
 import { connectToMongoDB } from './db/mongodb.js';
 import { initPluginWebSocket } from './routes/plugin.js';
+import { initAdminChatWebSocket } from './routes/adminChat.js';
 import { initRedis } from './lib/redis.js';
 import { logger } from './lib/logger.js';
 
@@ -120,6 +121,7 @@ if (!process.env.VERCEL) {
     server.headersTimeout = 660000;
 
     initPluginWebSocket(server);
+    initAdminChatWebSocket(server);
   })();
 }
 

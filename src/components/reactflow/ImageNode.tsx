@@ -464,8 +464,10 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             context={() => ({
               imageUrl,
               prompt: mockup?.prompt,
-              tags: mockup?.tags,
-              brandingTags: mockup?.brandingTags,
+              tags: {
+                category: mockup?.tags,
+                branding: mockup?.brandingTags,
+              },
             })}
             rating={nodeData.feedbackRating ?? null}
             onRatingChange={(rating) => nodeData.onUpdateData?.(String(id), { feedbackRating: rating })}
@@ -498,8 +500,8 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         }}
         title={t('canvasNodes.imageNode.deleteMockup')}
         message={t('canvasNodes.imageNode.deleteMockupMessage')}
-        confirmText={t('canvasNodes.imageNode.deleteButton')}
-        cancelText={t('canvasNodes.imageNode.cancelButton')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         variant="danger"
       />
     </NodeContainer>

@@ -1,0 +1,1245 @@
+{
+  "mode": "apply",
+  "generatedAt": "2026-04-18T02:45:44.520Z",
+  "stats": {
+    "total": 157,
+    "dynamic": 24,
+    "resolvable": 133
+  },
+  "seed": {
+    "mockup.mediaKit.bulkDeleteSuccess": {
+      "en": "Bulk Delete Success",
+      "pt": "Bulk Delete Success",
+      "site": {
+        "file": "src\\components\\brand\\MediaKitGallery.tsx",
+        "line": 98
+      }
+    },
+    "mockup.mediaKit.bulkDeleteError": {
+      "en": "Bulk Delete Error",
+      "pt": "Bulk Delete Error",
+      "site": {
+        "file": "src\\components\\brand\\MediaKitGallery.tsx",
+        "line": 100
+      }
+    },
+    "branding.aiSuggestions": {
+      "en": "Ai Suggestions",
+      "pt": "Ai Suggestions",
+      "site": {
+        "file": "src\\components\\branding\\BrandingChatInput.tsx",
+        "line": 79
+      }
+    },
+    "branding.feedbackGiven": {
+      "en": "Feedback Given",
+      "pt": "Feedback Given",
+      "site": {
+        "file": "src\\components\\branding\\SectionActions.tsx",
+        "line": 149
+      }
+    },
+    "branding.thumbsUp": {
+      "en": "Thumbs Up",
+      "pt": "Thumbs Up",
+      "site": {
+        "file": "src\\components\\branding\\SectionActions.tsx",
+        "line": 149
+      }
+    },
+    "budget.myBudgets": {
+      "en": "My Budgets",
+      "pt": "My Budgets",
+      "site": {
+        "file": "src\\components\\budget\\BudgetTemplateSelector.tsx",
+        "line": 305
+      }
+    },
+    "canvas.assetAdded": {
+      "en": "Asset Added",
+      "pt": "Asset Added",
+      "site": {
+        "file": "src\\components\\canvas\\CanvasFlow.tsx",
+        "line": 393
+      }
+    },
+    "mockup.openMediaLibrary": {
+      "en": "Open Media Library",
+      "pt": "Open Media Library",
+      "site": {
+        "file": "src\\components\\canvas\\CanvasHeader.tsx",
+        "line": 211
+      }
+    },
+    "workflows.loadWorkflow": {
+      "en": "Load Workflow",
+      "pt": "Load Workflow",
+      "site": {
+        "file": "src\\components\\canvas\\CanvasHeader.tsx",
+        "line": 251
+      }
+    },
+    "workflows.saveWorkflow": {
+      "en": "Save Workflow",
+      "pt": "Save Workflow",
+      "site": {
+        "file": "src\\components\\canvas\\CanvasHeader.tsx",
+        "line": 259
+      }
+    },
+    "canvas.download": {
+      "en": "Download",
+      "pt": "Download",
+      "site": {
+        "file": "src\\components\\canvas\\CanvasHeader.tsx",
+        "line": 268
+      }
+    },
+    "canvas.hideGrid": {
+      "en": "Hide Grid",
+      "pt": "Hide Grid",
+      "site": {
+        "file": "src\\components\\canvas\\CanvasSettingsModal.tsx",
+        "line": 311
+      }
+    },
+    "communityPresets.searchPlaceholder": {
+      "en": "Search Placeholder",
+      "pt": "Search Placeholder",
+      "site": {
+        "file": "src\\components\\canvas\\CommunityPresetsSidebar.tsx",
+        "line": 382
+      }
+    },
+    "mockup.suggested": {
+      "en": "Suggested",
+      "pt": "Suggested",
+      "site": {
+        "file": "src\\components\\canvas\\DirectorSidePanel.tsx",
+        "line": 283
+      }
+    },
+    "canvasNodes.directorNode.analyze": {
+      "en": "Analyze",
+      "pt": "Analyze",
+      "site": {
+        "file": "src\\components\\canvas\\DirectorSidePanel.tsx",
+        "line": 578
+      }
+    },
+    "mockup.angle": {
+      "en": "Angle",
+      "pt": "Angle",
+      "site": {
+        "file": "src\\components\\canvas\\DirectorSidePanel.tsx",
+        "line": 639
+      }
+    },
+    "mockup.lighting": {
+      "en": "Lighting",
+      "pt": "Lighting",
+      "site": {
+        "file": "src\\components\\canvas\\DirectorSidePanel.tsx",
+        "line": 665
+      }
+    },
+    "mockup.effect": {
+      "en": "Effect",
+      "pt": "Effect",
+      "site": {
+        "file": "src\\components\\canvas\\DirectorSidePanel.tsx",
+        "line": 691
+      }
+    },
+    "mockup.generatedPrompt": {
+      "en": "Generated Prompt",
+      "pt": "Generated Prompt",
+      "site": {
+        "file": "src\\components\\canvas\\DirectorSidePanel.tsx",
+        "line": 760
+      }
+    },
+    "credits.noSubscription": {
+      "en": "No Subscription",
+      "pt": "No Subscription",
+      "site": {
+        "file": "src\\components\\CreditPackagesModal.tsx",
+        "line": 831
+      }
+    },
+    "workflows.edit.visibility": {
+      "en": "Visibility",
+      "pt": "Visibility",
+      "site": {
+        "file": "src\\components\\EditWorkflowModal.tsx",
+        "line": 105
+      }
+    },
+    "workflows.visibility.public": {
+      "en": "Public",
+      "pt": "Public",
+      "site": {
+        "file": "src\\components\\EditWorkflowModal.tsx",
+        "line": 116
+      }
+    },
+    "workflows.visibility.private": {
+      "en": "Private",
+      "pt": "Private",
+      "site": {
+        "file": "src\\components\\EditWorkflowModal.tsx",
+        "line": 116
+      }
+    },
+    "mockup.clearAllTags": {
+      "en": "Clear All Tags",
+      "pt": "Clear All Tags",
+      "site": {
+        "file": "src\\components\\mockupmachine\\CategoriesSection.tsx",
+        "line": 522
+      }
+    },
+    "common.hide": {
+      "en": "Hide",
+      "pt": "Hide",
+      "site": {
+        "file": "src\\components\\mockupmachine\\EssentialSidebar.tsx",
+        "line": 175
+      }
+    },
+    "common.show": {
+      "en": "Show",
+      "pt": "Show",
+      "site": {
+        "file": "src\\components\\mockupmachine\\EssentialSidebar.tsx",
+        "line": 175
+      }
+    },
+    "errors.imageUploadFailed": {
+      "en": "Image Upload Failed",
+      "pt": "Image Upload Failed",
+      "site": {
+        "file": "src\\components\\mockupmachine\\InputSection.tsx",
+        "line": 84
+      }
+    },
+    "errors.uploadFailed": {
+      "en": "Upload Failed",
+      "pt": "Upload Failed",
+      "site": {
+        "file": "src\\components\\mockupmachine\\InputSection.tsx",
+        "line": 93
+      }
+    },
+    "mockup.addInstructions": {
+      "en": "Add Instructions",
+      "pt": "Add Instructions",
+      "site": {
+        "file": "src\\components\\mockupmachine\\InputSection.tsx",
+        "line": 322
+      }
+    },
+    "mockup.collapse": {
+      "en": "Collapse",
+      "pt": "Collapse",
+      "site": {
+        "file": "src\\components\\mockupmachine\\InstructionsIdentityPanel.tsx",
+        "line": 119
+      }
+    },
+    "mockup.expand": {
+      "en": "Expand",
+      "pt": "Expand",
+      "site": {
+        "file": "src\\components\\mockupmachine\\InstructionsIdentityPanel.tsx",
+        "line": 120
+      }
+    },
+    "mockup.tags": {
+      "en": "Tags",
+      "pt": "Tags",
+      "site": {
+        "file": "src\\components\\mockupmachine\\KeywordsSection.tsx",
+        "line": 47
+      }
+    },
+    "mockup.presetSaveError": {
+      "en": "Preset Save Error",
+      "pt": "Preset Save Error",
+      "site": {
+        "file": "src\\components\\mockupmachine\\PresetsControl.tsx",
+        "line": 65
+      }
+    },
+    "mockup.presetLoaded": {
+      "en": "Preset Loaded",
+      "pt": "Preset Loaded",
+      "site": {
+        "file": "src\\components\\mockupmachine\\PresetsControl.tsx",
+        "line": 88
+      }
+    },
+    "mockup.removeInstructionHint": {
+      "en": "Remove Instruction Hint",
+      "pt": "Remove Instruction Hint",
+      "site": {
+        "file": "src\\components\\mockupmachine\\PromptSection.tsx",
+        "line": 135
+      }
+    },
+    "mockup.switchToEssential": {
+      "en": "Switch To Essential",
+      "pt": "Switch To Essential",
+      "site": {
+        "file": "src\\components\\mockupmachine\\SidebarGenerationConfig.tsx",
+        "line": 256
+      }
+    },
+    "messages.selectDesignTypeFirst": {
+      "en": "Select Design Type First",
+      "pt": "Select Design Type First",
+      "site": {
+        "file": "src\\components\\mockupmachine\\SurpriseMeControl.tsx",
+        "line": 174
+      }
+    },
+    "mockup.generatePromptFirst": {
+      "en": "Generate Prompt First",
+      "pt": "Generate Prompt First",
+      "site": {
+        "file": "src\\components\\mockupmachine\\SurpriseMeControl.tsx",
+        "line": 184
+      }
+    },
+    "mockup.generateAll": {
+      "en": "Generate All",
+      "pt": "Generate All",
+      "site": {
+        "file": "src\\components\\mockupmachine\\SurpriseMeControl.tsx",
+        "line": 185
+      }
+    },
+    "mockup.vibeTitle": {
+      "en": "Vibe Title",
+      "pt": "Vibe Title",
+      "site": {
+        "file": "src\\components\\mockupmachine\\VibeGrid.tsx",
+        "line": 90
+      }
+    },
+    "communityPresets.filters.all": {
+      "en": "All",
+      "pt": "All",
+      "site": {
+        "file": "src\\components\\MockupPresetModal.tsx",
+        "line": 417
+      }
+    },
+    "communityPresets.filters.official": {
+      "en": "Official",
+      "pt": "Official",
+      "site": {
+        "file": "src\\components\\MockupPresetModal.tsx",
+        "line": 430
+      }
+    },
+    "communityPresets.filters.community": {
+      "en": "Community",
+      "pt": "Community",
+      "site": {
+        "file": "src\\components\\MockupPresetModal.tsx",
+        "line": 443
+      }
+    },
+    "pix.paymentExpired": {
+      "en": "Payment Expired",
+      "pt": "Payment Expired",
+      "site": {
+        "file": "src\\components\\PixPaymentModal.tsx",
+        "line": 136
+      }
+    },
+    "configuration.seedreamApiKey": {
+      "en": "Seedream Api Key",
+      "pt": "Seedream Api Key",
+      "site": {
+        "file": "src\\components\\profile\\ApiSettings.tsx",
+        "line": 344
+      }
+    },
+    "configuration.seedreamPlaceholder": {
+      "en": "Seedream Placeholder",
+      "pt": "Seedream Placeholder",
+      "site": {
+        "file": "src\\components\\profile\\ApiSettings.tsx",
+        "line": 362
+      }
+    },
+    "configuration.deleteSeedream": {
+      "en": "Delete Seedream",
+      "pt": "Delete Seedream",
+      "site": {
+        "file": "src\\components\\profile\\ApiSettings.tsx",
+        "line": 533
+      }
+    },
+    "configuration.deleteSeedreamConfirm": {
+      "en": "Delete Seedream Confirm",
+      "pt": "Delete Seedream Confirm",
+      "site": {
+        "file": "src\\components\\profile\\ApiSettings.tsx",
+        "line": 534
+      }
+    },
+    "canvasNodes.brandingProjectSelectModal.searchProjectsPlaceholder": {
+      "en": "Search Projects Placeholder",
+      "pt": "Search Projects Placeholder",
+      "site": {
+        "file": "src\\components\\reactflow\\BrandingProjectSelectModal.tsx",
+        "line": 128
+      }
+    },
+    "canvasNodes.chatNode.openAsPanel": {
+      "en": "Open As Panel",
+      "pt": "Open As Panel",
+      "site": {
+        "file": "src\\components\\reactflow\\ChatNode.tsx",
+        "line": 125
+      }
+    },
+    "canvasNodes.imageNode.pleaseSelectImageFile": {
+      "en": "Please Select Image File",
+      "pt": "Please Select Image File",
+      "site": {
+        "file": "src\\components\\reactflow\\ColorExtractorNode.tsx",
+        "line": 68
+      }
+    },
+    "canvasNodes.imageNode.imageInput": {
+      "en": "Image Input",
+      "pt": "Image Input",
+      "site": {
+        "file": "src\\components\\reactflow\\ColorExtractorNode.tsx",
+        "line": 190
+      }
+    },
+    "canvasNodes.promptNode.creditsRequired": {
+      "en": "Credits Required",
+      "pt": "Credits Required",
+      "site": {
+        "file": "src\\components\\reactflow\\ColorExtractorNode.tsx",
+        "line": 246
+      }
+    },
+    "canvasNodes.imageNode.removeImage": {
+      "en": "Remove Image",
+      "pt": "Remove Image",
+      "site": {
+        "file": "src\\components\\reactflow\\ColorExtractorNode.tsx",
+        "line": 340
+      }
+    },
+    "canvasNodes.editNode.comingSoon": {
+      "en": "Coming Soon",
+      "pt": "Coming Soon",
+      "site": {
+        "file": "src\\components\\reactflow\\EditNode.tsx",
+        "line": 43
+      }
+    },
+    "canvasNodes.imageNode.canvasImage": {
+      "en": "Canvas Image",
+      "pt": "Canvas Image",
+      "site": {
+        "file": "src\\components\\reactflow\\ImageNode.tsx",
+        "line": 158
+      }
+    },
+    "canvasNodes.imageNode.failedToSaveImage": {
+      "en": "Failed To Save Image",
+      "pt": "Failed To Save Image",
+      "site": {
+        "file": "src\\components\\reactflow\\ImageNode.tsx",
+        "line": 172
+      }
+    },
+    "canvasNodes.imageNode.failedToFindCurrentNode": {
+      "en": "Failed To Find Current Node",
+      "pt": "Failed To Find Current Node",
+      "site": {
+        "file": "src\\components\\reactflow\\ImageNode.tsx",
+        "line": 222
+      }
+    },
+    "canvasNodes.imageNode.invalidNodePosition": {
+      "en": "Invalid Node Position",
+      "pt": "Invalid Node Position",
+      "site": {
+        "file": "src\\components\\reactflow\\ImageNode.tsx",
+        "line": 236
+      }
+    },
+    "canvasNodes.imageNode.failedToCreateTextNode": {
+      "en": "Failed To Create Text Node",
+      "pt": "Failed To Create Text Node",
+      "site": {
+        "file": "src\\components\\reactflow\\ImageNode.tsx",
+        "line": 245
+      }
+    },
+    "canvasNodes.logoNode.deleteTitle": {
+      "en": "Delete Title",
+      "pt": "Delete Title",
+      "site": {
+        "file": "src\\components\\reactflow\\LogoNode.tsx",
+        "line": 172
+      }
+    },
+    "canvasNodes.logoNode.deleteMessage": {
+      "en": "Delete Message",
+      "pt": "Delete Message",
+      "site": {
+        "file": "src\\components\\reactflow\\LogoNode.tsx",
+        "line": 173
+      }
+    },
+    "canvasNodes.logoNode.deleteButton": {
+      "en": "Delete Button",
+      "pt": "Delete Button",
+      "site": {
+        "file": "src\\components\\reactflow\\LogoNode.tsx",
+        "line": 174
+      }
+    },
+    "canvasNodes.logoNode.cancelButton": {
+      "en": "Cancel Button",
+      "pt": "Cancel Button",
+      "site": {
+        "file": "src\\components\\reactflow\\LogoNode.tsx",
+        "line": 175
+      }
+    },
+    "canvasNodes.pdfNode.uploadPdf": {
+      "en": "Upload Pdf",
+      "pt": "Upload Pdf",
+      "site": {
+        "file": "src\\components\\reactflow\\PDFNode.tsx",
+        "line": 175
+      }
+    },
+    "canvasNodes.promptNode.brandConnected": {
+      "en": "Brand Connected",
+      "pt": "Brand Connected",
+      "site": {
+        "file": "src\\components\\reactflow\\PromptNode.tsx",
+        "line": 531
+      }
+    },
+    "canvasNodes.shaderNode.processingVideo": {
+      "en": "Processing Video",
+      "pt": "Processing Video",
+      "site": {
+        "file": "src\\components\\reactflow\\ShaderNode.tsx",
+        "line": 551
+      }
+    },
+    "canvasNodes.shaderNode.applyingShader": {
+      "en": "Applying Shader",
+      "pt": "Applying Shader",
+      "site": {
+        "file": "src\\components\\reactflow\\ShaderNode.tsx",
+        "line": 552
+      }
+    },
+    "canvasNodes.shared.downloading": {
+      "en": "Downloading",
+      "pt": "Downloading",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\ImageNodeActionButtons.tsx",
+        "line": 108
+      }
+    },
+    "canvasNodes.shared.downloadFailed": {
+      "en": "Download Failed",
+      "pt": "Download Failed",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\useNodeDownload.ts",
+        "line": 20
+      }
+    },
+    "canvasNodes.strategyNode.generatingAllSections": {
+      "en": "Generating All Sections",
+      "pt": "Generating All Sections",
+      "site": {
+        "file": "src\\components\\reactflow\\StrategyNode.tsx",
+        "line": 1274
+      }
+    },
+    "canvasNodes.upscaleNode.upscaling": {
+      "en": "Upscaling",
+      "pt": "Upscaling",
+      "site": {
+        "file": "src\\components\\reactflow\\UpscaleNode.tsx",
+        "line": 196
+      }
+    },
+    "canvasNodes.upscaleNode.upscale": {
+      "en": "Upscale",
+      "pt": "Upscale",
+      "site": {
+        "file": "src\\components\\reactflow\\UpscaleNode.tsx",
+        "line": 201
+      }
+    },
+    "canvasNodes.videoInputNode.removeVideo": {
+      "en": "Remove Video",
+      "pt": "Remove Video",
+      "site": {
+        "file": "src\\components\\reactflow\\VideoInputNode.tsx",
+        "line": 184
+      }
+    },
+    "workflows.saveDialog.nodes": {
+      "en": "Nodes",
+      "pt": "Nodes",
+      "site": {
+        "file": "src\\components\\SaveWorkflowDialog.tsx",
+        "line": 140
+      }
+    },
+    "workflows.saveDialog.connections": {
+      "en": "Connections",
+      "pt": "Connections",
+      "site": {
+        "file": "src\\components\\SaveWorkflowDialog.tsx",
+        "line": 145
+      }
+    },
+    "canvasNodes.promptNode.selectModel": {
+      "en": "Select Model",
+      "pt": "Select Model",
+      "site": {
+        "file": "src\\components\\shared\\ModelSelector.tsx",
+        "line": 187
+      }
+    },
+    "adminPresets.select": {
+      "en": "Select",
+      "pt": "Select",
+      "site": {
+        "file": "src\\components\\ui\\data-table-editable-cell.tsx",
+        "line": 83
+      }
+    },
+    "adminPresets.clickToEdit": {
+      "en": "Click To Edit",
+      "pt": "Click To Edit",
+      "site": {
+        "file": "src\\components\\ui\\data-table-editable-cell.tsx",
+        "line": 131
+      }
+    },
+    "common.yes": {
+      "en": "Yes",
+      "pt": "Yes",
+      "site": {
+        "file": "src\\components\\ui\\data-table-editable-cell.tsx",
+        "line": 134
+      }
+    },
+    "common.no": {
+      "en": "No",
+      "pt": "No",
+      "site": {
+        "file": "src\\components\\ui\\data-table-editable-cell.tsx",
+        "line": 134
+      }
+    },
+    "mockup.selectModelToGenerate": {
+      "en": "Select Model To Generate",
+      "pt": "Select Model To Generate",
+      "site": {
+        "file": "src\\components\\ui\\GenerateButton.tsx",
+        "line": 43
+      }
+    },
+    "about.visantStudio": {
+      "en": "Visant Studio",
+      "pt": "Visant Studio",
+      "site": {
+        "file": "src\\pages\\AboutPage.tsx",
+        "line": 154
+      }
+    },
+    "admin.saveError": {
+      "en": "Save Error",
+      "pt": "Save Error",
+      "site": {
+        "file": "src\\pages\\AdminPage.tsx",
+        "line": 393
+      }
+    },
+    "admin.saveSuccess": {
+      "en": "Save Success",
+      "pt": "Save Success",
+      "site": {
+        "file": "src\\pages\\AdminPage.tsx",
+        "line": 396
+      }
+    },
+    "adminPresets.failedToCreatePreset": {
+      "en": "Failed To Create Preset",
+      "pt": "Failed To Create Preset",
+      "site": {
+        "file": "src\\pages\\AdminPresetsPage.tsx",
+        "line": 910
+      }
+    },
+    "adminPresets.reference": {
+      "en": "Reference",
+      "pt": "Reference",
+      "site": {
+        "file": "src\\pages\\AdminPresetsPage.tsx",
+        "line": 1725
+      }
+    },
+    "adminPresets.removeImage": {
+      "en": "Remove Image",
+      "pt": "Remove Image",
+      "site": {
+        "file": "src\\pages\\AdminPresetsPage.tsx",
+        "line": 1735
+      }
+    },
+    "branding.steps.moodboard": {
+      "en": "Moodboard",
+      "pt": "Moodboard",
+      "site": {
+        "file": "src\\pages\\BrandingMachinePage.tsx",
+        "line": 64
+      }
+    },
+    "budget.duplicated": {
+      "en": "Duplicated",
+      "pt": "Duplicated",
+      "site": {
+        "file": "src\\pages\\BudgetMachinePage.tsx",
+        "line": 371
+      }
+    },
+    "canvas.noImagesToExport": {
+      "en": "No Images To Export",
+      "pt": "No Images To Export",
+      "site": {
+        "file": "src\\pages\\CanvasPage.tsx",
+        "line": 786
+      }
+    },
+    "canvas.exportingImages": {
+      "en": "Exporting Images",
+      "pt": "Exporting Images",
+      "site": {
+        "file": "src\\pages\\CanvasPage.tsx",
+        "line": 796
+      }
+    },
+    "canvas.exportComplete": {
+      "en": "Export Complete",
+      "pt": "Export Complete",
+      "site": {
+        "file": "src\\pages\\CanvasPage.tsx",
+        "line": 836
+      }
+    },
+    "canvas.exportFailed": {
+      "en": "Export Failed",
+      "pt": "Export Failed",
+      "site": {
+        "file": "src\\pages\\CanvasPage.tsx",
+        "line": 846
+      }
+    },
+    "communityPresets.messages.presetApplied": {
+      "en": "Preset Applied",
+      "pt": "Preset Applied",
+      "site": {
+        "file": "src\\pages\\CanvasPage.tsx",
+        "line": 1240
+      }
+    },
+    "communityPresets.messages.presetImported": {
+      "en": "Preset Imported",
+      "pt": "Preset Imported",
+      "site": {
+        "file": "src\\pages\\CanvasPage.tsx",
+        "line": 1266
+      }
+    },
+    "canvas.textPasted": {
+      "en": "Text Pasted",
+      "pt": "Text Pasted",
+      "site": {
+        "file": "src\\pages\\CanvasPage.tsx",
+        "line": 1632
+      }
+    },
+    "canvas.pasteFailed": {
+      "en": "Paste Failed",
+      "pt": "Paste Failed",
+      "site": {
+        "file": "src\\pages\\CanvasPage.tsx",
+        "line": 1638
+      }
+    },
+    "canvas.deleteChatNode": {
+      "en": "Delete Chat Node",
+      "pt": "Delete Chat Node",
+      "site": {
+        "file": "src\\pages\\CanvasPage.tsx",
+        "line": 4139
+      }
+    },
+    "canvas.deleteChatNodeMessage": {
+      "en": "Delete Chat Node Message",
+      "pt": "Delete Chat Node Message",
+      "site": {
+        "file": "src\\pages\\CanvasPage.tsx",
+        "line": 4140
+      }
+    },
+    "canvas.cancel": {
+      "en": "Cancel",
+      "pt": "Cancel",
+      "site": {
+        "file": "src\\pages\\CanvasPage.tsx",
+        "line": 4142
+      }
+    },
+    "canvas.searchProjects": {
+      "en": "Search Projects",
+      "pt": "Search Projects",
+      "site": {
+        "file": "src\\pages\\CanvasProjectsPage.tsx",
+        "line": 308
+      }
+    },
+    "canvas.noProjectsFound": {
+      "en": "No Projects Found",
+      "pt": "No Projects Found",
+      "site": {
+        "file": "src\\pages\\CanvasProjectsPage.tsx",
+        "line": 427
+      }
+    },
+    "canvas.noProjectsMatchSearch": {
+      "en": "No Projects Match Search",
+      "pt": "No Projects Match Search",
+      "site": {
+        "file": "src\\pages\\CanvasProjectsPage.tsx",
+        "line": 430
+      }
+    },
+    "canvas.clearSearch": {
+      "en": "Clear Search",
+      "pt": "Clear Search",
+      "site": {
+        "file": "src\\pages\\CanvasProjectsPage.tsx",
+        "line": 435
+      }
+    },
+    "communityPresets.tabs.my": {
+      "en": "My",
+      "pt": "My",
+      "site": {
+        "file": "src\\pages\\CommunityPresetsPage.tsx",
+        "line": 776
+      }
+    },
+    "communityPresets.buttons.create": {
+      "en": "Create",
+      "pt": "Create",
+      "site": {
+        "file": "src\\pages\\CommunityPresetsPage.tsx",
+        "line": 786
+      }
+    },
+    "common.presetSelected": {
+      "en": "Preset Selected",
+      "pt": "Preset Selected",
+      "site": {
+        "file": "src\\pages\\CommunityProfilePage.tsx",
+        "line": 221
+      }
+    },
+    "mockup.title": {
+      "en": "Title",
+      "pt": "Title",
+      "site": {
+        "file": "src\\pages\\CommunityProfilePage.tsx",
+        "line": 549
+      }
+    },
+    "creative.studio.title": {
+      "en": "Title",
+      "pt": "Title",
+      "site": {
+        "file": "src\\pages\\CreatePage.tsx",
+        "line": 56
+      }
+    },
+    "designSystem.components.searchbar.title": {
+      "en": "Title",
+      "pt": "Title",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 232
+      }
+    },
+    "designSystem.components.tags.title": {
+      "en": "Title",
+      "pt": "Title",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 248
+      }
+    },
+    "designSystem.components.premiumButton.title": {
+      "en": "Title",
+      "pt": "Title",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 252
+      }
+    },
+    "designSystem.components.glassPanel.title": {
+      "en": "Title",
+      "pt": "Title",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 253
+      }
+    },
+    "designSystem.components.microTitle.title": {
+      "en": "Title",
+      "pt": "Title",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 254
+      }
+    },
+    "designSystem.tabs.patterns": {
+      "en": "Patterns",
+      "pt": "Patterns",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 259
+      }
+    },
+    "designSystem.patterns.setupContainer.title": {
+      "en": "Title",
+      "pt": "Title",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 262
+      }
+    },
+    "designSystem.components.searchbar.description": {
+      "en": "Description",
+      "pt": "Description",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 848
+      }
+    },
+    "designSystem.components.tags.description": {
+      "en": "Description",
+      "pt": "Description",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 1498
+      }
+    },
+    "designSystem.components.premiumButton.description": {
+      "en": "Description",
+      "pt": "Description",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 1672
+      }
+    },
+    "designSystem.components.glassPanel.description": {
+      "en": "Description",
+      "pt": "Description",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 1700
+      }
+    },
+    "designSystem.components.microTitle.description": {
+      "en": "Description",
+      "pt": "Description",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 1726
+      }
+    },
+    "designSystem.patterns.setupContainer.description": {
+      "en": "Description",
+      "pt": "Description",
+      "site": {
+        "file": "src\\pages\\DesignSystemPage.tsx",
+        "line": 1755
+      }
+    },
+    "messages.unsavedChangesMessage": {
+      "en": "Unsaved Changes Message",
+      "pt": "Unsaved Changes Message",
+      "site": {
+        "file": "src\\pages\\MockupMachinePage.tsx",
+        "line": 1953
+      }
+    },
+    "community.title": {
+      "en": "Title",
+      "pt": "Title",
+      "site": {
+        "file": "src\\pages\\MockupsPage.tsx",
+        "line": 311
+      }
+    },
+    "mockups.title": {
+      "en": "Title",
+      "pt": "Title",
+      "site": {
+        "file": "src\\pages\\MockupsPage.tsx",
+        "line": 312
+      }
+    },
+    "branding.myBrandings.errors.invalidProjectId": {
+      "en": "Invalid Project Id",
+      "pt": "Invalid Project Id",
+      "site": {
+        "file": "src\\pages\\MyBrandingsPage.tsx",
+        "line": 65
+      }
+    },
+    "pricing.storage.byokTitle": {
+      "en": "Byok Title",
+      "pt": "Byok Title",
+      "site": {
+        "file": "src\\pages\\PricingPage.tsx",
+        "line": 445
+      }
+    },
+    "pricing.storage.byokDescription": {
+      "en": "Byok Description",
+      "pt": "Byok Description",
+      "site": {
+        "file": "src\\pages\\PricingPage.tsx",
+        "line": 448
+      }
+    },
+    "pricing.included": {
+      "en": "Included",
+      "pt": "Included",
+      "site": {
+        "file": "src\\pages\\PricingPage.tsx",
+        "line": 514
+      }
+    },
+    "pricing.selectPlan": {
+      "en": "Select Plan",
+      "pt": "Select Plan",
+      "site": {
+        "file": "src\\pages\\PricingPage.tsx",
+        "line": 515
+      }
+    },
+    "pricing.storage.subscriptionNote": {
+      "en": "Subscription Note",
+      "pt": "Subscription Note",
+      "site": {
+        "file": "src\\pages\\PricingPage.tsx",
+        "line": 524
+      }
+    },
+    "subscription.portalError": {
+      "en": "Portal Error",
+      "pt": "Portal Error",
+      "site": {
+        "file": "src\\pages\\ProfilePage.tsx",
+        "line": 148
+      }
+    }
+  },
+  "skipped": [
+    {
+      "key": "communityPresets.categories.${category}",
+      "site": {
+        "file": "src\\components\\canvas\\CommunityPresetsSidebar.tsx",
+        "line": 405
+      }
+    },
+    {
+      "key": "communityPresets.categories.${key}",
+      "site": {
+        "file": "src\\components\\CommunityPresetModal.tsx",
+        "line": 232
+      }
+    },
+    {
+      "key": "mockup.categoryGroups.${group.key}",
+      "site": {
+        "file": "src\\components\\mockupmachine\\CategoriesSection.tsx",
+        "line": 572
+      }
+    },
+    {
+      "key": "communityPresets.tabs.${type}",
+      "site": {
+        "file": "src\\components\\MockupPresetModal.tsx",
+        "line": 376
+      }
+    },
+    {
+      "key": "communityPresets.categories.${migrated.category}",
+      "site": {
+        "file": "src\\components\\PresetCard.tsx",
+        "line": 303
+      }
+    },
+    {
+      "key": "communityPresets.tabs.${migrated.category}",
+      "site": {
+        "file": "src\\components\\PresetCard.tsx",
+        "line": 304
+      }
+    },
+    {
+      "key": "communityPresets.difficulty${migrated.difficulty.charAt(0).toUpperCase() + migrated.difficulty.slice(1)}",
+      "site": {
+        "file": "src\\components\\PresetCard.tsx",
+        "line": 324
+      }
+    },
+    {
+      "key": "communityPresets.tabs.${presetCategory}",
+      "site": {
+        "file": "src\\components\\reactflow\\MockupNode.tsx",
+        "line": 124
+      }
+    },
+    {
+      "key": "common.tabs.${tab}",
+      "site": {
+        "file": "src\\components\\reactflow\\modals\\BrandMediaLibraryModal.tsx",
+        "line": 139
+      }
+    },
+    {
+      "key": "${translationKeyPrefix}.viewFullScreen",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\ImageNodeActionButtons.tsx",
+        "line": 88
+      }
+    },
+    {
+      "key": "${translationKeyPrefix}.downloadImage",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\ImageNodeActionButtons.tsx",
+        "line": 108
+      }
+    },
+    {
+      "key": "${translationKeyPrefix}.delete",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\ImageNodeActionButtons.tsx",
+        "line": 123
+      }
+    },
+    {
+      "key": "${translationKeyPrefix}.brandKit",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\ImageNodeActionButtons.tsx",
+        "line": 135
+      }
+    },
+    {
+      "key": "${translationKeyPrefix}.removeFromFavorites",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\ImageNodeActionButtons.tsx",
+        "line": 163
+      }
+    },
+    {
+      "key": "${translationKeyPrefix}.saveToCollection",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\ImageNodeActionButtons.tsx",
+        "line": 165
+      }
+    },
+    {
+      "key": "${translationKeyPrefix}.addToFavorites",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\ImageNodeActionButtons.tsx",
+        "line": 166
+      }
+    },
+    {
+      "key": "${translationKeyPrefix}.analyzingImage",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\ImageNodeActionButtons.tsx",
+        "line": 183
+      }
+    },
+    {
+      "key": "${translationKeyPrefix}.describeImageWithAI",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\ImageNodeActionButtons.tsx",
+        "line": 183
+      }
+    },
+    {
+      "key": "${translationKeyPrefix}.removeLogo",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\ImageNodeActionButtons.tsx",
+        "line": 198
+      }
+    },
+    {
+      "key": "${translationKeyPrefix}.remove",
+      "site": {
+        "file": "src\\components\\reactflow\\shared\\ImageNodeActionButtons.tsx",
+        "line": 198
+      }
+    },
+    {
+      "key": "canvasNodes.videoNode.mode.${opt.value}",
+      "site": {
+        "file": "src\\components\\reactflow\\VideoNode.tsx",
+        "line": 385
+      }
+    },
+    {
+      "key": "transactions.status.${transaction.status}",
+      "site": {
+        "file": "src\\components\\TransactionsModal.tsx",
+        "line": 182
+      }
+    },
+    {
+      "key": "mockup.categoryGroups.${c.name}",
+      "site": {
+        "file": "src\\pages\\AdminPresetsPage.tsx",
+        "line": 370
+      }
+    },
+    {
+      "key": "common.${interval}",
+      "site": {
+        "file": "src\\pages\\ThankYouPage.tsx",
+        "line": 202
+      }
+    }
+  ]
+}

@@ -42,6 +42,11 @@ const baseSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
 
+  // Ollama
+  OLLAMA_BASE_URL: z.string().url().optional(),
+  OLLAMA_MODEL: z.string().optional(),
+  DEFAULT_LLM_PROVIDER: z.enum(['gemini', 'ollama', 'openai', 'anthropic']).default('gemini'),
+
   // Networking
   FRONTEND_URL: z.string().optional(),
   VERCEL: z.string().optional(),

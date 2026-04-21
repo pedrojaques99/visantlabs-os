@@ -137,7 +137,7 @@ export function parseBrandGuidelineList(input: unknown): BrandGuidelineDto[] {
   if (Array.isArray(input)) {
     return input
       .map((g) => BrandGuidelineSchema.safeParse(g))
-      .filter((r): r is z.SafeParseSuccess<BrandGuidelineDto> => r.success)
+      .filter((r): r is z.ZodSafeParseSuccess<BrandGuidelineDto> => r.success)
       .map((r) => r.data);
   }
   const wrapped = BrandGuidelineListResponseSchema.safeParse(input);

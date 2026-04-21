@@ -13,10 +13,33 @@ vi.mock('../../../src/services/r2Service.js', () => ({
 }));
 
 // Mock geminiService globably for this file
-vi.mock('../../../src/services/geminiService.js', () => ({
-  generateMockup: vi.fn(async () => 'fake-base64-string'),
-  getErrorMessage: (e: any) => e.message || String(e),
-}));
+vi.mock('../../../src/services/geminiService.js', () => {
+  class RateLimitError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'RateLimitError';
+    }
+  }
+  class ModelOverloadedError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'ModelOverloadedError';
+    }
+  }
+  class ModelResponseTextError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'ModelResponseTextError';
+    }
+  }
+  return {
+    generateMockup: vi.fn(async () => 'fake-base64-string'),
+    getErrorMessage: (e: any) => e.message || String(e),
+    RateLimitError,
+    ModelOverloadedError,
+    ModelResponseTextError,
+  };
+});
 
 describe('Mockup Routes Integration', () => {
   beforeAll(() => {

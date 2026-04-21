@@ -36,10 +36,6 @@ const TEXT_GENERATION_PRICING: Record<string, { inputPricePer1M: number; outputP
     inputPricePer1M: 0.15,
     outputPricePer1M: 0.60,
   },
-  [GEMINI_MODELS.PRO_2_0]: {
-    inputPricePer1M: 1.25,
-    outputPricePer1M: 5.00,
-  },
 };
 
 /**

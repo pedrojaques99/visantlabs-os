@@ -237,7 +237,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
     if (isDev) console.log('👂 [WelcomeScreen] useEffect: Setting up paste event listener');
     window.addEventListener('paste', handlePaste);
     return () => {
-      if (isDev) console.log('🧹 [WelcomeScreen] useEffect: Cleaning up paste event listener');
+      if (isDev) console.log('💎� [WelcomeScreen] useEffect: Cleaning up paste event listener');
       window.removeEventListener('paste', handlePaste);
     };
   }, [processFile]);

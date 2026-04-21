@@ -45,7 +45,7 @@ async function findUserByIdentifier(identifier: string) {
   await connectToMongoDB();
 
   // Try to find by username first (username is stored in lowercase)
-  let user = await prisma.user.findUnique({
+  let user = await prisma.user.findFirst({
     where: { username: identifier.toLowerCase() },
   });
 
@@ -327,7 +327,7 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
         }
 
         // Check if username is already taken by another user
-        const existingUser = await prisma.user.findUnique({
+        const existingUser = await prisma.user.findFirst({
           where: { username: username.toLowerCase() },
         });
 
@@ -858,6 +858,83 @@ router.get('/settings/seedream-api-key', apiRateLimiter, authenticate, async (re
       error: 'Failed to check API key',
       message: error.message
     });
+  }
+});
+
+// ═══ LLM PREFERENCES (Gemini vs Ollama) ═══
+
+router.get('/settings/llm-preferences', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { llmProvider: true, ollamaUrl: true, ollamaModel: true },
+    });
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json({
+      llmProvider: user.llmProvider || 'gemini',
+      ollamaUrl: user.ollamaUrl || '',
+      ollamaModel: user.ollamaModel || '',
+    });
+  } catch (error: any) {
+    console.error('Failed to get LLM preferences:', error);
+    res.status(500).json({ error: 'Failed to load LLM preferences', message: error.message });
+  }
+});
+
+router.put('/settings/llm-preferences', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    const { llmProvider, ollamaUrl, ollamaModel } = req.body ?? {};
+
+    if (llmProvider !== undefined && llmProvider !== 'gemini' && llmProvider !== 'ollama') {
+      return res.status(400).json({ error: 'llmProvider must be "gemini" or "ollama"' });
+    }
+
+    const updateData: Record<string, any> = {};
+    if (llmProvider !== undefined) updateData.llmProvider = llmProvider;
+
+    if (ollamaUrl !== undefined) {
+      if (ollamaUrl === null || ollamaUrl === '') {
+        updateData.ollamaUrl = null;
+      } else if (typeof ollamaUrl !== 'string' || !/^https?:\/\/.+/.test(ollamaUrl)) {
+        return res.status(400).json({ error: 'Invalid Ollama URL format' });
+      } else {
+        updateData.ollamaUrl = ollamaUrl.trim();
+      }
+    }
+
+    if (ollamaModel !== undefined) {
+      if (ollamaModel === null || ollamaModel === '') {
+        updateData.ollamaModel = null;
+      } else if (typeof ollamaModel !== 'string' || ollamaModel.length > 100) {
+        return res.status(400).json({ error: 'Invalid Ollama model name' });
+      } else {
+        updateData.ollamaModel = ollamaModel.trim();
+      }
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: { llmProvider: true, ollamaUrl: true, ollamaModel: true },
+    });
+
+    res.json({
+      success: true,
+      llmProvider: updated.llmProvider || 'gemini',
+      ollamaUrl: updated.ollamaUrl || '',
+      ollamaModel: updated.ollamaModel || '',
+    });
+  } catch (error: any) {
+    console.error('Failed to update LLM preferences:', error);
+    res.status(500).json({ error: 'Failed to update LLM preferences', message: error.message });
   }
 });
 

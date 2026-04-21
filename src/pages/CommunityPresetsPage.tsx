@@ -995,7 +995,7 @@ export const CommunityPresetsPage: React.FC = () => {
           title={t('communityPresets.actions.duplicateConfirm') || "Duplicate Preset"}
           message={t('communityPresets.actions.duplicateMessage') || "Are you sure you want to duplicate this preset? It will be added to your personal collection."}
           confirmText={t('communityPresets.actions.duplicateButton') || "Duplicate"}
-          cancelText={t('communityPresets.actions.cancel') || "Cancel"}
+          cancelText={t('common.cancel') || "Cancel"}
           variant="info"
         />
 
@@ -1152,10 +1152,10 @@ const PresetDetailModal: React.FC<{
                 onEdit();
               }}
                 className="flex items-center gap-2 px-3 py-2 rounded-md transition-all text-sm font-mono bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50"
-                title={t('communityPresets.actions.edit')}
+                title={t('common.edit')}
               >
                 <Edit2 size={16} />
-                <span>{t('communityPresets.actions.edit')}</span>
+                <span>{t('common.edit')}</span>
               </Button>
             )}
             {isAuthenticated && onToggleLike && (

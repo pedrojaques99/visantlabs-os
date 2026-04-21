@@ -58,6 +58,7 @@ const SECTION_CONFIG = [
   { id: 'editorial', icon: FileText, label: 'Editorial' },
   { id: 'media', icon: ImageIcon, label: 'Media Kit' },
   { id: 'accessibility', icon: ShieldCheck, label: 'Accessibility' },
+  { id: 'knowledge', icon: FileText, label: 'Knowledge' },
 ] as const;
 
 export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({

@@ -1,17 +1,10 @@
-import { authService } from './authService';
-
-const getAuthHeaders = () => {
-  const token = authService.getToken();
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
-};
+import { chatApiRequest } from '@/lib/chat/client';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  generationId?: string;
 }
 
 export interface ChatSession {
@@ -30,138 +23,62 @@ export interface SendMessageResult {
   reply: string;
   sessionId: string;
   toolsUsed?: string[];
+  generationId?: string;
 }
 
-const getApiBaseUrl = () => {
-  const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
-  return viteApiUrl || '/api';
-};
-
-const API_URL = getApiBaseUrl();
-
 export const chatApi = {
-  // Create a new chat session
   async createSession(title?: string, brandGuidelineId?: string): Promise<ChatSession> {
-    const response = await fetch(`${API_URL}/chat/sessions`, {
+    const { session } = await chatApiRequest<{ session: ChatSession }>('/chat/sessions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeaders(),
-      },
-      body: JSON.stringify({ title, brandGuidelineId }),
+      body: { title, brandGuidelineId },
+      errorMessage: 'Failed to create session',
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to create session');
-    }
-
-    const data = await response.json();
-    return data.session;
+    return session;
   },
 
-  // List all sessions for current user
   async listSessions(): Promise<ChatSessionListItem[]> {
-    const response = await fetch(`${API_URL}/chat/sessions`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
+    const { sessions } = await chatApiRequest<{ sessions: ChatSessionListItem[] }>('/chat/sessions', {
+      errorMessage: 'Failed to list sessions',
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to list sessions');
-    }
-
-    const data = await response.json();
-    return data.sessions;
+    return sessions;
   },
 
-  // Get a specific session with all messages
   async getSession(sessionId: string): Promise<ChatSession> {
-    const response = await fetch(`${API_URL}/chat/sessions/${sessionId}`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
+    const { session } = await chatApiRequest<{ session: ChatSession }>(`/chat/sessions/${sessionId}`, {
+      errorMessage: 'Failed to get session',
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to get session');
-    }
-
-    const data = await response.json();
-    return data.session;
+    return session;
   },
 
-  // Delete a session
   async deleteSession(sessionId: string): Promise<void> {
-    const response = await fetch(`${API_URL}/chat/sessions/${sessionId}`, {
+    await chatApiRequest<void>(`/chat/sessions/${sessionId}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
+      errorMessage: 'Failed to delete session',
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to delete session');
-    }
   },
 
-  // Upload/ingest documents to a session
-  async uploadToSession(
-    sessionId: string,
-    parts: any[],
-    metadata?: Record<string, any>
-  ): Promise<void> {
-    const response = await fetch(`${API_URL}/chat/sessions/${sessionId}/upload`, {
+  async uploadToSession(sessionId: string, parts: any[], metadata?: Record<string, any>): Promise<void> {
+    await chatApiRequest<void>(`/chat/sessions/${sessionId}/upload`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeaders(),
-      },
-      body: JSON.stringify({ parts, metadata }),
+      body: { parts, metadata },
+      errorMessage: 'Failed to upload to session',
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to upload to session');
-    }
   },
 
-  // Send a message to a session
   async sendMessage(sessionId: string, message: string): Promise<SendMessageResult> {
-    const response = await fetch(`${API_URL}/chat/sessions/${sessionId}/message`, {
+    return chatApiRequest<SendMessageResult>(`/chat/sessions/${sessionId}/message`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeaders(),
-      },
-      body: JSON.stringify({ message }),
+      body: { message },
+      errorMessage: 'Failed to send message',
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to send message');
-    }
-
-    return await response.json();
   },
 
-  // Rename a session
   async renameSession(sessionId: string, title: string): Promise<ChatSession> {
-    const response = await fetch(`${API_URL}/chat/sessions/${sessionId}`, {
+    const { session } = await chatApiRequest<{ session: ChatSession }>(`/chat/sessions/${sessionId}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeaders(),
-      },
-      body: JSON.stringify({ title }),
+      body: { title },
+      errorMessage: 'Failed to rename session',
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to rename session');
-    }
-
-    const data = await response.json();
-    return data.session;
+    return session;
   },
 };

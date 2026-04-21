@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ExternalLink, Lock, Eye, EyeOff, Diamond, AlertTriangle } from 'lucide-react';
+import { ExternalLink, Lock, Eye, EyeOff, Diamond, AlertTriangle, Cpu } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { saveGeminiApiKey, deleteGeminiApiKey, hasGeminiApiKey, saveSeedreamApiKey, deleteSeedreamApiKey, hasSeedreamApiKey } from '@/services/userSettingsService';
+import { saveGeminiApiKey, deleteGeminiApiKey, hasGeminiApiKey, saveSeedreamApiKey, deleteSeedreamApiKey, hasSeedreamApiKey, getLlmPreferences, saveLlmPreferences, type LlmPreferences } from '@/services/userSettingsService';
 import { toast } from 'sonner';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { ApiKeyPolicyModal } from '../ApiKeyPolicyModal';
@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { FigmaTokenSetup } from '../settings/FigmaTokenSetup';
 
 export const ApiSettings: React.FC = () => {
@@ -27,6 +28,11 @@ export const ApiSettings: React.FC = () => {
     const [hasSeedreamKey, setHasSeedreamKey] = useState(false);
     const [showSeedreamDeleteConfirm, setShowSeedreamDeleteConfirm] = useState(false);
 
+    // LLM Preferences (Gemini vs Ollama for admin chat)
+    const [llmPrefs, setLlmPrefs] = useState<LlmPreferences>({ llmProvider: 'gemini', ollamaUrl: '', ollamaModel: '' });
+    const [llmDirty, setLlmDirty] = useState(false);
+    const [isSavingLlm, setIsSavingLlm] = useState(false);
+
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -36,9 +42,10 @@ export const ApiSettings: React.FC = () => {
     const checkApiKeyStatus = async () => {
         setIsChecking(true);
         try {
-            const [hasGemini, hasSeedream] = await Promise.all([
+            const [hasGemini, hasSeedream, prefs] = await Promise.all([
                 hasGeminiApiKey(),
-                hasSeedreamApiKey()
+                hasSeedreamApiKey(),
+                getLlmPreferences(),
             ]);
 
             setHasKey(hasGemini);
@@ -47,10 +54,48 @@ export const ApiSettings: React.FC = () => {
             setHasSeedreamKey(hasSeedream);
             if (hasSeedream) setSeedreamKey('');
 
+            setLlmPrefs(prefs);
+            setLlmDirty(false);
+
         } catch (error) {
             console.error('Failed to check API key status:', error);
         } finally {
             setIsChecking(false);
+        }
+    };
+
+    const updateLlmPref = <K extends keyof LlmPreferences>(key: K, value: LlmPreferences[K]) => {
+        setLlmPrefs(prev => ({ ...prev, [key]: value }));
+        setLlmDirty(true);
+    };
+
+    const handleSaveLlm = async () => {
+        if (llmPrefs.llmProvider === 'ollama') {
+            const url = llmPrefs.ollamaUrl.trim();
+            if (!url) {
+                toast.error('Informe a URL do servidor Ollama (ex: http://localhost:11434)');
+                return;
+            }
+            if (!/^https?:\/\/.+/.test(url)) {
+                toast.error('URL inválida. Use http:// ou https://');
+                return;
+            }
+        }
+        setIsSavingLlm(true);
+        try {
+            const saved = await saveLlmPreferences({
+                llmProvider: llmPrefs.llmProvider,
+                ollamaUrl: llmPrefs.ollamaUrl.trim(),
+                ollamaModel: llmPrefs.ollamaModel.trim(),
+            });
+            setLlmPrefs(saved);
+            setLlmDirty(false);
+            toast.success(llmPrefs.llmProvider === 'ollama' ? 'Ollama configurado' : 'Preferências salvas');
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            toast.error(msg || 'Falha ao salvar preferências');
+        } finally {
+            setIsSavingLlm(false);
         }
     };
 
@@ -356,6 +401,120 @@ export const ApiSettings: React.FC = () => {
                                 className="px-8 py-2.5 bg-brand-cyan hover:bg-brand-cyan/90 disabled:bg-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-all duration-200 text-sm font-mono shadow-lg shadow-brand-cyan/20 hover:shadow-brand-cyan/30 disabled:shadow-none min-w-[100px] flex items-center justify-center"
                             >
                                 {isLoading ? (
+                                    <GlitchLoader size={16} />
+                                ) : (
+                                    t('configuration.save') || 'Salvar Alterações'
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* LLM Preferences (Gemini vs Ollama) */}
+                    <div className="pt-6 border-t border-neutral-800/50 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Cpu size={16} className="text-brand-cyan" />
+                                <h3 className="text-lg font-bold font-manrope text-neutral-200">
+                                    Modelo de Linguagem
+                                </h3>
+                            </div>
+                            {llmPrefs.llmProvider === 'ollama' && (
+                                <div className="px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full flex items-center gap-1.5">
+                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                    <span className="text-xs font-mono text-green-400 font-medium">Local</span>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4">
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-brand-cyan/10 rounded-md shrink-0">
+                                    <Diamond size={16} className="text-brand-cyan" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm text-neutral-300 font-medium font-manrope">
+                                        Escolha onde rodar o Chat do Admin
+                                    </p>
+                                    <p className="text-xs text-neutral-400 font-mono leading-relaxed">
+                                        Gemini é o padrão (nuvem). Ollama roda 100% local — ótimo para privacidade, VPS e uso offline. Se Ollama falhar, o sistema usa Gemini automaticamente.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <label className="text-sm font-semibold text-neutral-300 font-manrope">
+                                Provedor
+                            </label>
+                            <Select
+                                value={llmPrefs.llmProvider}
+                                onChange={(v) => updateLlmPref('llmProvider', v as 'gemini' | 'ollama')}
+                                options={[
+                                    { value: 'gemini', label: 'Gemini (nuvem, padrão)' },
+                                    { value: 'ollama', label: 'Ollama (local / VPS)' },
+                                ]}
+                            />
+                        </div>
+
+                        {llmPrefs.llmProvider === 'ollama' && (
+                            <div className="space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <label htmlFor="ollama-url-input" className="text-sm font-semibold text-neutral-300 font-manrope">
+                                            URL do Servidor Ollama
+                                        </label>
+                                        <Button variant="ghost"
+                                            type="button"
+                                            onClick={() => window.open('https://ollama.com/download', '_blank')}
+                                            className="flex items-center gap-1.5 text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono transition-colors group"
+                                        >
+                                            <span>Instalar Ollama</span>
+                                            <ExternalLink size={12} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                        </Button>
+                                    </div>
+                                    <Input
+                                        id="ollama-url-input"
+                                        type="url"
+                                        value={llmPrefs.ollamaUrl}
+                                        onChange={(e) => updateLlmPref('ollamaUrl', e.target.value)}
+                                        placeholder="http://localhost:11434"
+                                        className="w-full bg-neutral-950/70 px-4 py-3.5 rounded-xl border border-neutral-800 focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 transition-all duration-200 shadow-inner"
+                                        autoComplete="off"
+                                    />
+                                    <p className="text-xs text-neutral-500 font-mono pl-1">
+                                        Use <span className="text-neutral-300">http://localhost:11434</span> para local, ou o IP/URL da sua VPS.
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label htmlFor="ollama-model-input" className="text-sm font-semibold text-neutral-300 font-manrope">
+                                        Modelo
+                                    </label>
+                                    <Input
+                                        id="ollama-model-input"
+                                        type="text"
+                                        value={llmPrefs.ollamaModel}
+                                        onChange={(e) => updateLlmPref('ollamaModel', e.target.value)}
+                                        placeholder="llama3.1"
+                                        className="w-full bg-neutral-950/70 px-4 py-3.5 rounded-xl border border-neutral-800 focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 transition-all duration-200 shadow-inner"
+                                        autoComplete="off"
+                                    />
+                                    <p className="text-xs text-neutral-500 font-mono pl-1">
+                                        Ex: <span className="text-neutral-300">llama3.1</span>, <span className="text-neutral-300">mistral</span>, <span className="text-neutral-300">qwen2.5</span>. Deixe vazio para usar o padrão do servidor.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-3">
+                            <div className="flex-1" />
+                            <Button variant="brand"
+                                type="button"
+                                onClick={handleSaveLlm}
+                                disabled={isSavingLlm || !llmDirty}
+                                className="px-8 py-2.5 bg-brand-cyan hover:bg-brand-cyan/90 disabled:bg-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-all duration-200 text-sm font-mono shadow-lg shadow-brand-cyan/20 hover:shadow-brand-cyan/30 disabled:shadow-none min-w-[100px] flex items-center justify-center"
+                            >
+                                {isSavingLlm ? (
                                     <GlitchLoader size={16} />
                                 ) : (
                                     t('configuration.save') || 'Salvar Alterações'

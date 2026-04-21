@@ -180,7 +180,7 @@ router.get('/mockup-examples', apiRateLimiter, async (req, res) => {
 
 const VALID_FEATURES: FeedbackFeature[] = [
   'mockup', 'branding', 'canvas', 'creative',
-  'brand-intelligence', 'node-builder', 'chat', 'image-gen',
+  'brand-intelligence', 'node-builder', 'chat', 'admin-chat', 'image-gen',
 ];
 
 /**

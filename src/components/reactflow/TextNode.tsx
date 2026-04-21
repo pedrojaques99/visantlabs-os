@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, useReactFlow, NodeResizer } from '@xyflow/react';
-import { FileText, Wand2, Type, Diamond, Copy, Check } from 'lucide-react';
+import { FileText, Diamond, Type, Copy, Check } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { TextNodeData } from '@/types/reactFlow';
 import { Textarea } from '@/components/ui/textarea';
@@ -202,7 +202,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               {isImproving ? (
                 <GlitchLoader size={14} color="currentColor" />
               ) : (
-                <Wand2 size={14} strokeWidth={2} />
+                <Diamond size={14} strokeWidth={2} />
               )}
             </NodeButton>
           )}

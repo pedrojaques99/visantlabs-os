@@ -769,7 +769,7 @@ export const BrandingMachinePage: React.FC = () => {
           title={t('branding.dependencyModalTitle')}
           message={getDependencyModalMessage()}
           confirmText={t('branding.generateDependencies')}
-          cancelText={t('branding.cancel')}
+          cancelText={t('common.cancel')}
           variant="info"
         />
       )}

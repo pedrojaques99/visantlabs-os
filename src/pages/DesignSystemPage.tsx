@@ -552,7 +552,7 @@ export const DesignSystemPage: React.FC = () => {
                       title={t('designSystem.commandPalette.searchShortcut') || 'Search (Ctrl+K)'}
                     >
                       <Search className="w-4 h-4" />
-                      <span>{t('designSystem.commandPalette.search') || 'Search'}</span>
+                      <span>{t('common.search') || 'Search'}</span>
                       <div className="flex items-center gap-1 px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-800/50">
                         <Command className="w-3 h-3" />
                         <kbd className="text-xs">K</kbd>

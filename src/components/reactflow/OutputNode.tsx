@@ -471,8 +471,8 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         }}
         title={t('canvasNodes.imageNode.deleteMockup')}
         message={t('canvasNodes.imageNode.deleteMockupMessage')}
-        confirmText={t('canvasNodes.imageNode.deleteButton')}
-        cancelText={t('canvasNodes.imageNode.cancelButton')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         variant="danger"
       />
     </NodeContainer>

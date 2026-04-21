@@ -4,17 +4,40 @@ import { createUser } from '../../factories/user.js';
 import { signTestToken, bearer } from '../../helpers/auth.js';
 
 // Mock geminiService to avoid actual AI calls
-vi.mock('../../../src/services/geminiService.js', () => ({
-  generateMockup: vi.fn(async () => ({
-    success: true,
-    mockupInfo: { 
-      imageBase64: 'fake-base64',
-      prompt: 'test prompt',
-      tags: ['test'],
+vi.mock('../../../src/services/geminiService.js', () => {
+  class RateLimitError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'RateLimitError';
     }
-  })),
-  getErrorMessage: (e: any) => e.message || String(e),
-}));
+  }
+  class ModelOverloadedError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'ModelOverloadedError';
+    }
+  }
+  class ModelResponseTextError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'ModelResponseTextError';
+    }
+  }
+  return {
+    generateMockup: vi.fn(async () => ({
+      success: true,
+      mockupInfo: {
+        imageBase64: 'fake-base64',
+        prompt: 'test prompt',
+        tags: ['test'],
+      }
+    })),
+    getErrorMessage: (e: any) => e.message || String(e),
+    RateLimitError,
+    ModelOverloadedError,
+    ModelResponseTextError,
+  };
+});
 
 // Mock r2Service to avoid actual uploads
 vi.mock('../../../server/services/r2Service.js', () => ({

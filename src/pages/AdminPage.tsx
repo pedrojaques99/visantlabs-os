@@ -680,7 +680,7 @@ export const AdminPage: React.FC = () => {
   const columns = useMemo<ColumnDef<AdminUser>[]>(() => [
     {
       accessorKey: 'name',
-      header: t('admin.user'),
+      header: t('common.user'),
       cell: ({ row }) => (
         <DataTableEditableCell
           row={row}
@@ -995,7 +995,7 @@ export const AdminPage: React.FC = () => {
                       </TabsTrigger>
                       <TabsTrigger value="presets" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        {t('admin.presets')}
+                        {t('common.presets')}
                       </TabsTrigger>
                       <TabsTrigger value="products" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />

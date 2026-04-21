@@ -283,7 +283,7 @@ export const ChatSidebar = ({
                 <Button variant="brand" onClick={handleSaveSystemPrompt}
                   className="text-[10px] px-2 py-1 rounded bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/30 transition-all"
                 >
-                  {t('canvasNodes.chatNode.save') || 'Save'}
+                  {t('common.save') || 'Save'}
                 </Button>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Bot, User, Copy, Check, FileText, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Bot, User, Copy, Check, FileText, ThumbsUp, ThumbsDown, Wrench, Loader2, AlertCircle, ChevronDown, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '@/utils/markdownRenderer';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { ActionDetector } from './ActionDetector';
 import { parseActionsFromResponse, type DetectedAction } from '@/services/chatService';
 import { FlowNodeType } from '@/types/reactFlow';
 import { useGenerationFeedback, type UseGenerationFeedbackParams } from '@/hooks/useGenerationFeedback';
+import { FullScreenViewer } from '../../FullScreenViewer';
 
 
 export interface ChatMessageProps {
@@ -21,9 +22,71 @@ export interface ChatMessageProps {
   showAvatar?: boolean;
   attachments?: Array<{ type: 'image' | 'pdf'; dataUrl: string; name: string; }>;
   creativeProjects?: Array<{ creativeProjectId: string; imageUrl: string; editUrl: string; prompt: string }>;
+  toolCalls?: Array<{
+    id: string;
+    name: string;
+    status: 'running' | 'done' | 'error';
+    startedAt?: string;
+    endedAt?: string;
+    errorMessage?: string;
+    summary?: string;
+  }>;
   generationId?: string;
   feature?: 'chat' | 'admin-chat';
 }
+
+const TOOL_LABELS: Record<string, string> = {
+  generate_or_update_mockup: 'Gerando mockup',
+};
+
+const CreativeProjectCard: React.FC<{
+  project: { creativeProjectId: string; imageUrl: string; editUrl: string; prompt: string };
+  onViewImage: (url: string) => void;
+}> = ({ project, onViewImage }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="group space-y-3 p-4 bg-white/[0.03] rounded-xl border border-white/5 shadow-sm hover:border-white/10 transition-all duration-200">
+      <img
+        src={project.imageUrl}
+        alt={project.prompt}
+        className="rounded-lg max-h-[500px] w-full object-contain bg-black/20 cursor-pointer hover:opacity-90 transition-opacity"
+        onClick={() => onViewImage(project.imageUrl)}
+      />
+      <div className="flex items-start justify-between gap-2 text-xs">
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="text-left flex-1 text-neutral-500 hover:text-neutral-300 transition-colors flex items-start gap-1.5 min-w-0"
+          aria-expanded={expanded}
+        >
+          <ChevronDown
+            size={12}
+            className={cn(
+              'mt-0.5 shrink-0 transition-transform',
+              expanded ? 'rotate-0' : '-rotate-90'
+            )}
+          />
+          <span className={cn('break-words', !expanded && 'line-clamp-1')}>{project.prompt}</span>
+        </button>
+        <Button
+          variant="ghost"
+          size="xs"
+          asChild
+          className="shrink-0 text-brand-cyan/70 hover:text-brand-cyan hover:bg-brand-cyan/10 font-mono"
+        >
+          <a
+            href={project.editUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Pencil size={10} className="mr-1" />
+            EDITAR
+          </a>
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({
   id,
@@ -36,10 +99,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   showAvatar = true,
   attachments,
   creativeProjects,
+  toolCalls,
   generationId,
   feature = 'chat',
 }) => {
   const [isCopied, setIsCopied] = useState(false);
+  const [viewerImage, setViewerImage] = useState<string | null>(null);
   const isAssistant = role === 'assistant' || role === 'model';
 
   // Feedback hook — only for assistant messages with generationId
@@ -83,7 +148,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       )}
       
       <div className={cn(
-        "max-w-[85%] md:max-w-[80%] rounded-2xl p-4 text-sm leading-relaxed relative group transition-all border",
+        "max-w-[85%] md:max-w-[80%] rounded-2xl p-5 text-sm leading-relaxed relative group transition-all border",
         !isAssistant 
           ? "bg-brand-cyan/10 border-brand-cyan/20 text-neutral-100" 
           : "bg-white/5 border-white/5 text-neutral-300"
@@ -116,8 +181,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                     <img
                       src={attachment.dataUrl}
                       alt={attachment.name}
-                      className="rounded-lg max-h-48 w-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                      onClick={() => window.open(attachment.dataUrl)}
+                      className="rounded-lg max-h-[500px] w-full object-contain bg-black/20 cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => setViewerImage(attachment.dataUrl)}
                     />
                   ) : (
                     <div className="bg-white/5 rounded-lg p-3 flex items-center gap-2 text-xs hover:bg-white/10 transition-colors">
@@ -132,29 +197,53 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           </div>
         )}
 
+        {/* Tool Calls (visual feedback for LLM tool usage) */}
+        {toolCalls && toolCalls.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+            {toolCalls.map((call) => {
+              const label = TOOL_LABELS[call.name] || call.name;
+              const isRunning = call.status === 'running';
+              const isError = call.status === 'error';
+              return (
+                <div
+                  key={call.id}
+                  className={cn(
+                    'flex items-center gap-2.5 px-3 py-2 rounded-lg border text-[11px] font-mono',
+                    isError
+                      ? 'bg-red-500/5 border-red-500/20 text-red-300'
+                      : isRunning
+                      ? 'bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan/80'
+                      : 'bg-white/[0.02] border-white/5 text-neutral-400'
+                  )}
+                >
+                  {isRunning ? (
+                    <Loader2 size={12} className="animate-spin shrink-0" />
+                  ) : isError ? (
+                    <AlertCircle size={12} className="shrink-0" />
+                  ) : (
+                    <Wrench size={12} className="shrink-0 text-green-400/70" />
+                  )}
+                  <span className="uppercase tracking-wider truncate flex-1">
+                    {label}
+                  </span>
+                  <span className="text-[10px] opacity-60">
+                    {isError ? (call.errorMessage || 'falhou').slice(0, 40) : call.summary || call.status}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* Generated Creative Projects */}
         {creativeProjects && creativeProjects.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-white/10 space-y-3">
+          <div className="mt-5 pt-5 border-t border-white/10 space-y-6">
             {creativeProjects.map((proj, idx) => (
-              <div key={idx} className="group space-y-2">
-                <img
-                  src={proj.imageUrl}
-                  alt={proj.prompt}
-                  className="rounded-lg max-h-64 w-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => window.open(proj.editUrl, '_blank')}
-                />
-                <div className="flex items-center justify-between gap-2 text-xs">
-                  <span className="text-neutral-500 line-clamp-1 flex-1">{proj.prompt.substring(0, 60)}...</span>
-                  <a
-                    href={proj.editUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-brand-cyan hover:text-brand-cyan/80 font-mono whitespace-nowrap underline"
-                  >
-                    EDITAR ✏️
-                  </a>
-                </div>
-              </div>
+              <CreativeProjectCard 
+                key={idx} 
+                project={proj} 
+                onViewImage={(url) => setViewerImage(url)}
+              />
             ))}
           </div>
         )}
@@ -201,6 +290,16 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           />
         )}
       </div>
+
+      {/* Image Full Screen Viewer */}
+      {viewerImage && (
+        <FullScreenViewer
+          imageUrl={viewerImage}
+          isLoading={false}
+          onClose={() => setViewerImage(null)}
+          showActions={false}
+        />
+      )}
     </div>
   );
 };

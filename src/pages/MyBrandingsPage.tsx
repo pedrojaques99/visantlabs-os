@@ -268,8 +268,8 @@ export const MyBrandingsPage: React.FC = () => {
           onConfirm={handleDeleteConfirm}
           title={t('branding.myBrandings.confirmDeleteTitle')}
           message={t('branding.myBrandings.confirmDelete')}
-          confirmText={t('branding.myBrandings.delete')}
-          cancelText={t('branding.cancel') || t('common.cancel')}
+          confirmText={t('common.delete')}
+          cancelText={t('common.cancel') || t('common.cancel')}
           variant="danger"
         />
       </div>

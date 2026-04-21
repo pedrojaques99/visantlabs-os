@@ -297,7 +297,7 @@ export const MyBudgetsPage: React.FC = () => {
                             className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                           >
                             <Edit className="h-4 w-4" />
-                            {t('budget.edit') || 'Edit'}
+                            {t('common.edit') || 'Edit'}
                           </Button>
                           <Button variant="ghost" onClick={(e) => handleDeletePresetClick(presetId, e)}
                             disabled={deletingPresetId === presetId}
@@ -406,7 +406,7 @@ export const MyBudgetsPage: React.FC = () => {
           onConfirm={handleDeleteConfirm}
           title={t('budget.confirmDeleteTitle')}
           message={t('budget.confirmDelete')}
-          confirmText={t('budget.delete')}
+          confirmText={t('common.delete')}
           cancelText={t('common.cancel')}
           variant="danger"
         />
@@ -421,7 +421,7 @@ export const MyBudgetsPage: React.FC = () => {
           onConfirm={handleDeletePresetConfirm}
           title={t('budget.confirmDeletePresetTitle') || 'Excluir Preset'}
           message={t('budget.confirmDeletePreset') || 'Tem certeza que deseja excluir este preset? Esta ação não pode ser desfeita.'}
-          confirmText={t('budget.delete') || 'Excluir'}
+          confirmText={t('common.delete') || 'Excluir'}
           cancelText={t('common.cancel') || 'Cancelar'}
           variant="danger"
         />

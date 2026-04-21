@@ -31,6 +31,7 @@ import { MediaSection } from './sections/MediaSection';
 import { LogosSection } from './sections/LogosSection';
 import { StrategySection } from './sections/StrategySection';
 import { FigmaLinkSection } from './sections/FigmaLinkSection';
+import { KnowledgeSection } from './sections/KnowledgeSection';
 import { GuidelineExportBar } from './GuidelineExportBar';
 
 interface GuidelineDetailProps {
@@ -72,12 +73,12 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
 
   const [orderedBlocks, setOrderedBlocks] = useState<string[]>(() => {
     const saved = localStorage.getItem('brand_guidelines_block_order');
-    return guideline.orderedBlocks || (saved ? JSON.parse(saved) : ['identity', 'strategy', 'logos', 'colors', 'typography', 'figma', 'tags', 'tokens', 'editorial', 'accessibility', 'media']);
+    return guideline.orderedBlocks || (saved ? JSON.parse(saved) : ['identity', 'strategy', 'logos', 'colors', 'typography', 'figma', 'tags', 'tokens', 'editorial', 'accessibility', 'media', 'knowledge']);
   });
 
   React.useEffect(() => {
     setOrderedBlocks(
-      guideline.orderedBlocks || ['identity', 'strategy', 'logos', 'colors', 'typography', 'figma', 'tags', 'tokens', 'editorial', 'accessibility', 'media']
+      guideline.orderedBlocks || ['identity', 'strategy', 'logos', 'colors', 'typography', 'figma', 'tags', 'tokens', 'editorial', 'accessibility', 'media', 'knowledge']
     );
   }, [guideline.id]);
 
@@ -158,6 +159,8 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
         );
       case 'figma':
         return <FigmaLinkSection key="figma" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+      case 'knowledge':
+        return <KnowledgeSection key="knowledge" guideline={guideline} span="full" />;
       default:
         return null;
     }

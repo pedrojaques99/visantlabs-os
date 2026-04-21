@@ -232,7 +232,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
 
                     <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
                         <GlassPanel padding="none" className="flex flex-row items-center gap-0.5 p-1 bg-neutral-950/80 backdrop-blur-xl border-white/10 rounded-lg shadow-2xl pointer-events-auto">
-                            <Tooltip content={t('mockup.download') || "Download"} position="top">
+                            <Tooltip content={t('common.download') || "Download"} position="top">
                                 <a
                                     href={imageUrl}
                                     download={`mockup-${Date.now()}.png`}

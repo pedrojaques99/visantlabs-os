@@ -1,24 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
-import { 
-  Search, 
-  Globe, 
-  Instagram, 
-  FileText, 
-  Download, 
-  ExternalLink, 
-  Loader2, 
-  Image as ImageIcon,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  Plus,
-  ArrowRight,
-  Maximize2,
-  CloudDownload,
-  Zap,
-  Sparkles,
-  Copy
-} from 'lucide-react';
+import { Search, Globe, Instagram, FileText, Download, ExternalLink, Loader2, Image as ImageIcon, CheckCircle2, AlertCircle, X, Plus, ArrowRight, Maximize2, CloudDownload, Zap, Diamond, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageShell } from '../components/ui/PageShell';
 import { imageApi, SearchImage, DesignerParams } from '../services/imageApi';
@@ -655,7 +636,7 @@ export default function ExtractorPage() {
                     ${showFilters ? 'bg-brand-cyan/20 text-brand-cyan' : 'bg-white/[0.02] text-neutral-500 hover:bg-white/5 hover:text-neutral-300'}
                   `}
                 >
-                  <Sparkles size={16} />
+                  <Diamond size={16} />
                 </button>
                 <button
                   type="button"

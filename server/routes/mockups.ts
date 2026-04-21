@@ -1311,7 +1311,9 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       mockupCacheKey,
       CACHE_TTL.MOCKUP_GEN,
       JSON.stringify(responseData)
-    );
+    ).catch((err: any) => {
+      console.warn(`[Cache] SET mockup failed (graceful): ${err.message}`);
+    });
     console.log(`[Cache] SET mockup:${mockupCacheKey.slice(0, 20)} (7d)`);
 
     // Return generated image

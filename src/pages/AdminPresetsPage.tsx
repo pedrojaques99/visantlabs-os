@@ -1606,7 +1606,7 @@ export const AdminPresetsPage: React.FC = () => {
                         variant="outline"
                         className="font-mono border-neutral-700/60 hover:border-[brand-cyan]/30"
                       >
-                        {t('adminPresets.close')}
+                        {t('common.close')}
                       </Button>
                     </div>
                   </CardContent>

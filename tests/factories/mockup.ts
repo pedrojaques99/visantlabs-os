@@ -4,7 +4,7 @@ import { faker } from '@faker-js/faker';
 /**
  * Mockup factory for integration tests.
  */
-export const mockupSeed = (overrides = {}) => ({
+export const mockupSeed = (overrides: Record<string, any> = {}): Record<string, any> => ({
   prompt: faker.lorem.sentence(),
   designType: 'blank',
   aspectRatio: '16:9',

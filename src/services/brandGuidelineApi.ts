@@ -332,4 +332,33 @@ export const brandGuidelineApi = {
     }
     return response.json();
   },
+
+  async listKnowledge(guidelineId: string): Promise<BrandKnowledgeFile[]> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/knowledge`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to list knowledge files');
+    const data = await response.json();
+    return Array.isArray(data.files) ? data.files : [];
+  },
+
+  async deleteKnowledge(guidelineId: string, fileId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/knowledge/${fileId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: 'Failed to delete' }));
+      throw new Error(err.error || 'Failed to delete knowledge file');
+    }
+  },
 };
+
+export interface BrandKnowledgeFile {
+  id: string;
+  fileName: string;
+  source: 'pdf' | 'image' | 'url' | 'text';
+  vectorIds: string[];
+  addedByUserId: string;
+  addedAt: string;
+}

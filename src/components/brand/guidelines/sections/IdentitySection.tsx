@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
-import { FileText, RefreshCw, Wand2, Trash2, Loader2, Plus, Globe, Instagram, Linkedin, Briefcase, Twitter } from 'lucide-react';
+import { FileText, RefreshCw, Diamond, Trash2, Loader2, Plus, Globe, Instagram, Linkedin, Briefcase, Twitter } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface IdentitySectionProps {

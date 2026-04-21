@@ -2,14 +2,18 @@ import express, { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
-import { chatWithAIContext } from '../services/geminiService.js';
+import { chatWithLLM } from '../services/llmRouter.js';
+import { env } from '../config/env.js';
 import { knowledgeService } from '../services/knowledgeService.js';
 import { buildBrandContextCached } from '../lib/brandContextBuilder.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { prisma } from '../db/prisma.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
-import { CHAT_TOOLS, executeToolCall } from '../services/chatToolExecutor.js';
+import { getChatTools, executeChatTool } from '../services/chat/toolRegistry.js';
+import { formatGeminiHistory } from '../lib/chat/history.js';
+import { resolveRagScope } from '../lib/chat/ragScope.js';
+import type { ChatMessage as SharedChatMessage } from '../../shared/types/chat.js';
 
 const router = express.Router();
 
@@ -22,11 +26,7 @@ const chatRateLimiter = rateLimit({
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: string;
-}
+type ChatMessage = SharedChatMessage;
 
 interface ChatSession {
   _id: string;
@@ -46,13 +46,6 @@ Seja direto, estratégico e conciso. Responda no idioma do usuário. Jamais use 
 
 ${brandContext ? `CONTEXTO DE MARCA:\n${brandContext}\n` : ''}
 ${ragContext ? `DOCUMENTOS INGERIDOS:\n${ragContext}\n` : ''}`;
-}
-
-function toGeminiHistory(messages: ChatMessage[]) {
-  return messages.slice(-20).map(m => ({
-    role: m.role === 'user' ? 'user' : 'model',
-    parts: [{ text: m.content }],
-  }));
 }
 
 async function getSession(sessionId: string, userId: string): Promise<ChatSession | null> {
@@ -222,29 +215,33 @@ router.post('/sessions/:id/message', authenticate, chatRateLimiter, async (req: 
       // sem Pinecone ou sem hits — continua sem RAG
     }
 
-    // 2. Brand context se vinculado
+    // 2. Brand context se vinculado (user-facing: enforce ownership)
     let brandContext = '';
-    if (session.brandGuidelineId) {
-      const guideline = await prisma.brandGuideline.findFirst({
-        where: { id: session.brandGuidelineId, userId: req.userId! },
-      });
-      if (guideline) {
-        brandContext = await buildBrandContextCached(guideline as any);
-      }
+    const { guideline } = await resolveRagScope(session, req.userId!, {
+      enforceOwnerId: req.userId!,
+    });
+    if (guideline) {
+      brandContext = await buildBrandContextCached(guideline as any);
     }
 
     // 3. System prompt
     let systemInstruction = buildSystemPrompt(ragContext, brandContext);
 
     // 4. Histórico no formato Gemini
-    const geminiHistory = toGeminiHistory(session.messages);
+    const geminiHistory = formatGeminiHistory(session.messages);
 
     // 5. First call: Chat with tools
-    let { text: reply, toolCalls } = await chatWithAIContext(
+    let { text: reply, toolCalls } = await chatWithLLM(
       message,
       '',
       geminiHistory,
-      { apiKey: userApiKey, model: GEMINI_MODELS.TEXT, systemInstruction, tools: CHAT_TOOLS }
+      {
+        apiKey: userApiKey,
+        model: GEMINI_MODELS.TEXT,
+        systemInstruction,
+        tools: getChatTools(false),
+        provider: env.DEFAULT_LLM_PROVIDER || 'gemini'
+      }
     );
 
     // 6. Tool use loop: if LLM called tools, execute and re-prompt
@@ -255,7 +252,11 @@ router.post('/sessions/:id/message', authenticate, chatRateLimiter, async (req: 
       const toolResults: string[] = [];
       for (const toolCall of toolCalls) {
         try {
-          const result = await executeToolCall(toolCall.name, toolCall.args);
+          const raw = await executeChatTool(toolCall.name, toolCall.args, {
+            userId: req.userId!,
+            sessionId: session._id,
+          });
+          const result = typeof raw === 'string' ? raw : JSON.stringify(raw);
           toolResults.push(`[${toolCall.name}]\n${result}`);
           toolsUsed.push(toolCall.name);
         } catch (e: any) {
@@ -268,11 +269,16 @@ router.post('/sessions/:id/message', authenticate, chatRateLimiter, async (req: 
       const toolContext = toolResults.join('\n\n');
       const systemWithTools = `${systemInstruction}\n\nTOOL RESULTS:\n${toolContext}`;
 
-      const { text: finalReply } = await chatWithAIContext(
+      const { text: finalReply } = await chatWithLLM(
         message,
         '',
         geminiHistory,
-        { apiKey: userApiKey, model: GEMINI_MODELS.TEXT, systemInstruction: systemWithTools }
+        {
+          apiKey: userApiKey,
+          model: GEMINI_MODELS.TEXT,
+          systemInstruction: systemWithTools,
+          provider: env.DEFAULT_LLM_PROVIDER || 'gemini'
+        }
       );
 
       reply = finalReply;
@@ -285,12 +291,18 @@ router.post('/sessions/:id/message', authenticate, chatRateLimiter, async (req: 
 
     // 8. Persistir mensagens
     const now = new Date().toISOString();
+    const generationId = uuidv4();
     session.messages.push({ role: 'user', content: message, timestamp: now });
-    session.messages.push({ role: 'assistant', content: reply, timestamp: now });
+    session.messages.push({ role: 'assistant', content: reply, timestamp: now, generationId });
 
     await saveSession(session);
 
-    res.json({ reply, sessionId: session._id, toolsUsed: toolsUsed.length > 0 ? toolsUsed : undefined });
+    res.json({
+      reply,
+      sessionId: session._id,
+      toolsUsed: toolsUsed.length > 0 ? toolsUsed : undefined,
+      generationId,
+    });
   } catch (err: any) {
     console.error('[Chat] Message error:', err);
     res.status(500).json({ error: err.message });
