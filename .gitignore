@@ -7,19 +7,22 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# Dependencies
+node_modules/
+
+# Build output
 dist
 dist-ssr
-*.local
+/generated/prisma
+/coverage
+
+# Environment
 .env
 .env.local
 .env.*.local
-.md
-MONGODB_AUTH_TROUBLESHOOTING.md
-MONGODB_SETUP.md
-VERCEL_MONGODB_SETUP.md
-TROUBLESHOOTING.md
-# Editor directories and files
+*.local
+
+# Editor / IDE
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -30,15 +33,7 @@ TROUBLESHOOTING.md
 *.sln
 *.sw?
 
-/generated/prisma
-ENV_VARIABLES.md
-MONGODB_URI_FIX.md
-GOOGLE_OAUTH_SETUP.md
-/MD
-.agent
-/.agent
-
-# Extensões e IDEs
+# AI tools & agents
 .cursor/
 .claude/
 .gemini/
@@ -47,36 +42,33 @@ GOOGLE_OAUTH_SETUP.md
 .agents/
 .augment/
 .firecrawl/
-.github/skills/ (a menos que sejam GitHub Actions específicas)
-/docs/
-/plugin/docs/
-plugin/Visant Copilot _Beta_/
+.agent/
 plugin/.agent/
 plugin/.firecrawl/
-
-#Scripts
-
-# Node
-node_modules/
+.github/skills/
+.github/memory/
+skills/
+src/skills/.data/
 
 # Figma plugin dev files (generated with ngrok URL)
 plugin/ui-dev.html
 plugin/manifest.dev.json
+plugin/Visant Copilot _Beta_/
+/plugin/docs/
 
-*.md
+# Docs (internal/setup, not shipped)
+MONGODB_AUTH_TROUBLESHOOTING.md
+MONGODB_SETUP.md
+VERCEL_MONGODB_SETUP.md
+TROUBLESHOOTING.md
+ENV_VARIABLES.md
+MONGODB_URI_FIX.md
+GOOGLE_OAUTH_SETUP.md
 
-# skills
-.github/skills/
-skills/
-src/skills/.data/
-/.github/memory
-/coverage
-/.claude
+# Test output artifacts
 test_output_verbose_utf8.txt
 test_output_verbose.txt
 test_output_utf8.txt
 test_output.txt
 vitest_output_branding.txt
 vitest_output.txt
-/.claude
-.claude/settings.local.json
