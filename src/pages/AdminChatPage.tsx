@@ -8,7 +8,7 @@ export const AdminChatPage: React.FC = () => {
     const { theme } = useTheme();
 
     return (
-        <div className={cn("h-[100dvh] w-full flex flex-col overflow-hidden", theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-neutral-50')}>
+        <div className={cn("h-[100dvh] w-full flex flex-col overflow-hidden", theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-50')}>
             <SEO
                 title="Admin Strategic Chat | Visant Labs"
                 description="Assistente estratégico exclusivo para administradores da Visant Labs."

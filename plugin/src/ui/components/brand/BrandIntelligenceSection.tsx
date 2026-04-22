@@ -6,7 +6,7 @@ import { useBrandImport } from '../../hooks/useBrandImport';
 import { OpButton } from '../common/OpButton';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { Sparkles, RefreshCw, Layers } from 'lucide-react';
+import { RefreshCw, Layers } from 'lucide-react';
 
 export function BrandIntelligenceSection() {
   const { brandGuideline, isGenerating } = usePluginStore();
@@ -26,8 +26,6 @@ export function BrandIntelligenceSection() {
   return (
     <div className="space-y-4">
       <div className="bg-neutral-900/40 p-3 rounded-lg border border-white/5 shadow-sm relative overflow-hidden group">
-        <Sparkles size={24} className="absolute -top-1 -right-1 text-brand-cyan/10 rotate-12 group-hover:text-brand-cyan/20 transition-colors" />
-        
         <div className="flex flex-col gap-2 relative z-10">
           <Button
             onClick={() => runImport({ overwrite: false })}

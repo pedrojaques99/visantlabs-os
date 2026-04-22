@@ -352,7 +352,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
     >
       <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-neutral-950 flex items-center justify-center p-4">
         <img src={url} alt={label} className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500" />
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-300 transition-opacity flex items-center justify-center gap-2">
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
           {onAdd && (
             <button
               onClick={(e) => { e.stopPropagation(); onAdd(); }}

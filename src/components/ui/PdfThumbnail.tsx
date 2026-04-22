@@ -111,7 +111,7 @@ export const PdfThumbnail: React.FC<PdfThumbnailProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className="absolute top-1 right-1 w-5 h-5 bg-red-500/80 hover:bg-red-500 border border-black rounded-md flex items-center justify-center opacity-0 group-hover:opacity-300 transition-opacity z-10"
+          className="absolute top-1 right-1 w-5 h-5 bg-red-500/80 hover:bg-red-500 border border-black rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
           title="Remove PDF"
         >
           <X size={10} className="text-white" strokeWidth={3} />
@@ -120,7 +120,7 @@ export const PdfThumbnail: React.FC<PdfThumbnailProps> = ({
 
       {/* File name tooltip on hover */}
       {fileName && (
-        <div className="absolute bottom-0 left-0 right-0 bg-neutral-950/80 text-white text-[10px] font-mono px-1 py-0.5 truncate opacity-0 group-hover:opacity-300 transition-opacity z-10">
+        <div className="absolute bottom-0 left-0 right-0 bg-neutral-950/80 text-white text-[10px] font-mono px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition-opacity z-10">
           {fileName}
         </div>
       )}

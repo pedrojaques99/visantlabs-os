@@ -86,7 +86,7 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
         </div>
       ) : undefined}
       actions={(
-        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
+        <Button variant="ghost" size="icon" aria-label="Add item" className="h-6 w-6 text-neutral-500 hover:text-white"
           onClick={() => {
             if (!isEditing) setIsEditing(true);
           }}>
@@ -98,7 +98,7 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
         {isEditing ? (
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
-              <MicroTitle className="text-[10px] opacity-300 uppercase tracking-widest pl-1">Design Tokens (JSON)</MicroTitle>
+              <MicroTitle className="text-[10px] opacity-100 uppercase tracking-widest pl-1">Design Tokens (JSON)</MicroTitle>
               <Textarea
                 value={tokensJson}
                 onChange={(e) => setTokensJson(e.target.value)}

@@ -3752,7 +3752,7 @@ export const CanvasPage: React.FC = () => {
   // Allow visual rendering of canvas even during authentication
   if (isLoadingProject && isAuthenticated !== false) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">

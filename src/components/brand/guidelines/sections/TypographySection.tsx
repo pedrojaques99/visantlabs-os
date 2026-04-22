@@ -31,6 +31,9 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
     role: t.role || t.name || 'Body',
     style: t.style || t.fontStyle || 'Regular',
     size: t.size || t.fontSize || 16,
+    lineHeight: t.lineHeight,
+    letterSpacing: t.letterSpacing,
+    weights: t.weights,
   }));
 
   // Brand fonts already saved — shown as priority group in GoogleFontPicker
@@ -62,7 +65,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
       onCancel={() => { form.reset(); setIsEditing(false); }}
       span={span as any}
       actions={(
-        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
+        <Button variant="ghost" size="icon" aria-label="Add font" className="h-6 w-6 text-neutral-500 hover:text-white"
           onClick={() => {
             if (!isEditing) setIsEditing(true);
             append({ family: 'Inter', role: 'Main Header', style: 'Bold', size: 48 });
@@ -170,6 +173,39 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                           />
                         </div>
                       </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <MicroTitle className="text-[10px] opacity-40 uppercase pl-1 tracking-widest">Line Height</MicroTitle>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            {...form.register(`typography.${i}.lineHeight`, { valueAsNumber: true })}
+                            className="bg-neutral-950/80 border-white/5 text-[10px] font-mono text-white focus:border-brand-cyan/30 focus:bg-neutral-950 h-10 rounded-xl"
+                            placeholder="e.g. 1.6"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <MicroTitle className="text-[10px] opacity-40 uppercase pl-1 tracking-widest">Letter Spacing</MicroTitle>
+                          <Input
+                            {...form.register(`typography.${i}.letterSpacing`)}
+                            className="bg-neutral-950/80 border-white/5 text-[10px] font-mono text-white focus:border-brand-cyan/30 focus:bg-neutral-950 h-10 rounded-xl"
+                            placeholder="e.g. -0.05em"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <MicroTitle className="text-[10px] opacity-40 uppercase pl-1 tracking-widest">Weights</MicroTitle>
+                          <Input
+                            value={(form.watch(`typography.${i}.weights`) || []).join(', ')}
+                            onChange={(e) => {
+                              const vals = e.target.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+                              form.setValue(`typography.${i}.weights`, vals);
+                            }}
+                            className="bg-neutral-950/80 border-white/5 text-[10px] font-mono text-white focus:border-brand-cyan/30 focus:bg-neutral-950 h-10 rounded-xl"
+                            placeholder="300, 400, 700"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -225,7 +261,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                     </div>
 
                     <div className="opacity-0 group-hover/row:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-700">
+                      <Button variant="ghost" size="icon" aria-label="Preview font" className="h-8 w-8 text-neutral-700">
                         <Eye size={14} />
                       </Button>
                     </div>

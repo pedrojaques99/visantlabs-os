@@ -108,6 +108,25 @@ export const PublicBrandGuideline: React.FC = () => {
 
   const brandTheme = useMemo(() => extractBrandTheme(guideline, theme), [guideline, theme]);
 
+  const visibleSections = useMemo<BrandViewSection[]>(() => {
+    switch (activeTab) {
+      case 'identity':
+        return ['identity', 'guidelines'];
+      case 'strategy':
+        return ['manifesto', 'archetypes', 'personas', 'voiceValues', 'guidelines'];
+      case 'colors':
+        return ['colors'];
+      case 'typography':
+        return ['typography'];
+      case 'logos':
+        return ['logos'];
+      case 'media':
+        return ['media'];
+      default:
+        return ['identity', 'manifesto', 'archetypes', 'personas', 'voiceValues', 'colors', 'typography', 'logos', 'media', 'guidelines'];
+    }
+  }, [activeTab]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
@@ -149,31 +168,13 @@ export const PublicBrandGuideline: React.FC = () => {
     { id: 'media', label: 'Library', icon: Palette },
   ];
 
-  const visibleSections = useMemo<BrandViewSection[]>(() => {
-    switch (activeTab) {
-      case 'identity':
-        return ['identity', 'guidelines'];
-      case 'strategy':
-        return ['manifesto', 'archetypes', 'personas', 'voiceValues', 'guidelines'];
-      case 'colors':
-        return ['colors'];
-      case 'typography':
-        return ['typography'];
-      case 'logos':
-        return ['logos'];
-      case 'media':
-        return ['media'];
-      default:
-        return ['identity', 'manifesto', 'archetypes', 'personas', 'voiceValues', 'colors', 'typography', 'logos', 'media', 'guidelines'];
-    }
-  }, [activeTab]);
-
   return (
     <div
       className="min-h-screen transition-all duration-1000 selection:bg-[var(--accent)]/30 overflow-x-hidden"
       style={{
         '--accent': brandTheme.accent,
         '--accent-rgb': brandTheme.accentRgb,
+        '--accent-text': brandTheme.accentText,
         '--brand-bg': brandTheme.bg,
         '--brand-surface': brandTheme.surface,
         '--brand-text': brandTheme.text,
@@ -184,10 +185,11 @@ export const PublicBrandGuideline: React.FC = () => {
       <SEO title={`${brandName} - Brand Portal`} description={guideline.identity?.description || guideline.identity?.tagline} />
 
       {/* Floating Side Nav (Desktop) */}
-      <nav className="fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4">
+      <nav aria-label="Brand sections" className="fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4">
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            aria-current={activeTab === tab.id ? 'true' : undefined}
             onClick={() => {
               setActiveTab(tab.id);
               document.getElementById(tab.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -197,7 +199,7 @@ export const PublicBrandGuideline: React.FC = () => {
               activeTab === tab.id ? "translate-x-2" : "opacity-60 hover:opacity-100"
             )}
           >
-            <div className={cn(
+            <div aria-hidden="true" className={cn(
               "w-1 h-1 rounded-full transition-all duration-300",
               activeTab === tab.id
                 ? "h-6 bg-[var(--accent)] shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]"
@@ -209,7 +211,7 @@ export const PublicBrandGuideline: React.FC = () => {
           </button>
         ))}
       </nav>
-      <div className="flex gap-2" style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 1000 }}>
+      <div className="flex gap-2 fixed top-5 left-5 z-[1000]">
         <Button
           onClick={() => navigate('/')}
           variant="ghost"
@@ -236,25 +238,27 @@ export const PublicBrandGuideline: React.FC = () => {
         </Button>
       </div>
 
-      <div className="flex gap-2" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
+      <div className="flex gap-2 fixed top-5 right-5 z-[1000]">
         <Button
           onClick={() => setTheme(prev => prev === 'brand' ? 'light' : prev === 'light' ? 'dark' : 'brand')}
           variant="ghost"
+          aria-label={`Switch theme, current: ${theme}`}
           className={cn(
             "h-10 px-4 rounded-full border transition-all duration-500 gap-2 font-mono text-[10px] font-bold uppercase tracking-widest",
             theme === 'brand'
-              ? "bg-[var(--accent)] text-black border-transparent shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]"
+              ? "bg-[var(--accent)] text-[var(--accent-text)] border-transparent shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]"
               : theme === 'dark'
                 ? "bg-neutral-900 border-white/5 text-white hover:bg-neutral-800"
                 : "bg-white border-neutral-200 text-neutral-900 hover:bg-neutral-50 shadow-sm"
           )}
         >
-          {theme === 'brand' ? <Diamond size={14} className="animate-pulse" /> : theme === 'light' ? <Sun size={14} /> : <Moon size={14} />}
+          {theme === 'brand' ? <Diamond size={14} className="animate-pulse" aria-hidden="true" /> : theme === 'light' ? <Sun size={14} aria-hidden="true" /> : <Moon size={14} aria-hidden="true" />}
           {theme}
         </Button>
         <Button
           onClick={handleDownloadJSON}
           variant="ghost"
+          aria-label="Download brand guidelines as JSON"
           className={cn(
             "h-10 w-10 p-0 rounded-full border transition-colors",
             theme === 'dark'
@@ -262,11 +266,12 @@ export const PublicBrandGuideline: React.FC = () => {
               : "bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm"
           )}
         >
-          <Download size={14} />
+          <Download size={14} aria-hidden="true" />
         </Button>
         <Button
           onClick={handleDownloadCSS}
           variant="ghost"
+          aria-label="Download brand variables as CSS"
           className={cn(
             "h-10 w-10 p-0 rounded-full border transition-colors",
             theme === 'dark'
@@ -274,7 +279,7 @@ export const PublicBrandGuideline: React.FC = () => {
               : "bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm"
           )}
         >
-          <Palette size={14} />
+          <Palette size={14} aria-hidden="true" />
         </Button>
       </div>
 
@@ -323,10 +328,11 @@ export const PublicBrandGuideline: React.FC = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
+                    aria-current={activeTab === tab.id ? 'true' : undefined}
                     className={cn(
                       "px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
                       activeTab === tab.id
-                        ? "bg-[var(--accent)] text-black"
+                        ? "bg-[var(--accent)] text-[var(--accent-text)]"
                         : "opacity-40 hover:opacity-100 hover:bg-[var(--brand-text)]/5"
                     )}
                   >

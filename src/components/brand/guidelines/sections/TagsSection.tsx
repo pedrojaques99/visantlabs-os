@@ -66,7 +66,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
         </div>
       ) : undefined}
       actions={(
-        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
+        <Button variant="ghost" size="icon" aria-label="Add item" className="h-6 w-6 text-neutral-500 hover:text-white"
           onClick={() => {
             if (!isEditing) setIsEditing(true);
           }}>
@@ -78,7 +78,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
         {isEditing ? (
           <div className="w-full space-y-4 pt-2">
             <div className="space-y-2">
-              <MicroTitle className="text-[10px] opacity-300 uppercase pl-1">Strategic Framework (JSON)</MicroTitle>
+              <MicroTitle className="text-[10px] opacity-100 uppercase pl-1">Strategic Framework (JSON)</MicroTitle>
               <Textarea
                 value={tagsJson}
                 onChange={(e) => setTagsJson(e.target.value)}

@@ -212,7 +212,7 @@ export const ApiKeysPage: React.FC = () => {
   // Loading state
   if (isCheckingAuth || (isLoading && keys.length === 0)) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <GlitchLoader size={32} />
       </div>
     );
@@ -221,7 +221,7 @@ export const ApiKeysPage: React.FC = () => {
   // Not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-400 font-mono mb-4">Please sign in to manage API keys</p>
           <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
@@ -233,7 +233,7 @@ export const ApiKeysPage: React.FC = () => {
   return (
     <>
       <SEO title="API Keys" description="Manage your API keys for agent and programmatic access" noindex={true} />
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0">
 
         </div>

@@ -168,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         <img
           src="/logo-vsn-labs.png"
           alt="VSN Labs"
-          className="h-5 md:h-7 w-auto opacity-90 group-hover:opacity-300 transition-opacity"
+          className="h-5 md:h-7 w-auto opacity-90 group-hover:opacity-100 transition-opacity"
         />
         <div className="hidden sm:flex items-baseline gap-1.5">
           <span className="text-xs md:text-sm font-mono text-neutral-500 uppercase">Visant Labs®</span>

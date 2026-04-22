@@ -201,7 +201,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-300 transition-opacity">
+        <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           {/* Clear selection button (only on hover when there are selected tags) */}
           {hasSelection && (
             <Button variant="ghost" type="button"

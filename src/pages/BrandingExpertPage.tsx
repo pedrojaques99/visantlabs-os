@@ -11,7 +11,7 @@ export const BrandingExpertPage: React.FC = () => {
     const projectId = searchParams.get('projectId') || undefined;
 
     return (
-        <div className={cn("h-screen w-full flex flex-col overflow-hidden", theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-neutral-50')}>
+        <div className={cn("h-screen w-full flex flex-col overflow-hidden", theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-50')}>
             <SEO 
                 title="Especialista em Branding | Visant Labs"
                 description="Converse com nosso assistente especialista em estratégia e metodologia de branding."

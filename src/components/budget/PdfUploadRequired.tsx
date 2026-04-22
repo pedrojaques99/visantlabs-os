@@ -137,7 +137,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
 
 
   return (
-    <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 flex items-center justify-center">
+    <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 flex items-center justify-center">
       <div className="max-w-2xl w-full px-4">
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 space-y-6">
           <div className="text-center mb-8">

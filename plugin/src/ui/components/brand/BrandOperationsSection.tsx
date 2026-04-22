@@ -4,7 +4,7 @@ import { useSmartAnalyze } from '../../hooks/useSmartAnalyze';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { OpButton } from '../common/OpButton';
-import { Zap, Wand2, Grid3X3, Smartphone, FileJson, Sparkles, Image as ImageIcon, StickyNote, Download, Copy } from 'lucide-react';
+import { Zap, Grid3X3, Smartphone, FileJson, Image as ImageIcon, StickyNote, Download, Copy } from 'lucide-react';
 
 function BrandLintReport({ report }: { report: any }) {
   const totals = report?.totals || {};

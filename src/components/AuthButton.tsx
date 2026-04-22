@@ -305,7 +305,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
       <div className="flex items-center gap-3" data-auth-dropdown>
         {propSubscriptionStatus || subscriptionStatus ? (
           <Button variant="ghost" onClick={onCreditsClick}
-            className="flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] text-brand-cyan font-mono bg-[#1A1A1A]/40 border border-brand-cyan/20 hover:bg-[#252525]/60 hover:border-brand-cyan/40 transition-all cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] text-brand-cyan font-mono bg-neutral-900/40 border border-brand-cyan/20 hover:bg-[#252525]/60 hover:border-brand-cyan/40 transition-all cursor-pointer shadow-sm"
             aria-label={t('auth.availableCredits', { count: availableCredits })}
             title={t('auth.creditsAvailable', { count: availableCredits })}
           >
@@ -315,7 +315,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
         ) : null}
         <div className="relative">
           <Button variant="ghost" onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 h-9 px-2 md:px-3 rounded-[10px] text-[11px] text-neutral-400 font-mono bg-[#1A1A1A]/40 border border-white/5 hover:bg-[#252525]/60 hover:border-neutral-600/50 hover:text-neutral-300 transition-all cursor-pointer shadow-sm"
+            className="flex items-center gap-2 h-9 px-2 md:px-3 rounded-[10px] text-[11px] text-neutral-400 font-mono bg-neutral-900/40 border border-white/5 hover:bg-[#252525]/60 hover:border-neutral-600/50 hover:text-neutral-300 transition-all cursor-pointer shadow-sm"
             title={t('auth.userMenu')}
           >
             {user.picture ? (

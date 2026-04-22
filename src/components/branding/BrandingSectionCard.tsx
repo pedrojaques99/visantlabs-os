@@ -177,7 +177,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
           <div className="flex items-center gap-2 mb-2">
             {isDraggable && (
               <div
-                className={`transition-colors opacity-60 group-hover:opacity-300 pointer-events-none ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-400' : 'text-neutral-400 hover:text-neutral-500'
+                className={`transition-colors opacity-60 group-hover:opacity-100 pointer-events-none ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-400' : 'text-neutral-400 hover:text-neutral-500'
                   }`}
                 title={t('branding.dragToReorder') || 'Drag to reorder'}
               >
@@ -253,7 +253,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
         <div
           ref={resizeRef}
           onMouseDown={handleResizeStart}
-          className={`absolute bottom-0 right-0 w-8 h-8 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-300 transition-opacity rounded-tl-lg ${theme === 'dark' ? 'hover:bg-neutral-950/20' : 'hover:bg-neutral-200'
+          className={`absolute bottom-0 right-0 w-8 h-8 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-tl-lg ${theme === 'dark' ? 'hover:bg-neutral-950/20' : 'hover:bg-neutral-200'
             }`}
           title={t('branding.resize') || 'Resize'}
         >

@@ -74,7 +74,7 @@ export const AuthCallbackPage: React.FC = () => {
 
   if (isProcessing && !error) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
         <div className="text-center">
           <GlitchLoader size={32} color="brand-cyan" className="mx-auto mb-4" />
           <p className="text-neutral-400 font-mono text-sm">{t('auth.processing') || 'Processing authentication...'}</p>
@@ -84,7 +84,7 @@ export const AuthCallbackPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
       <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 w-full max-w-md">
         <div className="flex items-center gap-3 mb-4">
           <AlertCircle size={24} className="text-red-400" />

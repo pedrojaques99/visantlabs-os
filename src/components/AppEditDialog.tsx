@@ -106,7 +106,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl bg-[#0A0A0A] border-white/10 text-neutral-200 backdrop-blur-xl max-h-[90vh]">
+      <DialogContent className="max-w-4xl bg-neutral-950 border-white/10 text-neutral-200 backdrop-blur-xl max-h-[90vh]">
         <DialogHeader className="px-10 pt-10">
           <DialogTitle className="text-3xl font-black font-redhatmono tracking-tighter text-white">
             {app ? 'EDIT APP CONFIG //' : 'NEW APP CONFIG //'}
@@ -240,7 +240,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
               <Label>App Image / Thumbnail</Label>
               {formData.thumbnail && (
                 <div className="relative aspect-video rounded-md overflow-hidden border border-white/10 mb-2">
-                  <img src={formData.thumbnail} className="w-full h-full object-cover" />
+                  <img src={formData.thumbnail} alt="App thumbnail" className="w-full h-full object-cover" />
                   <button
                     onClick={() => setFormData({ ...formData, thumbnail: '' })}
                     className="absolute top-1 right-1 bg-black/60 px-2 py-0.5 rounded-full text-red-500 hover:bg-black/80 transition-colors"

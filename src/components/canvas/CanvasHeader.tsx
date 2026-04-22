@@ -80,7 +80,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
   const { openLibrary: openBrandLibrary } = useBrandKit();
 
   // Common button classes
-  const headerButtonClass = "h-9 w-9 p-0 border rounded-[10px] transition-all flex items-center justify-center bg-[#1A1A1A]/40 hover:bg-[#252525]/60 text-neutral-400 hover:text-neutral-200 border-white/5 hover:border-white/10 cursor-pointer shadow-sm transition-all duration-200";
+  const headerButtonClass = "h-9 w-9 p-0 border rounded-[10px] transition-all flex items-center justify-center bg-neutral-900/40 hover:bg-[#252525]/60 text-neutral-400 hover:text-neutral-200 border-white/5 hover:border-white/10 cursor-pointer shadow-sm transition-all duration-200";
   const activeHeaderButtonClass = "bg-brand-cyan/10 text-brand-cyan border-brand-cyan/20";
 
   // Handle share button click
@@ -163,7 +163,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
   }, [handleSaveProjectName, projectName, generateGenericName]);
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-[#0C0C0C]/95 backdrop-blur-sm border-b border-neutral-800/50">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-neutral-950/95 backdrop-blur-sm border-b border-neutral-800/50">
       <div className="px-2 sm:px-4 md:px-6 flex items-center justify-between h-12 gap-2 py-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <BackButton onClick={onBack} className="mt-8 flex-shrink-0" />
@@ -269,7 +269,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             >
               <Download size={16} />
             </Button>
-            <div className="absolute right-0 top-full mt-1 w-52 bg-[#1a1a1a] border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
+            <div className="absolute right-0 top-full mt-1 w-52 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
               <Button variant="ghost" onClick={() => onExportImagesRequest?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
               >

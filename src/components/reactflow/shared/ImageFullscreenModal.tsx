@@ -139,9 +139,9 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
           <div className="flex items-center gap-2 ml-auto">
             {/* Zoom Controls */}
             <div className="flex items-center gap-1 bg-neutral-950/70 backdrop-blur-sm rounded-md border border-neutral-700/50 p-1">
-              <Button variant="ghost"
+              <Button variant="action"
                 onClick={handleZoomOut}
-                className="p-1.5 hover:bg-neutral-800/50 rounded text-neutral-400 hover:text-white transition-colors"
+                
                 title={t('common.zoomOut')}
               >
                 <ZoomOut size={14} strokeWidth={2} />
@@ -149,9 +149,9 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
               <span className="text-xs font-mono text-neutral-500 px-2 min-w-[3rem] text-center">
                 {Math.round(zoom * 100)}%
               </span>
-              <Button variant="ghost"
+              <Button variant="action"
                 onClick={handleZoomIn}
-                className="p-1.5 hover:bg-neutral-800/50 rounded text-neutral-400 hover:text-white transition-colors"
+                
                 title={t('common.zoomIn')}
               >
                 <ZoomIn size={14} strokeWidth={2} />

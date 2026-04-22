@@ -564,7 +564,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                                   className="w-6 h-6 rounded border border-white/10 shadow-sm transition-transform group-hover/color:scale-110"
                                   style={{ backgroundColor: color }}
                                 />
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-neutral-950 text-white text-[10px] font-mono rounded opacity-0 group-hover/color:opacity-300 transition-opacity z-10 whitespace-nowrap border border-neutral-700">
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-neutral-950 text-white text-[10px] font-mono rounded opacity-0 group-hover/color:opacity-100 transition-opacity z-10 whitespace-nowrap border border-neutral-700">
                                   {color}
                                 </div>
                               </div>

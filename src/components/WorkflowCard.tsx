@@ -96,7 +96,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                     e.stopPropagation();
                                     onDuplicate();
                                 }}
-                                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300"
+                                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
                                 title={isOwner ? t('workflows.actions.duplicate') || 'Duplicate' : t('workflows.actions.addToLibrary') || 'Add to Library'}
                             >
                                 {isOwner ? <Copy className="h-4 w-4" /> : <Download className="h-4 w-4" />}
@@ -108,7 +108,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                     e.stopPropagation();
                                     onEdit?.();
                                 }}
-                                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300"
+                                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
                                 title={t('common.edit') || 'Edit'}
                             >
                                 <Edit2 className="h-4 w-4" />
@@ -120,7 +120,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                     e.stopPropagation();
                                     onDelete?.();
                                 }}
-                                className="p-1.5 text-neutral-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-300"
+                                className="p-1.5 text-neutral-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
                                 title={t('common.delete') || 'Delete'}
                             >
                                 <Trash2 className="h-4 w-4" />

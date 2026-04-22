@@ -308,7 +308,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                                 setFormData({ ...formData, referenceImageUrl: '' });
                                                 setImageUploadError(null);
                                             }}
-                                            className="absolute inset-0 bg-neutral-950/60 flex items-center justify-center opacity-0 group-hover:opacity-300 transition-opacity"
+                                            className="absolute inset-0 bg-neutral-950/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
                                             <X className="h-4 w-4 text-white" />
                                         </Button>

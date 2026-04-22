@@ -259,7 +259,7 @@ export function GenericPresetModal<T extends string>({
                         className={cn(
                             'transition-all duration-300 ease-in-out',
                             activeTab === 'official'
-                                ? 'opacity-300 translate-y-0'
+                                ? 'opacity-100 translate-y-0'
                                 : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
                         )}
                     >
@@ -276,7 +276,7 @@ export function GenericPresetModal<T extends string>({
                         className={cn(
                             'transition-all duration-300 ease-in-out',
                             activeTab === 'community'
-                                ? 'opacity-300 translate-y-0'
+                                ? 'opacity-100 translate-y-0'
                                 : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
                         )}
                     >

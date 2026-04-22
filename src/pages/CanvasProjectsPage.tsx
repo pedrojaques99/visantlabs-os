@@ -327,9 +327,9 @@ export const CanvasProjectsPage: React.FC = () => {
       </Button>
 
       <Button 
-        variant="ghost" 
+        variant="toolbar" 
         onClick={handleImportJsonClick}
-        className="h-10 px-3 hover:bg-neutral-900/40 text-neutral-400 hover:text-brand-cyan transition-all rounded-md flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest"
+        
       >
         <FileJson className="h-4 w-4" />
         <span className="hidden lg:inline">JSON</span>

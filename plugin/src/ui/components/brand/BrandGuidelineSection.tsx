@@ -6,7 +6,7 @@ import { getGuidelineId, getGuidelineLabel } from '../../lib/brandHydration';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { Link2, Plus, RefreshCw, Sparkles, BookOpen } from 'lucide-react';
+import { Link2, Plus, RefreshCw, BookOpen } from 'lucide-react';
 import { useBrandImport } from '../../hooks/useBrandImport';
 import { NamingGuideModal, PushPreviewModal } from './BrandModals';
 

@@ -3,7 +3,7 @@ import { useOpRunner } from '../../hooks/useOpRunner';
 import { useSmartAnalyze } from '../../hooks/useSmartAnalyze';
 import { usePluginStore } from '../../store';
 import { OpButton } from '../common/OpButton';
-import { FileJson, Sparkles, Layers, StickyNote, BookOpen } from 'lucide-react';
+import { FileJson, Layers, StickyNote, BookOpen } from 'lucide-react';
 import { NamingGuideModal, SmartScanModal } from '../brand/BrandModals';
 import { useFigmaMessages } from '../../hooks/useFigmaMessages';
 
@@ -45,32 +45,18 @@ export function IntelligenceSection() {
         </OpButton>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <OpButton
-          opId="analyzeJson"
-          runner={runner}
-          task={() => analyze('figma-plugin')}
-          busyLabel="Analyzing…"
-          variant="outline"
-          size="sm"
-          className="h-8 text-[10px]"
-        >
-          <FileJson size={12} className="mr-2 text-neutral-500" />
-          Analyze to JSON
-        </OpButton>
-        <OpButton
-          opId="analyzePrompt"
-          runner={runner}
-          task={() => analyze('image-gen')}
-          busyLabel="Analyzing…"
-          variant="outline"
-          size="sm"
-          className="h-8 text-[10px]"
-        >
-          <Sparkles size={12} className="mr-2 text-neutral-500" />
-          Analyze to Prompt
-        </OpButton>
-      </div>
+      <OpButton
+        opId="analyzeJson"
+        runner={runner}
+        task={() => analyze('figma-plugin')}
+        busyLabel="Analyzing…"
+        variant="outline"
+        size="sm"
+        className="w-full h-8 text-[10px]"
+      >
+        <FileJson size={12} className="mr-2 text-neutral-500" />
+        Analyze to JSON
+      </OpButton>
 
       <div className="pt-2 border-t border-white/5 space-y-3">
         <OpButton

@@ -81,7 +81,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
   if (isCollapsed) {
     return (
       <Button variant="ghost" onClick={onToggleCollapse}
-        className="w-full bg-neutral-950/30 backdrop-blur-sm border border-neutral-800/40 rounded-md px-3 py-2 opacity-70 hover:opacity-300 transition-opacity flex items-center gap-2 justify-center"
+        className="w-full bg-neutral-950/30 backdrop-blur-sm border border-neutral-800/40 rounded-md px-3 py-2 opacity-70 hover:opacity-100 transition-opacity flex items-center gap-2 justify-center"
         title="Show filters"
       >
         <Menu size={16} className="text-neutral-500 flex-shrink-0" />

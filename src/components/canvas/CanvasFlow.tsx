@@ -1050,7 +1050,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
             className={cn(
               "transition-opacity duration-300",
-              isDragging ? '!opacity-300' : '!opacity-300 hover:!opacity-300'
+              isDragging ? '!opacity-100' : '!opacity-100 hover:!opacity-100'
             )}
           />
         )}

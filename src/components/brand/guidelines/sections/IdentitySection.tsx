@@ -91,11 +91,11 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
       span={span as any}
       rowSpan={rowSpan as any}
       actions={(
-        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
+        <Button variant="ghost" size="icon" aria-label="Add item" className="h-6 w-6 text-neutral-500 hover:text-white"
           onClick={() => {
             if (!isEditing) setIsEditing(true);
           }}>
-          <Plus size={12} />
+          <Plus size={12} aria-hidden="true" />
         </Button>
       )}
     >

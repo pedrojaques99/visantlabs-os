@@ -326,7 +326,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
     // --- Render Content ---
 
     const content = (
-        <div className={cn("flex flex-col h-full bg-[#0C0C0C]", variant === 'embedded' ? "bg-transparent" : "")}>
+        <div className={cn("flex flex-col h-full bg-neutral-950", variant === 'embedded' ? "bg-transparent" : "")}>
             {/* Header Area */}
             <div className={cn(
                 "flex-shrink-0 space-y-4 p-4",
@@ -462,7 +462,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
     if (variant === 'sheet') {
         return (
             <Sheet open={isOpen} onOpenChange={onClose}>
-                <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-[#0C0C0C] border-neutral-800">
+                <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-neutral-950 border-neutral-800">
                     {content}
                 </SheetContent>
             </Sheet>

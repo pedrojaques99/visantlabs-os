@@ -165,7 +165,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                     <div key={i} className="relative w-12 h-12 rounded-md overflow-hidden border border-white/20 bg-neutral-800 shadow-lg group/ref">
                                         <img
                                             src={img.url || (img.base64 ? `data:${img.mimeType || 'image/png'};base64,${img.base64}` : '')}
-                                            className="w-full h-full object-contain p-1 opacity-90 group-hover/ref:opacity-300 transition-opacity"
+                                            className="w-full h-full object-contain p-1 opacity-90 group-hover/ref:opacity-100 transition-opacity"
                                             alt={`Ref ${i}`}
                                         />
                                         {onReferenceImagesChange && (

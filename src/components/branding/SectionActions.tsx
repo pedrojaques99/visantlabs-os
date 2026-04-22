@@ -63,7 +63,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
   // When editing, show only Check (save) and Dismiss (cancel)
   if (isEditing) {
     return (
-      <div className="flex items-center gap-1 opacity-300 transition-opacity duration-200">
+      <div className="flex items-center gap-1 opacity-100 transition-opacity duration-200">
         <Tooltip content={t('common.save') || 'Save'} position="top">
           <Button variant="ghost"
             onClick={(e) => {
@@ -94,7 +94,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
 
   // Normal mode: show all actions
   return (
-    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-300 transition-opacity duration-200">
+    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
       {hasData && onRegenerate && (
         <Tooltip content={t('branding.regenerate') || 'Regenerate'} position="top">
           <Button variant="ghost"
