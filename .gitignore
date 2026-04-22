@@ -65,6 +65,24 @@ ENV_VARIABLES.md
 MONGODB_URI_FIX.md
 GOOGLE_OAUTH_SETUP.md
 
+# Internal planning & implementation docs
+docs/IMPLEMENTATION_*.md
+docs/implementation_plan_*.md
+docs/plan_v*.md
+docs/plugin_improvement.md
+docs/DOCUMENTATION_*.md
+docs/DESIGN_SYSTEM_*.md
+docs/FIGMA_*.md
+docs/MCP_*.md
+docs/MOCKUP_*.md
+docs/P0_*.md
+docs/BRAND_*.md
+docs/DOCS_*.md
+docs/VISANTCHI*.md
+docs/superpowers/
+scripts/reports/
+MEMORY.md
+
 # Test output artifacts
 test_output_verbose_utf8.txt
 test_output_verbose.txt
