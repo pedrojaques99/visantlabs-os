@@ -14,8 +14,8 @@ register({
 });
 
 import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
-dotenv.config();
+dotenv.config({ path: '.env.local', override: false });
+dotenv.config({ override: false });
 
 // Fail-fast env validation — must run before any module that reads env at load.
 import { loadEnv } from './config/env.js';

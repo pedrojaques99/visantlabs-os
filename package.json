@@ -24,7 +24,7 @@
     "dev:server": "tsx watch server/index.ts",
     "mcp:figma": "node --loader ts-node/esm server/mcp/figma-mcp.ts",
     "mcp:visant": "tsx mcp-server/index.ts",
-    "dev:all": "concurrently \"npm run dev\" \"npm run dev:server\"",
+    "dev:all": "node scripts/find-free-port.js",
     "stop:servers": "node scripts/stop-dev-server.js || true",
     "check:icons": "node scripts/check-icons.cjs",
     "build": "npm run stop:servers && npm run check:icons && npm run audit:visuals && npm run i18n:check && prisma generate && vite build",
