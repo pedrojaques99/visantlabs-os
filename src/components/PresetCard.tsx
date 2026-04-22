@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Download, Edit2, Trash2, Heart, LayoutGrid, Box, Settings, Palette, Diamond, Image as ImageIcon, Camera, Layers, MapPin, Sun, Check, Clipboard } from 'lucide-react';
-import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import { authService } from '../services/authService';
 import { migrateLegacyPreset } from '../types/communityPrompts';
 import type { CommunityPrompt, PromptCategory } from '../types/communityPrompts';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
+import { useGlitchCopy } from '@/hooks/useGlitchCopy';
 
 export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string; label: string }> = {
   'all': { icon: LayoutGrid, color: 'text-neutral-300', label: 'All Prompts' },
@@ -61,8 +61,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
   const presetIcon = getPresetIcon(migrated.category);
   const isLiked = migrated.isLikedByUser || false;
   const likesCount = migrated.likesCount || 0;
-  const [isCopyingPrompt, setIsCopyingPrompt] = useState(false);
-  const [glitchText, setGlitchText] = useState('');
+  const { isCopying: isCopyingPrompt, glitchText, handleCopy: handleCopyPrompt } = useGlitchCopy(migrated.prompt);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isPromptExpanded, setIsPromptExpanded] = useState(false);
   const isOwner = currentUserId && migrated.userId && currentUserId === migrated.userId;
@@ -79,27 +78,6 @@ export const PresetCard: React.FC<PresetCardProps> = ({
     getCurrentUser();
   }, [isAuthenticated]);
 
-  useEffect(() => {
-    if (isCopyingPrompt) {
-      const glitchChars = '*•□./-®';
-      const glitchInterval = setInterval(() => {
-        const randomGlitch = Array.from({ length: 4 }, () =>
-          glitchChars[Math.floor(Math.random() * glitchChars.length)]
-        ).join('');
-        setGlitchText(randomGlitch);
-      }, 150);
-
-      const timeout = setTimeout(() => {
-        setIsCopyingPrompt(false);
-        setGlitchText('');
-      }, 600);
-
-      return () => {
-        clearInterval(glitchInterval);
-        clearTimeout(timeout);
-      };
-    }
-  }, [isCopyingPrompt]);
 
   return (
     <div
@@ -147,7 +125,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <h3 className={cn(
-              "text-[12px] font-semibold mb-0.5 font-mono line-clamp-1",
+              "text-xs font-semibold mb-0.5 font-mono line-clamp-1",
               selected ? "text-brand-cyan" : "text-neutral-200"
             )}>
               {migrated.name}
@@ -186,17 +164,14 @@ export const PresetCard: React.FC<PresetCardProps> = ({
           <div className="flex gap-1 flex-shrink-0 flex-col items-end">
             {/* Actions */}
             <div className="flex gap-1">
-              <Button variant="ghost" onClick={async (e) => {
+              <Button variant="ghost" onClick={(e) => {
                 e.stopPropagation();
-                setIsCopyingPrompt(true);
-                try {
-                  await navigator.clipboard.writeText(migrated.prompt);
-                  toast.success(t('canvasNodes.promptNode.presetCard.copied'));
-                } catch (err) {
-                  toast.error(t('canvasNodes.promptNode.presetCard.copyFailed'));
-                }
+                handleCopyPrompt(
+                  t('canvasNodes.promptNode.presetCard.copied'),
+                  t('canvasNodes.promptNode.presetCard.copyFailed')
+                );
               }}
-                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300 relative min-w-[16px] min-h-[16px] flex items-center justify-center"
+                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100 relative size-4 flex items-center justify-center"
                 title="Copy prompt"
               >
                 {isCopyingPrompt ? (
@@ -210,31 +185,18 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                   e.stopPropagation();
                   onDuplicate();
                 }}
-                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300"
+                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
                   title={t('communityPresets.actions.duplicate') || 'Duplicate'}
                 >
                   {canEdit ? <Download className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
               )}
-              {isOwner && onEdit && (
+              {(isOwner || canEdit) && onEdit && (
                 <Button variant="ghost" onClick={(e) => {
                   e.stopPropagation();
                   onEdit?.();
                 }}
-                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300"
-                  title={t('common.edit')}
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            <div>
-              {canEdit && onEdit && onDelete && !isOwner && (
-                <Button variant="ghost" onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit?.();
-                }}
-                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-300"
+                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
                   title={t('common.edit')}
                 >
                   <Edit2 className="h-4 w-4" />
@@ -245,7 +207,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                   e.stopPropagation();
                   onDelete?.();
                 }}
-                  className="p-1.5 text-neutral-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-300"
+                  className="p-1.5 text-neutral-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
                   title={t('common.delete')}
                 >
                   <Trash2 className="h-4 w-4" />

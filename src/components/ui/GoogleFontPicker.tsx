@@ -105,7 +105,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
             </Button>
 
             {isOpen && (
-                <div className="absolute z-50 w-full mt-2 bg-[#0C0C0C] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute z-50 w-full mt-2 bg-neutral-950 border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="p-2 border-b border-white/5">
                         <div className="relative">
                             <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />

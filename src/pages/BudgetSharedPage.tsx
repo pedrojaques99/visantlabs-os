@@ -107,7 +107,7 @@ export const BudgetSharedPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
         <div className="fixed inset-0 z-0">
 
         </div>
@@ -122,7 +122,7 @@ export const BudgetSharedPage: React.FC = () => {
 
   if (error || !budget) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
         <div className="fixed inset-0 z-0">
 
         </div>
@@ -397,8 +397,8 @@ const BudgetSharedContent: React.FC<{
   // If custom PDF, show it in iframe
   if (budgetData.customPdfUrl) {
     return (
-      <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-white'}`}>
-        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-[#0C0C0C] border-neutral-800' : 'bg-white border-neutral-200'} border-b shadow-sm`}>
+      <div className={`min-h-screen ${theme === 'dark' ? 'bg-neutral-950' : 'bg-white'}`}>
+        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-neutral-950 border-neutral-800' : 'bg-white border-neutral-200'} border-b shadow-sm`}>
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="mb-3">
               <Breadcrumb>
@@ -552,8 +552,8 @@ const BudgetSharedContent: React.FC<{
 
     // Default Visant pages
     return (
-      <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-white'}`}>
-        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-[#0C0C0C] border-neutral-800' : 'bg-white border-neutral-200'} border-b shadow-sm`}>
+      <div className={`min-h-screen ${theme === 'dark' ? 'bg-neutral-950' : 'bg-white'}`}>
+        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-neutral-950 border-neutral-800' : 'bg-white border-neutral-200'} border-b shadow-sm`}>
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="mb-3">
               <Breadcrumb>
@@ -628,8 +628,8 @@ const BudgetSharedContent: React.FC<{
         description={t('budget.shared.seoDescription')}
         noindex={true}
       />
-      <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-white'}`}>
-        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-[#0C0C0C] border-neutral-800' : 'bg-white border-neutral-200'} border-b shadow-sm`}>
+      <div className={`min-h-screen ${theme === 'dark' ? 'bg-neutral-950' : 'bg-white'}`}>
+        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-neutral-950 border-neutral-800' : 'bg-white border-neutral-200'} border-b shadow-sm`}>
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="mb-3">
               <Breadcrumb>

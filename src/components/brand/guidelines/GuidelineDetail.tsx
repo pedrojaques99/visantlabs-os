@@ -16,7 +16,7 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { motion } from 'framer-motion';
-import { Layers } from 'lucide-react';
+import { Layers, ClipboardCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
 
@@ -32,12 +32,17 @@ import { LogosSection } from './sections/LogosSection';
 import { StrategySection } from './sections/StrategySection';
 import { FigmaLinkSection } from './sections/FigmaLinkSection';
 import { KnowledgeSection } from './sections/KnowledgeSection';
+import { GradientSection } from './sections/GradientSection';
+import { ShadowSection } from './sections/ShadowSection';
+import { MotionSection } from './sections/MotionSection';
+import { BorderSection } from './sections/BorderSection';
 import { GuidelineExportBar } from './GuidelineExportBar';
 
 interface GuidelineDetailProps {
   guideline: BrandGuideline;
   activeSections: string[];
   onOpenWizard: () => void;
+  onStartReview?: () => void;
 }
 
 const containerVariants = {
@@ -49,6 +54,7 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
   guideline,
   activeSections,
   onOpenWizard,
+  onStartReview,
 }) => {
   const { t } = useTranslation();
   const updateMutation = useUpdateGuideline();
@@ -71,15 +77,15 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  const DEFAULT_BLOCKS = ['identity', 'strategy', 'logos', 'colors', 'typography', 'figma', 'tags', 'tokens', 'gradients', 'shadows', 'motion', 'borders', 'editorial', 'accessibility', 'media', 'knowledge'];
+
   const [orderedBlocks, setOrderedBlocks] = useState<string[]>(() => {
     const saved = localStorage.getItem('brand_guidelines_block_order');
-    return guideline.orderedBlocks || (saved ? JSON.parse(saved) : ['identity', 'strategy', 'logos', 'colors', 'typography', 'figma', 'tags', 'tokens', 'editorial', 'accessibility', 'media', 'knowledge']);
+    return guideline.orderedBlocks || (saved ? JSON.parse(saved) : DEFAULT_BLOCKS);
   });
 
   React.useEffect(() => {
-    setOrderedBlocks(
-      guideline.orderedBlocks || ['identity', 'strategy', 'logos', 'colors', 'typography', 'figma', 'tags', 'tokens', 'editorial', 'accessibility', 'media', 'knowledge']
-    );
+    setOrderedBlocks(guideline.orderedBlocks || DEFAULT_BLOCKS);
   }, [guideline.id]);
 
   const handleDragEnd = (event: any) => {
@@ -161,6 +167,14 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
         return <FigmaLinkSection key="figma" guideline={guideline} onUpdate={handleUpdate} span="1" />;
       case 'knowledge':
         return <KnowledgeSection key="knowledge" guideline={guideline} span="full" />;
+      case 'gradients':
+        return <GradientSection key="gradients" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+      case 'shadows':
+        return <ShadowSection key="shadows" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+      case 'motion':
+        return <MotionSection key="motion" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+      case 'borders':
+        return <BorderSection key="borders" guideline={guideline} onUpdate={handleUpdate} span="1" />;
       default:
         return null;
     }
@@ -185,7 +199,20 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
         </SortableContext>
       </DndContext>
 
-      <GuidelineExportBar guideline={guideline} />
+      <div className="flex items-center justify-between pt-2">
+        {onStartReview && (
+          <button
+            onClick={onStartReview}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-brand-cyan/20 hover:bg-brand-cyan/5 transition-all group"
+          >
+            <ClipboardCheck size={13} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
+            <span className="text-[10px] font-mono text-neutral-600 group-hover:text-brand-cyan transition-colors uppercase tracking-widest">Review Design System</span>
+          </button>
+        )}
+        <div className="ml-auto">
+          <GuidelineExportBar guideline={guideline} />
+        </div>
+      </div>
     </div>
   );
 };

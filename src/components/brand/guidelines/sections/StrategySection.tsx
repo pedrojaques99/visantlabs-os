@@ -186,7 +186,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <MicroTitle className="opacity-60 uppercase text-[11px] tracking-widest text-neutral-400">Archetypes</MicroTitle>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => addItem('archetype')}>
+                <Button variant="ghost" size="icon" aria-label="Add archetype" className="h-6 w-6" onClick={() => addItem('archetype')}>
                   <Plus size={12} />
                 </Button>
               </div>
@@ -204,7 +204,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                         className="h-8 bg-neutral-850 border-white/5 text-xs"
                         placeholder="Name (e.g. O Mago)"
                       />
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('archetype', i)}>
+                      <Button variant="ghost" size="icon" aria-label="Remove archetype" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('archetype', i)}>
                         <Trash2 size={12} />
                       </Button>
                     </div>
@@ -227,7 +227,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <MicroTitle className="opacity-60 uppercase text-[11px] tracking-widest text-neutral-400">Tone of Voice Values</MicroTitle>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => addItem('voice')}>
+                <Button variant="ghost" size="icon" aria-label="Add voice value" className="h-6 w-6" onClick={() => addItem('voice')}>
                   <Plus size={12} />
                 </Button>
               </div>
@@ -245,7 +245,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                         className="h-8 bg-neutral-850 border-white/5 text-xs"
                         placeholder="Title"
                       />
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('voice', i)}>
+                      <Button variant="ghost" size="icon" aria-label="Remove voice value" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('voice', i)}>
                         <Trash2 size={12} />
                       </Button>
                     </div>

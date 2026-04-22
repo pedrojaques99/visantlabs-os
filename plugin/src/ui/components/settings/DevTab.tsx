@@ -1,15 +1,28 @@
 import React, { useState } from 'react';
 import { useFigmaMessages } from '../../hooks/useFigmaMessages';
 import { ServerDebugPanel } from './ServerDebugPanel';
+import { LintingSection } from '../tools/LintingSection';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Code2, Zap } from 'lucide-react';
+import { Code2, Zap, ShieldCheck, Cpu, LayoutGrid } from 'lucide-react';
+import { useOpRunner } from '../../hooks/useOpRunner';
+import { useSmartAnalyze } from '../../hooks/useSmartAnalyze';
+import { usePluginStore } from '../../store';
+import { OpButton } from '../common/OpButton';
+import { BrandSection } from '../brand/BrandSection';
 
 export function DevTab() {
   const [jsonInput, setJsonInput] = useState('');
   const [messageType, setMessageType] = useState('APPLY_OPERATIONS');
   const { send } = useFigmaMessages();
+  const { analyze } = useSmartAnalyze();
+  const isGenerating = usePluginStore((s) => s.isGenerating);
+  const store = usePluginStore();
+  const runner = useOpRunner({ globalBusy: isGenerating });
+  const brandColorsArray = store.selectedColors
+    ? Array.from(store.selectedColors.values()).map((c) => ({ hex: c.hex, name: c.role }))
+    : [];
 
   const handleRun = () => {
     try {
@@ -33,6 +46,42 @@ export function DevTab() {
 
   return (
     <div className="space-y-4 max-w-2xl">
+      {/* Advanced Tools */}
+      <BrandSection title="Advanced Analysis" icon={Cpu} badge="ADV" collapsible defaultOpen={true}>
+        <div className="space-y-2">
+          <OpButton
+            opId="analyzePrompt"
+            runner={runner}
+            task={() => analyze('image-gen')}
+            busyLabel="Analyzing…"
+            variant="outline"
+            size="sm"
+            className="w-full h-8 text-[10px]"
+          >
+            <Cpu size={12} className="mr-2 text-neutral-500" />
+            Analyze to Prompt
+          </OpButton>
+          <OpButton
+            opId="socialFrames"
+            runner={runner}
+            message={{ type: 'GENERATE_SOCIAL_FRAMES', brandColors: brandColorsArray }}
+            responseTypes={['OPERATIONS_DONE']}
+            busyLabel="Criando frames…"
+            variant="outline"
+            size="sm"
+            className="w-full h-8 text-[10px]"
+          >
+            <LayoutGrid size={12} className="mr-2 text-neutral-500" />
+            Social Frames
+          </OpButton>
+        </div>
+      </BrandSection>
+
+      {/* Brand Audit */}
+      <BrandSection title="Brand Audit" icon={ShieldCheck} collapsible defaultOpen={false}>
+        <LintingSection />
+      </BrandSection>
+
       {/* Server Debug Panel */}
       <ServerDebugPanel />
 

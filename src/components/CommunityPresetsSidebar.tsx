@@ -85,7 +85,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                 {t('communityPresets.tags.all') || 'All'}
               </Button>
 
-              <div className="w-[1px] h-4 bg-neutral-800 mx-1 flex-shrink-0" />
+              <div className="w-px h-4 bg-neutral-800 mx-1 flex-shrink-0" />
 
               {allTags.map(({ tag, count }) => (
                 <Button variant="ghost"                   key={tag}
@@ -110,7 +110,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
               ))}
             </div>
             {/* Gradient Fade for scroll indication - Adjusted for inside container */}
-            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#0C0C0C]/10 to-transparent pointer-events-none md:block hidden" />
+            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-neutral-950/10 to-transparent pointer-events-none md:block hidden" />
           </div>
         )}
       </div>

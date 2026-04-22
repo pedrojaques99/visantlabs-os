@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build.js",
-    "dev": "node scripts/dev.js"
+    "dev": "node scripts/dev.js",
+    "check:icons": "node scripts/check-icons.js"
+
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.100.0",

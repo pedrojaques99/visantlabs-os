@@ -780,7 +780,9 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="flex flex-wrap gap-4">
+                        {/* Core variants */}
+                        <p className="text-xs font-mono text-neutral-500">Core:</p>
+                        <div className="flex flex-wrap gap-3">
                           <Button variant="default">Default</Button>
                           <Button variant="secondary">Secondary</Button>
                           <Button variant="destructive">Destructive</Button>
@@ -791,35 +793,47 @@ export const DesignSystemPage: React.FC = () => {
                           <Button variant="sidebarAction">Sidebar Action</Button>
                         </div>
                         <Separator />
-                        <div className="flex flex-wrap gap-4">
-                          <Button variant="ghost" size="sm">Small</Button>
-                          <Button variant="ghost" size="default">Default</Button>
-                          <Button variant="ghost" size="lg">Large</Button>
-                          <Button variant="ghost" size="icon">
-                            <Palette className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sidebar">Sidebar</Button>
+                        {/* Semantic variants (new) */}
+                        <p className="text-xs font-mono text-neutral-500">Semantic (use in place of ghost+className override):</p>
+                        <div className="flex flex-wrap gap-3">
+                          <Button variant="surface">Surface</Button>
+                          <Button variant="toolbar">Toolbar</Button>
+                          <Button variant="menuItem">Menu Item</Button>
+                          <Button variant="info">Info</Button>
+                          <Button variant="warning">Warning</Button>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex gap-1 group">
+                            <Button variant="action"><Copy className="h-4 w-4" /></Button>
+                            <Button variant="danger"><Users className="h-4 w-4" /></Button>
+                          </div>
+                          <p className="text-xs font-mono text-neutral-500">action + danger — hover-reveal icon buttons</p>
                         </div>
                         <Separator />
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
-                          <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <div className="text-xs font-mono text-neutral-500 mb-1">Brand</div>
-                            <Button variant="brand" size="sm" className="w-full">Brand Button</Button>
-                          </div>
-                          <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <div className="text-xs font-mono text-neutral-500 mb-1">Sidebar</div>
-                            <Button variant="sidebarAction" size="sm" className="w-full">Sidebar</Button>
-                          </div>
-                          <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <div className="text-xs font-mono text-neutral-500 mb-1">Icon</div>
-                            <Button variant="ghost" size="icon" className="w-full">
-                              <Palette className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <div className="text-xs font-mono text-neutral-500 mb-1">Large</div>
-                            <Button variant="ghost" size="lg" className="w-full">Large</Button>
-                          </div>
+                        {/* Sizes */}
+                        <p className="text-xs font-mono text-neutral-500">Sizes:</p>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Button variant="surface" size="xs">xs</Button>
+                          <Button variant="surface" size="sm">sm</Button>
+                          <Button variant="surface" size="default">default</Button>
+                          <Button variant="surface" size="lg">lg</Button>
+                          <Button variant="ghost" size="icon"><Palette className="w-4 h-4" /></Button>
+                          <Button variant="action" size="icon-sm"><Copy className="w-3 h-3" /></Button>
+                          <Button variant="action" size="icon-md"><Search className="w-4 h-4" /></Button>
+                        </div>
+                        <Separator />
+                        {/* Usage guide */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {[
+                            { variant: 'surface' as const, label: 'surface', note: 'Bordered muted — toolbars, auth gates' },
+                            { variant: 'toolbar' as const, label: 'toolbar', note: 'Uppercase + brand-cyan hover' },
+                            { variant: 'menuItem' as const, label: 'menuItem', note: 'Full-width mono dropdown' },
+                          ].map(({ variant, label, note }) => (
+                            <div key={label} className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                              <div className="text-[10px] font-mono text-neutral-500 mb-2">{note}</div>
+                              <Button variant={variant} size="sm" className="w-full">{label}</Button>
+                            </div>
+                          ))}
                         </div>
                       </CardContent>
                     </Card>
@@ -1528,7 +1542,7 @@ export const DesignSystemPage: React.FC = () => {
                             </Badge>
                             <Badge
                               variant="outline"
-                              className="opacity-300 cursor-not-allowed bg-neutral-800/50 text-neutral-400 border-neutral-700/50"
+                              className="opacity-100 cursor-not-allowed bg-neutral-800/50 text-neutral-400 border-neutral-700/50"
                             >
                               Disabled Tag
                             </Badge>

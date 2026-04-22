@@ -684,7 +684,50 @@ export interface BrandGuidelineTypography {
   role: string
   size?: number
   lineHeight?: number
+  letterSpacing?: string
+  weights?: number[]
   availableStyles?: string[]
+}
+
+export interface BrandGuidelineGradient {
+  id: string
+  name: string
+  type: 'linear' | 'radial'
+  angle: number
+  stops: { color: string; position: number }[]
+  usage: 'hero' | 'decorative' | 'fill' | 'overlay'
+  css?: string
+}
+
+export interface BrandGuidelineShadow {
+  id: string
+  name: string
+  x: number
+  y: number
+  blur: number
+  spread: number
+  color: string
+  opacity: number
+  type: 'outer' | 'inner' | 'glow'
+  css?: string
+}
+
+export interface BrandGuidelineMotion {
+  easing?: string
+  durations?: { fast: number; medium: number; slow: number }
+  philosophy?: 'minimal' | 'moderate' | 'expressive'
+  respectsReducedMotion?: boolean
+}
+
+export interface BrandGuidelineBorder {
+  id: string
+  name: string
+  width: number
+  style: 'solid' | 'dashed' | 'dotted'
+  color: string
+  opacity: number
+  role: 'default' | 'emphasis' | 'scaffold' | 'divider'
+  css?: string
 }
 export interface BrandArchetype {
   name: string
@@ -754,7 +797,15 @@ export interface BrandGuideline {
     donts?: string[]
     imagery?: string
     accessibility?: string
+    person?: 'first' | 'second' | 'third'
+    emojiPolicy?: 'none' | 'informal' | 'free'
+    casingRules?: string[]
   }
+  gradients?: BrandGuidelineGradient[]
+  shadows?: BrandGuidelineShadow[]
+  motion?: BrandGuidelineMotion
+  borders?: BrandGuidelineBorder[]
+  validation?: Record<string, 'pending' | 'approved' | 'needs_work'>
   strategy?: {
     manifesto?: string
     positioning?: string[]

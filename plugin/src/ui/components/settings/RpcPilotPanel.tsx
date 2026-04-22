@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, Cpu, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useClient } from '../../lib/ClientProvider';
 
 /**
@@ -30,7 +30,7 @@ export function RpcPilotPanel() {
   return (
     <div className="space-y-3 max-w-2xl bg-cyan-950/20 border border-cyan-800 rounded p-4">
       <h3 className="text-sm font-bold text-cyan-400 flex items-center gap-2">
-        <Sparkles size={14} />
+        <Cpu size={14} />
         RPC Pilot — ai.chat (brand-aware)
       </h3>
       <p className="text-xs text-gray-400">
@@ -46,7 +46,7 @@ export function RpcPilotPanel() {
       />
 
       <Button size="sm" onClick={run} disabled={state === 'loading'}>
-        {state === 'loading' ? <Loader2 size={12} className="animate-spin mr-1" /> : <Sparkles size={12} className="mr-1" />}
+        {state === 'loading' ? <Loader2 size={12} className="animate-spin mr-1" /> : <Cpu size={12} className="mr-1" />}
         Run ai.chat
       </Button>
 

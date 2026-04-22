@@ -164,7 +164,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1 opacity-300">
+          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1 opacity-100">
             {[
               { label: 'Main Logo', icon: ImageIcon },
               { label: 'Symbol', icon: Palette },

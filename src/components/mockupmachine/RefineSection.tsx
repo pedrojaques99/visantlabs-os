@@ -289,7 +289,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                   >
                     <span className="w-3.5 h-3.5 rounded-full border border-white/10" style={{ backgroundColor: color }} />
                     <span className="truncate max-w-[72px]">{color}</span>
-                    <X size={10} className={`opacity-0 group-hover:opacity-300 transition-opacity ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`} />
+                    <X size={10} className={`opacity-0 group-hover:opacity-100 transition-opacity ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`} />
                   </div>
                 ))}
 

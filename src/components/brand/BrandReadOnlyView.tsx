@@ -76,6 +76,8 @@ export function toCSSVariables(g: BrandGuideline): string {
 export type BrandTheme = {
   accent: string;
   accentRgb: string;
+  /** Readable text color to use ON the accent background (black or white, WCAG AA). */
+  accentText: string;
   bg: string;
   surface: string;
   text: string;
@@ -142,9 +144,14 @@ export function extractBrandTheme(
     return `${r}, ${g}, ${b}`;
   };
 
+  const accentLum = getRelativeLuminance(accentToken.hex);
+  const accentText =
+    getContrastRatio(accentLum, getRelativeLuminance('#000000')) >= 4.5 ? '#000000' : '#ffffff';
+
   return {
     accent: accentToken.hex,
     accentRgb: toRgb(accentToken.hex),
+    accentText,
     bg: rBg,
     surface: rSurface,
     text: rText,
@@ -243,7 +250,7 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({ guideline, com
             <div className="space-y-8">
               {identity.tagline && (
                 <div className="space-y-2">
-                  <span className="text-[10px] font-mono opacity-40 uppercase tracking-widest">Brand Tagline</span>
+                  <span className="text-[10px] font-mono text-[var(--brand-text)]/50 uppercase tracking-widest">Brand Tagline</span>
                   <p className="text-sm font-bold uppercase opacity-80">{identity.tagline}</p>
                 </div>
               )}
@@ -332,7 +339,7 @@ export const BrandArchetypesView: React.FC<SectionCommonProps> = ({ guideline, c
                 <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">{arch.name}</span>
               </div>
               <div className="flex-1 flex items-center justify-center py-8">
-                {arch.image ? <img src={arch.image} className="w-full object-contain" /> : <Diamond size={64} className="opacity-10" />}
+                {arch.image ? <img src={arch.image} alt={arch.name} className="w-full object-contain" /> : <Diamond size={64} className="opacity-10" aria-hidden="true" />}
               </div>
             </div>
             <div className="flex-1 space-y-6">
@@ -389,7 +396,7 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
             <div className="flex flex-col md:flex-row gap-12">
               <div className="w-full md:w-1/3 aspect-square rounded-[32px] overflow-hidden border border-[var(--brand-text)]/10 shadow-2xl">
                 {persona.image ? (
-                  <img src={persona.image} className="w-full h-full object-cover" />
+                  <img src={persona.image} alt={persona.name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-black/20 flex items-center justify-center opacity-30">
                     <User size={64} />
@@ -559,13 +566,15 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({ guideline, com
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {filtered.map((color, i) => (
-            <motion.div
+            <motion.button
               key={i}
+              type="button"
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               onClick={() => handleClick(color.hex, color)}
-              className="group cursor-pointer space-y-3"
+              aria-label={`Copy hex ${color.hex}${color.name ? ` — ${color.name}` : ''}`}
+              className="group cursor-pointer space-y-3 text-left"
             >
               <div className="relative aspect-square rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-all group-hover:scale-105 group-hover:border-[var(--accent)]/30 shadow-2xl">
                 <div className="absolute inset-0" style={{ backgroundColor: color.hex }} />
@@ -582,7 +591,7 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({ guideline, com
                   {color.role || 'Accent'}
                 </p>
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
       </div>
@@ -771,7 +780,7 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
                 />
                 <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                   <Button
-                    className="w-full h-10 rounded-xl text-[10px] font-bold uppercase tracking-wider gap-2 shadow-lg transition-all bg-[var(--accent)] text-black hover:scale-[1.02]"
+                    className="w-full h-10 rounded-xl text-[10px] font-bold uppercase tracking-wider gap-2 shadow-lg transition-all bg-[var(--accent)] text-[var(--accent-text)] hover:scale-[1.02]"
                     onClick={() => handleClick(logo)}
                   >
                     {onAssetClick ? <MousePointerClick size={14} /> : <Download size={14} />}
@@ -878,7 +887,7 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
                   <Button
                     size="icon"
-                    className="w-14 h-14 rounded-full bg-[var(--accent)] text-black shadow-[0_0_30px_rgba(var(--accent-rgb),0.5)] active:scale-90 transition-all"
+                    className="w-14 h-14 rounded-full bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_0_30px_rgba(var(--accent-rgb),0.5)] active:scale-90 transition-all"
                     onClick={() => handleClick(item)}
                   >
                     {onAssetClick ? <MousePointerClick size={24} /> : <Download size={24} />}

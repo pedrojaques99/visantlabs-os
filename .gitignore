@@ -90,3 +90,8 @@ test_output_utf8.txt
 test_output.txt
 vitest_output_branding.txt
 vitest_output.txt
+/.planning
+/.claude
+/.data
+CLAUDE.md
+UI-REVIEW.md

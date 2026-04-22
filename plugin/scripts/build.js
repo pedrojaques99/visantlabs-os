@@ -3,6 +3,8 @@ const path = require('path');
 const { execSync } = require('child_process');
 const esbuild = require('esbuild');
 
+require('./check-icons');
+
 const ROOT = path.resolve(__dirname, '../..');
 const pluginDir = path.resolve(__dirname, '..');
 const distDir = path.join(pluginDir, 'dist');

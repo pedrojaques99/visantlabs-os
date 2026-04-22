@@ -641,7 +641,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           {/* Action Icons - appears on hover or when selected */}
           <div className={cn(
             "absolute top-3 right-3 flex gap-1.5 transition-all backdrop-blur-sm z-10",
-            selected ? "opacity-300" : "opacity-0 group-hover:opacity-300"
+            selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           )}>
             <NodeButton variant="ghost" size="xs" onClick={(e) => {
               e.stopPropagation();

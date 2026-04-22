@@ -233,7 +233,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
   };
 
   return (
-    <div className={`w-full relative min-h-screen ${theme === 'dark' ? 'bg-[#0C0C0C] text-neutral-300' : 'bg-neutral-50 text-neutral-800'
+    <div className={`w-full relative min-h-screen ${theme === 'dark' ? 'bg-neutral-950 text-neutral-300' : 'bg-neutral-50 text-neutral-800'
       }`}>
       <div className="fixed inset-0 z-0">
       </div>
@@ -291,7 +291,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                         </h2>
                         <Button variant="ghost"
                           onClick={() => setIsEditingName(true)}
-                          className={`opacity-0 group-hover:opacity-300 transition-opacity p-1 rounded ${theme === 'dark' ? 'hover:bg-neutral-950/70' : 'hover:bg-neutral-200'
+                          className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded ${theme === 'dark' ? 'hover:bg-neutral-950/70' : 'hover:bg-neutral-200'
                             }`}
                           title={t('branding.editProjectName') || 'Editar nome do projeto'}
                         >

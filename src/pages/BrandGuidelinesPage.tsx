@@ -21,8 +21,9 @@ import {
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { GuidelinesSidebar } from '@/components/brand/guidelines/GuidelinesSidebar';
 import { GuidelineDetail } from '@/components/brand/guidelines/GuidelineDetail';
+import { DesignSystemValidation } from '@/components/brand/guidelines/DesignSystemValidation';
 import { ShareGuidelineDialog } from '@/components/brand/guidelines/ShareGuidelineDialog';
-import { Palette, Layers, AlignLeft, Share2, Eye, Plus } from 'lucide-react';
+import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -160,11 +161,15 @@ export const BrandGuidelinesPage: React.FC = () => {
         [guidelines, selectedId]
     );
 
+    const [reviewGuidelineId, setReviewGuidelineId] = useState<string | null>(null);
+
     const handleWizardSuccess = useCallback((id: string) => {
         setIsWizardOpen(false);
         setEditingGuideline(null);
         setSelectedId(id);
-    }, []);
+        // Auto-open review after new brand creation (not edit)
+        if (!editingGuideline) setReviewGuidelineId(id);
+    }, [editingGuideline]);
 
     const toggleSection = useCallback((section: string) => {
         setActiveSections((prev) => {
@@ -251,19 +256,19 @@ export const BrandGuidelinesPage: React.FC = () => {
                         </div>
 
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                            <div className="sr-only">
-                                <h1 className="text-3xl font-bold text-neutral-100 flex items-center gap-3">
-                                    <Palette className="text-brand-cyan h-8 w-8 hidden lg:block" />
+                            <div>
+                                <h1 className="text-xl font-bold text-neutral-100 flex items-center gap-2">
+                                    <Palette className="text-brand-cyan h-5 w-5 hidden lg:block" aria-hidden="true" />
                                     {t('brandGuidelines.title')}
                                 </h1>
-                                <p className="text-neutral-500 mt-1">{t('brandGuidelines.subtitle')}</p>
+                                <p className="text-neutral-500 text-sm mt-0.5">{t('brandGuidelines.subtitle')}</p>
                             </div>
 
                             <div className="lg:hidden fixed top-[72px] left-4 z-[45]">
                                 <Sheet>
                                     <SheetTrigger asChild>
-                                        <Button variant="outline" size="icon" className="h-10 w-10 rounded-full bg-neutral-950/80 backdrop-blur-xl border-white/10 text-brand-cyan shadow-2xl hover:scale-110 active:scale-95 transition-all">
-                                            <AlignLeft className="h-5 w-5" />
+                                        <Button variant="outline" size="icon" aria-label="Open brand guidelines menu" className="h-10 w-10 rounded-full bg-neutral-950/80 backdrop-blur-xl border-white/10 text-brand-cyan shadow-2xl hover:scale-110 active:scale-95 transition-all">
+                                            <AlignLeft className="h-5 w-5" aria-hidden="true" />
                                         </Button>
                                     </SheetTrigger>
                                     <SheetContent side="left" className="w-[85vw] max-w-sm p-0 border-r border-white/10 bg-neutral-950/95 backdrop-blur-xl">
@@ -331,11 +336,42 @@ export const BrandGuidelinesPage: React.FC = () => {
                                 >
                                     {selected ? (
                                         <div className="w-full">
-                                            <GuidelineDetail
-                                                guideline={selected}
-                                                activeSections={activeSections}
-                                                onOpenWizard={() => handleOpenWizard(selected)}
-                                            />
+                                            {reviewGuidelineId === selected.id ? (
+                                                <DesignSystemValidation
+                                                    guideline={selected}
+                                                    onUpdate={(patch) => updateMutation.mutate({ id: selected.id!, data: patch })}
+                                                    onComplete={() => setReviewGuidelineId(null)}
+                                                    onEditSection={(sectionId) => {
+                                                        setReviewGuidelineId(null);
+                                                        if (!activeSections.includes(sectionId)) toggleSection(sectionId);
+                                                    }}
+                                                />
+                                            ) : (
+                                                <>
+                                                    {/* Review trigger button */}
+                                                    {selected.validation && Object.values(selected.validation).some(v => v !== 'approved') && (
+                                                        <button
+                                                            onClick={() => setReviewGuidelineId(selected.id!)}
+                                                            className="mb-6 w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-brand-cyan/20 bg-brand-cyan/5 hover:bg-brand-cyan/10 hover:border-brand-cyan/30 transition-all group"
+                                                        >
+                                                            <ClipboardCheck size={16} className="text-brand-cyan shrink-0" />
+                                                            <div className="flex-1 text-left">
+                                                                <p className="text-[11px] font-bold text-brand-cyan">Design System Review pending</p>
+                                                                <p className="text-[10px] text-neutral-500">
+                                                                    {Object.values(selected.validation).filter(v => v === 'approved').length}/{Object.keys(selected.validation).length} sections approved
+                                                                </p>
+                                                            </div>
+                                                            <span className="text-[10px] font-mono text-brand-cyan/60 group-hover:text-brand-cyan transition-colors">Review →</span>
+                                                        </button>
+                                                    )}
+                                                    <GuidelineDetail
+                                                        guideline={selected}
+                                                        activeSections={activeSections}
+                                                        onOpenWizard={() => handleOpenWizard(selected)}
+                                                        onStartReview={() => setReviewGuidelineId(selected.id!)}
+                                                    />
+                                                </>
+                                            )}
                                         </div>
                                     ) : (
                                         <NoSelectionState />

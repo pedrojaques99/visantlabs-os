@@ -317,7 +317,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         <div className="flex items-center justify-center mb-4 sm:mb-5 md:mb-6 w-full">
                           {/* Current Package Display */}
                           <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] text-center shadow-sm relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                             <div className="relative z-10 space-y-4 sm:space-y-6">
                               <div>
@@ -520,7 +520,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                               {/* Plan Card */}
                               <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] text-center shadow-sm relative overflow-hidden group">
-                                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                                 {/* Popular Badge */}
                                 {currentPlan.displayOrder === 1 && (

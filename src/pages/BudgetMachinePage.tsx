@@ -480,7 +480,7 @@ export const BudgetMachinePage: React.FC = () => {
   // Show loading state while checking authentication or access
   if (isCheckingAuth || isLoadingAccess) {
     return (
-      <div className="min-h-full w-full flex items-center justify-center bg-[#0C0C0C] text-neutral-300">
+      <div className="min-h-full w-full flex items-center justify-center bg-neutral-950 text-neutral-300">
         <div className="text-center">
           <p className="text-sm font-mono text-neutral-400">Loading...</p>
         </div>
@@ -495,7 +495,7 @@ export const BudgetMachinePage: React.FC = () => {
 
   if (isLoadingProject) {
     return (
-      <div className="min-h-full w-full flex items-center justify-center bg-[#0C0C0C] text-neutral-300">
+      <div className="min-h-full w-full flex items-center justify-center bg-neutral-950 text-neutral-300">
         <div className="text-center">
           <p className="text-sm font-mono text-neutral-400">Loading budget...</p>
         </div>
@@ -505,7 +505,7 @@ export const BudgetMachinePage: React.FC = () => {
 
   if (!selectedTemplate) {
     return (
-      <div className="min-h-full w-full bg-[#0C0C0C] text-neutral-300">
+      <div className="min-h-full w-full bg-neutral-950 text-neutral-300">
         <BudgetTemplateSelector
           selectedTemplate={selectedTemplate}
           onSelectTemplate={handleTemplateSelect}
@@ -625,7 +625,7 @@ export const BudgetMachinePage: React.FC = () => {
             {/* Form Side - Overlay Sidebar */}
             <div
               ref={formContainerRef}
-              className={`fixed top-[160px] left-0 h-[calc(100vh-160px)] z-40 bg-[#0C0C0C] border-r border-neutral-800 overflow-hidden flex flex-col transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+              className={`fixed top-[160px] left-0 h-[calc(100vh-160px)] z-40 bg-neutral-950 border-r border-neutral-800 overflow-hidden flex flex-col transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
               style={formWidth ? {
                 width: `${formWidth}px`,

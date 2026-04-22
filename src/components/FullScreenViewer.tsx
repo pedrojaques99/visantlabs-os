@@ -395,6 +395,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               {generationId && (
                 <div className="flex items-center gap-1 rounded-lg bg-neutral-950/70 backdrop-blur-sm border border-white/5 p-1">
                   <Button variant="ghost" size="icon"
+                    aria-label={feedback.rating === 'up' ? "Remover feedback positivo" : "Feedback positivo — melhora o modelo"}
                     onClick={(e) => { e.stopPropagation(); feedback.submit('up'); }}
                     className={cn(
                       "w-8 h-8 rounded-md transition-all",
@@ -403,11 +404,11 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                         : "text-neutral-400 hover:text-white hover:bg-white/10"
                     )}
                     disabled={feedback.isLoading}
-                    title={feedback.rating === 'up' ? "Remover feedback" : "Valeu! (Melhora o modelo)"}
                   >
-                    <ThumbsUp size={14} className={cn(feedback.rating === 'up' && "fill-current")} />
+                    <ThumbsUp size={14} aria-hidden="true" className={cn(feedback.rating === 'up' && "fill-current")} />
                   </Button>
                   <Button variant="ghost" size="icon"
+                    aria-label={feedback.rating === 'down' ? "Remover feedback negativo" : "Feedback negativo — reportar problema"}
                     onClick={(e) => { e.stopPropagation(); feedback.submit('down'); }}
                     className={cn(
                       "w-8 h-8 rounded-md transition-all",
@@ -416,7 +417,6 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                         : "text-neutral-400 hover:text-white hover:bg-white/10"
                     )}
                     disabled={feedback.isLoading}
-                    title={feedback.rating === 'down' ? "Remover feedback" : "Ruim (Reportar)"}
                   >
                     <ThumbsDown size={14} className={cn(feedback.rating === 'down' && "fill-current")} />
                   </Button>

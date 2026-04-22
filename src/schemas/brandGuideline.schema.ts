@@ -19,6 +19,9 @@ export const typographySchema = z.object({
   role: z.string(),
   style: z.string().optional(),
   size: z.number().optional(),
+  lineHeight: z.number().optional(),
+  letterSpacing: z.string().optional(),
+  weights: z.array(z.number()).optional(),
 });
 
 export const identitySchema = z.object({

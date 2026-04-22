@@ -708,8 +708,8 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                     )}
 
                                     {mode === 'modal' && (
-                                        <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-white/10 h-8 w-8 shrink-0">
-                                            <X size={18} />
+                                        <Button variant="ghost" size="icon" aria-label="Fechar" onClick={onClose} className="hover:bg-white/10 h-8 w-8 shrink-0">
+                                            <X size={18} aria-hidden="true" />
                                         </Button>
                                     )}
                                 </div>

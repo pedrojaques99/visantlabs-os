@@ -39,6 +39,7 @@ export function ChatView() {
           </>
         )}
       </div>
+      <ChatInput onSend={sendMessage} />
       {selectionDetails.length > 0 && (
         <div className="px-3 py-1.5 border-t border-border/50 bg-muted/30 flex items-center gap-1.5 flex-wrap">
           <Layers size={10} className="text-muted-foreground shrink-0" />
@@ -48,7 +49,6 @@ export function ChatView() {
           ))}
         </div>
       )}
-      <ChatInput onSend={sendMessage} />
     </div>
   );
 }

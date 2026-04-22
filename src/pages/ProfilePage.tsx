@@ -202,7 +202,7 @@ export const ProfilePage: React.FC = () => {
 
   if (isCheckingAuth || isLoading) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <GlitchLoader size={32} />
       </div>
     );

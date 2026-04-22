@@ -147,7 +147,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                 className="w-full aspect-square rounded-xl border border-white/5 shadow-lg group-hover/color:border-brand-cyan/30 transition-all relative overflow-hidden"
                 style={{ backgroundColor: c.hex }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-300 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-100 transition-opacity" />
               </div>
               <div className="text-center w-full">
                 <p className="text-[12px] font-bold text-white uppercase tracking-tight truncate">{c.name || 'Color'}</p>
@@ -166,6 +166,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Toggle WCAG contrast matrix"
               className={cn(
                 "h-6 w-6 transition-colors",
                 showWCAG ? "text-brand-cyan" : "text-neutral-500 hover:text-white"
@@ -179,7 +180,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
           {guideline.colors && guideline.colors.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white">
+                <Button variant="ghost" size="icon" aria-label="Copy all colors" className="h-6 w-6 text-neutral-500 hover:text-white">
                   <Copy size={12} />
                 </Button>
               </DropdownMenuTrigger>
@@ -199,7 +200,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
+          <Button variant="ghost" size="icon" aria-label="Add color" className="h-6 w-6 text-neutral-500 hover:text-white"
             onClick={() => {
               if (!isEditing) setIsEditing(true);
               append({ hex: '#000000', name: 'New Color' });
@@ -257,7 +258,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                     {(() => { try { const cmyk = hexToCmyk(form.watch(`colors.${i}.hex`) || '#000000'); return `CMYK ${cmyk.c}/${cmyk.m}/${cmyk.y}/${cmyk.k}`; } catch { return ''; } })()}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon"
+                <Button variant="ghost" size="icon" aria-label="Remove color"
                   className="h-7 w-7 rounded-lg text-neutral-700 hover:text-red-400 opacity-0 group-hover/color:opacity-100 transition-all hover:bg-red-400/10 shrink-0"
                   onClick={() => remove(i)}>
                   <Trash2 size={12} />
@@ -287,7 +288,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                     className="w-full aspect-square max-w-[64px] rounded-xl border border-white/5 shadow-lg group-hover/color:border-white/10 transition-all duration-300 relative overflow-hidden"
                     style={{ backgroundColor: c.hex }}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-300 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-100 transition-opacity" />
                   </div>
                   <div className="text-center min-w-0 w-full">
                     <p className="text-[11px] font-bold text-white uppercase tracking-tight truncate">{c.name || 'Color'}</p>
@@ -344,6 +345,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label="Close contrast matrix"
                   className="h-5 w-5 text-neutral-600 hover:text-white"
                   onClick={() => setShowWCAG(false)}
                 >

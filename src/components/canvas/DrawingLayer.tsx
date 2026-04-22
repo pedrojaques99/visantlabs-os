@@ -270,7 +270,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                       placeholder="Click to edit text..."
                       className={cn(
                         'transition-opacity',
-                        isSelected ? 'opacity-80' : 'opacity-300'
+                        isSelected ? 'opacity-80' : 'opacity-100'
                       )}
                     />
                   </div>

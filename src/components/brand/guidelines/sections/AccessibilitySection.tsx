@@ -45,18 +45,18 @@ export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guid
         </div>
       ) : undefined}
       actions={(
-        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
+        <Button variant="ghost" size="icon" aria-label="Add item" className="h-6 w-6 text-neutral-500 hover:text-white"
           onClick={() => {
             if (!isEditing) setIsEditing(true);
           }}>
-          <Plus size={12} />
+          <Plus size={12} aria-hidden="true" />
         </Button>
       )}
     >
       <div className="py-4">
         {isEditing ? (
           <div className="space-y-2 pt-2">
-            <MicroTitle className="text-[10px] opacity-300 uppercase tracking-widest pl-1">Compliance & Vision</MicroTitle>
+            <MicroTitle className="text-[10px] opacity-100 uppercase tracking-widest pl-1">Compliance & Vision</MicroTitle>
             <Textarea
               value={text}
               onChange={(e) => setText(e.target.value)}

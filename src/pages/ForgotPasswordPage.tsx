@@ -79,7 +79,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
 
         <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
@@ -100,7 +100,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
 
         <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
@@ -126,7 +126,7 @@ export const ForgotPasswordPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
 
       <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
         <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-md bg-brand-cyan/20">

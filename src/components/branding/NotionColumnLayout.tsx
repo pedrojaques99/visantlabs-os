@@ -448,7 +448,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                   {/* Section card */}
                   <div
                     className={`transition-all duration-300 ${isDragged
-                      ? 'opacity-300 scale-95'
+                      ? 'opacity-100 scale-95'
                       : isDropTargetBefore || isDropTargetAfter
                         ? 'ring-2 ring-[brand-cyan]/60 rounded-xl shadow-lg shadow-[brand-cyan]/20'
                         : ''
@@ -621,7 +621,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
             return (
               <div
                 key={stepNumber}
-                className={`transition-all duration-300 ${isDragged ? 'opacity-300 scale-95' : ''
+                className={`transition-all duration-300 ${isDragged ? 'opacity-100 scale-95' : ''
                   }`}
                 style={{
                   // Mobile: sempre span 1 (1 coluna)
@@ -741,7 +741,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                     <div
                       draggable={false}
                       className={`transition-all duration-300 ${isDragged
-                        ? 'opacity-300 scale-95'
+                        ? 'opacity-100 scale-95'
                         : isDropTarget
                           ? 'ring-2 ring-[brand-cyan]/60 rounded-xl shadow-lg shadow-[brand-cyan]/20'
                           : ''

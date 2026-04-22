@@ -55,7 +55,7 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
   // If loading or no custom template, use default components
   if (isLoading || !activeTemplate) {
     return (
-      <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-neutral-100'}`}>
+      <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-100'}`}>
         <div className="flex-1 min-h-full overflow-visible">
           {/* Page 1: Cover */}
           <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="cover" budgetData={data} isSidebarOpen={isSidebarOpen}>
@@ -122,7 +122,7 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
 
   // Use custom template layout
   return (
-    <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-neutral-100'}`}>
+    <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-100'}`}>
       <div className="flex-1 min-h-full overflow-visible">
         {/* Page 1: Cover */}
         <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="cover" budgetData={data} isSidebarOpen={isSidebarOpen}>
@@ -226,7 +226,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
   // If custom PDF is provided, show it instead
   if (data.customPdfUrl) {
     return (
-      <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-neutral-100'}`}>
+      <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-100'}`}>
         <PdfPreviewWithFields
           pdfUrl={data.customPdfUrl}
           data={data}
@@ -251,7 +251,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
   // If template is custom but no PDF uploaded yet
   if (data.template === 'custom') {
     return (
-      <div className={`w-full h-full min-h-full flex items-center justify-center ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-neutral-100'}`}>
+      <div className={`w-full h-full min-h-full flex items-center justify-center ${theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-100'}`}>
         <div className="text-center p-8">
           <p className={`text-lg font-mono mb-2 ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-600'}`}>
             Layout Custom
@@ -298,7 +298,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
   const secondaryColor = data.brandColors[1] || '#34d399';
 
   return (
-    <div className={`w-full h-full overflow-auto p-8 ${theme === 'dark' ? 'bg-[#0C0C0C] text-neutral-100' : 'bg-white text-neutral-900'}`}>
+    <div className={`w-full h-full overflow-auto p-8 ${theme === 'dark' ? 'bg-neutral-950 text-neutral-100' : 'bg-white text-neutral-900'}`}>
       <style>
         {`
           @media print {
