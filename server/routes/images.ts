@@ -81,41 +81,53 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
     let finalQuery = safeQuery;
     let tbs = '';
 
+    const contentMode = designerParams?.contentMode || 'all';
+
     if (mode === 'instagram') {
       const handle = safeQuery.startsWith('@') ? safeQuery.slice(1) : safeQuery;
       finalQuery = `site:instagram.com "${handle}" -reels -video -stories`;
     } else {
-      // Prioritize clean, production-ready assets
-      // Exclude stock clusters, watermarks, commercial patterns, and paid stock sites
-      const negativeOperators = [
-        '-stock', '-watermark', '-template', '-mockup', '-flyer',
-        ...(designerParams?.type !== 'clipart' ? ['-clipart', '-vector', '-cartoon'] : [])
-      ];
+      // Query modifiers driven entirely by contentMode badge — no global negative operators
+      const contentQueryMap: Record<string, string> = {
+        all:          '',
+        photo:        '-logo -text -clipart -illustration',
+        logo:         'logo transparent -background -photo',
+        illustration: 'illustration art -photo',
+        vector:       'vector svg filetype:svg -photo',
+        creative:     'banner creative ad',
+      };
 
-      finalQuery = `${safeQuery} ${negativeOperators.join(' ')}`;
+      const contentSuffix = contentQueryMap[contentMode] || '';
+      finalQuery = `${safeQuery} ${contentSuffix}`.trim();
     }
 
     // Process Designer Parameters (tbs)
     if (designerParams && typeof designerParams === 'object') {
       const filters: string[] = [];
-      
-      // Size filter
+
       if (designerParams.size === 'large') filters.push('isz:l');
-      
-      // Type/Color filters
-      if (designerParams.type === 'transparent') filters.push('ic:trans');
-      if (designerParams.type === 'clipart') filters.push('itp:clipart');
-      if (designerParams.type === 'lineart') filters.push('itp:lineart');
-      if (designerParams.type === 'photo') filters.push('itp:photo');
-      
-      // Aspect ratio
-      if (designerParams.aspect === 'square') filters.push('iar:s');
-      if (designerParams.aspect === 'wide') filters.push('iar:w');
-      if (designerParams.aspect === 'tall') filters.push('iar:t');
-      
-      if (filters.length > 0) {
-        tbs = filters.join(',');
+
+      // contentMode overrides manual type for tbs
+      const tbsTypeMap: Record<string, string> = {
+        logo:         'itp:clipart',
+        illustration: 'itp:clipart',
+        vector:       'itp:lineart',
+        photo:        'itp:photo',
+      };
+      if (tbsTypeMap[contentMode]) {
+        filters.push(tbsTypeMap[contentMode]);
+      } else {
+        if (designerParams.type === 'transparent') filters.push('ic:trans');
+        if (designerParams.type === 'clipart')     filters.push('itp:clipart');
+        if (designerParams.type === 'lineart')     filters.push('itp:lineart');
+        if (designerParams.type === 'photo')       filters.push('itp:photo');
       }
+
+      if (designerParams.aspect === 'square') filters.push('iar:s');
+      if (designerParams.aspect === 'wide')   filters.push('iar:w');
+      if (designerParams.aspect === 'tall')   filters.push('iar:t');
+
+      if (filters.length > 0) tbs = filters.join(',');
     }
 
     // Cache check
@@ -175,72 +187,53 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
         const title = (img.title || '').toLowerCase();
         const domain = (img.domain || '').toLowerCase();
 
-        // ========== PAID STOCK SITES ==========
+        // ========== ALWAYS: paid stock & watermark (never wanted) ==========
         const paidStockSites = [
-          // Adobe family
-          'adobestock', 'stock.adobe',
-          // Getty & premium
-          'gettyimages', 'istock', 'pond5',
-          // Stock-specific
+          'adobestock', 'stock.adobe', 'gettyimages', 'istock', 'pond5',
           'shutterstock', 'alamy', 'dreamstime', 'depositphotos', 'fotolia',
-          '123rf', 'clipart.com', 'canstockphoto',
-          // Free but often watermarked
-          'pixabay', 'pexels', 'stockvault'
+          '123rf', 'clipart.com', 'canstockphoto', 'stockvault'
         ];
-        if (paidStockSites.some(p => url.includes(p) || domain.includes(p))) {
-          return false;
-        }
+        if (paidStockSites.some(p => url.includes(p) || domain.includes(p))) return false;
 
-        // ========== WATERMARK & TARJA DETECTION ==========
-        const watermarkKeywords = [
-          'watermark', 'watermarked', 'tarja', 'stamp', '©', '®',
-          'copyright', 'all rights reserved',
-          'confidential', 'draft',
-          'logo watermark', 'brand watermark'
-        ];
-        if (watermarkKeywords.some(k => title.includes(k))) {
-          return false;
-        }
+        const watermarkKeywords = ['watermark', 'watermarked', 'tarja', '©', '®', 'all rights reserved'];
+        if (watermarkKeywords.some(k => title.includes(k))) return false;
 
-        // ========== COMMERCIAL/TEMPLATE CONTENT ==========
-        const commercialPatterns = [
-          // Templates & mockups
-          'template', 'mockup', 'psd file', 'photoshop',
-          // Marketing materials
-          'flyer', 'poster', 'brochure', 'leaflet', 'pamphlet', 'infographic',
-          'presentation', 'slide deck', 'powerpoint',
-          // Social media templates
-          'facebook cover', 'facebook post', 'instagram post', 'instagram story',
-          'twitter header', 'linkedin banner', 'youtube thumbnail',
-          // Graphics with text/logos
-          'business card', 'letterhead', 'envelope', 'packaging',
-          // Commercial indicators
-          'buy now', 'for sale', 'subscribe', 'premium', 'pro version',
-          'licensed', 'commercial use', 'resale rights'
-        ];
-        if (commercialPatterns.some(p => title.includes(p))) {
-          return false;
-        }
+        // ========== LOW-QUALITY (always) ==========
+        const lowQualityPatterns = ['low res', 'low quality', 'pixelated', 'placeholder', 'no image', 'image not found'];
+        if (lowQualityPatterns.some(p => title.includes(p))) return false;
 
-        // ========== CLIPART & VECTOR EXCLUSION ==========
-        if (designerParams?.type !== 'clipart') {
-          const clipartPatterns = [
-            'clipart', 'vector', 'illustration', 'cartoon', 'drawing',
-            'graphic design', 'digital art', 'animated'
-          ];
-          if (clipartPatterns.some(p => title.includes(p) || url.includes(p))) {
-            return false;
+        // ========== TEXT-OVERLAY / ARTICLE THUMBNAIL DETECTION ==========
+        // 'creative' mode: user explicitly wants images with text — skip this filter
+        // 'logo' mode: logos have brand text intentionally — skip sentence filter, only query-match
+        const skipTextFilter = contentMode === 'creative';
+        const looseTextFilter = contentMode === 'logo';
+
+        if (!skipTextFilter) {
+          const rawTitle = (img.title || '');
+
+          if (!looseTextFilter) {
+            const sentenceWords = [
+              ' and ', ' the ', ' with ', ' for ', ' using ', ' how ', ' why ',
+              ' what ', ' when ', ' where ', ' vs ', ' versus ', ' or ', ' but ',
+              ' are ', ' is ', ' was ', ' were ', ' has ', ' have ', ' been ',
+              ' will ', ' can ', ' should ', ' would ', ' could ',
+              ' to ', ' of ', ' in ', ' on ', ' at ', ' by ', ' from ',
+              ' into ', ' about ', ' through ', ' between ', ' against ',
+              ' releasing ', ' released ', ' introducing ', ' launches ',
+              ' update ', ' review ', ' guide ', ' tutorial ', ' blog ',
+              ' post ', ' article ', ' read more', ' click here',
+              ' part ', ' episode ', ' chapter ', ' series ',
+              ' vs.', '...', ' — ', ' | ',
+            ];
+            const titleWords = rawTitle.trim().split(/\s+/);
+            const isSentenceLike = sentenceWords.some(w => ` ${title} `.includes(w));
+            const isTooManyWords = titleWords.length > 6;
+            const hasPhrasepunct = /[,:]\s+\w/.test(rawTitle) || rawTitle.includes(' - ');
+
+            if ((isSentenceLike && isTooManyWords) || (isSentenceLike && hasPhrasepunct) || (hasPhrasepunct && isTooManyWords)) {
+              return false;
+            }
           }
-        }
-
-        // ========== LOW-QUALITY INDICATORS ==========
-        // Reject if title suggests bad quality
-        const lowQualityPatterns = [
-          'low res', 'low quality', 'pixelated', 'blurry',
-          'placeholder', 'no image', 'image not found'
-        ];
-        if (lowQualityPatterns.some(p => title.includes(p))) {
-          return false;
         }
 
         return true;

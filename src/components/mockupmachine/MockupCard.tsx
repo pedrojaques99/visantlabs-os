@@ -13,6 +13,7 @@ import { GlassPanel } from '../ui/GlassPanel';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button'
 import { useGenerationFeedback } from '@/hooks/useGenerationFeedback';
+import { SendToButton } from '@/components/shared/SendToButton';
 import { type FeedbackContext, type FeedbackRating } from '@/services/feedbackApi';
 
 export interface MockupCardProps {
@@ -263,6 +264,16 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                                     <Download size={12} />
                                 </a>
                             </Tooltip>
+
+                            <div className="w-px h-3 bg-white/10 mx-1" />
+
+                            <SendToButton
+                                source="mockupmachine"
+                                imageUrl={imageUrl}
+                                mimeType="image/png"
+                                label="Mockup Machine output"
+                                variant="icon"
+                            />
 
                             <div className="w-px h-3 bg-white/10 mx-1" />
 

@@ -52,8 +52,8 @@ describe('OpenAPI Generator', () => {
       expect(spec.components).toBeDefined();
       expect(spec.components?.securitySchemes).toBeDefined();
       expect(spec.components?.securitySchemes?.bearerAuth).toBeDefined();
-      expect(spec.components.securitySchemes.bearerAuth.type).toBe('http');
-      expect(spec.components.securitySchemes.bearerAuth.scheme).toBe('bearer');
+      expect(spec.components!.securitySchemes!.bearerAuth.type).toBe('http');
+      expect(spec.components!.securitySchemes!.bearerAuth.scheme).toBe('bearer');
     });
 
     it('should include all required tags', () => {

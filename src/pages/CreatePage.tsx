@@ -17,19 +17,19 @@ export const CreatePage: React.FC = () => {
   const projectName = useCreativeStore((s) => s.projectName);
 
   useEffect(() => {
-    // 1. Sync Store -> URL: If we have a persisted ID in store but not in URL, update URL
+    // 1. Sync Store -> URL: Only when no projectId in URL (don't override intentional navigation)
     const isPersisted = currentCreativeId && currentCreativeId.length === 24;
-    if (isPersisted && projectId !== currentCreativeId) {
+    if (!projectId && isPersisted) {
       setParams({ project: currentCreativeId }, { replace: true });
       loadedRef.current = currentCreativeId;
       return;
     }
 
-    // 2. Sync URL -> Store: If we have a projectId in URL but store doesn't have it (and isn't a new generation)
+    // 2. Sync URL -> Store: If we have a projectId in URL but store doesn't have it
     if (!projectId) return;
-    
-    // If the store already has this ID or is currently in a "new generation" state (creative_...), don't overwrite it
-    if (currentCreativeId === projectId || (currentCreativeId && currentCreativeId.startsWith('creative_'))) {
+
+    // If the store already has this exact ID, no need to reload
+    if (currentCreativeId === projectId) {
       loadedRef.current = projectId;
       return;
     }
@@ -60,7 +60,7 @@ export const CreatePage: React.FC = () => {
       seoDescription="Professional AI-driven design studio for brand-aware creative generation."
       breadcrumb={[
         { label: t('apps.home') || 'Home', to: '/' },
-        { label: t('canvas.title') || 'Canvas', to: '/canvas' },
+        { label: 'Creative Projects', to: '/create/projects' },
         { label: 'Creative Studio' }
       ]}
       hideHeader

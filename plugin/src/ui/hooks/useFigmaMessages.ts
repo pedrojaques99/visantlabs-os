@@ -415,7 +415,9 @@ export function useFigmaMessages() {
               role: 'assistant' as const,
               content,
               timestamp: Date.now(),
-              operations: designOps
+              operations: designOps,
+              toolCalls: result.toolCallRecord ? [result.toolCallRecord] : undefined,
+              metadata: result.usage ? { usage: result.usage } : undefined
             });
 
             if (designOps.length > 0) {

@@ -155,13 +155,11 @@ export const CreativeCanvas = forwardRef<HTMLDivElement, Props>(
         <LassoTool canvasWidth={width} canvasHeight={height} />
 
         {/* The Moveable Engine handles drawing handles/lines on top of DOM elements */}
-        {ref && (ref as React.RefObject<HTMLDivElement>).current && (
-           <CreativeMoveable
-              canvasWidth={width}
-              canvasHeight={height}
-              containerRef={ref as React.RefObject<HTMLDivElement>}
-           />
-        )}
+        <CreativeMoveable
+          canvasWidth={width}
+          canvasHeight={height}
+          containerRef={ref as React.RefObject<HTMLDivElement>}
+        />
       </div>
     );
   }

@@ -8,7 +8,10 @@ export type SessionWsEvent =
   | { type: 'TOOL_CALL_START'; payload: any }
   | { type: 'TOOL_CALL_END'; payload: any }
   | { type: 'APPROVAL_REQUIRED'; payload: any }
-  | { type: 'APPROVAL_RESOLVED'; payload: any };
+  | { type: 'APPROVAL_RESOLVED'; payload: any }
+  | { type: 'CREATIVE_PLAN_PROPOSED'; payload: any }
+  | { type: 'FIGMA_OPS_QUEUED'; payload: any }
+  | { type: 'FIGMA_OPS_APPLIED'; payload: any };
 
 interface Options {
   /** WS path relative to the API base, e.g. `/admin-chat/ws`. */

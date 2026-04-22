@@ -4,6 +4,15 @@
  */
 
 import WebSocket from 'ws';
+import { EventEmitter } from 'events';
+import { pluginQueue, type QueuedBatch } from './pluginQueue.js';
+
+/**
+ * Emitted events:
+ *   'drain:complete'  { fileId, userId, batches: QueuedBatch[], appliedCount: number }
+ *   'drain:failed'    { fileId, userId, error: string }
+ */
+export const pluginBridgeEvents = new EventEmitter();
 
 export interface Operation {
   type: string;
@@ -37,11 +46,17 @@ class PluginBridge {
   ); // 10 seconds
   private readonly heartbeatInterval = 30000; // 30 seconds
 
+  /** Whether the plugin is currently connected and WebSocket is open. */
+  isConnected(fileId: string): boolean {
+    const s = this.sessions.get(fileId);
+    return !!s && s.ws.readyState === WebSocket.OPEN;
+  }
+
   /**
-   * Register a new plugin WebSocket connection
+   * Register a new plugin WebSocket connection.
+   * Automatically drains any pending Redis queue after registration.
    */
   register(fileId: string, ws: WebSocket, userId: string): PluginSession {
-    // Clean up old session if exists
     if (this.sessions.has(fileId)) {
       const oldSession = this.sessions.get(fileId)!;
       oldSession.ws.close(1000, 'New connection');
@@ -60,11 +75,60 @@ class PluginBridge {
     this.sessions.set(fileId, session);
     this.startHeartbeat(session);
 
-    console.log(
-      `[PluginBridge] Session registered: fileId=${fileId}, userId=${userId}`,
+    console.log(`[PluginBridge] Session registered: fileId=${fileId}, userId=${userId}`);
+
+    // Drain any ops queued while plugin was offline (fire-and-forget)
+    this.drainQueue(fileId).catch((err) =>
+      console.error(`[PluginBridge] drainQueue error for ${fileId}:`, err),
     );
 
     return session;
+  }
+
+  /**
+   * Drain the Redis queue for a fileId.
+   * Applies each batch in order, then clears the queue.
+   * Emits 'drain:complete' or 'drain:failed' on pluginBridgeEvents.
+   */
+  private async drainQueue(fileId: string): Promise<void> {
+    const pending = await pluginQueue.peek(fileId);
+    if (pending.length === 0) return;
+
+    console.log(`[PluginBridge] Draining ${pending.length} queued batch(es) for ${fileId}`);
+
+    let totalApplied = 0;
+    const session = this.sessions.get(fileId);
+    if (!session) return;
+
+    try {
+      for (const batch of pending) {
+        const result = await this.push(fileId, batch.operations);
+        if (result.success) {
+          totalApplied += result.appliedCount;
+        } else {
+          throw new Error(result.errors?.join(', ') || 'apply failed');
+        }
+      }
+
+      await pluginQueue.clear(fileId);
+
+      pluginBridgeEvents.emit('drain:complete', {
+        fileId,
+        userId: session.userId,
+        batches: pending,
+        appliedCount: totalApplied,
+      });
+
+      console.log(`[PluginBridge] Drain complete: ${totalApplied} ops applied for ${fileId}`);
+    } catch (err: any) {
+      pluginBridgeEvents.emit('drain:failed', {
+        fileId,
+        userId: session.userId,
+        batches: pending,
+        error: err.message,
+      });
+      console.error(`[PluginBridge] Drain failed for ${fileId}:`, err.message);
+    }
   }
 
   /**

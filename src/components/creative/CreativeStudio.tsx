@@ -26,7 +26,7 @@ import { toast } from 'sonner';
 
 export const CreativeStudio: React.FC = () => {
   const {
-    status, format, brandId, removeLayer, selectedLayerIds,
+    status, format, brandId, removeLayer, selectedLayerIds, setSelectedLayerIds,
     pages, activePageIndex, setActivePageIndex, addPage, removePage, setStatus,
     groupSelected, ungroupSelected, backgroundSelected,
     activeTool, setActiveTool
@@ -102,6 +102,10 @@ export const CreativeStudio: React.FC = () => {
         }
       }
 
+      if (e.key === 'Escape' && selectedLayerIds.length > 0) {
+        setSelectedLayerIds([]);
+      }
+
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedLayerIds.length > 0) {
         e.preventDefault();
         selectedLayerIds.forEach(id => removeLayer(id));
@@ -110,7 +114,7 @@ export const CreativeStudio: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, selectedLayerIds, removeLayer, groupSelected, ungroupSelected]);
+  }, [undo, redo, selectedLayerIds, setSelectedLayerIds, removeLayer, groupSelected, ungroupSelected]);
 
   const handleExport = async () => {
     if (!canvasRef.current) return;
@@ -172,52 +176,21 @@ export const CreativeStudio: React.FC = () => {
       )}
 
       <main
-        ref={containerRef}
-        className="flex-1 relative flex flex-col items-center justify-center overflow-hidden bg-neutral-950/50"
+        className="flex-1 flex flex-col overflow-hidden bg-neutral-950/50"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            const { setSelectedLayerIds, setBackgroundSelected } = useCreativeStore.getState();
+            setSelectedLayerIds([]);
+            setBackgroundSelected(false);
+          }
+        }}
       >
-        <div
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
-          style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '24px 24px' }}
-        />
-
-        {/* ── Minimalist Header Header Actions ── */}
-        {status === 'editing' && (
-          <div className="absolute top-4 right-6 z-40 flex items-center gap-3">
-            <div className="flex items-center gap-px bg-neutral-900/60 border border-white/10 rounded-full p-1 group">
-              <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 group/btn">
-                <Paintbrush size={12} className="text-brand-cyan group-hover/btn:rotate-12 transition-transform" /> Variar Cores
-              </button>
-              <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 group/btn">
-                <ImageIcon size={12} className="text-emerald-400 group-hover/btn:-rotate-12 transition-transform" /> Variar Imagens
-              </button>
-              <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 group/btn">
-                <TypeIcon size={12} className="text-amber-400 group-hover/btn:scale-110 transition-transform" /> Variar Copy
-              </button>
-            </div>
-            <button
-              onClick={() => setActiveTool(activeTool === 'lasso' ? 'select' : 'lasso')}
-              className={`px-4 py-2 rounded-full border text-[10px] font-bold uppercase tracking-[0.1em] transition-all flex items-center gap-2 shadow-lg ${activeTool === 'lasso'
-                  ? 'border-brand-cyan/60 bg-brand-cyan/20 text-brand-cyan shadow-brand-cyan/10'
-                  : 'border-white/10 bg-neutral-900/60 text-neutral-400 hover:text-white hover:border-white/20'
-                }`}
-              title="Laço — selecionar região para editar com IA"
-            >
-              <Scan size={12} /> Laço
-            </button>
-            <button
-              onClick={() => setStatus('setup')}
-              className="px-5 py-2 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan hover:bg-brand-cyan/20 hover:border-brand-cyan/40 transition-all flex items-center gap-2 shadow-lg shadow-brand-cyan/5"
-            >
-              <Diamond size={12} /> Gerar Novo
-            </button>
-          </div>
-        )}
-
-        <div className="absolute top-4 left-6 z-40">
-          <BreadcrumbWithBack to="/canvas">
+        {/* ── Top header bar (breadcrumb left, actions right) ── */}
+        <div className="flex items-center justify-between px-6 py-3 shrink-0 border-b border-white/[0.04] z-40">
+          <BreadcrumbWithBack to="/create/projects">
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink asChild><Link to="/canvas">Canvas</Link></BreadcrumbLink>
+                <BreadcrumbLink asChild><Link to="/create/projects">Creative Projects</Link></BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
@@ -225,7 +198,53 @@ export const CreativeStudio: React.FC = () => {
               </BreadcrumbItem>
             </BreadcrumbList>
           </BreadcrumbWithBack>
+
+          {status === 'editing' && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-px bg-neutral-900/60 border border-white/10 rounded-full p-1">
+                <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2">
+                  <Paintbrush size={12} className="text-brand-cyan" /> Variar Cores
+                </button>
+                <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2">
+                  <ImageIcon size={12} className="text-emerald-400" /> Variar Imagens
+                </button>
+                <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2">
+                  <TypeIcon size={12} className="text-amber-400" /> Variar Copy
+                </button>
+              </div>
+              <button
+                onClick={() => setActiveTool(activeTool === 'lasso' ? 'select' : 'lasso')}
+                className={`px-4 py-2 rounded-full border text-[10px] font-bold uppercase tracking-[0.1em] transition-all flex items-center gap-2 ${
+                  activeTool === 'lasso'
+                    ? 'border-brand-cyan/60 bg-brand-cyan/20 text-brand-cyan'
+                    : 'border-white/10 bg-neutral-900/60 text-neutral-400 hover:text-white hover:border-white/20'
+                }`}
+                title="Laço — selecionar região para editar com IA"
+              >
+                <Scan size={12} /> Laço
+              </button>
+              <button
+                onClick={() => setStatus('setup')}
+                className="px-5 py-2 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan hover:bg-brand-cyan/20 hover:border-brand-cyan/40 transition-all flex items-center gap-2"
+              >
+                <Diamond size={12} /> Gerar Novo
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* ── Canvas area (fills remaining space, centers content) ── */}
+        <div
+          ref={containerRef}
+          className="flex-1 relative flex flex-col items-center justify-center overflow-hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              const { setSelectedLayerIds, setBackgroundSelected } = useCreativeStore.getState();
+              setSelectedLayerIds([]);
+              setBackgroundSelected(false);
+            }
+          }}
+        >
 
         {status === 'generating' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-50 bg-black/80 backdrop-blur-xl animate-in fade-in">
@@ -318,8 +337,9 @@ export const CreativeStudio: React.FC = () => {
           </div>
         ) : null}
 
-        {status === 'editing' && backgroundSelected && <BackgroundToolbar />}
-        {status === 'editing' && <CreativeToolbar />}
+          {status === 'editing' && backgroundSelected && <BackgroundToolbar />}
+          {status === 'editing' && <CreativeToolbar />}
+        </div>
       </main>
     </div>
   );

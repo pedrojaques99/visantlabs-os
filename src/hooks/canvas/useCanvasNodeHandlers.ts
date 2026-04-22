@@ -3,7 +3,8 @@ import { useCallback, useRef, useEffect } from 'react';
 
 // ========== IMPORTS - Tipos ReactFlow ==========
 import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, GenerateVideoParams, NodeBuilderData, CustomNodeData } from '@/types/reactFlow';
+import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, GenerateVideoParams, NodeBuilderData, CustomNodeData, VariablesNodeData, DataNodeData, BatchRunnerNodeData } from '@/types/reactFlow';
+import { useBatchRunnerHandlers } from './handlers/useBatchRunnerHandlers';
 import type { CustomNodeDefinition, MultiOutputConfig } from '@/types/customNode';
 import { DEFAULT_MODEL } from '@/constants/geminiModels';
 import { nodeBuilderApi } from '@/services/nodeBuilderApi';
@@ -721,6 +722,30 @@ export const useCanvasNodeHandlers = (
   });
 
 
+  // ========== BATCH RUNNER HANDLERS ==========
+  const {
+    handleBatchRun,
+    handleBatchCancel,
+    handleBatchReset,
+    handleBatchNodeDataUpdate,
+  } = useBatchRunnerHandlers({ nodesRef, edgesRef, updateNodeData });
+
+  // ========== DATA NODE HANDLER ==========
+  const handleDataNodeDataUpdate = useCallback(
+    (nodeId: string, newData: Partial<DataNodeData>) => {
+      updateNodeData<DataNodeData>(nodeId, newData, 'data');
+    },
+    [updateNodeData]
+  );
+
+  // ========== VARIABLES NODE HANDLER ==========
+  const handleVariablesNodeDataUpdate = useCallback(
+    (nodeId: string, newData: Partial<VariablesNodeData>) => {
+      updateNodeData<VariablesNodeData>(nodeId, newData, 'variables');
+    },
+    [updateNodeData]
+  );
+
   // ========== USEEFFECT - Atualização Final de Handlers Ref ==========
   // Atualiza handlersRef com os handlers adicionais (Logo, PDF, BrandCore)
 
@@ -741,6 +766,12 @@ export const useCanvasNodeHandlers = (
       handleBrandCoreDataUpdate,
       handleBrandCoreUploadPdfToR2,
       handleSavePrompt,
+      handleVariablesNodeDataUpdate,
+      handleDataNodeDataUpdate,
+      handleBatchRun,
+      handleBatchCancel,
+      handleBatchReset,
+      handleBatchNodeDataUpdate,
     };
   }, [
     handleLogoNodeUpload,
@@ -754,6 +785,12 @@ export const useCanvasNodeHandlers = (
     handleBrandCoreDataUpdate,
     handleBrandCoreUploadPdfToR2,
     handleSavePrompt,
+    handleVariablesNodeDataUpdate,
+    handleDataNodeDataUpdate,
+    handleBatchRun,
+    handleBatchCancel,
+    handleBatchReset,
+    handleBatchNodeDataUpdate,
   ]);
 
   // ========== NODE BUILDER + CUSTOM NODE HANDLERS ==========
@@ -991,6 +1028,12 @@ export const useCanvasNodeHandlers = (
     handleNodeBuilderSpawn,
     handleNodeBuilderUpdateData,
     handleCustomNodeExecute,
+    handleVariablesNodeDataUpdate,
+    handleDataNodeDataUpdate,
+    handleBatchRun,
+    handleBatchCancel,
+    handleBatchReset,
+    handleBatchNodeDataUpdate,
     handlersRef,
     nodesRef,
     updateNodeData,

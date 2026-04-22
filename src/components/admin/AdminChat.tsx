@@ -5,8 +5,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { adminChatApi, AdminChatMessage, AdminChatSession, ToolCallRecord, PendingBrandKnowledgeApproval } from '@/services/adminChatApi';
-import { X, Bot, Loader2, Shield, FileText, Image as ImageIcon, Video, Paperclip, Plus, Trash2, Menu, BookOpen, Check } from 'lucide-react';
+import { adminChatApi, AdminChatMessage, AdminChatSession, ToolCallRecord, PendingBrandKnowledgeApproval, PendingCreativePlan } from '@/services/adminChatApi';
+import { X, Bot, Loader2, Shield, FileText, Image as ImageIcon, Video, Paperclip, Plus, Trash2, ChevronLeft, ChevronRight, BookOpen, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { authService } from '@/services/authService';
@@ -28,6 +28,7 @@ import { Diamond, PanelRightOpen, PanelRightClose, Upload } from 'lucide-react';
 import { useLayout } from '@/hooks/useLayout';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
+import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
 
 interface AdminChatProps {
     mode?: 'modal' | 'inline';
@@ -67,6 +68,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
     const [selectedModel, setSelectedModel] = useState<string>(GEMINI_MODELS.PRO_3_1); // Default admin model
     const [isDraggingFile, setIsDraggingFile] = useState(false);
     const [mediaPanelOpen, setMediaPanelOpen] = useState(true);
+    const [wizardOpen, setWizardOpen] = useState(false);
     const brandImportInputRef = useRef<HTMLInputElement>(null);
     const brandImport = useBrandImport(selectedBrandId || undefined);
 
@@ -108,8 +110,26 @@ export const AdminChat: React.FC<AdminChatProps> = ({
     const [inflightToolCalls, setInflightToolCalls] = useState<ToolCallRecord[]>([]);
     const [pendingApprovals, setPendingApprovals] = useState<PendingBrandKnowledgeApproval[]>([]);
     const [resolvingPendingId, setResolvingPendingId] = useState<string | null>(null);
+    const [pendingPlan, setPendingPlan] = useState<PendingCreativePlan | null>(null);
+    const [planAnswers, setPlanAnswers] = useState<Record<number, string>>({});
+    const [approvingPlan, setApprovingPlan] = useState(false);
+    const [planModeActive, setPlanModeActive] = useState(false);
+    const [textMode, setTextMode] = useState<'layers' | 'image' | 'both'>('layers');
 
-    const messagesEndRef = useAutoScrollToBottom<HTMLDivElement>([messages, isLoading]);
+    // Derive plan from last assistant message as fallback when WS event was missed
+    const activePlan = React.useMemo(() => {
+        if (pendingPlan) return pendingPlan;
+        if (isLoading) return null;
+        const last = messages[messages.length - 1];
+        if (last?.role !== 'assistant') return null;
+        const planTool = (last.toolCalls || []).find(
+            (tc: any) => tc.name === 'propose_creative_plan' && tc.status === 'done' && tc.args?.proposals?.length
+        );
+        if (!planTool) return null;
+        return { id: planTool.id, ...planTool.args } as PendingCreativePlan;
+    }, [pendingPlan, messages, isLoading]);
+
+    const messagesEndRef = useAutoScrollToBottom<HTMLDivElement>([messages, isLoading, activePlan]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Load sessions
@@ -152,6 +172,11 @@ export const AdminChat: React.FC<AdminChatProps> = ({
             );
             return;
         }
+        if (ev.type === 'CREATIVE_PLAN_PROPOSED' && ev.payload) {
+            setPendingPlan(ev.payload as PendingCreativePlan);
+            setPlanAnswers({});
+            return;
+        }
         if (ev.type === 'MESSAGE' && ev.payload) {
             const incoming: AdminChatMessage = ev.payload;
             setMessages((prev) => {
@@ -177,9 +202,12 @@ export const AdminChat: React.FC<AdminChatProps> = ({
 
     const createNewSession = async () => {
         try {
-            const session = await adminChatApi.createSession(selectedBrandId || undefined);
+            const session = await adminChatApi.createSession(undefined);
+            setSelectedBrandId('');
             setCurrentSessionId(session._id);
             setPendingApprovals([]);
+            setPendingPlan(null);
+            setPlanAnswers({});
             setMessages([
                 {
                     role: 'assistant',
@@ -201,6 +229,8 @@ export const AdminChat: React.FC<AdminChatProps> = ({
             const session = await adminChatApi.getSession(sessionId);
             setCurrentSessionId(sessionId);
             setSelectedBrandId(session.brandGuidelineId || '');
+            setPendingPlan(null);
+            setPlanAnswers({});
             setPendingApprovals(
                 (session.pendingApprovals || []).filter(p => p.status === 'pending')
             );
@@ -302,7 +332,8 @@ export const AdminChat: React.FC<AdminChatProps> = ({
 
             // 4. Send message to session
             try {
-                const { reply, action, actionResult, creativeProjects, toolsUsed, toolCalls, generationId } = await adminChatApi.sendMessage(sessionId, currentInput);
+                const { reply, action, actionResult, creativeProjects, toolsUsed, toolCalls, generationId } = await adminChatApi.sendMessage(sessionId, currentInput, planModeActive, textMode);
+                if (planModeActive) setPlanModeActive(false);
 
                 setMessages(prev => [...prev, {
                     role: 'assistant',
@@ -412,6 +443,45 @@ export const AdminChat: React.FC<AdminChatProps> = ({
         }
     };
 
+    const approvePlan = async () => {
+        if (!pendingPlan || !currentSessionId) return;
+        setApprovingPlan(true);
+        const answers = pendingPlan.questions
+            .map((q, i) => planAnswers[i]?.trim() ? `${q}: ${planAnswers[i].trim()}` : null)
+            .filter(Boolean)
+            .join(' | ');
+        const msg = answers
+            ? `Aprovado. ${answers}. Pode gerar os mockups propostos.`
+            : 'Aprovado. Pode gerar os mockups propostos.';
+        setPendingPlan(null);
+        setPlanAnswers({});
+        setInput(msg);
+        // trigger send programmatically via ref trick — easier: just set input and auto-send
+        setApprovingPlan(false);
+        // Directly invoke send logic
+        setIsLoading(true);
+        setInflightToolCalls([]);
+        const userMsg: AdminChatMessage = { role: 'user', content: msg, timestamp: new Date().toISOString() };
+        setMessages(prev => [...prev, userMsg]);
+        try {
+            const result = await adminChatApi.sendMessage(currentSessionId, msg, false, textMode);
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: result.reply,
+                timestamp: new Date().toISOString(),
+                creativeProjects: result.creativeProjects,
+                toolCalls: result.toolCalls,
+                generationId: result.generationId,
+            }]);
+            setInflightToolCalls([]);
+            await refetchSessions();
+        } catch {
+            toast.error('Erro ao aprovar plano.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const rejectPending = async (pendingId: string) => {
         if (!currentSessionId) return;
         setResolvingPendingId(pendingId);
@@ -433,6 +503,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
     };
 
     return (
+        <>
         <AnimatePresence>
             {isOpen && (
                 <div className={cn(
@@ -590,7 +661,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                         className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-neutral-400 shrink-0"
                                         aria-label="Alternar sidebar"
                                     >
-                                        <Menu size={18} />
+                                        {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
                                     </button>
                                     <h3 className="text-sm font-semibold text-neutral-200 truncate leading-tight">
                                         {sessions.find(s => s._id === currentSessionId)?.title || 'Nova sessão'}
@@ -598,23 +669,31 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                    {brandGuidelines && brandGuidelines.length > 0 && (
-                                        <div className="hidden md:block w-44">
-                                            <Select
-                                                options={brandGuidelines.map((brand: any) => ({
-                                                    value: brand.id,
-                                                    label: brand.identity?.name || brand.id,
-                                                    icon: <BrandAvatar brand={brand} size={16} rounded="sm" />
-                                                }))}
-                                                value={selectedBrandId}
-                                                onChange={handleBrandChange}
-                                                placeholder="Marca contexto"
-                                                className="text-xs"
-                                                variant="node"
-                                                disabled={!!sessions.find(s => s._id === currentSessionId)?.brandGuidelineId}
-                                            />
-                                        </div>
-                                    )}
+                                    <div className="hidden md:block w-44">
+                                        <Select
+                                            options={(brandGuidelines || []).map((brand: any) => ({
+                                                value: brand.id,
+                                                label: brand.identity?.name || brand.id,
+                                                icon: <BrandAvatar brand={brand} size={16} rounded="sm" />
+                                            }))}
+                                            value={selectedBrandId}
+                                            onChange={handleBrandChange}
+                                            placeholder="Marca contexto"
+                                            className="text-xs"
+                                            variant="node"
+                                            disabled={!!sessions.find(s => s._id === currentSessionId)?.brandGuidelineId}
+                                            footer={
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setWizardOpen(true)}
+                                                    className="flex items-center gap-2 w-full px-2 py-2 text-[11px] font-medium text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/40 transition-colors"
+                                                >
+                                                    <Plus size={12} />
+                                                    Nova marca
+                                                </button>
+                                            }
+                                        />
+                                    </div>
 
                                     {isLargeScreen && selectedBrandId && (
                                         <Button
@@ -703,6 +782,78 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                     </div>
                                 ))}
 
+                                {/* Creative plan proposal card */}
+                                {activePlan && (
+                                    <div className="flex gap-4">
+                                        <div className="w-8 h-8 rounded-full bg-neutral-900 border border-white/10 flex items-center justify-center shadow-lg shrink-0">
+                                            <Bot size={16} className="text-neutral-300" />
+                                        </div>
+                                        <div className="flex-1 max-w-[85%] rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-4">
+                                            {activePlan.summary && (
+                                                <p className="text-xs text-neutral-400">{activePlan.summary}</p>
+                                            )}
+
+                                            {activePlan.proposals?.length > 0 && (
+                                                <div className="space-y-1.5">
+                                                    <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest">Variações propostas</p>
+                                                    {activePlan.proposals.map((p, i) => (
+                                                        <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-lg bg-black/30 border border-white/5">
+                                                            <span className="text-xs text-neutral-500 shrink-0 mt-px">{i + 1}.</span>
+                                                            <div className="min-w-0">
+                                                                <p className="text-xs font-medium text-neutral-200">{p.title}</p>
+                                                                {p.aspectRatio && (
+                                                                    <p className="text-[11px] text-neutral-600 mt-0.5">{p.aspectRatio}</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {activePlan.questions && activePlan.questions.length > 0 && (
+                                                <div className="space-y-2.5">
+                                                    <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest">Perguntas</p>
+                                                    {activePlan.questions.map((q, i) => (
+                                                        <div key={i} className="space-y-1">
+                                                            <label className="text-xs text-neutral-300">{q}</label>
+                                                            <input
+                                                                type="text"
+                                                                value={planAnswers[i] || ''}
+                                                                onChange={e => setPlanAnswers(prev => ({ ...prev, [i]: e.target.value }))}
+                                                                placeholder="Resposta opcional..."
+                                                                className="w-full px-3 py-1.5 rounded-md bg-black/40 border border-white/10 text-xs text-neutral-200 placeholder-neutral-600 outline-none focus:border-white/20 transition-colors"
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center gap-2 pt-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    type="button"
+                                                    onClick={approvePlan}
+                                                    disabled={approvingPlan || isLoading}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs rounded-md transition-colors"
+                                                >
+                                                    {approvingPlan ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                                                    Aprovar e gerar
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    type="button"
+                                                    onClick={() => { setPendingPlan(null); setPlanAnswers({}); }}
+                                                    disabled={approvingPlan}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 text-xs rounded-md transition-colors"
+                                                >
+                                                    <X size={12} />
+                                                    Cancelar
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {isLoading && (
                                     <div className="flex gap-4">
                                         <div className="w-8 h-8 rounded-full bg-neutral-900 border border-white/10 flex items-center justify-center shadow-lg">
@@ -780,6 +931,46 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                     onChange={handleFileChange}
                                     accept="image/*,application/pdf"
                                 />
+
+                                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                                    <button
+                                        type="button"
+                                        onClick={() => setPlanModeActive(v => !v)}
+                                        className={cn(
+                                            'flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors',
+                                            planModeActive
+                                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                                                : 'bg-white/[0.03] border-white/10 text-neutral-500 hover:text-neutral-300 hover:border-white/20'
+                                        )}
+                                        title="Modo Plano: o agente propõe variações e faz perguntas antes de gerar"
+                                    >
+                                        <Diamond size={11} className={planModeActive ? 'text-emerald-400' : 'opacity-50'} />
+                                        Modo Plano
+                                    </button>
+
+                                    <div className="flex items-center rounded-md border border-white/10 overflow-hidden text-[11px] font-medium">
+                                        {(['layers', 'image', 'both'] as const).map((mode) => (
+                                            <button
+                                                key={mode}
+                                                type="button"
+                                                onClick={() => setTextMode(mode)}
+                                                className={cn(
+                                                    'px-2.5 py-1 transition-colors',
+                                                    textMode === mode
+                                                        ? 'bg-white/10 text-neutral-200'
+                                                        : 'text-neutral-600 hover:text-neutral-400'
+                                                )}
+                                                title={
+                                                    mode === 'layers' ? 'Texto via layers editáveis (sem texto na imagem)'
+                                                    : mode === 'image' ? 'Texto baked na imagem Gemini (sem layers de texto)'
+                                                    : 'Texto na imagem + layers (pode conflitar)'
+                                                }
+                                            >
+                                                {mode === 'layers' ? 'Layers' : mode === 'image' ? 'Img' : 'Ambos'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
 
                                 <ChatInput
                                     value={input}
@@ -872,5 +1063,16 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                 </div>
             )}
         </AnimatePresence>
+        <BrandGuidelineWizardModal
+            isOpen={wizardOpen}
+            onClose={() => setWizardOpen(false)}
+            onSuccess={(id) => {
+                setWizardOpen(false);
+                queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] });
+                handleBrandChange(id);
+                setMediaPanelOpen(true);
+            }}
+        />
+        </>
     );
 };

@@ -30,10 +30,13 @@ export interface DocExtractionResult {
   };
 }
 
+export type ContentMode = 'all' | 'logo' | 'illustration' | 'vector' | 'photo' | 'creative';
+
 export interface DesignerParams {
   size?: 'large' | 'all';
   type?: 'transparent' | 'photo' | 'clipart' | 'lineart' | 'all';
   aspect?: 'square' | 'wide' | 'tall' | 'all';
+  contentMode?: ContentMode;
 }
 
 export const imageApi = {

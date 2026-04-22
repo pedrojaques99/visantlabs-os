@@ -19,9 +19,46 @@ import { JWT_SECRET } from '../utils/jwtSecret.js';
 import { env } from '../config/env.js';
 import { formatGeminiHistory } from '../lib/chat/history.js';
 import { resolveRagScope } from '../lib/chat/ragScope.js';
+import { withRetry } from '../lib/chat/executor.js';
+import { pluginBridgeEvents } from '../lib/pluginBridge.js';
 import type { ChatMessage as SharedChatMessage, ToolCallRecord as SharedToolCallRecord } from '../../shared/types/chat.js';
 
 const router = express.Router();
+
+// When the Figma plugin connects and drains its queue, notify the originating
+// AdminChat session so the user sees real-time feedback without polling.
+pluginBridgeEvents.on('drain:complete', ({ fileId, batches, appliedCount }: {
+  fileId: string;
+  batches: Array<{ chatSessionId?: string; meta?: any }>;
+  appliedCount: number;
+}) => {
+  const sessionIds = [...new Set(batches.map(b => b.chatSessionId).filter(Boolean))] as string[];
+  for (const sid of sessionIds) {
+    broadcastToSession(sid, {
+      type: 'FIGMA_OPS_APPLIED',
+      payload: {
+        fileId,
+        appliedCount,
+        figmaUrl: `https://www.figma.com/file/${fileId}`,
+        message: `${appliedCount} operações aplicadas no Figma.`,
+      },
+    });
+  }
+});
+
+pluginBridgeEvents.on('drain:failed', ({ fileId, batches, error }: {
+  fileId: string;
+  batches?: Array<{ chatSessionId?: string }>;
+  error: string;
+}) => {
+  const sessionIds = [...new Set((batches || []).map(b => b.chatSessionId).filter(Boolean))] as string[];
+  for (const sid of sessionIds) {
+    broadcastToSession(sid, {
+      type: 'FIGMA_OPS_FAILED',
+      payload: { fileId, error },
+    });
+  }
+});
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -112,10 +149,14 @@ ${brandContext ? `CONTEXTO DE MARCA:\n${brandContext}\n` : ''}
 ${ragContext ? `DOCUMENTOS INGERIDOS (use como base):\n${ragContext}\n` : ''}
 
 FERRAMENTAS DISPONÍVEIS:
-- Use "generate_or_update_mockup" quando o usuário pedir mockups, designs, protótipos ou variações de layouts.
+- Use "propose_creative_plan" ANTES de gerar mockups sempre que o pedido for aberto ou ambíguo (sem produto/formato/quantidade definidos, ou primeira intenção criativa da sessão). Proponha N variações (título + prompt rascunho + aspect ratio) e faça perguntas de clareza como "Usar a logo da marca?", "Formato preferido (quadrado, story, banner)?", "Referência de estilo?". Aguarde a resposta do usuário antes de gerar.
+  Exceções — gere direto sem propor plano: (a) usuário explicitamente aprovou um plano, (b) usuário usou "gera", "faz aí", "pode fazer" de forma direta com produto/formato claros, (c) pedido é regenerar/atualizar mockup existente.
+
+- Use "generate_or_update_mockup" quando o pedido for específico ou após aprovação de plano.
   Inclua na chamada: prompt descritivo, brandGuidelineId (se disponível), modelo (${GEMINI_MODELS.IMAGE_FLASH}, ${GEMINI_MODELS.IMAGE_NB2}, ou ${GEMINI_MODELS.IMAGE_PRO}), resolução (1K/2K/4K — só se usar NB2 ou PRO), aspect ratio.
   IMPORTANTE: quando o usuário pedir N mockups, N variações ou N opções (ex: "3 mockups", "mais 2 variações"), emita N chamadas da ferramenta em PARALELO na MESMA resposta — uma por variação, cada uma com seu próprio prompt distinto. Não descreva opções em texto e gere só uma; gere todas de uma vez.
   LOGO DA MARCA: a logo é injetada automaticamente como imagem de referência quando a sessão está vinculada a uma marca. NÃO descreva a aparência do logo no prompt (ex: "o logo é uma letra Q verde..."). Apenas diga "apply the brand logo" ou similar — o sistema cuida do resto.
+  TEXTO: use sempre "textMode: layers" por padrão (texto via layers editáveis, imagem sem tipografia renderizada). Use "textMode: image" apenas se o usuário pedir explicitamente textos/slogans na imagem gerada. Use "textMode: both" apenas se o usuário explicitamente quiser os dois. Nunca use "both" como padrão.
 - Use "save_to_brand_knowledge" em DOIS casos (só quando há marca vinculada — a escrita exige aprovação manual do usuário, você apenas propõe):
   1) Quando o usuário explicitamente quiser guardar algo (insight, decisão, referência).
   2) PROATIVAMENTE quando, dentro de um pedido operacional (ex: "quero um squeeze, ecobag e caneca, minimalista, logo original, conceito 'sedimentum' — terra, solo, de forma sofisticada"), o usuário embute sinais de identidade de marca que ainda não estão registrados: conceito/manifesto, keywords estéticas (minimalista, sofisticado, brutalista, orgânico...), moodboard sensorial (terra, solo, papel cru, concreto...), regras de uso (manter logo original, evitar cores X), arquétipo, tom, posicionamento. Nesse caso, emita a chamada EM PARALELO com "generate_or_update_mockup" na MESMA resposta — gere o mockup E proponha salvar os parâmetros ao mesmo tempo, sem pedir permissão no texto (a aprovação já é capturada pela UI).
@@ -127,6 +168,13 @@ FERRAMENTAS DISPONÍVEIS:
     **Regras de uso:** manter o logo original sem redesenho.
     \`\`\`
   Title: curto e descritivo (ex: "Direção estética: sedimentum"). Reason: 1 frase justificando ("extraído do briefing de mockups"). NÃO duplique informação já presente no CONTEXTO DE MARCA acima.
+
+- Use "update_session_memory" sempre que detectar na conversa: nome de marca nova, cliente novo, decisão estratégica tomada, ou referência visual/cultural relevante. Chame em paralelo com outras ferramentas — nunca bloqueie o fluxo por isso.
+- Use "generate_in_figma" quando o usuário pedir explicitamente para criar no Figma, exportar para o Figma, ou adicionar um frame no Figma. Requer marca vinculada com arquivo Figma. Se o plugin estiver fechado, as operações são enfileiradas e aplicadas automaticamente ao abrir — informe o usuário disso com naturalidade.
+
+- Use "brand_guideline_create" quando o usuário quiser criar uma nova marca, iniciar um brand guideline, ou registrar uma nova identidade de marca. Requer apenas o nome. Retorne o ID criado — pode ser vinculado à sessão.
+
+- Use "brand_guideline_update" para atualizar qualquer seção do brand guideline ativo da sessão (ou ID explícito). Envie apenas os campos que mudaram — os demais são preservados. Sub-campos de strategy (archetypes, personas, voiceValues, positioning, manifesto) são independentes. Quando usar: usuário define cores (hex obrigatório), tipografia, manifesto, posicionamento, arquétipos, personas, valores de voz, tokens, dos/donts, imagery, tom de voz. Chame em paralelo com generate_or_update_mockup quando o usuário definir marca E pedir geração simultaneamente.
 
 Quando apropriado, use as ferramentas para entregar resultados práticos além da análise textual.`;
 
@@ -181,6 +229,165 @@ async function saveSession(session: AdminChatSession): Promise<void> {
   );
   // Invalidate cache
   await redisClient.del(CacheKey.adminChatSession(session._id)).catch(() => { });
+}
+
+// ── Tool execution ─────────────────────────────────────────────────────────
+
+/**
+ * Execute all tool calls in parallel, collect results, apply session mutations.
+ * Returns the final reply text + accumulated side-effects.
+ */
+async function executeToolCalls(
+  rawReply: string,
+  toolCalls: Array<{ name: string; args: any }>,
+  session: AdminChatSession,
+  userId: string,
+  authHeader: string,
+): Promise<{
+  reply: string;
+  creativeProjects: any[];
+  toolsUsed: string[];
+  toolCallRecords: ToolCallRecord[];
+}> {
+  if (!toolCalls.length) {
+    return { reply: stripAction(rawReply), creativeProjects: [], toolsUsed: [], toolCallRecords: [] };
+  }
+
+  console.log(`[AdminChat] Executing ${toolCalls.length} tool(s) in parallel`);
+
+  // Pre-allocate records so we can broadcast start events before awaiting
+  const records: ToolCallRecord[] = toolCalls.map(call => ({
+    id: uuidv4(),
+    name: call.name,
+    status: 'running' as const,
+    args: call.args,
+    startedAt: new Date().toISOString(),
+    retries: 0,
+  }));
+
+  // Broadcast all starts immediately
+  for (const record of records) {
+    broadcastToSession(session._id, {
+      type: 'TOOL_CALL_START',
+      payload: { toolCallId: record.id, name: record.name, args: record.args, startedAt: record.startedAt },
+    });
+  }
+
+  // Execute all in parallel
+  const results = await Promise.allSettled(
+    toolCalls.map((call, i) =>
+      withRetry(
+        () => executeChatTool(call.name, call.args, { userId, sessionId: session._id, authHeader, brandGuidelineId: session.brandGuidelineId }),
+        call.name,
+      ).then(r => ({ index: i, result: r }))
+    )
+  );
+
+  const creativeProjects: any[] = [];
+  const toolsUsed: string[] = [];
+
+  for (const settled of results) {
+    if (settled.status === 'rejected') {
+      const i = (settled.reason as any)?._index ?? results.indexOf(settled);
+      const record = records[i] ?? records[results.indexOf(settled)];
+      if (record) {
+        record.status = 'error';
+        record.endedAt = new Date().toISOString();
+        record.errorMessage = settled.reason?.message || 'Tool execution failed';
+        broadcastToSession(session._id, {
+          type: 'TOOL_CALL_END',
+          payload: { toolCallId: record.id, status: 'error', endedAt: record.endedAt, errorMessage: record.errorMessage },
+        });
+      }
+      continue;
+    }
+
+    const { index, result: toolResult } = settled.value;
+    const record = records[index];
+    const call = toolCalls[index];
+
+    if (call.name === 'propose_creative_plan' && toolResult.success) {
+      broadcastToSession(session._id, {
+        type: 'CREATIVE_PLAN_PROPOSED',
+        payload: { id: record.id, ...toolResult.plan },
+      });
+      record.summary = 'Plano criativo proposto';
+    }
+
+    if (call.name === 'generate_or_update_mockup' && toolResult.success) {
+      creativeProjects.push({
+        creativeProjectId: toolResult.creativeProjectId,
+        imageUrl: toolResult.imageUrl,
+        editUrl: toolResult.editUrl,
+        prompt: toolResult.prompt,
+        creditsDeducted: toolResult.creditsDeducted,
+        creditsRemaining: toolResult.creditsRemaining,
+      });
+      record.summary = 'Mockup gerado';
+    }
+
+    if (call.name === 'generate_in_figma') {
+      if (toolResult.queued) {
+        record.summary = `Enfileirado para o Figma (${toolResult.queueSize} pendente(s))`;
+        broadcastToSession(session._id, { type: 'FIGMA_OPS_QUEUED', payload: { figmaUrl: toolResult.figmaUrl, queueSize: toolResult.queueSize, message: 'Será aplicado quando o plugin Visant abrir no Figma.' } });
+      } else if (toolResult.success) {
+        record.summary = `Criativo criado no Figma (${toolResult.appliedCount} ops)`;
+        broadcastToSession(session._id, { type: 'FIGMA_OPS_APPLIED', payload: { figmaUrl: toolResult.figmaUrl, appliedCount: toolResult.appliedCount, message: `${toolResult.appliedCount} operações aplicadas no Figma.` } });
+      } else {
+        record.summary = `Figma: ${toolResult.error || 'falha'}`;
+      }
+    }
+
+    if (call.name === 'update_session_memory' && toolResult.memoryPatch) {
+      const patch = toolResult.memoryPatch;
+      const push = (arr: string[], items: string[]) => {
+        for (const item of items) {
+          if (!arr.includes(item)) arr.push(item);
+        }
+      };
+      push(session.memory.brands, patch.brands ?? []);
+      push(session.memory.clients, patch.clients ?? []);
+      push(session.memory.decisions, patch.decisions ?? []);
+      push(session.memory.references, patch.references ?? []);
+      record.summary = 'Memória atualizada';
+    }
+
+    if (call.name === 'save_to_brand_knowledge' && toolResult.pendingApproval) {
+      if (!session.brandGuidelineId) {
+        record.summary = 'Sem marca vinculada — não salvo';
+      } else {
+        const pending: PendingBrandKnowledgeApproval = {
+          id: uuidv4(),
+          sessionId: session._id,
+          brandGuidelineId: session.brandGuidelineId,
+          title: toolResult.pendingApproval.title,
+          content: toolResult.pendingApproval.content,
+          reason: toolResult.pendingApproval.reason,
+          requestedByUserId: userId,
+          requestedAt: new Date().toISOString(),
+          status: 'pending',
+        };
+        session.pendingApprovals = [...(session.pendingApprovals || []), pending];
+        record.summary = 'Aguardando aprovação';
+        broadcastToSession(session._id, { type: 'APPROVAL_REQUIRED', payload: pending });
+      }
+    }
+
+    toolsUsed.push(call.name);
+    record.status = 'done';
+    record.endedAt = new Date().toISOString();
+    broadcastToSession(session._id, {
+      type: 'TOOL_CALL_END',
+      payload: { toolCallId: record.id, status: 'done', endedAt: record.endedAt, summary: record.summary },
+    });
+  }
+
+  return {
+    reply: stripAction(rawReply),
+    creativeProjects,
+    toolsUsed,
+    toolCallRecords: records,
+  };
 }
 
 // ── Routes ─────────────────────────────────────────────────────────────────
@@ -413,7 +620,7 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
     const session = await getSession(req.params.id, req.userId!);
     if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
 
-    const { message } = req.body;
+    const { message, planMode, textMode } = req.body;
     if (!message) return res.status(400).json({ error: 'message required' });
 
     const userApiKey = await getGeminiApiKey(req.userId!).catch(() => undefined);
@@ -440,15 +647,16 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
     }
 
     // 3. System prompt de agência composto
-    const systemInstruction = buildSystemPrompt(session.memory, brandContext, ragContext);
+    const systemInstruction = buildSystemPrompt(session.memory, brandContext, ragContext)
+      + (planMode ? '\n\nMODO PLANO ATIVO: O usuário ativou o modo plano explicitamente. Use "propose_creative_plan" OBRIGATORIAMENTE para qualquer pedido criativo nesta mensagem — não gere imagens diretamente.' : '');
 
     // 4. Histórico no formato Gemini (últimas 20 msgs)
     const geminiHistory = formatGeminiHistory(session.messages);
 
-    // 5. Chat via llmRouter (Gemini default, Ollama opcional por preferência do user)
+    // 5. Chat via llmRouter
     const { text: rawReply, toolCalls } = await chatWithLLM(
       message,
-      '', // context vai no systemInstruction
+      '',
       geminiHistory,
       {
         provider: (userPrefs?.llmProvider as any) || env.DEFAULT_LLM_PROVIDER || 'gemini',
@@ -457,131 +665,44 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
         apiKey: userApiKey,
         model: GEMINI_MODELS.TEXT,
         systemInstruction,
-        tools: getChatTools(true)
+        tools: getChatTools(true),
       }
     );
 
-    // 6. Execute tool calls if any (track status + broadcast real-time events)
-    let reply = rawReply;
-    let creativeProjects: any[] = [];
-    const toolsUsed: string[] = [];
-    const toolCallRecords: ToolCallRecord[] = [];
+    // 6. Execute tool calls in parallel
+    // Propagate request-level textMode into every generate_or_update_mockup call
+    const resolvedToolCalls = (toolCalls || []).map(tc =>
+      tc.name === 'generate_or_update_mockup' && textMode
+        ? { ...tc, args: { ...tc.args, textMode } }
+        : tc
+    );
+    const { reply: rawExecutedReply, creativeProjects, toolsUsed, toolCallRecords } =
+      await executeToolCalls(rawReply, resolvedToolCalls, session, req.userId!, req.headers.authorization || '');
+    // Fallback reply when agent only proposed a plan (no text output)
+    const reply = rawExecutedReply.trim() || (toolsUsed.includes('propose_creative_plan') ? 'Plano criativo pronto — revise as variações propostas.' : rawExecutedReply);
 
-    if (toolCalls && toolCalls.length > 0) {
-      console.log(`[AdminChat] LLM called ${toolCalls.length} tool(s)`);
-
-      const authHeader = req.headers.authorization || '';
-
-      for (const call of toolCalls) {
-        const record: ToolCallRecord = {
-          id: uuidv4(),
-          name: call.name,
-          status: 'running',
-          args: call.args,
-          startedAt: new Date().toISOString(),
-        };
-        toolCallRecords.push(record);
-
-        broadcastToSession(session._id, {
-          type: 'TOOL_CALL_START',
-          payload: { toolCallId: record.id, name: record.name, args: record.args, startedAt: record.startedAt },
-        });
-
-        try {
-          const toolResult = await executeChatTool(call.name, call.args, {
-            userId: req.userId!,
-            sessionId: session._id,
-            authHeader,
-            brandGuidelineId: session.brandGuidelineId,
-          });
-          console.log(`[AdminChat] Tool ${call.name} executed successfully`);
-
-          if (call.name === 'generate_or_update_mockup' && toolResult.success) {
-            creativeProjects.push({
-              creativeProjectId: toolResult.creativeProjectId,
-              imageUrl: toolResult.imageUrl,
-              editUrl: toolResult.editUrl,
-              prompt: toolResult.prompt,
-              creditsDeducted: toolResult.creditsDeducted,
-              creditsRemaining: toolResult.creditsRemaining
-            });
-            record.summary = 'Mockup gerado';
-          }
-
-          if (call.name === 'save_to_brand_knowledge' && toolResult.pendingApproval) {
-            if (!session.brandGuidelineId) {
-              record.summary = 'Sem marca vinculada — não salvo';
-            } else {
-              const pending: PendingBrandKnowledgeApproval = {
-                id: uuidv4(),
-                sessionId: session._id,
-                brandGuidelineId: session.brandGuidelineId,
-                title: toolResult.pendingApproval.title,
-                content: toolResult.pendingApproval.content,
-                reason: toolResult.pendingApproval.reason,
-                requestedByUserId: req.userId!,
-                requestedAt: new Date().toISOString(),
-                status: 'pending',
-              };
-              session.pendingApprovals = [...(session.pendingApprovals || []), pending];
-              record.summary = 'Aguardando aprovação';
-
-              broadcastToSession(session._id, {
-                type: 'APPROVAL_REQUIRED',
-                payload: pending,
-              });
-            }
-          }
-
-          toolsUsed.push(call.name);
-
-          record.status = 'done';
-          record.endedAt = new Date().toISOString();
-
-          broadcastToSession(session._id, {
-            type: 'TOOL_CALL_END',
-            payload: { toolCallId: record.id, status: 'done', endedAt: record.endedAt, summary: record.summary },
-          });
-        } catch (e: any) {
-          console.error(`[AdminChat] Error executing tool ${call.name}:`, e.message);
-          record.status = 'error';
-          record.endedAt = new Date().toISOString();
-          record.errorMessage = e?.message || 'Tool execution failed';
-
-          broadcastToSession(session._id, {
-            type: 'TOOL_CALL_END',
-            payload: { toolCallId: record.id, status: 'error', endedAt: record.endedAt, errorMessage: record.errorMessage },
-          });
-        }
-      }
-    }
-
-    // 7. Clean up any residual action markers (legacy format cleanup)
-    reply = stripAction(reply);
-
-    // 8. Gerar título da sessão na primeira mensagem
+    // 7. Smart title on first message (fire-and-forget, non-blocking)
     if (session.messages.length === 0) {
-      session.title = message.slice(0, 60);
+      chatWithLLM(
+        `Resuma em no máximo 5 palavras, sem pontuação: "${message.slice(0, 300)}"`,
+        '',
+        [],
+        { provider: 'gemini', apiKey: userApiKey, model: GEMINI_MODELS.TEXT }
+      )
+        .then(r => {
+          const title = r.text.trim().replace(/['"]/g, '').slice(0, 60);
+          session.title = title || message.slice(0, 60);
+          saveSession(session).catch(() => {});
+          broadcastToSession(session._id, { type: 'SESSION_TITLE_UPDATED', payload: { title: session.title } });
+        })
+        .catch(() => { session.title = message.slice(0, 60); });
     }
 
-    // 9. Gerar ID único pra feedback
+    // 8. Gerar ID único pra feedback
     const generationId = uuidv4();
-
-    // 10. Persistir mensagens com creative projects
     const now = new Date().toISOString();
-    session.messages.push({ role: 'user', content: message, timestamp: now });
-    session.messages.push({
-      role: 'assistant',
-      content: reply,
-      timestamp: now,
-      creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined,
-      toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined,
-      generationId
-    });
 
-    await saveSession(session);
-
-    // Broadcast a mensagem do user + resposta do assistant para todos os conectados nesta sessão
+    // 9. Broadcast ANTES de salvar (UX imediata)
     broadcastToSession(session._id, {
       type: 'MESSAGE',
       payload: { role: 'user', content: message, timestamp: now, by: req.userId },
@@ -598,17 +719,134 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
       },
     });
 
+    // 10. Persistir mensagens (em paralelo com a resposta HTTP)
+    session.messages.push({ role: 'user', content: message, timestamp: now });
+    session.messages.push({
+      role: 'assistant',
+      content: reply,
+      timestamp: now,
+      creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined,
+      toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined,
+      generationId,
+    });
+
     res.json({
       reply,
       sessionId: session._id,
       generationId,
       toolsUsed: toolsUsed.length > 0 ? toolsUsed : undefined,
       toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined,
-      creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined
+      creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined,
     });
+
+    // Save after responding so the client isn't blocked by DB latency
+    await saveSession(session);
   } catch (err: any) {
     console.error('[AdminChat] Message error:', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin-chat/sessions/:id/message/stream — SSE streaming
+router.post('/sessions/:id/message/stream', validateAdmin, async (req: AuthRequest, res: Response) => {
+  const session = await getSession(req.params.id, req.userId!).catch(() => null);
+  if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
+
+  const { message } = req.body;
+  if (!message) return res.status(400).json({ error: 'message required' });
+
+  // SSE headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const send = (event: string, data: any) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
+
+  try {
+    send('thinking', { message: 'Processando...' });
+
+    const userApiKey = await getGeminiApiKey(req.userId!).catch(() => undefined);
+    const userPrefs = await prisma.user.findUnique({
+      where: { id: req.userId! },
+      select: { llmProvider: true, ollamaUrl: true, ollamaModel: true } as any,
+    }).catch(() => null) as any;
+
+    const { ragUserId, ragProjectId, guideline } = await resolveRagScope(session, req.userId!);
+    let brandContext = '';
+    if (guideline) brandContext = await buildBrandContextCached(guideline as any);
+
+    let ragContext = '';
+    if (session.attachments.length > 0 || session.brandGuidelineId) {
+      ragContext = await knowledgeService.getContext(message, ragUserId, ragProjectId).catch(() => '');
+    }
+
+    const systemInstruction = buildSystemPrompt(session.memory, brandContext, ragContext);
+    const geminiHistory = formatGeminiHistory(session.messages);
+
+    send('thinking', { message: 'Gerando resposta...' });
+
+    const { text: rawReply, toolCalls } = await chatWithLLM(message, '', geminiHistory, {
+      provider: (userPrefs?.llmProvider as any) || env.DEFAULT_LLM_PROVIDER || 'gemini',
+      ollamaUrl: userPrefs?.ollamaUrl,
+      ollamaModel: userPrefs?.ollamaModel,
+      apiKey: userApiKey,
+      model: GEMINI_MODELS.TEXT,
+      systemInstruction,
+      tools: getChatTools(true),
+    });
+
+    // Notify client of each tool as it starts
+    if (toolCalls?.length) {
+      for (const call of toolCalls) {
+        send('tool_start', { name: call.name });
+      }
+    }
+
+    const { reply, creativeProjects, toolsUsed, toolCallRecords } =
+      await executeToolCalls(rawReply, toolCalls || [], session, req.userId!, req.headers.authorization || '');
+
+    if (session.messages.length === 0) {
+      chatWithLLM(
+        `Resuma em no máximo 5 palavras, sem pontuação: "${message.slice(0, 300)}"`,
+        '',
+        [],
+        { provider: 'gemini', apiKey: userApiKey, model: GEMINI_MODELS.TEXT }
+      )
+        .then(r => {
+          session.title = r.text.trim().replace(/['"]/g, '').slice(0, 60) || message.slice(0, 60);
+          saveSession(session).catch(() => {});
+          broadcastToSession(session._id, { type: 'SESSION_TITLE_UPDATED', payload: { title: session.title } });
+        })
+        .catch(() => { session.title = message.slice(0, 60); });
+    }
+
+    const generationId = uuidv4();
+    const now = new Date().toISOString();
+
+    broadcastToSession(session._id, { type: 'MESSAGE', payload: { role: 'user', content: message, timestamp: now, by: req.userId } });
+    broadcastToSession(session._id, { type: 'MESSAGE', payload: { role: 'assistant', content: reply, timestamp: now, creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined, toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined, generationId } });
+
+    send('done', {
+      reply,
+      sessionId: session._id,
+      generationId,
+      toolsUsed: toolsUsed.length > 0 ? toolsUsed : undefined,
+      toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined,
+      creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined,
+    });
+
+    res.end();
+
+    session.messages.push({ role: 'user', content: message, timestamp: now });
+    session.messages.push({ role: 'assistant', content: reply, timestamp: now, creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined, toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined, generationId });
+    await saveSession(session);
+  } catch (err: any) {
+    console.error('[AdminChat] Stream error:', err);
+    send('error', { message: err.message });
+    res.end();
   }
 });
 

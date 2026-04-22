@@ -34,6 +34,19 @@ export interface PendingBrandKnowledgeApproval {
     resolvedAt?: string;
 }
 
+export interface CreativePlanProposal {
+    title: string;
+    prompt: string;
+    aspectRatio?: string;
+}
+
+export interface PendingCreativePlan {
+    id: string;
+    summary: string;
+    proposals: CreativePlanProposal[];
+    questions: string[];
+}
+
 export interface AdminChatMessage {
     role: 'user' | 'assistant';
     content: string;
@@ -109,12 +122,76 @@ export const adminChatApi = {
         });
     },
 
-    async sendMessage(sessionId: string, message: string): Promise<AdminChatSendMessageResult> {
+    async sendMessage(sessionId: string, message: string, planMode?: boolean, textMode?: string): Promise<AdminChatSendMessageResult> {
         return chatApiRequest<AdminChatSendMessageResult>(`/admin-chat/sessions/${sessionId}/message`, {
             method: 'POST',
-            body: { message },
+            body: {
+                message,
+                ...(planMode ? { planMode: true } : {}),
+                ...(textMode && textMode !== 'layers' ? { textMode } : {}),
+            },
             errorMessage: 'Failed to send message to admin chat',
         });
+    },
+
+    /**
+     * SSE streaming version. Calls onThinking each time the server sends a
+     * progress event, then resolves with the final result.
+     */
+    async sendMessageStream(
+        sessionId: string,
+        message: string,
+        callbacks?: {
+            onThinking?: (msg: string) => void;
+            onToolStart?: (name: string) => void;
+        }
+    ): Promise<AdminChatSendMessageResult> {
+        const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+        const token = (await import('@/services/authService')).authService.getToken();
+
+        const response = await fetch(`${API_BASE}/admin-chat/sessions/${sessionId}/message/stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ message }),
+        });
+
+        if (!response.ok || !response.body) {
+            throw new Error(`Stream request failed: ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+
+            const parts = buffer.split('\n\n');
+            buffer = parts.pop() ?? '';
+
+            for (const part of parts) {
+                const eventLine = part.match(/^event: (\w+)/m)?.[1];
+                const dataLine = part.match(/^data: (.+)/m)?.[1];
+                if (!eventLine || !dataLine) continue;
+
+                try {
+                    const payload = JSON.parse(dataLine);
+                    if (eventLine === 'thinking') callbacks?.onThinking?.(payload.message);
+                    if (eventLine === 'tool_start') callbacks?.onToolStart?.(payload.name);
+                    if (eventLine === 'done') return payload as AdminChatSendMessageResult;
+                    if (eventLine === 'error') throw new Error(payload.message);
+                } catch (e) {
+                    if ((e as Error).message?.startsWith('Stream')) throw e;
+                }
+            }
+        }
+
+        throw new Error('Stream ended without done event');
     },
 
     async approvePending(

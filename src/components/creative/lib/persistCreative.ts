@@ -1,10 +1,30 @@
 import { useCreativeStore } from '../store/creativeStore';
 import { creativeProjectApi, type CreativeProject } from '@/services/creativeProjectApi';
+import { canvasApi } from '@/services/canvasApi';
 
 /**
  * Bridge between the client-side Zustand editor state and the persisted
  * CreativeProject record. Keeps the store free of HTTP concerns.
  */
+
+/** Blob URLs die with the browser session — upload to R2 so the URL survives reloads. */
+async function ensurePersistedUrl(url: string | null | undefined): Promise<string | null> {
+  if (!url || !url.startsWith('blob:')) return url ?? null;
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const reader = new FileReader();
+    const base64 = await new Promise<string>((resolve, reject) => {
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    return await canvasApi.uploadImageToR2(base64);
+  } catch (e) {
+    console.warn('[persistCreative] failed to upload blob to R2:', e);
+    return null;
+  }
+}
 
 export function snapshotCreativeFromStore(name?: string) {
   const s = useCreativeStore.getState();
@@ -23,8 +43,14 @@ export function snapshotCreativeFromStore(name?: string) {
 
 /** Create a new record from the current store state. */
 export async function saveCurrentCreativeAsNew(name?: string, thumbnailUrl?: string | null) {
+  const snapshot = snapshotCreativeFromStore(name);
+  const backgroundUrl = await ensurePersistedUrl(snapshot.backgroundUrl);
+  if (backgroundUrl && backgroundUrl !== snapshot.backgroundUrl) {
+    useCreativeStore.setState({ backgroundUrl, uploadedBackgroundUrl: backgroundUrl });
+    snapshot.backgroundUrl = backgroundUrl;
+  }
   return creativeProjectApi.create({
-    ...snapshotCreativeFromStore(name),
+    ...snapshot,
     thumbnailUrl: thumbnailUrl ?? null,
   });
 }
@@ -34,9 +60,16 @@ export async function updateCreativeFromStore(
   projectId: string,
   opts?: { name?: string; thumbnailUrl?: string | null }
 ) {
-  return creativeProjectApi.update(projectId, {
-    ...snapshotCreativeFromStore(opts?.name),
-    ...(opts?.thumbnailUrl !== undefined && { thumbnailUrl: opts.thumbnailUrl }),
+  const snapshot = snapshotCreativeFromStore(opts?.name);
+  return ensurePersistedUrl(snapshot.backgroundUrl).then((backgroundUrl) => {
+    if (backgroundUrl && backgroundUrl !== snapshot.backgroundUrl) {
+      useCreativeStore.setState({ backgroundUrl, uploadedBackgroundUrl: backgroundUrl });
+      snapshot.backgroundUrl = backgroundUrl;
+    }
+    return creativeProjectApi.update(projectId, {
+      ...snapshot,
+      ...(opts?.thumbnailUrl !== undefined && { thumbnailUrl: opts.thumbnailUrl }),
+    });
   });
 }
 

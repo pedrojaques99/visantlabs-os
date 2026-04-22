@@ -8,6 +8,9 @@ import {
   computeMetrics,
   type CreativeEvent,
 } from '../lib/creative-events-store.js';
+import { renderCreativePlan } from '../lib/creative-renderer.js';
+import { uploadCanvasImage } from '../services/r2Service.js';
+import { authenticate, type AuthRequest } from '../middleware/auth.js';
 
 const router = Router();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -40,6 +43,9 @@ RULES:
 - Use brand colors for text. Default to white on dark overlay.
 - Only include a "logo" layer if the brand has logos available (hasLogos: true).
 - If hasLogos is false, do NOT return any layer of type "logo".
+- LOGO PLACEMENT: treat the logo as a small brand seal — place it in a corner, never centered. Preferred corners (in order): top-right (x≈0.82, y≈0.04), bottom-right (x≈0.82, y≈0.88), bottom-left (x≈0.04, y≈0.88). Size: {"w":0.12,"h":0.07} maximum — keep it discreet. Never overlap the headline.
+- HEADLINE: write it as a real creative director would — punchy, specific to the prompt, max 6 words. Use <accent> on the most impactful word.
+- SUBHEADLINE: 1 short phrase that supports the headline, max 12 words.
 - Output ONLY the JSON object, no markdown, no commentary.`;
 
 interface CreativePlanRequest {
@@ -187,6 +193,47 @@ router.get('/brand/:brandId/insights', async (req, res) => {
   } catch (err: any) {
     console.error('[creative/brand/:id/insights] error:', err);
     return res.status(500).json({ error: err?.message ?? 'unknown error' });
+  }
+});
+
+// ─── Server-side render ───────────────────────────────────────────────────────
+// POST /api/creative/render
+// Accepts a creative plan + backgroundImageUrl, renders to PNG, uploads to R2.
+// Used by agents to close the generate → image loop without a browser.
+
+router.post('/render', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { plan, format, accentColor, backgroundImageUrl } = req.body as {
+      plan: Record<string, any>;
+      format?: string;
+      accentColor?: string;
+      backgroundImageUrl?: string;
+    };
+
+    if (!plan || !plan.layers) {
+      return res.status(400).json({ error: 'plan with layers is required' });
+    }
+
+    const resolvedPlan = { ...plan, backgroundImageUrl: backgroundImageUrl ?? plan.backgroundImageUrl };
+
+    const pngBuffer = await renderCreativePlan(resolvedPlan as any, {
+      format: (format as any) ?? '1:1',
+      accentColor: accentColor ?? '#ffffff',
+    });
+
+    // Upload to R2 if configured, otherwise return base64
+    try {
+      const base64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
+      const userId = req.userId ?? 'system';
+      const imageUrl = await uploadCanvasImage(base64, userId, 'creative-render', `render-${Date.now()}`);
+      return res.json({ imageUrl });
+    } catch {
+      // R2 not configured — return base64 directly
+      return res.json({ imageBase64: pngBuffer.toString('base64') });
+    }
+  } catch (err: any) {
+    console.error('[creative/render] error:', err);
+    return res.status(500).json({ error: err?.message ?? 'render failed' });
   }
 });
 

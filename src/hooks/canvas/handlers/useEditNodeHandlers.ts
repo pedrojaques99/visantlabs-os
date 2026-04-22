@@ -5,6 +5,7 @@ import type { FlowNodeData, EditNodeData, UpscaleNodeData, ImageNodeData } from 
 import type { GeminiModel, Resolution } from '@/types/types';
 import type { Mockup } from '@/services/mockupApi';
 import { editImage, upscaleImage, validateCredits } from '@/services/reactFlowService';
+import { collectVariables, applyVariables } from '@/utils/canvas/resolveVariables';
 import { getImageFromNode } from '@/utils/canvas/canvasNodeUtils';
 import { canvasApi } from '@/services/canvasApi';
 import { aiApi } from '@/services/aiApi';
@@ -87,7 +88,9 @@ export const useEditNodeHandlers = ({
 
     updateNodeData<EditNodeData>(nodeId, { ...config, isLoading: true }, 'edit');
 
-    const editPrompt = config.promptPreview || config.additionalPrompt || 'Apply the requested changes to this image while maintaining its overall composition and quality.';
+    const rawPrompt = config.promptPreview || config.additionalPrompt || 'Apply the requested changes to this image while maintaining its overall composition and quality.';
+    const vars = collectVariables(nodeId, nodesRef.current, edgesRef.current);
+    const editPrompt = applyVariables(rawPrompt, vars);
 
     let newOutputNodeId: string | null = null;
     const skeletonNode = createOutputNodeWithSkeleton(node, nodeId);

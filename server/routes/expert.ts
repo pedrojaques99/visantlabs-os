@@ -6,6 +6,7 @@ import { rateLimit } from 'express-rate-limit';
 import { redisClient } from '../lib/redis.js';
 import { CACHE_TTL, CacheKey, hashQuery } from '../lib/cache-utils.js';
 import { prisma } from '../db/prisma.js';
+import { buildBrandContext } from '../lib/brandContextBuilder.js';
 
 const expertRateLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -96,7 +97,7 @@ router.post('/chat', expertRateLimiter, authenticate, async (req: AuthRequest, r
         });
 
         if (guideline && guideline.userId === req.userId!) {
-          brandContext = formatBrandGuidelineContext(guideline);
+          brandContext = buildBrandContext(guideline as any);
           console.log(`[Expert] Using brand guidelines: ${(guideline.identity as { name?: string } | null)?.name || 'Unnamed'}`);
         }
       } catch (e) {
@@ -141,45 +142,5 @@ router.post('/chat', expertRateLimiter, authenticate, async (req: AuthRequest, r
     next(error);
   }
 });
-
-function formatBrandGuidelineContext(guideline: any): string {
-  const parts: string[] = [];
-
-  if (guideline.identity?.name) {
-    parts.push(`**BRAND NAME**: ${guideline.identity.name}`);
-  }
-
-  if (guideline.identity?.tagline) {
-    parts.push(`**TAGLINE**: ${guideline.identity.tagline}`);
-  }
-
-  if (guideline.colors?.length) {
-    const colorList = guideline.colors
-      .map((c: any) => `- ${c.name || 'Unnamed'}: ${c.hex || c.rgb || 'N/A'}`)
-      .join('\n');
-    parts.push(`**PRIMARY COLORS**:\n${colorList}`);
-  }
-
-  if (guideline.typography?.length) {
-    const typeList = guideline.typography
-      .map((t: any) => `- ${t.name || 'Unnamed'}: ${t.fontFamily || 'N/A'}`)
-      .join('\n');
-    parts.push(`**TYPOGRAPHY**:\n${typeList}`);
-  }
-
-  if (guideline.strategy?.positioning) {
-    parts.push(`**POSITIONING**: ${guideline.strategy.positioning}`);
-  }
-
-  if (guideline.strategy?.targetAudience) {
-    parts.push(`**TARGET AUDIENCE**: ${guideline.strategy.targetAudience}`);
-  }
-
-  if (guideline.guidelines?.voiceTone) {
-    parts.push(`**VOICE & TONE**: ${guideline.guidelines.voiceTone}`);
-  }
-
-  return `\n\n━━ BRAND GUIDELINES CONTEXT ━━\n${parts.join('\n')}\n━━━━━━━━━━━━━━━━━━━━━━━\n`;
-}
 
 export default router;

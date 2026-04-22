@@ -21,9 +21,10 @@ const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 1 week
 interface GoogleFontPickerProps {
     value: string;
     onChange: (font: string) => void;
+    brandFonts?: string[]; // fonts already stored in the brand guideline
 }
 
-export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onChange }) => {
+export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onChange, brandFonts = [] }) => {
     const { theme } = useTheme();
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState('');
@@ -69,11 +70,18 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
         return () => clearTimeout(timer);
     }, [isOpen]);
 
+    // Brand fonts take priority — always visible, not limited
+    const filteredBrandFonts = useMemo(() => {
+        if (!brandFonts.length) return [];
+        return brandFonts.filter(f => f && f.toLowerCase().includes(search.toLowerCase()));
+    }, [search, brandFonts]);
+
     const filteredFonts = useMemo(() => {
+        const brandSet = new Set(brandFonts.map(f => f?.toLowerCase()));
         return allFonts
-            .filter(font => font.toLowerCase().includes(search.toLowerCase()))
-            .slice(0, 30); // Limit to 30 to avoid browser crashing from too many CSS imports
-    }, [search, allFonts]);
+            .filter(font => !brandSet.has(font.toLowerCase()) && font.toLowerCase().includes(search.toLowerCase()))
+            .slice(0, 30);
+    }, [search, allFonts, brandFonts]);
 
     const handleSelect = (font: string) => {
         onChange(font);
@@ -114,6 +122,26 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
                         </div>
                     </div>
                     <div className="max-h-60 overflow-y-auto p-1 py-1 scrollbar-thin scrollbar-thumb-white/10">
+                        {filteredBrandFonts.length > 0 && (
+                            <>
+                                <div className="px-3 pt-2 pb-1 text-[9px] uppercase tracking-widest text-brand-cyan/60 font-mono">Brand Fonts</div>
+                                {filteredBrandFonts.map(font => (
+                                    <button
+                                        key={`brand-${font}`}
+                                        onClick={() => handleSelect(font)}
+                                        className={cn(
+                                            "w-full text-left px-3 py-2.5 rounded-xl text-xs flex items-center justify-between transition-colors",
+                                            font === value ? "bg-brand-cyan/10 text-brand-cyan" : "text-brand-cyan/80 hover:bg-brand-cyan/5 hover:text-brand-cyan"
+                                        )}
+                                        style={{ fontFamily: font }}
+                                    >
+                                        <span>{font}</span>
+                                        {font === value && <Check size={12} />}
+                                    </button>
+                                ))}
+                                {filteredFonts.length > 0 && <div className="my-1 border-t border-white/5" />}
+                            </>
+                        )}
                         {filteredFonts.length > 0 ? (
                             filteredFonts.map(font => (
                                 <button
@@ -129,11 +157,11 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
                                     {font === value && <Check size={12} />}
                                 </button>
                             ))
-                        ) : (
+                        ) : filteredBrandFonts.length === 0 ? (
                             <div className="p-4 text-center text-neutral-600 text-[10px] uppercase tracking-widest">
                                 {isLoadingFonts ? 'Loading fonts...' : 'No fonts found'}
                             </div>
-                        )}
+                        ) : null}
                     </div>
                     {/* Add a hidden link to load the fonts from Google Fonts */}
                     <style dangerouslySetInnerHTML={{

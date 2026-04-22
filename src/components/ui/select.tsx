@@ -20,10 +20,11 @@ export interface SelectProps {
   onMouseDown?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   loading?: boolean;
+  footer?: React.ReactNode;
 }
 
 const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
-  ({ className, options, value, onChange, placeholder, variant = 'default', disabled = false, loading = false, ...props }, ref) => {
+  ({ className, options, value, onChange, placeholder, variant = 'default', disabled = false, loading = false, footer, ...props }, ref) => {
     const [isOpen, setIsOpen] = React.useState(false);
     const [focusedIndex, setFocusedIndex] = React.useState(-1);
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -228,6 +229,11 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             );
           })}
         </ul>
+        {footer && (
+          <div className="border-t border-white/5">
+            {footer}
+          </div>
+        )}
       </div>
     );
 

@@ -27,6 +27,31 @@ export function useChatSend() {
       store.setIsGenerating(true);
 
       try {
+        // Map brand data from store to expected payload format
+        const typo = store.typography;
+        const brandFonts = (typo.length > 0) ? {
+          primary: typo.find(t => t.name === 'primary') ? {
+            family: typo.find(t => t.name === 'primary')!.fontFamily,
+            style: typo.find(t => t.name === 'primary')!.fontStyle,
+            size: typo.find(t => t.name === 'primary')!.fontSize,
+          } : undefined,
+          secondary: typo.find(t => t.name === 'secondary') ? {
+            family: typo.find(t => t.name === 'secondary')!.fontFamily,
+            style: typo.find(t => t.name === 'secondary')!.fontStyle,
+            size: typo.find(t => t.name === 'secondary')!.fontSize,
+          } : undefined,
+        } : null;
+
+        const logos = store.logos;
+        const brandLogos = logos.length > 0 ? {
+          light: logos.find(l => l.name === 'light') ? { name: logos.find(l => l.name === 'light')!.label || 'Logo Light', key: logos.find(l => l.name === 'light')!.figmaKey } : undefined,
+          dark: logos.find(l => l.name === 'dark') ? { name: logos.find(l => l.name === 'dark')!.label || 'Logo Dark', key: logos.find(l => l.name === 'dark')!.figmaKey } : undefined,
+        } : null;
+
+        const brandColors = store.selectedColors.size > 0
+          ? Array.from(store.selectedColors.entries()).map(([role, entry]) => ({ name: entry.name || role, value: entry.hex, role }))
+          : null;
+
         // Send message to sandbox with context
         const msg: any = {
           type: 'GENERATE_WITH_CONTEXT',
@@ -34,7 +59,11 @@ export function useChatSend() {
           thinkMode: store.thinkMode,
           useBrand: store.useBrand,
           attachments: store.pendingAttachments,
-          model: store.selectedModel
+          model: store.selectedModel,
+          brandFonts,
+          brandLogos,
+          brandColors,
+          designSystem: store.designSystem,
         };
 
         send(msg);

@@ -7,6 +7,7 @@ import type {
   ColorVariable,
   FontVariable
 } from '@/lib/figma-types';
+import type { ToolCallRecord } from '../../../../shared/types/chat';
 
 export interface SelectionDetail {
   id: string;
@@ -94,7 +95,10 @@ export interface ChatMessage {
   operations?: FigmaOperation[];
   thinking?: string;
   metadata?: Record<string, any>;
+  toolCalls?: ToolCallRecord[];
 }
+
+export type { ToolCallRecord };
 
 export interface PluginStore {
   // Selection & Canvas

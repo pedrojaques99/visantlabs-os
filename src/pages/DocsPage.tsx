@@ -52,6 +52,7 @@ export const DocsPage: React.FC = () => {
     mockupEndpoints,
     pluginEndpoints,
     mcpToolNames,
+    platformToolCount,
   } = useDocsData();
 
   // Build navigation with dynamic MCP tools
@@ -485,7 +486,7 @@ export const DocsPage: React.FC = () => {
                             <div className="space-y-1 text-xs text-muted-foreground">
                               <p>Endpoint: <code className="font-redhatmono bg-secondary px-1 rounded">/api/mcp</code></p>
                               <p>Auth: <code className="font-redhatmono bg-secondary px-1 rounded">Bearer visant_sk_xxx</code></p>
-                              <p>19 tools available</p>
+                              <p>{platformToolCount > 0 ? platformToolCount : '—'} tools available</p>
                             </div>
                           </div>
                           <div className="bg-secondary/40 border border-border rounded-md p-5">
@@ -500,6 +501,37 @@ export const DocsPage: React.FC = () => {
                               <p>9 tools available</p>
                             </div>
                           </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Getting Started */}
+                    <Card id="mcp-getting-started" className="border border-border bg-card">
+                      <CardHeader>
+                        <CardTitle>Getting Started</CardTitle>
+                        <CardDescription>Connect any LLM to Visant Labs in 3 steps.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-3">
+                          {[
+                            { n: 1, title: 'Create an API Key', desc: <span>Go to <a href="/settings/api-keys" className="text-brand-cyan underline">Settings → API Keys</a> → Create API Key. Select scopes: <code className="font-redhatmono bg-secondary px-1 rounded">read write generate</code>. Copy the key — shown only once.</span> },
+                            { n: 2, title: 'Add to your LLM client', desc: <span>See <strong>Code Snippets</strong> below for Claude.ai, Cursor, Node.js, and Python examples. The MCP endpoint is <code className="font-redhatmono bg-secondary px-1 rounded">POST /api/mcp</code>.</span> },
+                            { n: 3, title: 'Test it', desc: <span>Ask: <em>"List my brand guidelines"</em> or <em>"Generate a mockup for coffee packaging using my Feira 2026 brand"</em></span> },
+                          ].map(({ n, title, desc }) => (
+                            <div key={n} className="flex gap-3">
+                              <div className="w-6 h-6 rounded-full bg-brand-cyan/20 text-brand-cyan flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">{n}</div>
+                              <div><p className="text-sm font-medium text-foreground">{title}</p><p className="text-xs text-muted-foreground mt-0.5">{desc}</p></div>
+                            </div>
+                          ))}
+                        </div>
+                        <Separator />
+                        <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase">Quick test — curl</div>
+                          <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`curl -X POST https://visantlabs.com/api/mcp \\
+  -H "Content-Type: application/json" \\
+  -H "Accept: application/json, text/event-stream" \\
+  -H "Authorization: Bearer visant_sk_xxx" \\
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'`}</pre>
                         </div>
                       </CardContent>
                     </Card>

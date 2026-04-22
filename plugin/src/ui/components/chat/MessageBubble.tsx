@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Braces, Check, Copy } from 'lucide-react';
-import type { ChatMessage } from '../../store/types';
+import { Braces, Check, Copy, Loader2, CircleCheck, CircleX } from 'lucide-react';
+import type { ChatMessage, ToolCallRecord } from '../../store/types';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -39,6 +39,29 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         {message.attachments && message.attachments.length > 0 && (
           <div className="mt-2 text-xs opacity-75">
             {message.attachments.length} attachment{message.attachments.length > 1 ? 's' : ''}
+          </div>
+        )}
+        {!isUser && message.metadata?.usage && (
+          <div className="mt-1.5 text-[10px] font-mono text-muted-foreground/60 flex items-center gap-1">
+            <span title="output tokens">↑{message.metadata.usage.output_tokens ?? message.metadata.usage.outputTokens ?? '?'}</span>
+            {(message.metadata.usage.input_tokens ?? message.metadata.usage.inputTokens) && (
+              <span title="input tokens"> · ↓{message.metadata.usage.input_tokens ?? message.metadata.usage.inputTokens}</span>
+            )}
+            <span>tok</span>
+          </div>
+        )}
+        {message.toolCalls && message.toolCalls.length > 0 && (
+          <div className="mt-2 flex flex-col gap-0.5">
+            {message.toolCalls.map((tc) => (
+              <div key={tc.id} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                {tc.status === 'running' && <Loader2 size={10} className="animate-spin shrink-0" />}
+                {tc.status === 'done'    && <CircleCheck size={10} className="text-green-500 shrink-0" />}
+                {tc.status === 'error'  && <CircleX size={10} className="text-destructive shrink-0" />}
+                <span className="font-mono">{tc.name}</span>
+                {tc.summary && <span className="opacity-70">— {tc.summary}</span>}
+                {tc.errorMessage && <span className="text-destructive">{tc.errorMessage}</span>}
+              </div>
+            ))}
           </div>
         )}
         {message.operations && message.operations.length > 0 && (

@@ -805,6 +805,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     let operations: any[] = [];
     let usage: { inputTokens: number; outputTokens: number; totalTokens: number } | undefined;
     const generationStart = Date.now();
+    const toolCallStartedAt = new Date().toISOString();
     const maxRetries = promptMode === 'v2' ? 1 : 0; // V2 gets 1 retry with feedback
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -959,6 +960,16 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     );
 
     // Return validated operations to apply
+    const toolCallRecord = {
+      id: `tc-${Date.now()}`,
+      name: 'generate_figma_operations',
+      status: 'done' as const,
+      args: { command: command.slice(0, 120) },
+      startedAt: toolCallStartedAt,
+      endedAt: new Date().toISOString(),
+      summary: `${validOps.length} operation${validOps.length !== 1 ? 's' : ''} via ${provider.name}${warnings.length > 0 ? ` (${warnings.length} filtered)` : ''}`,
+    };
+
     const responseData = {
       success: true,
       operations: validOps,
@@ -967,6 +978,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       warnings: warnings.length > 0 ? warnings : undefined,
       usage: usage || undefined,
       durationMs,
+      toolCallRecord,
     };
 
     // Cache plugin context for 1 hour

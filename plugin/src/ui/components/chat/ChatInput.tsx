@@ -29,7 +29,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
   const mentions = useMentions(textareaRef);
 
   const activeBrandName = brandGuideline?.name || brandGuideline?.identity?.name || 'Brand';
-  const brandLogo = brandGuideline?.logos?.find(l => l.variant === 'icon' || l.variant === 'primary')?.url;
+  const brandLogo = (brandGuideline?.logos?.find(l => l.variant === 'icon' || l.variant === 'primary') ?? brandGuideline?.logos?.[0])?.url;
 
   const handleSend = () => {
     if (content.trim()) {

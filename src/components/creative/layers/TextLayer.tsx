@@ -68,7 +68,7 @@ export const TextLayer: React.FC<Props> = ({ layer, canvasWidth, canvasHeight, a
           cursor: 'inherit',
           userSelect: editing ? 'text' : 'none',
           whiteSpace: 'pre-wrap',
-          overflow: 'hidden',
+          overflow: 'visible',
           WebkitFontSmoothing: 'antialiased',
           transform: 'translateZ(0)',
         }}
