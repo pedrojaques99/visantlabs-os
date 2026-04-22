@@ -363,7 +363,7 @@ server.setRequestHandler(
 
         // Route to existing AI pipeline
         try {
-          const response = await fetch('http://localhost:3001/api/plugin', {
+          const response = await fetch('http://localhost:${process.env.PORT || 3001}/api/plugin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -420,7 +420,7 @@ server.setRequestHandler(
           }
 
           // Generate mockup via existing API
-          const generateResponse = await fetch('http://localhost:3001/api/mockups/generate', {
+          const generateResponse = await fetch('http://localhost:${process.env.PORT || 3001}/api/mockups/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

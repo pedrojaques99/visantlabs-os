@@ -30,11 +30,12 @@ export function requestContext(req: Request, res: Response, next: NextFunction):
   req.log = withRequestId(reqId);
   res.setHeader('X-Request-Id', reqId);
 
-  req.log.info({ method: req.method, url: req.originalUrl }, 'request.start');
-
-  res.on('finish', () => {
-    req.log.info({ status: res.statusCode }, 'request.finish');
-  });
+  if (process.env.NODE_ENV !== 'production') {
+    req.log.debug({ method: req.method, url: req.originalUrl }, 'request.start');
+    res.on('finish', () => {
+      req.log.debug({ status: res.statusCode }, 'request.finish');
+    });
+  }
 
   next();
 }

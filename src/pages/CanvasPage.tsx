@@ -3732,6 +3732,59 @@ export const CanvasPage: React.FC = () => {
     toast.success(t('canvas.nodeDuplicatedSingular'), { duration: 2000 });
   }, [nodeContextMenu, nodes, edges, reactFlowInstance, setNodes, addToHistory, t]);
 
+  // Global mouse handlers for drawing outside the canvas
+  const handleGlobalMouseMove = useCallback((e: React.MouseEvent) => {
+    if (drawing.isDrawing) {
+      drawing.draw(e);
+    }
+  }, [drawing]);
+
+  const handleGlobalMouseUp = useCallback(() => {
+    if (drawing.isDrawing) {
+      drawing.stopDrawing();
+    }
+  }, [drawing]);
+
+  // Handle drag and drop onto canvas
+  const handleCanvasDrop = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+
+    if (!reactFlowInstance) return;
+
+    const type = event.dataTransfer.getData('application/reactflow');
+    const dataString = event.dataTransfer.getData('application/nodeData');
+
+    // check if the dropped element is valid
+    if (typeof type === 'undefined' || !type) {
+      return;
+    }
+
+    const position = reactFlowInstance.screenToFlowPosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    const nodeId = generateNodeId(type);
+    let nodeData: any = { label: `${type} node` };
+
+    if (dataString) {
+      try {
+        nodeData = JSON.parse(dataString);
+      } catch (e) {
+        console.error('Failed to parse node data', e);
+      }
+    }
+
+    const newNode = {
+      id: nodeId,
+      type,
+      position,
+      data: nodeData,
+    };
+
+    setNodes((nds) => nds.concat(newNode as any));
+    addToHistory([...nodes, newNode as any], edges, drawing.drawings);
+  }, [reactFlowInstance, setNodes, addToHistory, nodes, edges, drawing.drawings]);
 
   // Show loading state while loading project
   // Show loading state while checking access
@@ -3789,59 +3842,6 @@ export const CanvasPage: React.FC = () => {
       </div>
     );
   }
-  // Global mouse handlers for drawing outside the canvas
-  const handleGlobalMouseMove = useCallback((e: React.MouseEvent) => {
-    if (drawing.isDrawing) {
-      drawing.draw(e);
-    }
-  }, [drawing]);
-
-  const handleGlobalMouseUp = useCallback(() => {
-    if (drawing.isDrawing) {
-      drawing.stopDrawing();
-    }
-  }, [drawing]);
-
-  // Handle drag and drop onto canvas
-  const handleCanvasDrop = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-
-    if (!reactFlowInstance) return;
-
-    const type = event.dataTransfer.getData('application/reactflow');
-    const dataString = event.dataTransfer.getData('application/nodeData');
-
-    // check if the dropped element is valid
-    if (typeof type === 'undefined' || !type) {
-      return;
-    }
-
-    const position = reactFlowInstance.screenToFlowPosition({
-      x: event.clientX,
-      y: event.clientY,
-    });
-
-    const nodeId = generateNodeId(type);
-    let nodeData: any = { label: `${type} node` };
-    
-    if (dataString) {
-      try {
-        nodeData = JSON.parse(dataString);
-      } catch (e) {
-        console.error('Failed to parse node data', e);
-      }
-    }
-
-    const newNode = {
-      id: nodeId,
-      type,
-      position,
-      data: nodeData,
-    };
-
-    setNodes((nds) => nds.concat(newNode as any));
-    addToHistory([...nodes, newNode as any], edges, drawing.drawings);
-  }, [reactFlowInstance, setNodes, addToHistory, nodes, edges, drawing.drawings]);
 
   return (
     <PageShell
