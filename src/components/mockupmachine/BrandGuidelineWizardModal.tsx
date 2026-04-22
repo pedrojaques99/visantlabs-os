@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Modal } from '../ui/Modal';
 import { GlitchLoader } from '../ui/GlitchLoader';
@@ -41,6 +42,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     editGuideline,
 }) => {
     const { t } = useTranslation();
+    const qc = useQueryClient();
     const isEditMode = !!editGuideline;
 
     const [name, setName] = useState('');
@@ -368,6 +370,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             setImageFiles([]);
             setImagePreviews([]);
             localStorage.removeItem(DRAFT_KEY);
+            await qc.invalidateQueries({ queryKey: ['brand-guidelines'] });
             onSuccess(workingId);
 
         } catch {
@@ -376,7 +379,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             setIsSubmitting(false);
             setIsIngesting(false);
         }
-    }, [canSubmit, isEditMode, trimmedName, trimmedUrl, editGuideline, hasUrl, pdfFile, onSuccess, t]);
+    }, [canSubmit, isEditMode, trimmedName, trimmedUrl, editGuideline, hasUrl, pdfFile, onSuccess, t, qc]);
 
     const submitLabel = isIngesting
         ? t('mockup.brandWizardExtracting')
