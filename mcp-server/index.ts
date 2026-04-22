@@ -140,7 +140,74 @@ const TOOLS = [
   {
     name: 'get_brand_guideline',
     description:
-      'Fetch the full brand guideline (identity, colors, typography, logos, voice) for a given id.',
+      'Fetch the full brand guideline for a given id. Includes identity, colors, typography, logos, voice, ' +
+      'gradients, shadows, motion tokens, borders, strategy, editorial guidelines, and validation state. ' +
+      'Use this to get LLM-ready brand context before generating any brand-aware content.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        brandId: { type: 'string' },
+      },
+      required: ['brandId'],
+    },
+  },
+  {
+    name: 'update_brand_guideline',
+    description:
+      'Patch a brand guideline with new data. Accepts any subset of fields: identity, colors, typography, ' +
+      'gradients, shadows, motion, borders, strategy, guidelines, tokens, validation. ' +
+      'All fields are optional — only provided fields are updated.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        brandId: { type: 'string', description: 'Brand guideline id to update' },
+        data: {
+          type: 'object',
+          description: 'Partial brand guideline data to merge',
+          properties: {
+            identity: { type: 'object' },
+            colors: { type: 'array' },
+            typography: { type: 'array' },
+            gradients: { type: 'array' },
+            shadows: { type: 'array' },
+            motion: { type: 'object' },
+            borders: { type: 'array' },
+            strategy: { type: 'object' },
+            guidelines: { type: 'object' },
+            tokens: { type: 'object' },
+            validation: { type: 'object' },
+            tags: { type: 'object' },
+          },
+        },
+      },
+      required: ['brandId', 'data'],
+    },
+  },
+  {
+    name: 'validate_brand_section',
+    description:
+      'Mark a brand guideline section as approved or needs_work. ' +
+      'Section names: colors, typography, logos, identity, strategy, editorial, gradients, shadows, motion, borders, tokens.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        brandId: { type: 'string' },
+        section: { type: 'string', description: 'Section name to validate' },
+        state: {
+          type: 'string',
+          enum: ['approved', 'needs_work', 'pending'],
+          description: 'Validation state to set',
+        },
+      },
+      required: ['brandId', 'section', 'state'],
+    },
+  },
+  {
+    name: 'get_brand_design_system',
+    description:
+      'Get a structured LLM-ready design system context for a brand. Returns colors with semantic roles, ' +
+      'typography with intent, spacing/radius tokens, shadows, gradients, motion tokens, and borders — ' +
+      'formatted as a concise JSON optimized for AI code generation and design decisions.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -194,6 +261,49 @@ async function handleTool(name: string, args: ToolArgs) {
     case 'get_brand_guideline': {
       const data = await visantFetch(`/brand-guidelines/${args.brandId}`);
       return toolResult(data);
+    }
+    case 'update_brand_guideline': {
+      const data = await visantFetch(`/brand-guidelines/${args.brandId}`, {
+        method: 'PUT',
+        body: JSON.stringify(args.data),
+      });
+      return toolResult(data);
+    }
+    case 'validate_brand_section': {
+      const current = await visantFetch(`/brand-guidelines/${args.brandId}`);
+      const guideline = current.guideline || current;
+      const validation = { ...(guideline.validation || {}), [args.section as string]: args.state };
+      const data = await visantFetch(`/brand-guidelines/${args.brandId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ validation }),
+      });
+      return toolResult(data);
+    }
+    case 'get_brand_design_system': {
+      const raw = await visantFetch(`/brand-guidelines/${args.brandId}`);
+      const g = raw.guideline || raw;
+      const ds = {
+        brand: g.identity?.name,
+        colors: (g.colors || []).map((c: any) => ({ hex: c.hex, name: c.name, role: c.role })),
+        typography: (g.typography || []).map((t: any) => ({
+          family: t.family, role: t.role, size: t.size,
+          lineHeight: t.lineHeight, letterSpacing: t.letterSpacing, weights: t.weights,
+        })),
+        tokens: {
+          radius: g.tokens?.radius,
+          spacing: g.tokens?.spacing,
+        },
+        gradients: (g.gradients || []).map((gr: any) => ({ name: gr.name, css: gr.css, usage: gr.usage })),
+        shadows: (g.shadows || []).map((s: any) => ({ name: s.name, css: s.css, type: s.type })),
+        motion: g.motion,
+        borders: (g.borders || []).map((b: any) => ({ name: b.name, css: b.css, role: b.role })),
+        voice: g.guidelines?.voice,
+        philosophy: g.guidelines?.person,
+        strategy: g.strategy?.manifesto ? { manifesto: g.strategy.manifesto } : undefined,
+        completeness: g.extraction?.completeness,
+        validation: g.validation,
+      };
+      return toolResult(ds);
     }
     default:
       throw new Error(`Unknown tool: ${name}`);

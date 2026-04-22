@@ -383,3 +383,132 @@ describe('POST /api/brand-guidelines/:id/figma-sync', () => {
     expect(res.body.error).toMatch(/mismatch/i);
   });
 });
+
+// ─── Design tokens (gradients, shadows, motion, borders) ──────────────────────
+
+describe('PUT /api/brand-guidelines/:id — design token fields', () => {
+  it('persists gradients array', async () => {
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id });
+
+    const gradient = {
+      id: 'g1',
+      name: 'Hero Gradient',
+      type: 'linear',
+      angle: 135,
+      stops: [{ color: '#52DDEB', position: 0 }, { color: '#1F7878', position: 100 }],
+      usage: 'hero',
+      css: 'linear-gradient(135deg, #52DDEB 0%, #1F7878 100%)',
+    };
+
+    const res = await (await request())
+      .put(`${BASE}/${guideline._id}`)
+      .set('Authorization', bearer(token))
+      .send({ gradients: [gradient] });
+
+    expect(res.status).toBe(200);
+    expect(res.body.guideline.gradients).toHaveLength(1);
+    expect(res.body.guideline.gradients[0].name).toBe('Hero Gradient');
+    expect(res.body.guideline.gradients[0].css).toBe(gradient.css);
+  });
+
+  it('persists shadows array', async () => {
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id });
+
+    const shadow = {
+      id: 's1',
+      name: 'Soft',
+      x: 6, y: 6, blur: 17, spread: 0,
+      color: '#6d6d6d', opacity: 0.15,
+      type: 'outer',
+      css: '6px 6px 17px 0px rgba(109, 109, 109, 0.15)',
+    };
+
+    const res = await (await request())
+      .put(`${BASE}/${guideline._id}`)
+      .set('Authorization', bearer(token))
+      .send({ shadows: [shadow] });
+
+    expect(res.status).toBe(200);
+    expect(res.body.guideline.shadows).toHaveLength(1);
+    expect(res.body.guideline.shadows[0].name).toBe('Soft');
+  });
+
+  it('persists motion tokens', async () => {
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id });
+
+    const motion = {
+      easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)',
+      durations: { fast: 140, medium: 260, slow: 480 },
+      philosophy: 'minimal',
+      respectsReducedMotion: true,
+    };
+
+    const res = await (await request())
+      .put(`${BASE}/${guideline._id}`)
+      .set('Authorization', bearer(token))
+      .send({ motion });
+
+    expect(res.status).toBe(200);
+    expect(res.body.guideline.motion.easing).toBe(motion.easing);
+    expect(res.body.guideline.motion.durations.fast).toBe(140);
+    expect(res.body.guideline.motion.philosophy).toBe('minimal');
+    expect(res.body.guideline.motion.respectsReducedMotion).toBe(true);
+  });
+
+  it('persists borders array', async () => {
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id });
+
+    const border = {
+      id: 'b1',
+      name: 'Emphasis',
+      width: 1.5, style: 'solid', color: '#52DDEB', opacity: 0.4,
+      role: 'emphasis',
+      css: '1.5px solid rgba(82, 221, 235, 0.4)',
+    };
+
+    const res = await (await request())
+      .put(`${BASE}/${guideline._id}`)
+      .set('Authorization', bearer(token))
+      .send({ borders: [border] });
+
+    expect(res.status).toBe(200);
+    expect(res.body.guideline.borders).toHaveLength(1);
+    expect(res.body.guideline.borders[0].role).toBe('emphasis');
+  });
+
+  it('persists validation state', async () => {
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id });
+
+    const res = await (await request())
+      .put(`${BASE}/${guideline._id}`)
+      .set('Authorization', bearer(token))
+      .send({ validation: { colors: 'approved', typography: 'needs_work' } });
+
+    expect(res.status).toBe(200);
+    expect(res.body.guideline.validation.colors).toBe('approved');
+    expect(res.body.guideline.validation.typography).toBe('needs_work');
+  });
+
+  it('persists extended typography fields (letterSpacing, weights)', async () => {
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id });
+
+    const typography = [
+      { family: 'Inter', role: 'body', size: 16, lineHeight: 1.5, letterSpacing: '-0.01em', weights: [400, 500, 700] },
+    ];
+
+    const res = await (await request())
+      .put(`${BASE}/${guideline._id}`)
+      .set('Authorization', bearer(token))
+      .send({ typography });
+
+    expect(res.status).toBe(200);
+    expect(res.body.guideline.typography[0].letterSpacing).toBe('-0.01em');
+    expect(res.body.guideline.typography[0].weights).toEqual([400, 500, 700]);
+  });
+});
