@@ -120,7 +120,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     const update: Partial<BrandGuideline> = parsed.data as any
     const { changeNote } = req.body // Optional user-provided change note
     const merged: Partial<BrandGuideline> = {}
-    const fields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections', 'folder', 'strategy', 'orderedBlocks'] as const
+    const fields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections', 'folder', 'strategy', 'orderedBlocks', 'gradients', 'shadows', 'motion', 'borders', 'validation', 'isPublic', 'publicSlug'] as const
 
     for (const field of fields) {
       if (update[field] !== undefined) {

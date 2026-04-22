@@ -33,6 +33,50 @@ export interface BrandGuidelineTypography {
   role: string     // "heading", "body", "accent", "mono"
   size?: number
   lineHeight?: number
+  letterSpacing?: string
+  weights?: number[]
+  availableStyles?: string[]
+}
+
+export interface BrandGuidelineGradient {
+  id: string
+  name: string
+  type: 'linear' | 'radial'
+  angle: number
+  stops: { color: string; position: number }[]
+  usage: 'hero' | 'decorative' | 'fill' | 'overlay'
+  css?: string
+}
+
+export interface BrandGuidelineShadow {
+  id: string
+  name: string
+  x: number
+  y: number
+  blur: number
+  spread: number
+  color: string
+  opacity: number
+  type: 'outer' | 'inner' | 'glow'
+  css?: string
+}
+
+export interface BrandGuidelineMotion {
+  easing?: string
+  durations?: { fast: number; medium: number; slow: number }
+  philosophy?: 'minimal' | 'moderate' | 'expressive'
+  respectsReducedMotion?: boolean
+}
+
+export interface BrandGuidelineBorder {
+  id: string
+  name: string
+  width: number
+  style: 'solid' | 'dashed' | 'dotted'
+  color: string
+  opacity: number
+  role: 'default' | 'emphasis' | 'scaffold' | 'divider'
+  css?: string
 }
 
 export interface BrandGuidelineMedia {
@@ -55,6 +99,9 @@ export interface BrandGuidelineGuidelines {
   donts?: string[]
   imagery?: string
   accessibility?: string
+  person?: 'first' | 'second' | 'third'
+  emojiPolicy?: 'none' | 'informal' | 'free'
+  casingRules?: string[]
 }
 
 export interface BrandGuidelineExtraction {
@@ -110,6 +157,13 @@ export interface BrandGuideline {
   guidelines?: BrandGuidelineGuidelines
   strategy?: BrandGuidelineStrategy
   extraction?: BrandGuidelineExtraction
+  // Design tokens
+  gradients?: BrandGuidelineGradient[]
+  shadows?: BrandGuidelineShadow[]
+  motion?: BrandGuidelineMotion
+  borders?: BrandGuidelineBorder[]
+  // Validation state
+  validation?: Record<string, 'pending' | 'approved' | 'needs_work'>
   updatedAt?: string
   // Organization
   folder?: string
@@ -135,6 +189,11 @@ export function calculateCompleteness(bg: BrandGuideline): number {
     (bg.typography?.length ?? 0) > 0 ? 1 : 0,
     bg.tags && Object.keys(bg.tags).length > 0 ? 1 : 0,
     bg.guidelines?.voice ? 1 : 0,
+    bg.strategy?.manifesto ? 1 : 0,
+    (bg.gradients?.length ?? 0) > 0 ? 1 : 0,
+    (bg.shadows?.length ?? 0) > 0 ? 1 : 0,
+    bg.motion?.easing ? 1 : 0,
+    (bg.borders?.length ?? 0) > 0 ? 1 : 0,
   ]
   return Math.round((sections.reduce((a, b) => a + b, 0) / sections.length) * 100)
 }

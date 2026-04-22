@@ -52,7 +52,59 @@ export const BrandTypographySchema = z.object({
   weight: z.number().optional(),
   fontWeight: z.number().optional(),
   lineHeight: z.number().optional(),
+  letterSpacing: z.string().optional(),
+  weights: z.array(z.number()).optional(),
   availableStyles: z.array(z.string()).optional()
+}).passthrough();
+
+export const BrandGradientStopSchema = z.object({
+  color: z.string(),
+  position: z.number(),
+}).passthrough();
+
+export const BrandGradientSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.enum(['linear', 'radial']),
+  angle: z.number(),
+  stops: z.array(BrandGradientStopSchema),
+  usage: z.enum(['hero', 'decorative', 'fill', 'overlay']),
+  css: z.string().optional(),
+}).passthrough();
+
+export const BrandShadowSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  x: z.number(),
+  y: z.number(),
+  blur: z.number(),
+  spread: z.number(),
+  color: z.string(),
+  opacity: z.number(),
+  type: z.enum(['outer', 'inner', 'glow']),
+  css: z.string().optional(),
+}).passthrough();
+
+export const BrandMotionSchema = z.object({
+  easing: z.string().optional(),
+  durations: z.object({
+    fast: z.number(),
+    medium: z.number(),
+    slow: z.number(),
+  }).optional(),
+  philosophy: z.enum(['minimal', 'moderate', 'expressive']).optional(),
+  respectsReducedMotion: z.boolean().optional(),
+}).passthrough();
+
+export const BrandBorderSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  width: z.number(),
+  style: z.enum(['solid', 'dashed', 'dotted']),
+  color: z.string(),
+  opacity: z.number(),
+  role: z.enum(['default', 'emphasis', 'scaffold', 'divider']),
+  css: z.string().optional(),
 }).passthrough();
 
 export const BrandIdentitySchema = z.object({
@@ -99,6 +151,13 @@ export const BrandGuidelineSchema = z.object({
   guidelines: z.any().optional().nullable(),
   strategy: z.any().optional().nullable(),
   extraction: z.any().optional().nullable(),
+  gradients: z.array(BrandGradientSchema).optional().nullable(),
+  shadows: z.array(BrandShadowSchema).optional().nullable(),
+  motion: BrandMotionSchema.optional().nullable(),
+  borders: z.array(BrandBorderSchema).optional().nullable(),
+  validation: z.record(z.string(), z.enum(['pending', 'approved', 'needs_work'])).optional().nullable(),
+  activeSections: z.array(z.string()).optional().nullable(),
+  orderedBlocks: z.array(z.string()).optional().nullable(),
 
   createdAt: z.union([z.string(), z.date()]).optional().nullable(),
   updatedAt: z.union([z.string(), z.date()]).optional().nullable()

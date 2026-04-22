@@ -484,8 +484,17 @@ model BrandGuideline {
   // Technical tokens (optional, power users)
   tokens    Json?    // { spacing?, radius?, shadows?, components? }
 
+  // Design tokens
+  gradients Json?    // BrandGuidelineGradient[]
+  shadows   Json?    // BrandGuidelineShadow[]
+  motion    Json?    // BrandGuidelineMotion
+  borders   Json?    // BrandGuidelineBorder[]
+
+  // Validation state
+  validation Json?   // Record<string, 'pending'|'approved'|'needs_work'>
+
   // Editorial guidelines
-  guidelines Json?   // { voice?, dos?, donts?, imagery?, accessibility? }
+  guidelines Json?   // { voice?, dos?, donts?, imagery?, accessibility?, person?, emojiPolicy?, casingRules? }
 
   // Brand strategy
   strategy      Json?  // { manifesto?, archetypes[], personas[], voiceValues[], positioning? }
