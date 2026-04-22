@@ -282,6 +282,9 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
           Layers ({layers.length})
         </label>
         <div className="flex flex-col gap-1 overflow-y-auto pr-1 max-h-[300px]">
+          {layers.length === 0 && (
+            <p className="text-[11px] text-neutral-600 px-2 py-2">Nenhuma camada ainda</p>
+          )}
           {[...layers].reverse().map((layer) => {
             const label =
               layer.data.type === 'text'

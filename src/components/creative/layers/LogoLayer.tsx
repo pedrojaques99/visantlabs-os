@@ -23,6 +23,10 @@ export const LogoLayer: React.FC<Props> = ({ layer, canvasWidth, canvasHeight })
         alt="logo"
         crossOrigin="anonymous"
         draggable={false}
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.outline = '1px dashed rgba(255,80,80,0.6)';
+          (e.currentTarget as HTMLImageElement).style.opacity = '0.4';
+        }}
         style={{
           width: '100%',
           height: '100%',
