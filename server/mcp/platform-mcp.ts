@@ -1268,6 +1268,465 @@ export function createPlatformMcpServer(): McpServer {
   );
 
   // ═══════════════════════════════════════════
+  // Creative Full Pipeline
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'creative-full',
+    'Full creative pipeline in one call. Generates layout plan, generates background image, renders to PNG, and saves the project. Returns imageUrl + projectId. Use this instead of chaining creative-generate + mockup-generate + creative-render manually.',
+    {
+      prompt: z.string().min(1).describe('Creative brief describing the desired visual.'),
+      brandGuidelineId: z.string().optional().describe('Brand guideline ID to inject brand context.'),
+      format: z.enum(['1:1', '16:9', '9:16', '4:5']).default('1:1').describe('Output aspect ratio.'),
+      autoSave: z.boolean().default(true).describe('Whether to persist the result as a creative project.'),
+    },
+    async ({ prompt, brandGuidelineId, format, autoSave }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        // Step 1: Generate creative plan
+        const planRes = await fetch(`${INTERNAL_API_BASE}/api/creative/plan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ prompt, brandGuidelineId, format, feature: 'agent' }),
+        });
+        const planData = await planRes.json();
+        if (!planRes.ok) return jsonResponse({ error: planData.error || 'Creative plan generation failed', step: 'plan' });
+        const plan = planData.plan ?? planData;
+
+        // Step 2: Generate background image from plan's background prompt
+        const bgPrompt = plan?.background?.prompt || prompt;
+        const mockupRes = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ prompt: bgPrompt, aspectRatio: format, designType: 'background', feature: 'agent' }),
+        });
+        const mockupData = await mockupRes.json();
+        const backgroundImageUrl: string | undefined = mockupData.imageUrl ?? mockupData.mockup?.imageUrl;
+
+        // Step 3: Render creative to PNG
+        const renderRes = await fetch(`${INTERNAL_API_BASE}/api/creative/render`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ plan, backgroundImageUrl, format }),
+        });
+        const renderData = await renderRes.json();
+        if (!renderRes.ok) return jsonResponse({ error: renderData.error || 'Render failed', step: 'render', plan, backgroundImageUrl });
+        const imageUrl: string = renderData.imageUrl ?? renderData.imageBase64;
+
+        // Step 4: Optionally save project
+        let projectId: string | undefined;
+        if (autoSave) {
+          const saveRes = await fetch(`${INTERNAL_API_BASE}/api/creative-projects`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+            body: JSON.stringify({
+              prompt,
+              format,
+              brandId: brandGuidelineId || null,
+              backgroundUrl: backgroundImageUrl || null,
+              layers: plan.layers ?? [],
+              overlay: plan.overlay ?? null,
+              thumbnailUrl: imageUrl?.startsWith('http') ? imageUrl : null,
+              name: `Creative — ${prompt.slice(0, 50)}`,
+            }),
+          });
+          const saveData = await saveRes.json();
+          projectId = saveData.project?.id;
+        }
+
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ plan, backgroundImageUrl, imageUrl, projectId, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Creative Projects CRUD
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'creative-projects-create',
+    'Save a creative project to the database. Requires prompt, format, and layers (from creative-generate). Optionally attach a brand guideline and background/thumbnail URLs.',
+    {
+      prompt: z.string().min(1).describe('Creative brief used to generate this project.'),
+      format: z.string().describe('Aspect ratio (e.g. "1:1", "16:9").'),
+      layers: z.array(z.record(z.string(), z.any())).describe('Layer array from creative-generate.'),
+      name: z.string().optional().describe('Project display name. Defaults to "Untitled Creative".'),
+      brandId: z.string().nullable().optional().describe('Brand guideline ID to associate.'),
+      backgroundUrl: z.string().nullable().optional().describe('Background image URL.'),
+      overlay: z.record(z.string(), z.any()).nullable().optional().describe('Overlay config from creative plan.'),
+      thumbnailUrl: z.string().nullable().optional().describe('Thumbnail image URL.'),
+    },
+    async ({ prompt, format, layers, name, brandId, backgroundUrl, overlay, thumbnailUrl }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/creative-projects`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ prompt, format, layers, name, brandId, backgroundUrl, overlay, thumbnailUrl }),
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to create creative project' });
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ ...result, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'creative-projects-update',
+    'Update an existing creative project (partial update). All fields are optional — only provided fields are updated.',
+    {
+      id: z.string().describe('Creative project ID to update.'),
+      name: z.string().optional().describe('New project name.'),
+      prompt: z.string().optional().describe('Updated creative prompt.'),
+      format: z.string().optional().describe('Updated aspect ratio.'),
+      layers: z.array(z.record(z.string(), z.any())).optional().describe('Updated layers array.'),
+      brandId: z.string().nullable().optional().describe('Brand guideline ID to associate.'),
+      backgroundUrl: z.string().nullable().optional().describe('Updated background image URL.'),
+      overlay: z.record(z.string(), z.any()).nullable().optional().describe('Updated overlay config.'),
+      thumbnailUrl: z.string().nullable().optional().describe('Updated thumbnail URL.'),
+    },
+    async ({ id, name, prompt, format, layers, brandId, backgroundUrl, overlay, thumbnailUrl }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/creative-projects/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ name, prompt, format, layers, brandId, backgroundUrl, overlay, thumbnailUrl }),
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to update creative project' });
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ ...result, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'creative-projects-delete',
+    'Permanently delete a creative project by ID.',
+    {
+      id: z.string().describe('Creative project ID to delete.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/creative-projects/${id}`, {
+          method: 'DELETE',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to delete creative project' });
+        return jsonResponse({ ok: result.ok ?? true });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Mockup CRUD
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'mockup-update',
+    'Update a mockup\'s metadata (prompt, tags, isLiked, designType, aspectRatio). Does not regenerate the image.',
+    {
+      id: z.string().describe('Mockup MongoDB ObjectId.'),
+      prompt: z.string().optional().describe('Updated prompt text.'),
+      designType: z.string().optional().describe('Design type (e.g. "social", "banner").'),
+      aspectRatio: z.string().optional().describe('Aspect ratio (e.g. "16:9").'),
+      tags: z.array(z.string()).optional().describe('Tag list.'),
+      brandingTags: z.array(z.string()).optional().describe('Branding tag list.'),
+      isLiked: z.boolean().optional().describe('Mark/unmark as liked.'),
+    },
+    async ({ id, prompt, designType, aspectRatio, tags, brandingTags, isLiked }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/mockups/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ prompt, designType, aspectRatio, tags, brandingTags, isLiked }),
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to update mockup' });
+        return jsonResponse({ ok: true, message: result.message });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'mockup-delete',
+    'Permanently delete a mockup by ID.',
+    {
+      id: z.string().describe('Mockup MongoDB ObjectId to delete.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/mockups/${id}`, {
+          method: 'DELETE',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to delete mockup' });
+        return jsonResponse({ ok: true, ...result });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Branding Projects CRUD
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'branding-save',
+    'Create or update a branding project. If projectId is provided and the project exists, it updates it; otherwise creates a new one. Returns the saved project.',
+    {
+      prompt: z.string().min(1).describe('Brand brief or description used to generate the project.'),
+      data: z.record(z.string(), z.any()).describe('Branding project data (colors, typography, logos, etc.).'),
+      projectId: z.string().optional().describe('Existing project ID to update. Omit to create a new project.'),
+      name: z.string().optional().describe('Project display name.'),
+    },
+    async ({ prompt, data, projectId, name }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/branding/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ prompt, data, projectId, name }),
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to save branding project' });
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ ...result, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'branding-delete',
+    'Permanently delete a branding project by ID.',
+    {
+      id: z.string().describe('Branding project ID to delete.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/branding/${id}`, {
+          method: 'DELETE',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to delete branding project' });
+        return jsonResponse({ ok: result.success ?? true });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Canvas CRUD
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'canvas-update',
+    'Update a canvas project by ID. Provide any combination of name, nodes, edges, drawings, or linkedGuidelineId. Only provided fields are updated.',
+    {
+      id: z.string().describe('Canvas project ID to update.'),
+      name: z.string().optional().describe('New project name.'),
+      nodes: z.array(z.record(z.string(), z.any())).optional().describe('Updated node array.'),
+      edges: z.array(z.record(z.string(), z.any())).optional().describe('Updated edge array.'),
+      drawings: z.array(z.record(z.string(), z.any())).optional().describe('Updated drawings array.'),
+      linkedGuidelineId: z.string().nullable().optional().describe('Brand guideline ID to link.'),
+    },
+    async ({ id, name, nodes, edges, drawings, linkedGuidelineId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/canvas/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ name, nodes, edges, drawings, linkedGuidelineId }),
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to update canvas project' });
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ ...result, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'canvas-delete',
+    'Permanently delete a canvas project by ID.',
+    {
+      id: z.string().describe('Canvas project ID to delete.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/canvas/${id}`, {
+          method: 'DELETE',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to delete canvas project' });
+        return jsonResponse({ ok: result.success ?? true });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'canvas-share',
+    'Share a canvas project with other users. Generates a shareId and sets collaborative mode. Accepts user emails or user IDs for canEdit/canView lists.',
+    {
+      id: z.string().describe('Canvas project ID to share.'),
+      canEdit: z.array(z.string()).default([]).describe('List of user emails or IDs who can edit.'),
+      canView: z.array(z.string()).default([]).describe('List of user emails or IDs who can view.'),
+    },
+    async ({ id, canEdit, canView }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/canvas/${id}/share`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ canEdit, canView }),
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to share canvas project' });
+        return jsonResponse(result);
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Budget CRUD
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'budget-update',
+    'Update an existing budget project by ID. Accepts any subset of budget fields — only provided fields are modified.',
+    {
+      id: z.string().describe('Budget project ID to update.'),
+      name: z.string().optional().describe('Project name.'),
+      clientName: z.string().optional().describe('Client name.'),
+      projectDescription: z.string().optional().describe('Project description.'),
+      startDate: z.string().optional().describe('Start date (ISO string).'),
+      endDate: z.string().optional().describe('End date (ISO string).'),
+      deliverables: z.array(z.any()).optional().describe('Deliverables list.'),
+      observations: z.string().optional().describe('Additional observations.'),
+      data: z.record(z.string(), z.any()).optional().describe('Full budget data object (replaces existing data field).'),
+    },
+    async ({ id, name, clientName, projectDescription, startDate, endDate, deliverables, observations, data }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/budget/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ name, clientName, projectDescription, startDate, endDate, deliverables, observations, data }),
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to update budget' });
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ ...result, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'budget-delete',
+    'Permanently delete a budget project by ID.',
+    {
+      id: z.string().describe('Budget project ID to delete.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/budget/${id}`, {
+          method: 'DELETE',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to delete budget' });
+        return jsonResponse({ ok: result.success ?? true });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'budget-duplicate',
+    'Duplicate an existing budget project. Returns the new project.',
+    {
+      id: z.string().describe('Budget project ID to duplicate.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/budget/${id}/duplicate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({}),
+        });
+        const result = await response.json();
+        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to duplicate budget' });
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ ...result, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Brand Guidelines — Media Kit (URL/base64 only)
+  // ═══════════════════════════════════════════
+
+  // NOTE: brand-guidelines-logo-upload is intentionally NOT implemented via MCP.
+  // The POST /:id/logos route accepts either base64 `data` or `url`, which is
+  // feasible for MCP, but logos are large binary blobs that exceed practical
+  // token limits in agent contexts. Agents should use brand-guidelines-update
+  // to attach a pre-uploaded logo URL instead. If needed in the future, add a
+  // dedicated logo-url tool that only accepts the `url` param (no base64).
+
+  // ═══════════════════════════════════════════
   // Canvas Pipeline (Variables + Data nodes)
   // ═══════════════════════════════════════════
 
