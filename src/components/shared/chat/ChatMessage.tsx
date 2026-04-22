@@ -26,6 +26,7 @@ export interface ChatMessageProps {
     id: string;
     name: string;
     status: 'running' | 'done' | 'error';
+    args?: any;
     startedAt?: string;
     endedAt?: string;
     errorMessage?: string;
@@ -105,6 +106,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 }) => {
   const [isCopied, setIsCopied] = useState(false);
   const [viewerImage, setViewerImage] = useState<string | null>(null);
+  const [expandedToolId, setExpandedToolId] = useState<string | null>(null);
   const isAssistant = role === 'assistant' || role === 'model';
 
   // Feedback hook — only for assistant messages with generationId
@@ -197,38 +199,121 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           </div>
         )}
 
-        {/* Tool Calls (visual feedback for LLM tool usage) */}
+        {/* Tool Calls (expandable) */}
         {toolCalls && toolCalls.length > 0 && (
           <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
             {toolCalls.map((call) => {
               const label = TOOL_LABELS[call.name] || call.name;
               const isRunning = call.status === 'running';
               const isError = call.status === 'error';
+              const isExpanded = expandedToolId === call.id;
+              const hasDuration = call.startedAt && call.endedAt;
+              const durationMs = hasDuration
+                ? new Date(call.endedAt!).getTime() - new Date(call.startedAt!).getTime()
+                : null;
+              const durationLabel = durationMs != null
+                ? durationMs >= 1000 ? `${(durationMs / 1000).toFixed(1)}s` : `${durationMs}ms`
+                : null;
+              const hasDetail = !isRunning && call.args && Object.keys(call.args).length > 0;
+
               return (
-                <div
-                  key={call.id}
-                  className={cn(
-                    'flex items-center gap-2.5 px-3 py-2 rounded-lg border text-[11px] font-mono',
-                    isError
-                      ? 'bg-red-500/5 border-red-500/20 text-red-300'
-                      : isRunning
-                      ? 'bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan/80'
-                      : 'bg-white/[0.02] border-white/5 text-neutral-400'
+                <div key={call.id}>
+                  <button
+                    type="button"
+                    onClick={() => hasDetail && setExpandedToolId(isExpanded ? null : call.id)}
+                    className={cn(
+                      'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border text-[11px] font-mono transition-colors',
+                      isError
+                        ? 'bg-red-500/5 border-red-500/20 text-red-300'
+                        : isRunning
+                        ? 'bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan/80'
+                        : isExpanded
+                        ? 'bg-white/5 border-white/10 text-neutral-300'
+                        : 'bg-white/[0.02] border-white/5 text-neutral-400',
+                      hasDetail && !isRunning && 'hover:bg-white/5 hover:border-white/10 cursor-pointer'
+                    )}
+                  >
+                    {isRunning ? (
+                      <Loader2 size={12} className="animate-spin shrink-0" />
+                    ) : isError ? (
+                      <AlertCircle size={12} className="shrink-0" />
+                    ) : (
+                      <Wrench size={12} className="shrink-0 text-green-400/70" />
+                    )}
+                    <span className="uppercase tracking-wider truncate flex-1 text-left">
+                      {label}
+                    </span>
+                    {durationLabel && (
+                      <span className="text-[10px] opacity-40 shrink-0">{durationLabel}</span>
+                    )}
+                    <span className="text-[10px] opacity-60 shrink-0 ml-1">
+                      {isError ? (call.errorMessage || 'falhou').slice(0, 40) : call.summary || call.status}
+                    </span>
+                    {hasDetail && !isRunning && (
+                      <ChevronDown size={11} className={cn('shrink-0 opacity-40 transition-transform', isExpanded && 'rotate-180')} />
+                    )}
+                  </button>
+
+                  {isExpanded && call.args && (
+                    <div className="mt-1 ml-3 px-3 py-2.5 rounded-lg bg-black/30 border border-white/5 text-[11px] space-y-2">
+                      {call.name === 'propose_creative_plan' && (
+                        <>
+                          {call.args.summary && (
+                            <p className="text-neutral-400 italic">{call.args.summary}</p>
+                          )}
+                          {call.args.proposals?.length > 0 && (
+                            <div className="space-y-1">
+                              <p className="text-[10px] font-semibold text-neutral-600 uppercase tracking-widest">Variações</p>
+                              {call.args.proposals.map((p: any, i: number) => (
+                                <div key={i} className="flex items-start gap-2">
+                                  <span className="text-neutral-600 shrink-0">{i + 1}.</span>
+                                  <div>
+                                    <span className="text-neutral-300 font-medium">{p.title}</span>
+                                    {p.aspectRatio && <span className="text-neutral-600 ml-2">{p.aspectRatio}</span>}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {call.args.questions?.length > 0 && (
+                            <div className="space-y-0.5">
+                              <p className="text-[10px] font-semibold text-neutral-600 uppercase tracking-widest">Perguntas feitas</p>
+                              {call.args.questions.map((q: string, i: number) => (
+                                <p key={i} className="text-neutral-500">— {q}</p>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      )}
+                      {call.name === 'update_session_memory' && (
+                        <div className="space-y-1">
+                          {(['brands', 'clients', 'decisions', 'references'] as const).map(key =>
+                            call.args[key] ? (
+                              <div key={key} className="flex gap-2">
+                                <span className="text-neutral-600 capitalize shrink-0">{key}:</span>
+                                <span className="text-neutral-400">{call.args[key]}</span>
+                              </div>
+                            ) : null
+                          )}
+                        </div>
+                      )}
+                      {call.name === 'generate_or_update_mockup' && (
+                        <div className="space-y-1">
+                          {call.args.prompt && <p className="text-neutral-400 line-clamp-3">{call.args.prompt}</p>}
+                          <div className="flex gap-3 text-neutral-600">
+                            {call.args.model && <span>model: {call.args.model.split('/').pop()}</span>}
+                            {call.args.aspectRatio && <span>ratio: {call.args.aspectRatio}</span>}
+                            {call.args.textMode && <span>texto: {call.args.textMode}</span>}
+                          </div>
+                        </div>
+                      )}
+                      {!['propose_creative_plan', 'update_session_memory', 'generate_or_update_mockup'].includes(call.name) && (
+                        <pre className="text-neutral-500 whitespace-pre-wrap break-all text-[10px]">
+                          {JSON.stringify(call.args, null, 2).slice(0, 400)}
+                        </pre>
+                      )}
+                    </div>
                   )}
-                >
-                  {isRunning ? (
-                    <Loader2 size={12} className="animate-spin shrink-0" />
-                  ) : isError ? (
-                    <AlertCircle size={12} className="shrink-0" />
-                  ) : (
-                    <Wrench size={12} className="shrink-0 text-green-400/70" />
-                  )}
-                  <span className="uppercase tracking-wider truncate flex-1">
-                    {label}
-                  </span>
-                  <span className="text-[10px] opacity-60">
-                    {isError ? (call.errorMessage || 'falhou').slice(0, 40) : call.summary || call.status}
-                  </span>
                 </div>
               );
             })}
@@ -249,7 +334,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         )}
 
         {/* Feedback buttons */}
-        {isAssistant && generationId && (
+        {isAssistant && generationId && content?.trim() && (
           <div className="mt-3 flex items-center gap-1">
             <button
               onClick={() => feedback.submit('up')}

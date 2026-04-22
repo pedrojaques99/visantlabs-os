@@ -12,7 +12,9 @@ Use o nodeId dos elementos selecionados para editar:
 - SET_CORNER_RADIUS: { nodeId, cornerRadius }
 - SET_TEXT_CONTENT: { nodeId, content, fontFamily?, fontStyle?, fontSize? }
 - SET_TEXT_STYLE: { nodeId, fontSize?, fontFamily?, fontStyle?, fills? }
-- SET_AUTO_LAYOUT: { nodeId, layoutMode, itemSpacing? }
+  REGRA: Ao aplicar brand guidelines em texto, SEMPRE inclua fontFamily (e fontStyle se disponível). Não envie SET_TEXT_STYLE só com fills sem fontFamily quando houver fonte de marca disponível.
+- SET_AUTO_LAYOUT: { nodeId, layoutMode, itemSpacing?, primaryAxisSizingMode?, counterAxisSizingMode? }
+  REGRA: Se o frame já tem dimensões fixas, inclua primaryAxisSizingMode:"FIXED" e counterAxisSizingMode:"FIXED". Nunca aplique SET_AUTO_LAYOUT sem o usuário pedir organização/layout explicitamente.
 - SET_OPACITY: { nodeId, opacity } (0 a 1)
 - RENAME: { nodeId, name }`;
 

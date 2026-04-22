@@ -47,12 +47,14 @@ import brandIntelligenceRoutes from './routes/brandIntelligence.js';
 import rpcRoutes from './routes/rpc.js';
 import adminChatRoutes from './routes/adminChat.js';
 import chatRoutes from './routes/chat.js';
+import apiKeysRoutes from './routes/apiKeys.js';
+import pipelineRoutes from './routes/pipeline.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
 import { requestContext } from './middleware/requestContext.js';
 
-import { createPlatformMcpServer, setMcpUserId } from './mcp/platform-mcp.js';
+import { createPlatformMcpServer, setMcpUserId, getMcpToolNames, getMcpToolCount } from './mcp/platform-mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { authenticateApiKey } from './middleware/apiKeyAuth.js';
@@ -216,11 +218,31 @@ export function createApp() {
     ['/chat', chatRoutes],
     ['/telemetry', telemetryRoutes],
     ['/rpc', rpcRoutes],
+    ['/api-keys', apiKeysRoutes],
+    ['/pipeline', pipelineRoutes],
   ];
 
   for (const [path, router] of mounts) {
     app.use(`${routePrefix}${path}`, router);
   }
+
+  // ── MCP Discovery ────────────────────────────────────────────────────────
+  app.get('/.well-known/mcp.json', (_req, res) => {
+    const base = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+    res.json({
+      mcpVersion: '2025-03-26',
+      name: 'Visant Labs',
+      description: 'AI-powered design platform for mockups, branding, budgets, and canvas.',
+      endpoint: `${base}/api/mcp`,
+      transport: ['streamable-http'],
+      authentication: {
+        type: 'bearer',
+        description: 'API key from Settings → API Keys (visant_sk_xxx)',
+      },
+      toolCount: 22,
+      docsUrl: `${base}/llms-full.txt`,
+    });
+  });
 
   // ── Platform MCP (Streamable HTTP + legacy SSE) ──────────────────────────
   const legacySseTransports = new Map<string, SSEServerTransport>();
@@ -260,6 +282,20 @@ export function createApp() {
     setMcpUserId(isAuth ? authReq.userId : null);
     return isAuth;
   };
+
+  // Bootstrap tool registry on startup (createPlatformMcpServer populates _registeredToolNames)
+  createPlatformMcpServer();
+
+  // GET /api/mcp/meta — live tool metadata, used by llms.txt and frontend
+  app.get(`${routePrefix}/mcp/meta`, (_req, res) => {
+    res.json({
+      toolCount: getMcpToolCount(),
+      tools: getMcpToolNames(),
+      endpoint: `${routePrefix}/mcp`,
+      protocol: 'MCP 2025-03-26',
+      transport: 'Streamable HTTP',
+    });
+  });
 
   app.post(`${routePrefix}/mcp`, async (req, res) => {
     if (!validateMcpOrigin(req)) {

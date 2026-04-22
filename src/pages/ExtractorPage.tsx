@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from '
 import { Search, Globe, Instagram, FileText, Download, ExternalLink, Loader2, Image as ImageIcon, CheckCircle2, AlertCircle, X, Plus, ArrowRight, Maximize2, CloudDownload, Zap, Diamond, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageShell } from '../components/ui/PageShell';
-import { imageApi, SearchImage, DesignerParams } from '../services/imageApi';
+import { imageApi, SearchImage, DesignerParams, ContentMode } from '../services/imageApi';
 import { applyShaderEffect } from '../utils/shaders/shaderRenderer';
 import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
@@ -41,8 +41,8 @@ const StreamImage = ({ src, alt, onCrashed }: { src: string; alt: string; onCras
             onCrashed();
           }}
           className={cn(
-            "w-full h-auto object-cover transition-opacity duration-700",
-            isLoaded ? "opacity-100" : "opacity-0"
+            "w-full h-auto block transition-opacity duration-700",
+            isLoaded ? "opacity-100" : "opacity-0 absolute inset-0"
           )}
         />
       )}
@@ -201,16 +201,17 @@ export default function ExtractorPage() {
   const [pdfPages, setPdfPages] = useState<string[]>([]);
   const [extractingPdf, setExtractingPdf] = useState(false);
   const [upscalingUrls, setUpscalingUrls] = useState<Set<string>>(new Set());
-  const [limit, setLimit] = useState(40);
+  const [limit, setLimit] = useState(80);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   const [columns, setColumns] = useState(() => {
     const saved = localStorage.getItem('vsn_extractor_columns');
     return saved ? parseInt(saved, 10) : 4;
   });
   const [designerParams, setDesignerParams] = useState<DesignerParams>(() => {
     const saved = localStorage.getItem('vsn_extractor_params');
-    return saved ? JSON.parse(saved) : { size: 'all', type: 'all', aspect: 'all' };
+    return saved ? JSON.parse(saved) : { size: 'all', type: 'all', aspect: 'all', contentMode: 'all' as ContentMode };
   });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -240,6 +241,21 @@ export default function ExtractorPage() {
   useEffect(() => {
     localStorage.setItem('vsn_extractor_columns', columns.toString());
   }, [columns]);
+
+  // Infinite scroll
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && images.length > 0) {
+          handleSearch(undefined, true);
+        }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading, images.length]);
 
   // Auto-detect extraction mode based on input pattern
   useEffect(() => {
@@ -283,7 +299,7 @@ export default function ExtractorPage() {
     }
     
     setError(null);
-    const currentLimit = isLoadMore ? limit + 40 : 40;
+    const currentLimit = isLoadMore ? limit + 80 : 80;
 
     try {
       let result;
@@ -674,7 +690,7 @@ export default function ExtractorPage() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-2xl backdrop-blur-xl"
+                  className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-2xl backdrop-blur-xl"
                 >
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">Grid Zoom ({columns})</label>
@@ -706,16 +722,24 @@ export default function ExtractorPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">Asset Type</label>
-                    <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
-                      {(['all', 'transparent', 'photo', 'clipart'] as const).map(t => (
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">Content Type</label>
+                    <div className="flex gap-1 flex-wrap">
+                      {([
+                        { value: 'all',          label: 'Todos',        hint: 'Qualquer tipo' },
+                        { value: 'photo',        label: 'Imagens',      hint: 'Fotos sem texto' },
+                        { value: 'logo',         label: 'Logotipo',     hint: 'Logos e marcas' },
+                        { value: 'illustration', label: 'Ilustração',   hint: 'Artes e ilustrações' },
+                        { value: 'vector',       label: 'Vector / SVG', hint: 'Vetores e lineart' },
+                        { value: 'creative',     label: 'Criativos',    hint: 'Banners com texto' },
+                      ] as { value: ContentMode; label: string; hint: string }[]).map(({ value, label, hint }) => (
                         <button
-                          key={t}
-                          onClick={() => setDesignerParams({ ...designerParams, type: t })}
-                          className={`flex-none px-3 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all border ${designerParams.type === t ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/5 text-neutral-600'}`}
+                          key={value}
+                          title={hint}
+                          onClick={() => setDesignerParams({ ...designerParams, contentMode: value })}
+                          className={`flex-none px-3 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all border ${designerParams.contentMode === value ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan' : 'bg-transparent border-white/5 text-neutral-600 hover:text-neutral-400'}`}
                         >
-                          {t === 'transparent' ? 'PNG' : t}
+                          {label}
                         </button>
                       ))}
                     </div>
@@ -797,19 +821,18 @@ export default function ExtractorPage() {
               </div>
             </div>
 
-            {/* Grid - CSS Grid for stable, performant layout */}
+            {/* Grid - CSS columns for true masonry (each image keeps its natural height) */}
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: `repeat(${columns}, 1fr)`,
-              gap: '1rem',
+              columns: columns,
+              columnGap: '1rem',
               width: '100%'
             }}>
               <AnimatePresence mode="popLayout">
                 {visibleImages.map((img) => {
                   const isHD = img.width >= 1920 || img.height >= 1080;
                   return (
+                    <div key={img.url} style={{ breakInside: 'avoid', marginBottom: '1rem' }}>
                     <ImageCard
-                      key={img.url}
                       img={img}
                       isHD={isHD}
                       isSelected={selectedImages.has(img.url)}
@@ -820,6 +843,7 @@ export default function ExtractorPage() {
                       onCopy={handleCopyAsPng}
                       onCrashed={() => handleImageCrashed(img.url)}
                     />
+                    </div>
                   );
                 })}
               </AnimatePresence>
@@ -835,22 +859,12 @@ export default function ExtractorPage() {
               </div>
             )}
 
-            {/* Minimal Load More */}
-            {hasMore && images.length > 0 && (
-              <div className="flex justify-center pt-8 pb-20">
-                <button
-                  onClick={() => handleSearch(undefined, true)}
-                  disabled={loading}
-                  className="
-                    px-8 py-3 bg-white/[0.02] border border-white/5 rounded-full
-                    text-[9px] font-bold text-neutral-500 hover:text-white hover:bg-white/5 transition-all uppercase tracking-widest
-                    disabled:opacity-10
-                  "
-                >
-                  {loading ? <Loader2 className="animate-spin" size={16} /> : "Load deeper streams"}
-                </button>
-              </div>
-            )}
+            {/* Infinite scroll sentinel */}
+            <div ref={loadMoreRef} className="flex justify-center py-10">
+              {loading && images.length > 0 && (
+                <Loader2 className="animate-spin text-white/20" size={20} />
+              )}
+            </div>
           </div>
         )}
 

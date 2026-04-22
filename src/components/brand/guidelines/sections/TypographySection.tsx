@@ -24,21 +24,26 @@ interface TypographySectionProps {
 export const TypographySection: React.FC<TypographySectionProps> = ({ guideline, onUpdate, span }) => {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
+
+  // Normalize typography entries — support both {family,role} and {fontFamily,name} from Figma imports
+  const normalizedTypography = (guideline.typography || []).map((t: any) => ({
+    family: t.family || t.fontFamily || '',
+    role: t.role || t.name || 'Body',
+    style: t.style || t.fontStyle || 'Regular',
+    size: t.size || t.fontSize || 16,
+  }));
+
+  // Brand fonts already saved — shown as priority group in GoogleFontPicker
+  const savedBrandFonts = [...new Set(normalizedTypography.map((t) => t.family).filter(Boolean))];
+
   const form = useForm({
     resolver: zodResolver(typographyFormSchema),
-    defaultValues: {
-      typography: (guideline.typography || []).map((t) => ({
-        family: t.family,
-        role: t.role || 'Body',
-        style: t.style || 'Regular',
-        size: t.size || 16,
-      }))
-    },
+    defaultValues: { typography: normalizedTypography },
   });
   const { fields, append, remove } = useFieldArray({ control: form.control, name: 'typography' });
 
   useEffect(() => {
-    form.reset({ typography: guideline.typography || [] });
+    form.reset({ typography: normalizedTypography });
   }, [guideline.id]);
 
   const handleSave = form.handleSubmit((data) => {
@@ -141,6 +146,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                           <GoogleFontPicker
                             value={currentFamily}
                             onChange={(val) => form.setValue(`typography.${i}.family`, val)}
+                            brandFonts={savedBrandFonts}
                           />
                         </div>
                       </div>

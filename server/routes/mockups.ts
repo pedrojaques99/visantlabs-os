@@ -803,6 +803,30 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       }
     }
 
+    // Early cache check — before lock acquisition and credit deduction
+    // Key includes input image fingerprint so same prompt + different image = different result
+    const inputImageFingerprint = finalBaseImage
+      ? hashQuery(
+          finalBaseImage.base64
+            ? `${finalBaseImage.base64.slice(0, 500)}:${finalBaseImage.base64.length}`
+            : (finalBaseImage.url || ''),
+          finalBaseImage.mimeType || ''
+        )
+      : 'no-image';
+
+    const mockupCacheKey = CacheKey.mockupGen(
+      req.userId!,
+      hashQuery(finalPromptText, model + (resolution || '') + (aspectRatio || '') + inputImageFingerprint)
+    );
+
+    if (!req.body.skipCache) {
+      const earlyCached = await redisClient.get(mockupCacheKey).catch(() => null);
+      if (earlyCached) {
+        console.log(`[Cache] HIT — early return, no credits deducted: ${mockupCacheKey.slice(0, 30)}`);
+        return res.json({ ...JSON.parse(earlyCached), fromCache: true });
+      }
+    }
+
     // CRITICAL: Check for duplicate recent requests to prevent multiple credit deductions
     // Use a distributed lock mechanism to prevent concurrent requests from deducting credits
     const db = getDb();
@@ -1060,16 +1084,6 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
           timestamp: new Date().toISOString(),
         });
       }
-    }
-
-    // Cache check before generation
-    const mockupCacheKey = CacheKey.mockupGen(req.userId!, hashQuery(finalPromptText, model + (resolution || '') + (aspectRatio || '')));
-    const cachedMockup = await redisClient.get(mockupCacheKey).catch(() => null);
-
-    if (cachedMockup && !req.body.skipCache) {
-      const cached = JSON.parse(cachedMockup);
-      console.log(`[Cache] HIT mockup:${mockupCacheKey.slice(0, 20)}`);
-      return res.json({ ...cached, fromCache: true });
     }
 
     // Generate mockup image using selected provider

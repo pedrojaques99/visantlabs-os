@@ -17,6 +17,7 @@ import {
 } from '@/constants/geminiModels';
 import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
 import { resolveGenerationContext } from '@/utils/canvas/generationContext';
+import { collectVariables, applyVariables } from '@/utils/canvas/resolveVariables';
 import { toast } from 'sonner';
 
 interface UsePromptNodeHandlersParams {
@@ -209,9 +210,11 @@ export const usePromptNodeHandlers = ({
 
       // 'edge' = BrandNode connected via React Flow (image-analysis data, no DB id) → enhance client-side
       // 'guideline' = header-linked BrandGuideline (has DB id) → let server inject via brandGuidelineId
+      const vars = collectVariables(nodeId, nodesRef.current, edgesRef.current);
+      const resolvedPrompt = applyVariables(prompt, vars);
       let enhancedPrompt = (source === 'edge' && tokens)
-        ? buildEnhancement(prompt, tokens)
-        : prompt;
+        ? buildEnhancement(resolvedPrompt, tokens)
+        : resolvedPrompt;
 
       const currentPromptData = nodesRef.current.find(n => n.id === nodeId)?.data as PromptNodeData;
       const pdfPageReference = currentPromptData?.pdfPageReference;

@@ -7,7 +7,7 @@ import { prisma } from '../db/prisma.js'
 import { rateLimit } from 'express-rate-limit'
 import { BrandGuideline, BrandGuidelineMedia, BrandGuidelineLogo, calculateCompleteness } from '../types/brandGuideline.js'
 import { parseUrl, parsePdf, parseImage, parseJson } from '../lib/brand-parse.js'
-import { extractBrandData } from '../lib/brand-extract.js'
+import { extractBrandData, type AssetClassification } from '../lib/brand-extract.js'
 import { mergeBrandGuidelines } from '../lib/brand-merge.js'
 import { uploadBrandMedia, deleteImage } from '../services/r2Service.js'
 import { brandSharedService } from '../services/brandSharedService.js'
@@ -282,6 +282,49 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
 
     const extracted = await extractBrandData(chunks, imagesToExtract, req.userId)
     const merged = mergeBrandGuidelines(existing as any, extracted)
+
+    // Classify and store uploaded images into logos/media
+    if (imagesToExtract && imagesToExtract.length > 0 && extracted.assetClassifications?.length) {
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { subscriptionTier: true, isAdmin: true },
+      })
+      const existingLogos: BrandGuidelineLogo[] = (merged.logos as BrandGuidelineLogo[]) || []
+      const existingMedia: BrandGuidelineMedia[] = (merged.media as BrandGuidelineMedia[]) || []
+
+      await Promise.allSettled(
+        extracted.assetClassifications.map(async (cls) => {
+          const imgData = imagesToExtract![cls.index]
+          if (!imgData) return
+          const assetId = crypto.randomUUID()
+          const ct = imgData.match(/^data:([^;]+);/)?.[1] || 'image/png'
+          const storedUrl = await uploadBrandMedia(
+            imgData, req.userId!, existing.id, assetId, ct,
+            user?.subscriptionTier || undefined, user?.isAdmin || undefined,
+          )
+
+          if (cls.category === 'logo' || cls.category === 'icon') {
+            existingLogos.push({
+              id: assetId,
+              url: storedUrl,
+              variant: cls.category === 'icon' ? 'icon' : (cls.logoVariant || 'custom'),
+              label: cls.label,
+              source: 'upload',
+            } as BrandGuidelineLogo)
+          } else {
+            existingMedia.push({
+              id: assetId,
+              url: storedUrl,
+              type: 'image',
+              label: cls.label,
+            } as BrandGuidelineMedia)
+          }
+        })
+      )
+
+      merged.logos = existingLogos
+      merged.media = existingMedia
+    }
 
     // Track source
     if (!merged.extraction) {

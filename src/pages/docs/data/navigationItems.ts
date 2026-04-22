@@ -42,10 +42,14 @@ export const DOCS_NAVIGATION_ITEMS: NavigationItem[] = [
     icon: Terminal,
     sections: [
       { id: 'mcp-overview', label: 'Overview' },
+      { id: 'mcp-getting-started', label: 'Getting Started' },
       { id: 'mcp-setup', label: 'Setup & Connection' },
+      { id: 'mcp-snippets', label: 'Code Snippets' },
       { id: 'mcp-auth', label: 'Authentication' },
+      { id: 'mcp-tools-ref', label: 'Tool Reference (28)' },
+      { id: 'mcp-workflows', label: 'Common Workflows' },
+      { id: 'mcp-response-format', label: 'Response Format' },
       { id: 'mcp-figma-tools', label: 'Figma MCP Tools' },
-      // Dynamic sections added from mcpSpec.tools
     ],
   },
   {

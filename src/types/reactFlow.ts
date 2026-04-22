@@ -783,11 +783,49 @@ export interface ChatNodeData extends BaseNodeData {
   connectedNodeIds?: string[];
 }
 
+// Batch Runner — orchestrates generation for every row in a connected DataNode
+export type BatchStatus = 'idle' | 'running' | 'paused' | 'done' | 'cancelled';
+
+export interface BatchResult {
+  rowIndex: number;
+  rowData: Record<string, string>;
+  status: 'pending' | 'running' | 'done' | 'error';
+  outputImageUrl?: string;
+  error?: string;
+}
+
+export interface BatchRunnerNodeData extends BaseNodeData {
+  type: 'batchRunner';
+  status: BatchStatus;
+  results: BatchResult[];
+  concurrency: number; // rows processed at a time (1 = sequential)
+  onRun?: (nodeId: string) => void;
+  onCancel?: (nodeId: string) => void;
+  onUpdateData?: (nodeId: string, newData: Partial<BatchRunnerNodeData>) => void;
+}
+
+// Data Node — loads CSV/JSON file and exposes rows as variables for generation nodes
+export interface DataNodeData extends BaseNodeData {
+  type: 'data';
+  fileName?: string;
+  rows: Array<Record<string, string>>;
+  columns: string[];
+  selectedRowIndex: number;
+  onUpdateData?: (nodeId: string, newData: Partial<DataNodeData>) => void;
+}
+
+// Variables Node — defines named variables ({{name}}: value) consumed by generation nodes
+export interface VariablesNodeData extends BaseNodeData {
+  type: 'variables';
+  variables: Array<{ key: string; value: string }>;
+  onUpdateData?: (nodeId: string, newData: Partial<VariablesNodeData>) => void;
+}
+
 // Union type for all node data
-export type FlowNodeData = ImageNodeData | MergeNodeData | EditNodeData | UpscaleNodeData | UpscaleBicubicNodeData | MockupNodeData | OutputNodeData | PromptNodeData | BrandNodeData | AngleNodeData | LogoNodeData | PDFNodeData | StrategyNodeData | BrandCoreData | VideoNodeData | VideoInputNodeData | TextureNodeData | AmbienceNodeData | LuminanceNodeData | ShaderNodeData | ColorExtractorNodeData | TextNodeData | DirectorNodeData | ChatNodeData | NodeBuilderData | CustomNodeData;
+export type FlowNodeData = ImageNodeData | MergeNodeData | EditNodeData | UpscaleNodeData | UpscaleBicubicNodeData | MockupNodeData | OutputNodeData | PromptNodeData | BrandNodeData | AngleNodeData | LogoNodeData | PDFNodeData | StrategyNodeData | BrandCoreData | VideoNodeData | VideoInputNodeData | TextureNodeData | AmbienceNodeData | LuminanceNodeData | ShaderNodeData | ColorExtractorNodeData | TextNodeData | DirectorNodeData | ChatNodeData | NodeBuilderData | CustomNodeData | VariablesNodeData | DataNodeData | BatchRunnerNodeData;
 
 // Custom node types
-export type FlowNodeType = 'image' | 'merge' | 'edit' | 'upscale' | 'mockup' | 'output' | 'prompt' | 'brand' | 'angle' | 'logo' | 'pdf' | 'strategy' | 'brandCore' | 'video' | 'videoInput' | 'texture' | 'ambience' | 'luminance' | 'shader' | 'colorExtractor' | 'text' | 'director' | 'chat' | 'nodeBuilder' | 'custom';
+export type FlowNodeType = 'image' | 'merge' | 'edit' | 'upscale' | 'mockup' | 'output' | 'prompt' | 'brand' | 'angle' | 'logo' | 'pdf' | 'strategy' | 'brandCore' | 'video' | 'videoInput' | 'texture' | 'ambience' | 'luminance' | 'shader' | 'colorExtractor' | 'text' | 'director' | 'chat' | 'nodeBuilder' | 'custom' | 'variables' | 'data' | 'batchRunner';
 
 // Extended Node type with our custom data
 export type FlowNode = Node<FlowNodeData>;

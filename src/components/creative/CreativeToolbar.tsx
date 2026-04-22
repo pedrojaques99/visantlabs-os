@@ -57,7 +57,7 @@ export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute top-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-neutral-900/95 border border-white/10 rounded-lg px-3 py-2 backdrop-blur-md shadow-2xl animate-in fade-in slide-in-from-top-2"
+      className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-neutral-900/95 border border-white/10 rounded-lg px-3 py-2 backdrop-blur-md shadow-2xl animate-in fade-in slide-in-from-top-2"
     >
       <div className="flex items-center gap-1.5 pr-1">
         <ImageIcon size={12} className="text-brand-cyan" />
@@ -110,7 +110,7 @@ export const CreativeToolbar: React.FC = () => {
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute top-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-neutral-900/95 border border-white/10 rounded-lg px-3 py-2 backdrop-blur-md shadow-2xl animate-in fade-in slide-in-from-top-2"
+      className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-neutral-900/95 border border-white/10 rounded-lg px-3 py-2 backdrop-blur-md shadow-2xl animate-in fade-in slide-in-from-top-2"
     >
       {/* ── Selection badge & Grouping ── */}
       {selectedCount > 1 ? (

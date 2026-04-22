@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Type, Square, Download, ArrowLeft, Trash2, Undo2, Redo2, Briefcase, Save, FolderOpen, Loader2, Check, AlertTriangle, Circle } from 'lucide-react';
+import { Eye, EyeOff, Type, Square, Download, ArrowLeft, Trash2, Undo2, Redo2, Briefcase, Save, FolderOpen, Loader2, Check, AlertTriangle, Circle, Image, Palette } from 'lucide-react';
 import type { AutoSaveStatus } from '@/hooks/useAutoSave';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
@@ -64,6 +64,10 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
     setProjectName,
     setCreativeId,
     reset,
+    backgroundUrl,
+    overlay,
+    backgroundSelected,
+    setBackgroundSelected,
   } = useCreativeStore();
   const { undo, redo, pastStates, futureStates } = useCreativeStore.temporal.getState();
   const { colors, activeGuideline, allGuidelines } = useBrandKit();
@@ -327,6 +331,40 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
               </div>
             );
           })}
+
+          {/* Background pseudo-layer — always at bottom like Figma's frame fill */}
+          {(() => {
+            const hasBg = !!backgroundUrl;
+            const hasOverlay = !!overlay;
+            const label = hasBg
+              ? 'Imagem'
+              : hasOverlay
+              ? overlay.type === 'solid' ? 'Cor sólida' : 'Gradiente'
+              : 'Fundo vazio';
+            const Icon = hasBg ? Image : Palette;
+            return (
+              <div
+                onClick={() => {
+                  setSelectedLayerIds([]);
+                  setBackgroundSelected(true);
+                }}
+                className={`flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-mono cursor-pointer transition-colors border-t border-white/5 mt-1 pt-2 ${
+                  backgroundSelected
+                    ? 'bg-brand-cyan/10 text-brand-cyan'
+                    : 'text-neutral-500 hover:bg-white/5'
+                }`}
+              >
+                <Icon size={12} className="shrink-0" />
+                <span className="flex-1 truncate">Fundo · {label}</span>
+                {hasOverlay && (
+                  <span
+                    className="w-3 h-3 rounded-sm shrink-0 border border-white/10"
+                    style={{ background: overlay.color ?? `rgba(0,0,0,${overlay.opacity})` }}
+                  />
+                )}
+              </div>
+            );
+          })()}
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 import express from 'express';
+import { getMcpToolCount, getMcpToolNames } from '../mcp/platform-mcp.js';
 
 const router = express.Router();
 
@@ -29,7 +30,7 @@ router.get('/llms.txt', (req, res) => {
 
 ## For Agents (Claude Connectors)
 
-**MCP Server**: \`POST /api/mcp\` — 22 tools via Streamable HTTP (MCP 2025-03-26)
+**MCP Server**: \`POST /api/mcp\` — ${getMcpToolCount()} tools via Streamable HTTP (MCP 2025-03-26)
 
 Connect on Claude.ai:
 1. Settings → Connectors → Add custom connector
@@ -85,14 +86,64 @@ API keys are generated in the user dashboard under Settings > API Keys.
 2. Enter URL: \`https://visantlabs.com/api/mcp\`
 3. (Optional) Add API key for authenticated access: \`visant_sk_xxx\`
 
+### Getting Started (3 steps)
+
+1. Create an API key at \`https://visantlabs.com/settings/api-keys\`
+2. Add to Claude.ai: Settings → Integrations → Add MCP → URL: \`https://visantlabs.com/api/mcp\`
+3. Add header: \`Authorization: Bearer visant_sk_xxx\`
+
 ### Connect Programmatically
 
+**curl**
 \`\`\`bash
 curl -X POST https://visantlabs.com/api/mcp \\
   -H "Content-Type: application/json" \\
   -H "Accept: application/json, text/event-stream" \\
   -H "Authorization: Bearer visant_sk_xxx" \\
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
+\`\`\`
+
+**Node.js (@modelcontextprotocol/sdk)**
+\`\`\`typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+
+const client = new Client({ name: 'my-app', version: '1.0.0' });
+await client.connect(new StreamableHTTPClientTransport(
+  new URL('https://visantlabs.com/api/mcp'),
+  { requestInit: { headers: { Authorization: 'Bearer visant_sk_xxx' } } }
+));
+const result = await client.callTool('mockup-generate', {
+  prompt: 'coffee brand packaging, kraft paper, minimal black logo',
+  designType: 'packaging',
+  aspectRatio: '1:1',
+});
+\`\`\`
+
+**Python (mcp SDK)**
+\`\`\`python
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+async with streamablehttp_client(
+    "https://visantlabs.com/api/mcp",
+    headers={"Authorization": "Bearer visant_sk_xxx"},
+) as (read, write, _):
+    async with ClientSession(read, write) as session:
+        await session.initialize()
+        result = await session.call_tool("account-usage", {})
+\`\`\`
+
+**Cursor (.cursor/mcp.json)**
+\`\`\`json
+{
+  "mcpServers": {
+    "visant": {
+      "url": "https://visantlabs.com/api/mcp",
+      "headers": { "Authorization": "Bearer visant_sk_xxx" }
+    }
+  }
+}
 \`\`\`
 
 ### Required Headers
@@ -107,7 +158,7 @@ curl -X POST https://visantlabs.com/api/mcp \\
 
 For older clients: \`GET /api/mcp/sse\` (deprecated, use POST /api/mcp)
 
-### Available Tools (22)
+### Available Tools (${getMcpToolCount()})
 
 **Account** (requires auth):
 - \`account-usage\` — Get credit balance, plan limits, billing info
@@ -128,6 +179,9 @@ For older clients: \`GET /api/mcp/sse\` (deprecated, use POST /api/mcp)
 - \`canvas-list\` — List canvas projects
 - \`canvas-get\` — Get canvas by ID
 - \`canvas-create\` — Create new canvas
+- \`canvas-resolve-variables\` — Resolve {{placeholder}} tokens in a prompt
+- \`canvas-parse-csv\` — Parse CSV for data-driven generation
+- \`canvas-list-projects\` — Extended canvas list with metadata
 
 **Budget** (requires auth):
 - \`budget-list\` — List budget documents
@@ -138,17 +192,33 @@ For older clients: \`GET /api/mcp/sse\` (deprecated, use POST /api/mcp)
 - \`ai-improve-prompt\` — Enhance prompt for better results (1 credit)
 - \`ai-describe-image\` — Analyze and describe image (1 credit)
 
-**Brand Guidelines** (requires auth for private):
+**Brand Guidelines** (requires auth):
 - \`brand-guidelines-list\` — List user's brand guidelines
-- \`brand-guidelines-get\` — Get guideline (JSON or LLM-ready prompt)
-- \`brand-guidelines-public\` — Get public guideline by slug (no auth)
+- \`brand-guidelines-get\` — Get guideline in JSON or LLM-ready prompt format
+- \`brand-guidelines-create\` — Create a new brand guideline (identity, colors, typography, strategy, tokens)
+- \`brand-guidelines-update\` — Patch any section; sub-fields of strategy merged independently
+- \`brand-guidelines-delete\` — Permanently delete (requires confirm: true)
+- \`brand-guidelines-ingest\` — Extract brand data from URL or text and merge into guideline
+- \`brand-guidelines-share\` — Generate (or revoke) a public read-only link
+- \`brand-guidelines-versions\` — List version history and changelog
+- \`brand-guidelines-public\` — Get a public guideline by slug (no auth required)
 
-**Creatives** (requires auth):
-- \`creative-generate\` — Generate a structured creative plan (1 credit)
+**Creative Studio** (requires auth):
+- \`creative-projects-list\` — List creative projects (paginated)
+- \`creative-projects-get\` — Get creative project with all layers
+- \`creative-generate\` — Generate layered creative layout with brand context (1 credit)
 
 **Community** (no auth required):
-- \`community-presets\` — Browse shared mockup presets
-- \`community-profiles\` — Browse public creator profiles
+- \`community-presets\` — Browse shared mockup presets (paginated)
+- \`community-profiles\` — Browse public creator profiles (paginated)
+
+### Error format (MCP tools)
+
+All tool errors return structured JSON:
+\`\`\`json
+{ "error": { "code": "NOT_FOUND", "message": "Brand guideline not found" } }
+\`\`\`
+Codes: \`UNAUTHORIZED\`, \`NOT_FOUND\`, \`VALIDATION_ERROR\`, \`INSUFFICIENT_CREDITS\`, \`INTERNAL_ERROR\`
 
 ## REST API Endpoints
 

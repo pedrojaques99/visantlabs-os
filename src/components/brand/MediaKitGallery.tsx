@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { cn } from '@/lib/utils';
@@ -35,6 +35,13 @@ interface MediaKitGalleryProps {
     onAssetDragStart?: (e: React.DragEvent, url: string, type: 'logo' | 'image') => void;
 }
 
+const classifyFile = (file: File): 'logo' | 'media' => {
+    if (file.type === 'image/svg+xml') return 'logo';
+    const name = file.name.toLowerCase();
+    if (/logo|mark|icon|symbol|brand/.test(name)) return 'logo';
+    return 'media';
+};
+
 const ACCEPTED_IMAGE_TYPES = 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml';
 const ACCEPTED_ALL_TYPES = `${ACCEPTED_IMAGE_TYPES},application/pdf`;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -53,6 +60,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
     const { t } = useTranslation();
     const [isUploading, setIsUploading] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [isPanelHovered, setIsPanelHovered] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [uploadingFiles, setUploadingFiles] = useState<{ name: string; type: 'media' | 'logo' }[]>([]);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -193,18 +202,48 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
         if (readOnly) return;
 
         const files = Array.from(e.dataTransfer.files);
-        if (files.length > 0) handleUpload(files, 'media');
+        if (files.length === 0) return;
+        const logoFiles = files.filter(f => classifyFile(f) === 'logo');
+        const mediaFiles = files.filter(f => classifyFile(f) === 'media');
+        if (logoFiles.length) handleUpload(logoFiles, 'logo');
+        if (mediaFiles.length) handleUpload(mediaFiles, 'media');
     }, [readOnly, handleUpload]);
 
     const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
     const handleDragEnter = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
     const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); };
 
+    // Capture paste when panel is hovered — intercepts before chat handler
+    useEffect(() => {
+        if (readOnly || !isPanelHovered) return;
+        const handlePaste = (e: ClipboardEvent) => {
+            const files = Array.from(e.clipboardData?.items || [])
+                .filter(i => i.kind === 'file')
+                .map(i => i.getAsFile())
+                .filter(Boolean) as File[];
+            if (files.length === 0) return;
+            e.stopPropagation();
+            e.preventDefault();
+            const logoFiles = files.filter(f => classifyFile(f) === 'logo');
+            const mediaFiles = files.filter(f => classifyFile(f) === 'media');
+            if (logoFiles.length) handleUpload(logoFiles, 'logo');
+            if (mediaFiles.length) handleUpload(mediaFiles, 'media');
+        };
+        // capture phase: runs before window listeners (chat paste handler)
+        document.addEventListener('paste', handlePaste, { capture: true });
+        return () => document.removeEventListener('paste', handlePaste, { capture: true });
+    }, [readOnly, isPanelHovered, handleUpload]);
+
     const displayedMedia = compact ? media.slice(0, 12) : media;
     const displayedLogos = compact ? logos.slice(0, 12) : logos;
 
     return (
-        <div className="flex flex-col gap-4 relative">
+        <div
+            ref={containerRef}
+            className="flex flex-col gap-4 relative"
+            onMouseEnter={() => setIsPanelHovered(true)}
+            onMouseLeave={() => setIsPanelHovered(false)}
+        >
             {/* Bulk Actions Bar */}
             {selectedIds.size > 0 && !readOnly && (
                 <div className="sticky top-0 z-20 flex items-center justify-between p-2 mb-2 bg-brand-cyan/10 border border-brand-cyan/20 rounded-lg backdrop-blur-md animate-in fade-in slide-in-from-top-2">

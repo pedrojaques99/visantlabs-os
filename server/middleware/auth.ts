@@ -18,10 +18,21 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
-    // Internal MCP calls: trust x-mcp-user-id header from localhost only
+    // Internal MCP calls: trust x-mcp-user-id header from localhost or internal network
     const mcpUserId = req.headers['x-mcp-user-id'] as string | undefined;
     if (mcpUserId) {
-      const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1' || req.ip === '127.0.0.1' || req.ip === '::1';
+      const ip = req.ip || '';
+      const host = req.hostname || '';
+      const isLocal =
+        host === 'localhost' ||
+        host === '127.0.0.1' ||
+        ip === '127.0.0.1' ||
+        ip === '::1' ||
+        ip === '::ffff:127.0.0.1' ||
+        ip.startsWith('10.') ||
+        ip.startsWith('172.') ||
+        ip.startsWith('192.168.') ||
+        process.env.TRUST_INTERNAL_CALLS === 'true';
       if (isLocal) {
         req.userId = mcpUserId;
         return next();

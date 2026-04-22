@@ -7,13 +7,25 @@ import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Loader2, FileText, X, ShieldCheck, Image as ImageIcon, Upload, Plus } from 'lucide-react';
+import { Loader2, FileText, X, ShieldCheck, Image as ImageIcon, Upload, Plus, Figma } from 'lucide-react';
 import { MicroTitle } from '../ui/MicroTitle';
 import { validatePdfFile } from '@/utils/pdfUtils';
 import { buildBrandIngestPayload } from '@/hooks/queries/useBrandImport';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { validateFile } from '@/utils/fileUtils';
+
+const isFigmaUrl = (text: string): boolean => {
+    try {
+        const u = new URL(text);
+        const host = u.hostname;
+        const path = u.pathname;
+        return (host === 'figma.com' || host === 'www.figma.com') &&
+            (path.startsWith('/file/') || path.startsWith('/design/'));
+    } catch {
+        return false;
+    }
+};
 
 interface BrandGuidelineWizardModalProps {
     isOpen: boolean;
@@ -33,6 +45,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
 
     const [name, setName] = useState('');
     const [url, setUrl] = useState('');
+    const [figmaUrl, setFigmaUrl] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isIngesting, setIsIngesting] = useState(false);
 
@@ -49,6 +62,15 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     const [media, setMedia] = useState<BrandGuideline['media']>([]);
     const [logos, setLogos] = useState<BrandGuideline['logos']>([]);
 
+    const DRAFT_KEY = 'visant_brand_wizard_draft';
+
+    // Persist text inputs as draft (new mode only)
+    useEffect(() => {
+        if (!isOpen || isEditMode) return;
+        const draft = { name, url, figmaUrl };
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    }, [name, url, figmaUrl, isOpen, isEditMode]);
+
     useEffect(() => {
         if (isOpen && editGuideline) {
             setName(editGuideline.identity?.name || '');
@@ -56,8 +78,27 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             setMedia(editGuideline.media || []);
             setLogos(editGuideline.logos || []);
         } else if (isOpen) {
+            // Restore draft if available
+            try {
+                const saved = localStorage.getItem(DRAFT_KEY);
+                if (saved) {
+                    const draft = JSON.parse(saved);
+                    setName(draft.name || '');
+                    setUrl(draft.url || '');
+                    setFigmaUrl(draft.figmaUrl || '');
+                    setPdfFile(null);
+                    setImageFiles([]);
+                    setImagePreviews([]);
+                    setMedia([]);
+                    setLogos([]);
+                    if (pdfInputRef.current) pdfInputRef.current.value = '';
+                    if (imageInputRef.current) imageInputRef.current.value = '';
+                    return;
+                }
+            } catch {}
             setName('');
             setUrl('');
+            setFigmaUrl('');
             setMedia([]);
             setLogos([]);
             setPdfFile(null);
@@ -74,8 +115,23 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
 
         const handlePaste = (e: ClipboardEvent) => {
             const target = e.target as HTMLElement;
-            // Don't intercept if user is typing in a text input and it's a text paste
-            if ((target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') && e.clipboardData?.types.includes('text/plain')) {
+            const isTypingInInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+
+            // Detect Figma URL paste anywhere (even in inputs, intercept only if it's a Figma URL)
+            if (e.clipboardData?.types.includes('text/plain')) {
+                const text = e.clipboardData.getData('text/plain').trim();
+                if (isFigmaUrl(text)) {
+                    if (!isTypingInInput || (target as HTMLInputElement).id !== 'brand-wizard-figma') {
+                        e.preventDefault();
+                        setFigmaUrl(text);
+                        toast.success('URL do Figma detectada');
+                        return;
+                    }
+                }
+            }
+
+            // Don't intercept other text pastes in inputs
+            if (isTypingInInput && e.clipboardData?.types.includes('text/plain')) {
                 return;
             }
 
@@ -93,6 +149,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
 
             if (files.length === 0) return;
 
+            e.preventDefault();
             const imageFilesFromPaste = files.filter(f => f.type.startsWith('image/'));
             const pdfFilesFromPaste = files.filter(f => f.type === 'application/pdf');
 
@@ -197,7 +254,17 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     const trimmedName = name.trim();
     const trimmedUrl = url.trim();
     const hasUrl = trimmedUrl.length > 0;
+    const hasFigma = isFigmaUrl(figmaUrl.trim());
     const canSubmit = trimmedName.length > 0 && !isSubmitting && !isIngesting;
+
+    const handleFormDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        const text = e.dataTransfer.getData('text/plain').trim();
+        if (isFigmaUrl(text)) {
+            setFigmaUrl(text);
+            toast.success('URL do Figma detectada');
+        }
+    };
 
     const handleClose = useCallback(() => {
         if (isSubmitting || isIngesting) return;
@@ -272,11 +339,35 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 setIsIngesting(false);
             }
 
+            // Handle Figma URL: link + auto-import all tokens
+            const trimmedFigma = figmaUrl.trim();
+            if (trimmedFigma && isFigmaUrl(trimmedFigma)) {
+                setIsIngesting(true);
+                try {
+                    await brandGuidelineApi.linkFigmaFile(workingId, trimmedFigma);
+                    await brandGuidelineApi.importFromFigma(workingId, {
+                        importColors: true,
+                        importTypography: true,
+                    });
+                    toast.success('Tokens Figma importados — cores e tipografia extraídas');
+                } catch (err: any) {
+                    if (err?.needsToken) {
+                        toast.warning('Token Figma não configurado — vá em Perfil > Configuração');
+                    } else {
+                        toast.warning('Figma linkado, mas extração de tokens falhou');
+                    }
+                } finally {
+                    setIsIngesting(false);
+                }
+            }
+
             setName('');
             setUrl('');
+            setFigmaUrl('');
             setPdfFile(null);
             setImageFiles([]);
             setImagePreviews([]);
+            localStorage.removeItem(DRAFT_KEY);
             onSuccess(workingId);
 
         } catch {
@@ -334,7 +425,13 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 </div>
             }
         >
-            <form id="brand-wizard-form" onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <form
+                id="brand-wizard-form"
+                onSubmit={handleSubmit}
+                onDrop={handleFormDrop}
+                onDragOver={(e) => e.preventDefault()}
+                className="flex flex-col gap-5"
+            >
                 <div className="flex flex-col gap-1.5">
                     <MicroTitle as="label" htmlFor="brand-wizard-name">
                         {t('mockup.brandWizardNameLabel')}
@@ -468,6 +565,34 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                         ))}
                     </div>
                 )}
+
+                {/* Figma URL */}
+                <div className="flex flex-col gap-1.5">
+                    <MicroTitle as="label" htmlFor="brand-wizard-figma" className="flex items-center gap-1.5">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                            <path d="M8 24C10.208 24 12 22.208 12 20V16H8C5.792 16 4 17.792 4 20C4 22.208 5.792 24 8 24Z" fill="#0ACF83"/>
+                            <path d="M4 12C4 9.792 5.792 8 8 8H12V16H8C5.792 16 4 14.208 4 12Z" fill="#A259FF"/>
+                            <path d="M4 4C4 1.792 5.792 0 8 0H12V8H8C5.792 8 4 6.208 4 4Z" fill="#F24E1E"/>
+                            <path d="M12 0H16C18.208 0 20 1.792 20 4C20 6.208 18.208 8 16 8H12V0Z" fill="#FF7262"/>
+                            <path d="M20 12C20 14.208 18.208 16 16 16C13.792 16 12 14.208 12 12C12 9.792 13.792 8 16 8C18.208 8 20 9.792 20 12Z" fill="#1ABCFE"/>
+                        </svg>
+                        Figma
+                    </MicroTitle>
+                    <Input
+                        id="brand-wizard-figma"
+                        type="url"
+                        value={figmaUrl}
+                        onChange={(e) => setFigmaUrl(e.target.value)}
+                        placeholder="figma.com/file/... ou figma.com/design/..."
+                        disabled={isSubmitting || isIngesting}
+                        className="w-full bg-neutral-900/60 border border-white/10 rounded-md px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral-700 focus:outline-none focus:border-brand-cyan/50 transition-colors disabled:opacity-50"
+                    />
+                    {hasFigma && (
+                        <MicroTitle as="p" className="text-neutral-600 mt-0.5 lowercase">
+                            cores e tipografia serão extraídas automaticamente via API Figma.
+                        </MicroTitle>
+                    )}
+                </div>
 
                 <MicroTitle as="p" className="text-neutral-700 mt-1 lowercase">
                     {t('mockup.brandWizardExtractionHint') || 'extração essencialista de estratégia, arquétipos e tokens.'}

@@ -47,19 +47,27 @@ export interface ApiEndpoint {
 export function useDocsData() {
   const [openApiSpec, setOpenApiSpec] = useState<OpenAPISpec | null>(null);
   const [mcpSpec, setMcpSpec] = useState<MCPSpec | null>(null);
+  const [platformToolCount, setPlatformToolCount] = useState<number>(0);
+  const [platformToolNames, setPlatformToolNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetchDocs = async () => {
       try {
-        const [apiRes, mcpRes] = await Promise.all([
+        const [apiRes, mcpRes, metaRes] = await Promise.all([
           fetch('/api/docs/api/spec'),
           fetch('/api/docs/plugin/mcp.json'),
+          fetch('/api/mcp/meta'),
         ]);
 
         if (apiRes.ok) setOpenApiSpec(await apiRes.json());
         if (mcpRes.ok) setMcpSpec(await mcpRes.json());
+        if (metaRes.ok) {
+          const meta = await metaRes.json();
+          setPlatformToolCount(meta.toolCount ?? 0);
+          setPlatformToolNames(meta.tools ?? []);
+        }
       } catch (err) {
         console.error('Failed to fetch documentation specs:', err);
         setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -125,5 +133,9 @@ export function useDocsData() {
     mockupEndpoints,
     pluginEndpoints,
     mcpToolNames,
+    /** Live count of platform MCP tools from /api/mcp/meta */
+    platformToolCount,
+    /** Live names of platform MCP tools from /api/mcp/meta */
+    platformToolNames,
   };
 }

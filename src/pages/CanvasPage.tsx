@@ -32,6 +32,9 @@ import { ChatNode } from '../components/reactflow/ChatNode';
 import { DirectorNode } from '../components/reactflow/DirectorNode';
 import { NodeBuilderNode } from '../components/reactflow/NodeBuilderNode';
 import { CustomNode } from '../components/reactflow/CustomNode';
+import { VariablesNode } from '../components/reactflow/VariablesNode';
+import { DataNode } from '../components/reactflow/DataNode';
+import { BatchRunnerNode } from '../components/reactflow/BatchRunnerNode';
 import { BrandingProjectSelectModal } from '../components/reactflow/BrandingProjectSelectModal';
 import { CanvasBottomToolbar, type CanvasTool } from '../components/canvas/CanvasBottomToolbar';
 import { ContextMenu } from '../components/reactflow/contextmenu/ContextMenu';
@@ -39,7 +42,7 @@ import { EdgeContextMenu } from '../components/reactflow/contextmenu/EdgeContext
 import { ImageContextMenu } from '../components/reactflow/contextmenu/ImageContextMenu';
 import { NodeContextMenu } from '../components/reactflow/contextmenu/NodeContextMenu';
 import { usePasteImage } from '@/hooks/usePasteImage';
-import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, PromptNodeData, OutputNodeData, BrandNodeData, MockupNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, AngleNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, DirectorNodeData, NodeBuilderData, CustomNodeData } from '../types/reactFlow';
+import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, PromptNodeData, OutputNodeData, BrandNodeData, MockupNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, AngleNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, DirectorNodeData, NodeBuilderData, CustomNodeData, VariablesNodeData, DataNodeData, BatchRunnerNodeData } from '../types/reactFlow';
 import type { CustomNodeDefinition, MultiOutputConfig } from '../types/customNode';
 import type { Mockup } from '../services/mockupApi';
 import { mockupApi } from '../services/mockupApi';
@@ -56,6 +59,8 @@ import { useCanvasEvents } from '@/hooks/canvas/useCanvasEvents';
 import { useCanvasContextMenu } from '@/hooks/canvas/useCanvasContextMenu';
 import { useCanvasKeyboard } from '@/hooks/canvas/useCanvasKeyboard';
 import { CanvasToolbar } from '../components/canvas/CanvasNodeToolbar';
+import { PipelineInbox } from '../components/canvas/PipelineInbox';
+import type { PipelineAsset } from '@/services/pipelineApi';
 import { useCanvasHeader } from '../components/canvas/CanvasHeaderContext';
 import { CanvasFlow } from '../components/canvas/CanvasFlow';
 import { CollaborativeCanvas } from '../components/canvas/CollaborativeCanvas';
@@ -126,6 +131,9 @@ const nodeTypes = {
   director: DirectorNode,
   nodeBuilder: NodeBuilderNode,
   custom: CustomNode,
+  variables: VariablesNode,
+  data: DataNode,
+  batchRunner: BatchRunnerNode,
 } as const;
 
 export const CanvasPage: React.FC = () => {
@@ -992,6 +1000,11 @@ export const CanvasPage: React.FC = () => {
     handleUpscaleNodeDataUpdate,
     handlePromptNodeDataUpdate,
     handleTextNodeDataUpdate,
+    handleVariablesNodeDataUpdate,
+    handleDataNodeDataUpdate,
+    handleBatchRun,
+    handleBatchCancel,
+    handleBatchNodeDataUpdate,
     handleNodeBuilderSendMessage,
     handleNodeBuilderSpawn,
     handleNodeBuilderUpdateData,
@@ -1217,6 +1230,9 @@ export const CanvasPage: React.FC = () => {
     addStrategyNode,
     addBrandCoreNode,
     addTextNode,
+    addVariablesNode,
+    addDataNode,
+    addBatchRunnerNode,
     addChatNode,
     addDirectorNode,
     addNodeBuilderNode,
@@ -1334,6 +1350,26 @@ export const CanvasPage: React.FC = () => {
       addImageNode,
     }
   );
+
+  const handlePipelineAsset = useCallback((asset: PipelineAsset) => {
+    const nodeId = addImageNode();
+    if (!nodeId) return;
+    // Update the freshly created node with the pipeline asset's image
+    setNodes((nds) => nds.map((n) => {
+      if (n.id !== nodeId) return n;
+      return {
+        ...n,
+        data: {
+          ...n.data,
+          mockup: {
+            ...(n.data as any).mockup,
+            imageUrl: asset.imageUrl,
+            imageBase64: asset.imageBase64,
+          },
+        },
+      };
+    }));
+  }, [addImageNode, setNodes]);
 
   const toolbarActions = useCanvasToolbarActions({
     nodes,
@@ -2860,6 +2896,53 @@ export const CanvasPage: React.FC = () => {
             } as Node<FlowNodeData>;
           }
         }
+        if (n.type === 'batchRunner') {
+          const bData = n.data as BatchRunnerNodeData;
+          const needsUpdate = !bData.onRun || !handlersRef.current?.handleBatchRun;
+          if (needsUpdate) {
+            hasChanges = true;
+            return {
+              ...n,
+              data: {
+                ...bData,
+                onRun: handleBatchRun,
+                onCancel: handleBatchCancel,
+                onUpdateData: handleBatchNodeDataUpdate,
+                onDeleteNode: handleDeleteNodeById,
+              } as BatchRunnerNodeData,
+            } as Node<FlowNodeData>;
+          }
+        }
+        if (n.type === 'data') {
+          const dData = n.data as DataNodeData;
+          const needsUpdate = !dData.onUpdateData || !handlersRef.current?.handleDataNodeDataUpdate;
+          if (needsUpdate) {
+            hasChanges = true;
+            return {
+              ...n,
+              data: {
+                ...dData,
+                onUpdateData: handleDataNodeDataUpdate,
+                onDeleteNode: handleDeleteNodeById,
+              } as DataNodeData,
+            } as Node<FlowNodeData>;
+          }
+        }
+        if (n.type === 'variables') {
+          const varData = n.data as VariablesNodeData;
+          const needsUpdate = !varData.onUpdateData || !handlersRef.current?.handleVariablesNodeDataUpdate;
+          if (needsUpdate) {
+            hasChanges = true;
+            return {
+              ...n,
+              data: {
+                ...varData,
+                onUpdateData: handleVariablesNodeDataUpdate,
+                onDeleteNode: handleDeleteNodeById,
+              } as VariablesNodeData,
+            } as Node<FlowNodeData>;
+          }
+        }
         if (n.type === 'chat') {
           const chatData = n.data as ChatNodeData;
           const needsUpdate = !chatData.onSendMessage ||
@@ -4374,8 +4457,13 @@ export const CanvasPage: React.FC = () => {
         initialData={savePromptModalState.initialData}
       />
 
+      {/* Pipeline Inbox — floating, top-right of toolbar */}
+      <div className="fixed left-4 top-[65px] z-40 mb-2">
+        <PipelineInbox onUseAsset={handlePipelineAsset} />
+      </div>
+
       {/* Canvas Toolbar - Always visible, independent from ShaderControlsSidebar */}
-      <div className="fixed left-4 top-[65px] z-40">
+      <div className="fixed left-4 top-[105px] z-40">
         <CanvasToolbar
           variant="stacked"
           position="left"

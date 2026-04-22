@@ -61,9 +61,9 @@ describe('MCP Generator', () => {
       for (const tool of spec.tools) {
         expect(tool.examples).toBeDefined();
         expect(Array.isArray(tool.examples)).toBe(true);
-        expect(tool.examples.length).toBeGreaterThan(0);
+        expect(tool.examples!.length).toBeGreaterThan(0);
 
-        for (const example of tool.examples) {
+        for (const example of tool.examples!) {
           expect(example.name).toBeDefined();
           expect(example.input).toBeDefined();
         }

@@ -24,6 +24,7 @@ import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { useMediaSource } from '@/hooks/canvas/useMediaSource';
 import { NODE_LAYOUT } from '@/constants/nodeLayout';
 import { useBaseNode } from '@/hooks/canvas/useBaseNode';
+import { SendToButton } from '@/components/shared/SendToButton';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -431,6 +432,14 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             showDescribe={true}
             translationKeyPrefix="canvasNodes.outputNode"
             t={t}
+          />
+          <SendToButton
+            source="canvas"
+            imageUrl={typeof mediaUrl === 'string' && !mediaUrl.startsWith('data:') ? mediaUrl : undefined}
+            imageBase64={typeof mediaUrl === 'string' && mediaUrl.startsWith('data:') ? mediaUrl : nodeData.resultImageBase64}
+            mimeType="image/png"
+            label={nodeData.label || 'Canvas output'}
+            variant="node"
           />
           <NodeFeedbackButtons
             generationId={nodeData.generationId ?? null}

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { prisma } from '../db/prisma.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
@@ -78,7 +78,7 @@ function isHighResolution(resolution: string | undefined | null): boolean {
 }
 
 // Admin status endpoint - checks auth and database connection
-router.get('/status', validateAdmin, async (req: AuthRequest, res) => {
+router.get('/status', validateAdmin, async (req: AuthRequest, res: Response) => {
   try {
     // Auth status is already verified by validateAdmin middleware
     const authStatus = {
@@ -127,7 +127,7 @@ router.get('/status', validateAdmin, async (req: AuthRequest, res) => {
   }
 });
 
-router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
+router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res: Response) => {
   try {
     // Connect to MongoDB for direct collection queries
     await connectToMongoDB();
@@ -679,7 +679,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
 });
 
 // Public endpoint to get presets (for frontend services)
-router.get('/presets/public', async (_req, res) => {
+router.get('/presets/public', async (_req: Request, res: Response) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -718,7 +718,7 @@ router.get('/presets/public', async (_req, res) => {
 });
 
 // Presets CRUD endpoints (admin only)
-router.get('/presets', validateAdmin, async (_req, res) => {
+router.get('/presets', validateAdmin, async (_req: Request, res: Response) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -757,7 +757,7 @@ router.get('/presets', validateAdmin, async (_req, res) => {
 });
 
 // Mockup Presets
-router.get('/presets/mockup/:id', validateAdmin, async (req, res) => {
+router.get('/presets/mockup/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -777,7 +777,7 @@ router.get('/presets/mockup/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.post('/presets/mockup', validateAdmin, async (req, res) => {
+router.post('/presets/mockup', validateAdmin, async (req: Request, res: Response) => {
   try {
     const { id, name, description, prompt, referenceImageUrl, aspectRatio, model, tags, mockupCategoryId } = req.body;
 
@@ -839,7 +839,7 @@ router.post('/presets/mockup', validateAdmin, async (req, res) => {
   }
 });
 
-router.post('/presets/mockup/batch', validateAdmin, async (req, res) => {
+router.post('/presets/mockup/batch', validateAdmin, async (req: Request, res: Response) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -1003,7 +1003,7 @@ router.post('/presets/mockup/batch', validateAdmin, async (req, res) => {
   }
 });
 
-router.put('/presets/mockup/:id', validateAdmin, async (req, res) => {
+router.put('/presets/mockup/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     // Validate preset ID to prevent injection
     if (!isSafeId(req.params.id)) {
@@ -1061,7 +1061,7 @@ router.put('/presets/mockup/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.delete('/presets/mockup/:id', validateAdmin, async (req, res) => {
+router.delete('/presets/mockup/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     // Validate preset ID to prevent injection
     if (!isSafeId(req.params.id)) {
@@ -1085,7 +1085,7 @@ router.delete('/presets/mockup/:id', validateAdmin, async (req, res) => {
 });
 
 // Upload preset reference image to R2
-router.post('/presets/mockup/:id/upload-image', validateAdmin, async (req, res) => {
+router.post('/presets/mockup/:id/upload-image', validateAdmin, async (req: Request, res: Response) => {
   try {
     const presetId = req.params.id;
     if (!isSafeId(presetId)) {
@@ -1119,7 +1119,7 @@ router.post('/presets/mockup/:id/upload-image', validateAdmin, async (req, res) 
 });
 
 // Angle Presets
-router.get('/presets/angle/:id', validateAdmin, async (req, res) => {
+router.get('/presets/angle/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -1139,7 +1139,7 @@ router.get('/presets/angle/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.post('/presets/angle', validateAdmin, async (req, res) => {
+router.post('/presets/angle', validateAdmin, async (req: Request, res: Response) => {
   try {
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
@@ -1190,7 +1190,7 @@ router.post('/presets/angle', validateAdmin, async (req, res) => {
   }
 });
 
-router.put('/presets/angle/:id', validateAdmin, async (req, res) => {
+router.put('/presets/angle/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     // Validate preset ID to prevent injection
     if (!isSafeId(req.params.id)) {
@@ -1237,7 +1237,7 @@ router.put('/presets/angle/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.delete('/presets/angle/:id', validateAdmin, async (req, res) => {
+router.delete('/presets/angle/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     // Validate preset ID to prevent injection
     if (!isSafeId(req.params.id)) {
@@ -1261,7 +1261,7 @@ router.delete('/presets/angle/:id', validateAdmin, async (req, res) => {
 });
 
 // Texture Presets
-router.get('/presets/texture/:id', validateAdmin, async (req, res) => {
+router.get('/presets/texture/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -1281,7 +1281,7 @@ router.get('/presets/texture/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.post('/presets/texture', validateAdmin, async (req, res) => {
+router.post('/presets/texture', validateAdmin, async (req: Request, res: Response) => {
   try {
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
@@ -1331,7 +1331,7 @@ router.post('/presets/texture', validateAdmin, async (req, res) => {
   }
 });
 
-router.put('/presets/texture/:id', validateAdmin, async (req, res) => {
+router.put('/presets/texture/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     // Validate preset ID to prevent injection
     if (!isSafeId(req.params.id)) {
@@ -1378,7 +1378,7 @@ router.put('/presets/texture/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.delete('/presets/texture/:id', validateAdmin, async (req, res) => {
+router.delete('/presets/texture/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     // Validate preset ID to prevent injection
     if (!isSafeId(req.params.id)) {
@@ -1402,7 +1402,7 @@ router.delete('/presets/texture/:id', validateAdmin, async (req, res) => {
 });
 
 // Ambience Presets
-router.get('/presets/ambience/:id', validateAdmin, async (req, res) => {
+router.get('/presets/ambience/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -1422,7 +1422,7 @@ router.get('/presets/ambience/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.post('/presets/ambience', validateAdmin, async (req, res) => {
+router.post('/presets/ambience', validateAdmin, async (req: Request, res: Response) => {
   try {
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
@@ -1472,7 +1472,7 @@ router.post('/presets/ambience', validateAdmin, async (req, res) => {
   }
 });
 
-router.put('/presets/ambience/:id', validateAdmin, async (req, res) => {
+router.put('/presets/ambience/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     // Validate preset ID to prevent injection
     if (!isSafeId(req.params.id)) {
@@ -1519,7 +1519,7 @@ router.put('/presets/ambience/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.delete('/presets/ambience/:id', validateAdmin, async (req, res) => {
+router.delete('/presets/ambience/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     // Validate preset ID to prevent injection
     if (!isSafeId(req.params.id)) {
@@ -1543,7 +1543,7 @@ router.delete('/presets/ambience/:id', validateAdmin, async (req, res) => {
 });
 
 // Luminance Presets
-router.get('/presets/luminance/:id', validateAdmin, async (req, res) => {
+router.get('/presets/luminance/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -1563,7 +1563,7 @@ router.get('/presets/luminance/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.post('/presets/luminance', validateAdmin, async (req, res) => {
+router.post('/presets/luminance', validateAdmin, async (req: Request, res: Response) => {
   try {
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
@@ -1613,7 +1613,7 @@ router.post('/presets/luminance', validateAdmin, async (req, res) => {
   }
 });
 
-router.put('/presets/luminance/:id', validateAdmin, async (req, res) => {
+router.put('/presets/luminance/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -1658,7 +1658,7 @@ router.put('/presets/luminance/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.delete('/presets/luminance/:id', validateAdmin, async (req, res) => {
+router.delete('/presets/luminance/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -1680,7 +1680,7 @@ router.delete('/presets/luminance/:id', validateAdmin, async (req, res) => {
 });
 
 // Community Presets Moderation
-router.delete('/community-presets/:id', validateAdmin, async (req, res) => {
+router.delete('/community-presets/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -1701,7 +1701,7 @@ router.delete('/community-presets/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.put('/community-presets/:id/approve', validateAdmin, async (req, res) => {
+router.put('/community-presets/:id/approve', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -1731,7 +1731,7 @@ router.put('/community-presets/:id/approve', validateAdmin, async (req, res) => 
 });
 
 // Products Management (Credit Packages and Subscription Plans)
-router.get('/products', validateAdmin, async (_req, res) => {
+router.get('/products', validateAdmin, async (_req: Request, res: Response) => {
   try {
     const products = await prisma.product.findMany({
       orderBy: { displayOrder: 'asc' },
@@ -1743,7 +1743,7 @@ router.get('/products', validateAdmin, async (_req, res) => {
   }
 });
 
-router.post('/products', validateAdmin, async (req, res) => {
+router.post('/products', validateAdmin, async (req: Request, res: Response) => {
   try {
     const {
       productId,
@@ -1797,7 +1797,7 @@ router.post('/products', validateAdmin, async (req, res) => {
   }
 });
 
-router.put('/products/:id', validateAdmin, async (req, res) => {
+router.put('/products/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isValidObjectId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid product ID format' });
@@ -1849,7 +1849,7 @@ router.put('/products/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.delete('/products/:id', validateAdmin, async (req, res) => {
+router.delete('/products/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isValidObjectId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid product ID format' });
@@ -1865,7 +1865,7 @@ router.delete('/products/:id', validateAdmin, async (req, res) => {
 });
 
 // Branding Presets
-router.post('/presets/branding', validateAdmin, async (req, res) => {
+router.post('/presets/branding', validateAdmin, async (req: Request, res: Response) => {
   try {
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
@@ -1913,7 +1913,7 @@ router.post('/presets/branding', validateAdmin, async (req, res) => {
   }
 });
 
-router.put('/presets/branding/:id', validateAdmin, async (req, res) => {
+router.put('/presets/branding/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -1952,7 +1952,7 @@ router.put('/presets/branding/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.delete('/presets/branding/:id', validateAdmin, async (req, res) => {
+router.delete('/presets/branding/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -1972,7 +1972,7 @@ router.delete('/presets/branding/:id', validateAdmin, async (req, res) => {
 });
 
 // Effect Presets
-router.post('/presets/effect', validateAdmin, async (req, res) => {
+router.post('/presets/effect', validateAdmin, async (req: Request, res: Response) => {
   try {
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
@@ -2020,7 +2020,7 @@ router.post('/presets/effect', validateAdmin, async (req, res) => {
   }
 });
 
-router.put('/presets/effect/:id', validateAdmin, async (req, res) => {
+router.put('/presets/effect/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -2059,7 +2059,7 @@ router.put('/presets/effect/:id', validateAdmin, async (req, res) => {
   }
 });
 
-router.delete('/presets/effect/:id', validateAdmin, async (req, res) => {
+router.delete('/presets/effect/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -2082,7 +2082,7 @@ router.delete('/presets/effect/:id', validateAdmin, async (req, res) => {
  * GET /api/admin/users/:id/history
  * Get detailed usage history for a specific user
  */
-router.get('/users/:id/history', adminUsersLimiter, validateAdmin, async (req: AuthRequest, res) => {
+router.get('/users/:id/history', adminUsersLimiter, validateAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     if (!isValidObjectId(id)) {
@@ -2144,7 +2144,7 @@ router.get('/users/:id/history', adminUsersLimiter, validateAdmin, async (req: A
  * Note: `vectorizedCount` is a proxy (count of rating==='up' docs); actual Pinecone
  * upsert is fire-and-forget and not tracked per-document in Mongo.
  */
-router.get('/feedback/stats', validateAdmin, async (req: AuthRequest, res) => {
+router.get('/feedback/stats', validateAdmin, async (req: AuthRequest, res: Response) => {
   try {
     await connectToMongoDB();
     const db = getDb();

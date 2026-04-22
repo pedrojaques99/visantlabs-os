@@ -81,7 +81,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           placeholder={placeholder}
           disabled={disabled || isLoading || isIngesting}
           className={cn(
-            "flex-1 min-h-[44px] resize-none bg-transparent border-none focus:ring-0 px-4 pt-3 pb-1 text-sm",
+            "flex-1 min-h-[44px] resize-none bg-transparent border-none outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-4 py-3 text-sm",
             "placeholder:text-white/20 text-white/90 scrollbar-none"
           )}
           style={{ height: `${minHeight}px` }}

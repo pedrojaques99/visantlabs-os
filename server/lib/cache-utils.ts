@@ -19,6 +19,8 @@ export const CACHE_TTL = {
   IMAGE_SEARCH: 7 * 24 * 60 * 60,    // 7d — image search results
   INSTAGRAM: 24 * 60 * 60,           // 24h — instagram extractions
   ADMIN_CHAT_SESSION: 60 * 60,       // 1h — session hot cache (invalidated on save)
+  FIGMA_OP_QUEUE: 7 * 24 * 60 * 60, // 7d — pending ops survive server restarts
+  ASSET_PIPELINE: 24 * 60 * 60,     // 24h — cross-tool asset queue per user
 } as const;
 
 export function hashQuery(text: string, extra?: string): string {
@@ -84,6 +86,14 @@ export const CacheKey = {
   // Admin chat sessions
   adminChatSession: (sessionId: string) =>
     `admin-chat:session:${sessionId}`,
+
+  // Figma operation queue (pending ops when plugin is offline)
+  figmaOpQueue: (fileId: string) =>
+    `figma:queue:${fileId}`,
+
+  // Asset pipeline (cross-tool "Send to →" queue per user)
+  assetPipeline: (userId: string) =>
+    `pipeline:${userId}`,
 } as const;
 
 export const CacheInvalidation = {

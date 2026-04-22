@@ -239,7 +239,7 @@ router.post('/sessions/:id/message', authenticate, chatRateLimiter, async (req: 
         apiKey: userApiKey,
         model: GEMINI_MODELS.TEXT,
         systemInstruction,
-        tools: getChatTools(false),
+        tools: getChatTools(true),
         provider: env.DEFAULT_LLM_PROVIDER || 'gemini'
       }
     );

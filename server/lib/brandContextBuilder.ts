@@ -38,6 +38,7 @@ export interface BrandContextJSON {
     name: string;
     tagline?: string;
     website?: string;
+    description?: string;
   };
   colors: Array<{
     name: string;
@@ -57,11 +58,22 @@ export interface BrandContextJSON {
     dos?: string[];
     donts?: string[];
     imagery?: string;
+    accessibility?: string;
+    values?: Array<{ title: string; description: string; example: string }>;
+  };
+  strategy?: {
+    manifesto?: string;
+    positioning?: string[];
+    archetypes?: Array<{ name: string; role?: string; description: string; examples?: string[] }>;
+    personas?: Array<{ name: string; age?: number; occupation?: string; traits?: string[]; bio?: string; desires?: string[]; painPoints?: string[] }>;
   };
   tokens?: {
     spacing?: Record<string, number>;
     radius?: Record<string, number>;
+    shadows?: Record<string, any>;
+    components?: Record<string, any>;
   };
+  tags?: Record<string, string[]>;
 }
 
 /**
@@ -77,6 +89,7 @@ export function buildBrandContextJSON(bg: BrandGuideline): BrandContextJSON {
       name: bg.identity?.name || 'Brand',
       tagline: bg.identity?.tagline,
       website: bg.identity?.website,
+      description: bg.identity?.description,
     },
     colors: (bg.colors || []).map(c => ({
       name: c.name,
@@ -84,23 +97,47 @@ export function buildBrandContextJSON(bg: BrandGuideline): BrandContextJSON {
       rgb: hexToRgb(c.hex) || { r: 0, g: 0, b: 0 },
       role: c.role,
     })),
-    typography: (bg.typography || []).map(t => ({
-      role: t.role,
-      family: t.family,
-      style: t.style,
-      size: t.size,
+    typography: (bg.typography || []).map((t: any) => ({
+      role: t.role || t.name || 'body',
+      family: t.family || t.fontFamily || '',
+      style: t.style || t.fontStyle,
+      size: t.size || t.fontSize,
       lineHeight: t.lineHeight,
-    })),
-    voice: bg.guidelines ? {
-      tone: bg.guidelines.voice,
-      dos: bg.guidelines.dos,
-      donts: bg.guidelines.donts,
-      imagery: bg.guidelines.imagery,
+    })).filter((t: any) => t.family),
+    voice: (bg.guidelines || bg.strategy?.voiceValues) ? {
+      tone: bg.guidelines?.voice,
+      dos: bg.guidelines?.dos,
+      donts: bg.guidelines?.donts,
+      imagery: bg.guidelines?.imagery,
+      accessibility: bg.guidelines?.accessibility,
+      values: bg.strategy?.voiceValues,
+    } : undefined,
+    strategy: bg.strategy ? {
+      manifesto: bg.strategy.manifesto,
+      positioning: bg.strategy.positioning,
+      archetypes: bg.strategy.archetypes?.map(a => ({
+        name: a.name,
+        role: a.role,
+        description: a.description,
+        examples: a.examples,
+      })),
+      personas: bg.strategy.personas?.map(p => ({
+        name: p.name,
+        age: p.age,
+        occupation: p.occupation,
+        traits: p.traits,
+        bio: p.bio,
+        desires: p.desires,
+        painPoints: p.painPoints,
+      })),
     } : undefined,
     tokens: bg.tokens ? {
       spacing: bg.tokens.spacing as Record<string, number>,
       radius: bg.tokens.radius as Record<string, number>,
+      shadows: bg.tokens.shadows,
+      components: bg.tokens.components,
     } : undefined,
+    tags: bg.tags,
   };
 }
 
@@ -114,8 +151,13 @@ export function buildBrandContextJSONString(bg: BrandGuideline): string {
 ${JSON.stringify(json, null, 2)}
 </brand_context>
 
-INSTRUCTIONS: Use ONLY the colors and typography from brand_context.
-Primary color should be used for main actions, secondary for accents.`;
+INSTRUCTIONS:
+- Use ONLY the colors and typography from brand_context. Primary color for main actions, secondary for accents.
+- If strategy.archetypes exist, reflect the primary archetype's personality in layout and visual tone.
+- If strategy.personas exist, design for the primary persona's context and expectations.
+- If strategy.manifesto or strategy.positioning exist, let them guide the overall narrative.
+- If voice.values exist, apply them to any copy or text elements.
+- If tokens (spacing, radius) exist, use them for consistent layout rhythm.`;
 }
 
 /**
@@ -158,37 +200,69 @@ export function buildBrandContext(
   // Typography - important for text-based generations
   if (bg.typography?.length) {
     lines.push('FONTS:');
-    for (const t of bg.typography) {
-      const parts = [t.family, t.style].filter(Boolean).join(' ');
-      const size = t.size ? ` ${t.size}` : '';
-      const lh = t.lineHeight ? `/${t.lineHeight}` : '';
-      lines.push(`  ${t.role}: ${parts}${size}${lh}`);
+    for (const t of bg.typography as any[]) {
+      const role = t.role || t.name || 'body';
+      const family = t.family || t.fontFamily || '';
+      const style = t.style || t.fontStyle || '';
+      if (!family) continue;
+      const parts = [family, style].filter(Boolean).join(' ');
+      const size = t.size || t.fontSize;
+      lines.push(`  ${role}: ${parts}${size ? ` ${size}px` : ''}`);
     }
     lines.push('');
   }
 
-  // Guidelines - voice and dos/donts
+  // Guidelines - voice, dos/donts, imagery, accessibility
   if (bg.guidelines) {
     if (bg.guidelines.voice) lines.push(`TONE: ${bg.guidelines.voice}`);
     if (bg.guidelines.dos?.length) lines.push(`DO: ${bg.guidelines.dos.join(' | ')}`);
     if (bg.guidelines.donts?.length) lines.push(`AVOID: ${bg.guidelines.donts.join(' | ')}`);
     if (bg.guidelines.imagery) lines.push(`IMAGERY: ${bg.guidelines.imagery}`);
+    if (!compact && bg.guidelines.accessibility) lines.push(`ACCESSIBILITY: ${bg.guidelines.accessibility}`);
     lines.push('');
   }
 
-  // Strategy - archetypes and positioning (compact mode skips this)
+  // Strategy - archetypes, personas, positioning, manifesto, voice values (compact skips)
   if (!compact && bg.strategy) {
+    if (bg.strategy.manifesto) {
+      lines.push(`MANIFESTO: "${bg.strategy.manifesto}"`);
+    }
     if (bg.strategy.positioning?.length) {
       lines.push(`POSITIONING: ${bg.strategy.positioning.join(' | ')}`);
     }
     if (bg.strategy.archetypes?.length) {
-      const archs = bg.strategy.archetypes.map(a => `${a.name}${a.role === 'primary' ? '*' : ''}`).join(', ');
-      lines.push(`ARCHETYPES: ${archs}`);
+      lines.push('BRAND ARCHETYPES:');
+      for (const a of bg.strategy.archetypes) {
+        const tag = a.role === 'primary' ? ' [PRIMARY]' : '';
+        lines.push(`  ${a.name}${tag}: ${a.description}`);
+        if (a.examples?.length) lines.push(`    Examples: ${a.examples.join(', ')}`);
+      }
     }
     if (bg.strategy.voiceValues?.length) {
-      const voice = bg.strategy.voiceValues.map(v => v.title).join(', ');
-      lines.push(`VOICE VALUES: ${voice}`);
+      lines.push('VOICE & TONE VALUES:');
+      for (const v of bg.strategy.voiceValues) {
+        lines.push(`  ${v.title}: ${v.description}`);
+        if (v.example) lines.push(`    e.g. "${v.example}"`);
+      }
     }
+    if (bg.strategy.personas?.length) {
+      lines.push('TARGET PERSONAS:');
+      for (const p of bg.strategy.personas) {
+        const meta = [p.age ? `${p.age}y` : null, p.occupation].filter(Boolean).join(', ');
+        lines.push(`  ${p.name}${meta ? ` (${meta})` : ''}`);
+        if (p.bio) lines.push(`    Bio: ${p.bio}`);
+        if (p.traits?.length) lines.push(`    Traits: ${p.traits.join(', ')}`);
+        if (p.desires?.length) lines.push(`    Desires: ${p.desires.join(' | ')}`);
+        if (p.painPoints?.length) lines.push(`    Pain Points: ${p.painPoints.join(' | ')}`);
+      }
+    }
+    lines.push('');
+  }
+
+  // Tags — industry/keyword context
+  if (!compact && bg.tags && Object.keys(bg.tags).length > 0) {
+    const allTags = Object.values(bg.tags).flat().filter(Boolean);
+    if (allTags.length) lines.push(`TAGS: ${allTags.join(', ')}`);
     lines.push('');
   }
 
@@ -210,12 +284,22 @@ export function buildBrandContext(
     lines.push('');
   }
 
-  // Tokens - spacing and radius
+  // Design tokens
   if (bg.tokens?.spacing) {
     lines.push(`SPACING: ${Object.entries(bg.tokens.spacing).map(([k, v]) => `${k}=${v}`).join(' ')}`);
   }
   if (bg.tokens?.radius) {
     lines.push(`RADIUS: ${Object.entries(bg.tokens.radius).map(([k, v]) => `${k}=${v}`).join(' ')}`);
+  }
+  if (!compact && bg.tokens?.shadows) {
+    const shadowEntries = Object.entries(bg.tokens.shadows).map(([k, v]: [string, any]) =>
+      `${k}=(x:${v.x} y:${v.y} blur:${v.blur} color:${v.color} opacity:${v.opacity})`
+    );
+    if (shadowEntries.length) lines.push(`SHADOWS: ${shadowEntries.join(' | ')}`);
+  }
+  if (!compact && bg.tokens?.components) {
+    const compKeys = Object.keys(bg.tokens.components);
+    if (compKeys.length) lines.push(`COMPONENT TOKENS: ${compKeys.join(', ')}`);
   }
 
   return lines.join('\n');
@@ -345,12 +429,12 @@ export async function buildBrandContextCached(
   }
 ): Promise<string> {
   const format = JSON.stringify(options) || 'default';
-  const cacheKey = CacheKey.brandContext(bg.id, format);
+  const cacheKey = CacheKey.brandContext(bg.id!, format);
 
   try {
     const cached = await redisClient.get(cacheKey);
     if (cached) {
-      console.log(`[Cache] HIT context:${bg.id.slice(0, 8)}`);
+      console.log(`[Cache] HIT context:${bg.id!.slice(0, 8)}`);
       return cached;
     }
   } catch (err) {
@@ -365,7 +449,7 @@ export async function buildBrandContextCached(
       CACHE_TTL.BRAND_CTX,
       result
     );
-    console.log(`[Cache] SET context:${bg.id.slice(0, 8)} (24h)`);
+    console.log(`[Cache] SET context:${bg.id!.slice(0, 8)} (24h)`);
   } catch (err) {
     console.warn(`[Cache] Redis SET failed:`, (err as Error).message);
   }

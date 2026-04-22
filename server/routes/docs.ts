@@ -13,7 +13,7 @@ import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { generateOpenAPISpec, countEndpoints } from '../lib/openapi-gen.js';
-import { generateMCPSpec, countMCPTools } from '../lib/mcp-gen.js';
+import { generateMCPSpec, generatePlatformMCPSpec, countMCPTools } from '../lib/mcp-gen.js';
 import { docsCache } from '../lib/docs-cache.js';
 import {
   DocumentationError,
@@ -702,6 +702,71 @@ Guidelines:
   } catch (err) {
     handleDocsError(err, res);
   }
+});
+
+/**
+ * GET /docs/platform/mcp.json
+ * Platform MCP spec — 28 tools for Claude.ai Connectors
+ */
+router.get('/platform/mcp.json', (req: Request, res: Response) => {
+  try {
+    const mcpSpec = docsCache.getOrGenerate(
+      'platform-mcp-spec',
+      () => generatePlatformMCPSpec(),
+      5 * 60 * 1000
+    );
+
+    setDocsHeaders(res, 3600);
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('X-MCP-Version', '2025-03-26');
+    res.json(mcpSpec);
+  } catch (err) {
+    handleDocsError(err, res);
+  }
+});
+
+/**
+ * GET /docs/api/api-keys
+ * API Keys documentation
+ */
+router.get('/api/api-keys', (_req: Request, res: Response) => {
+  setDocsHeaders(res, 3600);
+  res.json({
+    title: 'API Keys',
+    description: 'Manage API keys for programmatic access and MCP integrations.',
+    endpoint: '/api/api-keys',
+    authentication: 'JWT required (user session)',
+    operations: [
+      {
+        method: 'POST',
+        path: '/api/api-keys/create',
+        description: 'Create a new API key. Raw key returned once — save it.',
+        body: {
+          name: 'string (required, max 100 chars)',
+          scopes: 'string[] (optional) — "read" | "write" | "generate"',
+          expiresAt: 'ISO date string (optional)',
+        },
+        response: { id: 'string', key: 'visant_sk_xxx (shown once)', keyPrefix: 'string', name: 'string', scopes: 'string[]', expiresAt: 'string|null' },
+      },
+      {
+        method: 'GET',
+        path: '/api/api-keys',
+        description: 'List all API keys for the authenticated user.',
+        response: { keys: [{ id: 'string', keyPrefix: 'string', name: 'string', scopes: 'string[]', lastUsed: 'string|null', createdAt: 'string', expiresAt: 'string|null', active: 'boolean' }] },
+      },
+      {
+        method: 'DELETE',
+        path: '/api/api-keys/:id',
+        description: 'Revoke an API key (soft delete).',
+        response: { message: 'API key revoked' },
+      },
+    ],
+    usage: {
+      header: 'Authorization: Bearer visant_sk_xxx',
+      mcp_endpoint: '/api/mcp',
+      note: 'API keys are used for MCP server access and programmatic REST API calls.',
+    },
+  });
 });
 
 /**
