@@ -68,8 +68,8 @@ export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }
       <Divider />
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
       <Btn icon={Upload} onClick={() => fileRef.current?.click()} title="Trocar fundo" />
-      {backgroundUrl && (
-        <Btn icon={Diamond} onClick={() => onEditAI?.()} title="Editar com IA" />
+      {backgroundUrl && onEditAI && (
+        <Btn icon={Diamond} onClick={onEditAI} title="Editar com IA" />
       )}
       <Divider />
       <Btn icon={X} onClick={() => setBackgroundSelected(false)} title="Fechar" />
@@ -203,12 +203,19 @@ export const CreativeToolbar: React.FC = () => {
                   style={{ backgroundColor: c.hex, width: 18, height: 18 }}
                 />
               ))}
-              <input
-                type="color"
-                value={textData.color}
-                onChange={(e) => updateText({ color: e.target.value })}
-                className="w-[110px] h-[110px] rounded cursor-pointer bg-transparent border border-white/20 p-0"
-              />
+              <div className="relative w-[18px] h-[18px]">
+                <div
+                  className="w-[18px] h-[18px] rounded-full border border-white/20 cursor-pointer hover:scale-110 transition-transform"
+                  style={{ backgroundColor: textData.color }}
+                  title="Cor personalizada"
+                />
+                <input
+                  type="color"
+                  value={textData.color}
+                  onChange={(e) => updateText({ color: e.target.value })}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+              </div>
             </div>
           )}
 

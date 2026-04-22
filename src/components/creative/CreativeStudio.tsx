@@ -175,16 +175,7 @@ export const CreativeStudio: React.FC = () => {
         <CreativeSetupSidebar />
       )}
 
-      <main
-        className="flex-1 flex flex-col overflow-hidden bg-neutral-950/50"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            const { setSelectedLayerIds, setBackgroundSelected } = useCreativeStore.getState();
-            setSelectedLayerIds([]);
-            setBackgroundSelected(false);
-          }
-        }}
-      >
+      <main className="flex-1 flex flex-col overflow-hidden bg-neutral-950/50">
         {/* ── Top header bar (breadcrumb left, actions right) ── */}
         <div className="flex items-center justify-between px-6 py-3 shrink-0 border-b border-white/[0.04] z-40">
           <BreadcrumbWithBack to="/create/projects">
@@ -202,14 +193,14 @@ export const CreativeStudio: React.FC = () => {
           {status === 'editing' && (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-px bg-neutral-900/60 border border-white/10 rounded-full p-1">
-                <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2">
-                  <Paintbrush size={12} className="text-brand-cyan" /> Variar Cores
+                <button disabled className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-600 flex items-center gap-2 cursor-not-allowed" title="Em breve">
+                  <Paintbrush size={12} className="text-neutral-700" /> Variar Cores
                 </button>
-                <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2">
-                  <ImageIcon size={12} className="text-emerald-400" /> Variar Imagens
+                <button disabled className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-600 flex items-center gap-2 cursor-not-allowed" title="Em breve">
+                  <ImageIcon size={12} className="text-neutral-700" /> Variar Imagens
                 </button>
-                <button className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2">
-                  <TypeIcon size={12} className="text-amber-400" /> Variar Copy
+                <button disabled className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-600 flex items-center gap-2 cursor-not-allowed" title="Em breve">
+                  <TypeIcon size={12} className="text-neutral-700" /> Variar Copy
                 </button>
               </div>
               <button
