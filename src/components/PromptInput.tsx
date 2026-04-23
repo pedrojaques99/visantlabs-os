@@ -54,7 +54,7 @@ export const PromptInput: React.FC<PromptInputProps> = ({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
-        className="min-h-[80px] max-h-[300px] resize-none w-full nodrag nopan"
+        className="min-h-[80px] max-h-[300px] resize-none w-full nodrag nopan border-white/5"
         rows={3}
       />
     </form>

@@ -525,7 +525,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           <div>
             <NodeLabel>{t('canvasNodes.videoNode.negativePrompt') || 'Negative Prompt'}</NodeLabel>
             <Input
-              className="w-full bg-neutral-900 border-node border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-brand-cyan outline-none placeholder:text-neutral-600"
+              className="w-full bg-neutral-900 border-node border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-neutral-600 outline-none placeholder:text-neutral-600"
               placeholder={t('canvasNodes.videoNode.whatToAvoid') || 'What to avoid...'}
               value={negativePrompt}
               onChange={(e) => {

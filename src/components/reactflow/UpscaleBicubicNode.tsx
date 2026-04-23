@@ -456,7 +456,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
         {/* Floating Processing Indicator */}
         {isLoading && !hasResult && hasConnectedImage && (
           <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-neutral-950/20 rounded-md border-node border-neutral-700/30 backdrop-blur-sm">
-            <div className="p-3 rounded-md bg-neutral-950/40 backdrop-blur-md border-node border-brand-cyan/20 shadow-xl">
+            <div className="p-3 rounded-md bg-neutral-950/40 backdrop-blur-md border-node border-neutral-800 shadow-xl">
               <GlitchLoader size={16} color="brand-cyan" />
             </div>
           </div>
@@ -468,7 +468,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               <Maximize2 size={14} />
               Connect an image or video
             </div>
-            <label className="w-full px-4 py-2.5 bg-brand-cyan/5 hover:bg-brand-cyan/10 border-node border-brand-cyan/20 hover:border-brand-cyan/40 rounded-md text-[10px] font-mono font-bold text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all uppercase tracking-widest nodrag shadow-sm backdrop-blur-sm">
+            <label className="w-full px-4 py-2.5 bg-brand-cyan/5 hover:bg-brand-cyan/10 border-node border-neutral-800 hover:border-neutral-700 rounded-md text-[10px] font-mono font-bold text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all uppercase tracking-widest nodrag shadow-sm backdrop-blur-sm">
               <Upload size={14} />
               Upload Image
               <Input

@@ -87,7 +87,7 @@ export const SeedControl: React.FC<SeedControlProps> = ({
           disabled={disabled}
           className={cn(
             "flex-1 min-w-0 h-7 px-2 rounded-md text-xs font-mono bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-300",
-            "placeholder:text-neutral-600 focus:border-brand-cyan/40 focus:outline-none transition-colors",
+            "placeholder:text-neutral-600 focus:border-neutral-600 focus:outline-none transition-colors",
             "nodrag nopan",
             disabled && "opacity-50 cursor-not-allowed"
           )}

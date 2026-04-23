@@ -56,7 +56,7 @@ function renderResolutionButton(
           : 'flex flex-col items-center justify-center gap-1 py-2 px-3 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer',
         isSelected
           ? 'bg-foreground/10 text-foreground border-foreground/40'
-          : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-brand-cyan/30 hover:text-brand-cyan',
+          : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-700 hover:text-brand-cyan',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
       title={`${res} (${credits} credits)`}

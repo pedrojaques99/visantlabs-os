@@ -291,7 +291,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
             {extractedColors.map((color, index) => (
               <div
                 key={`${color}-${index}`}
-                className="flex items-center gap-2 p-2 bg-neutral-900/50 rounded border-node border-neutral-700/30 hover:border-[brand-cyan]/50 transition-colors group/color cursor-pointer hover:bg-neutral-800/50 relative"
+                className="flex items-center gap-2 p-2 bg-neutral-900/50 rounded border-node border-neutral-700/30 hover:border-neutral-700 transition-colors group/color cursor-pointer hover:bg-neutral-800/50 relative"
                 onClick={() => handleCopyColor(color)}
                 title={t('canvasNodes.colorExtractorNode.clickToCopy') || "Click to copy hex code"}
               >

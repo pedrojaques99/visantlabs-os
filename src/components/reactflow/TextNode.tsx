@@ -152,7 +152,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               "h-full w-full resize-none nodrag nopan text-xs",
               "pr-12 pb-8",
               "bg-neutral-900/60 border-neutral-700/40",
-              "focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20",
+              "focus:border-neutral-600 ",
               "backdrop-blur-sm transition-all duration-200",
               "placeholder:text-neutral-500 placeholder:font-mono",
               "overflow-y-auto"
@@ -173,7 +173,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               disabled={isImproving || !text.trim()}
               className={cn(
                 "absolute top-2 right-2 transition-all nodrag shadow-sm backdrop-blur-sm",
-                !isImproving && text.trim() && "text-brand-cyan border-brand-cyan/30 bg-brand-cyan/5 hover:bg-brand-cyan/10"
+                !isImproving && text.trim() && "text-brand-cyan border-neutral-800 bg-brand-cyan/5 hover:bg-brand-cyan/10"
               )}
               title={isImproving
                 ? (t('canvasNodes.textNode.improvingPrompt') || 'Improving prompt...')

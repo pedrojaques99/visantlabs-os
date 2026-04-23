@@ -523,7 +523,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
             <ImageIcon size={14} />
             {t('canvasNodes.shaderNode.connectImage') || 'Connect an image or video'}
           </div>
-          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border-node border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
+          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border-node border-[brand-cyan]/30 hover:border-neutral-700 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
             <Upload size={14} />
             {t('canvasNodes.shaderNode.uploadImageOrVideo') || 'Upload Image or Video'}
             <Input

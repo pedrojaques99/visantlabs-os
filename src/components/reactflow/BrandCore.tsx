@@ -462,7 +462,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
         {/* Analysis Status */}
         {isAnalyzing && (
-          <div className="px-3 py-2.5 bg-brand-cyan/10 border-node border-brand-cyan/20 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+          <div className="px-3 py-2.5 bg-brand-cyan/10 border-node border-neutral-800 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
             <div className="flex items-center gap-3">
               <div className="p-1.5 rounded-full bg-brand-cyan/20">
                 <GlitchLoader size={12} color="brand-cyan" />
@@ -599,7 +599,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                       {brandIdentity.personality.values && brandIdentity.personality.values.length > 0 && (
                         <div className="flex flex-wrap gap-1 pt-1.5 border-t border-neutral-700/10">
                           {brandIdentity.personality.values.map((value, idx) => (
-                            <span key={idx} className="px-2 py-0.5 bg-neutral-950/40 rounded text-[10px] text-brand-cyan/70 border-node border-brand-cyan/20 uppercase ">
+                            <span key={idx} className="px-2 py-0.5 bg-neutral-950/40 rounded text-[10px] text-brand-cyan/70 border-node border-neutral-800 uppercase ">
                               {value}
                             </span>
                           ))}

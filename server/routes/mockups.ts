@@ -10,7 +10,7 @@ import { generateMockup, RateLimitError, ModelResponseTextError } from '../../sr
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
-import { isOpenAIImageModel } from '../../src/constants/openaiModels.js';
+import { isOpenAIImageModel, OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
@@ -1191,7 +1191,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       usedSeed = seedreamResult.seed;
     } else if (provider === 'openai' || isOpenAIImageModel(model)) {
       // Use OpenAI image generation
-      const openaiModel = isOpenAIImageModel(model) ? model : 'gpt-image-1';
+      const openaiModel = isOpenAIImageModel(model) ? model : OPENAI_IMAGE_MODELS.GPT_IMAGE_2;
       console.log(`${logPrefix} [GENERATION] Using OpenAI provider`, {
         model: openaiModel,
         resolution,

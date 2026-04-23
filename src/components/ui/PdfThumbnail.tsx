@@ -64,7 +64,7 @@ export const PdfThumbnail: React.FC<PdfThumbnailProps> = ({
     <div
       className={cn(
         'relative group aspect-square bg-neutral-900/50 border border-neutral-700/30 rounded overflow-hidden',
-        onClick && 'cursor-pointer hover:border-[brand-cyan]/50 transition-colors',
+        onClick && 'cursor-pointer hover:border-neutral-700 transition-colors',
         className
       )}
       onClick={onClick}

@@ -128,7 +128,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
             placeholder={t('canvasNodes.brandingProjectSelectModal.searchProjectsPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-2 bg-neutral-900/50 border-node border-neutral-700/30 rounded text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
+            className="w-full px-3 py-2 bg-neutral-900/50 border-node border-neutral-700/30 rounded text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
             autoFocus
           />
         </div>
@@ -147,7 +147,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
                 return (
                   <Button variant="ghost" key={projectId}
                     onClick={() => handleSelectProject(project)}
-                    className="w-full px-4 py-3 text-left border rounded-md transition-all bg-neutral-900/50 border-neutral-700/30 text-neutral-300 hover:border-[brand-cyan]/50 hover:bg-neutral-800/50 group"
+                    className="w-full px-4 py-3 text-left border rounded-md transition-all bg-neutral-900/50 border-neutral-700/30 text-neutral-300 hover:border-neutral-700 hover:bg-neutral-800/50 group"
                   >
                     <div className="flex items-start gap-3">
                       <FolderOpen size={16} className="text-brand-cyan flex-shrink-0 mt-0.5" />

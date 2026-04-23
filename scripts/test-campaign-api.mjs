@@ -41,7 +41,7 @@ const MOCKS = [
       brief: 'Pre-workout supplement targeting serious athletes who want explosive energy and faster recovery',
       count: 6,
       formats: ['square', 'story'],
-      model: 'gpt-image-1',
+      model: 'gpt-image-2',
     },
   },
   {
@@ -51,7 +51,7 @@ const MOCKS = [
       brief: 'Luxury skincare serum for women 30-50 who want visible anti-aging results in 4 weeks',
       count: 4,
       formats: ['portrait'],
-      model: 'gpt-image-1',
+      model: 'gpt-image-2',
     },
   },
   {
@@ -61,7 +61,7 @@ const MOCKS = [
       brief: 'Specialty cold brew coffee for remote workers and busy creatives',
       count: 5,
       formats: ['story'],
-      model: 'gpt-image-1',
+      model: 'gpt-image-2',
     },
   },
   {
@@ -71,7 +71,7 @@ const MOCKS = [
       brief: 'Wireless earbuds with 40h battery for commuters and remote workers',
       count: 3,
       formats: ['banner', 'square'],
-      model: 'gpt-image-1',
+      model: 'gpt-image-2',
     },
   },
   {
@@ -81,7 +81,7 @@ const MOCKS = [
       brief: 'Performance running shoes for marathon runners and casual joggers',
       count: 8,
       formats: ['square', 'story', 'portrait'],
-      model: 'gpt-image-1',
+      model: 'gpt-image-2',
     },
   },
 ];

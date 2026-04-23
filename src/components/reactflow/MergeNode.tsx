@@ -223,7 +223,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
             e.stopPropagation();
           }}
           placeholder={t('canvasNodes.mergeNode.promptPlaceholder')}
-          className="text-xs nodrag nopan bg-neutral-900/40 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
+          className="text-xs nodrag nopan bg-neutral-900/40 border-neutral-700/40 focus:border-neutral-600 focus:ring-1  backdrop-blur-sm"
           rows={3}
           disabled={isLoading || isGeneratingPrompt}
         />
