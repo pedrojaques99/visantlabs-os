@@ -20,10 +20,33 @@ redis.on('error', (err) => {
   const prev = lastLoggedAt.get(key) ?? 0;
   if (now - prev < LOG_THROTTLE_MS) return;
   lastLoggedAt.set(key, now);
-  console.warn('[Redis] Connection failed, graceful degradation enabled', err.message);
+  if (process.env.NODE_ENV === 'production') {
+    console.warn('[Redis] Connection failed, graceful degradation enabled', err.message);
+  }
 });
 
-export const redisClient = redis;
+// Safe proxy: returns no-op defaults when Redis is not connected, preventing
+// unhandled "Connection is closed" errors from crashing the server.
+const NOOP_DEFAULTS: Record<string, unknown> = {
+  lpush: 0, rpush: 0, lrange: [], lrem: 0, llen: 0,
+  get: null, set: 'OK', del: 0, expire: 0, exists: 0,
+  hget: null, hset: 0, hdel: 0, hgetall: null,
+  sadd: 0, smembers: [], srem: 0,
+  ping: 'PONG',
+};
+
+export const redisClient = new Proxy(redis, {
+  get(target, prop: string) {
+    const value = target[prop as keyof typeof target];
+    if (typeof value !== 'function') return value;
+    return async (...args: unknown[]) => {
+      if (target.status !== 'ready') {
+        return prop in NOOP_DEFAULTS ? NOOP_DEFAULTS[prop] : null;
+      }
+      return (value as Function).apply(target, args);
+    };
+  },
+});
 
 export async function initRedis(): Promise<boolean> {
   try {
@@ -32,7 +55,9 @@ export async function initRedis(): Promise<boolean> {
     console.log(`[Redis] Connected (${pong})`);
     return true;
   } catch (err) {
-    console.warn('[Redis] Connection failed on init, continuing without cache');
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('[Redis] Connection failed on init, continuing without cache');
+    }
     return false;
   }
 }

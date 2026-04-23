@@ -6,12 +6,18 @@ import {
   isAdvancedModel, 
   getModelConfig 
 } from '../../constants/geminiModels';
-import { 
-  SEEDREAM_IMAGE_MODELS, 
-  SEEDREAM_MODEL_CONFIG, 
-  isSeedreamModel, 
-  getSeedreamModelConfig 
+import {
+  SEEDREAM_IMAGE_MODELS,
+  SEEDREAM_MODEL_CONFIG,
+  isSeedreamModel,
+  getSeedreamModelConfig
 } from '../../constants/seedreamModels';
+import {
+  OPENAI_IMAGE_MODEL_LIST,
+  OPENAI_IMAGE_MODEL_CONFIG,
+  isOpenAIImageModel,
+  getOpenAIImageModelConfig,
+} from '../../constants/openaiModels';
 import { Select } from '@/components/ui/select';
 import { cn } from '../../lib/utils';
 import { getCreditsRequired } from '@/utils/creditCalculator';
@@ -109,7 +115,31 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         return { value: modelId, label: label || modelId, icon };
       }).filter(Boolean) as any[];
 
-      return [...geminiOptions, ...seedreamOptions];
+      const openaiOptions = OPENAI_IMAGE_MODEL_LIST.map(modelId => {
+        const config = OPENAI_IMAGE_MODEL_CONFIG[modelId];
+        if (!config) return null;
+
+        const effectiveResolution = selectedModel === modelId ? resolution : config.defaultResolution;
+        const credits = getCreditsRequired(modelId, effectiveResolution, 'openai');
+        const isUnlimited = isGenerationUnlimited({ model: modelId, resolution: effectiveResolution, planMetadata });
+
+        const icon = (
+          <img
+            src={`https://img.logo.dev/${config.providerDomain}?size=48${token ? `&token=${token}` : ''}`}
+            className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+            onError={(e) => (e.currentTarget.style.display = 'none')}
+            alt=""
+          />
+        );
+
+        const label = variant === 'node'
+          ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
+          : config.label;
+
+        return { value: modelId, label: label || modelId, icon };
+      }).filter(Boolean) as any[];
+
+      return [...geminiOptions, ...seedreamOptions, ...openaiOptions];
     }
 
     // CHAT MODELS LOGIC
@@ -139,7 +169,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   // Sync parent if normalization occurred (only for image type)
   useEffect(() => {
     if (type === 'image' && effectiveModel !== selectedModel) {
-      const provider: ImageProvider = isSeedreamModel(effectiveModel) ? 'seedream' : 'gemini';
+      const provider: ImageProvider = isSeedreamModel(effectiveModel) ? 'seedream' : isOpenAIImageModel(effectiveModel) ? 'openai' : 'gemini';
       onModelChange(effectiveModel, provider);
     }
   }, [effectiveModel, selectedModel, onModelChange, type]);
@@ -148,13 +178,18 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     if (disabled || newModel === selectedModel) return;
 
     if (type === 'image') {
-      const provider: ImageProvider = isSeedreamModel(newModel) ? 'seedream' : 'gemini';
+      const provider: ImageProvider = isSeedreamModel(newModel) ? 'seedream' : isOpenAIImageModel(newModel) ? 'openai' : 'gemini';
       onModelChange(newModel, provider);
 
       if (provider === 'seedream') {
         const sdConfig = getSeedreamModelConfig(newModel);
         if (sdConfig && !resolution && onSyncResolution) {
           onSyncResolution(sdConfig.defaultResolution);
+        }
+      } else if (provider === 'openai') {
+        const oaiConfig = getOpenAIImageModelConfig(newModel);
+        if (oaiConfig && !resolution && onSyncResolution) {
+          onSyncResolution(oaiConfig.defaultResolution);
         }
       } else {
         const config = getModelConfig(newModel as GeminiModel);

@@ -8,7 +8,9 @@ import { prisma } from '../db/prisma.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { generateMockup, RateLimitError, ModelResponseTextError } from '../../src/services/geminiService.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
+import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
+import { isOpenAIImageModel } from '../../src/constants/openaiModels.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
@@ -588,7 +590,7 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, next
 
     // Use find() with sort instead of aggregation for better performance with indexes
     const mockups = await db.collection('mockups')
-      .find({ userId: new ObjectId(req.userId) })
+      .find({ userId: { $in: [req.userId, new ObjectId(req.userId)] } })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -715,7 +717,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       aspectRatio,
       referenceImages,
       feature, // Optional: 'mockupmachine' | 'canvas'
-      provider = 'gemini', // 'gemini' | 'seedream'
+      provider = 'gemini', // 'gemini' | 'seedream' | 'openai'
       width, // Optional: custom width in pixels (for Figma plugin)
       height, // Optional: custom height in pixels (for Figma plugin)
       brandGuidelineId, // Optional: brand guideline ID for context injection
@@ -980,7 +982,6 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
         const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId!) });
         if (user?.encryptedSeedreamApiKey) {
           const { decryptApiKey } = await import('../utils/encryption.js');
-          // decryptApiKey might throw if key is invalid/corrupt
           try {
             userApiKey = decryptApiKey(user.encryptedSeedreamApiKey);
             if (userApiKey) {
@@ -990,6 +991,22 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
             }
           } catch (decryptError) {
             console.error(`${logPrefix} [API KEY] Failed to decrypt Seedream key:`, decryptError);
+          }
+        }
+      } else if (provider === 'openai') {
+        // Check for OpenAI API Key (user BYOK)
+        const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId!) });
+        if (user?.encryptedOpenAIApiKey) {
+          const { decryptApiKey } = await import('../utils/encryption.js');
+          try {
+            userApiKey = decryptApiKey(user.encryptedOpenAIApiKey);
+            if (userApiKey) {
+              usingUserKey = true;
+              apiKeySource = 'user';
+              console.log(`${logPrefix} [API KEY] Using user OpenAI API key`);
+            }
+          } catch (decryptError) {
+            console.error(`${logPrefix} [API KEY] Failed to decrypt OpenAI key:`, decryptError);
           }
         }
       } else {
@@ -1093,9 +1110,6 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
 
     if (provider === 'seedream') {
       // Use Seedream via APIFree.ai
-
-      // Sanitize model: if it's not a valid Seedream model (e.g. it's a Gemini model from the UI),
-      // default to the latest Seedream model to prevent "Unknown error (400)"
       let seedreamModel = model;
       if (!isSeedreamModel(seedreamModel)) {
         console.warn(`${logPrefix} [GENERATION] Invalid Seedream model "${model}" detected. Defaulting to "seedream-4.5"`);
@@ -1116,11 +1130,32 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
         model: seedreamModel as any,
         resolution: resolution as any,
         aspectRatio: aspectRatio as any,
-        apiKey: userApiKey, // Pass user API key if available
+        apiKey: userApiKey,
         seed: validSeed,
       });
       imageBase64 = seedreamResult.base64;
       usedSeed = seedreamResult.seed;
+    } else if (provider === 'openai' || isOpenAIImageModel(model)) {
+      // Use OpenAI GPT Image 2
+      const openaiModel = isOpenAIImageModel(model) ? model : 'gpt-image-2';
+      console.log(`${logPrefix} [GENERATION] Using OpenAI provider`, {
+        model: openaiModel,
+        resolution,
+        hasBaseImage: !!finalBaseImage,
+        referenceImagesCount: finalReferenceImages?.length ?? 0,
+      });
+
+      const openaiResult = await generateOpenAIImage({
+        prompt: finalPromptText,
+        baseImage: finalBaseImage as any,
+        referenceImages: finalReferenceImages as any,
+        model: openaiModel,
+        resolution: resolution as any,
+        aspectRatio: aspectRatio as any,
+        apiKey: userApiKey,
+      });
+      imageBase64 = openaiResult.base64;
+      // OpenAI doesn't support seed — leave usedSeed undefined
     } else {
       // Use Gemini (default)
       imageBase64 = await generateMockup(
@@ -1133,7 +1168,6 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
         undefined,
         userApiKey
       );
-      // Gemini image API doesn't support seed — leave undefined
     }
 
     // Try to upload to R2 if configured to avoid large payloads
@@ -2037,6 +2071,74 @@ router.get('/usage/current', apiRateLimiter, authenticate, async (req: AuthReque
       totalImages,
       totalCost,
       requests: usageRecords.length,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /mockups/batch-generate
+ * Generates multiple mockups in parallel from an array of prompts.
+ * Delegates each item to the existing /generate logic via internal fetch.
+ * Returns array of results in the same order as the input prompts.
+ */
+router.post('/batch-generate', mockupRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const {
+      prompts,
+      model,
+      provider,
+      aspectRatio,
+      resolution,
+      brandGuidelineId,
+      baseImage,
+    } = req.body;
+
+    if (!Array.isArray(prompts) || prompts.length === 0) {
+      return res.status(400).json({ error: 'prompts must be a non-empty array' });
+    }
+    if (prompts.length > 20) {
+      return res.status(400).json({ error: 'Maximum 20 prompts per batch' });
+    }
+
+    const apiBase = process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3000}/api`;
+    const authHeader = req.headers['authorization'];
+
+    const results = await Promise.allSettled(
+      prompts.map((item: string | { promptText: string; referenceImages?: unknown[]; baseImage?: unknown }, idx: number) => {
+        const isObj = typeof item === 'object' && item !== null;
+        const promptText = isObj ? item.promptText : item;
+        const itemReferenceImages = isObj ? item.referenceImages : undefined;
+        const itemBaseImage = isObj ? item.baseImage : baseImage;
+        return fetch(`${apiBase}/mockups/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authHeader ? { Authorization: authHeader } : {}),
+          },
+          body: JSON.stringify({
+            promptText,
+            model,
+            provider,
+            aspectRatio,
+            resolution,
+            brandGuidelineId,
+            baseImage: itemBaseImage,
+            referenceImages: itemReferenceImages,
+            uniqueId: idx,
+          }),
+        }).then((r) => r.json());
+      })
+    );
+
+    res.json({
+      total: prompts.length,
+      results: results.map((r, idx) =>
+        r.status === 'fulfilled'
+          ? { index: idx, success: true, data: r.value }
+          : { index: idx, success: false, error: r.reason?.message ?? 'unknown' }
+      ),
     });
   } catch (error) {
     next(error);

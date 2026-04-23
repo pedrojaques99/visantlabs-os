@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid'
 import { authenticate, AuthRequest } from '../middleware/auth.js'
 import { prisma } from '../db/prisma.js'
 import { rateLimit } from 'express-rate-limit'
+import { Liveblocks } from '@liveblocks/node'
 import { BrandGuideline, BrandGuidelineMedia, BrandGuidelineLogo, calculateCompleteness } from '../types/brandGuideline.js'
 import { parseUrl, parsePdf, parseImage, parseJson } from '../lib/brand-parse.js'
 import { extractBrandData, type AssetClassification } from '../lib/brand-extract.js'
@@ -27,6 +28,16 @@ const apiRateLimiter = rateLimit({
   message: { error: 'Too many requests. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+})
+
+// Stricter limiter for unauthenticated public endpoints (no JWT = higher abuse surface)
+const publicRateLimiter = rateLimit({
+  windowMs: 60_000,
+  max: parseInt(process.env.RATE_LIMIT_MAX_PUBLIC || '30', 10),
+  message: { error: 'Too many requests to public endpoint. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip ?? 'unknown',
 })
 
 // GET /api/brand-guidelines — list all user's brand guidelines
@@ -843,7 +854,7 @@ router.delete('/:id/share', apiRateLimiter, authenticate, async (req: AuthReques
 })
 
 // GET /api/brand-guidelines/public/:slug — public read-only access (NO AUTH)
-router.get('/public/:slug', apiRateLimiter, async (req, res) => {
+router.get('/public/:slug', publicRateLimiter, async (req, res) => {
   try {
     const guideline = await prisma.brandGuideline.findFirst({
       where: { publicSlug: req.params.slug, isPublic: true },
@@ -879,7 +890,7 @@ router.get('/public/:slug', apiRateLimiter, async (req, res) => {
  *   - MCP servers querying brand information
  *   - Third-party apps integrating with brand guidelines
  */
-router.get('/public/:slug/context', apiRateLimiter, async (req, res) => {
+router.get('/public/:slug/context', publicRateLimiter, async (req, res) => {
   try {
     const { format = 'full', output = 'text' } = req.query as { format?: string; output?: string }
 
@@ -1664,6 +1675,67 @@ router.delete('/:id/knowledge/:fileId', apiRateLimiter, authenticate, async (req
   } catch (error: any) {
     console.error('Error deleting knowledge file:', error)
     res.status(500).json({ error: 'Failed to delete knowledge file' })
+  }
+})
+
+// ═══════════════════════════════════════════════════
+// COLLABORATIVE EDITING — LIVEBLOCKS AUTH
+// ═══════════════════════════════════════════════════
+
+/**
+ * POST /api/brand-guidelines/:id/liveblocks-auth
+ *
+ * Issues a Liveblocks session token for collaborative editing of a brand guideline.
+ * Only the owner and users in canEdit[] receive FULL_ACCESS.
+ * Users in canView[] receive READ_ACCESS (used for real-time cursor presence during review).
+ *
+ * Room ID convention: `brand-${guidelineId}` — distinct from canvas rooms (`canvas-*`).
+ */
+router.post('/:id/liveblocks-auth', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findUnique({
+      where: { id },
+      select: { userId: true, canEdit: true, canView: true },
+    }) as { userId: string; canEdit?: unknown; canView?: unknown } | null
+
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const isOwner = guideline.userId === req.userId
+    const canEdit = isOwner || (Array.isArray(guideline.canEdit) && (guideline.canEdit as string[]).includes(req.userId!))
+    const canView = isOwner || canEdit || (Array.isArray(guideline.canView) && (guideline.canView as string[]).includes(req.userId!))
+
+    if (!canView) return res.status(403).json({ error: 'Access denied' })
+
+    const LIVEBLOCKS_SECRET_KEY = process.env.LIVEBLOCKS_SECRET_KEY
+    if (!LIVEBLOCKS_SECRET_KEY) {
+      return res.status(500).json({ error: 'Liveblocks is not configured' })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { email: true, name: true, picture: true },
+    })
+
+    const liveblocks = new Liveblocks({ secret: LIVEBLOCKS_SECRET_KEY })
+    const session = liveblocks.prepareSession(req.userId, {
+      userInfo: {
+        name: user?.name || user?.email || 'Anonymous',
+        email: user?.email ?? undefined,
+        picture: user?.picture ?? undefined,
+      },
+    })
+
+    const roomId = `brand-${id}`
+    session.allow(roomId, canEdit ? session.FULL_ACCESS : session.READ_ACCESS)
+
+    const { body, status } = await session.authorize()
+    res.status(status).end(body)
+  } catch (error: any) {
+    console.error('[BrandGuideline Liveblocks Auth] Error:', error)
+    res.status(500).json({ error: 'Failed to authenticate with Liveblocks' })
   }
 })
 

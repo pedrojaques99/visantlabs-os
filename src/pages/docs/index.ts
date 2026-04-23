@@ -12,6 +12,8 @@ export type { PricingTier, CreditPackage, StoragePlan } from './data/pricingData
 // Hooks
 export { useDocsData } from './hooks/useDocsData';
 export type { OpenAPISpec, MCPSpec, MCPTool, ApiEndpoint } from './hooks/useDocsData';
+// NOTE: platformMcpSpec from useDocsData() is the live source of truth for tool lists.
+// Do not hardcode tool lists in components — consume platformMcpSpec.tools directly.
 
 // Utils
 export { generateTabMarkdown } from './utils/markdownGenerators';

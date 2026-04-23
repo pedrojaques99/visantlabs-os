@@ -517,6 +517,10 @@ model BrandGuideline {
   publicSlug String?    // Handled by sparse index manually
   isPublic   Boolean  @default(false)
 
+  // Collaborative editing — arrays of userId strings
+  canEdit    Json?    // string[] — users with edit access
+  canView    Json?    // string[] — users with view-only access (cursor presence)
+
   // Version tracking
   currentVersion Int @default(1)
 

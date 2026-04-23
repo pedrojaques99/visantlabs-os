@@ -1,203 +1,178 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { apiUrl, API_BASE_URL } from '../../config';
-import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { useClient } from '../../lib/ClientProvider';
+import { usePluginStore } from '../../store';
+import { AlertCircle, CheckCircle2, Loader2, Save } from 'lucide-react';
 import { RpcPilotPanel } from './RpcPilotPanel';
 
-/**
- * Server Debug Panel - Diagnose connectivity issues
- * Shows detailed status and runs test requests
- */
 export function ServerDebugPanel() {
+  const serverUrl = usePluginStore((s) => s.serverUrl);
+  const setServerUrl = usePluginStore((s) => s.setServerUrl);
+  const client = useClient();
+
+  const [urlDraft, setUrlDraft] = useState(serverUrl);
+  const [saving, setSaving] = useState(false);
+
+  const apiUrl = (path: string) => {
+    const base = serverUrl.replace(/\/$/, '');
+    const p = path.startsWith('/') ? path : `/${path}`;
+    return `${base}/api${p}`;
+  };
+
   const [testResults, setTestResults] = useState<{
-    [key: string]: { status: 'idle' | 'loading' | 'success' | 'error'; message?: string; time?: number };
+    [key: string]: { status: 'idle' | 'loading' | 'success' | 'error'; message?: string };
   }>({
-    apiUrl: { status: 'idle' },
     authStatus: { status: 'idle' },
     authLogin: { status: 'idle' },
-    corsTest: { status: 'idle' }
+    corsTest: { status: 'idle' },
   });
 
   const runTest = async (testName: string, fn: () => Promise<Response>) => {
-    setTestResults(prev => ({
-      ...prev,
-      [testName]: { status: 'loading' }
-    }));
-
-    const startTime = Date.now();
+    setTestResults(prev => ({ ...prev, [testName]: { status: 'loading' } }));
+    const t0 = Date.now();
     try {
-      const response = await fn();
-      const elapsed = Date.now() - startTime;
-
+      const res = await fn();
+      const elapsed = Date.now() - t0;
       setTestResults(prev => ({
         ...prev,
         [testName]: {
-          status: response.ok ? 'success' : 'error',
-          message: `${response.status} ${response.statusText} (${elapsed}ms)`,
-          time: elapsed
-        }
+          status: res.ok ? 'success' : 'error',
+          message: `${res.status} ${res.statusText} (${elapsed}ms)`,
+        },
       }));
     } catch (err: any) {
-      const elapsed = Date.now() - startTime;
       setTestResults(prev => ({
         ...prev,
-        [testName]: {
-          status: 'error',
-          message: err.message || String(err),
-          time: elapsed
-        }
+        [testName]: { status: 'error', message: err.message || String(err) },
       }));
     }
   };
 
-  const testAuthStatus = async () => {
-    await runTest('authStatus', async () => {
-      return fetch(apiUrl('/plugin/auth/status'), {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      });
-    });
+  const saveUrl = async () => {
+    setSaving(true);
+    try {
+      setServerUrl(urlDraft);
+      await client.request('storage.set', { key: 'serverUrl', value: urlDraft.replace(/\/$/, '') });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const testAuthLogin = async () => {
-    await runTest('authLogin', async () => {
-      return fetch(apiUrl('/auth/signin'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'test@test.com', password: 'test' })
-      });
-    });
+  const StatusIcon = ({ k }: { k: string }) => {
+    const s = testResults[k].status;
+    if (s === 'loading') return <Loader2 size={12} className="animate-spin" />;
+    if (s === 'success') return <CheckCircle2 size={12} className="text-green-500" />;
+    if (s === 'error') return <AlertCircle size={12} className="text-red-500" />;
+    return null;
   };
 
-  const testCors = async () => {
-    await runTest('corsTest', async () => {
-      return fetch(apiUrl('/'), {
-        method: 'OPTIONS',
-        headers: {
-          'Access-Control-Request-Method': 'GET',
-          'Access-Control-Request-Headers': 'Content-Type'
-        }
-      });
-    });
-  };
+  const tests = [
+    {
+      key: 'authStatus',
+      label: 'GET /auth/status',
+      run: () => runTest('authStatus', () => fetch(apiUrl('/plugin/auth/status'), { headers: { 'Content-Type': 'application/json' } })),
+    },
+    {
+      key: 'authLogin',
+      label: 'POST /auth/signin',
+      run: () => runTest('authLogin', () =>
+        fetch(apiUrl('/auth/signin'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'test@test.com', password: 'test' }),
+        })
+      ),
+    },
+    {
+      key: 'corsTest',
+      label: 'CORS Preflight',
+      run: () => runTest('corsTest', () =>
+        fetch(apiUrl('/'), {
+          method: 'OPTIONS',
+          headers: {
+            'Access-Control-Request-Method': 'GET',
+            'Access-Control-Request-Headers': 'Content-Type',
+          },
+        })
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-4">
-    <RpcPilotPanel />
-    <div className="space-y-4 max-w-2xl bg-red-950/20 border border-red-800 rounded p-4">
-      <h3 className="text-sm font-bold text-red-400 flex items-center gap-2">
-        <AlertCircle size={14} />
-        Server Debug Panel
-      </h3>
+      <RpcPilotPanel />
+      <div className="space-y-4 max-w-2xl bg-red-950/20 border border-red-800 rounded p-4">
+        <h3 className="text-sm font-bold text-red-400 flex items-center gap-2">
+          <AlertCircle size={14} />
+          Server Debug Panel
+        </h3>
 
-      {/* Configuration */}
-      <div className="space-y-2 bg-black/30 p-3 rounded text-xs font-mono">
-        <div>
+        {/* Editable server URL */}
+        <div className="space-y-1 bg-black/30 p-3 rounded text-xs font-mono">
           <span className="text-gray-400">API Base URL:</span>
-          <br />
-          <span className="text-brand-cyan">{API_BASE_URL}</span>
+          <div className="flex gap-2 mt-1">
+            <input
+              type="text"
+              value={urlDraft}
+              onChange={(e) => setUrlDraft(e.target.value)}
+              className="flex-1 bg-black/40 border border-gray-600 rounded px-2 py-1 text-brand-cyan focus:outline-none focus:border-brand-cyan"
+            />
+            <Button
+              onClick={saveUrl}
+              disabled={saving || urlDraft === serverUrl}
+              variant="outline"
+              size="sm"
+              className="text-xs h-7 gap-1"
+            >
+              {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+              Save
+            </Button>
+          </div>
+          <div className="mt-2 text-gray-500 break-all">
+            Full: {apiUrl('/auth/status')}
+          </div>
         </div>
-        <div className="mt-2">
-          <span className="text-gray-400">Full Auth Endpoint:</span>
-          <br />
-          <span className="text-brand-cyan break-all">{apiUrl('/auth/status')}</span>
+
+        {/* Connectivity Tests */}
+        <div className="space-y-2">
+          <h4 className="text-xs font-semibold text-gray-300">Connectivity Tests:</h4>
+          {tests.map(({ key, label, run }) => (
+            <div key={key} className="flex items-start gap-2 bg-black/20 p-2 rounded">
+              <div className="flex-1">
+                <div className="text-xs font-semibold flex items-center gap-1">
+                  <StatusIcon k={key} />
+                  {label}
+                </div>
+                {testResults[key].message && (
+                  <div className={`text-xs mt-1 ${testResults[key].status === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                    {testResults[key].message}
+                  </div>
+                )}
+              </div>
+              <Button
+                onClick={run}
+                disabled={testResults[key].status === 'loading'}
+                variant="outline"
+                size="sm"
+                className="text-xs h-6"
+              >
+                Test
+              </Button>
+            </div>
+          ))}
+        </div>
+
+        {/* Troubleshooting */}
+        <div className="text-xs text-gray-400 space-y-1 border-t border-gray-700 pt-3">
+          <p className="font-semibold text-gray-300">Troubleshooting:</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>All tests fail → Backend não está rodando. Execute: <code className="bg-black/40 px-1">npm run dev</code></li>
+            <li>CORS fails → Verifique cors middleware em server/index.ts</li>
+            <li>/auth/status fails → Verifique se o endpoint existe em server/routes</li>
+            <li>Timeout → Backend lento ou travado, reinicie</li>
+          </ul>
         </div>
       </div>
-
-      {/* Test Results */}
-      <div className="space-y-2">
-        <h4 className="text-xs font-semibold text-gray-300">Connectivity Tests:</h4>
-
-        {/* Auth Status Test */}
-        <div className="flex items-start gap-2 bg-black/20 p-2 rounded">
-          <div className="flex-1">
-            <div className="text-xs font-semibold flex items-center gap-1">
-              {testResults.authStatus.status === 'loading' && <Loader2 size={12} className="animate-spin" />}
-              {testResults.authStatus.status === 'success' && <CheckCircle2 size={12} className="text-green-500" />}
-              {testResults.authStatus.status === 'error' && <AlertCircle size={12} className="text-red-500" />}
-              GET /auth/status
-            </div>
-            {testResults.authStatus.message && (
-              <div className={`text-xs mt-1 ${testResults.authStatus.status === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-                {testResults.authStatus.message}
-              </div>
-            )}
-          </div>
-          <Button
-            onClick={testAuthStatus}
-            disabled={testResults.authStatus.status === 'loading'}
-            variant="outline"
-            size="sm"
-            className="text-xs h-6"
-          >
-            Test
-          </Button>
-        </div>
-
-        {/* Auth Login Test */}
-        <div className="flex items-start gap-2 bg-black/20 p-2 rounded">
-          <div className="flex-1">
-            <div className="text-xs font-semibold flex items-center gap-1">
-              {testResults.authLogin.status === 'loading' && <Loader2 size={12} className="animate-spin" />}
-              {testResults.authLogin.status === 'success' && <CheckCircle2 size={12} className="text-green-500" />}
-              {testResults.authLogin.status === 'error' && <AlertCircle size={12} className="text-red-500" />}
-              POST /auth/signin
-            </div>
-            {testResults.authLogin.message && (
-              <div className={`text-xs mt-1 ${testResults.authLogin.status === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-                {testResults.authLogin.message}
-              </div>
-            )}
-          </div>
-          <Button
-            onClick={testAuthLogin}
-            disabled={testResults.authLogin.status === 'loading'}
-            variant="outline"
-            size="sm"
-            className="text-xs h-6"
-          >
-            Test
-          </Button>
-        </div>
-
-        {/* CORS Test */}
-        <div className="flex items-start gap-2 bg-black/20 p-2 rounded">
-          <div className="flex-1">
-            <div className="text-xs font-semibold flex items-center gap-1">
-              {testResults.corsTest.status === 'loading' && <Loader2 size={12} className="animate-spin" />}
-              {testResults.corsTest.status === 'success' && <CheckCircle2 size={12} className="text-green-500" />}
-              {testResults.corsTest.status === 'error' && <AlertCircle size={12} className="text-red-500" />}
-              CORS Preflight
-            </div>
-            {testResults.corsTest.message && (
-              <div className={`text-xs mt-1 ${testResults.corsTest.status === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-                {testResults.corsTest.message}
-              </div>
-            )}
-          </div>
-          <Button
-            onClick={testCors}
-            disabled={testResults.corsTest.status === 'loading'}
-            variant="outline"
-            size="sm"
-            className="text-xs h-6"
-          >
-            Test
-          </Button>
-        </div>
-      </div>
-
-      {/* Troubleshooting Guide */}
-      <div className="text-xs text-gray-400 space-y-1 border-t border-gray-700 pt-3">
-        <p className="font-semibold text-gray-300">Troubleshooting:</p>
-        <ul className="list-disc list-inside space-y-1 text-gray-400">
-          <li>If all tests fail → Backend não está rodando. Execute: <code className="bg-black/40 px-1">npm run dev</code></li>
-          <li>If CORS fails → CORS misconfigured. Check server/index.ts cors middleware</li>
-          <li>If /auth/status fails → Check if endpoint exists in server/routes</li>
-          <li>If timeout → Backend está lento ou travado, reinicie</li>
-        </ul>
-      </div>
-    </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@
 import type { GeminiModel, SeedreamModel, ImageProvider, Resolution, AspectRatio } from '@/types/types';
 import { isAdvancedModel, getDefaultResolution, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
+import { isOpenAIImageModel, getOpenAIImageModelConfig } from '@/constants/openaiModels';
 
 export interface GenerationContext {
   provider: ImageProvider;
@@ -44,6 +45,15 @@ export function resolveGenerationContext(
     };
   }
 
+  if (isOpenAIImageModel(model)) {
+    const oaiConfig = getOpenAIImageModelConfig(model);
+    return {
+      provider: 'openai',
+      resolution: overrides.resolution ?? oaiConfig?.defaultResolution ?? '1K',
+      aspectRatio: overrides.aspectRatio ?? DEFAULT_ASPECT_RATIO,
+    };
+  }
+
   const geminiModel = model as GeminiModel;
   const advanced = isAdvancedModel(geminiModel);
   return {
@@ -55,5 +65,5 @@ export function resolveGenerationContext(
 
 /** Convenience: derive provider only */
 export function resolveProvider(model: string): ImageProvider {
-  return isSeedreamModel(model) ? 'seedream' : 'gemini';
+  return isSeedreamModel(model) ? 'seedream' : isOpenAIImageModel(model) ? 'openai' : 'gemini';
 }

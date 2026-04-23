@@ -260,6 +260,67 @@ export const useCanvasChatHandler = ({
           : `Could not create ${canvasCmd.nodeType} nodes. Feature may not be available.`;
       }
 
+      if (canvasCmd.action === 'generate-campaign') {
+        // Fire campaign generation in the background — update chat with progress
+        const campaignCount = canvasCmd.campaignCount ?? 10;
+        const campaignFormats = canvasCmd.campaignFormats ?? ['square', 'story'];
+        const brief = canvasCmd.campaignBrief || message.trim();
+
+        // Find product image from connected images
+        const productImageUrl = context.images?.[0];
+        if (!productImageUrl) {
+          systemReply = 'Connect a product image to the Chat node first, then ask me to generate ads.';
+        } else {
+          // Resolve brand guideline id from linked guideline
+          const brandGuidelineId = (linkedGuideline as any)?._id || (linkedGuideline as any)?.id;
+          systemReply = `Starting campaign generation: ${campaignCount} ads across ${campaignFormats.join(', ')} formats. I'll update you when done.`;
+
+          // Kick off async campaign — update chat node when complete
+          (async () => {
+            try {
+              const resp = await fetch('/api/canvas/generate-campaign', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productImageUrl, brandGuidelineId, brief, count: campaignCount, formats: campaignFormats, model: 'gpt-image-1' }),
+                credentials: 'include',
+              });
+              const { jobId } = await resp.json();
+
+              // Poll until done
+              let job: any = null;
+              for (let attempt = 0; attempt < 120; attempt++) {
+                await new Promise(r => setTimeout(r, 5000));
+                const poll = await fetch(`/api/canvas/generate-campaign/${jobId}`, { credentials: 'include' });
+                job = await poll.json();
+                if (job.status === 'done' || job.status === 'error') break;
+              }
+
+              const done = job?.results?.filter((r: any) => r.status === 'done') ?? [];
+              const summary = done.length > 0
+                ? `Campaign complete! Generated ${done.length}/${campaignCount} ads.\n\n${done.slice(0, 5).map((r: any, i: number) => `${i + 1}. **${r.adAngle}** (${r.format}) — [View](${r.imageUrl})`).join('\n')}${done.length > 5 ? `\n…and ${done.length - 5} more.` : ''}`
+                : `Campaign finished with errors. ${job?.error || ''}`;
+
+              const currentNode = nodesRef.current.find(n => n.id === nodeId);
+              const currentMsgs = (currentNode?.data as ChatNodeData)?.messages || [];
+              const completionMsg = {
+                id: `msg-${Date.now()}-assistant`,
+                role: 'assistant' as const,
+                content: summary,
+                timestamp: Date.now(),
+              };
+              updateNodeData<ChatNodeData>(nodeId, { messages: [...currentMsgs, completionMsg] }, 'chat');
+              toast.success(`Campaign done — ${done.length} ads generated!`);
+            } catch (err: any) {
+              const currentNode = nodesRef.current.find(n => n.id === nodeId);
+              const currentMsgs = (currentNode?.data as ChatNodeData)?.messages || [];
+              updateNodeData<ChatNodeData>(nodeId, {
+                messages: [...currentMsgs, { id: `msg-${Date.now()}-err`, role: 'assistant' as const, content: `Campaign failed: ${err.message}`, timestamp: Date.now() }],
+              }, 'chat');
+            }
+          })();
+        }
+      }
+
       const sysMsg = {
         id: `msg-${Date.now()}-system`,
         role: 'assistant' as const,

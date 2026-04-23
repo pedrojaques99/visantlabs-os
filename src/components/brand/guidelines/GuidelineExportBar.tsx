@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
-import { FileText, FileJson, FileCode, Braces, Sparkles } from 'lucide-react';
+import { FileText, FileJson, FileCode, Braces } from 'lucide-react';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
 
@@ -393,7 +393,6 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
         onClick={exportDesignMd}
         className="h-8 px-3 text-[10px] font-mono text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5 gap-2 border border-brand-cyan/10 hover:border-brand-cyan/30 transition-all"
       >
-        <Sparkles size={12} />
         DESIGN.md
       </Button>
     </div>

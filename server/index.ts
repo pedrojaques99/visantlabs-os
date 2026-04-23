@@ -35,7 +35,7 @@ import { initRedis } from './lib/redis.js';
 import { logger } from './lib/logger.js';
 
 const app = createApp();
-const PORT = Number(process.env.PORT) || 3001;
+const BASE_PORT = Number(process.env.PORT) || 3001;
 
 logger.info(
   { prefix: process.env.VERCEL ? '' : '/api' },
@@ -100,21 +100,28 @@ if (!process.env.VERCEL) {
 
     const redisConnected = await initRedis();
     if (!redisConnected) {
-      console.warn('⚠️  Redis connection failed, continuing without cache');
+      if (process.env.NODE_ENV === 'production') {
+        console.warn('⚠️  Redis connection failed, continuing without cache');
+      }
     }
 
-    const server = app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📝 Make sure MONGODB_URI is configured in your .env file`);
-    });
+    const tryListen = (port: number): Promise<{ server: ReturnType<typeof app.listen>; port: number }> =>
+      new Promise((resolve, reject) => {
+        const s = app.listen(port, '0.0.0.0', () => resolve({ server: s, port }));
+        s.once('error', (err: any) => {
+          if (err.code === 'EADDRINUSE') {
+            s.close();
+            resolve(tryListen(port + 1));
+          } else {
+            reject(err);
+          }
+        });
+      });
 
-    // Allow port reuse immediately (prevents EADDRINUSE after restart)
-    server.on('error', (err: any) => {
-      if (err.code === 'EADDRINUSE') {
-        console.error(`❌ Port ${PORT} already in use. Try killing the process or wait 30 seconds.`);
-        process.exit(1);
-      }
-    });
+    const { server, port: PORT } = await tryListen(BASE_PORT);
+
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📝 Make sure MONGODB_URI is configured in your .env file`);
 
     server.timeout = 600000;
     server.keepAliveTimeout = 650000;

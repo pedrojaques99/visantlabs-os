@@ -46,7 +46,7 @@ export const authenticate = async (
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
-      if (isDev) {
+      if (false) {
         console.log('[authenticate] ❌ No token provided', {
           path: req.path,
           method: req.method,

@@ -29,6 +29,43 @@ export interface MCPTool {
     input: any;
     expectedOutput?: string;
   }>;
+  // Extended fields served by /api/docs/platform/mcp.json
+  'x-cost'?: 'free' | 'credits';
+  'x-category'?: string;
+  'x-auth'?: boolean;
+}
+
+export interface PricingData {
+  creditCosts: Array<{
+    model: string;
+    modelId: string;
+    resolution: string;
+    googlePriceUSD: number;
+    creditsRequired: number;
+    category: 'image' | 'video' | 'chat' | 'branding';
+  }>;
+  creditPackages: Array<{
+    credits: number;
+    priceBRL: number;
+    priceUSD: number;
+    pricePerCreditUSD: number;
+    imagesHD: number;
+    images4K: number;
+    videosFast: number;
+    videosStandard: number;
+  }>;
+  storagePlans: Array<{
+    id: string;
+    name: string;
+    storageMB: number;
+    priceBRL: number;
+    priceUSD: number;
+    billingCycle: string;
+    features: string[];
+    isByok?: boolean;
+  }>;
+  googlePricing: Record<string, any>;
+  infraCosts: Record<string, number>;
 }
 
 export interface MCPSpec {
@@ -47,6 +84,8 @@ export interface ApiEndpoint {
 export function useDocsData() {
   const [openApiSpec, setOpenApiSpec] = useState<OpenAPISpec | null>(null);
   const [mcpSpec, setMcpSpec] = useState<MCPSpec | null>(null);
+  const [platformMcpSpec, setPlatformMcpSpec] = useState<MCPSpec | null>(null);
+  const [pricingData, setPricingData] = useState<PricingData | null>(null);
   const [platformToolCount, setPlatformToolCount] = useState<number>(0);
   const [platformToolNames, setPlatformToolNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,19 +94,22 @@ export function useDocsData() {
   useEffect(() => {
     const fetchDocs = async () => {
       try {
-        const [apiRes, mcpRes, metaRes] = await Promise.all([
+        const [apiRes, mcpRes, platformRes, pricingRes] = await Promise.all([
           fetch('/api/docs/api/spec'),
           fetch('/api/docs/plugin/mcp.json'),
-          fetch('/api/mcp/meta'),
+          fetch('/api/docs/platform/mcp.json'),
+          fetch('/api/docs/pricing'),
         ]);
 
         if (apiRes.ok) setOpenApiSpec(await apiRes.json());
         if (mcpRes.ok) setMcpSpec(await mcpRes.json());
-        if (metaRes.ok) {
-          const meta = await metaRes.json();
-          setPlatformToolCount(meta.toolCount ?? 0);
-          setPlatformToolNames(meta.tools ?? []);
+        if (platformRes.ok) {
+          const platform = await platformRes.json();
+          setPlatformMcpSpec(platform);
+          setPlatformToolCount(platform.tools?.length ?? 0);
+          setPlatformToolNames(platform.tools?.map((t: MCPTool) => t.name) ?? []);
         }
+        if (pricingRes.ok) setPricingData(await pricingRes.json());
       } catch (err) {
         console.error('Failed to fetch documentation specs:', err);
         setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -126,6 +168,10 @@ export function useDocsData() {
   return {
     openApiSpec,
     mcpSpec,
+    /** Full platform MCP spec from /api/docs/platform/mcp.json — single source of truth for tool list */
+    platformMcpSpec,
+    /** Pricing data from /api/docs/pricing — single source of truth for credit costs and packages */
+    pricingData,
     loading,
     error,
     apiEndpoints,
@@ -133,9 +179,7 @@ export function useDocsData() {
     mockupEndpoints,
     pluginEndpoints,
     mcpToolNames,
-    /** Live count of platform MCP tools from /api/mcp/meta */
     platformToolCount,
-    /** Live names of platform MCP tools from /api/mcp/meta */
     platformToolNames,
   };
 }

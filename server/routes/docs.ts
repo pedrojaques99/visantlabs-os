@@ -14,6 +14,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { generateOpenAPISpec, countEndpoints } from '../lib/openapi-gen.js';
 import { generateMCPSpec, generatePlatformMCPSpec, countMCPTools } from '../lib/mcp-gen.js';
+import { getPricingPayload } from '../lib/pricing-data.js';
 import { docsCache } from '../lib/docs-cache.js';
 import {
   DocumentationError,
@@ -818,6 +819,27 @@ router.get('/api/component/:name', (req: Request, res: Response) => {
         setDocsHeaders(res);
         res.status(500).json({ error: 'Failed to read component metrics', details: err.message });
       });
+  } catch (err) {
+    handleDocsError(err, res);
+  }
+});
+
+/**
+ * GET /docs/pricing
+ * Pricing data served from pricingData.ts — single source of truth for frontend.
+ * Includes credit costs per model/resolution, credit packages, storage plans,
+ * Google official pricing, and Visant infrastructure costs.
+ */
+router.get('/pricing', (_req: Request, res: Response) => {
+  try {
+    const pricingData = docsCache.getOrGenerate(
+      'pricing-data',
+      () => getPricingPayload(),
+      60 * 60 * 1000 // 1h cache — pricing rarely changes
+    );
+
+    setDocsHeaders(res, 3600);
+    res.json(pricingData);
   } catch (err) {
     handleDocsError(err, res);
   }
