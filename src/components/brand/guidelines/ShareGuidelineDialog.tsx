@@ -11,9 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { brandGuidelineApi } from '@/services/brandGuidelineApi';
+import { brandGuidelineApi, type BrandCollaborator } from '@/services/brandGuidelineApi';
 import { toast } from 'sonner';
-import { Share2, Copy, Check, Link2, Globe, Lock } from 'lucide-react';
+import { Share2, Copy, Check, Link2, Globe, Lock, UserPlus, X, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
 
@@ -36,6 +36,13 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
   const [shareUrl, setShareUrl] = useState('');
   const [copied, setCopied] = useState(false);
 
+  // Collaborators state
+  const [collaborators, setCollaborators] = useState<BrandCollaborator[]>([]);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'editor' | 'viewer'>('editor');
+  const [inviting, setInviting] = useState(false);
+  const [loadingCollaborators, setLoadingCollaborators] = useState(false);
+
   useEffect(() => {
     if (isOpen) {
       setIsPublic(guideline.isPublic || false);
@@ -45,13 +52,19 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
       } else {
         setShareUrl('');
       }
+      if (guideline.id) {
+        setLoadingCollaborators(true);
+        brandGuidelineApi.getCollaborators(guideline.id)
+          .then(setCollaborators)
+          .catch(() => {})
+          .finally(() => setLoadingCollaborators(false));
+      }
     }
   }, [isOpen, guideline]);
 
   const handleTogglePublic = async (checked: boolean) => {
     if (!guideline.id) return;
     setIsLoading(true);
-
     try {
       if (checked) {
         const result = await brandGuidelineApi.share(guideline.id);
@@ -81,6 +94,35 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error('Failed to copy');
+    }
+  };
+
+  const handleInvite = async () => {
+    if (!guideline.id || !inviteEmail.trim()) return;
+    setInviting(true);
+    try {
+      const collaborator = await brandGuidelineApi.addCollaborator(guideline.id, inviteEmail.trim(), inviteRole);
+      setCollaborators(prev => {
+        const filtered = prev.filter(c => c.id !== collaborator.id);
+        return [...filtered, collaborator];
+      });
+      setInviteEmail('');
+      toast.success(`${collaborator.email} added as ${inviteRole}`);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to invite collaborator');
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleRemove = async (userId: string) => {
+    if (!guideline.id) return;
+    try {
+      await brandGuidelineApi.removeCollaborator(guideline.id, userId);
+      setCollaborators(prev => prev.filter(c => c.id !== userId));
+      toast.success('Collaborator removed');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to remove collaborator');
     }
   };
 
@@ -155,6 +197,91 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
               <GlitchLoader size={20} />
             </div>
           )}
+
+          {/* Divider */}
+          <div className="border-t border-white/5" />
+
+          {/* Invite collaborators */}
+          <div className="space-y-3">
+            <MicroTitle className="text-neutral-500 flex items-center gap-2">
+              <UserPlus size={12} />
+              Invite to edit
+            </MicroTitle>
+
+            <div className="flex gap-2">
+              <Input
+                placeholder="Email address"
+                value={inviteEmail}
+                onChange={e => setInviteEmail(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleInvite()}
+                className="flex-1 bg-neutral-900/50 border-white/5 text-xs text-neutral-300 placeholder:text-neutral-700"
+              />
+              <div className="relative">
+                <select
+                  value={inviteRole}
+                  onChange={e => setInviteRole(e.target.value as 'editor' | 'viewer')}
+                  className="h-9 appearance-none bg-neutral-900/50 border border-white/5 text-xs text-neutral-400 rounded-md px-3 pr-7 cursor-pointer focus:outline-none focus:border-white/20"
+                >
+                  <option value="editor">Editor</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+                <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none" />
+              </div>
+              <Button
+                size="sm"
+                onClick={handleInvite}
+                disabled={inviting || !inviteEmail.trim()}
+                className="h-9 px-3 bg-brand-cyan/10 border border-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/20 disabled:opacity-40"
+              >
+                {inviting ? <GlitchLoader size={14} /> : 'Invite'}
+              </Button>
+            </div>
+
+            {/* Collaborators list */}
+            {loadingCollaborators ? (
+              <div className="flex justify-center py-2">
+                <GlitchLoader size={14} />
+              </div>
+            ) : collaborators.length > 0 ? (
+              <div className="space-y-1 max-h-40 overflow-y-auto">
+                {collaborators.map(c => (
+                  <div
+                    key={c.id}
+                    className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.02] border border-white/5"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      {c.picture ? (
+                        <img src={c.picture} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-neutral-800 flex items-center justify-center shrink-0">
+                          <span className="text-[10px] text-neutral-500 uppercase">
+                            {(c.name || c.email).charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                      <span className="text-xs text-neutral-400 truncate">{c.name || c.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={cn(
+                        "text-[10px] font-mono px-2 py-0.5 rounded",
+                        c.role === 'editor'
+                          ? "bg-brand-cyan/10 text-brand-cyan"
+                          : "bg-white/5 text-neutral-500"
+                      )}>
+                        {c.role}
+                      </span>
+                      <button
+                        onClick={() => handleRemove(c.id)}
+                        className="text-neutral-700 hover:text-neutral-400 transition-colors"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {/* Footer */}

@@ -666,7 +666,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                       }
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="w-full p-1.5 rounded-md border focus:outline-none focus:border-neutral-600 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-7 bg-neutral-900/50 border-neutral-700/50 text-neutral-400"
+                    className="w-full p-1.5 rounded-md border-node focus:outline-none focus:border-neutral-600 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-7 bg-neutral-900/50 border-neutral-700/50 text-neutral-400"
                     placeholder={t('canvasNodes.mockupNode.colorPlaceholder')}
                     disabled={isLoading}
                     style={{ pointerEvents: 'auto' }}
@@ -692,7 +692,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               {selectedColors.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-1.5 min-h-[24px]">
                   {selectedColors.map(color => (
-                    <div key={color} className="flex items-center gap-1 pl-1.5 pr-0.5 py-0.5 rounded-md border text-xs bg-neutral-900/80 border-neutral-700">
+                    <div key={color} className="flex items-center gap-1 pl-1.5 pr-0.5 py-0.5 rounded-md border-node text-xs bg-neutral-900/80 border-neutral-700">
                       <span
                         className="w-2.5 h-2.5 rounded-md border-node border-white/10"
                         style={{ backgroundColor: color }}
@@ -717,7 +717,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             <div>
               <div
                 className={cn(
-                  "flex items-center p-1.5 rounded-md cursor-pointer border bg-neutral-900/50 border-neutral-700/50 hover:bg-neutral-800/50 transition-colors",
+                  "flex items-center p-1.5 rounded-md cursor-pointer border-node bg-neutral-900/50 border-neutral-700/50 hover:bg-neutral-800/50 transition-colors",
                   "node-interactive"
                 )}
                 onClick={(e) => {
@@ -727,7 +727,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <div className={cn(
-                  "w-3.5 h-3.5 rounded-md flex items-center justify-center border transition-all duration-200",
+                  "w-3.5 h-3.5 rounded-md flex items-center justify-center border-node transition-all duration-200",
                   withHuman ? 'bg-brand-cyan/80 border-[brand-cyan]' : 'bg-neutral-700 border-neutral-600'
                 )}>
                   {withHuman && (

@@ -114,3 +114,10 @@ scripts/output/sports248-athletes/01-runner.png
 
 # MCP local config (may contain secrets)
 .mcp.json
+
+# Private scripts — client jobs & internal credentials
+scripts/feedback-analytics.mjs
+scripts/feedback/
+scripts/lib/
+scripts/gen-sports248-*.mjs
+scripts/output/sports248/

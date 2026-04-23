@@ -352,7 +352,48 @@ export const brandGuidelineApi = {
       throw new Error(err.error || 'Failed to delete knowledge file');
     }
   },
+
+  // ── Collaborators ──
+
+  async getCollaborators(guidelineId: string): Promise<BrandCollaborator[]> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/collaborators`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to fetch collaborators');
+    const data = await response.json();
+    return data.collaborators;
+  },
+
+  async addCollaborator(guidelineId: string, email: string, role: 'editor' | 'viewer'): Promise<BrandCollaborator> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/collaborators`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ email, role }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: 'Failed to add collaborator' }));
+      throw new Error(err.error || 'Failed to add collaborator');
+    }
+    const data = await response.json();
+    return data.collaborator;
+  },
+
+  async removeCollaborator(guidelineId: string, userId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/collaborators/${userId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to remove collaborator');
+  },
 };
+
+export interface BrandCollaborator {
+  id: string;
+  email: string;
+  name?: string | null;
+  picture?: string | null;
+  role: 'editor' | 'viewer';
+}
 
 export interface BrandKnowledgeFile {
   id: string;

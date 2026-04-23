@@ -520,7 +520,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             <div className={cn(
               "flex items-center gap-2 px-2.5 py-1.5 rounded-lg border-node text-[10px] font-mono transition-all duration-300",
               isBrandActive
-                ? "bg-foreground/10 border-foreground/30 text-foreground shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+                ? "bg-foreground/10 border-neutral-700 text-foreground shadow-[0_0_15px_rgba(255,255,255,0.05)]"
                 : "bg-neutral-900/40 border-neutral-800/40 text-neutral-400 opacity-80"
             )}>
               <div className="relative flex items-center justify-center shrink-0">
@@ -637,7 +637,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                       nodeData.onUpdateData(id, { promptSuggestions: [] });
                     }
                   }}
-                  className="w-full text-left font-mono border-node border-foreground/10 hover:border-neutral-700 hover:bg-brand-cyan/5 hover:text-brand-cyan transition-colors"
+                  className="w-full text-left font-mono border-node border-neutral-800 hover:border-neutral-700 hover:bg-brand-cyan/5 hover:text-brand-cyan transition-colors"
                 >
                   <span className="truncate">{suggestion}</span>
                 </NodeButton>
