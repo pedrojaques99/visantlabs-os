@@ -130,7 +130,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                                 variant="ghost"
                                 size="xs"
                                 onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
-                                className={cn(showSystemPromptEditor && "text-brand-cyan border-brand-cyan/30 bg-brand-cyan/5")}
+                                className={cn(showSystemPromptEditor && "text-brand-cyan border-neutral-800 bg-brand-cyan/5")}
                             >
                                 <Settings2 size={14} />
                             </NodeButton>
@@ -188,7 +188,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                         <div className="flex items-center justify-between pb-3 border-b border-neutral-700/20">
                             <div className="flex gap-2">
                                 <span className="text-[10px] text-brand-cyan flex items-center gap-1 uppercase font-bold tracking-widest"><CheckCircle2 size={10} /> {t('canvasNodes.chatNode.context') || 'Context'}</span>
-                                {connectedImages.length > 0 && <span className="text-[10px] bg-brand-cyan/10 text-brand-cyan px-2 rounded-full border-node border-brand-cyan/20">{t('canvasNodes.chatNode.images')}: {connectedImages.length}</span>}
+                                {connectedImages.length > 0 && <span className="text-[10px] bg-brand-cyan/10 text-brand-cyan px-2 rounded-full border-node border-neutral-800">{t('canvasNodes.chatNode.images')}: {connectedImages.length}</span>}
                             </div>
                             <NodeButton variant="primary" size="xs" onClick={handleSuggestMockups} disabled={isLoading}>
                                 <Diamond size={11} className="mr-1.5" /> {t('canvasNodes.chatNode.suggestMockups') || 'Suggest'}

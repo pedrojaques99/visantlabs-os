@@ -42,7 +42,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                   'flex flex-col items-center justify-center gap-1 w-12 h-11 text-xs font-mono transition-all px-0',
                   isSelected
                     ? 'bg-white/10 text-white border-white/20'
-                    : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-brand-cyan/30 hover:text-brand-cyan',
+                    : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-700 hover:text-brand-cyan',
                   disabled && 'opacity-50 cursor-not-allowed'
                 )}
               /* onMouseDown removed to allow node selection */
@@ -188,7 +188,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     'flex flex-col items-center justify-center gap-1 py-1.5 px-4 md:px-5 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer',
                     isSelected
                       ? 'bg-white/10 text-white border-white/20'
-                      : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-brand-cyan/30 hover:text-brand-cyan',
+                      : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-700 hover:text-brand-cyan',
                     disabled && 'opacity-50 cursor-not-allowed'
                   )}
                 >

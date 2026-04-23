@@ -71,7 +71,7 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           onClick={() => fileInputRef.current?.click()}
           className={cn(
             'mx-3 my-3 flex flex-col items-center gap-2 rounded border-node border-dashed border-white/15',
-            'p-4 text-white/30 hover:border-brand-cyan/40 hover:text-white/50 transition-colors w-[calc(100%-24px)]'
+            'p-4 text-white/30 hover:border-neutral-700 hover:text-white/50 transition-colors w-[calc(100%-24px)]'
           )}
         >
           <Upload size={18} />

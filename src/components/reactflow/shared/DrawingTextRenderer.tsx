@@ -66,7 +66,7 @@ export const DrawingTextRenderer: React.FC<DrawingTextRendererProps> = ({
         onClick={(e) => e.stopPropagation()}
         placeholder={placeholder}
         className={cn(
-          'w-full h-full resize-none nodrag nopan bg-transparent border-node border-brand-cyan/50 rounded outline-none focus:ring-2 focus:ring-brand-cyan/50 focus:border-brand-cyan p-2 drawing-text-editor',
+          'w-full h-full resize-none nodrag nopan bg-transparent border-node border-brand-cyan/50 rounded outline-none focus:border-neutral-600 p-2 drawing-text-editor',
           className
         )}
         style={textStyle}

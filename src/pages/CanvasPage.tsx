@@ -3739,11 +3739,14 @@ export const CanvasPage: React.FC = () => {
     }
   }, [drawing]);
 
-  const handleGlobalMouseUp = useCallback(() => {
-    if (drawing.isDrawing) {
+  const handleGlobalMouseUp = useCallback((e: React.MouseEvent) => {
+    // Only stop drawing if the mouseUp happened OUTSIDE the canvas wrapper.
+    // Events inside CanvasFlow already call stopDrawing via onMouseUp — letting
+    // this fire too would call stopDrawing twice and duplicate the stroke.
+    if (drawing.isDrawing && !reactFlowWrapper.current?.contains(e.target as Element)) {
       drawing.stopDrawing();
     }
-  }, [drawing]);
+  }, [drawing, reactFlowWrapper]);
 
   // Handle drag and drop onto canvas
   const handleCanvasDrop = useCallback((event: React.DragEvent) => {

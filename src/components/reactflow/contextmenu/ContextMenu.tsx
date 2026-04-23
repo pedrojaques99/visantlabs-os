@@ -333,7 +333,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         "aria-selected:bg-neutral-800/50 aria-selected:text-white",
         item.highlight
           ? "border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan"
-          : "border-neutral-800/40 bg-black/30 text-neutral-400 hover:border-brand-cyan/40 hover:bg-neutral-800/50 hover:text-white"
+          : "border-neutral-800/40 bg-black/30 text-neutral-400 hover:border-neutral-700 hover:bg-neutral-800/50 hover:text-white"
       )}
     >
       <span className={cn(
@@ -398,7 +398,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               className={cn(
                 "w-full bg-neutral-900/60 border border-neutral-800/50 rounded-md",
                 "px-3 py-1.5 text-xs text-neutral-200 placeholder:text-neutral-500",
-                "focus:outline-none focus:ring-1 focus:ring-brand-cyan/40 focus:border-brand-cyan/40",
+                "focus:outline-none focus:border-neutral-600",
                 "transition-colors duration-150"
               )}
               onMouseDown={(e) => e.stopPropagation()}

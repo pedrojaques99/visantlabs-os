@@ -41,6 +41,13 @@ const RULES = [
     scope: 'nodes-and-ui',
   },
   {
+    id: 'accent-border-on-focus',
+    description: "focus/hover brand-cyan border — banned on inputs, selects, buttons",
+    fix: "Replace focus:border-brand-cyan/* and hover:border-brand-cyan/* with focus:border-neutral-600",
+    pattern: /(?:focus|hover):border-brand-cyan|focus:border-\[brand-cyan\]/,
+    scope: 'nodes-and-ui',
+  },
+  {
     id: 'high-contrast-foreground-border',
     description: "border-foreground/* inside node — creates bright white border, use border-neutral-800",
     fix: "Replace border-foreground/* with border-neutral-800 for dark-theme nodes",

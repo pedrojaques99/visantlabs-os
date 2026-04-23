@@ -58,7 +58,7 @@ export const DataTableEditableCell = <TData,>({
                         setIsEditing(false);
                     }}
                     onBlur={onBlur}
-                    className={cn("h-4 w-4 rounded border-gray-300 text-brand-cyan focus:ring-brand-cyan", className)}
+                    className={cn("h-4 w-4 rounded border-gray-300 text-brand-cyan ", className)}
                 />
             );
         }

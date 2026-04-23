@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useEffect } from 'react';
-import { 
-  CHAT_MODELS, 
-  MODEL_CONFIG, 
-  AVAILABLE_IMAGE_MODELS, 
-  isAdvancedModel, 
-  getModelConfig 
+import {
+  CHAT_MODELS,
+  MODEL_CONFIG,
+  AVAILABLE_IMAGE_MODELS,
+  isAdvancedModel,
+  getModelConfig
 } from '../../constants/geminiModels';
 import {
   SEEDREAM_IMAGE_MODELS,
@@ -70,12 +70,12 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         const effectiveResolution = isAdvancedModel(modelId as GeminiModel)
           ? (selectedModel === modelId ? resolution : config?.defaultResolution)
           : undefined;
-        
+
         const credits = getCreditsRequired(modelId, effectiveResolution, 'gemini');
         const isUnlimited = isGenerationUnlimited({ model: modelId, resolution: effectiveResolution, planMetadata });
 
         const icon = config.providerDomain ? (
-          <img 
+          <img
             src={`https://img.logo.dev/${config.providerDomain}?size=48${token ? `&token=${token}` : ''}`}
             className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
             onError={(e) => (e.currentTarget.style.display = 'none')}
@@ -84,7 +84,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         ) : undefined;
 
         // Label with dynamic credit info
-        const label = variant === 'node' 
+        const label = variant === 'node'
           ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
           : config.label;
 
@@ -100,7 +100,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         const isUnlimited = isGenerationUnlimited({ model: modelId, resolution: effectiveResolution, planMetadata });
 
         const icon = config.providerDomain ? (
-          <img 
+          <img
             src={`https://img.logo.dev/${config.providerDomain}?size=48${token ? `&token=${token}` : ''}`}
             className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
             onError={(e) => (e.currentTarget.style.display = 'none')}
@@ -149,7 +149,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         value: modelId,
         label: config?.label || modelId,
         icon: config?.providerDomain ? (
-          <img 
+          <img
             src={`https://img.logo.dev/${config.providerDomain}?token=${token}`}
             className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
             onError={(e) => (e.currentTarget.style.display = 'none')}

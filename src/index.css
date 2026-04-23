@@ -1540,9 +1540,11 @@
 }
 
 /* ── Node border-width token — use `border-node` utility in node components ── */
-@utility border-node {
-  border-style: solid;
-  border-width: var(--node-border-width);
+@layer utilities {
+  .border-node {
+    border-style: solid;
+    border-width: var(--node-border-width, 1px);
+  }
 }
 
 /* Node text color utilities - use CSS variables for automatic contrast */

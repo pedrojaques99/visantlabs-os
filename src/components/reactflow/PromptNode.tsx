@@ -637,7 +637,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                       nodeData.onUpdateData(id, { promptSuggestions: [] });
                     }
                   }}
-                  className="w-full text-left font-mono border-node border-foreground/10 hover:border-brand-cyan/20 hover:bg-brand-cyan/5 hover:text-brand-cyan transition-colors"
+                  className="w-full text-left font-mono border-node border-foreground/10 hover:border-neutral-700 hover:bg-brand-cyan/5 hover:text-brand-cyan transition-colors"
                 >
                   <span className="truncate">{suggestion}</span>
                 </NodeButton>

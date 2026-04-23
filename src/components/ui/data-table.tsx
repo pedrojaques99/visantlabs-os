@@ -236,7 +236,7 @@ export function DataTable<TData, TValue>({
                   table.getColumn(searchKey)?.setFilterValue(value)
                 }
                 iconSize={16}
-                className="bg-neutral-950/70 border-neutral-800/50 text-neutral-300 placeholder:text-neutral-500 focus:ring-[brand-cyan]/30 focus:border-[brand-cyan]/50"
+                className="bg-neutral-950/70 border-neutral-800/50 text-neutral-300 placeholder:text-neutral-500  focus:border-neutral-600"
                 containerClassName="w-full"
               />
             </div>

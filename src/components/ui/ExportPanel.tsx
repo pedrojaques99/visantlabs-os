@@ -130,7 +130,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
             <select
               value={selectedScale}
               onChange={(e) => setSelectedScale(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-700/30 rounded text-xs text-neutral-300 font-mono focus:outline-none focus:border-[brand-cyan]/50"
+              className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-700/30 rounded text-xs text-neutral-300 font-mono focus:outline-none focus:border-neutral-600"
             >
               {SCALE_OPTIONS.map((scale) => (
                 <option key={scale} value={scale}>
@@ -146,7 +146,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
             <select
               value={selectedFormat}
               onChange={(e) => setSelectedFormat(e.target.value as ExportFormat)}
-              className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-700/30 rounded text-xs text-neutral-300 font-mono focus:outline-none focus:border-[brand-cyan]/50"
+              className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-700/30 rounded text-xs text-neutral-300 font-mono focus:outline-none focus:border-neutral-600"
             >
               {FORMAT_OPTIONS.map((format) => (
                 <option key={format} value={format}>

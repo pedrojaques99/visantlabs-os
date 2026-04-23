@@ -666,7 +666,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                       }
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="w-full p-1.5 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-7 bg-neutral-900/50 border-neutral-700/50 text-neutral-400"
+                    className="w-full p-1.5 rounded-md border focus:outline-none focus:border-neutral-600 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-7 bg-neutral-900/50 border-neutral-700/50 text-neutral-400"
                     placeholder={t('canvasNodes.mockupNode.colorPlaceholder')}
                     disabled={isLoading}
                     style={{ pointerEvents: 'auto' }}

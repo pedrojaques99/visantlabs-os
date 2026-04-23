@@ -3,6 +3,7 @@
 import { calculateImageCost } from '../../src/utils/pricing.js';
 import type { GeminiModel, Resolution } from '../../src/types/types.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { OPENAI_IMAGE_MODELS, isOpenAIImageModel } from '../../src/constants/openaiModels.js';
 
 export type FeatureType = 'brandingmachine' | 'mockupmachine' | 'canvas' | 'branding' | 'figma';
 
@@ -42,9 +43,22 @@ const TEXT_GENERATION_PRICING: Record<string, { inputPricePer1M: number; outputP
  * Get credits required for image generation based on model and resolution
  */
 export function getCreditsRequired(
-  model: GeminiModel,
+  model: GeminiModel | string,
   resolution?: Resolution
 ): number {
+  // OpenAI gpt-image-2 — ~$0.04-$0.17/image, mapped to credit tiers
+  if (isOpenAIImageModel(model)) {
+    switch (resolution) {
+      case '512px':
+      case 'HD':
+      case '1K':    return 2;
+      case '2K':    return 3;
+      case '4K':    return 4;
+      case '1080p': return 3;
+      default:      return 2;
+    }
+  }
+
   if (model === GEMINI_MODELS.FLASH) {
     return 1;
   }

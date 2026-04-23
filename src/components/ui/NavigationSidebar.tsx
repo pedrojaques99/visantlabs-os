@@ -171,7 +171,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       {/* Mobile Toggle Button */}
       <button
         onClick={() => onToggleOpen(!isOpen)}
-        className="fixed top-10 md:top-12 left-4 z-50 lg:hidden p-2 bg-card border border-neutral-800/50 rounded-md text-neutral-300 hover:bg-neutral-800/50 hover:border-brand-cyan/30 transition-colors"
+        className="fixed top-10 md:top-12 left-4 z-50 lg:hidden p-2 bg-card border border-neutral-800/50 rounded-md text-neutral-300 hover:bg-neutral-800/50 hover:border-neutral-700 transition-colors"
         aria-label="Toggle navigation"
       >
         {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -218,7 +218,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                     className={cn(
                       'flex-1 flex items-center gap-2 px-3 py-2 rounded-md text-sm font-mono transition-colors',
                       isActive
-                        ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
+                        ? 'bg-brand-cyan/20 text-brand-cyan border border-neutral-800'
                         : 'text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50'
                     )}
                   >

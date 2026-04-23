@@ -1085,7 +1085,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               value={prompt}
               onChange={handlePromptChange}
               placeholder={t('canvasNodes.strategyNode.brandDescriptionPlaceholder')}
-              className="text-xs resize-none nodrag nopan bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
+              className="text-xs resize-none nodrag nopan bg-neutral-900/60 border-neutral-700/40 focus:border-neutral-600 focus:ring-1  backdrop-blur-sm"
               rows={3}
               disabled={isGenerating}
             />
@@ -1369,7 +1369,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                           <AutoResizeTextarea
                             value={content}
                             onChange={(e) => handleSectionContentChange(section.type, e.target.value)}
-                            className="text-xs resize-none nodrag nopan w-full bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
+                            className="text-xs resize-none nodrag nopan w-full bg-neutral-900/60 border-neutral-700/40 focus:border-neutral-600 focus:ring-1  backdrop-blur-sm"
                             minHeight={40}
                             maxHeight={400}
                             onWheel={(e) => {

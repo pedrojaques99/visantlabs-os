@@ -161,12 +161,10 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     };
 
     const baseStyles = variant === 'node'
-      ? "w-full px-3 py-2 bg-neutral-950/40 border-node border-neutral-800 rounded-md text-xs text-neutral-300"
-      : "w-full px-3 py-2.5 bg-neutral-800 border-node border-neutral-800 rounded-xl text-neutral-200 text-sm";
+      ? "w-full px-3 py-2 bg-neutral-950/40 border border-neutral-800 rounded-md text-xs text-neutral-300"
+      : "w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-xl text-neutral-200 text-sm";
 
-    const focusStyles = variant === 'node'
-      ? "focus:outline-none focus:border-brand-cyan/50"
-      : "focus:outline-none focus:border-brand-cyan/70 focus:ring-1 focus:ring-brand-cyan/20";
+    const focusStyles = "focus:outline-none focus:border-neutral-600";
 
     const dropdownContent = (
       <div

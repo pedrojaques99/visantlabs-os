@@ -55,18 +55,21 @@ export async function generateOpenAIImage(params: GenerateOpenAIImageParams): Pr
   const quality = OPENAI_QUALITY_MAP[resolution] ?? 'medium';
 
   const hasBaseImage = !!(baseImage?.base64 || baseImage?.url);
+  const hasReferenceImages = !!(referenceImages?.length && referenceImages.some(r => r?.base64));
 
-  if (hasBaseImage) {
+  if (hasBaseImage || hasReferenceImages) {
     // Image editing mode — uses images.edit
+    // IMPORTANT: reference images (e.g. brand logo) MUST be passed here so the model sees them.
+    // If only referenceImages provided (no baseImage), they become the image[] input directly.
     const imageFiles: File[] = [];
 
     if (baseImage?.base64) {
       imageFiles.push(base64ToFile(baseImage.base64, baseImage.mimeType || 'image/png', 'base.png'));
     }
 
-    // Add reference images (up to 15 additional, API max is 16 total)
+    // Add reference images (logo, brand assets) — up to 16 total per API limit
     if (referenceImages?.length) {
-      for (const ref of referenceImages.slice(0, 15)) {
+      for (const ref of referenceImages.slice(0, 16 - imageFiles.length)) {
         if (ref?.base64) {
           imageFiles.push(base64ToFile(ref.base64, ref.mimeType || 'image/png', `ref_${imageFiles.length}.png`));
         }
@@ -90,7 +93,7 @@ export async function generateOpenAIImage(params: GenerateOpenAIImageParams): Pr
     };
   }
 
-  // Text-to-image mode — uses images.generate
+  // Text-to-image mode — uses images.generate (no reference images)
   const response = await client.images.generate({
     model,
     prompt,

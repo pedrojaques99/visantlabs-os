@@ -47,7 +47,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           className={cn(
             'w-full pl-8 pr-8 py-1.5 text-xs bg-neutral-900/50 border border-neutral-800/40 rounded-md',
             'text-neutral-300 placeholder:text-neutral-600',
-            'focus:outline-none focus:border-[brand-cyan]/50 focus:ring-1 focus:ring-[brand-cyan]/20',
+            'focus:outline-none focus:border-neutral-600',
             'transition-all duration-150',
             className
           )}
