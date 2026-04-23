@@ -42,10 +42,13 @@ if (!BRAND_NAME) {
 // ── Config ────────────────────────────────────────────────────────────────────
 const API_PORT   = process.env.SERVER_PORT || 3100;
 const MCP_URL    = `http://localhost:${API_PORT}/api/mcp`;
-const VISANT_KEY = process.env.VISANT_API_TOKEN ||
-  'REMOVED_VISANT_KEY';
-const OPENAI_KEY = process.env.OPENAI_KEY ||
-  'REMOVED_OPENAI_KEY';
+const VISANT_KEY = process.env.VISANT_API_TOKEN;
+const OPENAI_KEY = process.env.OPENAI_KEY;
+
+if (!VISANT_KEY || !OPENAI_KEY) {
+  console.error('Error: VISANT_API_TOKEN and OPENAI_KEY environment variables are required.');
+  process.exit(1);
+}
 
 const slug = name => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 const OUTPUT_DIR = join(__dirname, 'output', slug(BRAND_NAME));
