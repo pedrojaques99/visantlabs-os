@@ -23,6 +23,7 @@ import imagesRoutes from './routes/images.js';
 import waitlistRoutes from './routes/waitlist.js';
 import usageRoutes from './routes/usage.js';
 import videoRoutes from './routes/video.js';
+import moodboardRoutes from './routes/moodboard.js';
 import communityRoutes from './routes/community.js';
 import storageRoutes from './routes/storage.js';
 import usersRoutes from './routes/users.js';
@@ -49,6 +50,7 @@ import adminChatRoutes from './routes/adminChat.js';
 import chatRoutes from './routes/chat.js';
 import apiKeysRoutes from './routes/apiKeys.js';
 import pipelineRoutes from './routes/pipeline.js';
+import campaignRoutes from './routes/campaign.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
@@ -195,6 +197,7 @@ export function createApp() {
     ['/waitlist', waitlistRoutes],
     ['/usage', usageRoutes],
     ['/video', videoRoutes],
+    ['/moodboard', moodboardRoutes],
     ['/community', communityRoutes],
     ['/storage', storageRoutes],
     ['/users', usersRoutes],
@@ -220,6 +223,7 @@ export function createApp() {
     ['/rpc', rpcRoutes],
     ['/api-keys', apiKeysRoutes],
     ['/pipeline', pipelineRoutes],
+    ['/canvas/generate-campaign', campaignRoutes],
   ];
 
   for (const [path, router] of mounts) {

@@ -37,7 +37,7 @@ const BudgetMachinePage = lazyWithRetry(() => import('./pages/BudgetMachinePage'
 const MyBudgetsPage = lazyWithRetry(() => import('./pages/MyBudgetsPage').then(m => ({ default: m.MyBudgetsPage })));
 const BudgetSharedPage = lazyWithRetry(() => import('./pages/BudgetSharedPage').then(m => ({ default: m.BudgetSharedPage })));
 const AppsPage = lazyWithRetry(() => import('./pages/AppsPage').then(m => ({ default: m.AppsPage })));
-const ExtractorPage = lazyWithRetry(() => import('./pages/ExtractorPage').then(m => ({ default: m.default })));
+const ExtractorPage = lazyWithRetry(() => import('./pages/ExtractorPage'));
 const QRCodePage = lazyWithRetry(() => import('./pages/QRCodePage').then(m => ({ default: m.QRCodePage })));
 const AboutPage = lazyWithRetry(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
 const PrivacyPolicyPage = lazyWithRetry(() => import('./pages/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })));
@@ -53,6 +53,8 @@ const PublicBrandGuideline = lazyWithRetry(() => import('./pages/PublicBrandGuid
 const BrandingExpertPage = lazyWithRetry(() => import('./pages/BrandingExpertPage').then(m => ({ default: m.BrandingExpertPage })));
 const CreatePage = lazyWithRetry(() => import('./pages/CreatePage').then(m => ({ default: m.CreatePage })));
 const AdminChatPage = lazyWithRetry(() => import('./pages/AdminChatPage').then(m => ({ default: m.AdminChatPage })));
+const OnboardPage = lazyWithRetry(() => import('./pages/OnboardPage').then(m => ({ default: m.OnboardPage })));
+const MoodboardStudioPage = lazyWithRetry(() => import('./pages/MoodboardStudioPage').then(m => ({ default: m.MoodboardStudioPage })));
 
 
 const LoadingFallback = () => (
@@ -93,9 +95,11 @@ const App: React.FC = () => {
                 <Route path="/budget/shared/:shareId" element={<BudgetSharedPage />} />
                 <Route path="/apps" element={<AppsPage />} />
                 <Route path="/extractor" element={<ExtractorPage />} />
+                <Route path="/moodboard" element={<MoodboardStudioPage />} />
                 <Route path="/instagram-extractor" element={<Navigate to="/extractor" replace />} />
                 <Route path="/qrcode" element={<QRCodePage />} />
                 <Route path="/about" element={<AboutPage />} />
+                <Route path="/onboard" element={<OnboardPage />} />
                 <Route path="/privacy" element={<PrivacyPolicyPage />} />
                 <Route path="/brand-guidelines" element={<BrandGuidelinesPage />} />
                 <Route path="/brand/:slug" element={<PublicBrandGuideline />} />

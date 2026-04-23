@@ -248,6 +248,10 @@
       "description": "Extraia imagens HD do Google, URL, Instagram ou Documentos.",
       "name": "Extrator Universal"
     },
+    "moodboardStudio": {
+      "name": "Moodboard Studio",
+      "description": "Extraia, amplie e anime imagens de moodboards. Gere vídeos cinematográficos com Veo 3."
+    },
     "mockupMachine": {
       "description": "Gere mockups profissionais com IA",
       "name": "Mockup Machine"
@@ -1499,6 +1503,7 @@
   },
   "communityPresets": {
     "actions": {
+      "deleteConfirm": "Excluir Preset",
       "duplicate": "Duplicar",
       "duplicateButton": "Duplicar",
       "duplicateConfirm": "Duplicar Preset",

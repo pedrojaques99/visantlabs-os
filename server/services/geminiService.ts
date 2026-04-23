@@ -1701,3 +1701,139 @@ export const chatWithAIContext = async (
     model: GEMINI_MODELS.TEXT
   });
 };
+
+// ─── Moodboard Studio ───────────────────────────────────────────────────────
+
+export interface BoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface AnimationSuggestion {
+  id: string;
+  preset: string;
+  prompt: string;
+}
+
+export const detectGridItems = async (base64Image: string): Promise<BoundingBox[]> => {
+  const geminiAI = getAI();
+
+  const response = await withRetry(async () => {
+    return geminiAI.models.generateContent({
+      model: 'gemini-2.0-flash-lite',
+      contents: [{
+        parts: [
+          {
+            text: `Identify all individual images within this grid or moodboard.
+Return a JSON array of objects, each containing 'x', 'y', 'width', and 'height' as percentages (0-100) relative to the total image dimensions.
+Be extremely precise with the coordinates to avoid including borders or adjacent images.
+Only return the JSON array.`
+          },
+          { inlineData: { mimeType: 'image/jpeg', data: base64Image.replace(/^data:image\/\w+;base64,/, '') } }
+        ]
+      }],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              x: { type: Type.NUMBER },
+              y: { type: Type.NUMBER },
+              width: { type: Type.NUMBER },
+              height: { type: Type.NUMBER },
+            },
+            required: ['x', 'y', 'width', 'height'],
+          },
+        },
+      },
+    });
+  }, { model: 'gemini-2.0-flash-lite' });
+
+  try {
+    return JSON.parse(response.text || '[]');
+  } catch {
+    return [];
+  }
+};
+
+export const upscaleImageMoodboard = async (
+  base64Image: string,
+  size: '1K' | '2K' | '4K' = '4K'
+): Promise<string> => {
+  const geminiAI = getAI();
+
+  const response = await withRetry(async () => {
+    return geminiAI.models.generateContent({
+      model: 'gemini-2.0-flash-preview-image-generation',
+      contents: {
+        parts: [
+          { inlineData: { mimeType: 'image/jpeg', data: base64Image.replace(/^data:image\/\w+;base64,/, '') } },
+          { text: `Upscale this image to ${size} resolution. Enhance clarity, details, and sharpness while preserving the original content perfectly. Output only the upscaled image.` },
+        ],
+      },
+      config: {
+        responseModalities: [Modality.IMAGE, Modality.TEXT],
+      },
+    } as any);
+  }, { model: 'gemini-2.0-flash-preview-image-generation' });
+
+  for (const part of (response as any).candidates?.[0]?.content?.parts || []) {
+    if (part.inlineData) {
+      return `data:image/png;base64,${part.inlineData.data}`;
+    }
+  }
+
+  throw new Error('No image returned from upscale');
+};
+
+export const suggestAnimationPresets = async (
+  images: { id: string; base64: string }[]
+): Promise<AnimationSuggestion[]> => {
+  const geminiAI = getAI();
+
+  const response = await withRetry(async () => {
+    return geminiAI.models.generateContent({
+      model: 'gemini-2.0-flash-lite',
+      contents: [{
+        parts: [
+          {
+            text: `Analyze these images and suggest the best animation preset and a cinematic video prompt for each.
+Available presets: "zoom-in", "zoom-out", "pan-lr", "pan-rl", "fade-in".
+Return a JSON array of objects, each with 'id', 'preset', and 'prompt'.
+The 'id' must match the provided image IDs.
+The 'prompt' should be a detailed cinematic description optimized for Veo 3 video generation.
+Only return the JSON array.`
+          },
+          ...images.slice(0, 10).map(img => ({
+            inlineData: { mimeType: 'image/jpeg', data: img.base64.replace(/^data:image\/\w+;base64,/, '') }
+          })),
+        ]
+      }],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.STRING },
+              preset: { type: Type.STRING },
+              prompt: { type: Type.STRING },
+            },
+            required: ['id', 'preset', 'prompt'],
+          },
+        },
+      },
+    });
+  }, { model: 'gemini-2.0-flash-lite' });
+
+  try {
+    return JSON.parse(response.text || '[]');
+  } catch {
+    return [];
+  }
+};
