@@ -233,7 +233,7 @@ export const PricingPage: React.FC = () => {
         description="Planos e pacotes de créditos para gerar mockups profissionais com IA. Escolha o plano ideal para suas necessidades de design."
         keywords="preços, planos, créditos, assinatura, mockup generator, pricing"
       />
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0">
         </div>
         <div className="max-w-5xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
@@ -313,7 +313,7 @@ export const PricingPage: React.FC = () => {
                 <div className="animate-fade-in-fast">
                   <div className="flex flex-col items-center justify-center py-4">
                     <GlassPanel className="w-full max-w-[500px] shadow-2xl overflow-hidden group relative">
-                      <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                       <CardContent className="p-4 md:p-8">
                         <div className="space-y-8 relative z-10">
@@ -358,7 +358,7 @@ export const PricingPage: React.FC = () => {
                             <div className="text-4xl font-bold text-neutral-100 font-mono mb-1">
                               {formatPrice(animatedPrice, currencyInfo?.currency || 'BRL', currencyInfo?.locale || 'pt-BR')}
                             </div>
-                            <MicroTitle as="span" className="opacity-300">
+                            <MicroTitle as="span" className="opacity-100">
                               {currencyInfo?.currency === 'BRL' ? 'Pagamento Único' : 'One-time payment'}
                             </MicroTitle>
 
@@ -477,7 +477,7 @@ export const PricingPage: React.FC = () => {
                               </CardTitle>
                             </div>
                             {plan.isByok && (
-                              <Badge className="bg-brand-cyan/20 text-brand-cyan border-none text-[9px] px-2 py-0">
+                              <Badge className="bg-brand-cyan/20 text-brand-cyan border-none text-[10px] px-2 py-0">
                                 BYOK
                               </Badge>
                             )}
@@ -577,9 +577,9 @@ export const PricingPage: React.FC = () => {
               </div>
 
               <div className="flex flex-col gap-3">
-                <a 
-                  href="https://github.com/visantlabs" 
-                  target="_blank" 
+                <a
+                  href="https://github.com/visantlabs"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/40 transition-all group"
                 >
@@ -592,9 +592,9 @@ export const PricingPage: React.FC = () => {
                   <Plus size={16} className="text-neutral-600 group-hover:translate-x-1 transition-transform" />
                 </a>
 
-                <a 
-                  href="https://discord.gg/visantlabs" 
-                  target="_blank" 
+                <a
+                  href="https://discord.gg/visantlabs"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/40 transition-all group"
                 >

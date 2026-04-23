@@ -3,40 +3,22 @@ import { createPortal } from 'react-dom';
 import { useOthers, useUpdateMyPresence } from '../../config/liveblocks';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import type { Node } from '@xyflow/react';
+import {
+  getPresenceColor,
+  getPresenceLabelColor,
+  flowToScreen,
+  getViewportZoom,
+  getNodeDisplaySize,
+  ghostBoxStyle,
+  ghostLabelStyle,
+  cursorWrapperStyle,
+} from '@/lib/liveblocks-presence';
 
 interface CollaborativeCursorsProps {
   reactFlowInstance: ReactFlowInstance | null;
   reactFlowWrapper: React.RefObject<HTMLDivElement>;
   nodes?: Node[];
 }
-
-// Generate a consistent color for a user based on their ID
-const getUserColor = (userId: string): string => {
-  // Simple hash function to convert string to number
-  let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    hash = userId.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  // Generate vibrant colors with good saturation
-  const hue = Math.abs(hash) % 360;
-  const saturation = 65 + (Math.abs(hash) % 20); // 65-85%
-  const lightness = 50 + (Math.abs(hash) % 15); // 50-65%
-
-  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-};
-
-// Get darker version of color for label background
-const getDarkerColor = (color: string): string => {
-  // Extract HSL values and darken
-  const match = color.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
-  if (match) {
-    const [, hue, saturation, lightness] = match;
-    const darkerLightness = Math.max(35, parseInt(lightness) - 15);
-    return `hsl(${hue}, ${saturation}%, ${darkerLightness}%)`;
-  }
-  return color;
-};
 
 export const CollaborativeCursors: React.FC<CollaborativeCursorsProps> = ({
   reactFlowInstance,
@@ -113,12 +95,6 @@ export const CollaborativeCursors: React.FC<CollaborativeCursorsProps> = ({
         zIndex: 1000
       }}
     >
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
       {others.map((user) => {
         const cursor = user.presence?.cursor;
         if (!cursor) return null;
@@ -126,50 +102,21 @@ export const CollaborativeCursors: React.FC<CollaborativeCursorsProps> = ({
         // Convert flow coordinates to screen coordinates
         if (!reactFlowInstance) return null;
 
-        let screenPosition: { x: number; y: number } | null = null;
-
-        // Try using flowToScreenPosition if available
-        if (reactFlowInstance.flowToScreenPosition) {
-          screenPosition = reactFlowInstance.flowToScreenPosition({
-            x: cursor.x,
-            y: cursor.y,
-          });
-        } else if (reactFlowInstance.getViewport) {
-          // Fallback: calculate manually using viewport
-          const viewport = reactFlowInstance.getViewport();
-          if (viewport) {
-            screenPosition = {
-              x: cursor.x * viewport.zoom + viewport.x,
-              y: cursor.y * viewport.zoom + viewport.y,
-            };
-          }
-        }
-
+        const screenPosition = flowToScreen({ x: cursor.x, y: cursor.y }, reactFlowInstance);
         if (!screenPosition) return null;
 
-        const userInfo = user.info;
-        const userName = userInfo?.name || user.id;
-        const userColor = getUserColor(user.id);
-        const labelColor = getDarkerColor(userColor);
+        const userName = user.info?.name || user.id;
+        const userColor = getPresenceColor(user.id);
+        const labelColor = getPresenceLabelColor(userColor);
 
         return (
-          <div
-            key={user.id}
-            style={{
-              position: 'absolute',
-              left: `${screenPosition.x}px`,
-              top: `${screenPosition.y}px`,
-              transform: 'translate(20px, -50%)',
-              pointerEvents: 'none',
-              zIndex: 1000,
-            }}
-          >
+          <div key={user.id} style={cursorWrapperStyle(screenPosition.x, screenPosition.y)}>
             <div
               style={{
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '10px',
               }}
             >
               {/* Colored cursor circle */}
@@ -187,7 +134,7 @@ export const CollaborativeCursors: React.FC<CollaborativeCursorsProps> = ({
               {/* Name label */}
               <div
                 style={{
-                  padding: '4px 8px',
+                  padding: '4px 10px',
                   backgroundColor: labelColor,
                   color: 'white',
                   borderRadius: 'var(--radius)',
@@ -207,92 +154,29 @@ export const CollaborativeCursors: React.FC<CollaborativeCursorsProps> = ({
         );
       })}
 
-      {/* Render visual feedback for nodes being moved by others */}
+      {/* Ghost outlines for nodes being dragged by other users (Figma-style) */}
       {others.map((user) => {
         const nodePosition = user.presence?.nodePosition;
         if (!nodePosition || !user.presence?.isMoving) return null;
 
-        // Find the actual node to get its current position
         const node = nodes.find((n) => n.id === nodePosition.nodeId);
-        if (!node) return null;
+        if (!node || !reactFlowInstance) return null;
 
-        // Convert flow coordinates to screen coordinates
-        if (!reactFlowInstance) return null;
+        const sp = flowToScreen({ x: nodePosition.x, y: nodePosition.y }, reactFlowInstance);
+        if (!sp) return null;
 
-        let screenPosition: { x: number; y: number } | null = null;
-
-        // Use the position from presence (where the other user is moving it)
-        if (reactFlowInstance.flowToScreenPosition) {
-          screenPosition = reactFlowInstance.flowToScreenPosition({
-            x: nodePosition.x,
-            y: nodePosition.y,
-          });
-        } else if (reactFlowInstance.getViewport) {
-          const viewport = reactFlowInstance.getViewport();
-          if (viewport) {
-            screenPosition = {
-              x: nodePosition.x * viewport.zoom + viewport.x,
-              y: nodePosition.y * viewport.zoom + viewport.y,
-            };
-          }
-        }
-
-        if (!screenPosition) return null;
-
-        const userInfo = user.info;
-        const userName = userInfo?.name || user.id;
-        const userColor = getUserColor(user.id);
-        const labelColor = getDarkerColor(userColor);
+        const zoom = getViewportZoom(reactFlowInstance);
+        const { width, height } = getNodeDisplaySize(node);
+        const userName = user.info?.name || user.id;
+        const userColor = getPresenceColor(user.id);
+        const labelColor = getPresenceLabelColor(userColor);
 
         return (
           <div
-            key={`node-move-${user.id}-${nodePosition.nodeId}`}
-            style={{
-              position: 'absolute',
-              left: `${screenPosition.x}px`,
-              top: `${screenPosition.y}px`,
-              transform: 'translate(-50%, -100%)',
-              pointerEvents: 'none',
-              zIndex: 1001,
-              marginBottom: '8px',
-            }}
+            key={`ghost-${user.id}-${nodePosition.nodeId}`}
+            style={ghostBoxStyle(sp.x, sp.y, width * zoom, height * zoom, userColor)}
           >
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '4px',
-              }}
-            >
-              {/* User name label */}
-              <div
-                style={{
-                  padding: '4px 8px',
-                  backgroundColor: labelColor,
-                  color: 'white',
-                  borderRadius: 'var(--radius)',
-                  fontSize: '11px',
-                  fontWeight: 500,
-                  whiteSpace: 'nowrap',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
-                }}
-              >
-                {userName} is moving
-              </div>
-              {/* Animated indicator */}
-              <div
-                style={{
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: '50%',
-                  border: `3px solid ${userColor}`,
-                  borderTopColor: 'transparent',
-                  animation: 'spin 1s linear infinite',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-                }}
-              />
-            </div>
+            <div style={ghostLabelStyle(labelColor)}>{userName}</div>
           </div>
         );
       })}

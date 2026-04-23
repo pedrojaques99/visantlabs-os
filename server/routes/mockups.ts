@@ -1,11 +1,16 @@
 import express from 'express';
+import { randomUUID } from 'crypto';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { generateMockup, RateLimitError, ModelResponseTextError } from '../../src/services/geminiService.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
+import { generateOpenAIImage } from '../services/openaiImageService.js';
+import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
+import { isOpenAIImageModel, OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
@@ -13,6 +18,8 @@ import { safeFetch, getErrorMessage } from '../utils/securityValidation.js';
 import { ensureOptionalBoolean, ensureString, isValidObjectId, sanitizeLogValue } from '../utils/validation.js';
 import { rateLimit } from 'express-rate-limit';
 import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
+import { redisClient } from '../lib/redis.js';
+import { CACHE_TTL, CacheKey, hashQuery } from '../lib/cache-utils.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -171,9 +178,9 @@ async function deductCreditsAtomically(
     throw new Error('User not found');
   }
 
-  const totalCreditsEarnedBefore = userBefore.totalCreditsEarned || 0;
-  const monthlyCreditsBefore = userBefore.monthlyCredits || 20;
-  const creditsUsedBefore = userBefore.creditsUsed || 0;
+  const totalCreditsEarnedBefore = userBefore.totalCreditsEarned ?? 0;
+  const monthlyCreditsBefore = userBefore.monthlyCredits ?? 20;
+  const creditsUsedBefore = userBefore.creditsUsed ?? 0;
   const monthlyCreditsRemainingBefore = Math.max(0, monthlyCreditsBefore - creditsUsedBefore);
   const totalCreditsBefore = totalCreditsEarnedBefore + monthlyCreditsRemainingBefore;
 
@@ -262,9 +269,9 @@ async function deductCreditsAtomically(
       throw new Error('User not found');
     }
 
-    const currentTotalEarned = currentUser.totalCreditsEarned || 0;
-    const currentMonthlyCredits = currentUser.monthlyCredits || 20;
-    const currentCreditsUsed = currentUser.creditsUsed || 0;
+    const currentTotalEarned = currentUser.totalCreditsEarned ?? 0;
+    const currentMonthlyCredits = currentUser.monthlyCredits ?? 20;
+    const currentCreditsUsed = currentUser.creditsUsed ?? 0;
     const currentMonthlyRemaining = Math.max(0, currentMonthlyCredits - currentCreditsUsed);
     const currentTotal = currentTotalEarned + currentMonthlyRemaining;
 
@@ -286,9 +293,9 @@ async function deductCreditsAtomically(
     }
   }
 
-  const totalCreditsEarnedAfter = result.totalCreditsEarned || 0;
-  const creditsUsedAfter = result.creditsUsed || 0;
-  const monthlyCreditsAfter = result.monthlyCredits || 20;
+  const totalCreditsEarnedAfter = result.totalCreditsEarned ?? 0;
+  const creditsUsedAfter = result.creditsUsed ?? 0;
+  const monthlyCreditsAfter = result.monthlyCredits ?? 20;
   const monthlyCreditsRemainingAfter = Math.max(0, monthlyCreditsAfter - creditsUsedAfter);
   const totalCreditsAfter = totalCreditsEarnedAfter + monthlyCreditsRemainingAfter;
 
@@ -583,7 +590,7 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, next
 
     // Use find() with sort instead of aggregation for better performance with indexes
     const mockups = await db.collection('mockups')
-      .find({ userId: req.userId })
+      .find({ userId: { $in: [req.userId, new ObjectId(req.userId)] } })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -630,7 +637,7 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
     const db = getDb();
     const mockup = await db.collection('mockups').findOne({
       _id: new ObjectId(req.params.id),
-      userId: req.userId
+      userId: new ObjectId(req.userId)
     });
 
     if (!mockup) {
@@ -705,16 +712,22 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     const {
       promptText,
       baseImage,
-      model = 'gemini-2.5-flash-image',
+      model = GEMINI_MODELS.IMAGE_FLASH,
       resolution,
       aspectRatio,
       referenceImages,
       feature, // Optional: 'mockupmachine' | 'canvas'
-      provider = 'gemini', // 'gemini' | 'seedream'
+      provider = 'gemini', // 'gemini' | 'seedream' | 'openai'
       width, // Optional: custom width in pixels (for Figma plugin)
       height, // Optional: custom height in pixels (for Figma plugin)
       brandGuidelineId, // Optional: brand guideline ID for context injection
+      seed: rawSeed, // Optional: seed for deterministic generation
     } = req.body;
+
+    // Validate seed: must be a non-negative integer within Int32 range
+    const validSeed = (typeof rawSeed === 'number' && Number.isInteger(rawSeed) && rawSeed >= 0 && rawSeed <= 2_147_483_647)
+      ? rawSeed
+      : undefined;
 
     // Helper to download image from URL if base64 is not provided
     const processImageInput = async (img: any) => {
@@ -753,7 +766,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
 
     // Replace original images with processed ones (now containing base64)
     const finalBaseImage = processedBaseImage;
-    const finalReferenceImages = processedReferenceImages?.filter(img => img !== null);
+    let finalReferenceImages = processedReferenceImages?.filter(img => img !== null);
 
     // Build final prompt with optional brand context injection
     let finalPromptText = promptText;
@@ -778,10 +791,64 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
           const brandContext = buildBrandContextForImageGen(guidelineData);
           // Prepend brand context to prompt
           finalPromptText = `${brandContext}\n\n--- USER PROMPT ---\n${promptText}`;
+
+          // Inject brand logos as reference images (prepended, so logo comes first)
+          const logos: Array<{ url: string; variant: string; label?: string }> = guidelineData.logos || [];
+          if (logos.length > 0) {
+            // Priority: primary > icon > light > dark > first available
+            const priority = ['primary', 'icon', 'light', 'dark'];
+            const sorted = [...logos].sort((a, b) => {
+              const ai = priority.indexOf(a.variant);
+              const bi = priority.indexOf(b.variant);
+              return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+            });
+            const logoReferenceImages: Array<{ base64: string; mimeType: string }> = [];
+            for (const logo of sorted.slice(0, 2)) {
+              if (!logo.url) continue;
+              try {
+                const processed = await processImageInput({ url: logo.url });
+                if (processed) logoReferenceImages.push(processed as any);
+              } catch {
+                // non-critical
+              }
+            }
+            if (logoReferenceImages.length > 0) {
+              finalReferenceImages = [
+                ...logoReferenceImages,
+                ...(finalReferenceImages || []),
+              ];
+              console.log(`${logPrefix} [BRAND] Injected ${logoReferenceImages.length} brand logo(s) as reference images`);
+            }
+          }
+
+          // Inject media kit images as style reference images (up to 2, appended after logos)
+          const mediaItems: Array<{ url: string; type: string; label?: string }> = guidelineData.media || [];
+          const styleMedia = mediaItems.filter(m => m.type === 'image').slice(0, 2);
+          if (styleMedia.length > 0) {
+            const mediaReferenceImages: Array<{ base64: string; mimeType: string }> = [];
+            for (const media of styleMedia) {
+              if (!media.url) continue;
+              try {
+                const processed = await processImageInput({ url: media.url });
+                if (processed) mediaReferenceImages.push(processed as any);
+              } catch {
+                // non-critical
+              }
+            }
+            if (mediaReferenceImages.length > 0) {
+              finalReferenceImages = [
+                ...(finalReferenceImages || []),
+                ...mediaReferenceImages,
+              ];
+              console.log(`${logPrefix} [BRAND] Injected ${mediaReferenceImages.length} media kit image(s) as style references`);
+            }
+          }
+
           console.log(`${logPrefix} [BRAND] Injected brand context from guideline:`, {
             guidelineId: brandGuidelineId,
             brandName: (guidelineData.identity as any)?.name || 'Unknown',
             contextLength: brandContext.length,
+            logoCount: (guidelineData.logos as any[])?.length || 0,
           });
         } else {
           console.warn(`${logPrefix} [BRAND] Brand guideline not found:`, brandGuidelineId);
@@ -789,6 +856,30 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       } catch (brandError: any) {
         // Non-critical - continue without brand context
         console.error(`${logPrefix} [BRAND] Error fetching brand guideline:`, brandError.message);
+      }
+    }
+
+    // Early cache check — before lock acquisition and credit deduction
+    // Key includes input image fingerprint so same prompt + different image = different result
+    const inputImageFingerprint = finalBaseImage
+      ? hashQuery(
+          finalBaseImage.base64
+            ? `${finalBaseImage.base64.slice(0, 500)}:${finalBaseImage.base64.length}`
+            : (finalBaseImage.url || ''),
+          finalBaseImage.mimeType || ''
+        )
+      : 'no-image';
+
+    const mockupCacheKey = CacheKey.mockupGen(
+      req.userId!,
+      hashQuery(finalPromptText, model + (resolution || '') + (aspectRatio || '') + inputImageFingerprint)
+    );
+
+    if (!req.body.skipCache) {
+      const earlyCached = await redisClient.get(mockupCacheKey).catch(() => null);
+      if (earlyCached) {
+        console.log(`[Cache] HIT — early return, no credits deducted: ${mockupCacheKey.slice(0, 30)}`);
+        return res.json({ ...JSON.parse(earlyCached), fromCache: true });
       }
     }
 
@@ -820,7 +911,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     // Use uniqueId if provided (for batch requests), otherwise use 'single' for single-image requests
     const batchId = req.body.uniqueId !== undefined ? String(req.body.uniqueId) : 'single';
     lockKey = `credit-deduction-${req.userId}-${model}-${resolution || 'default'}-${promptHash}-${batchId}`;
-    const lockExpiry = new Date(Date.now() + 30000); // 30 seconds lock (increased from 10s to handle longer generation times)
+    const lockExpiry = new Date(Date.now() + 30000); // 30 seconds lock
 
     console.log(`${logPrefix} [LOCK] Checking for existing locks`, {
       userId: req.userId,
@@ -945,7 +1036,6 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
         const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId!) });
         if (user?.encryptedSeedreamApiKey) {
           const { decryptApiKey } = await import('../utils/encryption.js');
-          // decryptApiKey might throw if key is invalid/corrupt
           try {
             userApiKey = decryptApiKey(user.encryptedSeedreamApiKey);
             if (userApiKey) {
@@ -955,6 +1045,22 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
             }
           } catch (decryptError) {
             console.error(`${logPrefix} [API KEY] Failed to decrypt Seedream key:`, decryptError);
+          }
+        }
+      } else if (provider === 'openai') {
+        // Check for OpenAI API Key (user BYOK)
+        const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId!) });
+        if (user?.encryptedOpenAIApiKey) {
+          const { decryptApiKey } = await import('../utils/encryption.js');
+          try {
+            userApiKey = decryptApiKey(user.encryptedOpenAIApiKey);
+            if (userApiKey) {
+              usingUserKey = true;
+              apiKeySource = 'user';
+              console.log(`${logPrefix} [API KEY] Using user OpenAI API key`);
+            }
+          } catch (decryptError) {
+            console.error(`${logPrefix} [API KEY] Failed to decrypt OpenAI key:`, decryptError);
           }
         }
       } else {
@@ -1054,14 +1160,12 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     // Generate mockup image using selected provider
     // Note: We only generate one image per request
     let imageBase64: string;
+    let usedSeed: number | undefined;
 
     if (provider === 'seedream') {
       // Use Seedream via APIFree.ai
-
-      // Sanitize model: if it's not a valid Seedream model (e.g. it's a Gemini model from the UI),
-      // default to the latest Seedream model to prevent "Unknown error (400)"
       let seedreamModel = model;
-      if (!seedreamModel.startsWith('seedream-')) {
+      if (!isSeedreamModel(seedreamModel)) {
         console.warn(`${logPrefix} [GENERATION] Invalid Seedream model "${model}" detected. Defaulting to "seedream-4.5"`);
         seedreamModel = 'seedream-4.5';
       }
@@ -1070,17 +1174,42 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
         originalModel: model,
         effectiveModel: seedreamModel,
         resolution,
-        aspectRatio
+        aspectRatio,
+        seed: validSeed ?? 'random',
       });
 
-      imageBase64 = await generateSeedreamImage({
+      const seedreamResult = await generateSeedreamImage({
         prompt: finalPromptText,
         baseImage: finalBaseImage as any,
         model: seedreamModel as any,
         resolution: resolution as any,
         aspectRatio: aspectRatio as any,
-        apiKey: userApiKey, // Pass user API key if available
+        apiKey: userApiKey,
+        seed: validSeed,
       });
+      imageBase64 = seedreamResult.base64;
+      usedSeed = seedreamResult.seed;
+    } else if (provider === 'openai' || isOpenAIImageModel(model)) {
+      // Use OpenAI image generation
+      const openaiModel = isOpenAIImageModel(model) ? model : OPENAI_IMAGE_MODELS.GPT_IMAGE_2;
+      console.log(`${logPrefix} [GENERATION] Using OpenAI provider`, {
+        model: openaiModel,
+        resolution,
+        hasBaseImage: !!finalBaseImage,
+        referenceImagesCount: finalReferenceImages?.length ?? 0,
+      });
+
+      const openaiResult = await generateOpenAIImage({
+        prompt: finalPromptText,
+        baseImage: finalBaseImage as any,
+        referenceImages: finalReferenceImages as any,
+        model: openaiModel,
+        resolution: resolution as any,
+        aspectRatio: aspectRatio as any,
+        apiKey: userApiKey,
+      });
+      imageBase64 = openaiResult.base64;
+      // OpenAI doesn't support seed — leave usedSeed undefined
     } else {
       // Use Gemini (default)
       imageBase64 = await generateMockup(
@@ -1265,17 +1394,32 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       });
     }
 
-    // Return generated image
-    // Prefer imageUrl if available to save bandwidth
-    res.json({
-      imageBase64: imageUrl ? undefined : imageBase64, // Send undefined if imageUrl is present to save bandwidth
-      imageUrl, // Include the R2 URL
+    // Cache the result before sending
+    const responseData = {
+      imageBase64: imageUrl ? undefined : imageBase64,
+      imageUrl,
+      seed: usedSeed,
+      modelUsed: model,
       creditsDeducted: actualCreditsDeducted,
       creditsRemaining: totalCreditsRemaining,
       isAdmin,
-      width: width || undefined, // Echo back custom dimensions for Figma plugin
+      width: width || undefined,
       height: height || undefined,
+      requestId,
+      generationId: randomUUID(),
+    };
+
+    await redisClient.setex(
+      mockupCacheKey,
+      CACHE_TTL.MOCKUP_GEN,
+      JSON.stringify(responseData)
+    ).catch((err: any) => {
+      console.warn(`[Cache] SET mockup failed (graceful): ${err.message}`);
     });
+    console.log(`[Cache] SET mockup:${mockupCacheKey.slice(0, 20)} (7d)`);
+
+    // Return generated image
+    res.json(responseData);
   } catch (error: any) {
     // Always release lock on error if it was acquired
     if (lockKey) {
@@ -1409,7 +1553,7 @@ router.post('/track-prompt-generation', apiRateLimiter, authenticate, async (req
 
     // Calculate cost
     const { calculateTextGenerationCost } = await import('../utils/usageTracking.js');
-    const cost = calculateTextGenerationCost(inputTokens, outputTokens, 'gemini-2.5-flash-image');
+    const cost = calculateTextGenerationCost(inputTokens, outputTokens, GEMINI_MODELS.IMAGE_FLASH);
 
     // Create usage record
     const usageRecord = {
@@ -1420,7 +1564,7 @@ router.post('/track-prompt-generation', apiRateLimiter, authenticate, async (req
       inputTokens,
       outputTokens,
       promptLength: inputTokens * 4, // Approximate
-      model: 'gemini-2.5-flash-image',
+      model: GEMINI_MODELS.IMAGE_FLASH,
       cost,
       creditsDeducted: 0, // Prompt generation doesn't deduct credits
       subscriptionStatus,
@@ -1446,7 +1590,7 @@ router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthReques
     const {
       success,
       imagesCount = 1, // Number of images generated (default 1)
-      model = 'gemini-2.5-flash-image',
+      model = GEMINI_MODELS.IMAGE_FLASH,
       hasInputImage = false,
       promptLength,
       resolution,
@@ -1512,7 +1656,7 @@ router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthReques
       const { createUsageRecord, calculateImageGenerationCost, getCreditsRequired } = await import('../utils/usageTracking.js');
 
       // Calculate credits required based on model and resolution
-      const creditsPerImage = getCreditsRequired(model as 'gemini-2.5-flash-image' | 'gemini-3-pro-image-preview', resolution);
+      const creditsPerImage = getCreditsRequired(model as typeof GEMINI_MODELS.IMAGE_FLASH | typeof GEMINI_MODELS.IMAGE_PRO, resolution);
       // In local development, don't deduct credits but still track usage
       const creditsToDeduct = isLocalDevelopment ? 0 : imagesCount * creditsPerImage;
 
@@ -1792,7 +1936,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
     });
 
     const result = await db.collection('mockups').updateOne(
-      { _id: new ObjectId(req.params.id), userId: req.userId },
+      { _id: new ObjectId(req.params.id), userId: new ObjectId(req.userId) },
       { $set: updateData }
     );
 
@@ -1808,9 +1952,10 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
     }
 
     // Verify the update by fetching the updated mockup (only once)
+    // Fixed: convert req.userId to ObjectId since mockups are stored with ObjectId by Prisma
     const updatedMockup = await db.collection('mockups').findOne({
       _id: new ObjectId(req.params.id),
-      userId: req.userId
+      userId: new ObjectId(req.userId)
     });
 
     // Use structured logging to avoid format string vulnerability
@@ -1980,6 +2125,74 @@ router.get('/usage/current', apiRateLimiter, authenticate, async (req: AuthReque
       totalImages,
       totalCost,
       requests: usageRecords.length,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /mockups/batch-generate
+ * Generates multiple mockups in parallel from an array of prompts.
+ * Delegates each item to the existing /generate logic via internal fetch.
+ * Returns array of results in the same order as the input prompts.
+ */
+router.post('/batch-generate', mockupRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const {
+      prompts,
+      model,
+      provider,
+      aspectRatio,
+      resolution,
+      brandGuidelineId,
+      baseImage,
+    } = req.body;
+
+    if (!Array.isArray(prompts) || prompts.length === 0) {
+      return res.status(400).json({ error: 'prompts must be a non-empty array' });
+    }
+    if (prompts.length > 20) {
+      return res.status(400).json({ error: 'Maximum 20 prompts per batch' });
+    }
+
+    const apiBase = process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3000}/api`;
+    const authHeader = req.headers['authorization'];
+
+    const results = await Promise.allSettled(
+      prompts.map((item: string | { promptText: string; referenceImages?: unknown[]; baseImage?: unknown }, idx: number) => {
+        const isObj = typeof item === 'object' && item !== null;
+        const promptText = isObj ? item.promptText : item;
+        const itemReferenceImages = isObj ? item.referenceImages : undefined;
+        const itemBaseImage = isObj ? item.baseImage : baseImage;
+        return fetch(`${apiBase}/mockups/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authHeader ? { Authorization: authHeader } : {}),
+          },
+          body: JSON.stringify({
+            promptText,
+            model,
+            provider,
+            aspectRatio,
+            resolution,
+            brandGuidelineId,
+            baseImage: itemBaseImage,
+            referenceImages: itemReferenceImages,
+            uniqueId: idx,
+          }),
+        }).then((r) => r.json());
+      })
+    );
+
+    res.json({
+      total: prompts.length,
+      results: results.map((r, idx) =>
+        r.status === 'fulfilled'
+          ? { index: idx, success: true, data: r.value }
+          : { index: idx, success: false, error: r.reason?.message ?? 'unknown' }
+      ),
     });
   } catch (error) {
     next(error);

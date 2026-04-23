@@ -1,6 +1,13 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Position, type NodeProps, useReactFlow, NodeResizer, useNodes } from '@xyflow/react';
-import { Clapperboard, Video as VideoIcon, Settings, ChevronRight } from 'lucide-react';
+import { 
+  Clapperboard, 
+  Video as VideoIcon, 
+  Settings, 
+  ChevronRight, 
+  Diamond 
+} from 'lucide-react';
+import { SeedControl } from './shared/SeedControl';
 import type { VideoNodeData, GenerateVideoParams } from '@/types/reactFlow';
 import { VeoModel, GenerationMode, type Resolution, type AspectRatio } from '@/types/types';
 import { cn } from '@/lib/utils';
@@ -16,13 +23,15 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Switch } from '@/components/ui/switch';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
+import { useNodeDataUpdater } from '@/hooks/canvas/useNodeDataUpdater';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { NodeButton } from './shared/node-button';
 import { Input } from '@/components/ui/input';
-import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
-import { BrandMediaLibraryModal } from './modals/BrandMediaLibraryModal';
+
+import { useBrandKit } from '@/contexts/BrandKitContext';
 import { toast } from 'sonner';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
 
 // Constants
 const DEFAULT_MODEL = VeoModel.VEO_3_1;
@@ -54,7 +63,6 @@ const DURATION_OPTIONS = [
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
-  const { linkedGuidelineId } = useCanvasHeader();
   const nodes = useNodes();
   const { setNodes } = useReactFlow();
   const nodeData = data as VideoNodeData;
@@ -77,7 +85,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   // UI state
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
-  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+  const { openLibrary } = useBrandKit();
 
   // Derived state
   const isLoading = nodeData.isLoading || false;
@@ -123,15 +131,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     nodeData.isLooping, nodeData.isBrandActive, connectedText, hasTextConnection
   ]);
 
-  // Debounced update for text inputs
-  const debouncedUpdateData = useDebouncedCallback((updates: Partial<VideoNodeData>) => {
-    nodeData.onUpdateData?.(id, updates);
-  }, 500);
-
-  // Immediate update for non-text fields
-  const updateData = useCallback((updates: Partial<VideoNodeData>) => {
-    nodeData.onUpdateData?.(id, updates);
-  }, [nodeData, id]);
+  const { debouncedUpdate: debouncedUpdateData, immediateUpdate: updateData } = useNodeDataUpdater<VideoNodeData>(nodeData.onUpdateData, id);
 
   // Handle generation
   const handleGenerate = useCallback(async () => {
@@ -163,6 +163,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       resolution,
       duration,
       isLooping,
+      seed: nodeData.seedLocked ? nodeData.seed : undefined, // Only pass seed when locked
       // Mode-specific inputs
       startFrame: mode === GenerationMode.FRAMES_TO_VIDEO ? toInput(nodeData.connectedImage1) : undefined,
       endFrame: mode === GenerationMode.FRAMES_TO_VIDEO ? toInput(nodeData.connectedImage2) : undefined,
@@ -275,7 +276,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       if (index === 1) return t('canvasNodes.videoNode.inputVideo') || 'Input Video';
     }
     if (mode === GenerationMode.REFERENCES) {
-      return `${t('canvasNodes.videoNode.reference') || 'Reference'} ${index}`;
+      return `${t('common.reference') || 'Reference'} ${index}`;
     }
     return `${t('canvasNodes.videoNode.input') || 'Input'} ${index}`;
   }, [mode, t]);
@@ -360,12 +361,13 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       <NodeHeader
         icon={Clapperboard}
         title={t('canvasNodes.videoNode.title') || 'Veo Video'}
+        selected={selected}
         isBrandActive={isBrandActive}
         onToggleBrand={(active) => {
           setIsBrandActive(active);
           updateData({ isBrandActive: active } as any);
         }}
-        onOpenMediaLibrary={() => setShowMediaLibrary(true)}
+        onOpenMediaLibrary={() => openLibrary({ onSelectAsset: handleSelectAsset, onAddToBoard: handleAddToBoard })}
       />
 
       {/* Mode Selector */}
@@ -419,7 +421,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       )}
 
       {nodeData.connectedVideo && (
-        <div className="node-margin bg-neutral-900/50 border border-neutral-800 rounded p-2 flex items-center gap-2">
+        <div className="node-margin bg-neutral-900/50 border-node border-neutral-800 rounded p-2 flex items-center gap-2">
           <VideoIcon size={14} className="text-brand-cyan" />
           <span className="text-xs text-neutral-400">
             {t('canvasNodes.videoNode.videoInputConnected') || 'Video Input Connected'}
@@ -428,7 +430,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       )}
 
       {/* Advanced Settings Accordion */}
-      <div className="node-margin border border-neutral-800 rounded-md bg-neutral-900/30">
+      <div className="node-margin border-node border-neutral-800 rounded-md bg-neutral-900/30">
         <NodeButton
           variant="ghost"
           size="sm"
@@ -442,142 +444,156 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             className={cn('transition-transform ml-auto', isAdvancedOpen && 'rotate-90')}
           />
         </NodeButton>
+      </div>
 
-        {isAdvancedOpen && (
-          <div className="p-3 space-y-3 border-t border-neutral-800 bg-neutral-900/50">
-            {/* Model */}
+      {isAdvancedOpen && (
+        <div className="node-margin p-3 space-y-3 border-node border-neutral-800 rounded-md bg-neutral-900/50">
+          {/* Model */}
+          <div>
+            <NodeLabel>{t('canvasNodes.videoNode.model') || 'Model'}</NodeLabel>
+            <Select
+              value={model}
+              onChange={(v) => {
+                setModel(v);
+                updateData({ model: v });
+              }}
+              options={MODEL_OPTIONS}
+              variant="node"
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Aspect Ratio & Resolution Grid */}
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <NodeLabel>{t('canvasNodes.videoNode.model') || 'Model'}</NodeLabel>
-              <Select
-                value={model}
-                onChange={(v) => {
-                  setModel(v);
-                  updateData({ model: v });
+              <NodeLabel>{t('canvasNodes.videoNode.aspectRatio') || 'Aspect Ratio'}</NodeLabel>
+              <AspectRatioSelector
+                value={aspectRatio}
+                onChange={(r) => {
+                  setAspectRatio(r);
+                  updateData({ aspectRatio: r });
                 }}
-                options={MODEL_OPTIONS}
-                variant="node"
                 disabled={isLoading}
+                compact
               />
             </div>
-
-            {/* Aspect Ratio & Resolution Grid */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <NodeLabel>{t('canvasNodes.videoNode.aspectRatio') || 'Aspect Ratio'}</NodeLabel>
-                <AspectRatioSelector
-                  value={aspectRatio}
-                  onChange={(r) => {
-                    setAspectRatio(r);
-                    updateData({ aspectRatio: r });
-                  }}
-                  disabled={isLoading}
-                  compact
-                />
-              </div>
-              <div>
-                <NodeLabel>{t('canvasNodes.videoNode.resolution') || 'Resolution'}</NodeLabel>
-                <ResolutionSelector
-                  value={resolution}
-                  onChange={(r) => {
-                    setResolution(r);
-                    updateData({ resolution: r });
-                  }}
-                  model={model as any}
-                  disabled={isLoading}
-                  compact
-                  allowVideo={true}
-                />
-              </div>
-            </div>
-
-            {/* Duration */}
             <div>
-              <NodeLabel>{t('canvasNodes.videoNode.duration') || 'Duration'}</NodeLabel>
-              <Select
-                value={duration}
-                onChange={(v) => {
-                  setDuration(v);
-                  updateData({ duration: v });
+              <NodeLabel>{t('canvasNodes.videoNode.resolution') || 'Resolution'}</NodeLabel>
+              <ResolutionSelector
+                value={resolution}
+                onChange={(r) => {
+                  setResolution(r);
+                  updateData({ resolution: r });
                 }}
-                options={DURATION_OPTIONS}
-                variant="node"
+                model={model as any}
                 disabled={isLoading}
-              />
-            </div>
-
-            {/* Loop Toggle */}
-            <div className="flex items-center justify-between py-1">
-              <NodeLabel className="mb-0">{t('canvasNodes.videoNode.loopVideo') || 'Loop Video'}</NodeLabel>
-              <Switch
-                checked={isLooping}
-                onCheckedChange={(c) => {
-                  setIsLooping(c);
-                  updateData({ isLooping: c });
-                }}
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* Negative Prompt */}
-            <div>
-              <NodeLabel>{t('canvasNodes.videoNode.negativePrompt') || 'Negative Prompt'}</NodeLabel>
-              <Input
-                className="w-full bg-neutral-900 border border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-brand-cyan outline-none placeholder:text-neutral-600"
-                placeholder={t('canvasNodes.videoNode.whatToAvoid') || 'What to avoid...'}
-                value={negativePrompt}
-                onChange={(e) => {
-                  setNegativePrompt(e.target.value);
-                  debouncedUpdateData({ negativePrompt: e.target.value });
-                }}
-                disabled={isLoading}
+                compact
+                allowVideo={true}
               />
             </div>
           </div>
-        )}
-      </div>
+
+          {/* Duration */}
+          <div>
+            <NodeLabel>{t('canvasNodes.videoNode.duration') || 'Duration'}</NodeLabel>
+            <Select
+              value={duration}
+              onChange={(v) => {
+                setDuration(v);
+                updateData({ duration: v });
+              }}
+              options={DURATION_OPTIONS}
+              variant="node"
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Loop Toggle */}
+          <div className="flex items-center justify-between py-1">
+            <NodeLabel className="mb-0">{t('canvasNodes.videoNode.loopVideo') || 'Loop Video'}</NodeLabel>
+            <Switch
+              checked={isLooping}
+              onCheckedChange={(c) => {
+                setIsLooping(c);
+                updateData({ isLooping: c });
+              }}
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Negative Prompt */}
+          <div>
+            <NodeLabel>{t('canvasNodes.videoNode.negativePrompt') || 'Negative Prompt'}</NodeLabel>
+            <Input
+              className="w-full bg-neutral-900 border-node border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-neutral-600 outline-none placeholder:text-neutral-600"
+              placeholder={t('canvasNodes.videoNode.whatToAvoid') || 'What to avoid...'}
+              value={negativePrompt}
+              onChange={(e) => {
+                setNegativePrompt(e.target.value);
+                debouncedUpdateData({ negativePrompt: e.target.value });
+              }}
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Seed Control */}
+          <SeedControl
+            seed={nodeData.seed}
+            seedLocked={nodeData.seedLocked}
+            onSeedChange={(seed) => updateData({ seed })}
+            onSeedLockedChange={(locked) => updateData({ seedLocked: locked })}
+            disabled={isLoading}
+          />
+        </div>
+      )}
 
       {/* Generate Button */}
-      <NodeButton
-        variant="primary"
-        size="full"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleGenerate();
-        }}
-        onMouseDown={(e) => e.stopPropagation()}
-        disabled={isGenerateDisabled}
-        className="node-interactive py-2.5"
+      <Tooltip 
+        content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${CREDITS_REQUIRED} ${t('canvasNodes.promptNode.credits')}`}
+        delay={500}
       >
-        {isLoading ? (
-          <>
-            <GlitchLoader size={16} color="brand-cyan" />
-            <span>{t('canvasNodes.videoNode.generating') || 'Generating...'}</span>
-          </>
-        ) : (
-          <>
-            <VideoIcon size={16} />
-            <span>{t('canvasNodes.videoNode.generateVideo') || 'Generate Video'}</span>
-            <span className="text-brand-cyan/50 ml-1">({CREDITS_REQUIRED})</span>
-          </>
-        )}
-      </NodeButton>
+        <NodeButton
+          variant="primary"
+          size="full"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleGenerate();
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          disabled={isGenerateDisabled}
+          className="node-interactive group/gen"
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2">
+              <GlitchLoader size={14} color="brand-cyan" />
+              <span>{t('canvasNodes.videoNode.generating') || 'Generating...'}</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <VideoIcon size={14} className="group-hover/gen:rotate-12 transition-transform" />
+              <span className="font-semibold tracking-tight">{t('canvasNodes.videoNode.generateVideo') || 'Generate Video'}</span>
+              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                <Diamond size={10} className="opacity-50 fill-current" />
+                {CREDITS_REQUIRED}
+              </div>
+            </div>
+          )}
+        </NodeButton>
+      </Tooltip>
 
       {/* Result Preview */}
-      {(nodeData.resultVideoUrl || nodeData.resultVideoBase64) && !isLoading && (
-        <div className="node-margin mt-4 rounded-md overflow-hidden border border-neutral-700 bg-black relative group shadow-lg">
-          <video
-            src={nodeData.resultVideoUrl || (nodeData.resultVideoBase64 ? `data:video/mp4;base64,${nodeData.resultVideoBase64}` : undefined)}
-            className="w-full h-auto max-h-[200px] object-contain"
-            controls
-            loop={isLooping}
-            onLoadedMetadata={(e) => {
-              const video = e.target as HTMLVideoElement;
-              if (video.videoWidth > 0 && video.videoHeight > 0) {
-                nodeData.onUpdateData?.(String(id), {
-                  imageWidth: video.videoWidth,
-                  imageHeight: video.videoHeight,
-                });
-              }
+      {(nodeData.resultVideoUrl || nodeData.resultVideoBase64) && (
+        <div className="node-margin">
+          <NodeMediaDisplay
+            url={nodeData.resultVideoUrl || (nodeData.resultVideoBase64 ? (nodeData.resultVideoBase64.startsWith('data:') ? nodeData.resultVideoBase64 : `data:video/mp4;base64,${nodeData.resultVideoBase64}`) : null)}
+            isVideo={true}
+            isLoading={isLoading}
+            dragging={dragging}
+            onMediaLoad={(width, height) => {
+              nodeData.onUpdateData?.(String(id), {
+                imageWidth: width,
+                imageHeight: height,
+              });
             }}
           />
         </div>
@@ -592,14 +608,6 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         style={{ top: '50%' }}
       />
 
-      {/* Brand Media Library Modal */}
-      <BrandMediaLibraryModal
-        isOpen={showMediaLibrary}
-        onClose={() => setShowMediaLibrary(false)}
-        onSelectAsset={handleSelectAsset}
-        onAddToBoard={handleAddToBoard}
-        guidelineId={linkedGuidelineId}
-      />
     </NodeContainer>
   );
 }, (prevProps, nextProps) => {
@@ -626,6 +634,8 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     prevData.connectedImage3 === nextData.connectedImage3 &&
     prevData.connectedImage4 === nextData.connectedImage4 &&
     prevData.connectedVideo === nextData.connectedVideo &&
+    prevData.seed === nextData.seed &&
+    prevData.seedLocked === nextData.seedLocked &&
     prevData.resultVideoUrl === nextData.resultVideoUrl &&
     prevData.resultVideoBase64 === nextData.resultVideoBase64
   );

@@ -51,7 +51,7 @@ export const CanvasSharedPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
         <div className="fixed inset-0 z-0">
           
         </div>
@@ -66,7 +66,7 @@ export const CanvasSharedPage: React.FC = () => {
 
   if (error || !project) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
         <div className="fixed inset-0 z-0">
           
         </div>

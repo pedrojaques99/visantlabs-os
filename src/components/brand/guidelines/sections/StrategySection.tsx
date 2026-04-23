@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { strategySchema } from '@/schemas/brandGuideline.schema';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
-import { Compass, Sparkles, User, MessageCircle, Plus, Trash2, Heart } from 'lucide-react';
-import type { BrandGuideline, BrandArchetype, BrandPersona, BrandToneOfVoiceValue } from '@/lib/figma-types';
+import { Compass, Diamond, User, MessageCircle, Plus, Trash2, Heart } from 'lucide-react';
+import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 
 interface StrategySectionProps {
@@ -19,40 +16,76 @@ interface StrategySectionProps {
 
 export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onUpdate, span }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'manifesto' | 'positioning' | 'archetypes' | 'personas' | 'voice'>('manifesto');
+  const [localStrategy, setLocalStrategy] = useState(guideline.strategy || {});
+  const [isSaving, setIsSaving] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const strategy = guideline.strategy || {};
+  // Sync local state when server data changes (only when not editing)
+  useEffect(() => {
+    if (!isEditing) {
+      setLocalStrategy(guideline.strategy || {});
+    }
+  }, [guideline.strategy, isEditing]);
+
+  const strategy = isEditing ? localStrategy : (guideline.strategy || {});
+
+  const persistStrategy = useCallback((data: any) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setIsSaving(true);
+    debounceRef.current = setTimeout(() => {
+      onUpdate({ strategy: data });
+      setIsSaving(false);
+    }, 800);
+  }, [onUpdate]);
 
   const handleUpdateStrategy = (updatedStrategy: any) => {
-    onUpdate({ strategy: { ...strategy, ...updatedStrategy } });
+    const next = { ...localStrategy, ...updatedStrategy };
+    setLocalStrategy(next);
+    persistStrategy(next);
+  };
+
+  const handleCancel = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setLocalStrategy(guideline.strategy || {});
+    setIsSaving(false);
+    setIsEditing(false);
+  };
+
+  // Flush pending save and exit editing
+  const handleDone = () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      onUpdate({ strategy: localStrategy });
+    }
+    setIsSaving(false);
+    setIsEditing(false);
   };
 
   const addItem = (type: string) => {
     if (!isEditing) setIsEditing(true);
-
+    let next = { ...localStrategy };
     if (type === 'archetype') {
-      const archetypes = [...(strategy.archetypes || []), { name: 'New Archetype', description: '', role: 'primary' }];
-      handleUpdateStrategy({ archetypes });
+      next.archetypes = [...(localStrategy.archetypes || []), { name: 'New Archetype', description: '', role: 'primary' }];
     } else if (type === 'persona') {
-      const personas = [...(strategy.personas || []), { name: 'New Persona', age: 30, traits: [], desires: [], bio: '' }];
-      handleUpdateStrategy({ personas });
+      next.personas = [...(localStrategy.personas || []), { name: 'New Persona', age: 30, traits: [], desires: [], bio: '' }];
     } else if (type === 'voice') {
-      const voiceValues = [...(strategy.voiceValues || []), { title: 'Tone Name', description: '', example: '' }];
-      handleUpdateStrategy({ voiceValues });
+      next.voiceValues = [...(localStrategy.voiceValues || []), { title: 'Tone Name', description: '', example: '' }];
     }
+    setLocalStrategy(next);
+    persistStrategy(next);
   };
 
   const removeItem = (type: string, index: number) => {
+    let next = { ...localStrategy };
     if (type === 'archetype') {
-      const archetypes = (strategy.archetypes || []).filter((_, i) => i !== index);
-      handleUpdateStrategy({ archetypes });
+      next.archetypes = (localStrategy.archetypes || []).filter((_, i) => i !== index);
     } else if (type === 'persona') {
-      const personas = (strategy.personas || []).filter((_, i) => i !== index);
-      handleUpdateStrategy({ personas });
+      next.personas = (localStrategy.personas || []).filter((_, i) => i !== index);
     } else if (type === 'voice') {
-      const voiceValues = (strategy.voiceValues || []).filter((_, i) => i !== index);
-      handleUpdateStrategy({ voiceValues });
+      next.voiceValues = (localStrategy.voiceValues || []).filter((_, i) => i !== index);
     }
+    setLocalStrategy(next);
+    persistStrategy(next);
   };
 
   return (
@@ -61,9 +94,10 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
       icon={<Compass size={14} />}
       title="Brand Strategy"
       isEditing={isEditing}
+      isSaving={isSaving}
       onEdit={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
-      onCancel={() => setIsEditing(false)}
+      onSave={handleDone}
+      onCancel={handleCancel}
       span={span as any}
       expandedContent={
         <div className="space-y-8">
@@ -88,13 +122,13 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                 {strategy.archetypes.map((arch, i) => (
                   <div key={i} className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex gap-6 hover:border-brand-cyan/20 transition-all group">
                     <div className="w-16 h-16 rounded-xl bg-neutral-900 border border-white/5 flex items-center justify-center shrink-0">
-                      <Sparkles size={24} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
+                      <Diamond size={24} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <h4 className="font-bold text-white tracking-tight">{arch.name}</h4>
                         {arch.role && (
-                          <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan uppercase font-bold">{arch.role}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan uppercase font-bold">{arch.role}</span>
                         )}
                       </div>
                       <p className="text-xs text-neutral-400 leading-relaxed">{arch.description}</p>
@@ -122,7 +156,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                       <p className="text-xs text-neutral-400  line-clamp-2">"{persona.bio}"</p>
                       <div className="flex flex-wrap gap-2">
                         {persona.desires?.map((desire, idx) => (
-                          <span key={idx} className="text-[9px] px-2 py-1 rounded-md bg-white/5 border border-white/5 text-neutral-500 whitespace-nowrap">{desire}</span>
+                          <span key={idx} className="text-[10px] px-2 py-1 rounded-md bg-white/5 border border-white/5 text-neutral-500 whitespace-nowrap">{desire}</span>
                         ))}
                       </div>
                     </div>
@@ -139,7 +173,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
           <div className="space-y-8">
             {/* Editing Manifesto */}
             <div className="space-y-2">
-              <MicroTitle className="opacity-300 uppercase text-[9px]">Manifesto</MicroTitle>
+              <MicroTitle className="opacity-60 uppercase text-[11px] tracking-widest text-neutral-400">Manifesto</MicroTitle>
               <Textarea
                 value={strategy.manifesto || ''}
                 onChange={(e) => handleUpdateStrategy({ manifesto: e.target.value })}
@@ -151,8 +185,8 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             {/* Editing Archetypes */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <MicroTitle className="opacity-300 uppercase text-[9px]">Archetypes</MicroTitle>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => addItem('archetype')}>
+                <MicroTitle className="opacity-60 uppercase text-[11px] tracking-widest text-neutral-400">Archetypes</MicroTitle>
+                <Button variant="ghost" size="icon" aria-label="Add archetype" className="h-6 w-6" onClick={() => addItem('archetype')}>
                   <Plus size={12} />
                 </Button>
               </div>
@@ -170,7 +204,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                         className="h-8 bg-neutral-850 border-white/5 text-xs"
                         placeholder="Name (e.g. O Mago)"
                       />
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('archetype', i)}>
+                      <Button variant="ghost" size="icon" aria-label="Remove archetype" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('archetype', i)}>
                         <Trash2 size={12} />
                       </Button>
                     </div>
@@ -192,8 +226,8 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             {/* Editing Voice Values */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <MicroTitle className="opacity-300 uppercase text-[9px]">Tone of Voice Values</MicroTitle>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => addItem('voice')}>
+                <MicroTitle className="opacity-60 uppercase text-[11px] tracking-widest text-neutral-400">Tone of Voice Values</MicroTitle>
+                <Button variant="ghost" size="icon" aria-label="Add voice value" className="h-6 w-6" onClick={() => addItem('voice')}>
                   <Plus size={12} />
                 </Button>
               </div>
@@ -211,7 +245,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                         className="h-8 bg-neutral-850 border-white/5 text-xs"
                         placeholder="Title"
                       />
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('voice', i)}>
+                      <Button variant="ghost" size="icon" aria-label="Remove voice value" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('voice', i)}>
                         <Trash2 size={12} />
                       </Button>
                     </div>
@@ -241,16 +275,16 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1 opacity-300">
+          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1">
             {[
               { label: 'Manifesto', icon: Heart, type: 'manifesto' },
-              { label: 'Archetypes', icon: Sparkles, type: 'archetype' },
+              { label: 'Archetypes', icon: Diamond, type: 'archetype' },
               { label: 'Personas', icon: User, type: 'persona' },
               { label: 'Voice Values', icon: MessageCircle, type: 'voice' },
             ].map((p, i) => (
               <div
                 key={i}
-                className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-white/[0.01] bg-white/[0.01] h-full w-full cursor-pointer hover:bg-white/[0.03] transition-colors"
+                className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-white/[0.05] bg-white/[0.01] h-full w-full cursor-pointer hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300"
                 onClick={() => {
                   setIsEditing(true);
                   if (p.type !== 'manifesto') {
@@ -258,10 +292,10 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                   }
                 }}
               >
-                <div className="w-10 h-10 flex items-center justify-center rounded-lg text-neutral-800 border border-white/5">
-                  <p.icon size={18} strokeWidth={1} />
+                <div className="w-12 h-12 flex items-center justify-center rounded-xl text-neutral-500 border border-white/5 bg-neutral-900/50">
+                  <p.icon size={20} strokeWidth={1} />
                 </div>
-                <span className="py-4 text-center text-[10px] font-mono tracking-widest uppercase w-full opacity-30">{p.label}</span>
+                <span className="pt-4 text-center text-[11px] font-mono tracking-[0.1em] uppercase w-full text-neutral-400">{p.label}</span>
               </div>
             ))}
           </div>

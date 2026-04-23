@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Plus, ChevronDown, ChevronUp, Dices, MapPin, Camera, Lightbulb, Sparkles, Layers, XCircle, FilePlus } from 'lucide-react';
+import { X, Plus, ChevronDown, ChevronUp, Dices, MapPin, Camera, Lightbulb, Diamond, Layers, XCircle, FilePlus } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { translateTag } from '@/utils/localeUtils';
@@ -201,7 +201,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-300 transition-opacity">
+        <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           {/* Clear selection button (only on hover when there are selected tags) */}
           {hasSelection && (
             <Button variant="ghost" type="button"
@@ -210,7 +210,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 // Clear all selected tags for this section
                 selectedTags.forEach(tag => onTagToggle(tag));
               }}
-              className="text-[9px] font-mono px-1.5 py-0.5 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-700/40"
+              className="text-[10px] font-mono px-1.5 py-0.5 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-700/40"
             >
               {t('mockup.clearAll') || 'Clear all'}
             </Button>
@@ -448,7 +448,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         isSurpriseMeMode={isSurpriseMeMode}
         poolTags={effectPool}
         onPoolToggle={onEffectPoolToggle}
-        icon={<Sparkles size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
+        icon={<Diamond size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
       />
       {designType === 'logo' && (
         <CollapsableTagSection

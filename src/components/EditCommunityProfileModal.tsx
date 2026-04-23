@@ -238,7 +238,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               <Button variant="ghost"
                 onClick={handleCoverClick}
                 disabled={isUploadingCover}
-                className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 opacity-0 group-hover:opacity-300 transition-all duration-300 backdrop-blur-sm disabled:opacity-50"
+                className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm disabled:opacity-50"
               >
                 {isUploadingCover ? (
                   <GlitchLoader size={24} />
@@ -251,8 +251,8 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               </Button>
             </div>
             <div className="flex items-center gap-2 ml-1">
-              <Badge variant="outline" className="text-[9px] uppercase tracking-tighter py-0">16:9 Aspect</Badge>
-              <Badge variant="outline" className="text-[9px] uppercase tracking-tighter py-0">Max 2MB</Badge>
+              <Badge variant="outline" className="text-[10px] uppercase tracking-tighter py-0">16:9 Aspect</Badge>
+              <Badge variant="outline" className="text-[10px] uppercase tracking-tighter py-0">Max 2MB</Badge>
             </div>
           </div>
 

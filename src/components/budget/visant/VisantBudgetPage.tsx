@@ -79,7 +79,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
               max-width: 95% !important;
             }
           }
-          @media (max-width: 768px) {
+          @media (max-width: 7610px) {
             .visant-budget-page {
               padding: clamp(12px, 2vw, 22px) !important;
               max-width: 100% !important;
@@ -114,7 +114,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
               font-size: clamp(12px, 2.5vw, 14px) !important;
             }
             .visant-budget-page .service-description {
-              font-size: clamp(9px, 2vw, 10px) !important;
+              font-size: clamp(10px, 2vw, 10px) !important;
             }
           }
         `}
@@ -137,7 +137,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
             <span
               className="font-bold"
               style={{
-                fontSize: '18.07px',
+                fontSize: '18.010px',
                 color: textColor,
                 fontFamily: "'Manrope', sans-serif",
               }}
@@ -146,7 +146,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                 value="Orçamento"
                 onChange={() => { }}
                 editable={false}
-                style={{ fontSize: '18.07px', fontWeight: 'bold' }}
+                style={{ fontSize: '18.010px', fontWeight: 'bold' }}
                 saveStatus={saveStatus}
               />
             </span>
@@ -159,7 +159,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
             style={{
               borderColor: accentColor,
               color: textColor,
-              fontSize: '17.018px',
+              fontSize: '17.0110px',
               fontWeight: 'bold',
               fontFamily: "'Manrope', sans-serif",
             }}
@@ -168,7 +168,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
               value={data.brandName}
               onChange={(newName) => onDataChange?.({ brandName: String(newName) })}
               editable={editable}
-              style={{ fontSize: '17.018px', fontWeight: 'bold' }}
+              style={{ fontSize: '17.0110px', fontWeight: 'bold' }}
               saveStatus={saveStatus}
             />
           </div>
@@ -225,7 +225,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
             </div>
             <span
               style={{
-                fontSize: '17px',
+                fontSize: '110px',
                 fontFamily: "'Manrope', sans-serif",
                 fontWeight: '300',
                 color: textColor,
@@ -252,7 +252,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                   <span
                     className="service-number font-bold"
                     style={{
-                      fontSize: '29px',
+                      fontSize: '210px',
                       color: textColor,
                       fontFamily: "'Manrope', sans-serif",
                       lineHeight: '1.56',
@@ -314,11 +314,11 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                   </div>
                 </div>
                 {/* Quantity */}
-                <div style={{ textAlign: 'right', minWidth: '58px', flexShrink: 0 }}>
+                <div style={{ textAlign: 'right', minWidth: '510px', flexShrink: 0 }}>
                   <span
                     className="font-bold"
                     style={{
-                      fontSize: '18px',
+                      fontSize: '110px',
                       color: textColor,
                       fontFamily: "'Manrope', sans-serif",
                       whiteSpace: 'nowrap',
@@ -334,7 +334,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                       editable={editable}
                       type="number"
                       min={1}
-                      style={{ fontSize: '18px', fontWeight: 'bold' }}
+                      style={{ fontSize: '110px', fontWeight: 'bold' }}
                       saveStatus={saveStatus}
                     />
                     x
@@ -418,7 +418,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
           style={{
             borderTop: `2px solid ${secondaryTextColor}`,
             marginTop: '80px',
-            paddingTop: '48px',
+            paddingTop: '410px',
           }}
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
@@ -445,7 +445,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                         className="mt-8 mb-2"
                         style={{
                           borderTop: `1px solid ${secondaryTextColor}`,
-                          marginTop: '48px',
+                          marginTop: '410px',
                           marginBottom: '12px',
                         }}
                       />
@@ -495,7 +495,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                       className="mt-8 mb-2"
                       style={{
                         borderTop: `1px solid ${secondaryTextColor}`,
-                        marginTop: '48px',
+                        marginTop: '410px',
                         marginBottom: '12px',
                       }}
                     />
@@ -531,7 +531,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                       className="mt-8 mb-2"
                       style={{
                         borderTop: `1px solid ${secondaryTextColor}`,
-                        marginTop: '48px',
+                        marginTop: '410px',
                         marginBottom: '12px',
                       }}
                     />
@@ -576,7 +576,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                       lineHeight: '1.56',
                       textAlign: 'right',
                       display: 'flex',
-                      gap: '8px',
+                      gap: '10px',
                       justifyContent: 'flex-end',
                       flexWrap: 'wrap',
                     }}
@@ -656,7 +656,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                 <p
                   className="font-bold text-white"
                   style={{
-                    fontSize: '16.069px',
+                    fontSize: '16.0610px',
                     fontFamily: "'Manrope', sans-serif",
                     lineHeight: '1.56',
                   }}
@@ -709,7 +709,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
           className="mt-12 pt-6"
           style={{
             borderTop: `1px solid ${secondaryTextColor}`,
-            marginTop: '48px',
+            marginTop: '410px',
             paddingTop: '24px',
           }}
         >
@@ -755,7 +755,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                   <span style={{ fontWeight: 'bold' }}>{discountPercent}%</span>
                   <span> à vista no PIX! </span>
                   <span style={{ fontSize: '16px' }}>(</span>
-                  <span style={{ fontSize: '9px' }}>R$</span>
+                  <span style={{ fontSize: '10px' }}>R$</span>
                   <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{formatCurrency(finalWithDiscount)}</span>
                   <span style={{ fontSize: '16px' }}>)</span>
                 </p>

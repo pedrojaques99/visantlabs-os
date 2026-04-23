@@ -24,6 +24,8 @@ const uploadImageRateLimiter = rateLimit({
   legacyHeaders: false,
 });
 import { ensureString, isSafeId, sanitizeMongoQuery } from '../utils/validation.js';
+import { redisClient } from '../lib/redis.js';
+import { CACHE_TTL, CacheKey, hashQuery } from '../lib/cache-utils.js';
 
 const router = express.Router();
 
@@ -214,6 +216,14 @@ router.post('/presets', apiRateLimiter, authenticate, async (req: AuthRequest, r
 // Get public approved community presets (with optional auth for likes)
 router.get('/presets/public', apiRateLimiter, async (req, res) => {
   try {
+    // Cache check (public endpoint, cache without user context)
+    const cacheKey = CacheKey.presetSearch('all', 'public', 1);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log('[Cache] HIT preset:all:public');
+      return res.json(JSON.parse(cached));
+    }
+
     await connectToMongoDB();
     const db = getDb();
 
@@ -245,6 +255,9 @@ router.get('/presets/public', apiRateLimiter, async (req, res) => {
       'presets': [],
       'aesthetics': [],
       'themes': [],
+      // AI-generated prompts
+      'ui-prompts': [],
+      'figma-prompts': [],
       // Manter compatibilidade com formato antigo
       mockup: [],
       angle: [],
@@ -276,14 +289,24 @@ router.get('/presets/public', apiRateLimiter, async (req, res) => {
       }
     });
 
+    // Cache result for 7 days
+    await redisClient.setex(
+      cacheKey,
+      CACHE_TTL.PRESET_SEARCH,
+      JSON.stringify(grouped)
+    );
+    console.log('[Cache] SET preset:all:public (7d)');
+
     return res.json(grouped);
   } catch (error) {
-    console.error('Failed to load community presets:', error);
+    if (process.env.NODE_ENV === 'production') console.error('Failed to load community presets:', error);
     return res.json({
       '3d': [],
       'presets': [],
       'aesthetics': [],
       'themes': [],
+      'ui-prompts': [],
+      'figma-prompts': [],
       // Compatibilidade
       mockup: [],
       angle: [],

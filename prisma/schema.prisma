@@ -15,7 +15,7 @@ model User {
   email                String    @unique
   name                 String?
   picture              String?
-  username             String?   @unique // Optional unique username for profile URLs
+  username             String?   // Optional unique username for profile URLs (handled by sparse index)
   bio                  String?   // User bio/description
   coverImageUrl        String?   // Header cover image URL (stored in R2)
   instagram            String?   // Instagram profile URL
@@ -38,7 +38,7 @@ model User {
   taxId                String?   // CPF/CNPJ para pagamentos PIX
   stripeSubscriptionId String?
   subscriptionEndDate  DateTime?
-  referralCode         String?   @unique
+  referralCode         String?   // Handled by sparse index manually
   referredBy           String?   @db.ObjectId
   referralCount        Int       @default(0)
   isAdmin              Boolean   @default(false)
@@ -51,6 +51,9 @@ model User {
   storageProductId     String?   // Active storage plan product ID (e.g., 'storage_pro')
   storageSubscriptionEnd DateTime? // When standalone storage subscription expires (null = lifetime or tier-based)
   canvasSettings       Json?     // User settings for the canvas (colors, grid, etc.)
+  llmProvider          String    @default("gemini") // "gemini" | "ollama" — user's preferred LLM
+  ollamaUrl            String?   // User's Ollama endpoint (e.g. http://host:11434) when llmProvider="ollama"
+  ollamaModel          String?   // User's preferred Ollama model (default: llama3.1)
   totalGenerations     Int       @default(0) // Track total images generated across all apps
   totalTokensUsed      Int       @default(0) // Track total tokens used across all apps
   createdAt            DateTime  @default(now())
@@ -62,6 +65,7 @@ model User {
   budgetProjects   BudgetProject[]
   canvasProjects   CanvasProject[]
   canvasWorkflows  CanvasWorkflow[]
+  creativeProjects CreativeProject[]
   customPdfPresets CustomPdfPreset[]
   surpriseMePresets SurpriseMePreset[]
   brandGuidelines BrandGuideline[]
@@ -83,6 +87,8 @@ model Mockup {
   tags         String[]
   brandingTags String[]
   aspectRatio  String   @default("16:9")
+  seed         Int?     // Seed used for this generation (deterministic reproduction)
+  modelUsed    String?  // Exact model version used (e.g. "seedream-4.5", "gemini-2.5-flash-image")
   isLiked      Boolean? // User's like status for this mockup
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -167,6 +173,19 @@ model MockupExample {
   @@map("mockup_examples")
 }
 
+model MockupPattern {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  prompt       String   @unique
+  designType   String   @default("blank")
+  tags         String[]
+  rating       Int      @default(0) // Contagem de thumbs up únicos
+  isOfficial   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("mockup_patterns")
+}
+
 model BudgetProject {
   id                String    @id @default(auto()) @map("_id") @db.ObjectId
   userId            String    @db.ObjectId
@@ -185,7 +204,7 @@ model BudgetProject {
   brandLogo         String?   // base64 ou URL R2
   brandBackgroundColor String? // Cor de fundo da marca
   brandAccentColor  String?   // Cor de destaque da marca
-  shareId           String?   @unique // ID único para compartilhamento
+  shareId           String?   // Handled by sparse index manually
   data              Json      // JSON completo para backup/flexibilidade
   // Campos para layout empresarial
   timeline          Json?     // Array de TimelineMilestone
@@ -235,7 +254,7 @@ model CanvasProject {
   nodes           Json     // Array de nodes do React Flow
   edges           Json     // Array de edges do React Flow
   drawings        Json?    // Array de drawings (freehand, shapes, text)
-  shareId         String?  @unique // ID único para compartilhamento
+  shareId         String?   // Handled by sparse index manually
   isCollaborative Boolean  @default(false) // Se o projeto está em modo colaborativo
   canEdit         String[] @default([]) // IDs de usuários que podem editar
   canView         String[] @default([]) // IDs de usuários que podem visualizar
@@ -248,6 +267,39 @@ model CanvasProject {
   @@index([userId])
   @@index([createdAt])
   @@map("canvas_projects")
+}
+
+model CreativeProject {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  name            String   @default("Untitled Creative")
+
+  // Setup inputs
+  prompt          String
+  format          String   // '1:1' | '9:16' | '16:9' | '4:5'
+  brandId         String?  @db.ObjectId // linked brand guideline
+
+  // AI output + editor state (single source of truth for reload)
+  backgroundUrl   String?
+  overlay         Json?
+  layers          Json     // CreativeLayer[] — mirrors client store shape
+
+  // Preview
+  thumbnailUrl    String?
+
+  // AdminChat integration — link back to chat session for bidirectional editing
+  adminChatSessionId String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([brandId])
+  @@index([adminChatSessionId])
+  @@index([createdAt])
+  @@map("creative_projects")
 }
 
 model CanvasWorkflow {
@@ -432,21 +484,42 @@ model BrandGuideline {
   // Technical tokens (optional, power users)
   tokens    Json?    // { spacing?, radius?, shadows?, components? }
 
+  // Design tokens
+  gradients Json?    // BrandGuidelineGradient[]
+  shadows   Json?    // BrandGuidelineShadow[]
+  motion    Json?    // BrandGuidelineMotion
+  borders   Json?    // BrandGuidelineBorder[]
+
+  // Validation state
+  validation Json?   // Record<string, 'pending'|'approved'|'needs_work'>
+
   // Editorial guidelines
-  guidelines Json?   // { voice?, dos?, donts?, imagery?, accessibility? }
+  guidelines Json?   // { voice?, dos?, donts?, imagery?, accessibility?, person?, emojiPolicy?, casingRules? }
+
+  // Brand strategy
+  strategy      Json?  // { manifesto?, archetypes[], personas[], voiceValues[], positioning? }
 
   // UI preferences
   activeSections Json?  // string[] — persisted section toggles
+  orderedBlocks  Json?  // string[] — persisted section order
 
   // Extraction metadata
   extraction Json?   // { sources[], completeness }
+
+  // Knowledge base (ingested via admin chat, feeds RAG for this brand)
+  // Array<{id, fileName, source: 'pdf'|'image'|'url'|'text', vectorIds: string[], addedByUserId, addedAt}>
+  knowledgeFiles Json?
 
   // Organization
   folder     String?   // User-defined folder for grouping guidelines
 
   // Public sharing
-  publicSlug String?  @unique
+  publicSlug String?    // Handled by sparse index manually
   isPublic   Boolean  @default(false)
+
+  // Collaborative editing — arrays of userId strings
+  canEdit    Json?    // string[] — users with edit access
+  canView    Json?    // string[] — users with view-only access (cursor presence)
 
   // Version tracking
   currentVersion Int @default(1)
@@ -502,8 +575,9 @@ model AppConfig {
   span         String?  // lg:col-span-1 etc.
   databaseInfo String?  // Info specifically for the admin (e.g., table name, config keys)
   displayOrder Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  isHidden     Boolean  @default(false)
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime? @updatedAt
 
   @@map("app_configs")
 }

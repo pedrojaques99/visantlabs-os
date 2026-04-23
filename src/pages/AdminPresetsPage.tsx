@@ -299,11 +299,14 @@ export const AdminPresetsPage: React.FC = () => {
             {imageUrl ? (
               <>
                 <img src={imageUrl} alt={row.getValue("name")} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-neutral-950/50 opacity-0 group-hover:opacity-300 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => {
-                  handleEdit((row.original.category as PresetType) || 'mockup', row.original as any);
-                }}>
-                  <Edit2 className="w-4 h-4 text-white" />
-                </div>
+                <button
+                  type="button"
+                  aria-label="Editar preset"
+                  className="absolute inset-0 bg-neutral-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                  onClick={() => handleEdit((row.original.category as PresetType) || 'mockup', row.original as any)}
+                >
+                  <Edit2 className="w-4 h-4 text-white" aria-hidden="true" />
+                </button>
               </>
             ) : (
               <Icon className={cn("w-5 h-5", config.color)} />
@@ -1269,7 +1272,7 @@ export const AdminPresetsPage: React.FC = () => {
   const effectiveEditType = isCreating ? (activeTab === 'all' ? 'mockup' : activeTab) : editingPreset?.type;
 
   return (
-    <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
+    <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
       <div className="fixed inset-0 z-0">
       </div>
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
@@ -1533,7 +1536,7 @@ export const AdminPresetsPage: React.FC = () => {
                         Importar Batch de Mockup Presets
                       </h3>
                       <Button variant="ghost" onClick={handleCloseBatchModal}
-                        className="text-neutral-400 hover:text-neutral-200 transition-colors"
+                        
                       >
                         <X className="h-5 w-5" />
                       </Button>
@@ -1606,7 +1609,7 @@ export const AdminPresetsPage: React.FC = () => {
                         variant="outline"
                         className="font-mono border-neutral-700/60 hover:border-[brand-cyan]/30"
                       >
-                        {t('adminPresets.close')}
+                        {t('common.close')}
                       </Button>
                     </div>
                   </CardContent>
@@ -1630,7 +1633,7 @@ export const AdminPresetsPage: React.FC = () => {
                         {isCreating ? t('adminPresets.createTitle') : t('adminPresets.editTitle')}
                       </h3>
                       <Button variant="ghost" onClick={handleCancel}
-                        className="text-neutral-400 hover:text-neutral-200 transition-colors"
+                        
                       >
                         <X className="h-5 w-5" />
                       </Button>

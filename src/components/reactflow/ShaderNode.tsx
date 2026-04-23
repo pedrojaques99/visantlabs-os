@@ -1,8 +1,10 @@
 import React, { useEffect, memo, useRef, useCallback, useState } from 'react';
 import { type NodeProps, type Node, NodeResizer, useReactFlow } from '@xyflow/react';
 import { useParams } from 'react-router-dom';
-import { Sparkles, Download, Maximize2, Upload, Video, Image as ImageIcon, X } from 'lucide-react';
+import { Download, Maximize2, Upload, Video, Image as ImageIcon, X, Diamond } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { NodeHeader } from './shared/node-header';
+import { Tooltip } from '@/components/ui/Tooltip';
 import type { ShaderNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { NodeHandles } from './shared/NodeHandles';
@@ -495,14 +497,21 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
       <NodeHandles />
 
       {/* Header */}
-      <div className="flex items-center gap-3 node-margin">
-        <Sparkles size={16} className="text-brand-cyan" />
-        <h3 className="text-xs font-semibold text-neutral-300 font-mono">Shader Effect</h3>
-      </div>
+      <NodeHeader
+        icon={Diamond}
+        title="Shader Effect"
+        selected={selected}
+        isBrandActive={data.isBrandActive}
+        onToggleBrand={(active) => {
+          if (data.onUpdateData) {
+            data.onUpdateData(id, { isBrandActive: active });
+          }
+        }}
+      />
 
       {/* Status/Info - Show manual apply option when ready (only for images, videos auto-process) */}
       {!isLoading && hasConnectedImage && !hasResult && !isVideoInput ? (
-        <div className="w-full px-4 py-3 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
+        <div className="w-full px-4 py-3 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
           <ImageIcon size={14} className="text-brand-cyan" />
           Ready to process
         </div>
@@ -510,11 +519,11 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
 
       {!hasConnectedImage ? (
         <div className="w-full space-y-[var(--node-gap-sm)]">
-          <div className="w-full px-4 py-3 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-50">
+          <div className="w-full px-4 py-3 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-50">
             <ImageIcon size={14} />
             {t('canvasNodes.shaderNode.connectImage') || 'Connect an image or video'}
           </div>
-          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
+          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border-node border-[brand-cyan]/30 hover:border-neutral-700 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
             <Upload size={14} />
             {t('canvasNodes.shaderNode.uploadImageOrVideo') || 'Upload Image or Video'}
             <Input
@@ -526,7 +535,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           </label>
         </div>
       ) : hasConnectedImage && !hasResult && !isVideoInput && !isLoading ? (
-        <div className="w-full px-2 py-1.5 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
+        <div className="w-full px-2 py-1.5 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
           <ImageIcon size={14} className="text-brand-cyan" />
           <span>Image connected - Processing...</span>
         </div>
@@ -623,7 +632,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           {/* Floating Processing Indicator - subtle icon button */}
           {isLoading && (
             <div className="absolute top-3 left-3 z-20">
-              <div className="p-1.5 rounded-md bg-neutral-950/60 backdrop-blur-sm border border-[brand-cyan]/30 shadow-lg">
+              <div className="p-1.5 rounded-md bg-neutral-950/60 backdrop-blur-sm border-node border-[brand-cyan]/30 shadow-lg">
                 <GlitchLoader size={14} color="brand-cyan" />
               </div>
             </div>
@@ -632,7 +641,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           {/* Action Icons - appears on hover or when selected */}
           <div className={cn(
             "absolute top-3 right-3 flex gap-1.5 transition-all backdrop-blur-sm z-10",
-            selected ? "opacity-300" : "opacity-0 group-hover:opacity-300"
+            selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           )}>
             <NodeButton variant="ghost" size="xs" onClick={(e) => {
               e.stopPropagation();
@@ -940,14 +949,14 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
               }
             }}
               onMouseDown={(e) => e.stopPropagation()}
-              className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border border-neutral-700/50 hover:border-neutral-600/70 transition-all"
+              className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border-node border-neutral-700/50 hover:border-neutral-600/70 transition-all"
               title={t('common.viewFullscreen')}
             >
               <Maximize2 size={14} strokeWidth={2} />
             </NodeButton>
             <NodeButton variant="ghost" size="xs" onClick={handleDownload}
               onMouseDown={(e) => e.stopPropagation()}
-              className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border border-neutral-700/50 hover:border-neutral-600/70 transition-all"
+              className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border-node border-neutral-700/50 hover:border-neutral-600/70 transition-all"
               title={hasVideoResult ? t('common.downloadVideo') : t('common.downloadImage')}
             >
               <Download size={14} strokeWidth={2} />

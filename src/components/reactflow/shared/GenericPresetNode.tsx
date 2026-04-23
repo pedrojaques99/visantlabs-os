@@ -1,5 +1,6 @@
-import { type NodeProps, type Node, NodeResizer, Position } from '@xyflow/react';
-import { ChevronDown, LucideIcon } from 'lucide-react';
+import React, { ComponentType, memo, useCallback, useEffect, useState, useRef } from 'react';
+import { type NodeProps, type Node, NodeResizer, Position, useNodes } from '@xyflow/react';
+import { ChevronDown, type LucideIcon, Diamond, LayoutGrid, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ConnectedImagesDisplay } from '../ConnectedImagesDisplay';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -7,9 +8,16 @@ import { NodeHandles } from './NodeHandles';
 import { NodeContainer } from './NodeContainer';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
-import { ComponentType, memo, useCallback, useEffect, useState } from 'react';
 import { NodeButton } from './node-button';
 import { NodeLabel } from './NodeLabel';
+import { NodeHeader } from './node-header';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { useBrandKit } from '@/contexts/BrandKitContext';
+import { NODE_LAYOUT } from '@/constants/nodeLayout';
+import { useBaseNode } from '@/hooks/canvas/useBaseNode';
+import { getCreditsRequired } from '@/utils/creditCalculator';
+
+import { toast } from 'sonner';
 
 interface PresetItem {
     id: string;
@@ -60,11 +68,14 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
 ) {
     const GenericPresetNodeComponent: React.FC<NodeProps<Node<TNodeData>>> = ({ data, selected, id, dragging }) => {
         const { t } = useTranslation();
-        const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
+        const nodes = useNodes();
+        const { handleResize: baseResize, handleFitToContent: baseFitToContent } = useBaseNode(id, data);
         const [selectedPresetId, setSelectedPresetId] = useState<TPresetType | string>(
             (config.getSelectedPreset(data) as TPresetType | string) || config.defaultPresetId
         );
         const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
+        const { openLibrary, closeLibrary } = useBrandKit();
+        const containerRef = useRef<HTMLDivElement>(null);
 
         const isLoading = config.getIsLoading(data) || false;
         const resultImageUrl = config.getResultImageUrl(data);
@@ -95,62 +106,40 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
 
         const handleGenerate = async () => {
             const onGenerate = config.getOnGenerate(data);
-            if (!onGenerate) {
+            if (!onGenerate || !connectedImage) {
                 return;
             }
-
-            if (!connectedImage) {
-                console.warn(`[${config.nodeName}] No connected image available`);
-                return;
-            }
-
-            console.log(`[${config.nodeName}] Generating with:`, {
-                nodeId: id,
-                presetId: selectedPresetId,
-                hasConnectedImage: !!connectedImage,
-                imageType: connectedImage?.startsWith('http') ? 'URL' : connectedImage?.startsWith('data:') ? 'dataURL' : 'base64',
-            });
 
             await onGenerate(id, connectedImage, selectedPresetId);
         };
 
-        const handleFitToContent = useCallback(() => {
-            const width = data.imageWidth as number;
-            const height = data.imageHeight as number;
-            if (width && height) {
-                // Calculate a reasonable size if image is too large
-                let targetWidth = width;
-                let targetHeight = height;
-                const MAX_FIT_WIDTH = 1200;
-
-                if (targetWidth > MAX_FIT_WIDTH) {
-                    const ratio = MAX_FIT_WIDTH / targetWidth;
-                    targetWidth = MAX_FIT_WIDTH;
-                    targetHeight = targetHeight * ratio;
-                }
-
-                fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), data.onResize as any);
-            } else {
-                // For nodes without result image yet, just reset to original width/auto height
-                fitToContent(id, 320, 'auto', data.onResize as any);
+        const handleSelectAsset = (url: string, type: 'image' | 'logo') => {
+            const onUpdateData = config.getOnUpdateData(data);
+            if (onUpdateData) {
+                onUpdateData(id, { connectedImage: url } as any);
             }
-        }, [id, data.imageWidth, data.imageHeight, data.onResize, fitToContent]);
+            closeLibrary();
+        };
+
+        const handleOpenMediaLibrary = () => {
+            openLibrary({ onSelectAsset: handleSelectAsset });
+        };
+
+        const handleFitToContent = useCallback(() => {
+            baseFitToContent();
+        }, [baseFitToContent]);
 
         const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-            const { width } = params;
-            handleResizeWithDebounce(id, width, 'auto', data.onResize as any);
-        }, [id, data.onResize, handleResizeWithDebounce]);
+            baseResize(params.width, params.height);
+        }, [baseResize]);
 
         return (
             <NodeContainer
+                containerRef={containerRef}
                 selected={selected}
                 dragging={dragging}
                 onFitToContent={handleFitToContent}
-                className="w-full h-full"
-                style={{
-                    width: '320px',
-                    height: 'auto'
-                }}
+                className={cn(`min-w-[${NODE_LAYOUT.MIN_WIDTH}px]`)}
                 onContextMenu={(e) => {
                     // Allow ReactFlow to handle the context menu event
                 }}
@@ -159,10 +148,10 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                     <NodeResizer
                         color="brand-cyan"
                         isVisible={selected}
-                        minWidth={320}
-                        minHeight={200}
-                        maxWidth={2000}
-                        maxHeight={2000}
+                        minWidth={NODE_LAYOUT.MIN_WIDTH}
+                        minHeight={NODE_LAYOUT.MIN_HEIGHT}
+                        maxWidth={NODE_LAYOUT.MAX_WIDTH}
+                        maxHeight={NODE_LAYOUT.MAX_HEIGHT}
                         keepAspectRatio={hasResult}
                         onResize={handleResize}
                     />
@@ -170,15 +159,22 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                 <NodeHandles />
 
                 {/* Header */}
-                <div className="flex items-center gap-3 mb-3">
-                    <Icon size={16} className="text-brand-cyan" />
-                    <h3 className="text-xs font-semibold text-neutral-300 font-mono uppercase">
-                        {t(config.translationKeys.title) || config.title}
-                    </h3>
-                </div>
+                <NodeHeader
+                    icon={Icon}
+                    title={t(config.translationKeys.title) || config.title}
+                    selected={selected}
+                    isBrandActive={data.isBrandActive}
+                    onToggleBrand={(active) => {
+                        const onUpdateData = config.getOnUpdateData(data);
+                        if (onUpdateData) {
+                            onUpdateData(id, { isBrandActive: active } as any);
+                        }
+                    }}
+                    onOpenMediaLibrary={handleOpenMediaLibrary}
+                />
 
                 {/* Preset Selector - Button to open modal */}
-                <div className="mb-2 w-full">
+                <div className="node-margin">
                     <NodeButton variant="ghost" size="full"
                         onClick={(e) => {
                             e.stopPropagation();
@@ -189,16 +185,22 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                         }}
                         disabled={isLoading}
                         className={cn(
-                            'w-full flex items-center gap-3 p-1.5 rounded border transition-all text-left node-interactive',
-                            'bg-brand-cyan/10 border-[brand-cyan]/50 hover:bg-brand-cyan/15',
+                            'w-full flex items-center gap-3 p-1.5 rounded-md border-node transition-all text-left node-interactive',
+                            'bg-neutral-900/30 border-neutral-800 hover:bg-neutral-800/50 hover:border-neutral-700',
                             isLoading && 'opacity-50 cursor-not-allowed'
                         )}
                     >
-                        <div className="w-10 h-10 bg-neutral-900/30 border border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0">
-                            <Icon size={14} className="text-neutral-400" />
-                        </div>
+                        {selectedPreset?.id ? (
+                            <div className="w-10 h-10 bg-neutral-900/30 border-node border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                <Icon size={14} className="text-neutral-400" />
+                            </div>
+                        ) : (
+                            <div className="w-10 h-10 bg-neutral-900/30 border-node border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0">
+                                <Icon size={14} className="text-neutral-400" />
+                            </div>
+                        )}
                         <div className="flex-1 min-w-0">
-                            <div className="text-xs font-mono truncate text-brand-cyan">
+                            <div className="text-xs font-mono truncate text-foreground font-semibold">
                                 {selectedPreset?.name || t(config.translationKeys.selectPreset) || `Select ${config.title.toLowerCase()}`}
                             </div>
                             {selectedPreset?.description && (
@@ -227,33 +229,39 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                 )}
 
                 {/* Generate Button */}
-                <NodeButton variant="primary" size="full"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        handleGenerate();
-                    }}
-                    onMouseDown={(e) => {
-                        e.stopPropagation();
-                    }}
-                    disabled={isLoading || !hasConnectedImage}
-                    className={cn(
-                        'w-full px-2 py-1.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive',
-                        (isLoading || !hasConnectedImage) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
-                    )}
+                <Tooltip 
+                    content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${getCreditsRequired('mockup')} ${t('canvasNodes.promptNode.credits')}`}
+                    delay={500}
                 >
-                    {isLoading ? (
-                        <>
-                            <GlitchLoader size={14} className="mr-1" color="brand-cyan" />
-                            {t(config.translationKeys.generating) || 'Generating...'}
-                        </>
-                    ) : (
-                        <>
-                            <Icon size={14} />
-                            {t(config.translationKeys.generateButton) || `Generate ${config.title}`}
-                        </>
-                    )}
-                </NodeButton>
+                    <NodeButton variant="primary" size="full"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleGenerate();
+                        }}
+                        onMouseDown={(e) => {
+                            e.stopPropagation();
+                        }}
+                        disabled={isLoading || !hasConnectedImage}
+                        className="node-interactive group/gen"
+                    >
+                        {isLoading ? (
+                            <div className="flex items-center justify-center gap-2">
+                                <GlitchLoader size={14} color="brand-cyan" />
+                                <span>{t(config.translationKeys.generating) || 'Generating...'}</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center gap-2">
+                                <Icon size={14} className="group-hover/gen:rotate-12 transition-transform" />
+                                <span className="font-semibold tracking-tight">{t(config.translationKeys.generateButton) || `Generate ${config.title}`}</span>
+                                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                                    <Diamond size={10} className="opacity-50 fill-current" />
+                                    {getCreditsRequired('mockup')}
+                                </div>
+                            </div>
+                        )}
+                    </NodeButton>
+                </Tooltip>
 
                 {/* Result Preview */}
                 {hasResult && (resultImageUrl || resultImageBase64) && (
@@ -288,6 +296,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                     }}
                     isLoading={isLoading}
                 />
+
             </NodeContainer>
         );
     };

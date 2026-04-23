@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Lock, ChevronDown, ChevronUp, Settings2, Check } from 'lucide-react';
+import { Lock, ChevronDown, ChevronUp, Settings2, Check, ChevronLeft } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
@@ -13,11 +13,13 @@ import { SurpriseMeSelectedTagsDisplay } from './SurpriseMeSelectedTagsDisplay';
 import { AnalyzedSummaryCard } from './AnalyzedSummaryCard';
 import type { UploadedImage } from '@/types/types';
 import { SurpriseMeControl } from './SurpriseMeControl';
+import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { PresetsControl } from './PresetsControl';
 import { PromptSection } from './PromptSection';
 import { MicroTitle } from '../ui/MicroTitle';
 import { Switch } from '@/components/ui/switch';
+import { SeedControl } from '@/components/reactflow/shared/SeedControl';
 
 interface SidebarGenerationConfigProps {
     onGenerateClick: () => void;
@@ -25,7 +27,7 @@ interface SidebarGenerationConfigProps {
     onSurpriseMe: (autoGenerate: boolean) => void; /* Original handler from props */
     handleSurpriseMe: (autoGenerate?: boolean) => void; /* The wrapper function */
     onSuggestPrompts: () => void;
-    onGenerateSmartPrompt: () => void;
+    onGenerateSmartPrompt: (generateOutputs?: boolean) => Promise<void>;
     onSimplify: () => void;
     onGenerateSuggestion: (suggestion: string) => void;
     generateOutputsButtonRef: React.RefObject<HTMLButtonElement>;
@@ -35,6 +37,7 @@ interface SidebarGenerationConfigProps {
     authenticationRequiredMessage: string;
     isPromptReady: boolean;
     sidebarWidth?: number;
+    onSwitchToEssential: () => void;
 }
 
 export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = ({
@@ -51,6 +54,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
     authenticationRequiredMessage,
     isPromptReady,
     sidebarWidth = 400,
+    onSwitchToEssential,
 }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
@@ -138,6 +142,12 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
         setAspectRatio,
         imageProvider,
         setImageProvider,
+        seed,
+        setSeed,
+        seedLocked,
+        setSeedLocked,
+        detectedLanguage,
+        detectedText,
     } = useMockup();
 
     const [isAdvancedOptionsOpen, setIsAdvancedOptionsOpen] = useState(isSurpriseMeMode);
@@ -235,7 +245,20 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
     const [autoGenerate, setAutoGenerate] = React.useState(true);
 
     return (
-        <div className="animate-fade-in justify-center" >
+        <div className="animate-fade-in justify-center pt-2" >
+            {/* 0. Top Navigation / Switch back */}
+            <div className="flex items-center justify-between mb-4">
+                <button
+                    onClick={onSwitchToEssential}
+                    className="flex items-center gap-1 group text-[10px] font-mono text-neutral-600 hover:text-brand-cyan transition-colors uppercase tracking-widest"
+                >
+                    <ChevronLeft size={10} className="group-hover:-translate-x-0.5 transition-transform" />
+                    {t('mockup.switchToEssential') || 'ESSENTIAL'}
+                </button>
+
+                <BrandGuidelineSelector variant="minimal" />
+            </div>
+
             {/* Design Type + Color swatches - moved above card */}
             <div className="flex items-center justify-between mt-4">
                 <div className="flex -space-x-1.5 transition-all duration-300">
@@ -265,7 +288,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                         onCheckedChange={() => setDesignType(designType === 'logo' ? 'layout' : 'logo')}
                         className="scale-[0.5] origin-left pointer-events-none"
                     />
-                    <span className="font-bold text-[8px] uppercase tracking-tighter whitespace-nowrap opacity-80">
+                    <span className="font-bold text-[10px] uppercase tracking-tighter whitespace-nowrap opacity-80">
                         {t('mockup.transparentBackground') || 'ISOLAR LOGO'}
                     </span>
                 </div>
@@ -283,15 +306,17 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                         onStartOver={resetAll}
                         onReplaceImage={onReplaceImage}
                         onReferenceImagesChange={onReferenceImagesChange}
+                        detectedLanguage={detectedLanguage}
+                        detectedText={detectedText}
                     />
                 </div>
 
                 {/* 2. SurpriseMeSelectedTagsDisplay - ONLY visible in Normal Mode */}
                 {!isSurpriseMeMode && (
                     <div className="animate-fade-in-up stagger-2 relative z-[60]">
-                        <SurpriseMeSelectedTagsDisplay 
-                            onRerollAll={() => handleSurpriseMe(false)} 
-                            isGenerating={isSidebarGenerating} 
+                        <SurpriseMeSelectedTagsDisplay
+                            onRerollAll={() => handleSurpriseMe(false)}
+                            isGenerating={isSidebarGenerating}
                             sidebarWidth={sidebarWidth}
                         />
                     </div>
@@ -411,6 +436,15 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
 
                 {/* 3. Prompt Section */}
                 <div className="animate-fade-in-up stagger-4">
+                    {/* Seed Control — lives right above prompt so users associate it with generation */}
+                    <SeedControl
+                        seed={seed}
+                        seedLocked={seedLocked}
+                        onSeedChange={setSeed}
+                        onSeedLockedChange={setSeedLocked}
+                        disabled={isGenerating}
+                        className="mb-3"
+                    />
                     <PromptSection
                         promptPreview={promptPreview}
                         isSidebarGenerating={isSidebarGenerating}
@@ -456,8 +490,38 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                     ) : null;
                 })()}
 
-                {/* Spacer so fixed toolbar doesn't cover content */}
-                <div className="h-20 flex-shrink-0" aria-hidden="true" />
+                {/* 4. Generation Toolbar (Moved to sidebar) */}
+                <div className="mt-6 pt-6 border-t border-white/5 animate-fade-in-up stagger-5">
+                    <SurpriseMeControl
+                        onSurpriseMe={handleSurpriseMe}
+                        isGeneratingPrompt={isGeneratingPrompt}
+                        isDiceAnimating={false}
+                        isSurpriseMeMode={isSurpriseMeMode}
+                        setIsSurpriseMeMode={setIsSurpriseMeMode}
+                        autoGenerate={autoGenerate}
+                        setAutoGenerate={setAutoGenerate}
+                        selectedModel={selectedModel}
+                        setSelectedModel={setSelectedModel}
+                        imageProvider={imageProvider}
+                        setImageProvider={setImageProvider}
+                        mockupCount={mockupCount}
+                        setMockupCount={setMockupCount}
+                        resolution={resolution}
+                        setResolution={setResolution}
+                        aspectRatio={aspectRatio}
+                        setAspectRatio={setAspectRatio}
+                        uploadedImage={uploadedImage}
+                        onGeneratePrompt={() => onGenerateSmartPrompt(autoGenerate)}
+                        onGenerateOutputs={onGenerateClick}
+                        isGenerateDisabled={isGenerateDisabled}
+                        isGeneratingOutputs={isGenerating}
+                        isPromptReady={isPromptReady}
+                        variant="inline"
+                    />
+                </div>
+
+                {/* Spacer so fixed toolbar doesn't cover content (no longer fixed, but keeps padding) */}
+                <div className="h-10 flex-shrink-0" aria-hidden="true" />
             </div>
         </div>
     );

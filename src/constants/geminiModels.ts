@@ -2,16 +2,19 @@ import type { GeminiModel, Resolution, AspectRatio } from '../types/types';
 
 // ── Model IDs (single source of truth) ─────────────────────────────────────
 export const GEMINI_MODELS = {
+  /** Gemini 3.1 Pro - Flagship intelligence (1M tokens) */
+  PRO_3_1: 'gemini-3.1-pro-preview' as const,
+  /** Gemini 3 Flash - Optimized for performance and reasoning */
+  FLASH_3: 'gemini-3-flash-preview' as const,
+  /** Gemini 3.1 Flash Lite - Most cost-efficient high-volume model */
+  FLASH_3_LITE: 'gemini-3.1-flash-lite-preview' as const,
   /** High-end intelligence for branding strategy & complex reasoning */
-  PRO_2_0: 'gemini-2.0-pro-exp-02-05' as const,
-  /** Fast, multimodal, and reliable for most tasks */
-  FLASH_2_0: 'gemini-2.0-flash' as const,
-  /** Professional grade with massive context window (2M tokens) */
-  PRO_1_5: 'gemini-1.5-pro' as const,
-  /** Lightweight and optimized for cost/speed */
-  FLASH_1_5: 'gemini-1.5-flash' as const,
+  PRO_2_0: 'gemini-3.1-pro-preview' as const,
+  /** Nano Banana 1 — Fast, multimodal, and reliable for most tasks */
+  FLASH_2_5: 'gemini-2.5-flash' as const,
   /** Image generation models */
   IMAGE_FLASH: 'gemini-2.5-flash-image' as const,
+  /** Nano Banana 2 — High performance 2K multimodal generation */
   IMAGE_NB2: 'gemini-3.1-flash-image-preview' as const,
   IMAGE_PRO: 'gemini-3-pro-image-preview' as const,
   // Backward-compatible aliases (deprecated, use IMAGE_* variants)
@@ -19,10 +22,10 @@ export const GEMINI_MODELS = {
   NB2: 'gemini-3.1-flash-image-preview' as const,
   PRO: 'gemini-3-pro-image-preview' as const,
   // Text model alias (for chat/non-image generation)
-  TEXT: 'gemini-2.0-flash' as const,
+  TEXT: 'gemini-3-flash-preview' as const,
 } as const;
 
-export const DEFAULT_MODEL: GeminiModel = GEMINI_MODELS.PRO_2_0;
+export const DEFAULT_MODEL: GeminiModel = GEMINI_MODELS.IMAGE_NB2;
 export const DEFAULT_ASPECT_RATIO: AspectRatio = '16:9';
 
 // ── Per-model configuration ────────────────────────────────────────────────
@@ -43,22 +46,25 @@ export interface ModelConfig {
   supportsSearchGrounding: boolean;
   /** Input token limit from official docs */
   inputTokenLimit: number;
+  /** Domain for Logo.dev integration */
+  providerDomain?: string;
 }
 
 export const MODEL_CONFIG: Record<string, ModelConfig> = {
-  [GEMINI_MODELS.PRO_2_0]: {
-    label: 'Gemini 2.0 Pro',
-    emoji: '🧠',
+  [GEMINI_MODELS.PRO_3_1]: {
+    label: 'Gemini 3.1 Pro',
+    emoji: '🌌',
     maxHandles: 4,
     maxRefImages: 5,
     defaultResolution: undefined,
     supportsImageConfig: false,
     supportsThinking: true,
     supportsSearchGrounding: true,
-    inputTokenLimit: 2_000_000,
+    inputTokenLimit: 1_000_000,
+    providerDomain: 'google.com',
   },
-  [GEMINI_MODELS.FLASH_2_0]: {
-    label: 'Gemini 2.0 Flash',
+  [GEMINI_MODELS.FLASH_3]: {
+    label: 'Gemini 3 Flash',
     emoji: '⚡',
     maxHandles: 4,
     maxRefImages: 10,
@@ -67,21 +73,11 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: false,
     supportsSearchGrounding: true,
     inputTokenLimit: 1_000_000,
+    providerDomain: 'google.com',
   },
-  [GEMINI_MODELS.PRO_1_5]: {
-    label: 'Gemini 1.5 Pro',
+  [GEMINI_MODELS.FLASH_3_LITE]: {
+    label: 'Gemini 3.1 Lite',
     emoji: '💎',
-    maxHandles: 4,
-    maxRefImages: 5,
-    defaultResolution: undefined,
-    supportsImageConfig: false,
-    supportsThinking: false,
-    supportsSearchGrounding: false,
-    inputTokenLimit: 2_000_000,
-  },
-  [GEMINI_MODELS.FLASH_1_5]: {
-    label: 'Gemini 1.5 Flash',
-    emoji: '🚀',
     maxHandles: 2,
     maxRefImages: 1,
     defaultResolution: undefined,
@@ -89,9 +85,22 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: false,
     supportsSearchGrounding: false,
     inputTokenLimit: 1_000_000,
+    providerDomain: 'google.com',
+  },
+  [GEMINI_MODELS.FLASH_2_5]: {
+    label: 'Nano Banana 1',
+    emoji: '🍌',
+    maxHandles: 4,
+    maxRefImages: 10,
+    defaultResolution: undefined,
+    supportsImageConfig: false,
+    supportsThinking: false,
+    supportsSearchGrounding: true,
+    inputTokenLimit: 1_000_000,
+    providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_FLASH]: {
-    label: 'Image HD',
+    label: 'Gemini 2.5 Flash',
     emoji: '🎨',
     maxHandles: 2,
     maxRefImages: 1,
@@ -100,20 +109,22 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: false,
     supportsSearchGrounding: false,
     inputTokenLimit: 65_536,
+    providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_NB2]: {
-    label: 'NB2',
-    emoji: '💎',
+    label: 'Nano Banana 2',
+    emoji: '🍌',
     maxHandles: 4,
-    maxRefImages: 3,
-    defaultResolution: '1K',
+    maxRefImages: 10,
+    defaultResolution: '2K',
     supportsImageConfig: true,
     supportsThinking: false,
     supportsSearchGrounding: false,
-    inputTokenLimit: 65_536,
+    inputTokenLimit: 1_000_000,
+    providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_PRO]: {
-    label: 'Pro',
+    label: 'Gemini 3 Pro',
     emoji: '💎',
     maxHandles: 4,
     maxRefImages: 5,
@@ -122,15 +133,15 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsThinking: false,
     supportsSearchGrounding: false,
     inputTokenLimit: 65_536,
+    providerDomain: 'google.com',
   },
 };
 
 /** List of models suitable for Chat/Expert conversation */
 export const CHAT_MODELS: string[] = [
-  GEMINI_MODELS.PRO_2_0,
-  GEMINI_MODELS.FLASH_2_0,
-  GEMINI_MODELS.PRO_1_5,
-  GEMINI_MODELS.FLASH_1_5,
+  GEMINI_MODELS.PRO_3_1,
+  GEMINI_MODELS.FLASH_3,
+  GEMINI_MODELS.FLASH_2_5,
 ];
 
 export const IMAGE_MODELS: string[] = [
@@ -168,7 +179,7 @@ export function getDefaultResolution(model: string): Resolution | undefined {
 
 /** Get model config, falling back to FLASH config */
 export function getModelConfig(model: string): ModelConfig {
-  return MODEL_CONFIG[model] ?? MODEL_CONFIG[GEMINI_MODELS.FLASH_2_0];
+  return MODEL_CONFIG[model] ?? MODEL_CONFIG[GEMINI_MODELS.FLASH_2_5];
 }
 
 /** All image generation model IDs (excludes text-only) */

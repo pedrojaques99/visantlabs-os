@@ -5,9 +5,12 @@ import { prisma } from '../db/prisma.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
 import path from 'path';
-import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth.js';
 import { getUserIdFromToken } from '../utils/auth.js';
+import { isSafeId, ensureString } from '../utils/validation.js';
 import { rateLimit } from 'express-rate-limit';
+import { redisClient } from '../lib/redis.js';
+import { CACHE_TTL, CacheKey, hashObject } from '../lib/cache-utils.js';
 import {
   buildSystemPrompt,
   buildSystemPromptV2,
@@ -28,6 +31,48 @@ const agentCommandLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// Rate limiter for image analysis (expensive AI calls - 10 req/min)
+const imageAnalysisLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: 'Too many image analysis requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Input validation constants
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
+
+/**
+ * Validate image input for security
+ */
+function validateImageInput(image: any): { valid: boolean; error?: string } {
+  if (!image?.base64) {
+    return { valid: false, error: 'Image base64 required' };
+  }
+
+  // Check base64 size (rough estimate: base64 is ~33% larger than binary)
+  const estimatedSize = (image.base64.length * 3) / 4;
+  if (estimatedSize > MAX_IMAGE_SIZE_BYTES) {
+    return { valid: false, error: `Image too large. Max ${MAX_IMAGE_SIZE_MB}MB` };
+  }
+
+  // Validate mime type
+  const mimeType = image.mimeType || 'image/png';
+  if (!ALLOWED_IMAGE_TYPES.includes(mimeType)) {
+    return { valid: false, error: `Invalid image type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}` };
+  }
+
+  // Basic base64 format validation
+  if (!/^[A-Za-z0-9+/=]+$/.test(image.base64.replace(/\s/g, ''))) {
+    return { valid: false, error: 'Invalid base64 encoding' };
+  }
+
+  return { valid: true };
+}
 import { ObjectId } from 'mongodb';
 import WebSocket, { WebSocketServer } from 'ws';
 import type { BrandGuideline } from '../types/brandGuideline.js';
@@ -493,6 +538,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       brandGuideline: brandGuidelineFromUI,
       brandGuidelineId,
       thinkMode = false,
+      useBrand = true,
     } = req.body as PluginRequest;
 
     if (!command) {
@@ -512,46 +558,65 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     let brandGuideline: BrandGuideline | null = brandGuidelineFromUI || null;
     let brandChoiceContext = '';
 
-    // Try explicit brandGuidelineId first
-    if (brandGuidelineId && !brandGuideline) {
-      try {
-        const savedGuideline = await prisma.brandGuideline.findUnique({
-          where: { id: brandGuidelineId },
-        });
-        if (savedGuideline) {
-          brandGuideline = {
-            id: savedGuideline.id,
-            identity: savedGuideline.identity as any,
-            logos: savedGuideline.logos as any,
-            colors: savedGuideline.colors as any,
-            typography: savedGuideline.typography as any,
-            tags: savedGuideline.tags as any,
-            media: savedGuideline.media as any,
-            tokens: savedGuideline.tokens as any,
-            guidelines: savedGuideline.guidelines as any,
-          };
-          console.log('[Plugin] Loaded brand guideline from DB:', brandGuidelineId);
+    if (useBrand) {
+      // Try explicit brandGuidelineId first
+      if (brandGuidelineId && !brandGuideline) {
+        try {
+          const savedGuideline = await prisma.brandGuideline.findUnique({
+            where: { id: brandGuidelineId },
+          });
+          if (savedGuideline) {
+            brandGuideline = {
+              id: savedGuideline.id,
+              identity: savedGuideline.identity as any,
+              logos: savedGuideline.logos as any,
+              colors: savedGuideline.colors as any,
+              typography: savedGuideline.typography as any,
+              tags: savedGuideline.tags as any,
+              media: savedGuideline.media as any,
+              tokens: savedGuideline.tokens as any,
+              guidelines: savedGuideline.guidelines as any,
+            };
+            console.log('[Plugin] Loaded brand guideline from DB:', brandGuidelineId);
+          }
+        } catch (bgError) {
+          console.error('[Plugin] Error fetching brand guideline:', bgError);
         }
-      } catch (bgError) {
-        console.error('[Plugin] Error fetching brand guideline:', bgError);
       }
+
+      // If still no brand, try auto-resolve from project linkage
+      if (!brandGuideline && fileId && req.userId) {
+        try {
+          const brandResult = await resolveBrandGuideline(fileId, req.userId, brandGuidelineId);
+          if (brandResult.guideline) {
+            brandGuideline = brandResult.guideline;
+            console.log('[Plugin] Auto-resolved brand guideline from project linkage');
+          } else if (brandResult.needsUserChoice) {
+            brandChoiceContext = buildGuidelineChoiceContext(brandResult.availableGuidelines);
+            console.log('[Plugin] No linked brand, LLM will ask user to choose');
+          }
+        } catch (resolveError) {
+          console.error('[Plugin] Error auto-resolving brand:', resolveError);
+        }
+      }
+    } else {
+      console.log('[Plugin] Branding disabled by user. Using local context ONLY.');
     }
 
-    // If still no brand, try auto-resolve from project linkage
-    if (!brandGuideline && fileId && req.userId) {
-      try {
-        const brandResult = await resolveBrandGuideline(fileId, req.userId, brandGuidelineId);
-        if (brandResult.guideline) {
-          brandGuideline = brandResult.guideline;
-          console.log('[Plugin] Auto-resolved brand guideline from project linkage');
-        } else if (brandResult.needsUserChoice) {
-          brandChoiceContext = buildGuidelineChoiceContext(brandResult.availableGuidelines);
-          console.log('[Plugin] No linked brand, LLM will ask user to choose');
-        }
-      } catch (resolveError) {
-        console.error('[Plugin] Error auto-resolving brand:', resolveError);
-      }
-    }
+    // Cache check for plugin context
+    const contextHash = hashObject({ command, fileId, brandGuidelineId, designSystem });
+    const pluginCacheKey = CacheKey.pluginContext(fileId || 'public', brandGuidelineId || 'none', contextHash);
+    const cachedContext = await redisClient.get(pluginCacheKey).catch(() => null);
+
+    // ═══ BRANDED SOCIAL POSTS: Resolve effective brand context ═══
+    const effectiveBrandFonts = brandFonts || (brandGuideline?.typography ? {
+      primary: (brandGuideline.typography as any[]).find(t => t.role === 'primary' || t.role === 'heading'),
+      secondary: (brandGuideline.typography as any[]).find(t => t.role === 'secondary' || t.role === 'body'),
+    } : undefined);
+
+    const effectiveBrandColors = selectedBrandColors || (brandGuideline?.colors ? 
+      (brandGuideline.colors as any[]).map(c => ({ name: c.name, value: c.hex, role: c.role })) : 
+      undefined);
 
     // ═══ BRANDED SOCIAL POSTS: Scan templates ═══
     let templateContext = '';
@@ -649,8 +714,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           selectedLogo,
           brandLogos,
           selectedBrandFont,
-          brandFonts,
-          selectedBrandColors,
+          brandFonts: effectiveBrandFonts,
+          selectedBrandColors: effectiveBrandColors,
           availableComponents,
           availableColorVariables,
           availableFontVariables,
@@ -692,8 +757,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           selectedLogo,
           brandLogos,
           selectedBrandFont,
-          brandFonts,
-          selectedBrandColors,
+          brandFonts: effectiveBrandFonts,
+          selectedBrandColors: effectiveBrandColors,
           availableComponents,
           availableColorVariables,
           availableFontVariables,
@@ -740,6 +805,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     let operations: any[] = [];
     let usage: { inputTokens: number; outputTokens: number; totalTokens: number } | undefined;
     const generationStart = Date.now();
+    const toolCallStartedAt = new Date().toISOString();
     const maxRetries = promptMode === 'v2' ? 1 : 0; // V2 gets 1 retry with feedback
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -894,7 +960,17 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     );
 
     // Return validated operations to apply
-    res.json({
+    const toolCallRecord = {
+      id: `tc-${Date.now()}`,
+      name: 'generate_figma_operations',
+      status: 'done' as const,
+      args: { command: command.slice(0, 120) },
+      startedAt: toolCallStartedAt,
+      endedAt: new Date().toISOString(),
+      summary: `${validOps.length} operation${validOps.length !== 1 ? 's' : ''} via ${provider.name}${warnings.length > 0 ? ` (${warnings.length} filtered)` : ''}`,
+    };
+
+    const responseData = {
       success: true,
       operations: validOps,
       message: `Generated ${validOps.length} operation(s)${warnings.length > 0 ? ` (${warnings.length} filtered)` : ''}`,
@@ -902,7 +978,18 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       warnings: warnings.length > 0 ? warnings : undefined,
       usage: usage || undefined,
       durationMs,
-    });
+      toolCallRecord,
+    };
+
+    // Cache plugin context for 1 hour
+    await redisClient.setex(
+      pluginCacheKey,
+      CACHE_TTL.PLUGIN_CTX,
+      JSON.stringify(responseData)
+    ).catch(() => null);
+    console.log(`[Cache] SET plugin:${fileId?.slice(0, 8)}:${brandGuidelineId?.slice(0, 8)} (1h)`);
+
+    res.json(responseData);
 
     // Deduct credit after successful response (non-blocking, only for authenticated non-BYOK users)
     const isByokUser = !!(userApiKey || userAnthropicKey);
@@ -1033,6 +1120,511 @@ router.get('/proxy-image', proxyRateLimiter, async (req: Request, res: Response)
     // MED-002 fix: Don't expose internal error details
     console.error('[ProxyImage] Error:', error.message);
     res.status(500).json({ error: 'Failed to fetch image' });
+  }
+});
+
+// ============ Image to Prompt Generator ============
+import {
+  buildImageToPromptSystem,
+  IMAGE_ANALYSIS_USER_PROMPT,
+  detectComponentType,
+} from '../lib/prompt/modules/image-to-prompt.js';
+import {
+  UI_DESCRIBE_SYSTEM,
+  UI_DESCRIBE_USER,
+  UI_DESCRIBE_COMPACT,
+} from '../lib/prompt/modules/ui-to-image-prompt.js';
+import {
+  SMART_ANALYZER_SYSTEM,
+  SMART_ANALYZER_USER,
+  parseAnalyzerResponse,
+  IMAGE_CATEGORIES,
+  type ImageCategory,
+  getFigmaOperationsSystem,
+  FIGMA_OPERATIONS_USER,
+  parseFigmaOperationsResponse,
+  WHITE_LABEL_INSTRUCTION,
+} from '../lib/prompt/modules/smart-image-analyzer.js';
+import { generateText } from '../lib/ai-providers/gemini.js';
+import {
+  saveFeedback,
+  buildLearningContext,
+  getFeedbackStats,
+} from '../services/promptFeedbackService.js';
+import {
+  saveToLibrary,
+  findSimilar,
+  buildLibraryContext,
+  incrementUsage,
+  updateRating,
+  getUserPrompts,
+} from '../services/promptLibraryService.js';
+
+/**
+ * POST /api/plugin/image-to-prompt
+ * Analyzes an image and generates a Figma plugin prompt
+ * Admin only
+ */
+router.post('/image-to-prompt', imageAnalysisLimiter, authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { image, hint, saveToLib, name } = req.body;
+
+    // Validate image input
+    const validation = validateImageInput(image);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    // Detect component type from hint
+    const componentType = hint ? detectComponentType(hint) : undefined;
+    const typeKey = componentType || 'general';
+
+    // Get learned context from MongoDB feedback
+    const learningContext = await buildLearningContext(typeKey);
+
+    // Get similar prompts from library for better context
+    const libraryContext = await buildLibraryContext(componentType);
+
+    // Combine contexts
+    const contexts = [learningContext, libraryContext].filter(Boolean) as string[];
+
+    // Build system prompt with component-specific rules + learnings + library examples
+    const systemPrompt = buildImageToPromptSystem(componentType, contexts);
+
+    // Use Gemini Flash for fast vision analysis
+    const result = await generateText(
+      systemPrompt,
+      IMAGE_ANALYSIS_USER_PROMPT,
+      [{ mimeType: image.mimeType || 'image/png', data: image.base64 }]
+    );
+
+    // Generate a feedback ID for tracking
+    const feedbackId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    const generatedPrompt = result.text;
+    let promptId: string | undefined;
+
+    // Save to library if requested
+    if (saveToLib && name) {
+      const { publish } = req.body;
+      promptId = await saveToLibrary({
+        name,
+        prompt: generatedPrompt,
+        category: 'figma-prompts',
+        componentType: typeKey,
+        tags: ['figma-plugin', typeKey],
+        userId: req.userId,
+        isPublic: !!publish, // Admin can publish immediately
+      });
+    }
+
+    res.json({
+      success: true,
+      prompt: generatedPrompt,
+      feedbackId,
+      promptId,
+      componentType: typeKey,
+      usage: result.usage || null
+    });
+
+  } catch (error: any) {
+    console.error('[ImageToPrompt] Error:', error.message);
+    res.status(500).json({ error: 'Failed to analyze image', details: error.message });
+  }
+});
+
+/**
+ * POST /api/plugin/image-to-prompt/feedback
+ * Submit feedback to improve prompt generation (persisted to MongoDB)
+ * Admin only
+ */
+router.post('/image-to-prompt/feedback', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { feedbackId, success, componentType, improvement, generatedPrompt } = req.body;
+
+    if (!feedbackId) {
+      return res.status(400).json({ error: 'feedbackId required' });
+    }
+
+    // Persist to MongoDB
+    await saveFeedback({
+      feedbackId,
+      componentType: componentType || 'general',
+      success: !!success,
+      improvement: improvement || undefined,
+      generatedPrompt: generatedPrompt || undefined,
+    });
+
+    res.json({ success: true, message: 'Feedback saved' });
+
+  } catch (error: any) {
+    console.error('[ImageToPrompt] Feedback error:', error.message);
+    res.status(500).json({ error: 'Failed to record feedback' });
+  }
+});
+
+/**
+ * GET /api/plugin/image-to-prompt/stats
+ * Get feedback statistics
+ * Admin only
+ */
+router.get('/image-to-prompt/stats', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const stats = await getFeedbackStats();
+    res.json({ success: true, stats });
+  } catch (error: any) {
+    console.error('[ImageToPrompt] Stats error:', error.message);
+    res.status(500).json({ error: 'Failed to get stats' });
+  }
+});
+
+/**
+ * POST /api/plugin/ui-to-image-prompt
+ * Analyzes UI screenshot → generates prompt for image generation models
+ * Admin only
+ */
+router.post('/ui-to-image-prompt', imageAnalysisLimiter, authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { image, compact, saveToLib, name } = req.body;
+
+    // Validate image input
+    const validation = validateImageInput(image);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    // Use compact version for minimal tokens
+    const systemPrompt = compact ? UI_DESCRIBE_COMPACT : UI_DESCRIBE_SYSTEM;
+    const userPrompt = compact ? 'Gere o prompt.' : UI_DESCRIBE_USER;
+
+    const result = await generateText(
+      systemPrompt,
+      userPrompt,
+      [{ mimeType: image.mimeType || 'image/png', data: image.base64 }]
+    );
+
+    const generatedPrompt = result.text.trim();
+    let promptId: string | undefined;
+
+    // Save to library if requested
+    if (saveToLib && name) {
+      const { publish } = req.body;
+      promptId = await saveToLibrary({
+        name,
+        prompt: generatedPrompt,
+        category: 'ui-prompts',
+        tags: ['image-gen', 'ui-screenshot'],
+        userId: req.userId,
+        isPublic: !!publish, // Admin can publish immediately
+      });
+    }
+
+    res.json({
+      success: true,
+      prompt: generatedPrompt,
+      promptId,
+      usage: result.usage || null
+    });
+
+  } catch (error: any) {
+    console.error('[UItoImagePrompt] Error:', error.message);
+    res.status(500).json({ error: 'Failed to analyze UI', details: error.message });
+  }
+});
+
+/**
+ * GET /api/plugin/prompt-library
+ * Get user's saved prompts from library
+ * Admin only
+ */
+router.get('/prompt-library', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { category } = req.query;
+    const prompts = await getUserPrompts(req.userId!, category as string);
+    res.json({ success: true, prompts });
+  } catch (error: any) {
+    console.error('[PromptLibrary] Error:', error.message);
+    res.status(500).json({ error: 'Failed to get prompts' });
+  }
+});
+
+/**
+ * GET /api/plugin/prompt-library/similar
+ * Find similar prompts for inspiration
+ * Admin only
+ */
+router.get('/prompt-library/similar', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { componentType, tags } = req.query;
+    const tagArray = typeof tags === 'string' ? tags.split(',') : undefined;
+    const prompts = await findSimilar(componentType as string, tagArray, 10);
+    res.json({ success: true, prompts });
+  } catch (error: any) {
+    console.error('[PromptLibrary] Error:', error.message);
+    res.status(500).json({ error: 'Failed to find similar prompts' });
+  }
+});
+
+/**
+ * POST /api/plugin/prompt-library/:id/use
+ * Mark prompt as used (increments usage count)
+ * Admin only
+ */
+router.post('/prompt-library/:id/use', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const promptId = req.params.id;
+    if (!isSafeId(promptId, 50)) {
+      return res.status(400).json({ error: 'Invalid prompt ID' });
+    }
+    await incrementUsage(promptId);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('[PromptLibrary] Error:', error.message);
+    res.status(500).json({ error: 'Failed to update usage' });
+  }
+});
+
+/**
+ * POST /api/plugin/prompt-library/:id/rate
+ * Rate a prompt (success/failure affects ranking)
+ * Admin only
+ */
+router.post('/prompt-library/:id/rate', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const promptId = req.params.id;
+    if (!isSafeId(promptId, 50)) {
+      return res.status(400).json({ error: 'Invalid prompt ID' });
+    }
+    const { success } = req.body;
+    await updateRating(promptId, !!success);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('[PromptLibrary] Error:', error.message);
+    res.status(500).json({ error: 'Failed to update rating' });
+  }
+});
+
+// ============ Smart Image Analyzer (Unified Endpoint) ============
+
+/**
+ * POST /api/plugin/smart-analyze
+ * Unified endpoint: auto-detects image type and generates appropriate prompt
+ * - mode: 'figma-plugin' → generates FigmaOperation[] JSON
+ * - mode: 'image-gen' (default) → generates image generation prompt
+ * Admin only
+ */
+router.post('/smart-analyze', imageAnalysisLimiter, authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { image, mode = 'image-gen', whiteLabel = false, params, refinements, currentPrompt, availableComponents, brandGuideline } = req.body;
+    const saveToLib = req.body.saveToLib === true || req.body.saveToLib === 'true';
+    const publish = req.body.publish === true || req.body.publish === 'true';
+
+    // Validate image input
+    const validation = validateImageInput(image);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    const imageData = [{ mimeType: image.mimeType || 'image/png', data: image.base64 }];
+
+    // White label instruction to append when enabled
+    const whiteLabelSuffix = whiteLabel ? WHITE_LABEL_INSTRUCTION : '';
+
+    // Build parameter-based instructions
+    let paramInstructions = '';
+    if (params) {
+      if (mode === 'figma-plugin') {
+        if (params.useAutoLayout === false) paramInstructions += '\n- NÃO use auto-layout neste componente.';
+        if (params.useSemanticNaming) paramInstructions += '\n- Use nomes de camadas extremamente descritivos e semânticos em inglês.';
+        if (params.useTokens) paramInstructions += '\n- Priorize o uso de variáveis e tokens de cores/tipografia disponíveis no workspace.';
+        if (params.selectedFont) paramInstructions += `\n- Utilize a fonte "${params.selectedFont}" para todos os elementos de texto.`;
+      } else {
+        if (params.intensity === 'literal') paramInstructions += '\n- Seja extremamente literal: descreva apenas o que está visível, sem interpretações artísticas.';
+        else if (params.intensity === 'creative') paramInstructions += '\n- Seja criativo: adicione elementos que melhorem a estética, iluminação dramática e detalhes que complementem o mood.';
+
+        if (params.visualStyle && params.visualStyle !== 'auto') paramInstructions += `\n- Estilo visual desejado: ${params.visualStyle}.`;
+        if (params.aspectRatio) paramInstructions += `\n- Proporção alvo (Aspect Ratio): ${params.aspectRatio}.`;
+        if (params.selectedFont) paramInstructions += `\n- Sugira o uso da fonte "${params.selectedFont}" se houver texto na imagem.`;
+      }
+    }
+
+    // Refinement Logic: If refinements are provided, we ask the AI to REWRITE the prompt
+    let systemBase = mode === 'figma-plugin' 
+      ? getFigmaOperationsSystem({ 
+          availableComponents, 
+          brandContext: brandGuideline?.guidelines?.voice 
+        }) 
+      : SMART_ANALYZER_SYSTEM;
+    let userBase = mode === 'figma-plugin' ? FIGMA_OPERATIONS_USER : SMART_ANALYZER_USER;
+
+    if (refinements && Array.isArray(refinements) && refinements.length > 0) {
+      systemBase += `\n\nREFINAMENTO DE PROMPT:
+      - O usuário deseja alterar o prompt gerado anteriormente.
+      - Prompt Original: "${currentPrompt}"
+      - Novas instruções/mudanças desejadas: ${refinements.join(', ')}
+      - Sua tarefa é REESCREVER o prompt (ou operações) incorporando essas mudanças de forma fluida e profissional.
+      - Mantenha a consistência com a imagem original, mas priorize as novas instruções.`;
+      
+      userBase = `Com base na imagem e no prompt original "${currentPrompt}", gere uma nova versão do prompt incorporando: ${refinements.join(', ')}.`;
+    }
+
+    // MODE: Figma Plugin Operations
+    if (mode === 'figma-plugin') {
+      const result = await generateText(
+        systemBase + whiteLabelSuffix + (paramInstructions ? `\n\nREGRAS ADICIONAIS DE CUSTOMIZAÇÃO:${paramInstructions}` : ''),
+        userBase,
+        imageData
+      );
+
+      const parsed = parseFigmaOperationsResponse(result.text);
+
+      if (!parsed) {
+        return res.status(500).json({
+          error: 'Failed to parse Figma operations',
+          raw: result.text
+        });
+      }
+
+      const feedbackId = `figma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+      let promptId: string | undefined;
+      if (saveToLib) {
+        promptId = await saveToLibrary({
+          name: parsed.name,
+          prompt: JSON.stringify(parsed.operations, null, 2),
+          category: 'figma-prompts',
+          componentType: parsed.category,
+          tags: ['figma-plugin', 'operations', parsed.category],
+          userId: req.userId,
+          isPublic: !!publish,
+        });
+      }
+
+      return res.json({
+        success: true,
+        mode: 'figma-plugin',
+        name: parsed.name,
+        category: parsed.category,
+        operations: parsed.operations,
+        tokens: parsed.tokens,
+        feedbackId,
+        promptId,
+        usage: result.usage || null,
+      });
+    }
+
+    // MODE: Image Generation Prompt (default)
+    const analysisResult = await generateText(
+      systemBase + whiteLabelSuffix + (paramInstructions ? `\n\nREGRAS ADICIONAIS DE CUSTOMIZAÇÃO:${paramInstructions}` : ''),
+      userBase,
+      imageData
+    );
+
+    const parsed = parseAnalyzerResponse(analysisResult.text);
+
+    if (!parsed) {
+      return res.status(500).json({
+        error: 'Failed to parse image analysis',
+        raw: analysisResult.text
+      });
+    }
+
+    const { category, confidence, tags, prompt, name } = parsed;
+
+    // Determine library category based on detected type
+    const isUIType = category === 'ui-screenshot' || category === 'figma-design';
+    const libraryCategory = isUIType ? 'figma-prompts' : category;
+
+    const feedbackId = `smart-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    let promptId: string | undefined;
+    if (saveToLib) {
+      promptId = await saveToLibrary({
+        name,
+        prompt,
+        category: libraryCategory,
+        componentType: category,
+        tags: [...tags, category],
+        userId: req.userId,
+        isPublic: !!publish,
+      });
+    }
+
+    res.json({
+      success: true,
+      mode: 'image-gen',
+      category,
+      confidence,
+      tags,
+      name,
+      prompt,
+      promptType: isUIType ? 'figma-plugin' : 'image-generation',
+      feedbackId,
+      promptId,
+      libraryCategory,
+      usage: analysisResult.usage || null,
+    });
+
+  } catch (error: any) {
+    console.error('[SmartAnalyze] Error:', error.message);
+    res.status(500).json({ error: 'Failed to analyze image', details: error.message });
+  }
+});
+
+/**
+ * GET /api/plugin/smart-analyze/categories
+ * Returns all detectable image categories
+ */
+router.get('/smart-analyze/categories', (req: Request, res: Response) => {
+  const categories = Object.entries(IMAGE_CATEGORIES).map(([key, value]) => ({
+    id: key,
+    keywords: value.keywords,
+    color: value.color,
+  }));
+  res.json({ categories });
+});
+
+/**
+ * POST /api/plugin/smart-analyze/publish
+ * Publish a prompt to the community library
+ * Admin only
+ */
+router.post('/smart-analyze/publish', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { name, prompt, category, tags } = req.body;
+
+    // Validate inputs
+    const validName = ensureString(name, 200);
+    const validPrompt = ensureString(prompt, 100000);
+    const validCategory = ensureString(category, 50);
+
+    if (!validName || !validPrompt || !validCategory) {
+      return res.status(400).json({ error: 'Name, prompt, and category are required' });
+    }
+
+    // Validate tags
+    const validTags = Array.isArray(tags)
+      ? tags.slice(0, 20).map(t => ensureString(t, 50)).filter((t): t is string => t !== null)
+      : [];
+
+    const promptId = await saveToLibrary({
+      name: validName,
+      prompt: validPrompt,
+      category: validCategory,
+      tags: validTags,
+      userId: req.userId,
+      isPublic: true,
+    });
+
+    res.json({
+      success: true,
+      promptId,
+      message: 'Published to community!',
+    });
+
+  } catch (error: any) {
+    console.error('[SmartAnalyze:Publish] Error:', error.message);
+    res.status(500).json({ error: 'Failed to publish', details: error.message });
   }
 });
 

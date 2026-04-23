@@ -64,7 +64,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                     >
                         {t('pricing.yearly') || 'Anual'}
                         <span className={cn(
-                            "text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase ",
+                            "text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase ",
                             billingCycle === 'yearly' ? "bg-neutral-950/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
                         )}>
                             {t('pricing.yearlyDiscount') || '-16%'}
@@ -88,7 +88,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                                 key={plan.id}
                                 className="bg-neutral-900/40 border-neutral-800/50 hover:border-brand-cyan/30 transition-all duration-300 flex flex-col group relative overflow-hidden"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                                 <CardHeader className="text-center pb-2 relative z-10">
                                     {plan.displayOrder === 1 && (

@@ -37,6 +37,7 @@ export interface GenerateVideoParams {
   inputVideo?: string;
 
   isLooping?: boolean;
+  seed?: number; // Seed for deterministic generation
 
   model?: string;
   canvasId?: string;
@@ -46,6 +47,8 @@ export interface GenerateVideoParams {
 export interface GenerateVideoResponse {
   videoUrl?: string; // R2 URL (preferred)
   videoBase64?: string; // Base64 fallback (only if R2 URL not available)
+  seed?: number; // Seed used for generation
+  modelUsed?: string; // Model version used
   creditsDeducted: number;
   creditsRemaining: number;
   isAdmin: boolean;
@@ -73,6 +76,7 @@ export const videoApi = {
         inputVideo: params.inputVideo,
 
         isLooping: params.isLooping,
+        seed: params.seed, // Deterministic generation seed
 
         model: params.model || 'veo-3.1-generate-preview',
         canvasId: params.canvasId,

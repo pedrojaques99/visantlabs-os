@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Palette, Type, Box, LayoutGrid, Copy, Check, Home, Sparkles, ChevronLeft, ChevronRight, Users, Search, Command } from 'lucide-react';
+import { Palette, Type, Box, LayoutGrid, Copy, Check, Home, Diamond, ChevronLeft, ChevronRight, Users, Search, Command } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
@@ -56,15 +56,15 @@ const ColorSwatch: React.FC<{
   };
 
   return (
-    <div className="bg-card border border-neutral-800/50 rounded-md p-4 px-6 py-4 hover:border-brand-cyan/30 transition-all">
+    <div className="bg-card border border-neutral-800/20 rounded-xl p-4 px-6 py-4 hover:border-brand-cyan/20 transition-all">
       <div className="flex items-start gap-4">
         <div
-          className="w-16 h-16 rounded-md border border-neutral-800/50 flex-shrink-0"
+          className="w-16 h-16 rounded-xl border border-neutral-800/50 flex-shrink-0"
           style={{ backgroundColor: `var(${variable})` }}
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-mono font-semibold text-neutral-200">{name}</h4>
+            <h4 className="font-semibold text-neutral-200">{name}</h4>
             <Button variant="ghost" onClick={copyToClipboard}
               className="p-1 hover:bg-neutral-800/50 rounded transition-colors"
               title="Copy CSS variable"
@@ -100,9 +100,9 @@ const SpacingExample: React.FC<{
     <div className="flex items-center gap-4">
       <div className="w-24 font-mono text-sm text-neutral-400">{name}</div>
       <div className="flex-1">
-        <div className="h-8 bg-neutral-800/50 rounded flex items-center">
+        <div className="h-8 bg-neutral-800/50 rounded-lg flex items-center">
           <div
-            className="bg-brand-cyan/30 h-full flex items-center justify-center text-xs font-mono text-brand-cyan"
+            className="bg-brand-cyan/30 h-full flex items-center justify-center text-xs font-mono text-brand-cyan rounded-lg"
             style={{ width: `${size}px`, minWidth: '20px' }}
           >
             {size}px
@@ -180,14 +180,14 @@ export const DesignSystemPage: React.FC = () => {
   const spacingScale = [
     { name: '0', value: '0px', size: 0 },
     { name: '1', value: '0.25rem (4px)', size: 4 },
-    { name: '2', value: '0.5rem (8px)', size: 8 },
+    { name: '2', value: '0.5rem (10px)', size: 8 },
     { name: '3', value: '0.75rem (12px)', size: 12 },
     { name: '4', value: '1rem (16px)', size: 16 },
     { name: '5', value: '1.25rem (20px)', size: 20 },
     { name: '6', value: '1.5rem (24px)', size: 24 },
     { name: '8', value: '2rem (32px)', size: 32 },
     { name: '10', value: '2.5rem (40px)', size: 40 },
-    { name: '12', value: '3rem (48px)', size: 48 },
+    { name: '12', value: '3rem (410px)', size: 48 },
     { name: '16', value: '4rem (64px)', size: 64 },
     { name: '20', value: '5rem (80px)', size: 80 },
   ];
@@ -552,7 +552,7 @@ export const DesignSystemPage: React.FC = () => {
                       title={t('designSystem.commandPalette.searchShortcut') || 'Search (Ctrl+K)'}
                     >
                       <Search className="w-4 h-4" />
-                      <span>{t('designSystem.commandPalette.search') || 'Search'}</span>
+                      <span>{t('common.search') || 'Search'}</span>
                       <div className="flex items-center gap-1 px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-800/50">
                         <Command className="w-3 h-3" />
                         <kbd className="text-xs">K</kbd>
@@ -568,7 +568,7 @@ export const DesignSystemPage: React.FC = () => {
                     <Card className="overflow-hidden">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <Sparkles className="w-5 h-5 text-brand-cyan" />
+                          <Diamond className="w-5 h-5 text-brand-cyan" />
                           {t('designSystem.home.welcome') || 'Welcome to the Design System'}
                         </CardTitle>
                         <CardDescription>
@@ -728,9 +728,9 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent className="space-y-6">
                         {typography.map((font) => (
-                          <div key={font.className} className="border border-neutral-800/50 rounded-md p-6 bg-neutral-900/30">
-                            <h3 className="font-mono font-semibold text-neutral-200 mb-2">{font.name}</h3>
-                            <p className="text-sm text-neutral-400 font-mono mb-4">{font.description}</p>
+                          <div key={font.className} className="border border-neutral-800/20 rounded-xl p-6 bg-neutral-900/40">
+                            <h3 className="font-semibold text-neutral-200 mb-2">{font.name}</h3>
+                            <p className="text-sm text-neutral-400 mb-4">{font.description}</p>
                             <p className={cn('text-2xl', font.className)}>
                               Aa
                             </p>
@@ -780,7 +780,9 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="flex flex-wrap gap-4">
+                        {/* Core variants */}
+                        <p className="text-xs font-mono text-neutral-500">Core:</p>
+                        <div className="flex flex-wrap gap-3">
                           <Button variant="default">Default</Button>
                           <Button variant="secondary">Secondary</Button>
                           <Button variant="destructive">Destructive</Button>
@@ -791,35 +793,47 @@ export const DesignSystemPage: React.FC = () => {
                           <Button variant="sidebarAction">Sidebar Action</Button>
                         </div>
                         <Separator />
-                        <div className="flex flex-wrap gap-4">
-                          <Button variant="ghost" size="sm">Small</Button>
-                          <Button variant="ghost" size="default">Default</Button>
-                          <Button variant="ghost" size="lg">Large</Button>
-                          <Button variant="ghost" size="icon">
-                            <Palette className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sidebar">Sidebar</Button>
+                        {/* Semantic variants (new) */}
+                        <p className="text-xs font-mono text-neutral-500">Semantic (use in place of ghost+className override):</p>
+                        <div className="flex flex-wrap gap-3">
+                          <Button variant="surface">Surface</Button>
+                          <Button variant="toolbar">Toolbar</Button>
+                          <Button variant="menuItem">Menu Item</Button>
+                          <Button variant="info">Info</Button>
+                          <Button variant="warning">Warning</Button>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex gap-1 group">
+                            <Button variant="action"><Copy className="h-4 w-4" /></Button>
+                            <Button variant="danger"><Users className="h-4 w-4" /></Button>
+                          </div>
+                          <p className="text-xs font-mono text-neutral-500">action + danger — hover-reveal icon buttons</p>
                         </div>
                         <Separator />
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
-                          <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <div className="text-xs font-mono text-neutral-500 mb-1">Brand</div>
-                            <Button variant="brand" size="sm" className="w-full">Brand Button</Button>
-                          </div>
-                          <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <div className="text-xs font-mono text-neutral-500 mb-1">Sidebar</div>
-                            <Button variant="sidebarAction" size="sm" className="w-full">Sidebar</Button>
-                          </div>
-                          <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <div className="text-xs font-mono text-neutral-500 mb-1">Icon</div>
-                            <Button variant="ghost" size="icon" className="w-full">
-                              <Palette className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <div className="text-xs font-mono text-neutral-500 mb-1">Large</div>
-                            <Button variant="ghost" size="lg" className="w-full">Large</Button>
-                          </div>
+                        {/* Sizes */}
+                        <p className="text-xs font-mono text-neutral-500">Sizes:</p>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Button variant="surface" size="xs">xs</Button>
+                          <Button variant="surface" size="sm">sm</Button>
+                          <Button variant="surface" size="default">default</Button>
+                          <Button variant="surface" size="lg">lg</Button>
+                          <Button variant="ghost" size="icon"><Palette className="w-4 h-4" /></Button>
+                          <Button variant="action" size="icon-sm"><Copy className="w-3 h-3" /></Button>
+                          <Button variant="action" size="icon-md"><Search className="w-4 h-4" /></Button>
+                        </div>
+                        <Separator />
+                        {/* Usage guide */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {[
+                            { variant: 'surface' as const, label: 'surface', note: 'Bordered muted — toolbars, auth gates' },
+                            { variant: 'toolbar' as const, label: 'toolbar', note: 'Uppercase + brand-cyan hover' },
+                            { variant: 'menuItem' as const, label: 'menuItem', note: 'Full-width mono dropdown' },
+                          ].map(({ variant, label, note }) => (
+                            <div key={label} className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                              <div className="text-[10px] font-mono text-neutral-500 mb-2">{note}</div>
+                              <Button variant={variant} size="sm" className="w-full">{label}</Button>
+                            </div>
+                          ))}
                         </div>
                       </CardContent>
                     </Card>
@@ -1425,7 +1439,7 @@ export const DesignSystemPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-xs font-mono text-neutral-500 mb-2">Circular:</p>
-                            <SkeletonLoader width="48px" height="48px" variant="circular" />
+                            <SkeletonLoader width="410px" height="410px" variant="circular" />
                           </div>
                           <div>
                             <p className="text-xs font-mono text-neutral-500 mb-2">Text:</p>
@@ -1528,7 +1542,7 @@ export const DesignSystemPage: React.FC = () => {
                             </Badge>
                             <Badge
                               variant="outline"
-                              className="opacity-300 cursor-not-allowed bg-neutral-800/50 text-neutral-400 border-neutral-700/50"
+                              className="opacity-100 cursor-not-allowed bg-neutral-800/50 text-neutral-400 border-neutral-700/50"
                             >
                               Disabled Tag
                             </Badge>
@@ -1843,7 +1857,7 @@ export const DesignSystemPage: React.FC = () => {
                         <div className="font-mono text-sm space-y-2">
                           <div>
                             <span className="text-neutral-400">--node-padding:</span>{' '}
-                            <span className="text-brand-cyan">1.75rem (28px)</span>
+                            <span className="text-brand-cyan">1.75rem (210px)</span>
                           </div>
                           <div>
                             <span className="text-neutral-400">--node-gap:</span>{' '}

@@ -40,8 +40,21 @@ import {
   saveLocalBrandConfig,
   getLocalBrandConfig,
   extractForSync,
-  pushToFigma
+  pushToFigma,
+  applyBrandGuidelinesLocally,
+  createStickyPrompt,
+  varySelectionColors,
+  selectionToSlices,
+  lintBrandAdherence,
+  focusNode,
+  fixBrandIssues,
+  multiplyResponsive,
+  generateBrandGrid,
+  generateSocialFrames,
+  importLogoCandidates
 } from './handlers/index';
+import { dispatch } from './handlers/registry';
+import { isEnvelope } from '@shared/protocol';
 
 // ═══ Initialize UI ═══
 figma.showUI(__html__, { width: 420, height: 680, themeColors: true, title: 'Visant Copilot' });
@@ -59,11 +72,22 @@ if (currentUser) {
   });
 }
 
-// ═══ Selection change listener ═══
-figma.on('selectionchange', notifyContextChange);
+// ═══ Selection change listener (Debounced) ═══
+let selectionTimeout: number | undefined;
+figma.on('selectionchange', () => {
+  if (selectionTimeout) clearTimeout(selectionTimeout);
+  selectionTimeout = setTimeout(notifyContextChange, 150) as any;
+});
 
 // ═══ Message handler ═══
 figma.ui.onmessage = async (msg: UIMessage) => {
+
+  // ── New protocol (shared/protocol.ts): envelope → dispatch → result ──
+  if (isEnvelope(msg as any)) {
+    const result = await dispatch(msg as any);
+    figma.ui.postMessage(result);
+    return;
+  }
 
   // ── Agent Operations (WebSocket from server) ──
   if (msg.type === 'AGENT_OPS') {
@@ -106,29 +130,233 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
+  // Smart scan: analyze multi-selection and classify each node
+  if (msg.type === 'SMART_SCAN_SELECTION') {
+    const selection = figma.currentPage.selection;
+    if (selection.length === 0) {
+      postToUI({ type: 'SMART_SCAN_RESULT', items: [], error: 'Nothing selected' });
+      return;
+    }
+
+    const items: any[] = [];
+    for (const node of selection) {
+      const item: any = {
+        id: node.id,
+        name: node.name,
+        type: node.type,
+        width: Math.round(node.width),
+        height: Math.round(node.height),
+        category: 'unknown', // will be classified
+      };
+
+      // ── Name-based pattern helpers ──
+      const nameLower = node.name.toLowerCase().replace(/[-_/\\]/g, ' ');
+
+      // Logo patterns (EN + PT)
+      const isLogoName = /\b(logo|logotipo|logomarca|brand|marca|mark|emblem|badge|brasao|escudo|selo)\b/.test(nameLower);
+
+      // Color name patterns — known color words + role words (EN + PT)
+      const isColorName = /\b(primary|secondary|accent|neutral|surface|background|foreground|danger|warning|success|info|error|muted|destructive|primari[ao]|secundari[ao]|fundo|superficie|destaque|cor |color)\b/.test(nameLower)
+        || /\b(red|blue|green|yellow|orange|purple|pink|black|white|gray|grey|vermelho|azul|verde|amarelo|laranja|roxo|rosa|preto|branco|cinza)\b/.test(nameLower);
+
+      // Button / UI component patterns (EN + PT)
+      const isButtonName = /\b(button|btn|bot[aã]o|cta)\b/.test(nameLower);
+      const isIconName = /\b(icon|icone|ícone|glyph)\b/.test(nameLower);
+
+      // Guess color role from name
+      const guessColorRole = (n: string): string => {
+        const l = n.toLowerCase().replace(/[-_/\\]/g, ' ');
+        if (/\b(primary|primari[ao])\b/.test(l)) return 'primary';
+        if (/\b(secondary|secundari[ao])\b/.test(l)) return 'secondary';
+        if (/\b(accent|destaque)\b/.test(l)) return 'accent';
+        if (/\b(background|fundo|bg)\b/.test(l)) return 'background';
+        if (/\b(surface|superficie)\b/.test(l)) return 'surface';
+        if (/\b(danger|error|destructive|erro)\b/.test(l)) return 'danger';
+        if (/\b(warning|aviso|alerta)\b/.test(l)) return 'warning';
+        if (/\b(success|sucesso)\b/.test(l)) return 'success';
+        if (/\b(info|informa)\b/.test(l)) return 'info';
+        if (/\b(muted|neutral|neutro|cinza|gray|grey)\b/.test(l)) return 'neutral';
+        if (/\b(foreground|texto|text|fore)\b/.test(l)) return 'foreground';
+        return '';
+      };
+
+      // ── Classify by type + name heuristics ──
+
+      if (node.type === 'TEXT') {
+        // Text node → font capture
+        const textNode = node as TextNode;
+        const font = textNode.fontName as FontName;
+        item.category = 'font';
+        item.fontData = {
+          id: `${font.family}-${font.style}`,
+          name: `${font.family} ${font.style}`,
+          family: font.family,
+          style: font.style,
+          size: typeof textNode.fontSize === 'number' ? textNode.fontSize : undefined,
+        };
+        // Guess role from name or size
+        const size = typeof textNode.fontSize === 'number' ? textNode.fontSize : 0;
+        if (nameLower.includes('heading') || nameLower.includes('title') || nameLower.includes('titulo') || nameLower.includes('h1') || nameLower.includes('h2') || nameLower.includes('h3') || size >= 24) {
+          item.suggestedRole = 'heading';
+        } else if (nameLower.includes('body') || nameLower.includes('paragraph') || nameLower.includes('corpo') || nameLower.includes('texto') || nameLower.includes('text')) {
+          item.suggestedRole = 'body';
+        } else if (nameLower.includes('caption') || nameLower.includes('label') || nameLower.includes('small') || nameLower.includes('legenda') || nameLower.includes('rodape') || size <= 12) {
+          item.suggestedRole = 'caption';
+        } else {
+          item.suggestedRole = 'body';
+        }
+      } else if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET' || node.type === 'INSTANCE') {
+        // Component → classify by name first, then fallback to heuristics
+        let comp = node;
+        if (node.type === 'INSTANCE') {
+          try { const main = await (node as InstanceNode).getMainComponentAsync(); if (main) comp = main; } catch {}
+        }
+
+        // Name takes priority for classification
+        const compNameLower = comp.name.toLowerCase().replace(/[-_/\\]/g, ' ');
+        const isLogo = isLogoName
+          || /\b(logo|logotipo|brand|marca|mark|emblem)\b/.test(compNameLower)
+          || (!isButtonName && !isIconName && !isColorName
+            && item.width <= 400 && item.height <= 400
+            && item.width / item.height > 0.3 && item.width / item.height < 3);
+
+        // Export thumbnail for all component types
+        try {
+          const bytes = await (comp as SceneNode).exportAsync({ format: 'PNG', constraint: { type: 'HEIGHT', value: 64 } });
+          item.thumbnail = `data:image/png;base64,${figma.base64Encode(bytes)}`;
+        } catch {}
+        item.componentData = { id: comp.id, name: comp.name, key: (comp as any).key };
+
+        if (isLogo) {
+          item.category = 'logo';
+        } else {
+          item.category = 'component';
+          // Enrich with sub-type hint for UI
+          if (isButtonName) item.componentHint = 'button';
+          else if (isIconName) item.componentHint = 'icon';
+        }
+      } else if (node.type === 'FRAME' || node.type === 'GROUP' || node.type === 'RECTANGLE' || node.type === 'ELLIPSE') {
+        const fills = ('fills' in node) ? (node as any).fills : [];
+        const solidFills = Array.isArray(fills) ? fills.filter((f: any) => f.type === 'SOLID' && f.visible !== false) : [];
+
+        // Name says it's a color? Force color category even for larger shapes
+        if (isColorName && solidFills.length >= 1) {
+          const fill = solidFills[0];
+          const r = Math.round(fill.color.r * 255);
+          const g = Math.round(fill.color.g * 255);
+          const b = Math.round(fill.color.b * 255);
+          item.category = 'color';
+          item.colorData = {
+            hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase(),
+            name: node.name,
+            role: guessColorRole(node.name),
+          };
+        } else if (solidFills.length === 1 && item.width <= 200 && item.height <= 200) {
+          // Small shape with single fill → likely color swatch
+          const fill = solidFills[0];
+          const r = Math.round(fill.color.r * 255);
+          const g = Math.round(fill.color.g * 255);
+          const b = Math.round(fill.color.b * 255);
+          item.category = 'color';
+          item.colorData = {
+            hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase(),
+            name: node.name,
+            role: guessColorRole(node.name),
+          };
+        } else if (isLogoName) {
+          // Name says logo
+          item.category = 'logo';
+          try {
+            const bytes = await (node as SceneNode).exportAsync({ format: 'PNG', constraint: { type: 'HEIGHT', value: 64 } });
+            item.thumbnail = `data:image/png;base64,${figma.base64Encode(bytes)}`;
+          } catch {}
+          item.componentData = { id: node.id, name: node.name, key: '' };
+        } else {
+          // Fallback: treat as potential logo
+          item.category = 'logo';
+          try {
+            const bytes = await (node as SceneNode).exportAsync({ format: 'PNG', constraint: { type: 'HEIGHT', value: 64 } });
+            item.thumbnail = `data:image/png;base64,${figma.base64Encode(bytes)}`;
+          } catch {}
+          item.componentData = { id: node.id, name: node.name, key: '' };
+        }
+      }
+
+      items.push(item);
+    }
+
+    postToUI({ type: 'SMART_SCAN_RESULT', items });
+    return;
+  }
+
   if (msg.type === 'USE_SELECTION_AS_LOGO') {
     const comp = await getComponentFromSelection();
     postToUI({ type: 'SELECTION_LOGO_RESULT', component: comp });
     return;
   }
 
+  // Export a node as SVG (or PNG fallback) for uploading to webapp
+  if (msg.type === 'EXPORT_NODE_IMAGE') {
+    const { nodeId, format } = msg;
+    try {
+      let node: BaseNode | null = null;
+      if (nodeId === 'selection') {
+        const selection = figma.currentPage.selection;
+        if (selection.length > 0) {
+          node = selection[0];
+        }
+      } else {
+        node = await figma.getNodeByIdAsync(nodeId);
+      }
+
+      if (!node || !('exportAsync' in node)) {
+        postToUI({ type: 'EXPORT_NODE_IMAGE_RESULT', nodeId, error: 'Node not found or not exportable' });
+        return;
+      }
+      const exportNode = node as SceneNode;
+      if (format === 'SVG') {
+        const bytes = await exportNode.exportAsync({ format: 'SVG' });
+        const b64 = figma.base64Encode(bytes);
+        postToUI({ type: 'EXPORT_NODE_IMAGE_RESULT', nodeId, data: `data:image/svg+xml;base64,${b64}`, format: 'SVG' });
+      } else {
+        const bytes = await exportNode.exportAsync({ format: 'PNG', constraint: { type: 'SCALE', value: 2 } });
+        const b64 = figma.base64Encode(bytes);
+        postToUI({ type: 'EXPORT_NODE_IMAGE_RESULT', nodeId, data: `data:image/png;base64,${b64}`, format: 'PNG' });
+      }
+    } catch (e: any) {
+      postToUI({ type: 'EXPORT_NODE_IMAGE_RESULT', nodeId, error: e.message || 'Export failed' });
+    }
+    return;
+  }
+
+  if (msg.type === 'OPEN_EXTERNAL_URL') {
+    figma.openExternal(msg.url);
+    return;
+  }
+
   if (msg.type === 'USE_SELECTION_AS_FONT') {
     const selection = figma.currentPage.selection;
     let fontInfo = null;
-    
+
     if (selection.length > 0) {
       const node = selection[0];
       if (node.type === 'TEXT') {
-        const font = node.fontName as FontName;
+        const textNode = node as TextNode;
+        const font = textNode.fontName as FontName;
+        const fontSize = typeof textNode.fontSize !== 'symbol' ? textNode.fontSize : undefined;
+        const lh = typeof textNode.lineHeight !== 'symbol' ? textNode.lineHeight : undefined;
+
         fontInfo = {
-          id: `${font.family}-${font.style}`,
-          name: `${font.family} ${font.style}`,
+          id: font.family,
+          name: font.family,
           family: font.family,
-          style: font.style
+          style: font.style,
+          fontSize,
+          lineHeight: lh?.unit === 'PIXELS' ? lh.value : undefined
         };
       }
     }
-    
+
     postToUI({ type: 'SELECTION_FONT_RESULT', font: fontInfo });
     return;
   }
@@ -136,6 +364,68 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   if (msg.type === 'CAPTURE_COMPONENT_SELECTION') {
     const comp = await getComponentFromSelection();
     postToUI({ type: 'COMPONENT_CAPTURED', component: comp });
+    return;
+  }
+
+  // ── Import Components from Selection (Library synchronization) ──
+  if (msg.type === 'IMPORT_SELECTION_COMPONENTS') {
+    const selection = figma.currentPage.selection;
+    if (selection.length === 0) {
+      figma.notify('Selecione instâncias no canvas primeiro para importar para a Library.');
+      return;
+    }
+    
+    const components: any[] = [];
+    const seen = new Set<string>();
+    
+    // Preserve existing components
+    const existingComps = await getComponentsInCurrentFile();
+    for (const c of existingComps) {
+      components.push(c);
+      seen.add(c.id);
+    }
+    
+    let addedCount = 0;
+    
+    // Process selection
+    for (const node of selection) {
+      if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
+        if (!seen.has(node.id)) {
+           seen.add(node.id);
+           components.push({
+             id: node.id,
+             name: node.name,
+             key: node.key,
+             folderPath: []
+           });
+           addedCount++;
+        }
+      } else if (node.type === 'INSTANCE') {
+        try {
+           const main = await (node as InstanceNode).getMainComponentAsync();
+           if (main && !seen.has(main.id)) {
+             seen.add(main.id);
+             components.push({
+               id: main.id,
+               name: main.name,
+               key: main.key,
+               folderPath: []
+             });
+             addedCount++;
+           }
+        } catch {}
+      }
+    }
+    
+    if (addedCount > 0) {
+      postToUI({ type: 'COMPONENTS_LOADED', components });
+      figma.notify(`Importou ${addedCount} componente(s) vinculado(s) com sucesso!`);
+      // Start thumbnail generation for newly added components
+      const newComps = components.filter(c => !existingComps.some(ec => ec.id === c.id));
+      exportComponentThumbnails(newComps).catch(() => {});
+    } else {
+      figma.notify('Nenhum componente novo encontrado na seleção.');
+    }
     return;
   }
 
@@ -252,6 +542,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       selectedBrandColors: msg.brandColors,
       designSystem: (msg as any).designSystem || null,
       thinkMode: (msg as any).thinkMode || false,
+      useBrand: (msg as any).useBrand !== undefined ? (msg as any).useBrand : true,
       mentions: (msg as any).mentions || [],
       attachments: (msg as any).attachments || []
     };
@@ -382,6 +673,232 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       postToUI({ type: 'PUSH_TO_FIGMA_RESULT', ...result });
     } catch (err) {
       postToUI({ type: 'PUSH_TO_FIGMA_ERROR', error: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Apply Brand Guidelines locally to selection ──
+  if ((msg as any).type === 'APPLY_BRAND_GUIDELINES') {
+    try {
+      const { brand } = msg as any;
+      await applyBrandGuidelinesLocally(brand);
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Create Sticky Prompt (Dev Tool) ──
+  if (msg.type === 'CREATE_STICKY_PROMPT') {
+    const { prompt, name } = msg as any;
+    createStickyPrompt(prompt, name);
+    return;
+  }
+
+  // ── Vary Selection Colors (Dev Tool) ──
+  if ((msg as any).type === 'VARY_SELECTION_COLORS') {
+    const brandColors = (msg as any).brandColors as string[] | undefined;
+    await varySelectionColors(brandColors);
+    return;
+  }
+
+  // ── Transform Selection to Slices (Dev Tool) ──
+  if ((msg as any).type === 'SELECTION_TO_SLICES') {
+    await selectionToSlices();
+    return;
+  }
+
+  // ── Brand Linter ──
+  if ((msg as any).type === 'BRAND_LINT') {
+    try {
+      const brand = (msg as any).brand || {};
+      await lintBrandAdherence(brand);
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  if ((msg as any).type === 'BRAND_LINT_FOCUS') {
+    focusNode((msg as any).nodeId);
+    return;
+  }
+
+  if ((msg as any).type === 'BRAND_LINT_FIX') {
+    try {
+      const brand = (msg as any).brand || {};
+      await fixBrandIssues(brand);
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Brand Grid ──
+  if ((msg as any).type === 'GENERATE_BRAND_GRID') {
+    try {
+      const sections = (msg as any).sections;
+      await generateBrandGrid(sections);
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Import Logo Candidates from library ──
+  if ((msg as any).type === 'IMPORT_LOGO_CANDIDATES') {
+    try {
+      await importLogoCandidates((msg as any).maxWidth);
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Social Brand Frames ──
+  if ((msg as any).type === 'GENERATE_SOCIAL_FRAMES') {
+    try {
+      const brandColors = (msg as any).brandColors || [];
+      await generateSocialFrames(brandColors);
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Responsive Multiplier ──
+  if ((msg as any).type === 'RESPONSIVE_MULTIPLY') {
+    try {
+      const formats = (msg as any).formats as Array<{ id: string; label: string; width: number; height: number }> | undefined;
+      await multiplyResponsive(formats);
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Illustrator Exporter (PNG + SVG) ──
+  if ((msg as any).type === 'ILLUSTRATOR_EXPORT') {
+    const selection = figma.currentPage.selection;
+    const frames = selection.filter(n => n.type === 'FRAME') as FrameNode[];
+    if (frames.length === 0) { figma.notify("Selecione um Frame."); return; }
+
+    const batch: any[] = [];
+
+    for (const node of frames) {
+      try {
+        const uniqueName = node.name.replace(/[\/\\?%*:|"<>]/g, '-');
+
+        // 1 & 2: VECTORS (SVG) - Clone 1: hide images, keep vectors and text
+        const vectorClone = node.clone();
+        const hideImages = (n: SceneNode) => {
+          const hasImage = 'fills' in n && Array.isArray(n.fills) && n.fills.some((f: any) => f.type === 'IMAGE');
+          if (hasImage) {
+             n.visible = false;
+          }
+          if ('children' in n) {
+             for (const child of n.children) hideImages(child);
+          }
+        };
+        hideImages(vectorClone);
+        // Export SVG
+        const svgBytes = await vectorClone.exportAsync({ format: 'SVG' });
+
+        // 3: RASTERS (PNG) - Clone 2: hide vectors, keep only images
+        const rasterClone = node.clone();
+        const hideVectors = (n: SceneNode) => {
+          const hasImage = 'fills' in n && Array.isArray(n.fills) && n.fills.some((f: any) => f.type === 'IMAGE');
+          if (!hasImage && !('children' in n)) {
+             // Hide pure vectors/text
+             n.visible = false;
+          } else if (!hasImage && 'children' in n && n.children.length === 0) {
+             n.visible = false;
+          }
+          if ('children' in n) for (const child of n.children) hideVectors(child);
+        };
+        hideVectors(rasterClone);
+        // Export PNG at 3x
+        const pngBytes = await rasterClone.exportAsync({ format: 'PNG', constraint: { type: 'SCALE', value: 3 } });
+
+        // 5: Delete clones
+        vectorClone.remove();
+        rasterClone.remove();
+
+        // 4: Output 2 files
+        batch.push({
+          name: uniqueName,
+          png: pngBytes,
+          svg: svgBytes
+        });
+      } catch (e: any) {
+        figma.notify("Erro no export: " + e.message);
+      }
+    }
+
+    postToUI({
+      type: 'ILLUSTRATOR_EXPORT_BATCH',
+      items: batch,
+      count: batch.length
+    });
+    return;
+  }
+
+  if (msg.type === 'COPY_ILLUSTRATOR_CODE') {
+    const selection = figma.currentPage.selection;
+    if (selection.length === 0) { figma.notify("Selecione algo."); return; }
+    const node = selection[0];
+    const width = 'width' in node ? node.width : 800;
+    const height = 'height' in node ? node.height : 600;
+
+    let script = `// Visant AI - Quick Illustrator Copy (Vectors Only)\n`;
+    script += `var doc = app.documents.add(DocumentColorSpace.RGB, ${width}, ${height});\n\n`;
+
+    const process = (n: SceneNode) => {
+      let code = "";
+      const x = n.x, y = n.y, w = 'width' in n ? n.width : 0, h = 'height' in n ? n.height : 0, top = height - y;
+      if (n.type === 'RECTANGLE' || n.type === 'ELLIPSE' || n.type === 'TEXT') {
+        code += `(function(){\n`;
+        if (n.type === 'RECTANGLE') code += `  var item = doc.pathItems.rectangle(${top}, ${x}, ${w}, ${h});\n`;
+        else if (n.type === 'ELLIPSE') code += `  var item = doc.pathItems.ellipse(${top}, ${x}, ${w}, ${h});\n`;
+        else if (n.type === 'TEXT') {
+          code += `  var item = doc.textFrames.add(); item.contents = "${n.characters.replace(/"/g, '\\"')}";\n`;
+          code += `  item.top = ${top}; item.left = ${x};\n`;
+          if ('fontSize' in n && typeof n.fontSize === 'number') code += `  item.textRange.characterAttributes.size = ${n.fontSize};\n`;
+        }
+        if ('fills' in n && (n.fills as any).length > 0 && (n.fills as any)[0].type === 'SOLID') {
+          const c = (n.fills as any)[0].color;
+          code += `  var c = new RGBColor(); c.red=${Math.round(c.r*255)}; c.green=${Math.round(c.g*255)}; c.blue=${Math.round(c.b*255)}; item.fillColor = c; item.filled = true;\n`;
+        }
+        code += `})();\n\n`;
+      }
+      if ('children' in n) for (const child of n.children) code += process(child);
+      return code;
+    };
+    script += process(node);
+    postToUI({ type: 'ILLUSTRATOR_CODE_READY', code: script });
+    return;
+  }
+
+  if (msg.type === 'GET_SELECTION_FILL') {
+    const selection = figma.currentPage.selection;
+    if (selection.length === 0) {
+      figma.notify('Select an object with a solid fill.');
+      return;
+    }
+    const node = selection[0];
+    if ('fills' in node && Array.isArray(node.fills)) {
+      const solidFill = node.fills.find(f => f.type === 'SOLID' && f.visible !== false);
+      if (solidFill) {
+        const r = Math.round(solidFill.color.r * 255);
+        const g = Math.round(solidFill.color.g * 255);
+        const b = Math.round(solidFill.color.b * 255);
+        const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
+        postToUI({ type: 'SELECTION_FILL_RESULT', hex, name: node.name });
+      } else {
+        figma.notify('No solid fill found on selection.');
+      }
+    } else {
+      figma.notify('Selected object does not support fills.');
     }
     return;
   }

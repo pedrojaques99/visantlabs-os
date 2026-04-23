@@ -490,8 +490,8 @@ export const AdminProductsPage: React.FC = () => {
                                 </h2>
                                 <p className="text-neutral-500 text-sm">Preencha os detalhes do produto e links de pagamento.</p>
                             </div>
-                            <Button variant="ghost" size="icon" onClick={() => setIsEditModalOpen(false)} className="rounded-full">
-                                <X className="h-6 w-6" />
+                            <Button variant="ghost" size="icon" aria-label="Fechar" onClick={() => setIsEditModalOpen(false)} className="rounded-full">
+                                <X className="h-6 w-6" aria-hidden="true" />
                             </Button>
                         </div>
 
@@ -838,7 +838,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     { key: 'hasAdvancedModels', label: 'Modelos Premium', icon: '💎' },
                                                     { key: 'hasSharedWorkspaces', label: 'Workspaces', icon: '👥' },
                                                     { key: 'hasTeamAnalytics', label: 'Analytics', icon: '📊' },
-                                                    { key: 'hasPrioritySupport', label: 'Suporte Prioritário', icon: '⚡' },
+                                                    { key: 'hasPrioritySupport', label: 'Suporte Prioritário', icon: '💎' },
                                                 ].map(({ key, label, icon }) => {
                                                     const isChecked = formData.metadata?.[key] === true;
                                                     return (

@@ -489,6 +489,28 @@ export function getContrastRatioPublic(color1: string, color2: string): number {
   return getContrastRatio(color1, color2);
 }
 
+/** Convert hex to CMYK (0-100 range) */
+export function hexToCmyk(hex: string): { c: number; m: number; y: number; k: number } {
+  const [r, g, b] = hexToRgb(hex);
+  const rn = r / 255, gn = g / 255, bn = b / 255;
+  const k = 1 - Math.max(rn, gn, bn);
+  if (k === 1) return { c: 0, m: 0, y: 0, k: 100 };
+  return {
+    c: Math.round(((1 - rn - k) / (1 - k)) * 100),
+    m: Math.round(((1 - gn - k) / (1 - k)) * 100),
+    y: Math.round(((1 - bn - k) / (1 - k)) * 100),
+    k: Math.round(k * 100),
+  };
+}
+
+/** Convert CMYK (0-100) to hex */
+export function cmykToHex(c: number, m: number, y: number, k: number): string {
+  const r = Math.round(255 * (1 - c / 100) * (1 - k / 100));
+  const g = Math.round(255 * (1 - m / 100) * (1 - k / 100));
+  const b = Math.round(255 * (1 - y / 100) * (1 - k / 100));
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
+}
+
 export function lightenColor(hexColor: string, amount: number = 0.15): string {
   if (!hexColor) {
     return '#0A0A0A'; // Default fallback

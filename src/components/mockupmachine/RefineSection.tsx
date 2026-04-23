@@ -281,7 +281,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                   <div
                     key={color}
                     onClick={() => onRemoveColor(color)}
-                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border cursor-pointer transition-all duration-200 text-[9px] font-mono group ${theme === 'dark'
+                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border cursor-pointer transition-all duration-200 text-[10px] font-mono group ${theme === 'dark'
                       ? 'border-neutral-700/40 bg-neutral-900/60 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-600'
                       : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400'
                       }`}
@@ -289,7 +289,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                   >
                     <span className="w-3.5 h-3.5 rounded-full border border-white/10" style={{ backgroundColor: color }} />
                     <span className="truncate max-w-[72px]">{color}</span>
-                    <X size={10} className={`opacity-0 group-hover:opacity-300 transition-opacity ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`} />
+                    <X size={10} className={`opacity-0 group-hover:opacity-100 transition-opacity ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`} />
                   </div>
                 ))}
 

@@ -14,11 +14,19 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: '0.0.0.0',
+      watch: {
+        ignored: ['**/.data/**'],
+      },
       proxy: {
         '/api': {
-          target: 'http://localhost:3001',
+          target: `http://localhost:${process.env.SERVER_PORT || 3001}`,
           changeOrigin: true,
           secure: false,
+          timeout: 600000,
+          proxyTimeout: 600000,
+          configure: (proxy) => {
+            proxy.on('error', () => {}); // suppress ECONNREFUSED flood while server boots
+          },
         }
       }
     },

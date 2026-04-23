@@ -1,6 +1,7 @@
 import React, { memo, useState, useCallback } from 'react';
 import { type NodeProps, type Node, NodeResizer } from '@xyflow/react';
-import { Maximize2 } from 'lucide-react';
+import { Maximize2, Diamond } from 'lucide-react';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { UpscaleNodeData } from '@/types/reactFlow';
 import type { Resolution, GeminiModel } from '@/types/types';
@@ -18,6 +19,7 @@ import { getCreditsRequired } from '@/utils/creditCalculator';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { NodeButton } from './shared/node-button'
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
 
 export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -109,7 +111,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
       <NodeHandles />
 
       {/* Header */}
-      <NodeHeader icon={Maximize2} title={t('canvasNodes.upscaleNode.title')} />
+      <NodeHeader icon={Maximize2} title={t('canvasNodes.upscaleNode.title')} selected={selected} />
 
       {/* Connected Image Thumbnail - unified component */}
       <ConnectedImagesDisplay
@@ -158,39 +160,53 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
         </div>
       </div>
 
+      {/* Result Display Section */}
+      {(data.resultImageUrl || data.resultImageBase64) && (
+        <div className="node-margin mb-4">
+          <NodeMediaDisplay
+            url={data.resultImageUrl || (data.resultImageBase64 ? (data.resultImageBase64.startsWith('data:') ? data.resultImageBase64 : `data:image/png;base64,${data.resultImageBase64}`) : null)}
+            isLoading={isLoading}
+            dragging={dragging}
+            alt="Upscale Result"
+          />
+        </div>
+      )}
+
       {/* Upscale Button */}
-      <NodeButton
-        variant="primary"
-        size="full"
-        onClick={async (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          if (!isLoading && data.onUpscale) {
-            await handleUpscale();
-          }
-        }}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-        }}
-        disabled={isLoading || !data.onUpscale}
-        className={cn(
-          (isLoading || !data.onUpscale) ? 'opacity-50' : ''
-        )}
+      <Tooltip 
+        content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
+        delay={500}
       >
-        {isLoading ? (
-          <>
-            <GlitchLoader size={14} color="currentColor" />
-            Upscaling...
-          </>
-        ) : (
-          <>
-            <Maximize2 size={14} />
-            <span>Upscale</span>
-            <span className="text-brand-cyan/70">({creditsRequired} credits)</span>
-          </>
-        )}
-      </NodeButton>
+        <NodeButton
+          variant="primary"
+          size="full"
+          onClick={async (e) => {
+            e.stopPropagation();
+            if (!isLoading && data.onUpscale) {
+              await handleUpscale();
+            }
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          disabled={isLoading || !data.onUpscale}
+          className="node-interactive group/gen"
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2">
+              <GlitchLoader size={14} color="brand-cyan" />
+              <span>{t('canvasNodes.upscaleNode.upscaling') || 'Upscaling...'}</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <Maximize2 size={14} className="group-hover/gen:rotate-12 transition-transform" />
+              <span className="font-semibold tracking-tight">{t('canvasNodes.upscaleNode.upscale') || 'Upscale'}</span>
+              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                <Diamond size={10} className="opacity-50 fill-current" />
+                {creditsRequired}
+              </div>
+            </div>
+          )}
+        </NodeButton>
+      </Tooltip>
 
     </NodeContainer>
   );

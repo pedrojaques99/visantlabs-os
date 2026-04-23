@@ -209,7 +209,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
             <Button variant="ghost"
               onClick={() => fileInputRefs.current[giftIndex]?.click()}
               disabled={isUploading}
-              className="absolute inset-0 flex items-center justify-center bg-neutral-950/50 hover:bg-neutral-950/70 rounded-md transition-opacity opacity-0 hover:opacity-300"
+              className="absolute inset-0 flex items-center justify-center bg-neutral-950/50 hover:bg-neutral-950/70 rounded-md transition-opacity opacity-0 hover:opacity-100"
               style={{ cursor: isUploading ? 'wait' : 'pointer' }}
             >
               {isUploading ? (
@@ -260,7 +260,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
             color: textColor,
             position: 'relative',
             display: 'inline-block',
-            paddingBottom: '8px',
+            paddingBottom: '10px',
             borderBottom: `3px solid ${accentColor}`,
           }}
         >

@@ -18,6 +18,7 @@ const getAuthHeaders = () => {
 export interface ExpertChatMessage {
     role: 'user' | 'model';
     parts: { text: string }[];
+    generationId?: string;
 }
 
 export const expertApi = {
@@ -42,11 +43,11 @@ export const expertApi = {
     /**
      * Chat with the branding expert
      */
-    async chat(query: string, history: ExpertChatMessage[] = [], projectId?: string, model?: string) {
+    async chat(query: string, history: ExpertChatMessage[] = [], projectId?: string, model?: string, brandGuidelineId?: string) {
         const response = await fetch(`${API_BASE_URL}/expert/chat`, {
             method: 'POST',
             headers: getAuthHeaders(),
-            body: JSON.stringify({ query, history, projectId, model }),
+            body: JSON.stringify({ query, history, projectId, model, brandGuidelineId }),
         });
 
         if (!response.ok) {

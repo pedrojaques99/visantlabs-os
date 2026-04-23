@@ -1,20 +1,24 @@
 import React, { useState, memo, useEffect, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, type Node, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Wrench, Wand2 } from 'lucide-react';
+import { Wrench, Diamond } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { Tooltip } from '@/components/ui/Tooltip';
 import type { MergeNodeData } from '@/types/reactFlow';
-import type { GeminiModel } from '@/types/types';
+import type { GeminiModel, SeedreamModel, Resolution } from '@/types/types';
 import { cn } from '@/lib/utils';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { NodeContainer } from './shared/NodeContainer';
 import { Textarea } from '@/components/ui/textarea';
 import { NodeHeader } from './shared/node-header';
 import { NodeButton } from './shared/node-button';
-import { ModelSelector } from './shared/ModelSelector';
+import { ModelSelector } from '../shared/ModelSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { DEFAULT_MODEL, isAdvancedModel } from '@/constants/geminiModels';
-import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
+import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
+import { isOpenAIImageModel, getOpenAIImageModelConfig } from '@/constants/openaiModels';
+import { resolveProvider } from '@/utils/canvas/generationContext';
+import { useNodeDataUpdater } from '@/hooks/canvas/useNodeDataUpdater';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 
 export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data, selected, id, dragging }) => {
@@ -22,7 +26,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
   const { setNodes } = useReactFlow();
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [prompt, setPrompt] = useState(data.prompt || '');
-  const [model, setModel] = useState<GeminiModel>(data.model || DEFAULT_MODEL);
+  const [model, setModel] = useState<GeminiModel | SeedreamModel>(data.model || DEFAULT_MODEL);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const isLoading = data.isLoading || false;
@@ -30,7 +34,13 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
   const hasResult = !!(data.resultImageUrl || data.resultImageBase64);
   const connectedImages = data.connectedImages || [];
   const hasEnoughImages = connectedImages.length >= 2;
-  const creditsRequired = getCreditsRequired(model, isAdvancedModel(model) ? '1K' : undefined);
+  const isSeedream = isSeedreamModel(model);
+  const isOpenAI = isOpenAIImageModel(model);
+  const seedreamResolution = isSeedream ? (data.resolution as Resolution | undefined) || getSeedreamModelConfig(model)?.defaultResolution : undefined;
+  const openaiResolution = isOpenAI ? (data.resolution as Resolution | undefined) || getOpenAIImageModelConfig(model)?.defaultResolution : undefined;
+  const geminiResolution = !isSeedream && !isOpenAI && isAdvancedModel(model as GeminiModel) ? ((data.resolution as Resolution | undefined) || '1K') : undefined;
+  const effectiveResolution = isSeedream ? seedreamResolution : isOpenAI ? openaiResolution : geminiResolution;
+  const creditsRequired = getCreditsRequired(model, effectiveResolution, resolveProvider(model));
 
   // Auto-resize textarea to fit content
   const adjustTextareaHeight = () => {
@@ -78,12 +88,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
     await data.onGenerate(id, connectedImagesFromData, prompt, model);
   };
 
-  // Debounced update for data changes
-  const debouncedUpdateData = useDebouncedCallback((updates: Partial<MergeNodeData>) => {
-    if (data.onUpdateData) {
-      data.onUpdateData(id, updates);
-    }
-  }, 500);
+  const { debouncedUpdate: debouncedUpdateData } = useNodeDataUpdater<MergeNodeData>(data.onUpdateData, id);
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
@@ -159,16 +164,11 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
-            <Wrench size={16} className="text-brand-cyan" />
-          </div>
-          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
-            {t('canvasNodes.mergeNode.title') || 'Merge Node'}
-          </h3>
-        </div>
-      </div>
+      <NodeHeader 
+        icon={Wrench} 
+        title={t('canvasNodes.mergeNode.title') || 'Merge Node'} 
+        selected={selected} 
+      />
 
       <div className="p-4 flex flex-col gap-[var(--node-gap)]">
         {/* Connected Images Thumbnails - unified component */}
@@ -181,32 +181,31 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
 
         {/* Generate Prompt Button */}
         {hasEnoughImages && (
-          <NodeButton
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              handleGeneratePrompt();
-            }}
-            onMouseDown={(e) => {
-              e.stopPropagation();
-            }}
-            disabled={isGeneratingPrompt || isLoading}
-            variant="purple"
-            size="full"
-            className="shadow-sm backdrop-blur-sm"
-          >
-            {isGeneratingPrompt ? (
-              <>
-                <GlitchLoader size={14} className="mr-2" color="currentColor" />
-                <span>{t('canvasNodes.mergeNode.generatingPrompt') || 'Generating Prompt...'}</span>
-              </>
-            ) : (
-              <>
-                <Wand2 size={14} className="mr-2" />
-                <span>{t('canvasNodes.mergeNode.generatePrompt') || 'Generate Prompt'}</span>
-              </>
-            )}
-          </NodeButton>
+          <div className="w-full">
+            <NodeButton
+              onClick={(e) => {
+                e.stopPropagation();
+                handleGeneratePrompt();
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              disabled={isGeneratingPrompt || isLoading}
+              variant="purple"
+              size="full"
+              className="node-interactive group/prompt"
+            >
+              {isGeneratingPrompt ? (
+                <div className="flex items-center justify-center gap-2">
+                  <GlitchLoader size={14} color="currentColor" />
+                  <span>{t('canvasNodes.mergeNode.generatingPrompt') || 'Generating...'}</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2">
+                  <Diamond size={14} className="group-hover/prompt:rotate-12 transition-transform" />
+                  <span className="font-semibold tracking-tight">{t('canvasNodes.mergeNode.generatePrompt') || 'Generate Prompt'}</span>
+                </div>
+              )}
+            </NodeButton>
+          </div>
         )}
 
         {/* Prompt Input */}
@@ -224,18 +223,20 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
             e.stopPropagation();
           }}
           placeholder={t('canvasNodes.mergeNode.promptPlaceholder')}
-          className="text-xs nodrag nopan bg-neutral-900/40 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
+          className="text-xs nodrag nopan bg-neutral-900/40 border-neutral-700/40 focus:border-neutral-600 focus:ring-1  backdrop-blur-sm"
           rows={3}
           disabled={isLoading || isGeneratingPrompt}
         />
 
         <div className="flex flex-col gap-3">
           <ModelSelector
+            type="image"
+            variant="node"
             selectedModel={model}
-            onModelChange={(newModel) => {
-              setModel(newModel);
+            onModelChange={(newModel, provider) => {
+              setModel(newModel as GeminiModel | SeedreamModel);
               if (data.onUpdateData) {
-                data.onUpdateData(id, { model: newModel });
+                data.onUpdateData(id, { model: newModel as GeminiModel | SeedreamModel, provider });
               }
             }}
             disabled={isLoading || isGeneratingPrompt}
@@ -243,33 +244,38 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
         </div>
 
         {/* Generate Image Button */}
-        <NodeButton
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            handleGenerateImage();
-          }}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-          }}
-          disabled={isLoading || isGeneratingPrompt || !prompt.trim()}
-          variant="primary"
-          size="full"
-          className="shadow-sm backdrop-blur-sm"
+        <Tooltip 
+          content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
+          delay={500}
         >
-          {isLoading ? (
-            <>
-              <GlitchLoader size={14} className="mr-2" color="currentColor" />
-              <span>{t('canvasNodes.mergeNode.generatingImage') || 'Generating Image...'}</span>
-            </>
-          ) : (
-            <>
-              <Wrench size={14} className="mr-2" />
-              <span>{t('canvasNodes.mergeNode.generateImage') || 'Generate Image'}</span>
-              <span className="ml-2 text-[10px] opacity-70">({creditsRequired}c)</span>
-            </>
-          )}
-        </NodeButton>
+          <NodeButton
+            onClick={(e) => {
+              e.stopPropagation();
+              handleGenerateImage();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            disabled={isLoading || isGeneratingPrompt || !prompt.trim()}
+            variant="primary"
+            size="full"
+            className="node-interactive group/gen"
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2">
+                <GlitchLoader size={14} color="brand-cyan" />
+                <span>{t('canvasNodes.mergeNode.generatingImage') || 'Generating Image...'}</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                <Wrench size={14} className="group-hover/gen:rotate-12 transition-transform" />
+                <span className="font-semibold tracking-tight">{t('canvasNodes.mergeNode.generateImage') || 'Generate Image'}</span>
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                  <Diamond size={10} className="opacity-50 fill-current" />
+                  {creditsRequired}
+                </div>
+              </div>
+            )}
+          </NodeButton>
+        </Tooltip>
 
         {/* Result Preview */}
         {hasResult && (data.resultImageUrl || data.resultImageBase64) && (
@@ -277,7 +283,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
             <img
               src={data.resultImageUrl || (data.resultImageBase64 ? `data:image/png;base64,${data.resultImageBase64}` : '')}
               alt={t('canvasNodes.mergeNode.result')}
-              className="w-full h-auto rounded-md border border-neutral-700/30 shadow-sm"
+              className="w-full h-auto rounded-md border-node border-neutral-700/30 shadow-sm"
               onLoad={(e) => {
                 const img = e.target as HTMLImageElement;
                 if (img.naturalWidth > 0 && img.naturalHeight > 0) {

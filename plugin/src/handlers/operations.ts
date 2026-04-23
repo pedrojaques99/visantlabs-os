@@ -18,6 +18,41 @@ interface SummaryItem {
  * Normalize fills to valid Figma format
  * Handles common AI-generated formats like hex strings, color objects, etc.
  */
+/**
+ * Applies Figma variables to a set of fills if variableId is present
+ */
+async function applyVariablesToFills(fills: Paint[]): Promise<Paint[]> {
+  if (!figma.variables) {
+    // Cleanup variableId even if variables API is not available
+    return fills.map(f => {
+      const copy = { ...f };
+      delete (copy as any).variableId;
+      return copy;
+    });
+  }
+  
+  const results: Paint[] = [];
+  for (const fill of fills) {
+    const variableId = (fill as any).variableId;
+    const cleanFill = { ...fill };
+    delete (cleanFill as any).variableId;
+    
+    if (fill.type === 'SOLID' && variableId) {
+      try {
+        const variable = await figma.variables.getVariableByIdAsync(variableId);
+        if (variable) {
+          results.push(figma.variables.setBoundVariableForPaint(cleanFill as SolidPaint, 'color', variable));
+          continue;
+        }
+      } catch (err) {
+        console.warn(`Failed to apply variable ${variableId} to fill:`, err);
+      }
+    }
+    results.push(cleanFill as Paint);
+  }
+  return results;
+}
+
 function normalizeFills(fills: any): Paint[] | undefined {
   if (!fills || !Array.isArray(fills)) return undefined;
 
@@ -28,29 +63,65 @@ function normalizeFills(fills: any): Paint[] | undefined {
     if (fill.type && validTypes.includes(fill.type)) {
       // Ensure color is in correct format { r, g, b }
       if (fill.type === 'SOLID' && fill.color) {
-        const color = normalizeColor(fill.color);
-        return { ...fill, color };
+        const fullColor = normalizeColor(fill.color);
+        const { a, ...rgbColor } = fullColor;
+        return { 
+          ...fill, 
+          color: rgbColor,
+          opacity: a ?? fill.opacity ?? 1
+        };
       }
+      
+      // Handle Gradients (which often lack position or transform from AI)
+      if (fill.type.startsWith('GRADIENT_')) {
+        if (!fill.gradientStops) return null;
+        
+        fill.gradientStops = fill.gradientStops.map((stop: any) => {
+          const colorObj = stop.color || stop;
+          const normalizedColor = normalizeColor(colorObj);
+          return {
+            color: {
+              r: normalizedColor.r,
+              g: normalizedColor.g,
+              b: normalizedColor.b,
+              a: (colorObj as any).a ?? 1
+            },
+            position: stop.position ?? stop.offset ?? 0
+          };
+        });
+
+        if (!fill.gradientTransform) {
+          // Default: top-to-bottom identity-ish matrix
+          fill.gradientTransform = [[1, 0, 0], [0, 1, 0]];
+        }
+      }
+
+      // Handle Image detection from AI (which won't have a hash)
+      if (fill.type === 'IMAGE' && !fill.imageHash) {
+        return {
+          type: 'SOLID',
+          color: { r: 0.9, g: 0.92, b: 0.95 },
+          opacity: 1
+        } as SolidPaint;
+      }
+      
       return fill;
     }
 
     // Convert hex string or invalid format to SOLID
-    let color = { r: 0, g: 0, b: 0 };
+    let colorInput = fill;
+    if (fill.color) colorInput = fill.color;
+    else if (fill.hex) colorInput = fill.hex;
+    else if (fill.r !== undefined) colorInput = fill;
 
-    if (typeof fill === 'string') {
-      color = hexToRgb(fill);
-    } else if (fill.color) {
-      color = normalizeColor(fill.color);
-    } else if (fill.hex) {
-      color = hexToRgb(fill.hex);
-    } else if (fill.r !== undefined) {
-      color = normalizeColor(fill);
-    }
+    const fullColor = normalizeColor(colorInput);
+    const { a, ...rgbColor } = fullColor;
 
     return {
       type: 'SOLID' as const,
-      color,
-      opacity: fill.opacity ?? 1,
+      color: rgbColor,
+      opacity: a ?? (typeof fill === 'object' ? fill.opacity : 1) ?? 1,
+      variableId: (typeof fill === 'object' ? fill.variableId : undefined)
     };
   }).filter(Boolean) as Paint[];
 }
@@ -58,25 +129,80 @@ function normalizeFills(fills: any): Paint[] | undefined {
 /**
  * Normalize color to Figma format { r, g, b } with values 0-1
  */
-function normalizeColor(color: any): RGB {
+function normalizeColor(color: any): RGB & { a?: number } {
   if (!color) return { r: 0, g: 0, b: 0 };
 
-  // Already normalized (values 0-1)
-  if (typeof color.r === 'number' && color.r <= 1 && color.g <= 1 && color.b <= 1) {
-    return { r: color.r, g: color.g, b: color.b };
-  }
+  let r = 0, g = 0, b = 0, a = color.a ?? 1;
 
-  // Values 0-255, need to normalize
-  if (typeof color.r === 'number' && (color.r > 1 || color.g > 1 || color.b > 1)) {
-    return { r: color.r / 255, g: color.g / 255, b: color.b / 255 };
-  }
-
-  // Hex string
   if (typeof color === 'string') {
-    return hexToRgb(color);
+    const rgb = hexToRgb(color);
+    r = rgb.r; g = rgb.g; b = rgb.b;
+  } else if (typeof color.r === 'number') {
+    const factor = (color.r > 1 || color.g > 1 || color.b > 1) ? 255 : 1;
+    r = color.r / factor;
+    g = color.g / factor;
+    b = color.b / factor;
   }
 
-  return { r: 0, g: 0, b: 0 };
+  const result: RGB & { a?: number } = {
+    r: Math.max(0, Math.min(1, r)),
+    g: Math.max(0, Math.min(1, g)),
+    b: Math.max(0, Math.min(1, b))
+  };
+  
+  if (color.a !== undefined || typeof color === 'string') {
+    result.a = Math.max(0, Math.min(1, a));
+  }
+  
+  return result;
+}
+
+/**
+ * Robustly normalize to RGBA for effects and other properties that require it
+ */
+function normalizeRGBA(color: any): RGBA {
+  const c = normalizeColor(color);
+  return {
+    r: c.r,
+    g: c.g,
+    b: c.b,
+    a: (color && typeof color === 'object' && color.a !== undefined) ? color.a : (c.a ?? 1)
+  };
+}
+
+/**
+ * Parse line height from various formats
+ */
+function parseLineHeight(lh: any): LineHeight {
+  if (typeof lh === 'number') return { value: lh, unit: 'PIXELS' };
+  if (typeof lh === 'string') {
+    const clean = lh.trim().toUpperCase();
+    if (clean === 'AUTO') return { unit: 'AUTO' };
+    if (clean.endsWith('%')) {
+      const val = parseFloat(clean);
+      if (!isNaN(val)) return { value: val, unit: 'PERCENT' };
+    }
+    const val = parseFloat(clean);
+    if (!isNaN(val)) return { value: val, unit: 'PIXELS' };
+  }
+  return lh as LineHeight;
+}
+
+/**
+ * Parse letter spacing from various formats
+ */
+function parseLetterSpacing(ls: any): LetterSpacing {
+  if (typeof ls === 'number') return { value: ls, unit: 'PIXELS' };
+  if (typeof ls === 'string') {
+    const clean = ls.trim().toUpperCase();
+    if (clean.endsWith('%')) {
+      const val = parseFloat(clean);
+      if (!isNaN(val)) return { value: val, unit: 'PERCENT' };
+    }
+    const val = parseFloat(clean);
+    if (!isNaN(val)) return { value: val, unit: 'PIXELS' };
+  }
+  return ls as LetterSpacing;
 }
 
 /**
@@ -191,7 +317,99 @@ export async function applyOperations(ops: FigmaOperation[]) {
   }
 
   const summary = summaryLines.length > 0 ? summaryLines.join('\n') : undefined;
-  postToUI({ type: 'OPERATIONS_DONE', count: ops.length, summary, summaryItems, canUndo: true, nodeIdMap });
+  const telemetry = auditCreatedNodes(rootNodes);
+  postToUI({ type: 'OPERATIONS_DONE', count: ops.length, summary, summaryItems, canUndo: true, nodeIdMap, telemetry });
+}
+
+// ─── Telemetry: static audit of generated tree ───────────────────────────────
+// Cheap, deterministic checks. No LLM. Catches the recurring "FIXED where it
+// should be HUG / clipping / structural white frame" classes of error so we
+// can refine the prompt with data instead of screenshots.
+interface AuditViolation { node: string; rule: string; detail?: string }
+interface AuditReport {
+  rootCount: number;
+  nodeCount: number;
+  violations: AuditViolation[];
+  stats: { fixed: number; hug: number; fill: number; whiteFrames: number; textNodes: number };
+}
+
+function auditCreatedNodes(roots: SceneNode[]): AuditReport {
+  const violations: AuditViolation[] = [];
+  const stats = { fixed: 0, hug: 0, fill: 0, whiteFrames: 0, textNodes: 0 };
+  let nodeCount = 0;
+
+  function isWhiteSolid(fill: Paint): boolean {
+    if (fill.type !== 'SOLID' || fill.visible === false) return false;
+    const c = (fill as SolidPaint).color;
+    return c.r > 0.97 && c.g > 0.97 && c.b > 0.97;
+  }
+
+  function walk(node: SceneNode, depth: number) {
+    nodeCount++;
+    const anyNode = node as any;
+
+    // Sizing tally
+    if ('layoutSizingHorizontal' in anyNode) {
+      const h = anyNode.layoutSizingHorizontal;
+      if (h === 'FIXED') stats.fixed++;
+      else if (h === 'HUG') stats.hug++;
+      else if (h === 'FILL') stats.fill++;
+    }
+
+    // TEXT clipping / FIXED-on-text
+    if (node.type === 'TEXT') {
+      stats.textNodes++;
+      const t = node as TextNode;
+      if (t.textTruncation === 'ENDING') {
+        violations.push({ node: t.name, rule: 'text-truncated' });
+      }
+      if (anyNode.layoutSizingHorizontal === 'FIXED' && anyNode.layoutSizingVertical === 'FIXED') {
+        violations.push({ node: t.name, rule: 'text-double-fixed' });
+      }
+    }
+
+    // FRAME checks
+    if (node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE') {
+      const f = node as FrameNode;
+
+      // Auto-layout child should default to HUG, not FIXED
+      const parent = node.parent as any;
+      const inAutoLayout = parent && 'layoutMode' in parent && parent.layoutMode && parent.layoutMode !== 'NONE';
+      if (inAutoLayout && depth > 0) {
+        if (anyNode.layoutSizingVertical === 'FIXED' && f.layoutMode && f.layoutMode !== 'NONE') {
+          violations.push({ node: f.name, rule: 'should-be-hug-vertical' });
+        }
+      }
+
+      // Structural white frame: solid white fill on a non-root grouping container
+      if (depth > 0 && Array.isArray(f.fills) && f.fills.length > 0) {
+        const hasWhite = (f.fills as Paint[]).some(isWhiteSolid);
+        if (hasWhite && f.children && f.children.length > 0) {
+          stats.whiteFrames++;
+          violations.push({ node: f.name, rule: 'structural-white-frame' });
+        }
+      }
+
+      // Children overflow parent box (simple bounds check)
+      if (f.children) {
+        for (const child of f.children) {
+          if ('width' in child && 'x' in child) {
+            if (child.x + child.width > f.width + 0.5 || child.y + child.height > f.height + 0.5) {
+              violations.push({ node: child.name, rule: 'overflows-parent', detail: f.name });
+              break; // one per frame is enough
+            }
+          }
+        }
+      }
+    }
+
+    if ('children' in node) {
+      for (const child of (node as any).children as SceneNode[]) walk(child, depth + 1);
+    }
+  }
+
+  for (const r of roots) walk(r, 0);
+  return { rootCount: roots.length, nodeCount, violations, stats };
 }
 
 interface OperationContext {
@@ -204,10 +422,44 @@ interface OperationContext {
 async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   const { createdNodes, createdPages, pushSummary, getParent } = ctx;
 
+  // Resiliency: prioritize op.props but fallback to op root for flat JSON objects
+  const rawOp = op as any;
+  const props = rawOp.props || rawOp;
+
+  /**
+   * Helper to apply common positioning and layout props to a node
+   */
+  const applyCommonProps = (node: SceneNode, p: any, parent: BaseNode & ChildrenMixin) => {
+    const anyNode = node as any;
+    const parentIsAutoLayout = 'layoutMode' in parent && (parent as any).layoutMode !== 'NONE';
+
+    // Handle Absolute Positioning in Auto Layout
+    if (parentIsAutoLayout && p.layoutPositioning === 'ABSOLUTE' && 'layoutPositioning' in anyNode) {
+      anyNode.layoutPositioning = 'ABSOLUTE';
+    }
+
+    // Handle X, Y (only if not governed by Auto Layout)
+    const governsLayout = parentIsAutoLayout && (!('layoutPositioning' in anyNode) || anyNode.layoutPositioning !== 'ABSOLUTE');
+    if (!governsLayout) {
+      if (p.x !== undefined) anyNode.x = p.x;
+      if (p.y !== undefined) anyNode.y = p.y;
+    }
+
+    if (p.rotation !== undefined) anyNode.rotation = p.rotation;
+    if (p.opacity !== undefined) anyNode.opacity = p.opacity;
+    if (p.blendMode && 'blendMode' in anyNode) anyNode.blendMode = p.blendMode;
+    if (p.visible !== undefined) anyNode.visible = p.visible;
+    
+    // Explicit sizing for absolute/free elements
+    if (!governsLayout) {
+      if (p.width > 0 && p.height > 0) anyNode.resize(p.width, p.height);
+    }
+  };
+
   // ═══ CREATE_PAGE ═══
   if (op.type === 'CREATE_PAGE') {
     const page = figma.createPage();
-    page.name = op.props.name;
+    page.name = props.name || 'Nova Página';
     if (op.ref) createdPages.set(op.ref, page);
     pushSummary(`Página criada @"${page.name}"`, page);
     return;
@@ -217,65 +469,73 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   if (op.type === 'CREATE_FRAME') {
     const parent = await getParent(op.parentRef, op.parentNodeId);
     const frame = figma.createFrame();
-    frame.name = op.props.name;
-    const fw = op.props.width > 0 ? op.props.width : 100;
-    const fh = op.props.height > 0 ? op.props.height : 100;
+    frame.fills = []; // Começa transparente por padrão
+    frame.name = props.name || 'Frame';
+    const fw = props.width > 0 ? props.width : 100;
+    const fh = props.height > 0 ? props.height : 100;
     frame.resize(fw, fh);
 
     // Auto-layout
-    if (op.props.layoutMode && op.props.layoutMode !== 'NONE') {
-      frame.layoutMode = op.props.layoutMode;
-      frame.primaryAxisSizingMode = op.props.primaryAxisSizingMode ?? 'AUTO';
-      frame.counterAxisSizingMode = op.props.counterAxisSizingMode ?? 'AUTO';
-      frame.primaryAxisAlignItems = op.props.primaryAxisAlignItems ?? 'MIN';
-      frame.counterAxisAlignItems = op.props.counterAxisAlignItems ?? 'MIN';
-      frame.itemSpacing = op.props.itemSpacing ?? 0;
-      if (op.props.counterAxisSpacing != null && 'counterAxisSpacing' in frame) {
-        (frame as any).counterAxisSpacing = op.props.counterAxisSpacing;
+    if (props.layoutMode && props.layoutMode !== 'NONE') {
+      frame.layoutMode = props.layoutMode;
+      frame.primaryAxisSizingMode = props.primaryAxisSizingMode ?? 'FIXED';
+      frame.counterAxisSizingMode = props.counterAxisSizingMode ?? 'FIXED';
+      frame.primaryAxisAlignItems = props.primaryAxisAlignItems ?? 'MIN';
+      frame.counterAxisAlignItems = props.counterAxisAlignItems ?? 'MIN';
+      frame.itemSpacing = props.itemSpacing ?? 0;
+      if (props.counterAxisSpacing != null && 'counterAxisSpacing' in frame) {
+        (frame as any).counterAxisSpacing = props.counterAxisSpacing;
       }
-      frame.layoutWrap = op.props.layoutWrap ?? 'NO_WRAP';
-      frame.paddingTop = op.props.paddingTop ?? 0;
-      frame.paddingRight = op.props.paddingRight ?? 0;
-      frame.paddingBottom = op.props.paddingBottom ?? 0;
-      frame.paddingLeft = op.props.paddingLeft ?? 0;
-      if (op.props.strokesIncludedInLayout != null && 'strokesIncludedInLayout' in frame) {
-        (frame as any).strokesIncludedInLayout = op.props.strokesIncludedInLayout;
+      frame.layoutWrap = props.layoutWrap ?? 'NO_WRAP';
+      frame.paddingTop = props.paddingTop ?? 0;
+      frame.paddingRight = props.paddingRight ?? 0;
+      frame.paddingBottom = props.paddingBottom ?? 0;
+      frame.paddingLeft = props.paddingLeft ?? 0;
+      if (props.strokesIncludedInLayout != null && 'strokesIncludedInLayout' in frame) {
+        (frame as any).strokesIncludedInLayout = props.strokesIncludedInLayout;
       }
-      if (op.props.minWidth != null && 'minWidth' in frame) (frame as any).minWidth = op.props.minWidth;
-      if (op.props.maxWidth != null && 'maxWidth' in frame) (frame as any).maxWidth = op.props.maxWidth;
-      if (op.props.minHeight != null && 'minHeight' in frame) (frame as any).minHeight = op.props.minHeight;
-      if (op.props.maxHeight != null && 'maxHeight' in frame) (frame as any).maxHeight = op.props.maxHeight;
+      if (props.minWidth != null && 'minWidth' in frame) (frame as any).minWidth = props.minWidth;
+      if (props.maxWidth != null && 'maxWidth' in frame) (frame as any).maxWidth = props.maxWidth;
+      if (props.minHeight != null && 'minHeight' in frame) (frame as any).minHeight = props.minHeight;
+      if (props.maxHeight != null && 'maxHeight' in frame) (frame as any).maxHeight = props.maxHeight;
     }
 
-    if (op.props.fills) frame.fills = normalizeFills(op.props.fills) || [];
-    if (op.props.cornerRadius != null) frame.cornerRadius = op.props.cornerRadius;
-    if (op.props.cornerSmoothing != null) frame.cornerSmoothing = op.props.cornerSmoothing;
-    if (op.props.clipsContent != null) frame.clipsContent = op.props.clipsContent;
-    if (op.props.strokes) frame.strokes = op.props.strokes as any;
-    if (op.props.strokeWeight != null) frame.strokeWeight = op.props.strokeWeight;
-    if (op.props.opacity != null) frame.opacity = op.props.opacity;
+    if (props.fills) {
+      const normalized = normalizeFills(props.fills) || [];
+      frame.fills = await applyVariablesToFills(normalized);
+    }
+    if (props.cornerRadius != null) frame.cornerRadius = props.cornerRadius;
+    if (props.cornerSmoothing != null) frame.cornerSmoothing = props.cornerSmoothing;
+    if (props.clipsContent != null) frame.clipsContent = props.clipsContent;
+    if (props.strokes) {
+      const normalized = normalizeFills(props.strokes) || [];
+      frame.strokes = await applyVariablesToFills(normalized);
+    }
+    if (props.strokeWeight != null) frame.strokeWeight = props.strokeWeight;
+    if (props.opacity != null) frame.opacity = props.opacity;
+    if (props.effects) frame.effects = mapEffects(props.effects);
 
     // Posicionamento do frame
     if (parent === figma.currentPage || parent.type === 'PAGE') {
       const page = parent as PageNode;
-      const gap = op.props.positionGap ?? 100;
+      const gap = props.positionGap ?? 100;
 
-      if (op.props.autoPosition) {
+      if (props.autoPosition) {
         const siblings = page.children.filter(n => n.type === 'FRAME' || n.type === 'COMPONENT');
 
-        if (op.props.autoPosition === 'right' && siblings.length > 0) {
+        if (props.autoPosition === 'right' && siblings.length > 0) {
           // Posiciona à direita do último frame
           const maxX = Math.max(0, ...siblings.map(n => n.x + n.width));
           frame.x = maxX + gap;
           frame.y = 0;
-        } else if (op.props.autoPosition === 'below' && siblings.length > 0) {
+        } else if (props.autoPosition === 'below' && siblings.length > 0) {
           // Posiciona abaixo do último frame
           const maxY = Math.max(0, ...siblings.map(n => n.y + n.height));
           frame.x = 0;
           frame.y = maxY + gap;
-        } else if (op.props.autoPosition === 'grid') {
+        } else if (props.autoPosition === 'grid') {
           // Grid: calcula posição baseado em linha/coluna
-          const cols = 4;
+          const cols = props.gridCols || 4;
           const idx = siblings.length;
           const col = idx % cols;
           const row = Math.floor(idx / cols);
@@ -287,10 +547,10 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
           frame.x = 0;
           frame.y = 0;
         }
-      } else if (op.props.x != null || op.props.y != null) {
+      } else if (props.x != null || props.y != null) {
         // Posição explícita
-        frame.x = op.props.x ?? 0;
-        frame.y = op.props.y ?? 0;
+        frame.x = props.x ?? 0;
+        frame.y = props.y ?? 0;
       } else {
         // Fallback: centro do viewport
         frame.x = figma.viewport.center.x - fw / 2;
@@ -300,17 +560,14 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     parent.appendChild(frame);
 
     if (parent !== figma.currentPage && parent.type !== 'PAGE') {
-      if (op.props.x != null) frame.x = op.props.x;
-      if (op.props.y != null) frame.y = op.props.y;
+      const parentIsAutoLayout = 'layoutMode' in parent && (parent as any).layoutMode !== 'NONE';
+      if (parentIsAutoLayout) {
+        if (props.layoutSizingHorizontal) frame.layoutSizingHorizontal = props.layoutSizingHorizontal;
+        if (props.layoutSizingVertical) frame.layoutSizingVertical = props.layoutSizingVertical;
+      }
     }
-    if (op.props.rotation != null) frame.rotation = op.props.rotation;
 
-    if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
-      frame.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
-    }
-    if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
-      frame.layoutSizingVertical = op.props.layoutSizingVertical;
-    }
+    applyCommonProps(frame, props, parent);
 
     if (op.ref) createdNodes.set(op.ref, frame);
     pushSummary(`Criado @"${frame.name}"`, frame);
@@ -320,27 +577,34 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   else if (op.type === 'CREATE_RECTANGLE') {
     const parent = await getParent(op.parentRef, op.parentNodeId);
     const rect = figma.createRectangle();
-    rect.name = op.props.name;
-    rect.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
-    if (op.props.fills) rect.fills = normalizeFills(op.props.fills) || [];
-    if (op.props.cornerRadius != null) rect.cornerRadius = op.props.cornerRadius;
-    if (op.props.strokes) rect.strokes = op.props.strokes as any;
-    if (op.props.strokeWeight != null) rect.strokeWeight = op.props.strokeWeight;
-    if (op.props.opacity != null) rect.opacity = op.props.opacity;
-    if (op.props.effects) rect.effects = mapEffects(op.props.effects);
-    if (op.props.constraints && 'constraints' in rect) (rect as any).constraints = op.props.constraints;
+    rect.fills = []; // Começa transparente por padrão
+    rect.name = props.name || 'Retângulo';
+    rect.resize(props.width > 0 ? props.width : 100, props.height > 0 ? props.height : 100);
+    if (props.fills) {
+      const normalized = normalizeFills(props.fills) || [];
+      rect.fills = await applyVariablesToFills(normalized);
+    }
+    if (props.cornerRadius != null) rect.cornerRadius = props.cornerRadius;
+    if (props.strokes) {
+      const normalized = normalizeFills(props.strokes) || [];
+      rect.strokes = await applyVariablesToFills(normalized);
+    }
+    if (props.strokeWeight != null) rect.strokeWeight = props.strokeWeight;
+    if (props.opacity != null) rect.opacity = props.opacity;
+    if (props.effects) rect.effects = mapEffects(props.effects);
+    if (props.constraints && 'constraints' in rect) (rect as any).constraints = props.constraints;
     parent.appendChild(rect);
 
-    if (op.props.x != null) rect.x = op.props.x;
-    if (op.props.y != null) rect.y = op.props.y;
-    if (op.props.rotation != null) rect.rotation = op.props.rotation;
+    if (parent !== figma.currentPage && parent.type !== 'PAGE') {
+      const parentIsAutoLayout = 'layoutMode' in parent && (parent as any).layoutMode !== 'NONE';
+      if (parentIsAutoLayout) {
+        if (props.layoutSizingHorizontal) rect.layoutSizingHorizontal = props.layoutSizingHorizontal;
+        if (props.layoutSizingVertical) rect.layoutSizingVertical = props.layoutSizingVertical;
+      }
+    }
 
-    if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
-      rect.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
-    }
-    if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
-      rect.layoutSizingVertical = op.props.layoutSizingVertical;
-    }
+    applyCommonProps(rect, props, parent);
+
     if (op.ref) createdNodes.set(op.ref, rect);
     pushSummary(`Criado @"${rect.name}"`, rect);
   }
@@ -349,38 +613,67 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   else if (op.type === 'CREATE_ELLIPSE') {
     const parent = await getParent(op.parentRef, op.parentNodeId);
     const ellipse = figma.createEllipse();
-    ellipse.name = op.props.name;
-    ellipse.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
-    if (op.props.fills) ellipse.fills = normalizeFills(op.props.fills) || [];
-    if (op.props.strokes) ellipse.strokes = op.props.strokes as any;
-    if (op.props.strokeWeight != null) ellipse.strokeWeight = op.props.strokeWeight;
-    if (op.props.opacity != null) ellipse.opacity = op.props.opacity;
-    if (op.props.effects) ellipse.effects = mapEffects(op.props.effects);
-    if (op.props.constraints && 'constraints' in ellipse) (ellipse as any).constraints = op.props.constraints;
+    ellipse.fills = []; // Começa transparente por padrão
+    ellipse.name = props.name || 'Elipse';
+    ellipse.resize(props.width > 0 ? props.width : 100, props.height > 0 ? props.height : 100);
+    if (props.fills) {
+      const normalized = normalizeFills(props.fills) || [];
+      ellipse.fills = await applyVariablesToFills(normalized);
+    }
+    if (props.strokes) {
+      const normalized = normalizeFills(props.strokes) || [];
+      ellipse.strokes = await applyVariablesToFills(normalized);
+    }
+    if (props.strokeWeight != null) ellipse.strokeWeight = props.strokeWeight;
+    if (props.opacity != null) ellipse.opacity = props.opacity;
+    if (props.effects) ellipse.effects = mapEffects(props.effects);
+    if (props.constraints && 'constraints' in ellipse) (ellipse as any).constraints = props.constraints;
     parent.appendChild(ellipse);
 
-    if (op.props.x != null) ellipse.x = op.props.x;
-    if (op.props.y != null) ellipse.y = op.props.y;
-    if (op.props.rotation != null) ellipse.rotation = op.props.rotation;
+    if (parent !== figma.currentPage && parent.type !== 'PAGE') {
+      const parentIsAutoLayout = 'layoutMode' in parent && (parent as any).layoutMode !== 'NONE';
+      if (parentIsAutoLayout) {
+        if (props.layoutSizingHorizontal) ellipse.layoutSizingHorizontal = props.layoutSizingHorizontal;
+        if (props.layoutSizingVertical) ellipse.layoutSizingVertical = props.layoutSizingVertical;
+      }
+    }
 
-    if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
-      ellipse.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
-    }
-    if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
-      ellipse.layoutSizingVertical = op.props.layoutSizingVertical;
-    }
+    applyCommonProps(ellipse, props, parent);
+
     if (op.ref) createdNodes.set(op.ref, ellipse);
     pushSummary(`Criado @"${ellipse.name}"`, ellipse);
   }
 
   // ═══ CREATE_TEXT ═══
   else if (op.type === 'CREATE_TEXT') {
-    const fontFamily = op.props.fontFamily ?? 'Inter';
-    const fontStyle = op.props.fontStyle ?? 'Regular';
+    let fontStyle = props.fontStyle;
+    if (!fontStyle && props.fontWeight) {
+      const weight = props.fontWeight;
+      if (weight <= 100) fontStyle = 'Thin';
+      else if (weight <= 200) fontStyle = 'Extra Light';
+      else if (weight <= 300) fontStyle = 'Light';
+      else if (weight <= 400) fontStyle = 'Regular';
+      else if (weight <= 500) fontStyle = 'Medium';
+      else if (weight <= 600) fontStyle = 'Semi Bold';
+      else if (weight <= 700) fontStyle = 'Bold';
+      else if (weight <= 800) fontStyle = 'Extra Bold';
+      else fontStyle = 'Black';
+    }
+    if (!fontStyle) fontStyle = 'Regular';
+
+    const fontFamily = props.fontFamily ?? 'Inter';
+    
     try {
       await figma.loadFontAsync({ family: fontFamily, style: fontStyle });
     } catch {
-      await figma.loadFontAsync(DEFAULT_FONT);
+      // Fallback to Regular if specific weight style is not found
+      try {
+        await figma.loadFontAsync({ family: fontFamily, style: 'Regular' });
+        fontStyle = 'Regular';
+      } catch {
+        await figma.loadFontAsync(DEFAULT_FONT);
+        fontStyle = DEFAULT_FONT.style;
+      }
     }
 
     const parent = await getParent(op.parentRef, op.parentNodeId);
@@ -390,35 +683,42 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     } catch {
       text.fontName = DEFAULT_FONT;
     }
-    text.characters = op.props.content;
-    if (op.props.name) text.name = op.props.name;
-    if (op.props.fontSize) text.fontSize = op.props.fontSize;
-    if (op.props.fills) text.fills = normalizeFills(op.props.fills) || [];
-    if (op.props.textAlignHorizontal) text.textAlignHorizontal = op.props.textAlignHorizontal;
-    if (op.props.textAlignVertical) text.textAlignVertical = op.props.textAlignVertical;
-    if (op.props.textAutoResize) text.textAutoResize = op.props.textAutoResize;
-    if (op.props.textDecoration && op.props.textDecoration !== 'NONE') {
-      text.textDecoration = op.props.textDecoration;
+    text.characters = props.content || props.characters || '';
+    if (props.name) text.name = props.name;
+    if (props.fontSize) text.fontSize = props.fontSize;
+    if (props.fills) {
+      const normalized = normalizeFills(props.fills) || [];
+      text.fills = await applyVariablesToFills(normalized);
     }
-    if (op.props.textCase && op.props.textCase !== 'ORIGINAL') {
-      text.textCase = op.props.textCase;
+    if (props.textAlignHorizontal) text.textAlignHorizontal = props.textAlignHorizontal;
+    if (props.textAlignVertical) text.textAlignVertical = props.textAlignVertical;
+    if (props.textAutoResize) text.textAutoResize = props.textAutoResize;
+    if (props.textDecoration && props.textDecoration !== 'NONE') {
+      text.textDecoration = props.textDecoration;
     }
-    if (op.props.lineHeight) text.lineHeight = op.props.lineHeight;
-    if (op.props.letterSpacing) text.letterSpacing = op.props.letterSpacing;
-    if (op.props.paragraphSpacing != null) text.paragraphSpacing = op.props.paragraphSpacing;
-    if (op.props.opacity != null) text.opacity = op.props.opacity;
+    if (props.textCase && props.textCase !== 'ORIGINAL') {
+      text.textCase = props.textCase;
+    }
+    if (props.lineHeight) {
+      text.lineHeight = parseLineHeight(props.lineHeight);
+    }
+    if (props.letterSpacing) {
+      text.letterSpacing = parseLetterSpacing(props.letterSpacing);
+    }
+    if (props.paragraphSpacing != null) text.paragraphSpacing = props.paragraphSpacing;
+    if (props.opacity != null) text.opacity = props.opacity;
 
     parent.appendChild(text);
-    if (op.props.x != null) text.x = op.props.x;
-    if (op.props.y != null) text.y = op.props.y;
-    if (op.props.rotation != null) text.rotation = op.props.rotation;
+    if (parent !== figma.currentPage && parent.type !== 'PAGE') {
+      const parentIsAutoLayout = 'layoutMode' in parent && (parent as any).layoutMode !== 'NONE';
+      if (parentIsAutoLayout) {
+        if (props.layoutSizingHorizontal) text.layoutSizingHorizontal = props.layoutSizingHorizontal;
+        text.layoutSizingVertical = props.layoutSizingVertical || 'HUG';
+      }
+    }
 
-    if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
-      text.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
-    }
-    if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
-      text.layoutSizingVertical = op.props.layoutSizingVertical;
-    }
+    applyCommonProps(text, props, parent);
+
     if (op.ref) createdNodes.set(op.ref, text);
     pushSummary(`Criado @"${text.name}"`, text);
   }
@@ -448,8 +748,22 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     const instance = component.createInstance();
     if (op.name) instance.name = op.name;
     parent.appendChild(instance);
+    
+    // Position & Size if provided
+    if (op.width != null && op.height != null) instance.resize(op.width, op.height);
+    if (op.x != null) instance.x = op.x;
+    if (op.y != null) instance.y = op.y;
+    
+    const parentIsAutoLayout = 'layoutMode' in parent && parent.layoutMode !== 'NONE';
+    if (parentIsAutoLayout) {
+      if (props.layoutSizingHorizontal) instance.layoutSizingHorizontal = props.layoutSizingHorizontal;
+      if (props.layoutSizingVertical) instance.layoutSizingVertical = props.layoutSizingVertical;
+    }
+
+    applyCommonProps(instance, props, parent);
+    
     if (op.ref) createdNodes.set(op.ref, instance);
-    pushSummary(`Criado @"${instance.name}"`, instance);
+    pushSummary(`Instância de @"${instance.name}" criada`, instance);
   }
 
   // ═══ SET_FILL ═══
@@ -536,11 +850,14 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       if (op.strokesIncludedInLayout != null && 'strokesIncludedInLayout' in node) {
         (node as any).strokesIncludedInLayout = op.strokesIncludedInLayout;
       }
-      if (op.layoutSizingHorizontal && 'layoutSizingHorizontal' in node) {
-        (node as any).layoutSizingHorizontal = op.layoutSizingHorizontal;
-      }
-      if (op.layoutSizingVertical && 'layoutSizingVertical' in node) {
-        (node as any).layoutSizingVertical = op.layoutSizingVertical;
+      const parent = node.parent;
+      if (parent && 'layoutMode' in parent && (parent as any).layoutMode !== 'NONE') {
+        if (op.layoutSizingHorizontal && 'layoutSizingHorizontal' in node) {
+          (node as any).layoutSizingHorizontal = op.layoutSizingHorizontal;
+        }
+        if (op.layoutSizingVertical && 'layoutSizingVertical' in node) {
+          (node as any).layoutSizingVertical = op.layoutSizingVertical;
+        }
       }
       pushSummary(`Editado layout @"${node.name}"`, node);
     }
@@ -643,8 +960,12 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       if (op.textAutoResize) node.textAutoResize = op.textAutoResize;
       if (op.textAlignHorizontal) node.textAlignHorizontal = op.textAlignHorizontal;
       if (op.textAlignVertical) node.textAlignVertical = op.textAlignVertical;
-      if (op.lineHeight) node.lineHeight = op.lineHeight as LineHeight;
-      if (op.letterSpacing) node.letterSpacing = op.letterSpacing as LetterSpacing;
+      if (op.lineHeight) {
+        node.lineHeight = parseLineHeight(op.lineHeight);
+      }
+      if (op.letterSpacing) {
+        node.letterSpacing = parseLetterSpacing(op.letterSpacing);
+      }
       if (op.fills) node.fills = normalizeFills(op.fills) || [];
 
       pushSummary(`Estilizado texto @"${node.name}"`, node);
@@ -880,12 +1201,19 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     if (op.props.fills) comp.fills = normalizeFills(op.props.fills) || [];
     if (op.props.cornerRadius != null) comp.cornerRadius = op.props.cornerRadius;
 
-    parent.appendChild(comp);
-    if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
-      comp.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
-    }
-    if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
-      comp.layoutSizingVertical = op.props.layoutSizingVertical;
+    if (parent !== figma.currentPage && parent.type !== 'PAGE') {
+      const parentIsAutoLayout = 'layoutMode' in parent && parent.layoutMode !== 'NONE';
+      
+      if (!parentIsAutoLayout) {
+        // Assume non-AL parent expects coordinates
+        if (op.props.x != null) comp.x = op.props.x;
+        if (op.props.y != null) comp.y = op.props.y;
+      }
+
+      if (parentIsAutoLayout) {
+        if (op.props.layoutSizingHorizontal) comp.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
+        if (op.props.layoutSizingVertical) comp.layoutSizingVertical = op.props.layoutSizingVertical;
+      }
     }
     if (op.ref) createdNodes.set(op.ref, comp);
     pushSummary(`Componente criado @"${comp.name}"`, comp);
@@ -914,11 +1242,68 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       const svgFrame = figma.createNodeFromSvg(op.svgString);
       if (op.name) svgFrame.name = op.name;
       if (op.width && op.height) svgFrame.resize(op.width, op.height);
+      
+      // Position
+      if (op.x != null) svgFrame.x = op.x;
+      if (op.y != null) svgFrame.y = op.y;
+      if (op.opacity != null) svgFrame.opacity = op.opacity;
+
       parent.appendChild(svgFrame);
       if (op.ref) createdNodes.set(op.ref, svgFrame);
       pushSummary(`SVG criado @"${op.name || 'svg'}"`, svgFrame);
     } catch (e) {
       postToUI({ type: 'ERROR', message: `Erro ao criar SVG: ${String(e)}` });
+    }
+  }
+
+  // ═══ CREATE_ICON ═══
+  else if (op.type === 'CREATE_ICON') {
+    const parent = await getParent(op.parentRef, op.parentNodeId);
+    const { icon, size = 24, color, x = 0, y = 0, name, opacity = 1 } = op.props;
+    
+    // Parse prefix and name from e.g. "mdi:home"
+    const parts = icon.split(':');
+    const prefix = parts.length > 1 ? parts[0] : 'mdi';
+    const iconName = parts.length > 1 ? parts[1] : parts[0];
+    
+    try {
+      // Fetch SVG from Iconify API
+      const url = `https://api.iconify.design/${prefix}/${iconName}.svg`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Status ${response.status}`);
+      const svgString = await response.text();
+      
+      const iconNode = figma.createNodeFromSvg(svgString);
+      iconNode.name = name || `Icon: ${icon}`;
+      iconNode.resize(size, size);
+      iconNode.x = x;
+      iconNode.y = y;
+      iconNode.opacity = opacity;
+      
+      // Apply color to paths if provided
+      if (color) {
+        const fills = normalizeFills(color) || [];
+        const figmaFills = await applyVariablesToFills(fills);
+        await recolorRecursive(iconNode, figmaFills);
+      }
+      
+      parent.appendChild(iconNode);
+      if (op.ref) createdNodes.set(op.ref, iconNode);
+      pushSummary(`Ícone criado @"${icon}"`, iconNode);
+      
+    } catch (e) {
+      console.warn(`Failed to fetch icon ${icon}:`, e);
+      // Fallback: create a placeholder circle
+      const placeholder = figma.createEllipse();
+      placeholder.name = `Missing Icon: ${icon}`;
+      placeholder.resize(size, size);
+      placeholder.x = x;
+      placeholder.y = y;
+      placeholder.fills = [{ type: 'SOLID', color: { r: 1, g: 0.5, b: 0.5 }, opacity: 0.2 }];
+      placeholder.strokes = [{ type: 'SOLID', color: { r: 1, g: 0, b: 0 } }];
+      parent.appendChild(placeholder);
+      if (op.ref) createdNodes.set(op.ref, placeholder);
+      pushSummary(`Err: Ícone não encontrado @"${icon}"`, placeholder);
     }
   }
 
@@ -1039,15 +1424,32 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
     try {
       const cloned = (sourceNode as SceneNode).clone();
-      if (op.overrides?.name) cloned.name = op.overrides.name;
-      if (op.overrides?.width && 'resize' in cloned) {
-        (cloned as any).resize(op.overrides.width, op.overrides.height || (cloned as any).height);
+      if (props.name) cloned.name = props.name;
+      if (props.width && 'resize' in cloned) {
+        (cloned as any).resize(props.width, props.height || (cloned as any).height);
       }
-      if (op.overrides?.fills && 'fills' in cloned) {
-        (cloned as any).fills = op.overrides.fills as any;
+      if (props.fills && 'fills' in cloned) {
+        // Use normalizeFills to handle different formats
+        const normalized = normalizeFills(props.fills);
+        if (normalized) (cloned as any).fills = await applyVariablesToFills(normalized);
+      }
+      if (props.isMask != null && 'isMask' in cloned) {
+        (cloned as any).isMask = props.isMask;
+      }
+      if (props.opacity != null && 'opacity' in cloned) {
+        (cloned as any).opacity = props.opacity;
       }
 
       parent.appendChild(cloned);
+      
+      const parentIsAutoLayout = 'layoutMode' in parent && parent.layoutMode !== 'NONE';
+      if (parentIsAutoLayout) {
+        const sizingH = props.layoutSizingHorizontal;
+        const sizingV = props.layoutSizingVertical;
+        if (sizingH) (cloned as any).layoutSizingHorizontal = sizingH;
+        if (sizingV) (cloned as any).layoutSizingVertical = sizingV;
+      }
+
       if (op.ref) createdNodes.set(op.ref, cloned);
 
       // Text overrides
@@ -1224,12 +1626,56 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     }
   }
 
-  // ═══ DELETE_NODE ═══
-  else if (op.type === 'DELETE_NODE') {
-    const node = await figma.getNodeByIdAsync(op.nodeId);
+  // ═══ RECOLOR_NODE ═══
+  else if (op.type === 'RECOLOR_NODE') {
+    const node = (op.ref ? createdNodes.get(op.ref) : null)
+      ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
+    
     if (node) {
-      pushSummary(`Removido @"${node.name}"`);
-      node.remove();
+      const normalizedFills = normalizeFills(props.fills) || [];
+      const fills = await applyVariablesToFills(normalizedFills);
+      await recolorRecursive(node, fills);
+      pushSummary(`Recoloring @"${(node as any).name}" recursivamente`, node as SceneNode);
+    }
+  }
+}
+
+/**
+ * Recursively changes the fill color of all vector and text nodes within a tree.
+ */
+async function recolorRecursive(node: BaseNode, fills: Paint[]) {
+  // Check if node has fills and is a graphic/text type
+  if ('fills' in node && (
+     node.type === 'VECTOR' || 
+     node.type === 'TEXT' || 
+     node.type === 'STAR' || 
+     node.type === 'LINE' || 
+     node.type === 'ELLIPSE' || 
+     node.type === 'RECTANGLE' || 
+     node.type === 'POLYGON' || 
+     node.type === 'BOOLEAN_OPERATION'
+  )) {
+    // For text, we must load the font first
+    if (node.type === 'TEXT') {
+      const font = (node as TextNode).fontName;
+      if (font && typeof font !== 'symbol') {
+        try {
+          await figma.loadFontAsync(font);
+        } catch (e) {
+          console.warn('Failed to load font for recoloring:', font);
+        }
+      }
+    }
+    try {
+      (node as any).fills = fills;
+    } catch (e) {
+      console.warn(`Failed to set fill for node type ${node.type}:`, e);
+    }
+  }
+  
+  if ('children' in node) {
+    for (const child of node.children) {
+      await recolorRecursive(child, fills);
     }
   }
 }
@@ -1238,18 +1684,27 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
  * Map effect definitions to Figma Effect objects
  */
 function mapEffects(effects: any[]): Effect[] {
+  if (!effects || !Array.isArray(effects)) return [];
+  
   return effects.map(e => {
+    if (!e || typeof e !== 'object') return null;
+
     if (e.type === 'LAYER_BLUR' || e.type === 'BACKGROUND_BLUR') {
-      return { type: e.type, radius: e.radius, visible: e.visible ?? true } as Effect;
+      return { 
+        type: e.type, 
+        radius: typeof e.radius === 'number' ? e.radius : 4, 
+        visible: e.visible ?? true 
+      } as Effect;
     }
+    
     return {
-      type: e.type as 'DROP_SHADOW' | 'INNER_SHADOW',
-      color: e.color ?? { r: 0, g: 0, b: 0, a: 0.25 },
+      type: (e.type === 'DROP_SHADOW' || e.type === 'INNER_SHADOW') ? e.type : 'DROP_SHADOW',
+      color: normalizeRGBA(e.color),
       offset: e.offset ?? { x: 0, y: 4 },
-      radius: e.radius,
+      radius: typeof e.radius === 'number' ? e.radius : 10,
       spread: e.spread ?? 0,
       visible: e.visible ?? true,
-      blendMode: 'NORMAL' as BlendMode,
+      blendMode: e.blendMode ?? 'NORMAL',
     } as Effect;
-  });
+  }).filter(Boolean) as Effect[];
 }

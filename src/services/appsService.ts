@@ -8,13 +8,14 @@ export interface AppConfig {
   link: string;
   thumbnail?: string;
   badge?: string;
-  badgeVariant: 'featured' | 'premium' | 'free' | 'comingSoon';
+  badgeVariant: 'featured' | 'premium' | 'free' | 'comingSoon' | 'admin';
   category: string;
   isExternal: boolean;
   free: boolean;
   span?: string;
   databaseInfo?: string;
   displayOrder: number;
+  isHidden: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

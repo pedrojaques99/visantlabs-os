@@ -35,7 +35,7 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
     <div
       className={cn(
         'relative group aspect-square bg-neutral-900/50 border border-neutral-700/30 rounded overflow-hidden',
-        onClick && 'cursor-pointer hover:border-[brand-cyan]/50 transition-colors',
+        onClick && 'cursor-pointer hover:border-neutral-700 transition-colors',
         className
       )}
       onClick={onClick}
@@ -66,7 +66,7 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className="absolute top-1 right-1 w-5 h-5 bg-red-500/80 hover:bg-red-500 border border-black rounded-md flex items-center justify-center opacity-0 group-hover:opacity-300 transition-opacity z-10"
+          className="absolute top-1 right-1 w-5 h-5 bg-red-500/80 hover:bg-red-500 border border-black rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
           title="Remove"
         >
           <X size={10} className="text-white" strokeWidth={3} />

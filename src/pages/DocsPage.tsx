@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Book, Server, Puzzle, Terminal, Code, Sparkles, Layers, Workflow, Copy, Check, FileText, Bot, Coins } from 'lucide-react';
+import { Book, Server, Puzzle, Terminal, Code, Diamond, Layers, Workflow, Copy, Check, FileText, Bot, Coins } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { BreadcrumbWithBack } from '../components/ui/BreadcrumbWithBack';
 import {
@@ -25,9 +25,6 @@ import {
   DOCS_NAVIGATION_ITEMS,
   buildNavigationWithMcpTools,
   generateTabMarkdown,
-  PLATFORM_MCP_TOOLS,
-  CREDIT_COSTS,
-  CREDIT_PACKAGES,
 } from './docs/index';
 
 export const DocsPage: React.FC = () => {
@@ -43,16 +40,23 @@ export const DocsPage: React.FC = () => {
   });
   const [copied, setCopied] = useState(false);
 
-  // Use modular data hook
+  // Use modular data hook — platformMcpSpec is the single source of truth for tool lists
   const {
     openApiSpec,
     mcpSpec,
+    platformMcpSpec,
+    pricingData,
     loading,
     authEndpoints,
     mockupEndpoints,
     pluginEndpoints,
     mcpToolNames,
+    platformToolCount,
   } = useDocsData();
+
+  // Derived from server — no hardcoded fallbacks
+  const creditCosts = pricingData?.creditCosts ?? [];
+  const creditPackages = pricingData?.creditPackages ?? [];
 
   // Build navigation with dynamic MCP tools
   const navigationItems = useMemo(
@@ -60,10 +64,10 @@ export const DocsPage: React.FC = () => {
     [mcpToolNames]
   );
 
-  // Use modular markdown generator
+  // Use modular markdown generator — platform spec and pricing from server (single source of truth)
   const getMarkdown = useCallback(
-    (tab: string) => generateTabMarkdown(tab as any, mcpSpec, openApiSpec),
-    [mcpSpec, openApiSpec]
+    (tab: string) => generateTabMarkdown(tab as any, mcpSpec, openApiSpec, platformMcpSpec, pricingData),
+    [mcpSpec, openApiSpec, platformMcpSpec, pricingData]
   );
 
   const markCopied = useCallback(() => {
@@ -388,7 +392,7 @@ export const DocsPage: React.FC = () => {
 
                       <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('brand-guidelines')}>
                         <CardHeader>
-                          <Sparkles className="w-8 h-8 text-brand-cyan mb-2" />
+                          <Diamond className="w-8 h-8 text-brand-cyan mb-2" />
                           <CardTitle>Brand Guidelines</CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -485,7 +489,7 @@ export const DocsPage: React.FC = () => {
                             <div className="space-y-1 text-xs text-muted-foreground">
                               <p>Endpoint: <code className="font-redhatmono bg-secondary px-1 rounded">/api/mcp</code></p>
                               <p>Auth: <code className="font-redhatmono bg-secondary px-1 rounded">Bearer visant_sk_xxx</code></p>
-                              <p>19 tools available</p>
+                              <p>{platformToolCount > 0 ? platformToolCount : '—'} tools available</p>
                             </div>
                           </div>
                           <div className="bg-secondary/40 border border-border rounded-md p-5">
@@ -500,6 +504,37 @@ export const DocsPage: React.FC = () => {
                               <p>9 tools available</p>
                             </div>
                           </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Getting Started */}
+                    <Card id="mcp-getting-started" className="border border-border bg-card">
+                      <CardHeader>
+                        <CardTitle>Getting Started</CardTitle>
+                        <CardDescription>Connect any LLM to Visant Labs in 3 steps.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-3">
+                          {[
+                            { n: 1, title: 'Create an API Key', desc: <span>Go to <a href="/settings/api-keys" className="text-brand-cyan underline">Settings → API Keys</a> → Create API Key. Select scopes: <code className="font-redhatmono bg-secondary px-1 rounded">read write generate</code>. Copy the key — shown only once.</span> },
+                            { n: 2, title: 'Add to your LLM client', desc: <span>See <strong>Code Snippets</strong> below for Claude.ai, Cursor, Node.js, and Python examples. The MCP endpoint is <code className="font-redhatmono bg-secondary px-1 rounded">POST /api/mcp</code>.</span> },
+                            { n: 3, title: 'Test it', desc: <span>Ask: <em>"List my brand guidelines"</em> or <em>"Generate a mockup for coffee packaging using my Feira 2026 brand"</em></span> },
+                          ].map(({ n, title, desc }) => (
+                            <div key={n} className="flex gap-3">
+                              <div className="w-6 h-6 rounded-full bg-brand-cyan/20 text-brand-cyan flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">{n}</div>
+                              <div><p className="text-sm font-medium text-foreground">{title}</p><p className="text-xs text-muted-foreground mt-0.5">{desc}</p></div>
+                            </div>
+                          ))}
+                        </div>
+                        <Separator />
+                        <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase">Quick test — curl</div>
+                          <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`curl -X POST https://visantlabs.com/api/mcp \\
+  -H "Content-Type: application/json" \\
+  -H "Accept: application/json, text/event-stream" \\
+  -H "Authorization: Bearer visant_sk_xxx" \\
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'`}</pre>
                         </div>
                       </CardContent>
                     </Card>
@@ -599,7 +634,7 @@ const result = await client.callTool({
   name: "mockup-generate",
   arguments: {
     prompt: "A smartphone mockup on a marble desk",
-    model: "gemini-2.0-flash-exp"
+    model: "gemini-2.5-flash"
   }
 });`}</pre>
                           </div>
@@ -716,7 +751,7 @@ const result = await client.callTool({
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div>
-                          <h3 className="text-lg font-medium mb-3 flex items-center gap-2"><Sparkles className="w-5 h-5 text-brand-cyan" /> Capabilities</h3>
+                          <h3 className="text-lg font-medium mb-3 flex items-center gap-2"><Diamond className="w-5 h-5 text-brand-cyan" /> Capabilities</h3>
                           <ul className="space-y-2 list-none">
                             <li className="flex items-start gap-3">
                               <span className="bg-secondary text-brand-cyan p-1 rounded mt-0.5"><Puzzle className="w-4 h-4" /></span>
@@ -1295,7 +1330,7 @@ Content-Type: application/json`}</pre>
   "data": {
     "type": "prompt",
     "prompt": "A minimalist product photo of running shoes on white background, studio lighting",
-    "model": "gemini-2.0-flash-exp",
+    "model": "gemini-2.5-flash",
     "aspectRatio": "1:1",
     "resolution": "1024x1024"
   }
@@ -1522,7 +1557,7 @@ Content-Type: application/json`}</pre>
                     {/* Agent Integration */}
                     <Card id="ca-agents">
                       <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-brand-cyan" /> Agent Integration</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Diamond className="w-5 h-5 text-brand-cyan" /> Agent Integration</CardTitle>
                         <CardDescription>Complete workflow examples for LLM agents and external tools interacting with the Canvas API.</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
@@ -1548,7 +1583,7 @@ const { project } = await fetch(\`\${BASE}/canvas\`, {
         data: {
           type: "prompt",
           prompt: "A luxury perfume bottle on a dark marble surface, dramatic lighting",
-          model: "gemini-2.0-flash-exp",
+          model: "gemini-2.5-flash",
           aspectRatio: "1:1"
         }
       },
@@ -1762,7 +1797,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                     <Card className="bg-card border border-border">
                       <CardHeader>
                         <div className="flex items-center gap-3">
-                          <Sparkles className="h-8 w-8 text-brand-cyan" />
+                          <Diamond className="h-8 w-8 text-brand-cyan" />
                           <div>
                             <CardTitle className="text-2xl">Brand Guidelines API</CardTitle>
                             <CardDescription>Structured brand identity context for AI agents</CardDescription>
@@ -1918,44 +1953,49 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="ag-tools" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">Available MCP Tools</h3>
-                          <div className="overflow-x-auto border border-border rounded-md">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="border-b border-border bg-secondary/30">
-                                  <th className="text-left p-3 text-muted-foreground font-medium text-xs uppercase">Tool</th>
-                                  <th className="text-left p-3 text-muted-foreground font-medium text-xs uppercase">Description</th>
-                                  <th className="text-left p-3 text-muted-foreground font-medium text-xs uppercase">Cost</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-border/50">
-                                {[
-                                  { name: 'account-usage', desc: 'Get credit usage, limits, plan info', cost: 'Free' },
-                                  { name: 'mockup-list', desc: 'List your generated mockups', cost: 'Free' },
-                                  { name: 'mockup-generate', desc: 'Generate a mockup from prompt', cost: '1 credit' },
-                                  { name: 'brand-guidelines-list', desc: 'List brand guidelines', cost: 'Free' },
-                                  { name: 'brand-guidelines-get', desc: 'Get guideline with colors/fonts/strategy', cost: 'Free' },
-                                  { name: 'brand-guidelines-public', desc: 'Get public guideline by slug (no auth)', cost: 'Free' },
-                                  { name: 'canvas-list', desc: 'List canvas projects', cost: 'Free' },
-                                  { name: 'canvas-get', desc: 'Get canvas with nodes/edges', cost: 'Free' },
-                                  { name: 'canvas-create', desc: 'Create new canvas project', cost: 'Free' },
-                                  { name: 'ai-improve-prompt', desc: 'Enhance a text prompt', cost: '1 credit' },
-                                  { name: 'ai-describe-image', desc: 'Analyze an image', cost: '1 credit' },
-                                ].map(tool => (
-                                  <tr key={tool.name} className="hover:bg-secondary/20">
-                                    <td className="p-3 font-redhatmono text-foreground text-xs">{tool.name}</td>
-                                    <td className="p-3 text-muted-foreground text-xs">{tool.desc}</td>
-                                    <td className="p-3">
-                                      <Badge className={tool.cost === 'Free' ? 'bg-green-500/20 text-green-400 text-xs' : 'bg-purple-500/20 text-purple-400 text-xs'}>
-                                        {tool.cost}
-                                      </Badge>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                          <p className="text-muted-foreground text-xs mt-2">See <button onClick={() => setActiveTab('mcp')} className="text-brand-cyan hover:underline">MCP Tools tab</button> for full tool reference with input schemas.</p>
+                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                            Available MCP Tools
+                            {platformToolCount > 0 && <span className="text-muted-foreground text-sm font-normal ml-2">({platformToolCount} tools)</span>}
+                          </h3>
+                          {platformMcpSpec?.tools && (() => {
+                            const categories: Record<string, typeof platformMcpSpec.tools> = {};
+                            for (const tool of platformMcpSpec.tools) {
+                              const cat = (tool['x-category'] as string) ?? 'other';
+                              if (!categories[cat]) categories[cat] = [];
+                              categories[cat].push(tool);
+                            }
+                            const categoryLabels: Record<string, string> = {
+                              account: 'Account', mockups: 'Mockup Generation', ai: 'AI Prompt & Analysis',
+                              branding: 'Brand Identity', 'brand-guidelines': 'Brand Guidelines',
+                              canvas: 'Canvas', budget: 'Budget', community: 'Community (no auth)', other: 'Other',
+                            };
+                            return Object.entries(categories).map(([cat, tools]) => (
+                              <div key={cat} className="mb-4">
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 px-1">{categoryLabels[cat] ?? cat}</p>
+                                <div className="overflow-x-auto border border-border rounded-md">
+                                  <table className="w-full text-sm">
+                                    <tbody className="divide-y divide-border/50">
+                                      {tools.map(tool => (
+                                        <tr key={tool.name} className="hover:bg-secondary/20">
+                                          <td className="p-3 font-redhatmono text-foreground text-xs w-64 shrink-0">{tool.name}</td>
+                                          <td className="p-3 text-muted-foreground text-xs">{tool.description}</td>
+                                          <td className="p-3 text-right w-24 shrink-0">
+                                            <Badge className={tool['x-cost'] === 'free' ? 'bg-green-500/20 text-green-400 text-xs' : 'bg-purple-500/20 text-purple-400 text-xs'}>
+                                              {tool['x-cost'] === 'free' ? 'Free' : 'Credits'}
+                                            </Badge>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            ));
+                          })()}
+                          {!platformMcpSpec && loading && (
+                            <p className="text-muted-foreground text-sm">Loading tools...</p>
+                          )}
+                          <p className="text-muted-foreground text-xs mt-2">See <button onClick={() => setActiveTab('mcp')} className="text-brand-cyan hover:underline">MCP Tools tab</button> for full schemas and examples.</p>
                         </div>
 
                         <div id="ag-brand-guidelines" className="scroll-mt-20">
@@ -1989,8 +2029,10 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                             {[
                               { step: '1', title: 'Get an API key', desc: 'Settings → API Keys → Create with "read" + "generate" scopes' },
                               { step: '2', title: 'Connect to MCP', desc: 'SSE connect to /api/mcp with Authorization header' },
-                              { step: '3', title: 'Check balance', desc: 'Call account-usage to see available credits' },
-                              { step: '4', title: 'Generate', desc: 'Call mockup-generate, check _meta.credits_remaining' },
+                              { step: '3', title: 'Load brand context', desc: 'Call brand-guidelines-get → colors, typography, logos, strategy, voice' },
+                              { step: '4', title: 'Extract & enrich', desc: 'ai-extract-colors on logo, brand-generate-persona, brand-generate-archetype' },
+                              { step: '5', title: 'Build prompts', desc: 'ai-generate-smart-prompt per concept — brand context injected automatically' },
+                              { step: '6', title: 'Batch generate', desc: 'mockup-batch-generate (up to 20 in parallel), check _meta.credits_remaining' },
                             ].map(({ step, title, desc }) => (
                               <div key={step} className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-3">
                                 <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">{step}</span>
@@ -2079,7 +2121,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                             <div>
                               <h4 className="text-sm font-semibold text-foreground mb-2">Image Generation</h4>
                               <div className="space-y-1.5 text-sm">
-                                {CREDIT_COSTS.filter(c => c.category === 'image').map((cost, i) => (
+                                {creditCosts.filter(c => c.category === 'image').map((cost, i) => (
                                   <div key={i} className="flex justify-between items-center bg-secondary/40 border border-border rounded px-3 py-1.5">
                                     <span className="text-muted-foreground">{cost.model} {cost.resolution}</span>
                                     <Badge variant="secondary" className="font-redhatmono">{cost.creditsRequired} cr</Badge>
@@ -2090,7 +2132,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                             <div>
                               <h4 className="text-sm font-semibold text-foreground mb-2">Video Generation</h4>
                               <div className="space-y-1.5 text-sm">
-                                {CREDIT_COSTS.filter(c => c.category === 'video').map((cost, i) => (
+                                {creditCosts.filter(c => c.category === 'video').map((cost, i) => (
                                   <div key={i} className="flex justify-between items-center bg-secondary/40 border border-border rounded px-3 py-1.5">
                                     <span className="text-muted-foreground">{cost.model} {cost.resolution}</span>
                                     <Badge variant="secondary" className="font-redhatmono">{cost.creditsRequired} cr</Badge>
@@ -2135,7 +2177,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                 </tr>
                               </thead>
                               <tbody>
-                                {CREDIT_PACKAGES.map((pkg, i) => (
+                                {creditPackages.map((pkg, i) => (
                                   <tr key={i} className="border-t border-border">
                                     <td className="p-3 font-medium text-brand-cyan">{pkg.credits} credits</td>
                                     <td className="p-3 text-right font-redhatmono">R${pkg.priceBRL.toFixed(2)}</td>

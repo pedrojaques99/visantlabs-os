@@ -4,7 +4,7 @@ import { BrandingWelcomeScreen } from '../components/branding/BrandingWelcomeScr
 import { BrandingMoodboard } from '../components/branding/BrandingMoodboard';
 import { BrandingExpertChat } from '../components/branding/BrandingExpertChat';
 import { ConfirmationModal } from '../components/ConfirmationModal';
-import { Target as BowArrow, Sparkles } from 'lucide-react';
+import { Target as BowArrow, Diamond } from 'lucide-react';
 import { authService } from '../services/authService';
 import { brandingApi } from '../services/brandingApi';
 import { subscriptionService } from '../services/subscriptionService';
@@ -739,7 +739,7 @@ export const BrandingMachinePage: React.FC = () => {
 
   if (isLoadingProject) {
     return (
-      <div className={`h-screen w-full flex items-center justify-center ${theme === 'dark' ? 'bg-[#0C0C0C] text-neutral-300' : 'bg-neutral-50 text-neutral-800'
+      <div className={`h-screen w-full flex items-center justify-center ${theme === 'dark' ? 'bg-neutral-950 text-neutral-300' : 'bg-neutral-50 text-neutral-800'
         }`}>
         <div className="text-center">
           <p className={`text-sm font-mono ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
@@ -769,7 +769,7 @@ export const BrandingMachinePage: React.FC = () => {
           title={t('branding.dependencyModalTitle')}
           message={getDependencyModalMessage()}
           confirmText={t('branding.generateDependencies')}
-          cancelText={t('branding.cancel')}
+          cancelText={t('common.cancel')}
           variant="info"
         />
       )}
@@ -810,7 +810,7 @@ export const BrandingMachinePage: React.FC = () => {
           className="fixed bottom-20 right-6 z-40 w-12 h-12 bg-brand-gradient text-white rounded-full shadow-lg hover:shadow-brand-cyan/20 transition-all hover:scale-110 active:scale-95 flex items-center justify-center group"
           title="Falar com Especialista"
         >
-          <Sparkles size={20} className="group-hover:rotate-12 transition-transform" />
+          <Diamond size={20} className="group-hover:rotate-12 transition-transform" />
         </button>
       )}
     </>

@@ -8,6 +8,7 @@
 import { GoogleGenAI } from '@google/genai';
 import type { BrandGuideline } from '../../src/lib/figma-types.js';
 import { buildBrandContext } from '../lib/brandContextBuilder.js';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 
 // --------------------------------------------------------------------------
 // Types
@@ -248,7 +249,7 @@ Respond with JSON only:
 }`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: prompt,
     });
 
@@ -330,7 +331,7 @@ Respond with JSON only:
     }
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: [{ role: 'user', parts }],
     });
 

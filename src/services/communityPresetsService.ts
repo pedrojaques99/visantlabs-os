@@ -40,6 +40,9 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
           'presets': (data['presets'] || []).map(migrateLegacyPreset),
           'aesthetics': (data['aesthetics'] || []).map(migrateLegacyPreset),
           'themes': (data['themes'] || []).map(migrateLegacyPreset),
+          // AI-generated prompts
+          'ui-prompts': (data['ui-prompts'] || []).map(migrateLegacyPreset),
+          'figma-prompts': (data['figma-prompts'] || []).map(migrateLegacyPreset),
           // Compatibilidade com formato antigo
           mockup: (data.mockup || []).map(migrateLegacyPreset),
           angle: (data.angle || []).map(migrateLegacyPreset),
@@ -57,6 +60,7 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
     // Return empty fallback on error or non-ok response
     return {
       '3d': [], 'presets': [], 'aesthetics': [], 'themes': [],
+      'ui-prompts': [], 'figma-prompts': [],
       // Compatibilidade
       mockup: [], angle: [], texture: [], ambience: [], luminance: []
     };

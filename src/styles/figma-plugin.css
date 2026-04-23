@@ -1,5 +1,5 @@
 /* Figma plugin native styles — uses Figma CSS variables (themeColors: true) */
-/* No Tailwind, no shadcn — 11px font, 4px/8px grid, 5px radius */
+/* No Tailwind, no shadcn — 11px font, 4px/10px grid, 5px radius */
 
 :root {
   --fp-bg: var(--figma-color-bg, #ffffff);
@@ -16,13 +16,13 @@
   font-size: 11px;
   color: var(--fp-text);
   background: var(--fp-bg);
-  padding: 8px;
+  padding: 10px;
   box-sizing: border-box;
   min-height: 100%;
 }
 
 .fp-section {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .fp-label {
@@ -34,7 +34,7 @@
 
 .fp-input {
   width: 100%;
-  padding: 6px 8px;
+  padding: 6px 10px;
   font-size: 11px;
   border: 1px solid var(--fp-border);
   border-radius: 5px;
@@ -51,7 +51,7 @@
 .fp-textarea {
   width: 100%;
   min-height: 80px;
-  padding: 6px 8px;
+  padding: 6px 10px;
   font-size: 11px;
   border: 1px solid var(--fp-border);
   border-radius: 5px;
@@ -93,7 +93,7 @@
 .fp-divider {
   height: 1px;
   background: var(--fp-border);
-  margin: 8px 0;
+  margin: 10px 0;
 }
 
 .fp-spinner {

@@ -1,26 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import {
-  Image as ImageIcon,
-  Camera,
-  Palette,
-  FileText,
-  Target,
-  Dna,
-  Upload,
-  FileText as FileTextIcon,
-  Sparkles,
-  MessageSquare,
-  ChevronLeft,
-  ChevronRight,
-  Layers,
-  Wand2,
-  Building2,
-  Plus,
-  Grid3x3,
-  Pickaxe,
-  X,
-  Compass,
-} from 'lucide-react';
+import { Image as ImageIcon, Camera, Palette, FileText, Target, Dna, Upload, FileText as FileTextIcon, MessageSquare, ChevronLeft, ChevronRight, Layers, Diamond, Building2, Plus, Grid3x3, Pickaxe, X, Compass, Blocks,  } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/utils';
@@ -43,6 +22,7 @@ interface CanvasToolbarProps {
   onAddBrandCore?: () => void;
   onAddPrompt?: () => void;
   onAddChat?: () => void;
+  onAddNodeBuilder?: () => void;
   onAddShader?: () => void;
   onAddColorExtractor?: () => void;
   onAddDirector?: () => void;
@@ -86,6 +66,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   onAddBrandCore,
   onAddPrompt,
   onAddChat,
+  onAddNodeBuilder,
   onAddShader,
   onAddColorExtractor,
   onAddDirector,
@@ -166,6 +147,14 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       label: t('canvasToolbar.labels.chat') || 'Chat',
       tooltip: t('canvasToolbar.addChatNode') || 'Add Chat Node',
       onClick: onAddChat,
+      category: 'core' as const,
+    }] : []),
+    ...(onAddNodeBuilder ? [{
+      id: 'nodeBuilder',
+      icon: <Blocks className="w-4 h-4" />,
+      label: 'Node Builder',
+      tooltip: 'Build a custom AI node',
+      onClick: onAddNodeBuilder,
       category: 'core' as const,
     }] : []),
     {
@@ -354,7 +343,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         <div className="flex items-center gap-1.5 px-1 py-1">
           <span style={{ color: textColors.subtle }}>{icon}</span>
           <span
-            className="text-[9px] font-semibold uppercase "
+            className="text-[10px] font-semibold uppercase "
             style={{ color: textColors.subtle }}
           >
             {title}
@@ -389,7 +378,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       style={{
         width: `${EXPANDED_WIDTH}px`,
         height: 'auto',
-        maxHeight: 'calc(100vh - 97px)',
+        maxHeight: 'calc(100vh - 910px)',
         backgroundColor: isLight ? `${toolbarBg}dd` : `${toolbarBg}cc`,
         color: textColors.primary,
       }}
@@ -472,7 +461,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
               <Section
                 title={t('canvasToolbar.categories.core')}
                 tools={coreTools}
-                icon={<Wand2 size={12} />}
+                icon={<Diamond size={12} />}
               />
             )}
 

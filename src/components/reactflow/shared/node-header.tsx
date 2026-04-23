@@ -1,5 +1,5 @@
 import * as React from "react"
-import { LucideIcon, ShieldCheck, LayoutGrid, Brain } from "lucide-react"
+import { LucideIcon, ShieldCheck, LayoutGrid, Palette } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { NodeButton } from "./node-button"
 import { Tooltip } from "@/components/ui/Tooltip"
@@ -9,12 +9,14 @@ export interface NodeHeaderProps {
   title: string
   className?: string
   isBrandActive?: boolean
+  selected?: boolean
   onToggleBrand?: (active: boolean) => void;
   onOpenMediaLibrary?: () => void;
+  children?: React.ReactNode;
 }
 
 const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
-  ({ icon: Icon, title, className, isBrandActive, onToggleBrand, onOpenMediaLibrary }, ref) => {
+  ({ icon: Icon, title, className, isBrandActive, selected, onToggleBrand, onOpenMediaLibrary, children }, ref) => {
     return (
       <div
         ref={ref}
@@ -24,7 +26,13 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
         )}
       >
         <div className="flex items-center gap-4">
-          <Icon size={20} className="text-brand-cyan" style={{ color: 'var(--brand-cyan)' }} />
+          <Icon 
+            size={20} 
+            className={cn(
+              "transition-colors duration-300",
+              selected ? "text-brand-cyan" : "text-neutral-500"
+            )} 
+          />
           <h3 className="text-sm font-semibold node-text-primary font-mono uppercase">{title}</h3>
         </div>
 
@@ -41,7 +49,7 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
                 onMouseDown={(e) => e.stopPropagation()}
                 className="h-7 w-7 p-0 flex items-center justify-center hover:bg-neutral-800/80"
               >
-                <LayoutGrid size={14} className="text-neutral-500 hover:text-brand-cyan transition-colors" />
+                <LayoutGrid size={14} className="text-foreground" style={{ color: 'var(--foreground)' }} />
               </NodeButton>
             </Tooltip>
           )}
@@ -60,14 +68,16 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
                 className={cn(
                   "flex items-center justify-center w-8 h-8 rounded-md border transition-all duration-300",
                   isBrandActive
-                    ? "bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan"
+                    ? "bg-foreground/20 border-foreground/50 text-foreground"
                     : "bg-neutral-900/50 border-neutral-800 text-neutral-600 grayscale opacity-60 hover:opacity-100"
                 )}
               >
-                <Brain size={14} className={cn(isBrandActive)} />
+                <Palette size={14} className={cn(isBrandActive)} />
               </button>
             </Tooltip>
           )}
+
+          {children}
         </div>
       </div>
     )
@@ -76,12 +86,3 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
 NodeHeader.displayName = "NodeHeader"
 
 export { NodeHeader }
-
-
-
-
-
-
-
-
-

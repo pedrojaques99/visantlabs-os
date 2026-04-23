@@ -1,24 +1,27 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, useReactFlow, NodeResizer } from '@xyflow/react';
-import { FileText, Wand2, Type, Sparkles, Copy, Check } from 'lucide-react';
+import { Diamond, Type, Copy, Check } from 'lucide-react';
+import { NodeHeader } from './shared/node-header';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { TextNodeData } from '@/types/reactFlow';
 import { Textarea } from '@/components/ui/textarea';
 import { NodeContainer } from './shared/NodeContainer';
 import { useTranslation } from '@/hooks/useTranslation';
 import { aiApi } from '@/services/aiApi';
-import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
+import { useNodeDataUpdater } from '@/hooks/canvas/useNodeDataUpdater';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { NodeButton } from './shared/node-button'
+import { NODE_LAYOUT } from '@/constants/nodeLayout';
+import { useBaseNode } from '@/hooks/canvas/useBaseNode';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
   const nodeData = data as TextNodeData;
-  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
+  const { handleResize: baseResize, handleFitToContent: baseFitToContent } = useBaseNode(id, nodeData);
   const [text, setText] = useState(nodeData.text || '');
   const [isImproving, setIsImproving] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -33,12 +36,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
 
 
-  // Debounced update for data changes
-  const debouncedUpdateData = useDebouncedCallback((updates: Partial<TextNodeData>) => {
-    if (nodeData.onUpdateData) {
-      nodeData.onUpdateData(id, updates);
-    }
-  }, 500);
+  const { debouncedUpdate: debouncedUpdateData } = useNodeDataUpdater<TextNodeData>(nodeData.onUpdateData, id);
 
   const handleTextChange = (value: string) => {
     setText(value);
@@ -79,15 +77,14 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     }
   };
 
-  // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
+  // Handle resize from NodeResizer
   const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize as any);
-  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+    baseResize(width, height);
+  }, [baseResize]);
 
   const handleFitToContent = useCallback(() => {
-    // For text nodes, we set height to auto to let it grow/shrink based on content
-    fitToContent(id, 'auto', 'auto', nodeData.onResize as any);
-  }, [id, nodeData.onResize, fitToContent]);
+    baseFitToContent();
+  }, [baseFitToContent]);
 
   // Character count with visual feedback
   const charCount = text.length;
@@ -99,7 +96,12 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="min-w-[320px] min-h-[200px] h-auto flex flex-col overflow-hidden"
+      className={cn(
+        "flex flex-col overflow-hidden",
+        `min-w-[${NODE_LAYOUT.MIN_WIDTH}px]`,
+        `min-h-[${NODE_LAYOUT.MIN_HEIGHT}px]`,
+        "h-auto"
+      )}
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
@@ -108,54 +110,33 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         <NodeResizer
           color="brand-cyan"
           isVisible={selected}
-          minWidth={280}
-          minHeight={200}
-          maxWidth={2000}
-          maxHeight={2000}
+          minWidth={NODE_LAYOUT.MIN_WIDTH}
+          minHeight={NODE_LAYOUT.MIN_HEIGHT}
+          maxWidth={NODE_LAYOUT.MAX_WIDTH}
+          maxHeight={NODE_LAYOUT.MAX_HEIGHT}
           onResize={(_, { width, height }) => {
             handleResize(width, height);
           }}
         />
       )}
 
-      {/* Enhanced Header with Glassmorphism */}
-      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
-            <Type size={16} className="text-brand-cyan" />
-          </div>
-          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
-            {t('canvasNodes.textNode.title') || 'Text Node'}
-          </h3>
-        </div>
-
-        {/* Header Actions */}
-        <div className="flex items-center gap-1.5 ml-4">
-          {/* Copy Button */}
-          {text.trim() && (
-            <NodeButton
-              variant="ghost"
-              size="xs"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCopyText();
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              className="nodrag shadow-sm backdrop-blur-sm"
-              title={t('canvasNodes.textNode.copy') || 'Copy text'}
-            >
-              {isCopied ? (
-                <Check size={14} className="text-brand-cyan" />
-              ) : (
-                <Copy size={14} />
-              )}
-            </NodeButton>
-          )}
-        </div>
-      </div>
+      <NodeHeader icon={Type} title={t('canvasNodes.textNode.title') || 'Text Node'} selected={selected}>
+        {text.trim() && (
+          <NodeButton
+            variant="ghost"
+            size="xs"
+            onClick={(e) => { e.stopPropagation(); handleCopyText(); }}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="nodrag"
+            title={t('canvasNodes.textNode.copy') || 'Copy text'}
+          >
+            {isCopied ? <Check size={14} className="text-brand-cyan" /> : <Copy size={14} />}
+          </NodeButton>
+        )}
+      </NodeHeader>
 
       {/* Text Input Area */}
-      <div className="p-4 flex-1 flex flex-col overflow-hidden">
+      <div className="node-margin flex-1 flex flex-col overflow-hidden">
         <div className="relative group flex-1 overflow-hidden">
           <Textarea
             ref={textareaRef}
@@ -171,7 +152,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               "h-full w-full resize-none nodrag nopan text-xs",
               "pr-12 pb-8",
               "bg-neutral-900/60 border-neutral-700/40",
-              "focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20",
+              "focus:border-neutral-600 ",
               "backdrop-blur-sm transition-all duration-200",
               "placeholder:text-neutral-500 placeholder:font-mono",
               "overflow-y-auto"
@@ -192,7 +173,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               disabled={isImproving || !text.trim()}
               className={cn(
                 "absolute top-2 right-2 transition-all nodrag shadow-sm backdrop-blur-sm",
-                !isImproving && text.trim() && "text-brand-cyan border-brand-cyan/30 bg-brand-cyan/5 hover:bg-brand-cyan/10"
+                !isImproving && text.trim() && "text-brand-cyan border-neutral-800 bg-brand-cyan/5 hover:bg-brand-cyan/10"
               )}
               title={isImproving
                 ? (t('canvasNodes.textNode.improvingPrompt') || 'Improving prompt...')
@@ -201,7 +182,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               {isImproving ? (
                 <GlitchLoader size={14} color="currentColor" />
               ) : (
-                <Wand2 size={14} strokeWidth={2} />
+                <Diamond size={14} strokeWidth={2} />
               )}
             </NodeButton>
           )}
@@ -211,7 +192,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             "absolute bottom-2 right-2 text-[10px] font-mono transition-all duration-200",
             "px-2 py-0.5 rounded-full backdrop-blur-sm",
             isVeryLongText
-              ? "text-amber-400 bg-amber-400/10 border border-amber-400/20"
+              ? "text-amber-400 bg-amber-400/10 border-node border-amber-400/20"
               : isLongText
                 ? "text-neutral-400 bg-neutral-800/50"
                 : "text-neutral-500 bg-neutral-800/30"
@@ -223,7 +204,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         {/* AI Enhancement Hint */}
         {text.trim() && !isImproving && (
           <div className="mt-3 flex items-center gap-2 text-[10px] text-neutral-500 font-mono animate-in fade-in duration-300">
-            <Sparkles size={10} className="text-brand-cyan/70" />
+            <Diamond size={10} className="text-brand-cyan/70" />
             <span>{t('canvasNodes.textNode.aiHint') || 'Click the wand to enhance with AI'}</span>
           </div>
         )}

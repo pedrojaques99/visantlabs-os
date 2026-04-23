@@ -668,13 +668,13 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                       )}
                     >
                       <div className="flex items-center gap-1.5 mb-2">
-                        <MicroTitle as="span" className="text-[9px]">
+                        <MicroTitle as="span" className="text-[10px]">
                           {t('mockup.customCategories') || 'CUSTOM'}
                         </MicroTitle>
                         {customSelectedTags.length > 0 && (
                           <span
                             className={cn(
-                              'text-[9px] font-mono',
+                              'text-[10px] font-mono',
                               theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                             )}
                           >
@@ -725,7 +725,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         {customSelectedTags.length === 0 && !isEditingCustom && (
                           <span
                             className={cn(
-                              'text-[9px] font-mono ml-1',
+                              'text-[10px] font-mono ml-1',
                               theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                             )}
                           >

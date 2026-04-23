@@ -1,0 +1,74 @@
+# Visant Labs OS
+
+> AI-powered canvas-based design tool with mockup generation, branding, and budget management.
+
+## Project Structure
+- `/server`: Express.js backend. Entry point: `index.ts`. App logic: `app.ts`.
+- `/src`: React frontend. Uses Vite, Tailwind CSS, and Framer Motion.
+- `/plugin`: Figma plugin implementation (React UI + Figma Handlers).
+- `/prisma`: Database schema (MongoDB).
+- `/tests`: Vitest suites (Unit, Integration, E2E).
+
+## Key Technologies
+- **Runtime**: Node.js (ESM).
+- **Frontend**: React 19, Vite, Tailwind 4.
+- **Backend**: Express, Prisma, MongoDB.
+- **AI**: Gemini (Google AI SDK).
+- **Auth**: JWT, bcryptjs, Auth0/Google.
+- **Payment**: Stripe, AbacatePay.
+- **Collaboration**: Liveblocks.
+
+## Getting Started
+1. `npm install`
+2. `cp env.example .env.local`
+3. `npm run dev:all`
+
+## Guidelines for AI Agents
+- The project follows a "Cockpit" design philosophy: dark, premium, dashboard-like.
+- All backend routes are located in `/server/routes`.
+- Figma handlers are in `/plugin/src/handlers`.
+- Use `zod` for all data validation.
+- Prefer `tsx watch` for server development.
+
+## API Architecture
+- Common prefix: `/api` (normalized in Vercel).
+- Health checks: `/api/health`.
+- AI services: `/api/ai`.
+- Database access via Prisma Client.
+
+## MCP Tools (47 total) — connect at POST /api/mcp
+Full reference: GET /api/docs/platform/mcp.json | GET /.well-known/mcp.json
+
+### Prompt & Creative AI
+- `ai-improve-prompt` — refine a prompt via Gemini (free)
+- `ai-generate-smart-prompt` — build prompt from design type + tags + brand context
+- `ai-suggest-prompt-variations` — creative variations of an existing prompt
+- `ai-extract-prompt-from-image` — reverse-engineer a prompt from an image URL
+- `ai-extract-colors` — extract dominant color palette from image (hex, role, frequency)
+- `ai-generate-naming` — brand/product name suggestions with rationale
+
+### Brand Identity Generation (via /branding/generate-step)
+- `brand-generate-market-research` — benchmarking paragraph
+- `brand-generate-swot` — strengths/weaknesses/opportunities/threats
+- `brand-generate-persona` — audience persona (demographics, psychographics, pain points)
+- `brand-generate-archetype` — brand archetype (Hero, Sage, Lover, Caregiver…)
+- `brand-generate-concept-ideas` — mockup/usage scenario ideas
+- `brand-generate-color-palettes` — AI color recommendations with hex codes
+- `brand-generate-moodboard` — aesthetic and vibe direction
+
+### Mockup Generation
+- `mockup-generate` — single image (provider: openai|gemini|seedream, model: gpt-image-2…)
+- `mockup-batch-generate` — up to 20 images in parallel from prompts array
+- `mockup-list-public` — public blank templates (no auth)
+
+### Recommended Agent Flow (brand → mockups)
+1. `brand-guidelines-get` → full brand context (colors, typography, voice, strategy)
+2. `ai-extract-colors` on logo URL → dominant palette
+3. `brand-generate-persona` + `brand-generate-archetype` → positioning
+4. `brand-generate-concept-ideas` → usage scenarios
+5. `ai-generate-smart-prompt` × N → one optimized prompt per concept
+6. `mockup-batch-generate` → all images in parallel
+
+## Telemetry
+Logs of plugin operations are stored in `.agent/telemetry/YYYY-MM-DD.md`.
+Use this to analyze LLM-generated design quality.

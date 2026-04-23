@@ -6,6 +6,7 @@ import { cleanEdgeHandles } from '@/utils/canvas/canvasNodeUtils';
 import { canvasApi } from '@/services/canvasApi';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { processNodesForR2Upload } from '@/utils/canvas/processNodesForR2';
+import { collectR2UrlsForDeletion } from './utils/r2UploadHelpers';
 import { toast } from 'sonner';
 import { useCanvasEditingState } from './useCanvasEditingState';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
@@ -42,6 +43,8 @@ export const useCanvasProject = (
   const currentProjectIdRef = useRef<string | undefined>(undefined);
   const saveTimeoutRef = useRef<number | null>(null);
   const isSavingRef = useRef(false);
+  // Tracks all R2 URLs present at last save/load — used to detect orphaned files
+  const savedR2UrlsRef = useRef<Set<string>>(new Set());
   const localStorageSaveTimeoutRef = useRef<number | null>(null);
   // Track if we've shown the oversized warning toast this session
   const hasShownOversizedWarningRef = useRef(false);
@@ -198,6 +201,14 @@ export const useCanvasProject = (
             return node;
           });
           setNodes(validatedNodes);
+
+          // Snapshot R2 URLs present at load time for orphan cleanup on save
+          const loadedR2Urls = new Set<string>();
+          validatedNodes.forEach((node) => {
+            const isLiked = (node.data as any)?.isLiked === true || (node.data as any)?.mockup?.isLiked === true;
+            collectR2UrlsForDeletion(node, isLiked).forEach((url) => loadedR2Urls.add(url));
+          });
+          savedR2UrlsRef.current = loadedR2Urls;
 
           // Validate and clean edges after nodes are set
           if (project.edges && Array.isArray(project.edges)) {
@@ -706,7 +717,24 @@ export const useCanvasProject = (
           // Don't reset warning flag - keep it true so toast only shows once per session
         }
 
+        // Collect R2 URLs in nodes being saved
+        const currentR2Urls = new Set<string>();
+        nodesToSave.forEach((node) => {
+          const isLiked = (node.data as any)?.isLiked === true || (node.data as any)?.mockup?.isLiked === true;
+          collectR2UrlsForDeletion(node, isLiked).forEach((url) => currentR2Urls.add(url));
+        });
+
+        // Delete orphaned R2 files (present at last save/load but gone from current nodes)
+        const orphanedUrls = [...savedR2UrlsRef.current].filter((url) => !currentR2Urls.has(url));
+        if (orphanedUrls.length > 0) {
+          Promise.allSettled(orphanedUrls.map((url) => canvasApi.deleteImageFromR2(url))).catch(() => {});
+        }
+
         await canvasApi.save(projectName, nodesToSave, cleanedEdges, id, drawings, linkedGuidelineId);
+
+        // Update snapshot to reflect what was just saved
+        savedR2UrlsRef.current = currentR2Urls;
+
         // Also save to localStorage (will clean base64 automatically)
         saveCanvasToLocalStorage(id, nodesToSave, cleanedEdges, projectName, drawings);
       } catch (error: any) {
@@ -809,7 +837,23 @@ export const useCanvasProject = (
         }
       }
 
+      // Collect R2 URLs present in the nodes being saved
+      const currentR2Urls = new Set<string>();
+      nodesToSave.forEach((node) => {
+        const isLiked = (node.data as any)?.isLiked === true || (node.data as any)?.mockup?.isLiked === true;
+        collectR2UrlsForDeletion(node, isLiked).forEach((url) => currentR2Urls.add(url));
+      });
+
+      // Delete orphaned R2 files (present at load but gone from current nodes)
+      const orphanedUrls = [...savedR2UrlsRef.current].filter((url) => !currentR2Urls.has(url));
+      if (orphanedUrls.length > 0) {
+        Promise.allSettled(orphanedUrls.map((url) => canvasApi.deleteImageFromR2(url))).catch(() => {});
+      }
+
       await canvasApi.save(projectName, nodesToSave, cleanedEdges, id, drawings, linkedGuidelineId);
+
+      // Update snapshot to reflect what was just saved
+      savedR2UrlsRef.current = currentR2Urls;
     } catch (error: any) {
       console.error('Failed to save project immediately:', error);
 

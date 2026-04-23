@@ -14,22 +14,23 @@ const client = createClient({
     return [];
   },
   async authEndpoint(room) {
-    console.log('[Liveblocks] 🔐 Auth endpoint called for room:', room);
     try {
-      // Get auth token from backend
-      const projectId = room.replace('canvas-', '');
       const token = authService.getToken();
-      
-      console.log('[Liveblocks] Project ID extracted:', projectId);
-      console.log('[Liveblocks] Token available:', !!token);
-      
-      if (!token) {
-        console.error('[Liveblocks] ❌ Authentication token not found');
-        throw new Error('Authentication token not found. Please log in.');
+      if (!token) throw new Error('Authentication token not found. Please log in.');
+
+      // Route to the correct backend auth endpoint based on room prefix
+      let authPath: string;
+      if (room.startsWith('brand-')) {
+        const guidelineId = room.replace('brand-', '');
+        authPath = `/api/brand-guidelines/${guidelineId}/liveblocks-auth`;
+      } else if (room.startsWith('canvas-')) {
+        const projectId = room.replace('canvas-', '');
+        authPath = `/api/canvas/${projectId}/liveblocks-auth`;
+      } else {
+        throw new Error(`Unknown room prefix for room "${room}". Expected "brand-" or "canvas-".`);
       }
 
-      console.log('[Liveblocks] 📡 Calling auth endpoint: /api/canvas/' + projectId + '/liveblocks-auth');
-      const response = await fetch(`/api/canvas/${projectId}/liveblocks-auth`, {
+      const response = await fetch(authPath, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -37,48 +38,18 @@ const client = createClient({
         },
       });
 
-      console.log('[Liveblocks] Auth response status:', response.status, response.statusText);
-
       if (!response.ok) {
-        // Don't throw error for 401/403 - let Liveblocks handle it gracefully
-        if (response.status === 401 || response.status === 403) {
-          const errorText = await response.text().catch(() => 'Unauthorized');
-          console.warn(`[Liveblocks] ⚠️ Auth failed: ${response.status} ${errorText}`);
-          // Return an error object that Liveblocks can handle
-          throw new Error(`Unauthorized: ${errorText}`);
-        }
-        
         const errorText = await response.text().catch(() => 'Unknown error');
-        console.error('[Liveblocks] ❌ Auth error:', response.status, errorText);
-        throw new Error(`Failed to authenticate with Liveblocks: ${response.status} ${errorText}`);
+        throw new Error(`Liveblocks auth failed ${response.status}: ${errorText}`);
       }
 
-      console.log('[Liveblocks] ✅ Auth successful for room:', room);
-      
-      // Parse the response body to get the Liveblocks token
-      // The backend returns a JSON string with format: '{ token: "..." }'
-      const responseText = await response.text();
-      let liveblocksToken: string;
-      
-      try {
-        const parsed = JSON.parse(responseText);
-        liveblocksToken = parsed.token;
-      } catch (parseError) {
-        console.error('[Liveblocks] ❌ Failed to parse auth response:', parseError);
-        throw new Error('Invalid response format from Liveblocks auth endpoint');
-      }
-      
-      // Liveblocks expects an object with a token property
-      return { token: liveblocksToken };
-    } catch (error: any) {
-      console.error('[Liveblocks] ❌ Auth endpoint error:', error);
-      // Re-throw the error so Liveblocks can handle it properly
+      const parsed = await response.json();
+      return { token: parsed.token };
+    } catch (error) {
       throw error;
     }
   },
 });
-
-console.log('[Liveblocks] 🚀 Client initialized');
 
 // Types are now defined in liveblocks.config.ts and available globally
 // Using the global Liveblocks interface types

@@ -380,7 +380,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                 }} />
               </div>
             </div>
-            <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl animate-pulse" />
+            <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl" />
           </div>
         )}
 
@@ -435,7 +435,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                             }} />
                           </div>
                         </div>
-                        <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl animate-pulse" />
+                        <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl" />
                       </>
                     )}
                     {!isDropTargetBefore && isDraggingToFullWidth && draggedStepNumber !== null && (
@@ -448,7 +448,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                   {/* Section card */}
                   <div
                     className={`transition-all duration-300 ${isDragged
-                      ? 'opacity-300 scale-95'
+                      ? 'opacity-100 scale-95'
                       : isDropTargetBefore || isDropTargetAfter
                         ? 'ring-2 ring-[brand-cyan]/60 rounded-xl shadow-lg shadow-[brand-cyan]/20'
                         : ''
@@ -485,7 +485,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                               }} />
                             </div>
                           </div>
-                          <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl animate-pulse" />
+                          <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl" />
                         </>
                       )}
                       {!isDropTargetAfter && isDraggingToFullWidth && draggedStepNumber !== null && (
@@ -621,7 +621,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
             return (
               <div
                 key={stepNumber}
-                className={`transition-all duration-300 ${isDragged ? 'opacity-300 scale-95' : ''
+                className={`transition-all duration-300 ${isDragged ? 'opacity-100 scale-95' : ''
                   }`}
                 style={{
                   // Mobile: sempre span 1 (1 coluna)
@@ -741,7 +741,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                     <div
                       draggable={false}
                       className={`transition-all duration-300 ${isDragged
-                        ? 'opacity-300 scale-95'
+                        ? 'opacity-100 scale-95'
                         : isDropTarget
                           ? 'ring-2 ring-[brand-cyan]/60 rounded-xl shadow-lg shadow-[brand-cyan]/20'
                           : ''
@@ -845,7 +845,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
             <div className={`flex-1 flex items-center justify-center text-sm font-mono ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
               }`}>
               <div className="text-center space-y-3">
-                <div className="text-brand-cyan text-2xl font-semibold animate-pulse">+</div>
+                <div className="text-brand-cyan text-2xl font-semibold">+</div>
                 <div className="text-sm font-medium text-brand-cyan">Nova coluna</div>
                 <div className="text-xs opacity-70">Solte aqui para criar</div>
               </div>

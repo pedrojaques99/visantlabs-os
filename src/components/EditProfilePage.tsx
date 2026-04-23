@@ -39,7 +39,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
         try {
           const currentUser = await authService.verifyToken();
           if (!currentUser) {
-            setError(t('profile.loadError') || 'Failed to load profile data');
+            setError(t('common.loadError') || 'Failed to load profile data');
             setUser(null);
             return;
           }
@@ -50,7 +50,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           setPictureUrl(currentUser.picture || '');
         } catch (err: any) {
           console.error('Failed to load user data:', err);
-          setError(t('profile.loadError') || 'Failed to load profile data');
+          setError(t('common.loadError') || 'Failed to load profile data');
           setUser(null);
         } finally {
           setIsLoading(false);
@@ -104,7 +104,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
 
       const updatedUser = await authService.updateProfile(updateData);
       setUser(updatedUser);
-      setSuccess(t('profile.updateSuccess') || 'Profile updated successfully');
+      setSuccess(t('common.profileUpdatedSuccess') || 'Profile updated successfully');
       setTimeout(() => {
         setSuccess(null);
         onClose();
@@ -224,7 +224,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
         >
           <div className="text-center">
             <p className="font-mono mb-4 text-red-400">
-              {t('profile.notAuthenticated') || 'Please sign in to edit your profile'}
+              {t('common.notAuthenticated') || 'Please sign in to edit your profile'}
             </p>
             <Button variant="ghost"
               onClick={onClose}

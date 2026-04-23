@@ -305,29 +305,29 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
       <div className="flex items-center gap-3" data-auth-dropdown>
         {propSubscriptionStatus || subscriptionStatus ? (
           <Button variant="ghost" onClick={onCreditsClick}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] md:text-xs text-brand-cyan font-mono bg-neutral-800/30 border border-neutral-700/30 hover:bg-neutral-800/50 hover:border-[brand-cyan]/50 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] text-brand-cyan font-mono bg-neutral-900/40 border border-brand-cyan/20 hover:bg-[#252525]/60 hover:border-brand-cyan/40 transition-all cursor-pointer shadow-sm"
             aria-label={t('auth.availableCredits', { count: availableCredits })}
             title={t('auth.creditsAvailable', { count: availableCredits })}
           >
-            <Pickaxe size={12} className="md:w-3 md:h-3" aria-hidden="true" />
+            <Pickaxe size={12} className="md:w-3 md:h-3 text-brand-cyan" aria-hidden="true" />
             <span>{availableCredits}</span>
           </Button>
         ) : null}
         <div className="relative">
           <Button variant="ghost" onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-neutral-400 font-mono bg-neutral-800/30 border border-neutral-700/30 hover:bg-neutral-800/50 hover:border-neutral-600/50 hover:text-neutral-300 transition-all cursor-pointer"
+            className="flex items-center gap-2 h-9 px-2 md:px-3 rounded-[10px] text-[11px] text-neutral-400 font-mono bg-neutral-900/40 border border-white/5 hover:bg-[#252525]/60 hover:border-neutral-600/50 hover:text-neutral-300 transition-all cursor-pointer shadow-sm"
             title={t('auth.userMenu')}
           >
             {user.picture ? (
               <img
                 src={user.picture}
                 alt={user.name}
-                className="w-5 h-5 rounded-md"
+                className="w-4 h-4 md:w-5 md:h-5 rounded-[4px]"
               />
             ) : (
-              <UserIcon size={16} />
+              <UserIcon size={14} className="md:w-4 md:h-4" />
             )}
-            <span className="hidden sm:inline">{user.name || user.email}</span>
+            <span className="hidden sm:inline lowercase">{user.name || user.email}</span>
             <ChevronDown size={12} className={`hidden sm:block transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
           </Button>
           {isDropdownOpen && (
@@ -348,7 +348,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                   className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2"
                 >
                   <UserIcon size={14} />
-                  {t('auth.profile')}
+                  {t('common.profile')}
                 </Button>
                 <Button variant="ghost" onClick={() => {
                   setIsDropdownOpen(false);
@@ -358,7 +358,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                   className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2"
                 >
                   <Globe size={14} />
-                  {t('auth.community') || 'Community'}
+                  {t('common.community') || 'Community'}
                 </Button>
                 {user.isAdmin && (
                   <>

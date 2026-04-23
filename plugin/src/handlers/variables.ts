@@ -126,7 +126,9 @@ export async function getFontVariablesFromFile(): Promise<FontVariable[]> {
           id: style.id,
           name: style.name,
           family: style.fontName.family,
-          style: style.fontName.style
+          style: style.fontName.style,
+          fontSize: style.fontSize,
+          lineHeight: style.lineHeight?.unit === 'PIXELS' ? style.lineHeight.value : undefined
         });
         seen.add(style.id);
       }

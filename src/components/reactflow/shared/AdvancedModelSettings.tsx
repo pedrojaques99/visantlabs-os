@@ -41,12 +41,12 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
   if (!isAdvanced && !isFlash) return null;
 
   return (
-    <div className={cn("grid grid-cols-2 gap-2.5", className)}>
+    <div className={cn("flex flex-col gap-3", className)}>
       <div className={cn(!isAdvanced && "opacity-50 grayscale pointer-events-none")}>
         <NodeLabel className="mb-1.5 text-[10px]">
           {t('canvasNodes.promptNode.aspectRatio')}
         </NodeLabel>
-        <div onMouseDown={(e) => e.stopPropagation()}>
+        <div>
           <AspectRatioSelector
             value={aspectRatio}
             onChange={onAspectRatioChange}
@@ -60,7 +60,7 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
         <NodeLabel className="mb-1.5 text-[10px]">
           {t('canvasNodes.promptNode.resolution')}
         </NodeLabel>
-        <div onMouseDown={(e) => e.stopPropagation()}>
+        <div>
           <ResolutionSelector
             value={resolution}
             onChange={onResolutionChange}

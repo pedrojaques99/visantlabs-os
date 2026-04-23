@@ -1,7 +1,7 @@
 import React, { useState, useCallback, memo, useEffect, useRef } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { LabeledHandle } from './shared/LabeledHandle';
-import { Dna, ChevronDown, ChevronUp, Copy, Check, UploadCloud, FileText, X, Maximize2 } from 'lucide-react';
+import { Palette, ChevronDown, ChevronUp, Copy, Check, UploadCloud, FileText, X, Maximize2 } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { BrandCoreData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/hooks/useTranslation';
 import { NodeButton } from './shared/node-button';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
-import { fileToBase64 } from '@/utils/fileUtils';
+import { fileToBase64, validateFile } from '@/utils/fileUtils';
 import { pdfToBase64, validatePdfBase64Size, validatePdfFile } from '@/utils/pdfUtils';
 import { normalizeImageToBase64 } from '@/services/reactFlowService';
 import { consolidateStrategiesToText } from '@/services/brandPromptService';
@@ -92,109 +92,44 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (logoInputRef.current) logoInputRef.current.value = '';
+    if (!file || !nodeData.onUpdateData) return;
 
-    if (!nodeData.onUpdateData) {
-      console.error('[BrandCore] onUpdateData handler not available', { nodeId: id, hasHandler: !!nodeData.onUpdateData });
-      toast.error(t('canvasNodes.brandCore.uploadHandlerNotReady'), { duration: 3000 });
-      if (logoInputRef.current) {
-        logoInputRef.current.value = '';
-      }
-      return;
-    }
-
-    if (!file.type.startsWith('image/')) {
-      toast.error(t('canvasNodes.brandCore.pleaseSelectImageFile'), { duration: 3000 });
-      if (logoInputRef.current) {
-        logoInputRef.current.value = '';
-      }
-      return;
-    }
-
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error(t('canvasNodes.brandCore.fileSizeExceedsLimit'), { duration: 5000 });
-      if (logoInputRef.current) {
-        logoInputRef.current.value = '';
-      }
-      return;
-    }
-
-    if (logoInputRef.current) {
-      logoInputRef.current.value = '';
-    }
+    const error = validateFile(file, 'image');
+    if (error) { toast.error(error, { duration: 3000 }); return; }
 
     try {
-      console.log('[BrandCore] Processing logo upload', { nodeId: id, fileName: file.name, fileSize: file.size });
       const imageData = await fileToBase64(file);
       nodeData.onUpdateData(id, { uploadedLogo: imageData.base64 });
-      console.log('[BrandCore] Logo uploaded successfully', { nodeId: id });
       toast.success(t('canvasNodes.brandCore.logoUploadedSuccessfully'), { duration: 2000 });
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to process logo image', { duration: 5000 });
-      console.error('[BrandCore] Failed to process logo:', error);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to process logo image', { duration: 5000 });
     }
   };
 
   const handleIdentityFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (identityInputRef.current) identityInputRef.current.value = '';
+    if (!file || !nodeData.onUpdateData) return;
 
-    if (!nodeData.onUpdateData) {
-      console.error('[BrandCore] onUpdateData handler not available', { nodeId: id, hasHandler: !!nodeData.onUpdateData });
-      toast.error(t('canvasNodes.brandCore.uploadHandlerNotReady'), { duration: 3000 });
-      if (identityInputRef.current) {
-        identityInputRef.current.value = '';
-      }
-      return;
-    }
+    const validationError = validateFile(file, ['image', 'pdf']);
+    if (validationError) { toast.error(validationError, { duration: 5000 }); return; }
 
-    let fileType: 'pdf' | 'png' | null = null;
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const fileType: 'pdf' | 'png' = isPdf ? 'pdf' : 'png';
     let base64: string;
-    let errorMessage = '';
 
-    // Check if it's a PDF
-    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-      const validation = validatePdfFile(file);
-      if (!validation.isValid) {
-        errorMessage = validation.error || 'Invalid PDF file';
-      } else {
-        fileType = 'pdf';
-        try {
-          base64 = await pdfToBase64(file);
-        } catch (error: any) {
-          errorMessage = error?.message || 'Failed to process PDF';
-        }
+    if (isPdf) {
+      const pdfValidation = validatePdfFile(file);
+      if (!pdfValidation.isValid) {
+        toast.error(pdfValidation.error || 'Invalid PDF file', { duration: 5000 });
+        return;
       }
-    }
-    // Check if it's an image (PNG, JPG, etc.)
-    else if (file.type.startsWith('image/')) {
-      fileType = 'png'; // Use 'png' as the type identifier for all images
-      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-      if (file.size > MAX_FILE_SIZE) {
-        errorMessage = 'File size exceeds 10MB limit';
-      } else {
-        try {
-          const imageData = await fileToBase64(file);
-          base64 = imageData.base64;
-        } catch (error: any) {
-          errorMessage = error?.message || 'Failed to process image';
-        }
-      }
+      try { base64 = await pdfToBase64(file); }
+      catch (err: any) { toast.error(err?.message || 'Failed to process PDF', { duration: 5000 }); return; }
     } else {
-      errorMessage = 'Please select a PDF or image file (PNG, JPG, etc.)';
-    }
-
-    if (errorMessage || !fileType || !base64) {
-      toast.error(errorMessage || 'Failed to process file', { duration: 5000 });
-      if (identityInputRef.current) {
-        identityInputRef.current.value = '';
-      }
-      return;
-    }
-
-    if (identityInputRef.current) {
-      identityInputRef.current.value = '';
+      try { base64 = (await fileToBase64(file)).base64; }
+      catch (err: any) { toast.error(err?.message || 'Failed to process image', { duration: 5000 }); return; }
     }
 
     try {
@@ -213,9 +148,6 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         const sizeValidation = validatePdfBase64Size(base64);
         if (!sizeValidation.isValid) {
           toast.error(sizeValidation.error || 'PDF is too large for upload', { duration: 5000 });
-          if (identityInputRef.current) {
-            identityInputRef.current.value = '';
-          }
           return;
         }
 
@@ -351,16 +283,11 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
-            <Dna size={16} className="text-brand-cyan" />
-          </div>
-          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
-            {t('canvasNodes.brandCore.title') || 'Brand Core'}
-          </h3>
-        </div>
-      </div>
+      <NodeHeader
+        icon={Palette}
+        title={t('canvasNodes.brandCore.title') || 'Brand Core'}
+        selected={selected}
+      />
 
       <div className="p-4 flex flex-col gap-[var(--node-gap)]">
         {/* Inputs Section */}
@@ -394,7 +321,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
             {hasLogo ? (
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-md overflow-hidden bg-neutral-950/40 border border-neutral-700/50 p-1 flex items-center justify-center shadow-inner">
+                <div className="w-16 h-16 rounded-md overflow-hidden bg-neutral-950/40 border-node border-neutral-700/50 p-1 flex items-center justify-center shadow-inner">
                   <img
                     src={logoBase64.startsWith('data:') ? logoBase64 : `data:image/png;base64,${logoBase64}`}
                     alt="Logo"
@@ -419,7 +346,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   <UploadCloud size={14} className="mr-2" />
                   {t('canvasNodes.brandCore.uploadLogo')}
                 </NodeButton>
-                <div className="text-[9px] text-neutral-600 font-mono text-center uppercase tracking-tighter opacity-70">
+                <div className="text-[10px] text-neutral-600 font-mono text-center uppercase tracking-tighter opacity-70">
                   {t('canvasNodes.brandCore.orConnectLogoOrImageNode')}
                 </div>
               </div>
@@ -455,7 +382,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
             {hasIdentity ? (
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-md bg-neutral-950/40 border border-neutral-700/50 shadow-inner">
+                <div className="p-3 rounded-md bg-neutral-950/40 border-node border-neutral-700/50 shadow-inner">
                   <FileText size={20} className="text-brand-cyan/70" />
                 </div>
                 <div className="flex-1 overflow-hidden">
@@ -480,7 +407,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   <FileText size={14} className="mr-2" />
                   Upload PDF or PNG
                 </NodeButton>
-                <div className="text-[9px] text-neutral-600 font-mono text-center uppercase tracking-tighter opacity-70">
+                <div className="text-[10px] text-neutral-600 font-mono text-center uppercase tracking-tighter opacity-70">
                   Or connect a PDF Node or Image Node (PNG)
                 </div>
               </div>
@@ -526,7 +453,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               </>
             ) : (
               <>
-                <Dna size={14} className="mr-2" />
+                <Palette size={14} className="mr-2" />
                 <span>Analyze Brand Identity</span>
               </>
             )}
@@ -535,9 +462,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
         {/* Analysis Status */}
         {isAnalyzing && (
-          <div className="px-3 py-2.5 bg-brand-cyan/10 border border-brand-cyan/20 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+          <div className="px-3 py-2.5 bg-brand-cyan/10 border-node border-neutral-800 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="p-1.5 rounded-full bg-brand-cyan/20 animate-pulse">
+              <div className="p-1.5 rounded-full bg-brand-cyan/20">
                 <GlitchLoader size={12} color="brand-cyan" />
               </div>
               <span className="text-[10px] font-mono text-brand-cyan uppercase font-bold">Analysis in progress...</span>
@@ -574,21 +501,21 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               <div className="mt-4 space-y-4 text-[11px] animate-in fade-in slide-in-from-top-1 duration-300">
                 {/* Logo Details */}
                 {(brandIdentity.logo.colors.length > 0 || brandIdentity.logo.style || brandIdentity.logo.elements.length > 0) && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
-                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Logo DNA</div>
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20 backdrop-blur-sm">
+                    <div className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Logo DNA</div>
                     <div className="space-y-3">
                       {brandIdentity.logo.colors.length > 0 && (
                         <div className="flex flex-wrap gap-1.5">
                           {brandIdentity.logo.colors.map((color, idx) => (
                             <div
                               key={idx}
-                              className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/40 rounded border border-neutral-700/30 shadow-sm"
+                              className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/40 rounded border-node border-neutral-700/30 shadow-sm"
                             >
                               <div
-                                className="w-2.5 h-2.5 rounded border border-white/10 shadow-sm"
+                                className="w-2.5 h-2.5 rounded border-node border-white/10 shadow-sm"
                                 style={{ backgroundColor: color }}
                               />
-                              <span className="text-neutral-400 font-mono text-[9px] uppercase">{color}</span>
+                              <span className="text-neutral-400 font-mono text-[10px] uppercase">{color}</span>
                             </div>
                           ))}
                         </div>
@@ -597,13 +524,13 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                       <div className="space-y-1.5 border-t border-neutral-700/20 pt-2 text-neutral-300 leading-relaxed">
                         {brandIdentity.logo.style && (
                           <div className="flex gap-2">
-                            <span className="text-neutral-500 uppercase text-[9px] shrink-0 font-mono">Style:</span>
+                            <span className="text-neutral-500 uppercase text-[10px] shrink-0 font-mono">Style:</span>
                             <span>{brandIdentity.logo.style}</span>
                           </div>
                         )}
                         {brandIdentity.logo.elements.length > 0 && (
                           <div className="flex gap-2">
-                            <span className="text-neutral-500 uppercase text-[9px] shrink-0 font-mono">Traits:</span>
+                            <span className="text-neutral-500 uppercase text-[10px] shrink-0 font-mono">Traits:</span>
                             <div className="flex flex-wrap gap-1">
                               {brandIdentity.logo.elements.map((element, idx) => (
                                 <span key={idx} className="after:content-[','] last:after:content-[''] mr-0.5">
@@ -620,8 +547,8 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Brand Colors - Simplified but elegant */}
                 {(brandIdentity.colors.primary.length > 0 || brandIdentity.colors.secondary.length > 0 || brandIdentity.colors.accent.length > 0) && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
-                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Color Palettes</div>
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20 backdrop-blur-sm">
+                    <div className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Color Palettes</div>
                     <div className="space-y-3">
                       {[
                         { label: 'Primary', palette: brandIdentity.colors.primary },
@@ -629,15 +556,15 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         { label: 'Accent', palette: brandIdentity.colors.accent }
                       ].map(({ label, palette }) => palette.length > 0 && (
                         <div key={label} className="space-y-1.5">
-                          <div className="text-[9px] text-neutral-600 uppercase font-mono">{label}</div>
+                          <div className="text-[10px] text-neutral-600 uppercase font-mono">{label}</div>
                           <div className="flex flex-wrap gap-1.5">
                             {palette.map((color, idx) => (
                               <div key={idx} className="group/color relative">
                                 <div
-                                  className="w-6 h-6 rounded border border-white/10 shadow-sm transition-transform group-hover/color:scale-110"
+                                  className="w-6 h-6 rounded border-node border-white/10 shadow-sm transition-transform group-hover/color:scale-110"
                                   style={{ backgroundColor: color }}
                                 />
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-neutral-950 text-white text-[8px] font-mono rounded opacity-0 group-hover/color:opacity-300 transition-opacity z-10 whitespace-nowrap border border-neutral-700">
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-neutral-950 text-white text-[10px] font-mono rounded opacity-0 group-hover/color:opacity-100 transition-opacity z-10 whitespace-nowrap border-node border-neutral-700">
                                   {color}
                                 </div>
                               </div>
@@ -651,19 +578,19 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Personality & Tone */}
                 {(brandIdentity.personality.tone || brandIdentity.personality.feeling || brandIdentity.personality.values?.length > 0) && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
-                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Brand Personality</div>
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20 backdrop-blur-sm">
+                    <div className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Brand Personality</div>
                     <div className="space-y-2.5 text-neutral-400">
                       <div className="grid grid-cols-2 gap-3">
                         {brandIdentity.personality.tone && (
                           <div className="space-y-0.5">
-                            <span className="text-neutral-600 uppercase text-[9px] font-mono">Tone</span>
+                            <span className="text-neutral-600 uppercase text-[10px] font-mono">Tone</span>
                             <div className="text-neutral-300 line-clamp-2">{brandIdentity.personality.tone}</div>
                           </div>
                         )}
                         {brandIdentity.personality.feeling && (
                           <div className="space-y-0.5">
-                            <span className="text-neutral-600 uppercase text-[9px] font-mono">Vibe</span>
+                            <span className="text-neutral-600 uppercase text-[10px] font-mono">Vibe</span>
                             <div className="text-neutral-300 line-clamp-2">{brandIdentity.personality.feeling}</div>
                           </div>
                         )}
@@ -672,7 +599,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                       {brandIdentity.personality.values && brandIdentity.personality.values.length > 0 && (
                         <div className="flex flex-wrap gap-1 pt-1.5 border-t border-neutral-700/10">
                           {brandIdentity.personality.values.map((value, idx) => (
-                            <span key={idx} className="px-2 py-0.5 bg-neutral-950/40 rounded text-[9px] text-brand-cyan/70 border border-brand-cyan/20 uppercase ">
+                            <span key={idx} className="px-2 py-0.5 bg-neutral-950/40 rounded text-[10px] text-brand-cyan/70 border-node border-neutral-800 uppercase ">
                               {value}
                             </span>
                           ))}
@@ -712,7 +639,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         )}
                       </NodeButton>
                     </div>
-                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-32 overflow-y-auto">
+                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-32 overflow-y-auto">
                       {visualPrompts.mockupPrompt}
                     </div>
                   </div>
@@ -732,7 +659,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         )}
                       </NodeButton>
                     </div>
-                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-24 overflow-y-auto">
+                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-24 overflow-y-auto">
                       {visualPrompts.compositionPrompt}
                     </div>
                   </div>
@@ -752,7 +679,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         )}
                       </NodeButton>
                     </div>
-                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-24 overflow-y-auto">
+                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-24 overflow-y-auto">
                       {visualPrompts.stylePrompt}
                     </div>
                   </div>
@@ -791,7 +718,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     )}
                   </NodeButton>
                 </div>
-                <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-64 overflow-y-auto whitespace-pre-wrap">
+                <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-64 overflow-y-auto whitespace-pre-wrap">
                   {consolidateStrategiesToText(strategicPrompts.consolidated)}
                 </div>
               </div>
@@ -801,7 +728,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
         {/* Generating Prompts Status */}
         {isGeneratingPrompts && (
-          <div className="mt-4 px-3 py-2 bg-brand-cyan/20 border border-[brand-cyan]/30 rounded flex items-center gap-3">
+          <div className="mt-4 px-3 py-2 bg-brand-cyan/20 border-node border-[brand-cyan]/30 rounded flex items-center gap-3">
             <GlitchLoader size={14} color="brand-cyan" />
             <span className="text-xs font-mono text-brand-cyan">Generating prompts...</span>
           </div>

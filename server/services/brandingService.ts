@@ -3,6 +3,7 @@ import type { BrandingData } from '../../src/types/branding.js';
 import { cleanMarketResearchText } from '../utils/brandingHelpersServer.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 
 const getMongoDB = async () => {
     return { connectToMongoDB, getDb, ObjectId };
@@ -204,7 +205,7 @@ IMPORTANT:
         const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
         const response = await getAI().models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: GEMINI_MODELS.TEXT,
             contents: { parts: [{ text: systemPrompt }] },
         });
 
@@ -286,7 +287,7 @@ Example: {"competitors": [{"name": "Competitor 1", "url": "https://competitor1.c
         const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
         const response = await getAI().models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: GEMINI_MODELS.TEXT,
             contents: { parts: [{ text: systemPrompt }] },
             config: {
                 responseMimeType: 'application/json',
@@ -358,7 +359,7 @@ Example: {"references": ["Reference 1", "Reference 2", "Reference 3"]}`;
         const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
         const response = await getAI().models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: GEMINI_MODELS.TEXT,
             contents: { parts: [{ text: systemPrompt }] },
             config: {
                 responseMimeType: 'application/json',
@@ -430,7 +431,7 @@ Example: {
         const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
         const response = await getAI().models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: GEMINI_MODELS.TEXT,
             contents: { parts: [{ text: systemPrompt }] },
             config: {
                 responseMimeType: 'application/json',
@@ -567,7 +568,7 @@ Example: {
         const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
         const response = await getAI().models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: GEMINI_MODELS.TEXT,
             contents: { parts: [{ text: systemPrompt }] },
             config: {
                 responseMimeType: 'application/json',
@@ -662,7 +663,7 @@ Example: {"elements": ["Element 1", "Element 2", "Element 3"]}`;
         const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
         const response = await getAI().models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: GEMINI_MODELS.TEXT,
             contents: { parts: [{ text: systemPrompt }] },
             config: {
                 responseMimeType: 'application/json',
@@ -780,7 +781,7 @@ IMPORTANT:
         const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
         const response = await getAI().models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: GEMINI_MODELS.TEXT,
             contents: { parts: [{ text: systemPrompt }] },
             config: {
                 responseMimeType: 'application/json',
@@ -955,7 +956,7 @@ Example: {
         const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
         const response = await getAI().models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: GEMINI_MODELS.TEXT,
             contents: { parts: [{ text: systemPrompt }] },
             config: {
                 responseMimeType: 'application/json',
@@ -1013,7 +1014,7 @@ Example: {"mockups": ["Mockup idea 1", "Mockup idea 2", "Mockup idea 3"]}`;
         const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
         const response = await getAI().models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: GEMINI_MODELS.TEXT,
             contents: { parts: [{ text: systemPrompt }] },
             config: {
                 responseMimeType: 'application/json',
@@ -1086,7 +1087,7 @@ Example: {
         const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
         const response = await getAI().models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: GEMINI_MODELS.TEXT,
             contents: { parts: [{ text: systemPrompt }] },
             config: {
                 responseMimeType: 'application/json',
@@ -1160,7 +1161,7 @@ export const createBrandingUsageRecord = async (
         // Use real tokens if available, otherwise estimate
         const actualInputTokens = inputTokens ?? (promptLength ? Math.ceil(promptLength / 4) : 500);
         const actualOutputTokens = outputTokens ?? 1000; // Average response size if not provided
-        const cost = calculateTextGenerationCost(actualInputTokens, actualOutputTokens, 'gemini-2.5-flash');
+        const cost = calculateTextGenerationCost(actualInputTokens, actualOutputTokens, GEMINI_MODELS.TEXT);
 
         // Create usage record for billing
         const usageRecord: any = {
@@ -1170,7 +1171,7 @@ export const createBrandingUsageRecord = async (
             stepNumber,
             timestamp: new Date(),
             promptLength,
-            model: 'gemini-2.5-flash',
+            model: GEMINI_MODELS.TEXT,
             cost,
             creditsDeducted: isAdmin ? 0 : creditsDeducted, // Admins don't have credits deducted
             subscriptionStatus,

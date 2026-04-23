@@ -1,18 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useGlitchCopy } from '@/hooks/useGlitchCopy';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, Heart, Maximize2, ExternalLink, Copy, Globe, User, LayoutGrid, Box, Settings, Palette, Sparkles, Download, Clipboard } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, Heart, Maximize2, ExternalLink, Copy, Globe, User, LayoutGrid, Box, Settings, Palette, Diamond, Download, Clipboard } from 'lucide-react';
 import { SearchBar } from '../components/ui/SearchBar';
 
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
-
-import {
-  BreadcrumbWithBack,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "../components/ui/BreadcrumbWithBack";
+import { PageShell } from '../components/ui/PageShell';
+import { PremiumButton } from '../components/ui/PremiumButton';
 import { useLayout } from '@/hooks/useLayout';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
@@ -136,6 +129,8 @@ export const CommunityPresetsPage: React.FC = () => {
   const [allPresets, setAllPresets] = useState<CommunityPreset[]>([]);
   const [selectedPreset, setSelectedPreset] = useState<CommunityPreset | null>(null);
   const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [presetToDelete, setPresetToDelete] = useState<string | null>(null);
   const [presetToDuplicate, setPresetToDuplicate] = useState<CommunityPreset | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -421,10 +416,17 @@ export const CommunityPresetsPage: React.FC = () => {
       return;
     }
 
-    if (!confirm(t('communityPresets.messages.presetDeleteConfirm'))) {
-      return;
-    }
+    setPresetToDelete(id);
+    setDeleteConfirmOpen(true);
+  }, [t]);
 
+  const handleConfirmDelete = useCallback(async () => {
+    const id = presetToDelete;
+    if (!id) return;
+    const token = authService.getToken();
+    if (!token) return;
+    setDeleteConfirmOpen(false);
+    setPresetToDelete(null);
     setIsLoading(true);
     setError(null);
 
@@ -453,7 +455,7 @@ export const CommunityPresetsPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [t, viewMode, handleFetchMyPresets, handleFetchAllPresets]);
+  }, [presetToDelete, t, viewMode, handleFetchMyPresets, handleFetchAllPresets]);
 
   const handleDuplicateClick = useCallback((preset: CommunityPreset) => {
     setPresetToDuplicate(preset);
@@ -536,6 +538,12 @@ export const CommunityPresetsPage: React.FC = () => {
     }
   }, [presetToDuplicate, t, viewMode, handleFetchMyPresets]);
 
+  const updatePresetInState = useCallback((id: string, patch: Partial<CommunityPreset>) => {
+    const mapper = (prev: CommunityPreset[]) =>
+      prev.map(p => (p.id === id ? { ...p, ...patch } : p));
+    if (viewMode === 'my') setPresets(mapper); else setAllPresets(mapper);
+  }, [viewMode]);
+
   const handleToggleLike = useCallback(async (presetId: string) => {
     const token = authService.getToken();
     if (!token) {
@@ -552,34 +560,15 @@ export const CommunityPresetsPage: React.FC = () => {
     const currentLikesCount = preset.likesCount || 0;
 
     // Optimistic update
-    if (viewMode === 'my') {
-      setPresets(prev => prev.map(p =>
-        p.id === presetId
-          ? {
-            ...p,
-            isLikedByUser: !currentIsLiked,
-            likesCount: currentIsLiked ? Math.max(0, currentLikesCount - 1) : currentLikesCount + 1
-          }
-          : p
-      ));
-    } else {
-      setAllPresets(prev => prev.map(p =>
-        p.id === presetId
-          ? {
-            ...p,
-            isLikedByUser: !currentIsLiked,
-            likesCount: currentIsLiked ? Math.max(0, currentLikesCount - 1) : currentLikesCount + 1
-          }
-          : p
-      ));
-    }
+    updatePresetInState(presetId, {
+      isLikedByUser: !currentIsLiked,
+      likesCount: currentIsLiked ? Math.max(0, currentLikesCount - 1) : currentLikesCount + 1,
+    });
 
     try {
       const response = await fetch(`${COMMUNITY_API}/${presetId}/like`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) {
@@ -588,56 +577,13 @@ export const CommunityPresetsPage: React.FC = () => {
       }
 
       const result = await response.json();
-
-      // Update with server response
-      if (viewMode === 'my') {
-        setPresets(prev => prev.map(p =>
-          p.id === presetId
-            ? {
-              ...p,
-              isLikedByUser: result.isLikedByUser,
-              likesCount: result.likesCount
-            }
-            : p
-        ));
-      } else {
-        setAllPresets(prev => prev.map(p =>
-          p.id === presetId
-            ? {
-              ...p,
-              isLikedByUser: result.isLikedByUser,
-              likesCount: result.likesCount
-            }
-            : p
-        ));
-      }
+      updatePresetInState(presetId, { isLikedByUser: result.isLikedByUser, likesCount: result.likesCount });
     } catch (error: any) {
-      // Revert optimistic update on error
-      if (viewMode === 'my') {
-        setPresets(prev => prev.map(p =>
-          p.id === presetId
-            ? {
-              ...p,
-              isLikedByUser: currentIsLiked,
-              likesCount: currentLikesCount
-            }
-            : p
-        ));
-      } else {
-        setAllPresets(prev => prev.map(p =>
-          p.id === presetId
-            ? {
-              ...p,
-              isLikedByUser: currentIsLiked,
-              likesCount: currentLikesCount
-            }
-            : p
-        ));
-      }
+      updatePresetInState(presetId, { isLikedByUser: currentIsLiked, likesCount: currentLikesCount });
       toast.error(error.message || t('communityPresets.errors.failedToToggleLike'));
       console.error('Error toggling like:', error);
     }
-  }, [viewMode, presets, allPresets, t]);
+  }, [updatePresetInState, presets, allPresets, t]);
 
   // Handlers - Tab navigation
   const handleTabChange = useCallback((category: PromptCategory) => {
@@ -758,54 +704,60 @@ export const CommunityPresetsPage: React.FC = () => {
 
 
 
-  return (
-    <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
-      <div className="fixed inset-0 z-0">
+  const headerActions = (
+    <div className="flex items-center gap-3">
+      <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 backdrop-blur-md">
+        <button
+          onClick={() => handleViewModeChange('all')}
+          className={cn(
+            "px-4 py-1.5 rounded-lg text-xs font-bold font-mono transition-all",
+            viewMode === 'all'
+              ? "bg-brand-cyan/20 text-brand-cyan shadow-sm border border-brand-cyan/20"
+              : "text-neutral-500 hover:text-neutral-300"
+          )}
+        >
+          {t('communityPresets.tabs.all')}
+        </button>
+        <button
+          onClick={() => handleViewModeChange('my')}
+          className={cn(
+            "px-4 py-1.5 rounded-lg text-xs font-bold font-mono transition-all",
+            viewMode === 'my'
+              ? "bg-indigo-500/20 text-indigo-400 shadow-sm border border-indigo-500/20"
+              : "text-neutral-500 hover:text-neutral-300"
+          )}
+        >
+          {t('communityPresets.tabs.my')}
+        </button>
       </div>
+      
+      {isAuthenticated && (
+        <PremiumButton
+          onClick={handleCreate}
+          className="h-10 px-6 text-xs gap-2"
+        >
+          <Plus size={16} />
+          {t('communityPresets.buttons.create')}
+        </PremiumButton>
+      )}
+    </div>
+  );
 
-      <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
-        <div className="mb-6">
-          <BreadcrumbWithBack to="/community">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/">{t('common.home')}</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/community">{t('common.community')}</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{t('common.presets')}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </BreadcrumbWithBack>
-        </div>
-
-        <div className="flex items-start gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              {viewMode === 'all' ? (
-                <Globe className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
-              ) : (
-                <User className="h-6 w-6 md:h-8 md:w-8 text-indigo-400" />
-              )}
-              <h1 className={cn(
-                "text-3xl md:text-4xl font-semibold font-manrope",
-                viewMode === 'all' ? "text-neutral-300" : "text-indigo-100"
-              )}>
-                {viewMode === 'my' ? t('communityPresets.myPresets') : t('communityPresets.allPresets')}
-              </h1>
-            </div>
-            <p className="text-neutral-500 font-mono text-sm md:text-base mb-6">
-              {viewMode === 'my' ? t('communityPresets.myPresetsSubtitle') : t('communityPresets.subtitle')}
-            </p>
-          </div>
-        </div>
+  return (
+    <PageShell
+      pageId="community-presets"
+      seoTitle={viewMode === 'my' ? t('communityPresets.tabs.my') : t('communityPresets.title')}
+      title={viewMode === 'my' ? t('communityPresets.tabs.my') : t('communityPresets.title')}
+      microTitle="Community // Library"
+      description={t('communityPresets.subtitle')}
+      breadcrumb={[
+        { label: t('common.home'), to: '/' },
+        { label: t('common.community'), to: '/community' },
+        { label: t('common.presets') }
+      ]}
+      actions={headerActions}
+    >
+      <div className="relative z-10">
 
         {isCheckingAuth && (
           <div className="max-w-md mx-auto">
@@ -832,55 +784,6 @@ export const CommunityPresetsPage: React.FC = () => {
 
         {!isCheckingAuth && (viewMode === 'all' || isAuthenticated) && (
           <div className="space-y-4">
-            {/* View Mode (All/My) - Sub Hierarchy Tabs */}
-            <div className="flex items-center justify-between border-neutral-800/30">
-              <div className="flex p-1 rounded-md border border-neutral-800/50">
-                <Button variant="ghost" onClick={() => handleViewModeChange('all')}
-                  className={cn(
-                    "px-6 py-2 rounded-md text-xs font-mono transition-all flex items-center gap-2",
-                    viewMode === 'all'
-                      ? 'bg-neutral-800 text-brand-cyan shadow-sm'
-                      : 'text-neutral-500 hover:text-neutral-300'
-                  )}
-                >
-                  <Globe className="h-3.5 w-3.5" />
-                  {t('communityPresets.viewAll')}
-                </Button>
-                <Button variant="ghost" onClick={() => handleViewModeChange('my')}
-                  className={cn(
-                    "px-6 rounded-md text-xs font-mono transition-all flex items-center gap-2",
-                    viewMode === 'my'
-                      ? 'bg-neutral-800 text-indigo-400 shadow-sm'
-                      : 'text-neutral-500 hover:text-neutral-300'
-                  )}
-                  disabled={!isAuthenticated}
-                >
-                  <User className="h-3.5 w-3.5" />
-                  {t('communityPresets.viewMy')}
-                </Button>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {/* Search Bar */}
-                <SearchBar
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  placeholder={t('communityPresets.search.placeholder') || 'Search presets...'}
-                  iconSize={14}
-                  className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700/30 w-48 md:w-64 text-xs font-mono"
-                  containerClassName="w-48 md:w-64"
-                />
-
-                {!isEditing && isAuthenticated && (
-                  <Button variant="ghost" onClick={handleCreate}
-                    className="flex items-center gap-2 px-4 py-2 bg-neutral-950/70 hover:bg-neutral-800/50 border border-neutral-800/50 text-neutral-300 font-medium rounded-md text-sm font-mono transition-colors"
-                  >
-                    <Plus className="h-4 w-4" />
-                    {t('communityPresets.createNew')}
-                  </Button>
-                )}
-              </div>
-            </div>
 
             {/* Sidebar */}
             <CommunityPresetsSidebar
@@ -976,8 +879,19 @@ export const CommunityPresetsPage: React.FC = () => {
           title={t('communityPresets.actions.duplicateConfirm') || "Duplicate Preset"}
           message={t('communityPresets.actions.duplicateMessage') || "Are you sure you want to duplicate this preset? It will be added to your personal collection."}
           confirmText={t('communityPresets.actions.duplicateButton') || "Duplicate"}
-          cancelText={t('communityPresets.actions.cancel') || "Cancel"}
+          cancelText={t('common.cancel') || "Cancel"}
           variant="info"
+        />
+
+        <ConfirmationModal
+          isOpen={deleteConfirmOpen}
+          onClose={() => { setDeleteConfirmOpen(false); setPresetToDelete(null); }}
+          onConfirm={handleConfirmDelete}
+          title={t('communityPresets.actions.deleteConfirm') || "Delete Preset"}
+          message={t('communityPresets.messages.presetDeleteConfirm') || "Are you sure you want to delete this preset? This action cannot be undone."}
+          confirmText={t('common.delete') || "Delete"}
+          cancelText={t('common.cancel') || "Cancel"}
+          variant="danger"
         />
 
         {/* Preset Detail Modal */}
@@ -1027,7 +941,7 @@ export const CommunityPresetsPage: React.FC = () => {
           />
         )}
       </div>
-    </div>
+    </PageShell>
   );
 };
 
@@ -1050,43 +964,18 @@ const PresetDetailModal: React.FC<{
   const presetIcon = getPresetIcon(migrated.category);
   const [isImageFullscreen, setIsImageFullscreen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [isCopying, setIsCopying] = useState(false);
-  const [glitchText, setGlitchText] = useState('');
+  const { isCopying, glitchText, handleCopy } = useGlitchCopy(migrated.prompt);
   const isOwner = currentUserId && migrated.userId && currentUserId === migrated.userId;
 
   useEffect(() => {
     const getCurrentUser = async () => {
       if (isAuthenticated) {
         const user = await authService.verifyToken();
-        if (user) {
-          setCurrentUserId(user.id);
-        }
+        if (user) setCurrentUserId(user.id);
       }
     };
     getCurrentUser();
   }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (isCopying) {
-      const glitchChars = '*•□./-®'
-      const glitchInterval = setInterval(() => {
-        const randomGlitch = Array.from({ length: 4 }, () =>
-          glitchChars[Math.floor(Math.random() * glitchChars.length)]
-        ).join('')
-        setGlitchText(randomGlitch)
-      }, 150)
-
-      const timeout = setTimeout(() => {
-        setIsCopying(false)
-        setGlitchText('')
-      }, 600)
-
-      return () => {
-        clearInterval(glitchInterval)
-        clearTimeout(timeout)
-      }
-    }
-  }, [isCopying]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -1113,11 +1002,11 @@ const PresetDetailModal: React.FC<{
       onClick={onClose}
     >
       <div
-        className="bg-[#0F0F0F] border border-neutral-800/60 rounded-md max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-neutral-950 border border-neutral-800/60 rounded-md max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-[#0F0F0F] border-b border-neutral-800/50 p-10 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-neutral-950 border-b border-neutral-800/50 p-6 flex items-center justify-between z-10">
           <div className="flex-1 min-w-0">
             <h2 className="text-2xl font-semibold text-neutral-100 font-mono mb-1 truncate">
               {migrated.name}
@@ -1133,10 +1022,10 @@ const PresetDetailModal: React.FC<{
                 onEdit();
               }}
                 className="flex items-center gap-2 px-3 py-2 rounded-md transition-all text-sm font-mono bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50"
-                title={t('communityPresets.actions.edit')}
+                title={t('common.edit')}
               >
                 <Edit2 size={16} />
-                <span>{t('communityPresets.actions.edit')}</span>
+                <span>{t('common.edit')}</span>
               </Button>
             )}
             {isAuthenticated && onToggleLike && (
@@ -1181,7 +1070,7 @@ const PresetDetailModal: React.FC<{
                     e.stopPropagation();
                     setIsImageFullscreen(true);
                   }}
-                    className="absolute top-2 right-2 p-1.5 bg-neutral-950/60 hover:bg-neutral-950/80 backdrop-blur-sm border border-neutral-700/50 rounded-md text-neutral-300 hover:text-white transition-all opacity-0 group-hover:opacity-300"
+                    className="absolute top-2 right-2 p-1.5 bg-neutral-950/60 hover:bg-neutral-950/80 backdrop-blur-sm border border-neutral-700/50 rounded-md text-neutral-300 hover:text-white transition-all opacity-0 group-hover:opacity-100"
                     title="View fullscreen"
                   >
                     <Maximize2 size={14} />
@@ -1226,23 +1115,15 @@ const PresetDetailModal: React.FC<{
                   <label className="block text-xs font-semibold text-neutral-400 font-mono uppercase">
                     Prompt
                   </label>
-                  <Button variant="ghost" onClick={async (e) => {
+                  <Button variant="ghost" onClick={(e) => {
                     e.stopPropagation();
-                    setIsCopying(true);
-                    try {
-                      await navigator.clipboard.writeText(migrated.prompt);
-                      toast.success('Prompt copied to clipboard');
-                    } catch (err) {
-                      toast.error('Failed to copy prompt');
-                    }
+                    handleCopy('Prompt copied to clipboard', 'Failed to copy prompt');
                   }}
-                    className="p-1.5 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-all relative min-w-[14px] min-h-[14px] flex items-center justify-center"
+                    className="p-1.5 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-all relative size-3.5 flex items-center justify-center"
                     title="Copy prompt"
                   >
                     {isCopying ? (
-                      <span className="text-[10px] font-mono text-neutral-400">
-                        {glitchText}
-                      </span>
+                      <span className="text-[10px] font-mono text-neutral-400">{glitchText}</span>
                     ) : (
                       <Clipboard size={14} />
                     )}
@@ -1293,7 +1174,7 @@ const PresetDetailModal: React.FC<{
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-[#0F0F0F] border-t border-neutral-800/50 p-6 flex gap-3">
+        <div className="sticky bottom-0 bg-neutral-950 border-t border-neutral-800/50 p-6 flex gap-3">
           <Button variant="ghost" onClick={onOpenInCanvas}
             className="flex items-center gap-2 flex-1 px-6 py-3 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700/50 text-neutral-300 font-medium rounded-xl text-sm font-mono transition-all"
           >

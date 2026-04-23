@@ -14,6 +14,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 
 // Tool interface (not exported from SDK v1.20+)
 interface Tool {
@@ -362,7 +363,7 @@ server.setRequestHandler(
 
         // Route to existing AI pipeline
         try {
-          const response = await fetch('http://localhost:3001/api/plugin', {
+          const response = await fetch('http://localhost:${process.env.PORT || 3001}/api/plugin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -404,7 +405,7 @@ server.setRequestHandler(
           width,
           height,
           resolution,
-          model = 'gemini-2.5-flash-image',
+          model = GEMINI_MODELS.IMAGE_FLASH,
           targetNodeId,
         } = args;
 
@@ -419,7 +420,7 @@ server.setRequestHandler(
           }
 
           // Generate mockup via existing API
-          const generateResponse = await fetch('http://localhost:3001/api/mockups/generate', {
+          const generateResponse = await fetch('http://localhost:${process.env.PORT || 3001}/api/mockups/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -800,7 +801,7 @@ const tools: Tool[] = [
         },
         model: {
           type: 'string',
-          description: 'Optional: AI model to use (default: gemini-2.5-flash-image)',
+          description: `Optional: AI model to use (default: ${GEMINI_MODELS.IMAGE_FLASH})`,
         },
         targetNodeId: {
           type: 'string',

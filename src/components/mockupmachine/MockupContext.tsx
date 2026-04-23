@@ -11,15 +11,20 @@ interface MockupContextState {
     aspectRatio: AspectRatio;
     imageProvider: ImageProvider;
     selectedBrandGuideline: string | null;
+    selectedVibeSegment: string | null;
+    selectedVibeStyle: string | null;
 
     // Generation State
     mockups: (string | null)[];
     isLoading: boolean[];
     isGeneratingPrompt: boolean;
     hasGenerated: boolean;
+    generationIds: (string | null)[];
     hasAnalyzed: boolean;
     isAnalyzing: boolean;
     isAnalysisOverlayVisible: boolean;
+    detectedLanguage: string | null;
+    detectedText: string | null;
 
     // Selection State
     selectedTags: string[];
@@ -78,6 +83,13 @@ interface MockupContextState {
 
     // Additional Instructions
     instructions: string;
+
+    // Generation Mode
+    autoGenerate: boolean;
+
+    // Seed for deterministic generation
+    seed: number | undefined;
+    seedLocked: boolean;
 }
 
 interface MockupContextActions {
@@ -89,12 +101,17 @@ interface MockupContextActions {
     setAspectRatio: Dispatch<SetStateAction<AspectRatio>>;
     setImageProvider: Dispatch<SetStateAction<ImageProvider>>;
     setSelectedBrandGuideline: Dispatch<SetStateAction<string | null>>;
+    setSelectedVibeSegment: Dispatch<SetStateAction<string | null>>;
+    setSelectedVibeStyle: Dispatch<SetStateAction<string | null>>;
     setMockups: Dispatch<SetStateAction<(string | null)[]>>;
     setIsLoading: Dispatch<SetStateAction<boolean[]>>;
     setHasGenerated: Dispatch<SetStateAction<boolean>>;
+    setGenerationIds: Dispatch<SetStateAction<(string | null)[]>>;
     setHasAnalyzed: Dispatch<SetStateAction<boolean>>;
     setIsAnalyzing: Dispatch<SetStateAction<boolean>>;
     setIsAnalysisOverlayVisible: Dispatch<SetStateAction<boolean>>;
+    setDetectedLanguage: Dispatch<SetStateAction<string | null>>;
+    setDetectedText: Dispatch<SetStateAction<string | null>>;
     setIsGeneratingPrompt: Dispatch<SetStateAction<boolean>>;
     setSelectedTags: Dispatch<SetStateAction<string[]>>;
     setSelectedBrandingTags: Dispatch<SetStateAction<string[]>>;
@@ -139,6 +156,9 @@ interface MockupContextActions {
     setIsSurpriseMeMode: Dispatch<SetStateAction<boolean>>;
     setSurpriseMePool: Dispatch<SetStateAction<SurpriseMeSelectedTags>>;
     setInstructions: Dispatch<SetStateAction<string>>;
+    setAutoGenerate: Dispatch<SetStateAction<boolean>>;
+    setSeed: Dispatch<SetStateAction<number | undefined>>;
+    setSeedLocked: Dispatch<SetStateAction<boolean>>;
     resetAll: () => void;
     clearAllTags: () => void;
 }
@@ -147,7 +167,7 @@ export type MockupContextValue = MockupContextState & MockupContextActions;
 
 export const MockupContext = createContext<MockupContextValue | undefined>(undefined);
 
-const initialMockupCount = 2;
+const initialMockupCount = 1;
 
 export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
@@ -157,6 +177,8 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [resolution, setResolution] = useState<Resolution>('1K');
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
     const [selectedBrandGuideline, setSelectedBrandGuideline] = useState<string | null>(null);
+    const [selectedVibeSegment, setSelectedVibeSegment] = useState<string | null>(null);
+    const [selectedVibeStyle, setSelectedVibeStyle] = useState<string | null>(null);
 
     // Image provider state with localStorage persistence
     const [imageProvider, setImageProviderState] = useState<ImageProvider>(() => {
@@ -185,9 +207,12 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [mockups, setMockups] = useState<(string | null)[]>(Array(initialMockupCount).fill(null));
     const [isLoading, setIsLoading] = useState<boolean[]>(Array(initialMockupCount).fill(false));
     const [hasGenerated, setHasGenerated] = useState(false);
+    const [generationIds, setGenerationIds] = useState<(string | null)[]>(Array(initialMockupCount).fill(null));
     const [hasAnalyzed, setHasAnalyzed] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isAnalysisOverlayVisible, setIsAnalysisOverlayVisible] = useState(false);
+    const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
+    const [detectedText, setDetectedText] = useState<string | null>(null);
     const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [selectedBrandingTags, setSelectedBrandingTags] = useState<string[]>([]);
@@ -234,6 +259,9 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [isSurpriseMeModeState, setIsSurpriseMeModeState] = useState(false);
     const [surpriseMePool, setSurpriseMePool] = useState<SurpriseMeSelectedTags>(() => getSurpriseMeSelectedTags());
     const [instructions, setInstructions] = useState('');
+    const [autoGenerate, setAutoGenerate] = useState(true);
+    const [seed, setSeed] = useState<number | undefined>(undefined);
+    const [seedLocked, setSeedLocked] = useState(false);
 
     // Wrapper to clear selected tags when entering pool mode
     const setIsSurpriseMeMode = useCallback((value: boolean) => {
@@ -254,6 +282,8 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setReferenceImages([]);
         setDesignType('layout');
         setSelectedBrandGuideline(null);
+        setSelectedVibeSegment(null);
+        setSelectedVibeStyle(null);
         setSelectedTags([]);
         setSelectedBrandingTags([]);
         setSelectedLocationTags([]);
@@ -273,8 +303,11 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setIsLoading(Array(mockupCount).fill(false));
         setHasGenerated(false);
         setHasAnalyzed(false);
+        setGenerationIds(Array(mockupCount).fill(null));
         setIsSurpriseMeModeState(false);
         setIsAnalysisOverlayVisible(false);
+        setDetectedLanguage(null);
+        setDetectedText(null);
         setInstructions('');
     };
 
@@ -312,12 +345,17 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         aspectRatio, setAspectRatio,
         imageProvider, setImageProvider,
         selectedBrandGuideline, setSelectedBrandGuideline,
+        selectedVibeSegment, setSelectedVibeSegment,
+        selectedVibeStyle, setSelectedVibeStyle,
         mockups, setMockups,
         isLoading, setIsLoading,
         hasGenerated, setHasGenerated,
+        generationIds, setGenerationIds,
         hasAnalyzed, setHasAnalyzed,
         isAnalyzing, setIsAnalyzing,
         isAnalysisOverlayVisible, setIsAnalysisOverlayVisible,
+        detectedLanguage, setDetectedLanguage,
+        detectedText, setDetectedText,
         isGeneratingPrompt, setIsGeneratingPrompt,
         selectedTags, setSelectedTags,
         selectedBrandingTags, setSelectedBrandingTags,
@@ -362,12 +400,19 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         isSurpriseMeMode: isSurpriseMeModeState,
         setIsSurpriseMeMode,
         surpriseMePool, setSurpriseMePool,
-        instructions, setInstructions,
+        instructions,
+        setInstructions,
+        autoGenerate,
+        setAutoGenerate,
+        seed, setSeed,
+        seedLocked, setSeedLocked,
         resetAll,
         clearAllTags
     }), [
         uploadedImage, referenceImages, designType,
-        selectedModel, resolution, aspectRatio, imageProvider, selectedBrandGuideline, mockups, isLoading, hasGenerated,
+        selectedModel, resolution, aspectRatio, imageProvider, selectedBrandGuideline, 
+        selectedVibeSegment, selectedVibeStyle,
+        mockups, isLoading, hasGenerated, generationIds,
         isAnalyzing, isGeneratingPrompt, selectedTags, selectedBrandingTags,
         selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags,
         selectedMaterialTags, selectedColors, suggestedTags,
@@ -380,7 +425,8 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         customCategoryInput, customLocationInput, customAngleInput, customLightingInput,
         customEffectInput, customMaterialInput, colorInput, isValidColor,
         fullScreenImageIndex, mockupCount, isSurpriseMeModeState, surpriseMePool,
-        instructions, resetAll, clearAllTags
+        detectedLanguage, detectedText,
+        instructions, autoGenerate, seed, seedLocked, resetAll, clearAllTags
     ]);
 
     return (

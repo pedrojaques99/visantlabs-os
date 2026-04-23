@@ -20,9 +20,14 @@
       "https://picsum.photos",
       "https://fastly.picsum.photos",
       "https://res.cloudinary.com",
+      "https://api.iconify.design",
+      "https://api.simplesvg.com",
+      "https://api.unisvg.com",
+      "https://cdnjs.cloudflare.com",
       "http://localhost:3000",
       "ws://localhost:3000",
-      "http://localhost:3001"
+      "http://localhost:3001",
+      "ws://localhost:3001"
     ],
     "reasoning": "Plugin communicates with Visant backend for AI-powered design generation and loads placeholder images from CDNs."
   }

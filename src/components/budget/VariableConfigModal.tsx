@@ -142,7 +142,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
           </h3>
           <Button variant="ghost"
             onClick={onClose}
-            className="text-neutral-400 hover:text-neutral-200 transition-colors"
+            
           >
             <X size={20} />
           </Button>

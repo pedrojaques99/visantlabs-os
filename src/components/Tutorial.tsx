@@ -89,7 +89,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
           onClick={onClose}
           className={`fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-20 transition-all duration-300 cursor-pointer rounded-md p-2 hover:bg-white/5 backdrop-blur-sm ${theme === 'dark' ? 'text-neutral-400 hover:text-neutral-200' : 'text-neutral-500 hover:text-neutral-700'
             }`}
-          aria-label={t('tutorial.close')}
+          aria-label={t('common.close')}
         >
           <X className="size-4 sm:size-5" />
         </Button>

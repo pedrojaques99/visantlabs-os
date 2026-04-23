@@ -11,18 +11,10 @@ import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { getImageUrl, isSafeUrl } from '@/utils/imageUtils';
 import { translateTag } from '@/utils/localeUtils';
 import { CollapsibleSidebar } from '../components/mockupmachine/CollapsibleSidebar';
-import { SEO } from '../components/SEO';
-import { useTranslation } from '@/hooks/useTranslation';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "../components/ui/breadcrumb";
+import { PageShell } from '../components/ui/PageShell';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const MockupsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -280,39 +272,51 @@ export const MockupsPage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-center">
-              <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-neutral-400 font-mono text-sm">{t('mockupsPage.loadingMockups')}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error message if connection failed, but still show page
   const showErrorBanner = error && error.includes('Cannot connect to server');
 
-  return (
-    <>
-      <SEO
-        title="Mockups da Comunidade"
-        description="Explore mockups criados pela comunidade. Descubra designs profissionais e inspire-se para seus próprios projetos."
-        keywords="mockups comunidade, galeria mockups, designs compartilhados, inspiração design"
-      />
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 relative overflow-hidden">
-        {/* Background */}
-        <div className="fixed inset-0 z-0 pointer-events-none">
+  const headerActions = (
+    <div className="relative flex-shrink-0">
+      <Button variant="ghost" onClick={() => setShowSearch(!showSearch)}
+        className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-950/20"
+        title={t('common.search')}
+      >
+        <Search size={22} />
+      </Button>
+      {showSearch && (
+        <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-neutral-700/30 rounded-md p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder={t('mockupsPage.searchPlaceholder')}
+            iconSize={14}
+            className="bg-transparent border-neutral-700/30 text-sm font-mono"
+            containerClassName="w-full"
+            autoFocus
+          />
         </div>
+      )}
+    </div>
+  );
 
+  return (
+    <PageShell
+      pageId="mockups"
+      seoTitle="Mockups da Comunidade"
+      seoDescription="Explore mockups criados pela comunidade. Descubra designs profissionais e inspire-se para seus próprios projetos."
+      title="Galeria da Comunidade"
+      microTitle="Systems // Gallery"
+      description="Explore designs profissionais e inspire-se."
+      breadcrumb={[
+        { label: t('apps.home') || 'Home', to: '/' },
+        { label: t('community.title') || 'Community', to: '/community' },
+        { label: t('mockups.title') || 'Mockups' }
+      ]}
+      actions={headerActions}
+    >
+      <div className="relative z-10">
         {/* Error Banner */}
         {showErrorBanner && (
-          <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4">
+          <div className="mb-6">
             <div className="bg-red-500/10 border border-red-500/20 rounded-md p-3 flex items-center justify-between backdrop-blur-sm">
               <p className="text-red-400 font-mono text-xs flex-1">{error}</p>
               <Button variant="ghost" onClick={() => {
@@ -327,72 +331,20 @@ export const MockupsPage: React.FC = () => {
           </div>
         )}
 
-        {/* Header with Controls and Sidebar */}
-        <div className="relative z-30 pt-16 md:pt-20 pb-6">
-          <div className="max-w-7xl mx-auto px-4 md:px-6">
-            {/* Breadcrumb */}
-            <div className="mb-4">
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <Link to="/">Home</Link>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <Link to="/community">Community</Link>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Mockups</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
-            </div>
-            {/* Top Row: Sidebar, and Search */}
-            <div className="flex items-center justify-between gap-4 mb-4">
-              {/* Collapsible Sidebar - Flex grow to take available space */}
-              <div className="flex-1 min-w-0">
-                <CollapsibleSidebar
-                  isCollapsed={isSidebarCollapsed}
-                  onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                  title="Community Mockups"
-                  count={mockups.length}
-                  countLabel={mockups.length === 1 ? 'mockup' : 'mockups'}
-                  allTags={allTags}
-                  filterTag={filterTag}
-                  onFilterTagChange={setFilterTag}
-                  translateTag={translateTag}
-                />
-              </div>
 
-              {/* Search Button */}
-              <div className="relative flex-shrink-0">
-                <Button variant="ghost" onClick={() => setShowSearch(!showSearch)}
-                  className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-950/20"
-                  title={t('mockupsPage.search')}
-                >
-                  <Search size={20} />
-                </Button>
-                {showSearch && (
-                  <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-neutral-700/30 rounded-md p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
-                    <SearchBar
-                      value={searchQuery}
-                      onChange={setSearchQuery}
-                      placeholder={t('mockupsPage.searchPlaceholder')}
-                      iconSize={14}
-                      className="bg-transparent border-neutral-700/30 text-sm font-mono"
-                      containerClassName="w-full"
-                      autoFocus
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+        {/* Top Row: Sidebar */}
+        <div className="mb-8">
+          <CollapsibleSidebar
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            title="Community Mockups"
+            count={mockups.length}
+            countLabel={mockups.length === 1 ? 'mockup' : 'mockups'}
+            allTags={allTags}
+            filterTag={filterTag}
+            onFilterTagChange={setFilterTag}
+            translateTag={translateTag}
+          />
         </div>
 
         {/* Grid Gallery */}
@@ -531,6 +483,6 @@ export const MockupsPage: React.FC = () => {
           />
         )}
       </div>
-    </>
+    </PageShell>
   );
 };

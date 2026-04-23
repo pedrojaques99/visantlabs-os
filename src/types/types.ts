@@ -13,9 +13,9 @@ import { GEMINI_MODELS } from '../constants/geminiModels';
 export type GeminiModel =
   // Text/chat models
   | typeof GEMINI_MODELS.PRO_2_0
-  | typeof GEMINI_MODELS.FLASH_2_0
-  | typeof GEMINI_MODELS.PRO_1_5
-  | typeof GEMINI_MODELS.FLASH_1_5
+  | typeof GEMINI_MODELS.FLASH_2_5
+  | typeof GEMINI_MODELS.PRO_3_1
+  | typeof GEMINI_MODELS.FLASH_3_LITE
   | typeof GEMINI_MODELS.TEXT
   // Image generation models
   | typeof GEMINI_MODELS.IMAGE_FLASH
@@ -29,11 +29,11 @@ export type GeminiModel =
   | 'veo-3.1-generate-preview'
   | 'veo-3.1-fast-generate-preview';
 
-// Seedream models via APIFree.ai
-export type SeedreamModel = 'seedream-4.5' | 'seedream-4.0';
+// Seedream / Seededit models via APIFree.ai — single source of truth is seedreamModels.ts
+export type { SeedreamModelId as SeedreamModel } from '../constants/seedreamModels';
 
 // Image generation provider
-export type ImageProvider = 'gemini' | 'seedream';
+export type ImageProvider = 'gemini' | 'seedream' | 'openai';
 
 export enum VeoModel {
   VEO_3_1 = 'veo-3.1-generate-preview',

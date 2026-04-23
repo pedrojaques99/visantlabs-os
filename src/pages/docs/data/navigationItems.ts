@@ -3,7 +3,7 @@
  * Defines sidebar navigation structure and tab routing
  */
 
-import { Home, Server, Terminal, Puzzle, Layers, Workflow, Sparkles, Bot, Coins } from 'lucide-react';
+import { Home, Server, Terminal, Puzzle, Layers, Workflow, Diamond, Bot, Coins } from 'lucide-react';
 import type { NavigationItem } from '@/components/ui/NavigationSidebar';
 
 export const DOCS_NAVIGATION_ITEMS: NavigationItem[] = [
@@ -42,10 +42,14 @@ export const DOCS_NAVIGATION_ITEMS: NavigationItem[] = [
     icon: Terminal,
     sections: [
       { id: 'mcp-overview', label: 'Overview' },
+      { id: 'mcp-getting-started', label: 'Getting Started' },
       { id: 'mcp-setup', label: 'Setup & Connection' },
+      { id: 'mcp-snippets', label: 'Code Snippets' },
       { id: 'mcp-auth', label: 'Authentication' },
+      { id: 'mcp-tools-ref', label: 'Tool Reference (28)' },
+      { id: 'mcp-workflows', label: 'Common Workflows' },
+      { id: 'mcp-response-format', label: 'Response Format' },
       { id: 'mcp-figma-tools', label: 'Figma MCP Tools' },
-      // Dynamic sections added from mcpSpec.tools
     ],
   },
   {
@@ -84,7 +88,7 @@ export const DOCS_NAVIGATION_ITEMS: NavigationItem[] = [
   {
     id: 'brand-guidelines',
     label: 'Brand Guidelines',
-    icon: Sparkles,
+    icon: Diamond,
     sections: [
       { id: 'bg-overview', label: 'Overview' },
       { id: 'bg-rest', label: 'REST Endpoints' },

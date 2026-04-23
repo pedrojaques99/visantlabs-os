@@ -143,6 +143,10 @@ export const SEO: React.FC<SEOProps> = ({
     // Add x-default
     updateLinkTag('alternate', finalUrl, 'x-default');
 
+    // AI Discovery
+    updateLinkTag('ai-index', '/llms.txt');
+    updateMetaTag('ai-status', 'ready');
+
     // Update html lang attribute
     document.documentElement.lang = currentLocale === 'pt-BR' ? 'pt-BR' : 'en-US';
 

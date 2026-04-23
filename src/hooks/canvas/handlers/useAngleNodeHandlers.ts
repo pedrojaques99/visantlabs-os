@@ -12,7 +12,7 @@ import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { getAnglePreset } from '@/services/anglePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
 import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
-import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBrandContext';
+import { buildPromptWithBrandContext } from '@/hooks/canvas/useBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface UseAngleNodeHandlersParams {
@@ -54,8 +54,7 @@ export const useAngleNodeHandlers = ({
     const node = nodesRef.current.find(n => n.id === nodeId);
     const angleData = node?.data as AngleNodeData;
 
-    const { tokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
-    const promptOverride = tokens ? buildEnhancement(angle.prompt, tokens) : undefined;
+    const promptOverride = buildPromptWithBrandContext(angle.prompt, nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
 
     await generateImageWithPreset({
       nodeId,

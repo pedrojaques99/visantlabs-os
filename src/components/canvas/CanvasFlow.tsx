@@ -193,6 +193,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   const [isProcessingFiles, setIsProcessingFiles] = useState(false);
   const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0, fileName: '' });
   const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
+  const justFinishedSelectionRef = useRef(false);
+  const selectionDraggedRef = useRef(false);
   const [zoom, setZoom] = useState(1);
   const [showCreateIndicator, setShowCreateIndicator] = useState(false);
   const [createIndicatorPos, setCreateIndicatorPos] = useState({ x: 0, y: 0 });
@@ -380,6 +382,16 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     } catch (error) {
       console.error('Error converting screen position to flow position:', error);
       position = { x: 0, y: 0 };
+    }
+
+    // Check if this is an internal asset drop (from Brand Library)
+    const assetUrl = e.dataTransfer.getData('application/vsn-asset-url');
+    const assetType = e.dataTransfer.getData('application/vsn-asset-type') as 'image' | 'logo';
+
+    if (assetUrl && onDropImage) {
+      onDropImage({ url: assetUrl, mimeType: 'image/png' }, position);
+      toast.success(t('canvas.assetAdded') || 'Asset added to board');
+      return;
     }
 
     // Check if this is a toolbar node drop
@@ -599,6 +611,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       });
       if (position && !isNaN(position.x) && !isNaN(position.y)) {
         setIsSelecting(true);
+        selectionDraggedRef.current = false;
         onSelectionBoxStart?.(position);
       }
     }
@@ -620,6 +633,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         y: e.clientY,
       });
       if (position && !isNaN(position.x) && !isNaN(position.y)) {
+        selectionDraggedRef.current = true;
         onSelectionBoxUpdate?.(position);
       }
     }
@@ -628,9 +642,29 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   const handleSelectionMouseUp = useCallback(() => {
     if (isSelecting) {
       setIsSelecting(false);
+      // Only block deselection if user actually dragged a selection box
+      // Simple pane clicks should NOT block deselection
+      if (selectionDraggedRef.current) {
+        justFinishedSelectionRef.current = true;
+        setTimeout(() => { justFinishedSelectionRef.current = false; }, 100);
+      }
       onSelectionBoxEnd?.();
     }
   }, [isSelecting, onSelectionBoxEnd]);
+
+  // Wrap onNodesChange to suppress deselect-all right after a selection box drag ends
+  const handleNodesChangeInternal = useCallback((changes: any[]) => {
+    if (justFinishedSelectionRef.current) {
+      // Filter out select=false changes that come from the pane click after selection
+      const filtered = changes.filter(
+        (c: any) => !(c.type === 'select' && c.selected === false)
+      );
+      if (filtered.length > 0) onNodesChange(filtered);
+      return;
+    }
+    onNodesChange(changes);
+  }, [onNodesChange]);
+
 
   // Drawing handlers
   const handleDrawingMouseDown = useCallback((e: React.MouseEvent) => {
@@ -777,7 +811,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       {/* Drag-over overlay with clear visual feedback */}
       {isDraggingOver && (
         <div className="absolute inset-0 z-[9999] pointer-events-none flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm">
-          <div className="text-center animate-pulse">
+          <div className="text-center">
             <div className="w-32 h-32 mx-auto mb-6 rounded-full flex items-center justify-center bg-gradient-to-br from-brand-cyan to-blue-500 shadow-[0_0_40px_color-mix(in_srgb,var(--brand-cyan)_60%,transparent)]">
               <svg
                 className="w-16 h-16 text-white"
@@ -959,7 +993,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         data-node-bg-light={getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).primary === '#000000' ? 'true' : undefined}
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
+        onNodesChange={handleNodesChangeInternal}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onConnectStart={handleConnectStart}
@@ -1016,7 +1050,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
             className={cn(
               "transition-opacity duration-300",
-              isDragging ? '!opacity-300' : '!opacity-300 hover:!opacity-300'
+              isDragging ? '!opacity-100' : '!opacity-100 hover:!opacity-100'
             )}
           />
         )}
@@ -1054,7 +1088,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
             top: `${createIndicatorPos.y}px`,
           }}
         >
-          <div className="w-5 h-5 rounded-full flex items-center justify-center bg-brand-cyan/20 border-[1.5px] border-brand-cyan/60 animate-pulse">
+          <div className="w-5 h-5 rounded-full flex items-center justify-center bg-brand-cyan/20 border-[1.5px] border-brand-cyan/60">
             <span className="text-xs font-bold text-brand-cyan leading-none">
               +
             </span>
@@ -1062,18 +1096,6 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         </div>
       )}
 
-      <style>{`
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 0.6;
-            transform: translate(-50%, -50%) scale(1);
-          }
-          50% {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.1);
-          }
-        }
-      `}</style>
     </div>
   );
 };

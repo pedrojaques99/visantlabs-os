@@ -3,6 +3,7 @@
 import { calculateImageCost } from '../../src/utils/pricing.js';
 import type { GeminiModel, Resolution } from '../../src/types/types.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { OPENAI_IMAGE_MODELS, isOpenAIImageModel } from '../../src/constants/openaiModels.js';
 
 export type FeatureType = 'brandingmachine' | 'mockupmachine' | 'canvas' | 'branding' | 'figma';
 
@@ -14,7 +15,7 @@ export interface UsageRecord {
   inputTokens?: number; // Number of input tokens
   outputTokens?: number; // Number of output tokens
   hasInputImage: boolean; // Whether input image was provided
-  model: string; // Model used (e.g., 'gemini-2.5-flash-image')
+  model: string; // Model used (e.g., GEMINI_MODELS.IMAGE_FLASH)
   cost: number; // Calculated cost in USD
   requestId?: string; // Optional request ID for tracking
   feature?: FeatureType; // Feature where credits were used (brandingmachine, mockupmachine, canvas)
@@ -23,14 +24,18 @@ export interface UsageRecord {
 
 // Text generation pricing (tokens-based)
 // Prices are per 1 million tokens (USD)
-const TEXT_GENERATION_PRICING = {
-  'gemini-2.5-flash': {
-    inputPricePer1M: 0.30,
-    outputPricePer1M: 2.50,
+const TEXT_GENERATION_PRICING: Record<string, { inputPricePer1M: number; outputPricePer1M: number }> = {
+  [GEMINI_MODELS.FLASH_3]: {
+    inputPricePer1M: 0.10,
+    outputPricePer1M: 0.40,
   },
-  'gemini-3-pro-preview': { // Applies to analysis/text tasks using this model
-    inputPricePer1M: 2.00,
-    outputPricePer1M: 12.00,
+  [GEMINI_MODELS.PRO_3_1]: {
+    inputPricePer1M: 1.25,
+    outputPricePer1M: 5.00,
+  },
+  [GEMINI_MODELS.FLASH_2_5]: {
+    inputPricePer1M: 0.15,
+    outputPricePer1M: 0.60,
   },
 };
 
@@ -38,9 +43,22 @@ const TEXT_GENERATION_PRICING = {
  * Get credits required for image generation based on model and resolution
  */
 export function getCreditsRequired(
-  model: GeminiModel,
+  model: GeminiModel | string,
   resolution?: Resolution
 ): number {
+  // OpenAI gpt-image-2 — ~$0.04-$0.17/image, mapped to credit tiers
+  if (isOpenAIImageModel(model)) {
+    switch (resolution) {
+      case '512px':
+      case 'HD':
+      case '1K':    return 2;
+      case '2K':    return 3;
+      case '4K':    return 4;
+      case '1080p': return 3;
+      default:      return 2;
+    }
+  }
+
   if (model === GEMINI_MODELS.FLASH) {
     return 1;
   }
@@ -97,7 +115,7 @@ export function getVideoCreditsRequired(model?: string): number {
  */
 export function calculateImageGenerationCost(
   imagesCount: number,
-  model: string = 'gemini-2.5-flash-image',
+  model: string = GEMINI_MODELS.IMAGE_FLASH,
   hasInputImage: boolean = false,
   resolution?: Resolution
 ): number {
@@ -113,10 +131,9 @@ export function calculateImageGenerationCost(
 export function calculateTextGenerationCost(
   inputTokens: number,
   outputTokens: number,
-  model: string = 'gemini-2.5-flash'
+  model: string = GEMINI_MODELS.TEXT
 ): number {
-  const normalizedModel = model.includes('gemini-3-pro') ? 'gemini-3-pro-preview' : 'gemini-2.5-flash';
-  const pricing = TEXT_GENERATION_PRICING[normalizedModel as keyof typeof TEXT_GENERATION_PRICING];
+  const pricing = TEXT_GENERATION_PRICING[model] || TEXT_GENERATION_PRICING[GEMINI_MODELS.TEXT];
 
   if (!pricing) {
     console.warn(`Unknown text model pricing for ${model}, using Flash rates as fallback`);
@@ -137,7 +154,7 @@ export function calculateTextGenerationCost(
 export function createUsageRecord(
   userId: string,
   imagesGenerated: number,
-  model: string = 'gemini-2.5-flash-image',
+  model: string = GEMINI_MODELS.IMAGE_FLASH,
   hasInputImage: boolean = false,
   promptLength?: number,
   resolution?: Resolution,

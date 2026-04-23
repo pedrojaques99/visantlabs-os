@@ -1,25 +1,22 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
 import { canvasApi, type CanvasProject } from '../services/canvasApi';
 import { useLayout } from '@/hooks/useLayout';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
+import { PageShell } from '../components/ui/PageShell';
 import { AuthModal } from '../components/AuthModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
-import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
 import { toast } from 'sonner';
-import { FolderKanban, Calendar, Eye, Trash2, Plus, Pickaxe, FolderOpen, FileJson } from 'lucide-react';
-import { SEO } from '../components/SEO';
+import { FolderKanban, Calendar, Eye, Trash2, Plus, Pickaxe, FolderOpen, FileJson, Search } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { SearchBar } from '../components/ui/SearchBar';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData, OutputNodeData, ImageNodeData } from '../types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
-import { isLocalDevelopment } from '@/utils/env';
 import { WorkflowLibraryModal } from '../components/WorkflowLibraryModal';
-import { workflowApi, type CanvasWorkflow } from '../services/workflowApi';
+import { type CanvasWorkflow } from '../services/workflowApi';
 import { validateVisantJson, readJsonFile } from '@/utils/canvas/canvasJsonExport';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,7 +28,6 @@ const getProjectThumbnail = (project: CanvasProject): string | null => {
   const nodes = project.nodes as Node<FlowNodeData>[];
 
   // Priority: OutputNode > ImageNode > other nodes with images
-  // First, try to find an OutputNode
   const outputNode = nodes.find(n => n.type === 'output') as Node<OutputNodeData> | undefined;
   if (outputNode) {
     const outputData = outputNode.data as OutputNodeData;
@@ -43,7 +39,6 @@ const getProjectThumbnail = (project: CanvasProject): string | null => {
     }
   }
 
-  // Second, try to find an ImageNode
   const imageNode = nodes.find(n => n.type === 'image') as Node<ImageNodeData> | undefined;
   if (imageNode) {
     const imageData = imageNode.data as ImageNodeData;
@@ -58,7 +53,6 @@ const getProjectThumbnail = (project: CanvasProject): string | null => {
     }
   }
 
-  // Third, try to find any node with resultImageUrl or resultImageBase64
   for (const node of nodes) {
     const nodeData = node.data as any;
     if (nodeData.resultImageUrl) return nodeData.resultImageUrl;
@@ -88,12 +82,11 @@ export const CanvasProjectsPage: React.FC = () => {
   const editingInputRef = useRef<HTMLInputElement>(null);
   const hasLoadedProjectsRef = useRef(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
 
   const isLoadingRef = useRef(false);
   const [showWorkflowLibrary, setShowWorkflowLibrary] = useState(false);
-
-  // Placeholder/Check for admin status if needed, or pass false
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin] = useState(false);
 
   const handleLoadWorkflow = async (workflow: CanvasWorkflow) => {
     try {
@@ -101,14 +94,11 @@ export const CanvasProjectsPage: React.FC = () => {
         toast.error(t('workflows.errors.mustBeAuthenticated') || 'You must be logged in');
         return;
       }
-
-      // Create a new project from this workflow
       const newProject = await canvasApi.save(
         workflow.name,
         workflow.nodes,
         workflow.edges
       );
-
       toast.success(t('workflows.messages.loaded', { name: workflow.name }) || `Workflow loaded: ${workflow.name}`);
       navigate(`/canvas/${newProject._id}`);
     } catch (error) {
@@ -117,7 +107,6 @@ export const CanvasProjectsPage: React.FC = () => {
     }
   };
 
-  // Redirect to waitlist if user doesn't have premium access
   useEffect(() => {
     if (!isLoadingAccess && !hasAccess) {
       navigate('/waitlist', { replace: true });
@@ -125,32 +114,16 @@ export const CanvasProjectsPage: React.FC = () => {
   }, [hasAccess, isLoadingAccess, navigate]);
 
   const loadProjects = useCallback(async () => {
-    // Prevent multiple simultaneous calls
-    if (isLoadingRef.current) {
-      console.log('[CanvasProjects] ⚠️ Already loading, skipping...');
-      return;
-    }
-
-    console.log('[CanvasProjects] 📥 Loading projects...');
+    if (isLoadingRef.current) return;
     isLoadingRef.current = true;
     setIsLoading(true);
     try {
       const data = await canvasApi.getAll();
-      console.log('[CanvasProjects] ✅ Projects loaded successfully:', {
-        count: data.length,
-        projects: data.map(p => ({ id: p._id, name: p.name, isCollaborative: p.isCollaborative }))
-      });
       setProjects(data);
       hasLoadedProjectsRef.current = true;
     } catch (error: any) {
-      console.error('[CanvasProjects] ❌ Error loading canvas projects:', {
-        error,
-        status: error?.status,
-        message: error?.message,
-        stack: error?.stack
-      });
+      console.error('[CanvasProjects] Error loading canvas projects:', error);
       if (error?.status === 401) {
-        console.log('[CanvasProjects] 🔐 Unauthorized - showing auth modal');
         setShowAuthModal(true);
       } else {
         toast.error(t('canvas.failedToLoadProjects') || 'Failed to load canvas projects');
@@ -158,66 +131,26 @@ export const CanvasProjectsPage: React.FC = () => {
     } finally {
       isLoadingRef.current = false;
       setIsLoading(false);
-      console.log('[CanvasProjects] ⏸️ Loading finished');
     }
-  }, []);
+  }, [t]);
 
-  // Debounce the auth handling to give time for MongoDB/Auth to settle.
-  // This prevents the "limbo" state where the user might see the auth modal 
-  // or an empty state while the backend is still warming up.
   const handleAuthAction = useDebouncedCallback((auth: boolean | null) => {
-    if (auth === null) return;
-
-    // Skip if already loaded or currently loading
-    if (hasLoadedProjectsRef.current || isLoadingRef.current) {
-      return;
-    }
-
-    console.log('[CanvasProjects] 🔄 Auth action (debounced):', auth);
+    if (auth === null || hasLoadedProjectsRef.current || isLoadingRef.current) return;
     if (auth === false) {
-      console.log('[CanvasProjects] 🔐 Not authenticated - showing auth modal');
       setShowAuthModal(true);
     } else if (auth === true) {
-      console.log('[CanvasProjects] ✅ Authenticated - loading projects');
       loadProjects();
     }
-  }, 200); // 200ms debounce delay
+  }, 200);
 
   useEffect(() => {
     handleAuthAction(isAuthenticated);
   }, [isAuthenticated, handleAuthAction]);
 
   const handleView = (project: CanvasProject) => {
-    if (isLocalDevelopment()) {
-      console.log('[CanvasProjects] 👁️ Viewing project:', {
-        id: project._id,
-        name: project.name,
-        isCollaborative: project.isCollaborative,
-        nodeCount: Array.isArray(project.nodes) ? project.nodes.length : 0,
-        edgeCount: Array.isArray(project.edges) ? project.edges.length : 0,
-        createdAt: project.createdAt,
-        updatedAt: project.updatedAt,
-        timestamp: new Date().toISOString()
-      });
-    }
-
     if (project._id && project._id.trim() !== '') {
-      if (isLocalDevelopment()) {
-        console.log('[CanvasProjects] 🚀 Navigating to canvas page:', {
-          url: `/canvas/${project._id}`,
-          projectId: project._id,
-          timestamp: new Date().toISOString()
-        });
-      }
       navigate(`/canvas/${project._id}`);
     } else {
-      if (isLocalDevelopment()) {
-        console.error('[CanvasProjects] ❌ Invalid project ID:', {
-          projectId: project._id,
-          project: project,
-          timestamp: new Date().toISOString()
-        });
-      }
       toast.error(t('canvas.invalidProjectId') || 'Invalid project ID');
     }
   };
@@ -248,20 +181,11 @@ export const CanvasProjectsPage: React.FC = () => {
   }, [navigate]);
 
   const handleCreateNew = async () => {
-    console.log('[CanvasProjects] ➕ Creating new project...');
     try {
       const newProject = await canvasApi.save('Untitled', [], []);
-      console.log('[CanvasProjects] ✅ New project created:', {
-        id: newProject._id,
-        name: newProject.name
-      });
       navigate(`/canvas/${newProject._id}`);
     } catch (error: any) {
-      console.error('[CanvasProjects] ❌ Error creating project:', {
-        error,
-        status: error?.status,
-        message: error?.message
-      });
+      console.error('[CanvasProjects] Error creating project:', error);
       toast.error(t('canvas.failedToCreateProject') || 'Failed to create new project');
     }
   };
@@ -274,7 +198,6 @@ export const CanvasProjectsPage: React.FC = () => {
 
   const handleDeleteConfirm = async () => {
     if (!projectToDelete) return;
-
     setDeletingId(projectToDelete);
     try {
       await canvasApi.delete(projectToDelete);
@@ -306,19 +229,15 @@ export const CanvasProjectsPage: React.FC = () => {
       setEditingProjectId(null);
       return;
     }
-
     const project = projects.find(p => p._id === projectId);
     if (!project) return;
-
     const trimmedName = editingName.trim();
     if (trimmedName === project.name) {
       setEditingProjectId(null);
       setEditingName('');
       return;
     }
-
     try {
-      // Update project name using save method (it updates if projectId exists)
       await canvasApi.save(trimmedName, project.nodes, project.edges, projectId);
       setProjects(prev => prev.map(p =>
         p._id === projectId ? { ...p, name: trimmedName } : p
@@ -355,333 +274,290 @@ export const CanvasProjectsPage: React.FC = () => {
     });
   };
 
-  // Filter projects based on search query
   const filteredProjects = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return projects;
+    let result = [...projects];
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(project =>
+        project.name?.toLowerCase().includes(query)
+      );
     }
-    const query = searchQuery.toLowerCase();
-    return projects.filter(project =>
-      project.name?.toLowerCase().includes(query)
-    );
+    return result.sort((a, b) => {
+      const dateA = new Date(a.updatedAt || a.createdAt).getTime();
+      const dateB = new Date(b.updatedAt || b.createdAt).getTime();
+      return dateB - dateA;
+    });
   }, [projects, searchQuery]);
 
-  // Show loading state while checking access
+  const headerActions = (
+    <div className="flex items-center gap-3">
+      <div className="relative">
+        <Button 
+          variant="ghost" 
+          onClick={() => setShowSearch(!showSearch)}
+          className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-900/40"
+          title="Search"
+        >
+          <Search size={18} />
+        </Button>
+        {showSearch && (
+          <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-neutral-800/40 rounded-ml p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={t('canvas.searchProjects') || 'Search projects...'}
+              iconSize={14}
+              className="bg-transparent border-neutral-800/20 text-xs font-mono"
+              containerClassName="w-full"
+              autoFocus
+            />
+          </div>
+        )}
+      </div>
+      
+      <div className="h-6 w-[1px] bg-neutral-800/60 mx-1 hidden md:block" />
+
+      <Button 
+        variant="ghost" 
+        onClick={() => setShowWorkflowLibrary(true)}
+        className="h-10 px-3 hover:bg-neutral-900/40 text-neutral-400 hover:text-brand-cyan transition-all rounded-md flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest"
+      >
+        <FolderOpen className="h-4 w-4" />
+        <span className="hidden lg:inline">{t('workflows.importWorkflow') || 'Library'}</span>
+      </Button>
+
+      <Button 
+        variant="toolbar" 
+        onClick={handleImportJsonClick}
+        
+      >
+        <FileJson className="h-4 w-4" />
+        <span className="hidden lg:inline">JSON</span>
+      </Button>
+
+      <Button variant="brand" onClick={handleCreateNew}
+        className="h-10 px-6 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-bold uppercase tracking-widest text-[10px] rounded-md transition-all duration-300 hover:scale-[1.02] flex items-center gap-2"
+      >
+        <Plus className="h-4 w-4" />
+        {t('canvas.newProject') || 'New Project'}
+      </Button>
+      
+      <Input
+        ref={importJsonInputRef}
+        type="file"
+        accept=".json"
+        style={{ display: 'none' }}
+        onChange={handleImportJsonFileChange}
+      />
+    </div>
+  );
+
   if (isLoadingAccess || isLoading) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative overflow-hidden">
-        <div className="fixed inset-0 z-0">
-        </div>
-        <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
-          {/* Header Skeleton */}
-          <div className="mb-4">
-            <SkeletonLoader height="1.25rem" className="w-48" />
-          </div>
-          <div className="flex items-start gap-4 mb-6">
-            <div className="flex-1">
-              <SkeletonLoader height="2.5rem" className="w-48 mb-2" />
-              <SkeletonLoader height="1rem" className="w-24" />
-            </div>
-            <SkeletonLoader height="2.5rem" className="w-36 rounded-md" />
-          </div>
-
-          {/* Grid Skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className="bg-[#141414] border border-neutral-800/60 rounded-md p-6 md:p-8"
-                style={{ animationDelay: `${i * 100}ms` }}
-              >
-                {/* Thumbnail Skeleton */}
-                <SkeletonLoader height="12rem" className="w-full rounded-md mb-4" />
-
-                {/* Title Row */}
-                <div className="flex items-center gap-2 mb-2">
-                  <SkeletonLoader height="1.25rem" className="w-5 rounded" />
-                  <SkeletonLoader height="1.5rem" className="flex-1" />
-                </div>
-
-                {/* Date Row */}
-                <div className="flex items-center gap-2 mb-4">
-                  <SkeletonLoader height="0.875rem" className="w-3.5 rounded" />
-                  <SkeletonLoader height="0.875rem" className="w-24" />
-                </div>
-
-                {/* Stats Row */}
-                <div className="flex items-center gap-4 mb-4">
-                  <SkeletonLoader height="0.75rem" className="w-16" />
-                  <SkeletonLoader height="0.75rem" className="w-16" />
-                </div>
-
-                {/* Buttons Row */}
-                <div className="flex items-center gap-2">
-                  <SkeletonLoader height="2.5rem" className="flex-1 rounded-md" />
-                  <SkeletonLoader height="2.5rem" className="w-12 rounded-xl" />
-                </div>
+      <PageShell
+        pageId="canvas-projects-loading"
+        title={t('canvas.projects') || 'Projects'}
+        microTitle="Canvas // Workspace"
+        description="Manage your visual canvas projects."
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="bg-[#141414] border border-neutral-800/60 rounded-md p-6 md:p-8"
+              style={{ animationDelay: `${i * 100}ms` }}
+            >
+              <SkeletonLoader height="12rem" className="w-full rounded-md mb-4" />
+              <div className="flex items-center gap-2 mb-2">
+                <SkeletonLoader height="1.25rem" className="w-5 rounded" />
+                <SkeletonLoader height="1.5rem" className="flex-1" />
               </div>
-            ))}
-          </div>
+              <div className="flex items-center gap-2 mb-4">
+                <SkeletonLoader height="0.875rem" className="w-3.5 rounded" />
+                <SkeletonLoader height="0.875rem" className="w-24" />
+              </div>
+              <div className="flex items-center gap-2">
+                <SkeletonLoader height="2.5rem" className="flex-1 rounded-md" />
+                <SkeletonLoader height="2.5rem" className="w-12 rounded-xl" />
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
+      </PageShell>
     );
   }
 
-  // Don't render content if redirecting
-  if (!hasAccess) {
-    return null;
-  }
+  if (!hasAccess) return null;
+
+  const countStr = (() => {
+    const count = filteredProjects.length;
+    const total = projects.length;
+    const isSingular = count === 1;
+    if (searchQuery.trim()) {
+      return locale === 'pt-BR' 
+        ? `${count} de ${total} ${isSingular ? 'projeto' : 'projetos'} encontrados`
+        : `${count} of ${total} ${isSingular ? 'project' : 'projects'} found`;
+    } else {
+      return locale === 'pt-BR'
+        ? `Gerencie ${count} ${isSingular ? 'projeto' : 'projetos'}`
+        : `Manage ${count} ${isSingular ? 'project' : 'projects'}`;
+    }
+  })();
 
   return (
-    <>
-      <SEO
-        title={t('canvas.seoTitle') || 'Canvas Editor'}
-        description={t('canvas.seoDescription') || 'Editor visual baseado em fluxos para criação de designs. Colabore em tempo real e crie projetos visuais profissionais.'}
-        keywords={t('canvas.seoKeywords') || 'canvas editor, editor visual, design editor, colaboração, visual flow editor'}
-        noindex={true}
-      />
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative overflow-hidden">
-        <div className="fixed inset-0 z-0">
-        </div>
-        <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
-          {/* Header */}
-          <div className="mb-4">
-            <BreadcrumbWithBack to="/canvas">
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/">{t('apps.home')}</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/canvas">{t('canvas.title') || 'Canvas'}</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{t('canvas.projects') || 'Projects'}</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </BreadcrumbWithBack>
+    <PageShell
+      pageId="canvas-projects"
+      seoTitle={t('canvas.seoTitle') || 'Canvas Editor'}
+      seoDescription={t('canvas.seoDescription') || 'Editor visual baseado em fluxos.'}
+      title={t('canvas.projects') || 'Projects'}
+      microTitle="Canvas // Workspace"
+      description={countStr}
+      breadcrumb={[
+        { label: t('apps.home') || 'Home', to: '/' },
+        { label: t('canvas.title') || 'Canvas', to: '/canvas' },
+        { label: t('canvas.projects') || 'Projects' }
+      ]}
+      actions={headerActions}
+    >
+      <div className="relative z-10">
+        {filteredProjects.length === 0 && projects.length > 0 ? (
+          <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
+            <FolderKanban size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
+            <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
+              {t('canvas.noProjectsFound')?.toUpperCase() || 'NO PROJECTS FOUND'}
+            </h2>
+            <p className="text-sm text-neutral-600 font-mono mb-6">
+              {t('canvas.noProjectsMatchSearch') || 'No projects match your search query.'}
+            </p>
+            <Button variant="ghost" onClick={() => setSearchQuery('')}
+              className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
+            >
+              {t('canvas.clearSearch') || 'Clear Search'}
+            </Button>
           </div>
-          <div className="flex items-start gap-4 mb-6">
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-300 mb-2">
-                {t('canvas.projects') || 'Projects'}
-              </h1>
-              <p className="text-neutral-500 font-mono text-sm md:text-base mb-4">
-                {projects.length === 0
-                  ? (t('canvas.noProjectsYet') || 'No projects yet')
-                  : (() => {
-                    const count = filteredProjects.length;
-                    const total = projects.length;
-                    const isSingular = count === 1;
-                    if (searchQuery.trim()) {
-                      if (locale === 'pt-BR') {
-                        return `${count} de ${total} ${isSingular ? 'projeto' : 'projetos'}`;
-                      } else {
-                        return `${count} of ${total} ${isSingular ? 'project' : 'projects'}`;
-                      }
-                    } else {
-                      if (locale === 'pt-BR') {
-                        return `${count} ${isSingular ? 'projeto' : 'projetos'}`;
-                      } else {
-                        return `${count} ${isSingular ? 'project' : 'projects'}`;
-                      }
+        ) : projects.length === 0 ? (
+          <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
+            <FolderKanban size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
+            <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
+              {t('canvas.noProjectsYet')?.toUpperCase() || 'NO PROJECTS YET'}
+            </h2>
+            <p className="text-sm text-neutral-600 font-mono mb-6">
+              {t('canvas.createFirstProject') || 'Create your first canvas project to start working with nodes.'}
+            </p>
+            <Button variant="brand" onClick={handleCreateNew}
+              className="px-6 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
+            >
+              <Pickaxe className="h-4 w-4" />
+              {t('canvas.createFirstProjectButton') || 'Create Your First Project'}
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {filteredProjects.map((project) => {
+              const nodeCount = Array.isArray(project.nodes) ? project.nodes.length : 0;
+              const edgeCount = Array.isArray(project.edges) ? project.edges.length : 0;
+              const thumbnail = getProjectThumbnail(project);
+
+              return (
+                <div
+                  key={project._id}
+                  className="bg-[#141414]/40 backdrop-blur-sm border border-neutral-800/60 rounded-xl p-5 hover:border-brand-cyan/40 transition-all duration-500 group cursor-pointer overflow-hidden shadow-xl"
+                  onClick={() => {
+                    if (editingProjectId !== project._id) {
+                      handleView(project);
                     }
-                  })()}
-              </p>
-              {projects.length > 0 && (
-                <div className="max-w-md">
-                  <SearchBar
-                    value={searchQuery}
-                    onChange={setSearchQuery}
-                    placeholder={t('canvas.searchProjects') || 'Search projects...'}
-                    iconSize={16}
-                    className="bg-neutral-950/70 border-neutral-800/50 text-neutral-300 placeholder:text-neutral-500"
-                  />
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col gap-2 flex-shrink-0">
-              <Button variant="brand" onClick={handleCreateNew}
-                className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                {t('canvas.newProject') || 'New Project'}
-              </Button>
-              <Button variant="ghost" onClick={() => setShowWorkflowLibrary(true)}
-                className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
-              >
-                <FolderOpen className="h-4 w-4" />
-                {t('workflows.importWorkflow') || 'Import workflow'}
-              </Button>
-              <Button variant="outline" onClick={handleImportJsonClick}
-                className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
-              >
-                <FileJson className="h-4 w-4" />
-                Import from JSON
-              </Button>
-              <Input
-                ref={importJsonInputRef}
-                type="file"
-                accept=".json"
-                style={{ display: 'none' }}
-                onChange={handleImportJsonFileChange}
-              />
-            </div>
-          </div>
+                  }}
+                >
+                  <div className="relative w-full h-48 mb-6 rounded-lg overflow-hidden bg-neutral-900/50 border border-neutral-800/60">
+                    {thumbnail ? (
+                      <img
+                        src={thumbnail}
+                        alt={project.name || 'Project preview'}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <FolderKanban className="h-10 w-10 text-neutral-800" strokeWidth={1} />
+                      </div>
+                    )}
+                  </div>
 
-          {/* Projects Grid */}
-          {filteredProjects.length === 0 && projects.length > 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-              <FolderKanban size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
-              <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
-                {t('canvas.noProjectsFound')?.toUpperCase() || 'NO PROJECTS FOUND'}
-              </h2>
-              <p className="text-sm text-neutral-600 font-mono mb-6">
-                {t('canvas.noProjectsMatchSearch') || 'No projects match your search query.'}
-              </p>
-              <Button variant="ghost" onClick={() => setSearchQuery('')}
-                className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
-              >
-                {t('canvas.clearSearch') || 'Clear Search'}
-              </Button>
-            </div>
-          ) : projects.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-              <FolderKanban size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
-              <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
-                {t('canvas.noProjectsYet')?.toUpperCase() || 'NO PROJECTS YET'}
-              </h2>
-              <p className="text-sm text-neutral-600 font-mono mb-6">
-                {t('canvas.createFirstProject') || 'Create your first canvas project to start working with nodes.'}
-              </p>
-              <Button variant="brand" onClick={handleCreateNew}
-                className="px-6 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
-              >
-                <Pickaxe className="h-4 w-4" />
-                {t('canvas.createFirstProjectButton') || 'Create Your First Project'}
-              </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {filteredProjects.map((project) => {
-                const nodeCount = Array.isArray(project.nodes) ? project.nodes.length : 0;
-                const edgeCount = Array.isArray(project.edges) ? project.edges.length : 0;
-
-                return (
-                  <div
-                    key={project._id}
-                    className="bg-[#141414] border border-neutral-800/60 rounded-md p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer overflow-hidden"
-                    onClick={() => {
-                      if (editingProjectId !== project._id) {
-                        handleView(project);
-                      }
-                    }}
-                  >
-                    {/* Thumbnail Preview */}
-                    {(() => {
-                      const thumbnail = getProjectThumbnail(project);
-                      return thumbnail ? (
-                        <div className="w-full h-48 mb-4 rounded-md overflow-hidden bg-neutral-900/50 border border-neutral-800/60">
-                          <img
-                            src={thumbnail}
-                            alt={project.name || 'Project preview'}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              // Hide image on error
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        {editingProjectId === project._id ? (
+                          <Input
+                            ref={editingInputRef}
+                            type="text"
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            onBlur={() => handleNameEditSave(project._id)}
+                            onKeyDown={(e) => handleNameEditKeyDown(e, project._id)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex-1 font-bold text-neutral-200 font-manrope text-lg bg-transparent border-b border-brand-cyan/40 focus:border-brand-cyan focus:outline-none px-1 h-auto py-0"
                           />
-                        </div>
-                      ) : (
-                        <div className="w-full h-48 mb-4 rounded-md bg-neutral-900/50 border border-neutral-800/60 flex items-center justify-center">
-                          <FolderKanban className="h-12 w-12 text-neutral-700" strokeWidth={1} />
-                        </div>
-                      );
-                    })()}
-
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FolderKanban className="h-5 w-5 text-brand-cyan flex-shrink-0" />
-                          {editingProjectId === project._id ? (
-                            <Input
-                              ref={editingInputRef}
-                              type="text"
-                              value={editingName}
-                              onChange={(e) => setEditingName(e.target.value)}
-                              onBlur={() => handleNameEditSave(project._id)}
-                              onKeyDown={(e) => handleNameEditKeyDown(e, project._id)}
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex-1 font-semibold text-neutral-200 font-manrope text-lg bg-transparent border-b border-neutral-600 focus:border-brand-cyan focus:outline-none px-1"
-                            />
-                          ) : (
-                            <h3
-                              className="font-semibold text-neutral-200 font-manrope text-lg line-clamp-2 cursor-text hover:text-brand-cyan transition-colors"
-                              onClick={(e) => handleNameEditStart(project, e)}
-                              title={t('canvas.clickToEdit') || 'Click to edit'}
-                            >
-                              {project.name || t('canvas.untitled') || 'Untitled'}
-                            </h3>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono mb-3">
-                          <Calendar className="h-3.5 w-3.5" />
-                          <span>{formatDate(project.createdAt)}</span>
-                        </div>
+                        ) : (
+                          <h3
+                            className="font-bold text-neutral-200 font-manrope text-lg line-clamp-1 cursor-text group-hover:text-brand-cyan transition-colors"
+                            onClick={(e) => handleNameEditStart(project, e)}
+                            title={t('canvas.clickToEdit') || 'Click to edit'}
+                          >
+                            {project.name || t('canvas.untitled') || 'Untitled'}
+                          </h3>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-mono mb-4 uppercase tracking-widest" title={`${t('canvas.lastEdited')}: ${formatDate(project.updatedAt || project.createdAt)}`}>
+                        <Calendar className="h-3 w-3" />
+                        <span>{formatDate(project.updatedAt || project.createdAt)}</span>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-4 text-xs text-neutral-500 font-mono mb-4">
-                      <span>{nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}</span>
-                      <span>•</span>
-                      <span>{edgeCount} {edgeCount === 1 ? 'edge' : 'edges'}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" onClick={(e) => {
-                        e.stopPropagation();
-                        handleView(project);
-                      }}
-                        className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
-                      >
-                        <Eye className="h-4 w-4" />
-                        {t('canvas.open') || 'Open'}
-                      </Button>
-                      <Button variant="ghost" onClick={(e) => handleDeleteClick(project._id, e)}
-                        disabled={deletingId === project._id}
-                        className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+
+                  <div className="flex items-center gap-4 text-[10px] text-neutral-500 font-mono mb-6 uppercase tracking-widest opacity-60">
+                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-white/5">{nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}</span>
+                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-white/5">{edgeCount} {edgeCount === 1 ? 'edge' : 'edges'}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" onClick={(e) => {
+                      e.stopPropagation();
+                      handleView(project);
+                    }}
+                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-brand-cyan/50 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Eye className="h-4 w-4" />
+                      {t('canvas.open') || 'Open'}
+                    </Button>
+                    <Button variant="ghost" onClick={(e) => handleDeleteClick(project._id, e)}
+                      disabled={deletingId === project._id}
+                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 rounded-lg text-neutral-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Auth Modal */}
       {showAuthModal && (
         <AuthModal
           isOpen={showAuthModal}
           onClose={() => setShowAuthModal(false)}
           onSuccess={async () => {
             setShowAuthModal(false);
-            hasLoadedProjectsRef.current = false; // Reset flag to allow reload
+            hasLoadedProjectsRef.current = false;
             await loadProjects();
           }}
           isSignUp={false}
         />
       )}
 
-      {/* Delete Confirmation Modal */}
       <ConfirmationModal
         isOpen={showDeleteModal}
         onClose={() => {
@@ -704,7 +580,7 @@ export const CanvasProjectsPage: React.FC = () => {
         isAdmin={isAdmin}
         t={t}
       />
-    </>
+    </PageShell>
   );
 };
 

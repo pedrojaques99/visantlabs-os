@@ -113,7 +113,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
               placeholder={t('designSystem.commandPalette.placeholder') || 'Search components, colors, typography...'}
               iconSize={20}
               showClearButton={false}
-              className="flex-1 bg-transparent border-0 text-neutral-200 placeholder:text-neutral-500 focus:outline-none font-mono text-sm focus:ring-0 focus:ring-offset-0"
+              className="flex-1 bg-transparent border-0 text-neutral-200 placeholder:text-neutral-500 focus:outline-none font-mono text-sm focus:ring-offset-0"
               containerClassName="flex-1"
             />
             <div className="flex items-center gap-1 px-2 py-1 bg-neutral-900/50 rounded border border-neutral-800/50">

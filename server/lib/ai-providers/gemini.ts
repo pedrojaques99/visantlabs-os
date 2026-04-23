@@ -2,6 +2,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { FigmaOperation } from '../../../src/lib/figma-types.js';
 import type { AIProvider, AIGenerationOptions, AIGenerationResult } from './types.js';
+import { GEMINI_MODELS } from '../../../src/constants/geminiModels.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -15,7 +16,7 @@ const geminiProvider: AIProvider = {
   ): Promise<AIGenerationResult> {
     try {
       const model = genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash',
+        model: GEMINI_MODELS.TEXT,
         generationConfig: {
           responseMimeType: 'application/json',
           temperature: options?.temperature ?? 0.2,
@@ -114,5 +115,42 @@ const geminiProvider: AIProvider = {
     }
   },
 };
+
+/**
+ * Generate plain text response (for image analysis, chat, etc.)
+ */
+export async function generateText(
+  systemPrompt: string,
+  userPrompt: string,
+  attachments?: Array<{ mimeType: string; data: string }>
+): Promise<{ text: string; usage?: { inputTokens: number; outputTokens: number; totalTokens: number } }> {
+  const model = genAI.getGenerativeModel({
+    model: GEMINI_MODELS.TEXT,
+    generationConfig: { temperature: 0.3 },
+    systemInstruction: systemPrompt,
+  });
+
+  const parts: any[] = [{ text: userPrompt }];
+
+  if (attachments) {
+    for (const att of attachments) {
+      parts.push({
+        inlineData: { mimeType: att.mimeType, data: att.data },
+      });
+    }
+  }
+
+  const result = await model.generateContent(parts);
+  const text = result.response.text();
+
+  const meta = result.response.usageMetadata;
+  const usage = meta ? {
+    inputTokens: meta.promptTokenCount ?? 0,
+    outputTokens: meta.candidatesTokenCount ?? 0,
+    totalTokens: meta.totalTokenCount ?? 0,
+  } : undefined;
+
+  return { text, usage };
+}
 
 export default geminiProvider;

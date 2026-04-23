@@ -18,7 +18,7 @@ export function GlitchLoader({
   useEffect(() => {
     const glitchChars = '*•□./-®'
     const glitchInterval = setInterval(() => {
-      const randomGlitch = Array.from({ length: 4 }, () =>
+      const randomGlitch = Array.from({ length: 2 }, () =>
         glitchChars[Math.floor(Math.random() * glitchChars.length)]
       ).join('')
       setGlitchText(randomGlitch)

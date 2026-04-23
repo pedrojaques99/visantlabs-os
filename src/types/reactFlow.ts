@@ -1,6 +1,8 @@
 import type { Node, Edge } from '@xyflow/react';
+import type { CustomNodeDefinition, MultiOutputConfig } from './customNode';
 import type { Mockup } from '../services/mockupApi';
-import type { GeminiModel, Resolution, AspectRatio, DesignType, UploadedImage, GenerationMode } from './types';
+import type { GeminiModel, SeedreamModel, ImageProvider, Resolution, AspectRatio, DesignType, UploadedImage, GenerationMode } from './types';
+import type { FeedbackRating } from '../services/feedbackApi';
 import type { SubscriptionStatus } from '../services/subscriptionService';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 
@@ -36,13 +38,19 @@ export interface ImageNodeData extends BaseNodeData {
   onUpdateData?: (nodeId: string, newData: Partial<ImageNodeData>) => void;
   onBrandKit?: (nodeId: string, presetIds: string[]) => void;
   addTextNode?: (customPosition?: { x: number; y: number }, initialText?: string, isFlowPosition?: boolean) => string | undefined;
+  /** UUID da geração — atrelado ao feedback 👍/👎 (RAG loop). */
+  generationId?: string | null;
+  /** Rating persistido como SSoT no canvas save. */
+  feedbackRating?: FeedbackRating | null;
 }
 
 // Merge Node - combines connected images
 export interface MergeNodeData extends BaseNodeData {
   type: 'merge';
   prompt?: string;
-  model?: GeminiModel;
+  model?: GeminiModel | SeedreamModel;
+  /** Derived from model at generation time — stored for credit display only */
+  provider?: ImageProvider;
   isLoading?: boolean;
   isGeneratingPrompt?: boolean;
   resultImageBase64?: string;
@@ -50,7 +58,7 @@ export interface MergeNodeData extends BaseNodeData {
   imageWidth?: number; // Natural width of the image in pixels
   imageHeight?: number; // Natural height of the image in pixels
   connectedImages?: string[];
-  onGenerate?: (nodeId: string, connectedImages: string[], prompt: string, model?: GeminiModel) => Promise<void>;
+  onGenerate?: (nodeId: string, connectedImages: string[], prompt: string, model?: GeminiModel | SeedreamModel) => Promise<void>;
   onGeneratePrompt?: (nodeId: string, images: string[]) => Promise<void>;
   onUpdateData?: (nodeId: string, newData: Partial<MergeNodeData>) => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
@@ -169,10 +177,11 @@ export interface MockupNodeData extends BaseNodeData {
   isValidColor?: boolean; // Color input validation
   withHuman?: boolean; // Include human interaction
   customPrompt?: string; // Custom editable prompt (optional)
-  model?: GeminiModel; // Model for generation
+  model?: GeminiModel | SeedreamModel; // Model for generation
+  provider?: ImageProvider; // Image generation provider
   resolution?: Resolution; // Resolution for generation
   aspectRatio?: AspectRatio; // Aspect ratio for generation
-  onGenerate?: (nodeId: string, imageBase64: string, presetId: string, selectedColors?: string[], withHuman?: boolean, customPrompt?: string, model?: GeminiModel, resolution?: Resolution, aspectRatio?: AspectRatio) => Promise<void>;
+  onGenerate?: (nodeId: string, imageBase64: string, presetId: string, selectedColors?: string[], withHuman?: boolean, customPrompt?: string, model?: GeminiModel | SeedreamModel, resolution?: Resolution, aspectRatio?: AspectRatio) => Promise<void>;
   onUpdateData?: (nodeId: string, newData: Partial<MockupNodeData>) => void;
   onAddMockupNode?: () => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
@@ -293,9 +302,12 @@ export interface ShaderNodeData extends BaseNodeData {
 export interface PromptNodeData extends BaseNodeData {
   type: 'prompt';
   prompt: string;
-  model?: GeminiModel;
+  model?: GeminiModel | SeedreamModel;
+  provider?: ImageProvider;
   aspectRatio?: AspectRatio; // Aspect ratio for image generation (Pro model only)
   resolution?: Resolution; // Resolution for image generation (Pro model only)
+  seed?: number; // Seed for deterministic generation
+  seedLocked?: boolean; // If true, seed persists between generations
   isLoading?: boolean;
   resultImageBase64?: string;
   resultImageUrl?: string; // R2 URL for result image
@@ -313,7 +325,7 @@ export interface PromptNodeData extends BaseNodeData {
   pdfPageReference?: string; // Reference to specific page/section of PDF (e.g., "Page 3" or "Color section")
   promptSuggestions?: string[]; // AI-generated prompt suggestions
   isSuggestingPrompts?: boolean; // Loading state for prompt suggestions
-  onGenerate?: (nodeId: string, prompt: string, connectedImages?: string[], model?: GeminiModel) => Promise<void>;
+  onGenerate?: (nodeId: string, prompt: string, connectedImages?: string[], model?: GeminiModel | SeedreamModel) => Promise<void>;
   onSuggestPrompts?: (nodeId: string, prompt: string) => Promise<void>; // Generate prompt suggestions
   onSavePrompt?: (prompt: string) => void; // Opens save prompt modal
   onUpdateData?: (nodeId: string, newData: Partial<PromptNodeData>) => void;
@@ -343,6 +355,10 @@ export interface OutputNodeData extends BaseNodeData {
   onResize?: (nodeId: string, width: number, height: number) => void;
   onUpdateData?: (nodeId: string, newData: Partial<OutputNodeData>) => void;
   addTextNode?: (customPosition?: { x: number; y: number }, initialText?: string, isFlowPosition?: boolean) => string | undefined;
+  /** UUID da geração — atrelado ao feedback 👍/👎 (RAG loop). */
+  generationId?: string | null;
+  /** Rating persistido como SSoT no canvas save. */
+  feedbackRating?: FeedbackRating | null;
 }
 
 // Brand Identity extracted from logo and PDF
@@ -534,6 +550,8 @@ export interface VideoNodeData extends BaseNodeData {
   aspectRatio?: AspectRatio;
   resolution?: Resolution;
   duration?: string; // e.g., '5s', '10s'
+  seed?: number; // Seed for deterministic generation
+  seedLocked?: boolean; // If true, seed persists between generations
   isLoading?: boolean;
 
   // Connected handles (synced from edges)
@@ -579,6 +597,7 @@ export interface GenerateVideoParams {
   inputVideoObject?: any;
   isLooping?: boolean;
   negativePrompt?: string;
+  seed?: number; // Seed for deterministic generation
 }
 
 // Brand Node - extracts brand identity from logo and PDF/PNG (legacy, kept for compatibility)
@@ -696,6 +715,7 @@ export interface ChatNodeData extends BaseNodeData {
     role: 'user' | 'assistant';
     content: string;
     timestamp: number;
+    generationId?: string;
     contextUsed?: {
       hasImages: boolean;
       hasStrategyData: boolean;
@@ -745,6 +765,8 @@ export interface ChatNodeData extends BaseNodeData {
     connectToChat?: boolean
   ) => string | undefined;
 
+  onRemoveNode?: (targetNodeId: string) => void;
+
   onEditConnectedNode?: (
     targetNodeId: string,
     updates: Partial<FlowNodeData>
@@ -761,11 +783,49 @@ export interface ChatNodeData extends BaseNodeData {
   connectedNodeIds?: string[];
 }
 
+// Batch Runner — orchestrates generation for every row in a connected DataNode
+export type BatchStatus = 'idle' | 'running' | 'paused' | 'done' | 'cancelled';
+
+export interface BatchResult {
+  rowIndex: number;
+  rowData: Record<string, string>;
+  status: 'pending' | 'running' | 'done' | 'error';
+  outputImageUrl?: string;
+  error?: string;
+}
+
+export interface BatchRunnerNodeData extends BaseNodeData {
+  type: 'batchRunner';
+  status: BatchStatus;
+  results: BatchResult[];
+  concurrency: number; // rows processed at a time (1 = sequential)
+  onRun?: (nodeId: string) => void;
+  onCancel?: (nodeId: string) => void;
+  onUpdateData?: (nodeId: string, newData: Partial<BatchRunnerNodeData>) => void;
+}
+
+// Data Node — loads CSV/JSON file and exposes rows as variables for generation nodes
+export interface DataNodeData extends BaseNodeData {
+  type: 'data';
+  fileName?: string;
+  rows: Array<Record<string, string>>;
+  columns: string[];
+  selectedRowIndex: number;
+  onUpdateData?: (nodeId: string, newData: Partial<DataNodeData>) => void;
+}
+
+// Variables Node — defines named variables ({{name}}: value) consumed by generation nodes
+export interface VariablesNodeData extends BaseNodeData {
+  type: 'variables';
+  variables: Array<{ key: string; value: string }>;
+  onUpdateData?: (nodeId: string, newData: Partial<VariablesNodeData>) => void;
+}
+
 // Union type for all node data
-export type FlowNodeData = ImageNodeData | MergeNodeData | EditNodeData | UpscaleNodeData | UpscaleBicubicNodeData | MockupNodeData | OutputNodeData | PromptNodeData | BrandNodeData | AngleNodeData | LogoNodeData | PDFNodeData | StrategyNodeData | BrandCoreData | VideoNodeData | VideoInputNodeData | TextureNodeData | AmbienceNodeData | LuminanceNodeData | ShaderNodeData | ColorExtractorNodeData | TextNodeData | DirectorNodeData | ChatNodeData;
+export type FlowNodeData = ImageNodeData | MergeNodeData | EditNodeData | UpscaleNodeData | UpscaleBicubicNodeData | MockupNodeData | OutputNodeData | PromptNodeData | BrandNodeData | AngleNodeData | LogoNodeData | PDFNodeData | StrategyNodeData | BrandCoreData | VideoNodeData | VideoInputNodeData | TextureNodeData | AmbienceNodeData | LuminanceNodeData | ShaderNodeData | ColorExtractorNodeData | TextNodeData | DirectorNodeData | ChatNodeData | NodeBuilderData | CustomNodeData | VariablesNodeData | DataNodeData | BatchRunnerNodeData;
 
 // Custom node types
-export type FlowNodeType = 'image' | 'merge' | 'edit' | 'upscale' | 'mockup' | 'output' | 'prompt' | 'brand' | 'angle' | 'logo' | 'pdf' | 'strategy' | 'brandCore' | 'video' | 'videoInput' | 'texture' | 'ambience' | 'luminance' | 'shader' | 'colorExtractor' | 'text' | 'director' | 'chat';
+export type FlowNodeType = 'image' | 'merge' | 'edit' | 'upscale' | 'mockup' | 'output' | 'prompt' | 'brand' | 'angle' | 'logo' | 'pdf' | 'strategy' | 'brandCore' | 'video' | 'videoInput' | 'texture' | 'ambience' | 'luminance' | 'shader' | 'colorExtractor' | 'text' | 'director' | 'chat' | 'nodeBuilder' | 'custom' | 'variables' | 'data' | 'batchRunner';
 
 // Extended Node type with our custom data
 export type FlowNode = Node<FlowNodeData>;
@@ -782,5 +842,30 @@ export interface NodePosition {
 export interface SavedFlowState {
   nodePositions: Record<string, NodePosition>;
   edges: FlowEdge[];
+}
+
+// ─── Node Builder Node ───────────────────────────────────────────────────────
+
+export interface NodeBuilderData extends BaseNodeData {
+  messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+  isLoading?: boolean;
+  pendingDefinition?: CustomNodeDefinition;
+  onSendMessage?: (nodeId: string, message: string) => Promise<void>;
+  onUpdateData?: (nodeId: string, newData: Partial<NodeBuilderData>) => void;
+  onSpawnCustomNode?: (nodeId: string, definition: CustomNodeDefinition) => void;
+}
+
+// ─── Custom Node — dynamic, behavior-driven ──────────────────────────────────
+
+export interface CustomNodeData extends BaseNodeData {
+  definition: CustomNodeDefinition;
+  // Runtime overrides (user edits these in-node)
+  prompts?: string[];
+  connectedImages?: string[];     // indexed by handle position
+  shaderDescription?: string;
+  isLoading?: boolean;
+  executionLog?: string[];        // for pipeline / iterative-refine status
+  onExecute?: (nodeId: string) => Promise<void>;
+  onUpdateData?: (nodeId: string, newData: Partial<CustomNodeData>) => void;
 }
 

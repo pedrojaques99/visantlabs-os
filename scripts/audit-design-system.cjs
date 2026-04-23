@@ -76,7 +76,7 @@ const rules = [
     severity: 'warn',
     component: 'MicroTitle from @/components/ui/MicroTitle',
     test: (line) => {
-      // Detect text-[10px] tracking-widest or tracking-[0.2em] patterns
+      // Detect text-[10px] tracking-widest or tracking-[0.1em] patterns
       if (/MicroTitle/.test(line)) return false; // already using it
       return /text-\[10px\].*tracking|tracking-\[0\.2em\]/.test(line);
     },

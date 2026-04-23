@@ -1,11 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, ImageNodeData, OutputNodeData } from '@/types/reactFlow';
+import type { FlowNodeData } from '@/types/reactFlow';
 import type { DrawingStroke } from './useCanvasDrawing';
-import type { TimerRef } from '@/types/types';
 import { toast } from 'sonner';
-import { canvasApi } from '@/services/canvasApi';
-import { getImageUrl } from '@/utils/imageUtils';
 import { collectR2UrlsForDeletion } from './utils/r2UploadHelpers';
 import { copyMediaFromNode, getMediaFromNodeForCopy, copyMediaAsPngFromNode } from '@/utils/canvas/canvasNodeUtils';
 
@@ -30,553 +28,326 @@ export const useCanvasKeyboard = (
   selectedDrawingIds?: Set<string>,
   setSelectedDrawingIds?: (ids: Set<string>) => void
 ) => {
-  const logTimeoutRef = useRef<TimerRef | undefined>(undefined);
-  const lifecycleLogTimeoutRef = useRef<TimerRef | undefined>(undefined);
-  const lastLifecycleLogRef = useRef<string>('');
+  // Keep refs for latest values to avoid stale closures in hotkeys
+  const nodesRef = useRef(nodes);
+  nodesRef.current = nodes;
+  const edgesRef = useRef(edges);
+  edgesRef.current = edges;
+  const drawingsRef = useRef(drawings);
+  drawingsRef.current = drawings;
+  const selectedDrawingIdsRef = useRef(selectedDrawingIds);
+  selectedDrawingIdsRef.current = selectedDrawingIds;
 
-  // Debounced lifecycle logger
-  const debouncedLifecycleLog = (message: string, data?: any) => {
-    if (lifecycleLogTimeoutRef.current) {
-      clearTimeout(lifecycleLogTimeoutRef.current);
-    }
+  const openNodeFileUpload = async (selectedNodes: Node<FlowNodeData>[]) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.style.display = 'none';
 
-    const logKey = `${message}-${JSON.stringify(data || {})}`;
-    lastLifecycleLogRef.current = logKey;
+    input.onchange = async (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const file = target.files?.[0];
+      if (!file) return;
 
-    lifecycleLogTimeoutRef.current = setTimeout(() => {
-      if (lastLifecycleLogRef.current === logKey) {
-        console.log(message, data || '');
+      try {
+        const { fileToBase64 } = await import('@/utils/fileUtils');
+        const imageData = await fileToBase64(file);
+
+        selectedNodes.forEach(node => {
+          handlersRef.current.handleUploadImage(node.id, imageData.base64);
+        });
+      } catch (error) {
+        console.error('Failed to process uploaded image:', error);
+        toast.error('Failed to upload image', { duration: 3000 });
       }
-    }, 500);
+
+      document.body.removeChild(input);
+    };
+
+    document.body.appendChild(input);
+    input.click();
   };
 
-  useEffect(() => {
-    debouncedLifecycleLog('[Keyboard] Setting up keyboard handler', {
-      hasHandleUndo: !!handleUndo,
-      hasHandleRedo: !!handleRedo
-    });
+  // Undo: Ctrl+Z / Cmd+Z
+  useHotkeys('ctrl+z,meta+z', () => {
+    handleUndo();
+  }, { preventDefault: true, enableOnFormTags: false });
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Debug log for all Ctrl/Cmd key presses (debounced)
-      if (event.ctrlKey || event.metaKey) {
-        if (logTimeoutRef.current) {
-          clearTimeout(logTimeoutRef.current);
-        }
-        logTimeoutRef.current = setTimeout(() => {
-          console.log('[Keyboard] Modifier key pressed:', event.key, {
-            ctrlKey: event.ctrlKey,
-            metaKey: event.metaKey,
-            shiftKey: event.shiftKey,
-            target: (event.target as HTMLElement)?.tagName,
-          });
-        }, 300);
-      }
-      // Helper function to check if user is typing in an editable element
-      const isEditableElement = (element: HTMLElement | null): boolean => {
-        if (!element) return false;
+  // Redo: Ctrl+Shift+Z / Cmd+Shift+Z
+  useHotkeys('ctrl+shift+z,meta+shift+z', () => {
+    handleRedo();
+  }, { preventDefault: true, enableOnFormTags: false });
 
-        // Check if element itself is editable
-        if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' || element.isContentEditable) {
-          return true;
-        }
+  // Delete / Backspace
+  useHotkeys(['delete', 'backspace'], () => {
+    const nodes = nodesRef.current;
+    const edges = edgesRef.current;
+    const drawings = drawingsRef.current;
+    const selectedDrawingIds = selectedDrawingIdsRef.current;
 
-        // Check if element is inside an editable container
-        const parent = element.parentElement;
-        if (parent) {
-          if (parent.tagName === 'INPUT' || parent.tagName === 'TEXTAREA' || parent.isContentEditable) {
-            return true;
-          }
-          // Check for elements with role="textbox" or similar
-          if (parent.getAttribute('role') === 'textbox' || parent.getAttribute('contenteditable') === 'true') {
-            return true;
-          }
-        }
+    const selectedNodes = nodes.filter(n => n.selected);
+    const hasSelectedDrawings = selectedDrawingIds && selectedDrawingIds.size > 0;
 
-        return false;
-      };
+    if (selectedNodes.length > 0 || hasSelectedDrawings) {
+      addToHistory(nodes, edges, drawings);
 
-      // Process Undo/Redo FIRST with highest priority, before checking editable elements
-      // This ensures undo/redo works even if focus is in certain contexts
-      const isUndoRedo = (event.ctrlKey || event.metaKey) && (event.key === 'z' || event.key === 'Z');
-
-      if (isUndoRedo) {
-        // Only skip if we're definitely in an input/textarea (not contentEditable for undo/redo)
-        const target = event.target as HTMLElement;
-        const isInInputOrTextarea = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' ||
-          (target.closest('input') !== null) || (target.closest('textarea') !== null);
-
-        if (!isInInputOrTextarea) {
-          // Undo: Ctrl+Z (or Cmd+Z on Mac)
-          if (!event.shiftKey) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            event.stopPropagation();
-            console.log('[Undo] Ctrl+Z pressed, calling handleUndo');
-            handleUndo();
-            return;
-          }
-
-          // Redo: Ctrl+Shift+Z (or Cmd+Shift+Z on Mac)
-          if (event.shiftKey) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            event.stopPropagation();
-            console.log('[Redo] Ctrl+Shift+Z pressed, calling handleRedo');
-            handleRedo();
-            return;
-          }
-        }
+      if (deleteSelectedDrawings) {
+        deleteSelectedDrawings();
       }
 
-      // Don't handle other shortcuts if user is typing in an input/textarea
-      const target = event.target as HTMLElement;
-      if (isEditableElement(target)) {
-        return;
-      }
+      if (selectedNodes.length > 0) {
+        const hasR2Assets = selectedNodes.some((node) => {
+          const nodeData = node.data as any;
+          const isLiked = nodeData.isLiked === true || nodeData.mockup?.isLiked === true;
+          return collectR2UrlsForDeletion(node, isLiked).length > 0;
+        });
 
-      // Delete key
-      if (event.key === 'Delete' || event.key === 'Backspace') {
-        const selectedNodes = nodes.filter(n => n.selected);
-        const hasSelectedDrawings = selectedDrawingIds && selectedDrawingIds.size > 0;
-        
-        if (selectedNodes.length > 0 || hasSelectedDrawings) {
-          event.preventDefault();
-          addToHistory(nodes, edges, drawings);
-
-          // Delete drawings if requested
-          if (deleteSelectedDrawings) {
-            deleteSelectedDrawings();
-          }
-
-          // Delete nodes if any selected
-          if (selectedNodes.length > 0) {
-            // Delete images/videos from R2 for all node types before removing them
-            Promise.allSettled(
-              selectedNodes.map(async (node) => {
-                const nodeData = node.data as any;
-                const isLiked = nodeData.isLiked === true || nodeData.mockup?.isLiked === true;
-                const urlsToDelete = collectR2UrlsForDeletion(node, isLiked);
-
-                if (urlsToDelete.length > 0) {
-                  await Promise.allSettled(
-                    urlsToDelete.map(url => canvasApi.deleteImageFromR2(url))
-                  ).catch((error) => {
-                    console.error('Failed to delete files from R2:', error);
-                  });
-                }
-              })
-            ).catch(() => {});
-
-            const nodeIdsToRemove = new Set(selectedNodes.map(n => n.id));
-            const newNodes = nodes.filter(n => !nodeIdsToRemove.has(n.id));
-            const newEdges = edges.filter(e =>
-              !nodeIdsToRemove.has(e.source) && !nodeIdsToRemove.has(e.target)
-            );
-
-            setNodes(newNodes);
-            setEdges(newEdges);
-
-            setTimeout(() => {
-              addToHistory(newNodes, newEdges, drawings);
-            }, 0);
-
-            toast.success(`Removed ${selectedNodes.length} node${selectedNodes.length > 1 ? 's' : ''}`, { duration: 2000 });
-          }
-        }
-      }
-
-      // Close context menu and deselect nodes on Escape
-      if (event.key === 'Escape') {
-        setContextMenu(null);
-
-        // Deselect all selected nodes
-        const selectedNodes = nodes.filter(n => n.selected);
-        if (selectedNodes.length > 0) {
-          event.preventDefault();
-          setNodes((nds) =>
-            nds.map((node) => ({
-              ...node,
-              selected: false,
-            }))
-          );
-        }
-      }
-
-      // Upload image: U key when ImageNode is selected (only if Ctrl is not pressed)
-      if ((event.key === 'u' || event.key === 'U') && !(event.ctrlKey || event.metaKey)) {
-        const selectedNodes = nodes.filter(n => n.selected && n.type === 'image');
-        if (selectedNodes.length > 0) {
-          event.preventDefault();
-
-          const input = document.createElement('input');
-          input.type = 'file';
-          input.accept = 'image/*';
-          input.style.display = 'none';
-
-          input.onchange = async (e: Event) => {
-            const target = e.target as HTMLInputElement;
-            const file = target.files?.[0];
-            if (!file) return;
-
-            try {
-              const { fileToBase64 } = await import('@/utils/fileUtils');
-              const imageData = await fileToBase64(file);
-
-              selectedNodes.forEach(node => {
-                handlersRef.current.handleUploadImage(node.id, imageData.base64);
-              });
-            } catch (error) {
-              console.error('Failed to process uploaded image:', error);
-              toast.error('Failed to upload image', { duration: 3000 });
-            }
-
-            document.body.removeChild(input);
-          };
-
-          document.body.appendChild(input);
-          input.click();
-        }
-      }
-
-      // Ctrl+A / Cmd+A - Select all nodes and drawings
-      if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
-        event.preventDefault();
-
-        const allNodesSelected = nodes.length > 0 && nodes.every(n => n.selected);
-        const allDrawingsSelected = drawings && drawings.length > 0 
-          ? drawings.every(d => selectedDrawingIds?.has(d.id)) 
-          : true;
-
-        const shouldDeselect = allNodesSelected && (drawings && drawings.length > 0 ? allDrawingsSelected : true);
-
-        // Toggle: if everything selected, deselect all; otherwise select everything
-        setNodes((nds) =>
-          nds.map((node) => ({
-            ...node,
-            selected: !shouldDeselect,
-          }))
+        const nodeIdsToRemove = new Set(selectedNodes.map(n => n.id));
+        const newNodes = nodes.filter(n => !nodeIdsToRemove.has(n.id));
+        const newEdges = edges.filter(e =>
+          !nodeIdsToRemove.has(e.source) && !nodeIdsToRemove.has(e.target)
         );
 
-        if (drawings && setSelectedDrawingIds) {
-          if (shouldDeselect) {
-            setSelectedDrawingIds(new Set());
-          } else {
-            setSelectedDrawingIds(new Set(drawings.map(d => d.id)));
-          }
+        setNodes(newNodes);
+        setEdges(newEdges);
+
+        setTimeout(() => {
+          addToHistory(newNodes, newEdges, drawings);
+        }, 0);
+
+        if (hasR2Assets) {
+          toast.warning(
+            `Removed ${selectedNodes.length} node${selectedNodes.length > 1 ? 's' : ''} — images will be permanently lost on save. Undo with Ctrl+Z to recover.`,
+            { duration: 5000 }
+          );
+        } else {
+          toast.success(`Removed ${selectedNodes.length} node${selectedNodes.length > 1 ? 's' : ''}`, { duration: 2000 });
         }
-        return;
       }
+    }
+  }, { enableOnFormTags: false });
 
-      // Ctrl+D / Cmd+D - Duplicate selected nodes
-      if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
-        event.preventDefault();
+  // Escape — close context menu and deselect nodes
+  useHotkeys('escape', () => {
+    setContextMenu(null);
 
-        const selectedNodes = nodes.filter(n => n.selected);
-        if (selectedNodes.length > 0 && onDuplicateNodes) {
-          const selectedNodeIds = selectedNodes.map(n => n.id);
-          onDuplicateNodes(selectedNodeIds);
-        }
+    const nodes = nodesRef.current;
+    const selectedNodes = nodes.filter(n => n.selected);
+    if (selectedNodes.length > 0) {
+      setNodes((nds) =>
+        nds.map((node) => ({
+          ...node,
+          selected: false,
+        }))
+      );
+    }
+  }, { enableOnFormTags: false });
 
-        return;
+  // Ctrl+A / Cmd+A — select all nodes and drawings
+  useHotkeys('ctrl+a,meta+a', () => {
+    const nodes = nodesRef.current;
+    const drawings = drawingsRef.current;
+    const selectedDrawingIds = selectedDrawingIdsRef.current;
+
+    const allNodesSelected = nodes.length > 0 && nodes.every(n => n.selected);
+    const allDrawingsSelected = drawings && drawings.length > 0
+      ? drawings.every(d => selectedDrawingIds?.has(d.id))
+      : true;
+
+    const shouldDeselect = allNodesSelected && (drawings && drawings.length > 0 ? allDrawingsSelected : true);
+
+    setNodes((nds) =>
+      nds.map((node) => ({
+        ...node,
+        selected: !shouldDeselect,
+      }))
+    );
+
+    if (drawings && setSelectedDrawingIds) {
+      if (shouldDeselect) {
+        setSelectedDrawingIds(new Set());
+      } else {
+        setSelectedDrawingIds(new Set(drawings.map(d => d.id)));
       }
+    }
+  }, { preventDefault: true, enableOnFormTags: false });
 
-      // Ctrl+K / Cmd+K - Open context menu at center of screen
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-        event.preventDefault();
+  // Ctrl+D / Cmd+D — duplicate selected nodes
+  useHotkeys('ctrl+d,meta+d', () => {
+    const nodes = nodesRef.current;
+    const selectedNodes = nodes.filter(n => n.selected);
+    if (selectedNodes.length > 0 && onDuplicateNodes) {
+      onDuplicateNodes(selectedNodes.map(n => n.id));
+    }
+  }, { preventDefault: true, enableOnFormTags: false });
 
-        if (reactFlowInstance && reactFlowWrapper?.current) {
-          const pane = reactFlowWrapper.current.querySelector('.react-flow__pane');
-          if (pane) {
-            const rect = pane.getBoundingClientRect();
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
-
-            setContextMenu({
-              x: centerX - rect.left,
-              y: centerY - rect.top,
-            });
-          }
-        }
-
-        return;
+  // Ctrl+K / Cmd+K — open context menu at center of screen
+  useHotkeys('ctrl+k,meta+k', () => {
+    if (reactFlowInstance && reactFlowWrapper?.current) {
+      const pane = reactFlowWrapper.current.querySelector('.react-flow__pane');
+      if (pane) {
+        const rect = pane.getBoundingClientRect();
+        setContextMenu({
+          x: window.innerWidth / 2 - rect.left,
+          y: window.innerHeight / 2 - rect.top,
+        });
       }
+    }
+  }, { preventDefault: true, enableOnFormTags: false });
 
-      // Ctrl+C / Cmd+C - Copy image/video from any node with media
-      if ((event.ctrlKey || event.metaKey) && event.key === 'c' && !event.shiftKey) {
-        const selectedNodes = nodes.filter(n => n.selected);
-        if (selectedNodes.length > 0) {
-          // Check if any selected node has media (image or video)
-          const mediaNodes = selectedNodes.filter(n => {
-            const media = getMediaFromNodeForCopy(n);
-            return media !== null;
-          });
+  // Ctrl+N / Cmd+N — open context menu at center of screen (same as K)
+  useHotkeys('ctrl+n,meta+n', () => {
+    if (reactFlowInstance && reactFlowWrapper?.current) {
+      const pane = reactFlowWrapper.current.querySelector('.react-flow__pane');
+      if (pane) {
+        const rect = pane.getBoundingClientRect();
+        setContextMenu({
+          x: window.innerWidth / 2 - rect.left,
+          y: window.innerHeight / 2 - rect.top,
+        });
+      }
+    }
+  }, { preventDefault: true, enableOnFormTags: false });
 
-          if (mediaNodes.length > 0) {
-            event.preventDefault();
-
-            // Copy media from first selected node with media
-            const node = mediaNodes[0];
-            const media = getMediaFromNodeForCopy(node);
-
-            if (media) {
-              (async () => {
-                const result = await copyMediaFromNode(node);
-                if (result.success) {
-                  toast.success(
-                    media.isVideo
-                      ? 'Video copied to clipboard!'
-                      : 'Image copied to clipboard!',
-                    { duration: 2000 }
-                  );
-                } else {
-                  toast.error(result.error || 'Failed to copy media to clipboard', { duration: 3000 });
-                }
-              })();
+  // Ctrl+C / Cmd+C — copy media from selected node
+  useHotkeys('ctrl+c,meta+c', () => {
+    const nodes = nodesRef.current;
+    const selectedNodes = nodes.filter(n => n.selected);
+    if (selectedNodes.length > 0) {
+      const mediaNodes = selectedNodes.filter(n => getMediaFromNodeForCopy(n) !== null);
+      if (mediaNodes.length > 0) {
+        const node = mediaNodes[0];
+        const media = getMediaFromNodeForCopy(node);
+        if (media) {
+          (async () => {
+            const result = await copyMediaFromNode(node);
+            if (result.success) {
+              toast.success(
+                media.isVideo ? 'Video copied to clipboard!' : 'Image copied to clipboard!',
+                { duration: 2000 }
+              );
+            } else {
+              toast.error(result.error || 'Failed to copy media to clipboard', { duration: 3000 });
             }
-
-            return;
-          }
-          // Otherwise, allow default copy behavior for node data (future paste functionality)
+          })();
         }
       }
+    }
+  }, { enableOnFormTags: false });
 
-      // Ctrl+Shift+C / Cmd+Shift+C - Copy as PNG from any node with media
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'c' || event.key === 'C')) {
-        const selectedNodes = nodes.filter(n => n.selected);
-        if (selectedNodes.length > 0) {
-          const mediaNodes = selectedNodes.filter(n => {
-            const media = getMediaFromNodeForCopy(n);
-            return media !== null;
-          });
-
-          if (mediaNodes.length > 0) {
-            event.preventDefault();
-
-            const node = mediaNodes[0];
-            const media = getMediaFromNodeForCopy(node);
-
-            if (media) {
-              (async () => {
-                const result = await copyMediaAsPngFromNode(node);
-                if (result.success) {
-                  toast.success('Image copied to clipboard as PNG!', { duration: 2000 });
-                } else {
-                  toast.error(result.error || 'Failed to copy image as PNG to clipboard', { duration: 3000 });
-                }
-              })();
+  // Ctrl+Shift+C / Cmd+Shift+C — copy as PNG
+  useHotkeys('ctrl+shift+c,meta+shift+c', () => {
+    const nodes = nodesRef.current;
+    const selectedNodes = nodes.filter(n => n.selected);
+    if (selectedNodes.length > 0) {
+      const mediaNodes = selectedNodes.filter(n => getMediaFromNodeForCopy(n) !== null);
+      if (mediaNodes.length > 0) {
+        const node = mediaNodes[0];
+        const media = getMediaFromNodeForCopy(node);
+        if (media) {
+          (async () => {
+            const result = await copyMediaAsPngFromNode(node);
+            if (result.success) {
+              toast.success('Image copied to clipboard as PNG!', { duration: 2000 });
+            } else {
+              toast.error(result.error || 'Failed to copy image as PNG to clipboard', { duration: 3000 });
             }
-
-            return;
-          }
+          })();
         }
       }
+    }
+  }, { preventDefault: true, enableOnFormTags: false });
 
-      // Ctrl+N / Cmd+N - Open context menu at center of screen
-      if ((event.ctrlKey || event.metaKey) && event.key === 'n') {
-        event.preventDefault();
+  // Ctrl+M / Cmd+M — create Mockup Node
+  useHotkeys('ctrl+m,meta+m', () => {
+    if (addMockupNode && reactFlowInstance) {
+      addMockupNode({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    }
+  }, { preventDefault: true, enableOnFormTags: false });
 
-        if (reactFlowInstance && reactFlowWrapper?.current) {
-          const pane = reactFlowWrapper.current.querySelector('.react-flow__pane');
-          if (pane) {
-            const rect = pane.getBoundingClientRect();
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
+  // Ctrl+P / Cmd+P — create Prompt Node
+  useHotkeys('ctrl+p,meta+p', () => {
+    if (addPromptNode && reactFlowInstance) {
+      addPromptNode({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    }
+  }, { preventDefault: true, enableOnFormTags: false });
 
-            setContextMenu({
-              x: centerX - rect.left,
-              y: centerY - rect.top,
-            });
-          }
-        }
+  // Ctrl+U / Cmd+U — create Upscale Node
+  useHotkeys('ctrl+u,meta+u', () => {
+    if (addUpscaleNode && reactFlowInstance) {
+      addUpscaleNode({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    }
+  }, { preventDefault: true, enableOnFormTags: false });
 
-        return;
-      }
+  // U — upload image to selected ImageNode (no modifier)
+  useHotkeys('u', () => {
+    const nodes = nodesRef.current;
+    const selectedNodes = nodes.filter(n => n.selected && n.type === 'image');
+    if (selectedNodes.length > 0) {
+      openNodeFileUpload(selectedNodes);
+    }
+  }, { enableOnFormTags: false });
 
-      // Ctrl+M / Cmd+M - Create Mockup Node
-      if ((event.ctrlKey || event.metaKey) && event.key === 'm') {
-        event.preventDefault();
+  // Ctrl+I / Cmd+I — upload image to selected ImageNode
+  useHotkeys('ctrl+i,meta+i', () => {
+    const nodes = nodesRef.current;
+    const selectedNodes = nodes.filter(n => n.selected && n.type === 'image');
+    if (selectedNodes.length > 0) {
+      openNodeFileUpload(selectedNodes);
+    }
+  }, { enableOnFormTags: false });
 
-        if (addMockupNode && reactFlowInstance) {
-          const centerX = window.innerWidth / 2;
-          const centerY = window.innerHeight / 2;
-          addMockupNode({ x: centerX, y: centerY });
-        }
+  // F — focus on selected node
+  useHotkeys('f', () => {
+    const nodes = nodesRef.current;
+    const selectedNodes = nodes.filter(n => n.selected);
+    if (selectedNodes.length > 0 && reactFlowInstance && reactFlowWrapper?.current) {
+      const firstSelectedNode = selectedNodes[0];
 
-        return;
-      }
+      const nodeWidth = typeof firstSelectedNode.style?.width === 'number'
+        ? firstSelectedNode.style.width
+        : (typeof firstSelectedNode.style?.width === 'string'
+          ? parseFloat(firstSelectedNode.style.width) || 150
+          : 150);
+      const nodeHeight = typeof firstSelectedNode.style?.height === 'number'
+        ? firstSelectedNode.style.height
+        : (typeof firstSelectedNode.style?.height === 'string'
+          ? parseFloat(firstSelectedNode.style.height) || 100
+          : 100);
 
-      // Ctrl+P / Cmd+P - Create Prompt Node
-      if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
-        event.preventDefault();
+      const nodeCenterX = firstSelectedNode.position.x + nodeWidth / 2;
+      const nodeCenterY = firstSelectedNode.position.y + nodeHeight / 2;
 
-        if (addPromptNode && reactFlowInstance) {
-          const centerX = window.innerWidth / 2;
-          const centerY = window.innerHeight / 2;
-          addPromptNode({ x: centerX, y: centerY });
-        }
+      const pane = reactFlowWrapper.current.querySelector('.react-flow__pane');
+      if (!pane) return;
 
-        return;
-      }
+      const rect = pane.getBoundingClientRect();
+      const viewportHeight = rect.height;
 
-      // Ctrl+U / Cmd+U - Create Upscale Node
-      if ((event.ctrlKey || event.metaKey) && event.key === 'u') {
-        event.preventDefault();
+      const calculatedZoom = (viewportHeight * 0.75) / nodeHeight;
+      const reducedZoom = calculatedZoom * 0.7;
+      const finalZoom = Math.max(0.01, Math.min(100, reducedZoom));
 
-        if (addUpscaleNode && reactFlowInstance) {
-          const centerX = window.innerWidth / 2;
-          const centerY = window.innerHeight / 2;
-          addUpscaleNode({ x: centerX, y: centerY });
-        }
-
-        return;
-      }
-
-      // F - Focus on selected node
-      if (event.key === 'f' || event.key === 'F') {
-        const selectedNodes = nodes.filter(n => n.selected);
-        if (selectedNodes.length > 0 && reactFlowInstance && reactFlowWrapper?.current) {
-          event.preventDefault();
-
-          const firstSelectedNode = selectedNodes[0];
-
-          // Get node dimensions (width and height from style, with fallback defaults)
-          const nodeWidth = typeof firstSelectedNode.style?.width === 'number'
-            ? firstSelectedNode.style.width
-            : (typeof firstSelectedNode.style?.width === 'string'
-              ? parseFloat(firstSelectedNode.style.width) || 150
-              : 150);
-          const nodeHeight = typeof firstSelectedNode.style?.height === 'number'
-            ? firstSelectedNode.style.height
-            : (typeof firstSelectedNode.style?.height === 'string'
-              ? parseFloat(firstSelectedNode.style.height) || 100
-              : 100);
-
-          // Calculate the exact center of the node
-          const nodeCenterX = firstSelectedNode.position.x + nodeWidth / 2;
-          const nodeCenterY = firstSelectedNode.position.y + nodeHeight / 2;
-
-          // Get viewport dimensions
-          const pane = reactFlowWrapper.current.querySelector('.react-flow__pane');
-          if (!pane) return;
-
-          const rect = pane.getBoundingClientRect();
-          const viewportWidth = rect.width;
-          const viewportHeight = rect.height;
-
-          // Calculate zoom to fit node height at ~75% of viewport height (visually pleasant)
-          // Formula: zoom = (viewportHeight * targetRatio) / nodeHeight
-          const targetHeightRatio = 0.75; // 75% of viewport height
-          const calculatedZoom = (viewportHeight * targetHeightRatio) / nodeHeight;
-
-          // Reduce zoom by 50% for better visual spacing
-          const reducedZoom = calculatedZoom * 0.7;
-
-          // Clamp zoom to reasonable bounds (minZoom: 0.01, maxZoom: 100)
-          const minZoom = 0.01;
-          const maxZoom = 100;
-          const finalZoom = Math.max(minZoom, Math.min(maxZoom, reducedZoom));
-
-          // Try to use setCenter with zoom if available
-          if (typeof reactFlowInstance.setCenter === 'function') {
-            // setCenter may support zoom in options
-            try {
-              reactFlowInstance.setCenter(nodeCenterX, nodeCenterY, {
-                zoom: finalZoom,
-                duration: 300
-              });
-              return;
-            } catch (e) {
-              // If setCenter doesn't support zoom, fall through to setViewport
-            }
-          }
-
-          // Use setViewport to set both position and zoom
-          if (typeof reactFlowInstance.setViewport === 'function') {
-            // Calculate viewport position to center the node
-            // The viewport x,y represent the offset of the flow content
-            // To center node at (nodeCenterX, nodeCenterY), we need:
-            // viewport.x = viewportWidth/2 - nodeCenterX * zoom
-            // viewport.y = viewportHeight/2 - nodeCenterY * zoom
-            const viewportX = viewportWidth / 2 - nodeCenterX * finalZoom;
-            const viewportY = viewportHeight / 2 - nodeCenterY * finalZoom;
-
-            reactFlowInstance.setViewport({
-              x: viewportX,
-              y: viewportY,
-              zoom: finalZoom,
-            }, { duration: 300 });
-
-            return;
-          }
-
-          // Fallback: try fitView as last resort
-          if (typeof reactFlowInstance.fitView === 'function') {
-            reactFlowInstance.fitView({
-              nodes: [firstSelectedNode.id],
-              duration: 300,
-              padding: 0.2,
-            });
-          }
-
+      if (typeof reactFlowInstance.setCenter === 'function') {
+        try {
+          reactFlowInstance.setCenter(nodeCenterX, nodeCenterY, { zoom: finalZoom, duration: 300 });
           return;
-        }
+        } catch (e) { /* fall through */ }
       }
 
-      // Ctrl+I / Cmd+I - Upload image to ImageNode
-      if ((event.ctrlKey || event.metaKey) && event.key === 'i') {
-        const selectedNodes = nodes.filter(n => n.selected && n.type === 'image');
-        if (selectedNodes.length > 0) {
-          event.preventDefault();
-
-          const input = document.createElement('input');
-          input.type = 'file';
-          input.accept = 'image/*';
-          input.style.display = 'none';
-
-          input.onchange = async (e: Event) => {
-            const target = e.target as HTMLInputElement;
-            const file = target.files?.[0];
-            if (!file) return;
-
-            try {
-              const { fileToBase64 } = await import('@/utils/fileUtils');
-              const imageData = await fileToBase64(file);
-
-              selectedNodes.forEach(node => {
-                handlersRef.current.handleUploadImage(node.id, imageData.base64);
-              });
-            } catch (error) {
-              console.error('Failed to process uploaded image:', error);
-              toast.error('Failed to upload image', { duration: 3000 });
-            }
-
-            document.body.removeChild(input);
-          };
-
-          document.body.appendChild(input);
-          input.click();
-
-          return;
-        }
+      if (typeof reactFlowInstance.setViewport === 'function') {
+        const viewportWidth = rect.width;
+        reactFlowInstance.setViewport({
+          x: viewportWidth / 2 - nodeCenterX * finalZoom,
+          y: viewportHeight / 2 - nodeCenterY * finalZoom,
+          zoom: finalZoom,
+        }, { duration: 300 });
+        return;
       }
-    };
 
-    // Register listener in capture phase to ensure priority over other listeners
-    debouncedLifecycleLog('[Keyboard] Registering keyboard listener');
-    window.addEventListener('keydown', handleKeyDown, { capture: true });
-    return () => {
-      debouncedLifecycleLog('[Keyboard] Unregistering keyboard listener');
-      if (logTimeoutRef.current) {
-        clearTimeout(logTimeoutRef.current);
+      if (typeof reactFlowInstance.fitView === 'function') {
+        reactFlowInstance.fitView({ nodes: [firstSelectedNode.id], duration: 300, padding: 0.2 });
       }
-      if (lifecycleLogTimeoutRef.current) {
-        clearTimeout(lifecycleLogTimeoutRef.current);
-      }
-      window.removeEventListener('keydown', handleKeyDown, { capture: true });
-    };
-  }, [nodes, edges, setNodes, setEdges, handleUndo, handleRedo, addToHistory, drawings, setContextMenu, handlersRef, reactFlowInstance, reactFlowWrapper, onDuplicateNodes, addMockupNode, addPromptNode, addUpscaleNode, deleteSelectedDrawings, selectedDrawingIds, setSelectedDrawingIds]);
+    }
+  }, { preventDefault: true, enableOnFormTags: false });
 };
-
-
-
-

@@ -105,7 +105,7 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 px-4 py-8 backdrop-blur-md">
-      <div className="w-full max-w-3xl bg-[#0F0F0F] border border-neutral-800/60 rounded-xl shadow-2xl relative">
+      <div className="w-full max-w-3xl bg-neutral-950 border border-neutral-800/60 rounded-xl shadow-2xl relative">
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/60">
           <div>
             <MicroTitle className="text-neutral-500 uppercase mb-1">

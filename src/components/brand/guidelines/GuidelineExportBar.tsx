@@ -179,6 +179,146 @@ module.exports = {
 }`;
 }
 
+function guidelineToDesignMd(g: BrandGuideline): string {
+  const lines: string[] = [];
+
+  // YAML front matter
+  lines.push('---');
+  lines.push(`version: "${new Date().toISOString().split('T')[0]}"`);
+  lines.push(`name: "${g.name || 'Untitled'}"`);
+  if (g.description) lines.push(`description: "${g.description}"`);
+
+  if (g.colors && g.colors.length > 0) {
+    lines.push('colors:');
+    g.colors.forEach(c => {
+      const key = (c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      lines.push(`  ${key}: "${c.hex}"`);
+    });
+  }
+
+  if (g.typography && g.typography.length > 0) {
+    lines.push('typography:');
+    g.typography.forEach(t => {
+      const key = (t.role || 'body').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      lines.push(`  ${key}:`);
+      lines.push(`    fontFamily: "${t.family}"`);
+      if (t.size) lines.push(`    fontSize: "${t.size}px"`);
+      if (t.style) lines.push(`    fontWeight: "${t.style}"`);
+      if (t.lineHeight) lines.push(`    lineHeight: ${t.lineHeight}`);
+      if (t.letterSpacing) lines.push(`    letterSpacing: "${t.letterSpacing}"`);
+    });
+  }
+
+  if (g.tokens?.radius) {
+    lines.push('rounded:');
+    Object.entries(g.tokens.radius).forEach(([k, v]) => lines.push(`  ${k}: "${v}px"`));
+  }
+
+  if (g.tokens?.spacing) {
+    lines.push('spacing:');
+    Object.entries(g.tokens.spacing).forEach(([k, v]) => lines.push(`  ${k}: "${v}px"`));
+  }
+
+  if (g.motion?.easing || g.motion?.durations) {
+    lines.push('motion:');
+    if (g.motion.easing) lines.push(`  easing: "${g.motion.easing}"`);
+    if (g.motion.durations) {
+      lines.push('  durations:');
+      Object.entries(g.motion.durations).forEach(([k, v]) => lines.push(`    ${k}: "${v}ms"`));
+    }
+  }
+
+  lines.push('---');
+  lines.push('');
+  lines.push(`# ${g.name || 'Untitled'}`);
+  lines.push('');
+
+  // Overview
+  lines.push('## Overview');
+  if (g.description) lines.push(g.description);
+  if (g.tagline) lines.push('');
+  if (g.tagline) lines.push(`> ${g.tagline}`);
+  lines.push('');
+
+  // Colors with semantic context
+  if (g.colors && g.colors.length > 0) {
+    lines.push('## Colors');
+    lines.push('');
+    g.colors.forEach(c => {
+      const key = (c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      lines.push(`\`${key}\` (\`${c.hex}\`) — ${c.role || 'Brand color'}.`);
+    });
+    lines.push('');
+  }
+
+  // Typography with intent
+  if (g.typography && g.typography.length > 0) {
+    lines.push('## Typography');
+    lines.push('');
+    g.typography.forEach(t => {
+      lines.push(`**${t.role}:** ${t.family}${t.style ? ` ${t.style}` : ''}, ${t.size || 16}px${t.lineHeight ? `, line-height ${t.lineHeight}` : ''}${t.letterSpacing ? `, tracking ${t.letterSpacing}` : ''}.`);
+    });
+    lines.push('');
+  }
+
+  // Layout
+  lines.push('## Layout');
+  if (g.tokens?.spacing) {
+    const entries = Object.entries(g.tokens.spacing);
+    lines.push(`Spacing scale: ${entries.map(([k, v]) => `${k}=${v}px`).join(', ')}.`);
+  }
+  lines.push('');
+
+  // Shapes
+  if (g.tokens?.radius) {
+    lines.push('## Shapes');
+    const entries = Object.entries(g.tokens.radius);
+    lines.push(`Corner radii: ${entries.map(([k, v]) => `${k}=${v}px`).join(', ')}.`);
+    lines.push('');
+  }
+
+  // Elevation
+  if (g.shadows && g.shadows.length > 0) {
+    lines.push('## Elevation & Depth');
+    lines.push('');
+    g.shadows.forEach(s => {
+      lines.push(`**${s.name}** (\`${s.type}\`): \`${s.css || ''}\``);
+    });
+    lines.push('');
+  }
+
+  // Motion
+  if (g.motion) {
+    lines.push('## Motion');
+    if (g.motion.philosophy) lines.push(`Philosophy: ${g.motion.philosophy} — minimal, purposeful transitions.`);
+    if (g.motion.respectsReducedMotion) lines.push('Always respect `prefers-reduced-motion`.');
+    if (g.motion.easing) lines.push(`Default easing: \`${g.motion.easing}\`.`);
+    lines.push('');
+  }
+
+  // Editorial / Voice
+  if (g.guidelines?.voice || g.guidelines?.person) {
+    lines.push("## Do's and Don'ts");
+    lines.push('');
+    if (g.guidelines.voice) lines.push(`Voice: "${g.guidelines.voice}"`);
+    if (g.guidelines.person) lines.push(`Write in ${g.guidelines.person} person.`);
+    if (g.guidelines.emojiPolicy === 'none') lines.push('Never use emoji in copy.');
+    if (g.guidelines.casingRules && g.guidelines.casingRules.length > 0) {
+      lines.push('');
+      lines.push('**Casing:**');
+      g.guidelines.casingRules.forEach(r => lines.push(`- ${r}`));
+    }
+    if (g.guidelines.dos && g.guidelines.dos.length > 0) {
+      lines.push('');
+      lines.push("**Do:**");
+      g.guidelines.dos.forEach(d => lines.push(`- ${d}`));
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
 export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guideline }) => {
   const { t } = useTranslation();
   const safeName = (guideline.name || 'brand').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
@@ -203,9 +343,14 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
     toast.success('Exported as Tailwind Config');
   };
 
+  const exportDesignMd = () => {
+    downloadBlob(guidelineToDesignMd(guideline), 'DESIGN.md', 'text/markdown');
+    toast.success('Exported as DESIGN.md — LLM-ready spec');
+  };
+
   return (
     <div className="flex items-center gap-3 pt-6 border-t border-white/[0.03]">
-      <span className="text-[9px] font-mono text-neutral-700 uppercase tracking-widest mr-2">Export</span>
+      <span className="text-[10px] font-mono text-neutral-700 uppercase tracking-widest mr-2">Export</span>
       <Button
         variant="ghost"
         size="sm"
@@ -241,6 +386,14 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
       >
         <Braces size={12} />
         Tailwind
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={exportDesignMd}
+        className="h-8 px-3 text-[10px] font-mono text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5 gap-2 border border-brand-cyan/10 hover:border-brand-cyan/30 transition-all"
+      >
+        DESIGN.md
       </Button>
     </div>
   );

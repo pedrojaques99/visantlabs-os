@@ -5,24 +5,15 @@ import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { CreditPackagesModal } from '../components/CreditPackagesModal';
 import { TransactionsModal } from '../components/TransactionsModal';
 import { EditProfileModal } from '../components/EditProfilePage';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { PageShell } from '../components/ui/PageShell';
 import { authService, type User as UserType } from '../services/authService';
 import { subscriptionService, type SubscriptionStatus } from '../services/subscriptionService';
 import { referralService, type ReferralStats } from '../services/referralService';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { toast } from 'sonner';
-import { SEO } from '../components/SEO';
 import { Card, CardContent } from '../components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
-import {
-  BreadcrumbWithBack,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "../components/ui/BreadcrumbWithBack";
 import { BackButton } from "../components/ui/BackButton";
 import { ApiSettings } from '../components/profile/ApiSettings';
 import { ProfileOverview } from '../components/profile/ProfileOverview';
@@ -75,7 +66,7 @@ export const ProfilePage: React.FC = () => {
           const currentUser = await authService.verifyToken();
 
           if (!currentUser) {
-            setError(t('profile.loadError') || 'Failed to load profile');
+            setError(t('common.loadError') || 'Failed to load profile');
             setUser(null);
             return;
           }
@@ -89,7 +80,7 @@ export const ProfilePage: React.FC = () => {
 
         } catch (err: any) {
           console.error('Failed to load user data:', err);
-          setError(t('profile.loadError') || 'Failed to load profile data');
+          setError(t('common.loadError') || 'Failed to load profile data');
           setUser(null);
         } finally {
           setIsLoading(false);
@@ -163,12 +154,12 @@ export const ProfilePage: React.FC = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error(t('profile.selectImageFile') || 'Please select an image file');
+      toast.error(t('common.selectImageFile') || 'Please select an image file');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error(t('profile.imageSizeLimit') || 'Image too large');
+      toast.error(t('common.imageSizeLimit') || 'Image too large');
       return;
     }
 
@@ -179,7 +170,7 @@ export const ProfilePage: React.FC = () => {
         try {
           const base64String = reader.result as string;
           const token = localStorage.getItem('auth_token');
-          if (!token) throw new Error(t('profile.authenticationRequired'));
+          if (!token) throw new Error(t('common.authenticationRequired'));
 
           const response = await fetch('/api/auth/profile/picture', {
             method: 'POST',
@@ -190,28 +181,28 @@ export const ProfilePage: React.FC = () => {
             body: JSON.stringify({ imageBase64: base64String }),
           });
 
-          if (!response.ok) throw new Error(t('profile.pictureUploadError') || 'Failed to upload picture');
+          if (!response.ok) throw new Error(t('common.pictureUploadError') || 'Failed to upload picture');
 
           const data = await response.json();
           setAvatarUrl(data.picture);
           setUser(data.user);
-          toast.success(t('profile.pictureUploadSuccess') || 'Picture updated!');
+          toast.success(t('common.pictureUploadSuccess') || 'Picture updated!');
         } catch (err: any) {
-          toast.error(err.message || t('profile.pictureUploadError') || 'Failed to upload picture');
+          toast.error(err.message || t('common.pictureUploadError') || 'Failed to upload picture');
         } finally {
           setIsUploadingPicture(false);
         }
       };
       reader.readAsDataURL(file);
     } catch (err: any) {
-      toast.error(err.message || t('profile.pictureUploadError') || 'Failed to upload picture');
+      toast.error(err.message || t('common.pictureUploadError') || 'Failed to upload picture');
       setIsUploadingPicture(false);
     }
   };
 
   if (isCheckingAuth || isLoading) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <GlitchLoader size={32} />
       </div>
     );
@@ -219,63 +210,34 @@ export const ProfilePage: React.FC = () => {
 
   if (!user || isAuthenticated === false) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-400 font-mono mb-4">
-            {t('profile.notAuthenticated') || 'Please sign in to view your profile'}
-          </p>
-          <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
+      <PageShell pageId="profile-auth-error" width="5xl" title={t('common.notAuthenticated') || 'Acesso Restrito'}>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <p className="text-red-400 font-mono mb-4">
+              {t('common.notAuthenticated') || 'Please sign in to view your profile'}
+            </p>
+            <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
+          </div>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <>
-      <SEO
-        title={t('profile.seoTitle')}
-        description={t('profile.seoDescription')}
-        noindex={true}
-      />
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
-        <div className="fixed inset-0 z-0">
-        </div>
-        <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
-
-          {/* Header Card */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
-            <CardContent className="p-4 md:p-6">
-              <div className="mb-4">
-                <BreadcrumbWithBack to="/">
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link to="/">{t('apps.home')}</Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>{t('profile.breadcrumb') || 'Profile'}</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </BreadcrumbWithBack>
-              </div>
-
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
-                    <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-neutral-300">
-                      {t('profile.title') || 'Perfil'}
-                    </h1>
-                  </div>
-                  <p className="text-neutral-500 font-mono text-sm md:text-base ml-9 md:ml-11">
-                    {t('profile.subtitle') || 'Gerencie sua conta e assinatura'}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <PageShell
+      pageId="profile"
+      width="5xl"
+      seoTitle={t('common.profile')}
+      seoDescription={t('profile.seoDescription')}
+      title={t('common.profile') || 'Perfil'}
+      description={t('common.subtitle') || 'Gerencie sua conta e assinatura'}
+      microTitle="User // Account"
+      breadcrumb={[
+        { label: t('apps.home'), to: '/' },
+        { label: t('common.profile') || 'Profile' }
+      ]}
+    >
+      <div className="space-y-6">
 
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono flex items-center gap-2">
@@ -289,13 +251,13 @@ export const ProfilePage: React.FC = () => {
               <CardContent className="p-2">
                 <TabsList className="bg-transparent border-0 w-full justify-start overflow-x-auto">
                   <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6">
-                    {t('profile.tabs.overview') || 'Dashboard'}
+                    {t('common.tabs.overview') || 'Dashboard'}
                   </TabsTrigger>
                   <TabsTrigger value="history" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6">
-                    {t('profile.tabs.history') || 'Histórico'}
+                    {t('common.tabs.history') || 'Histórico'}
                   </TabsTrigger>
                   <TabsTrigger value="configuration" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6">
-                    {t('profile.tabs.configuration') || 'Configurações'}
+                    {t('common.tabs.configuration') || 'Configurações'}
                   </TabsTrigger>
                 </TabsList>
               </CardContent>
@@ -327,26 +289,25 @@ export const ProfilePage: React.FC = () => {
             </TabsContent>
           </Tabs>
 
-        </div>
-
-        <CreditPackagesModal
-          isOpen={isCreditPackagesModalOpen}
-          onClose={() => setIsCreditPackagesModalOpen(false)}
-          subscriptionStatus={subscriptionStatus}
-        />
-        <TransactionsModal
-          isOpen={isTransactionsModalOpen}
-          onClose={() => setIsTransactionsModalOpen(false)}
-        />
-        <EditProfileModal
-          isOpen={isEditProfileModalOpen}
-          onClose={() => {
-            setIsEditProfileModalOpen(false);
-            authService.invalidateCache();
-            window.location.reload();
-          }}
-        />
       </div>
-    </>
+
+      <CreditPackagesModal
+        isOpen={isCreditPackagesModalOpen}
+        onClose={() => setIsCreditPackagesModalOpen(false)}
+        subscriptionStatus={subscriptionStatus}
+      />
+      <TransactionsModal
+        isOpen={isTransactionsModalOpen}
+        onClose={() => setIsTransactionsModalOpen(false)}
+      />
+      <EditProfileModal
+        isOpen={isEditProfileModalOpen}
+        onClose={() => {
+          setIsEditProfileModalOpen(false);
+          authService.invalidateCache();
+          window.location.reload();
+        }}
+      />
+    </PageShell>
   );
 };

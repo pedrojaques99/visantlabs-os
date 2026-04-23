@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["DOM", "ES2020"]
+  },
+  "include": [
+    "src/code.ts",
+    "src/handlers/**/*.ts",
+    "src/state.ts",
+    "src/utils/**/*.ts",
+    "../shared/**/*.ts"
+  ]
+}

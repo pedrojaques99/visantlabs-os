@@ -58,6 +58,7 @@ const SECTION_CONFIG = [
   { id: 'editorial', icon: FileText, label: 'Editorial' },
   { id: 'media', icon: ImageIcon, label: 'Media Kit' },
   { id: 'accessibility', icon: ShieldCheck, label: 'Accessibility' },
+  { id: 'knowledge', icon: FileText, label: 'Knowledge' },
 ] as const;
 
 export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
@@ -70,7 +71,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [expandedIds, setExpandedIds] = useState<string[]>(selectedId ? [selectedId] : []);
+  const [expandedId, setExpandedId] = useState<string | null>(selectedId);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
@@ -135,14 +136,12 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
   const toggleExpand = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setExpandedIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
+    setExpandedId(prev => prev === id ? null : id);
   };
 
   React.useEffect(() => {
-    if (selectedId && !expandedIds.includes(selectedId)) {
-      setExpandedIds(prev => [...prev, selectedId]);
+    if (selectedId) {
+      setExpandedId(selectedId);
     }
   }, [selectedId]);
 
@@ -162,7 +161,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
               placeholder="Search guidelines..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-8 pr-8 text-xs bg-white/[0.02] border-white/5 placeholder:text-neutral-700 focus:border-brand-cyan/30"
+              className="h-8 pl-8 pr-8 text-xs bg-white/[0.02] border-white/5 placeholder:text-neutral-600 focus:border-brand-cyan/30"
             />
             {searchQuery && (
               <button
@@ -220,13 +219,13 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                       : "text-neutral-400 hover:text-neutral-200 border-transparent hover:bg-white/[0.03]"
                   )}
                 >
-                  <FileText size={14} className={cn(selectedId === g.id ? "text-neutral-400" : "text-neutral-700")} />
+                  <FileText size={14} className={cn(selectedId === g.id ? "text-brand-cyan/70" : "text-neutral-600")} />
                   <div className="flex-1 min-w-0 text-left">
                     <span className="truncate block font-medium">
                       {g.identity?.name || g.name || 'Untitled'}
                     </span>
                     {g.folder && (
-                      <span className="text-[9px] text-neutral-600 flex items-center gap-1 mt-0.5">
+                      <span className="text-[10px] text-neutral-500 flex items-center gap-1 mt-0.5">
                         <Folder size={8} />
                         {g.folder}
                       </span>
@@ -234,7 +233,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                   </div>
                   <div className="flex items-center gap-1">
                     {selectedId === g.id && (
-                      <div className="w-1 h-1 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(var(--brand-cyan-rgb),0.5)]" />
+                      <div className="w-1 h-1 rounded-full bg-brand-cyan shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.5)]" />
                     )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -275,33 +274,36 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                     <div
                       role="button"
                       onClick={(e) => toggleExpand(g.id!, e)}
-                      className="p-0.5 rounded-sm hover:bg-white/10 transition-colors"
+                      className="p-1 rounded-sm hover:bg-white/10 transition-colors"
                     >
-                      {expandedIds.includes(g.id!) ? (
-                        <ChevronDown size={14} className="text-neutral-600" />
+                      {expandedId === g.id ? (
+                        <ChevronDown size={14} className="text-neutral-500" />
                       ) : (
-                        <ChevronRight size={14} className="text-neutral-600" />
+                        <ChevronRight size={14} className="text-neutral-500" />
                       )}
                     </div>
                   </div>
                 </button>
 
                 <AnimatePresence>
-                  {expandedIds.includes(g.id!) && (
+                  {expandedId === g.id && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
-                      <div className="ml-6 space-y-0.5 mt-1 border-l border-white/5 pl-2">
+                      <div className="ml-5 space-y-px mt-1 border-l border-white/5 pl-2 mb-2">
                         {SECTION_CONFIG.map(({ id, icon: Icon, label }) => {
                           const isActive = activeSections.includes(id);
                           return (
                             <div
                               key={id}
-                              className="w-full flex items-center justify-between px-3 py-1.5 rounded transition-colors hover:bg-white/[0.03] group cursor-pointer"
+                              className={cn(
+                                "w-full flex items-center justify-between px-3 py-1.5 rounded-sm transition-all duration-200 group cursor-pointer",
+                                isActive ? "bg-white/[0.02]" : "hover:bg-white/[0.01]"
+                              )}
                               onClick={() => {
                                 if (!isActive) onToggleSection(id);
                                 setTimeout(() => {
@@ -314,10 +316,13 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                               }}
                             >
                               <div className={cn(
-                                "flex items-center gap-2 text-[10px] font-mono transition-colors",
-                                isActive ? 'text-neutral-200' : 'text-neutral-600 group-hover:text-neutral-400'
+                                "flex items-center gap-2.5 text-[10px] font-mono transition-colors",
+                                isActive ? 'text-neutral-200' : 'text-neutral-500 group-hover:text-neutral-300'
                               )}>
-                                <Icon size={10} className={isActive ? "text-neutral-400" : "text-neutral-800"} />
+                                <Icon size={13} className={cn(
+                                  "transition-colors",
+                                  isActive ? "text-brand-cyan/80" : "text-neutral-700 group-hover:text-neutral-500"
+                                )} />
                                 {label}
                               </div>
                               <Switch
@@ -325,7 +330,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                                 checked={isActive}
                                 onCheckedChange={() => onToggleSection(id)}
                                 onClick={(e) => e.stopPropagation()}
-                                className="scale-50 origin-right"
+                                className="scale-[0.55] origin-right opacity-40 group-hover:opacity-100 transition-opacity"
                               />
                             </div>
                           );
@@ -345,7 +350,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                 </p>
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="mt-2 text-[9px] font-mono text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+                  className="mt-2 text-[10px] font-mono text-brand-cyan hover:text-brand-cyan/80 transition-colors"
                 >
                   Clear search
                 </button>
@@ -365,7 +370,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
       <div className="mt-auto space-y-4 pt-6 pb-2">
         <div className="px-2 border-t border-white/[0.03] pt-6 space-y-3">
-          <p className="text-[9px] font-mono text-neutral-600 leading-relaxed uppercase ">
+          <p className="text-[10px] font-mono text-neutral-600 leading-relaxed uppercase ">
             Sync from Branding Machine projects.
           </p>
           <Button
@@ -384,7 +389,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
         <div className="px-2 border-t border-white/[0.03] pt-4">
           <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 uppercase tracking-widest px-1">
             <div className="flex items-center gap-2">
-              <Settings size={12} className="opacity-300" />
+              <Settings size={12} className="opacity-60" />
               Settings
             </div>
           </div>

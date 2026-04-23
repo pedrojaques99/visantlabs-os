@@ -103,13 +103,18 @@ export async function serializeNode(node: SceneNode, depth = 0, maxDepth = 12): 
     if (node.textAutoResize) base.textAutoResize = node.textAutoResize;
   }
 
-  // Instance info
-  if (node.type === 'INSTANCE') {
+  // Instance & Component info
+  if (node.type === 'INSTANCE' || node.type === 'COMPONENT') {
     try {
-      const mainComp = await node.getMainComponentAsync();
-      if (mainComp) {
-        base.componentKey = mainComp.key;
-        base.componentName = mainComp.name;
+      if (node.type === 'INSTANCE') {
+        const mainComp = await node.getMainComponentAsync();
+        if (mainComp) {
+          base.componentKey = mainComp.key;
+          base.componentName = mainComp.name;
+        }
+      } else {
+        base.componentKey = node.key;
+        base.componentName = node.name;
       }
     } catch {
       // Component may not be accessible

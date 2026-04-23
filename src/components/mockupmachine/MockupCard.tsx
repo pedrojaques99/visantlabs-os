@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Download, RefreshCw, ImageIcon, Heart, X, Pencil } from 'lucide-react';
+import { Download, RefreshCw, ImageIcon, Heart, X, Pencil, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
@@ -12,6 +12,9 @@ import type { AspectRatio } from '@/types/types';
 import { GlassPanel } from '../ui/GlassPanel';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button'
+import { useGenerationFeedback } from '@/hooks/useGenerationFeedback';
+import { SendToButton } from '@/components/shared/SendToButton';
+import { type FeedbackContext, type FeedbackRating } from '@/services/feedbackApi';
 
 export interface MockupCardProps {
     base64Image: string | null;
@@ -38,6 +41,15 @@ export interface MockupCardProps {
     creditsPerOperation?: number;
     className?: string;
     style?: React.CSSProperties;
+    /** UUID da geração para o RAG loop */
+    generationId?: string | null;
+    /** Contexto da geração para o RAG loop */
+    feedbackContext?: FeedbackContext | (() => FeedbackContext);
+    /** Controlled feedback rating — lifted state for sync across views */
+    feedbackRating?: FeedbackRating | null;
+    /** Called when feedback rating changes */
+    onFeedbackRatingChange?: (rating: FeedbackRating | null) => void;
+    isGeneratingPrompt?: boolean;
 }
 
 export const MockupCard: React.FC<MockupCardProps> = React.memo(({
@@ -64,7 +76,12 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
     editButtonsDisabled = false,
     creditsPerOperation,
     className,
-    style
+    style,
+    generationId,
+    feedbackContext,
+    feedbackRating,
+    onFeedbackRatingChange,
+    isGeneratingPrompt = false,
 }) => {
     const { t } = useTranslation();
     const [showReImaginePanel, setShowReImaginePanel] = useState(false);
@@ -94,6 +111,15 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
             if (onLikeStateChange) onLikeStateChange(newIsLiked);
         },
         translationKeyPrefix: 'canvas',
+    });
+    
+    // RAG Logic Hook — controlled when parent provides feedbackRating
+    const feedback = useGenerationFeedback({
+        generationId,
+        feature: 'mockup',
+        context: feedbackContext || {},
+        controlledRating: feedbackRating,
+        onRatingChange: onFeedbackRatingChange,
     });
 
     const handleToggleLike = mockupId && onLikeStateChange ? handleToggleLikeHook : onToggleLike;
@@ -127,6 +153,13 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:scale-110 transition-transform duration-700">
                         <GlitchPickaxe />
                     </div>
+                    {isGeneratingPrompt && (
+                        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-center animate-pulse">
+                            <span className="text-[10px] font-mono font-bold text-brand-cyan tracking-[0.2em] uppercase">
+                                Preparing Prompt
+                            </span>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -158,7 +191,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
 
             {isLoading && !isRedrawing && !!base64Image && (
                 <div className="absolute inset-0 flex items-center justify-center bg-neutral-950/20 backdrop-blur-[2px]">
-                    <ImageIcon size={40} className="text-white/20 animate-pulse" />
+                    <ImageIcon size={40} className="text-white/20" />
                 </div>
             )}
 
@@ -200,7 +233,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
 
                     <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
                         <GlassPanel padding="none" className="flex flex-row items-center gap-0.5 p-1 bg-neutral-950/80 backdrop-blur-xl border-white/10 rounded-lg shadow-2xl pointer-events-auto">
-                            <Tooltip content={t('mockup.download') || "Download"} position="top">
+                            <Tooltip content={t('common.download') || "Download"} position="top">
                                 <a
                                     href={imageUrl}
                                     download={`mockup-${Date.now()}.png`}
@@ -231,6 +264,16 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                                     <Download size={12} />
                                 </a>
                             </Tooltip>
+
+                            <div className="w-px h-3 bg-white/10 mx-1" />
+
+                            <SendToButton
+                                source="mockupmachine"
+                                imageUrl={imageUrl}
+                                mimeType="image/png"
+                                label="Mockup Machine output"
+                                variant="icon"
+                            />
 
                             <div className="w-px h-3 bg-white/10 mx-1" />
 
@@ -271,6 +314,44 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                                     </Button>
                                 </Tooltip>
                             )}
+
+                            <div className="w-px h-3 bg-white/10 mx-1" />
+
+                            <div className="flex items-center gap-0.5 px-1">
+                                <Tooltip content={feedback.rating === 'up' ? "Remover feedback positivo" : "Valeu! (Melhora o modelo)"} position="top">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={(e) => { e.stopPropagation(); feedback.submit('up'); }}
+                                        className={cn(
+                                            "w-8 h-8 rounded-md transition-all",
+                                            feedback.rating === 'up' 
+                                                ? "text-green-400 bg-green-400/10 hover:bg-green-400/20" 
+                                                : "text-neutral-400 hover:text-white hover:bg-white/10"
+                                        )}
+                                        disabled={feedback.isLoading}
+                                    >
+                                        <ThumbsUp size={12} className={cn(feedback.rating === 'up' && "fill-current")} />
+                                    </Button>
+                                </Tooltip>
+                                
+                                <Tooltip content={feedback.rating === 'down' ? "Remover feedback negativo" : "Não gostei (Reportar ruído)"} position="top">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={(e) => { e.stopPropagation(); feedback.submit('down'); }}
+                                        className={cn(
+                                            "w-8 h-8 rounded-md transition-all",
+                                            feedback.rating === 'down' 
+                                                ? "text-red-400 bg-red-400/10 hover:bg-red-400/20" 
+                                                : "text-neutral-400 hover:text-white hover:bg-white/10"
+                                        )}
+                                        disabled={feedback.isLoading}
+                                    >
+                                        <ThumbsDown size={12} className={cn(feedback.rating === 'down' && "fill-current")} />
+                                    </Button>
+                                </Tooltip>
+                            </div>
                         </GlassPanel>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { X, Compass, Sparkles, ChevronDown, ChevronUp, MapPin, Camera, Lightbulb, Layers, Palette, Package, Wand2, FileText, Shirt, Smartphone, CupSoda, Grid3x3, Dices, Shuffle, Plus } from 'lucide-react';
+import { X, Compass, Diamond, ChevronDown, ChevronUp, MapPin, Camera, Lightbulb, Layers, Palette, Package, FileText, Shirt, Smartphone, CupSoda, Grid3x3, Dices, Shuffle, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
@@ -279,7 +279,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
         <div className="p-3 pt-0 animate-fade-in">
           {suggestedTags.length > 0 && (
             <div className="mb-2">
-              <span className="text-[9px] text-brand-cyan/70 mb-1 block">
+              <span className="text-[10px] text-brand-cyan/70 mb-1 block">
                 {t('mockup.suggested') || 'Suggested'}
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -574,7 +574,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   </>
                 ) : (
                   <>
-                    <Sparkles size={16} />
+                    <Diamond size={16} />
                     {t('canvasNodes.directorNode.analyze') || 'Analyze Image'}
                   </>
                 )}
@@ -710,7 +710,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   }}
                   theme={theme}
                   t={t}
-                  icon={<Wand2 size={14} className="text-brand-cyan" />}
+                  icon={<Diamond size={14} className="text-brand-cyan" />}
                 />
 
                 <CollapsableTagSection

@@ -51,7 +51,7 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.875rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -67,8 +67,8 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0 / 15%);
-  --input: oklch(0.922 0 0 / 15%);
+  --border: oklch(0.922 0 0 / 8%);
+  --input: oklch(0.922 0 0 / 8%);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -96,6 +96,7 @@
    * 
    * NodeContainer automatically applies --node-padding unless overridden.
    */
+  --node-border-width: 1px;
   --node-padding: 2rem;
   /* p-8 = 32px - default padding for all nodes */
   --node-gap: 1rem;
@@ -122,36 +123,36 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.18 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.26 0 0);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.26 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --secondary: oklch(0.32 0 0);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
+  --muted: oklch(0.28 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.32 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 0.5%);
-  --input: oklch(1 0 0 / 1%);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 12%);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: oklch(0.22 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: oklch(0.32 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 0.5%);
+  --sidebar-border: oklch(1 0 0 / 12%);
   --sidebar-ring: oklch(0.556 0 0);
 }
 
@@ -239,7 +240,7 @@
 
   .welcome-screen a {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.5' fill='none' stroke='white' stroke-width='0.5'/%3E%3Ccircle cx='5' cy='5' r='3' fill='%23brand-cyan'/%3E%3C/svg%3E") 5 5, auto !important;
-    text-shadow: 0 0 8px color-mix(in srgb, var(--brand-cyan), transparent 40%), 0 0 16px color-mix(in srgb, var(--brand-cyan), transparent 60%);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--brand-cyan), transparent 40%), 0 0 16px color-mix(in srgb, var(--brand-cyan), transparent 60%);
     transition: text-shadow 0.3s ease;
   }
 
@@ -283,7 +284,7 @@
   }
 
   50% {
-    transform: translateY(-8px);
+    transform: translateY(-10px);
   }
 }
 
@@ -378,8 +379,8 @@
 }
 
 *::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 *::-webkit-scrollbar-track {
@@ -548,7 +549,7 @@
   }
 
   50% {
-    box-shadow: 0 0 0 8px rgba(82, 221, 235, 0.2);
+    box-shadow: 0 0 0 10px rgba(82, 221, 235, 0.2);
   }
 }
 
@@ -562,7 +563,7 @@
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px);
   }
 }
 
@@ -614,8 +615,13 @@
 }
 
 @keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
+  0% {
+    transform: translateY(-100%);
+  }
+
+  100% {
+    transform: translateY(100%);
+  }
 }
 
 .animate-scanline {
@@ -632,7 +638,7 @@
 
   50% {
     opacity: 0.85;
-    box-shadow: 0 0 8px rgba(82, 221, 235, 0.3);
+    box-shadow: 0 0 10px rgba(82, 221, 235, 0.3);
   }
 }
 
@@ -645,7 +651,7 @@
 
   0%,
   100% {
-    filter: drop-shadow(0 0 8px rgba(82, 221, 235, 0.25));
+    filter: drop-shadow(0 0 10px rgba(82, 221, 235, 0.25));
   }
 
   50% {
@@ -696,11 +702,25 @@
 }
 
 /* Staggered Reveal Utils */
-.stagger-1 { animation-delay: 0.1s; }
-.stagger-2 { animation-delay: 0.2s; }
-.stagger-3 { animation-delay: 0.3s; }
-.stagger-4 { animation-delay: 0.4s; }
-.stagger-5 { animation-delay: 0.5s; }
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+
+.stagger-3 {
+  animation-delay: 0.3s;
+}
+
+.stagger-4 {
+  animation-delay: 0.4s;
+}
+
+.stagger-5 {
+  animation-delay: 0.5s;
+}
 
 .reveal-hidden {
   opacity: 0;
@@ -1035,8 +1055,8 @@
 /* Drop Indicator */
 .drop-indicator {
   height: 2px;
-  margin: 4px 8px;
-  box-shadow: 0 0 8px rgba(82, 221, 235, 0.5);
+  margin: 4px 10px;
+  box-shadow: 0 0 10px rgba(82, 221, 235, 0.5);
 }
 
 @keyframes dropPulse {
@@ -1044,7 +1064,7 @@
   0%,
   100% {
     opacity: 0.4;
-    box-shadow: 0 0 8px rgba(82, 221, 235, 0.5);
+    box-shadow: 0 0 10px rgba(82, 221, 235, 0.5);
   }
 
   50% {
@@ -1072,7 +1092,7 @@
   justify-content: center;
   opacity: 0;
   transition: opacity 0.2s ease, background-color 0.2s ease;
-  border-radius: 8px 0 0 0;
+  border-radius: 10px 0 0 0;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -1103,8 +1123,8 @@
 }
 
 .react-flow__resize-control.handle {
-  width: 7px !important;
-  height: 7px !important;
+  width: 10px !important;
+  height: 10px !important;
   border-radius: 50% !important;
   background: #ffffff !important;
   border: 1.5px solid var(--brand-cyan) !important;
@@ -1169,7 +1189,7 @@
   width: 100%;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 7610px) {
   .column-layout {
     gap: 1.5rem;
   }
@@ -1242,10 +1262,11 @@
   box-shadow: none;
 }
 
-/* Node selected border - use neutral color */
+/* Node selected border - use brand cyan accent */
 .react-flow__node.selected .node-container,
 .react-flow__node[data-selected="true"] .node-container {
-  border-color: var(--node-text-accent, #737373) !important;
+  border-color: var(--brand-cyan) !important;
+  box-shadow: 0 0 15px rgba(var(--brand-cyan-rgb), 0.15) !important;
 }
 
 /* Handles - base, position, scale */
@@ -1259,6 +1280,7 @@
   padding: 6px;
   transform-origin: center;
   transition: opacity 0.15s ease;
+  z-index: 10;
 }
 
 .react-flow__handle[data-handlepos="left"] {
@@ -1315,8 +1337,8 @@
   .react-flow__node-pdf,
   .react-flow__node-merge,
   .react-flow__node-edit:not(.min-w-\[600px\])) .react-flow__handle:hover:not(.connected):not([data-connected="true"]):not(.react-flow__resize-control) {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   opacity: 0.7;
   background: #777777;
   border: 0.5px solid rgba(119, 119, 119, 0.4);
@@ -1350,14 +1372,14 @@
 /* Handle type colors (default + unconnected hover only) */
 .react-flow__handle.handle-image,
 .react-flow__handle.handle-video {
-  background: var(--brand-cyan) !important;
-  border: 0.5px solid rgba(82, 221, 235, 0.4) !important;
+  background: var(--foreground) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 .react-flow__handle.handle-image:hover:not(.connected):not([data-connected="true"]),
 .react-flow__handle.handle-video:hover:not(.connected):not([data-connected="true"]) {
-  background: #3dd5e6 !important;
-  border: 0.5px solid rgba(61, 213, 230, 0.6) !important;
+  background: var(--brand-cyan) !important;
+  border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
 }
 
 .react-flow__handle.handle-text {
@@ -1465,16 +1487,16 @@
 
 .react-flow__controls {
   background: transparent;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   border: 0.5px solid rgba(27, 27, 27, 0.15);
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .react-flow__minimap {
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   border: 0.5px solid rgba(82, 221, 235, 0.3);
-  border-radius: 8px;
+  border-radius: 10px;
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
 }
@@ -1517,17 +1539,25 @@
   color: var(--node-text-color, #e5e7eb);
 }
 
+/* ── Node border-width token — use `border-node` utility in node components ── */
+@layer utilities {
+  .border-node {
+    border-style: solid;
+    border-width: var(--node-border-width, 1px);
+  }
+}
+
 /* Node text color utilities - use CSS variables for automatic contrast */
 .node-text-primary {
   color: var(--node-text-color, #e5e7eb) !important;
 }
 
 .node-text-muted {
-  color: var(--node-text-color-muted, #9ca3af) !important;
+  color: var(--node-text-color-muted, #d1d5db) !important;
 }
 
 .node-text-subtle {
-  color: var(--node-text-color-subtle, #6b7280) !important;
+  color: var(--node-text-color-subtle, #9ca3af) !important;
 }
 
 .node-text-accent {
@@ -1562,10 +1592,15 @@
   color: var(--brand-cyan) !important;
 }
 
-/* Override border-brand-cyan inside nodes */
+/* Override border-brand-cyan inside nodes to use foreground by default (cyan on focus handled below) */
 .react-flow__node .node-container [class*="border-[brand-cyan]"],
 .react-flow__node .node-container [class*="border-brand-cyan"] {
-  border-color: var(--brand-cyan) !important;
+  border-color: var(--foreground) !important;
+  opacity: 0.7;
+}
+
+.react-flow__node .node-container [class*="text-brand-cyan"] {
+  color: var(--foreground) !important;
 }
 
 /* Override bg-brand-cyan inside nodes (solid, not with opacity) */
@@ -1574,10 +1609,11 @@
   background-color: var(--brand-cyan) !important;
 }
 
-/* Node selected border - use neutral color */
+/* Node selected border - use brand cyan accent */
 .react-flow__node.selected .node-container,
 .react-flow__node[data-selected="true"] .node-container {
-  border-color: #737373 !important;
+  border-color: var(--brand-cyan) !important;
+  box-shadow: 0 0 15px rgba(var(--brand-cyan-rgb), 0.15) !important;
 }
 
 /* Override focus rings and other brand-cyan references */
@@ -1799,7 +1835,7 @@ select.w-full.font-mono.node-interactive {
 @keyframes fadeInUpMenu {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
 
   to {
@@ -1937,8 +1973,8 @@ select.w-full.font-mono.node-interactive {
    SONNER TOAST CUSTOM STYLES
    ============================================ */
 [data-sonner-toast] {
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
   border-radius: var(--radius) !important;
   font-family: 'Red Hat Mono', monospace !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -1952,7 +1988,7 @@ select.w-full.font-mono.node-interactive {
 
 [data-sonner-toast]:hover {
   transform: translateY(-2px) scale(1.02) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2) !important;
 }
 
 [data-sonner-toast] [data-title] {
@@ -1982,4 +2018,10 @@ select.w-full.font-mono.node-interactive {
 
 .dark [data-sonner-toast][data-type="error"] {
   background: color-mix(in srgb, var(--destructive), transparent 95%) !important;
+}
+
+/* Creative Studio Layer Hover */
+.creative-layer:hover {
+  outline: 1px solid rgba(0, 229, 255, 0.25);
+  outline-offset: -1px;
 }

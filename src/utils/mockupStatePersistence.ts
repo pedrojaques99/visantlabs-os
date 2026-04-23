@@ -67,18 +67,23 @@ function isValidState(data: any): data is PersistedMockupState {
   const ageInDays = (Date.now() - data.timestamp) / (1000 * 60 * 60 * 24);
   if (ageInDays > MAX_AGE_DAYS) return false;
 
-  // State is valid if it has at least one of these:
-  // 1. Generated mockups
+  // State is valid if it has at least one of these signals of activity:
+  // 1. Generated mockups (High priority)
   const hasMockups = Array.isArray(data.mockups) && data.mockups.some((m: any) => m !== null);
-  // 2. An uploaded primary image
+  
+  // 2. An uploaded primary image (URL or base64)
   const hasImage = !!data.uploadedImage && (isHttpUrl(data.uploadedImage.url) || !!data.uploadedImage.base64);
-  // 3. Any selected tags (user has started work)
-  const hasSelectedTags =
+  
+  // 3. Any selected tags or design type selection (User progress)
+  const hasUserProgress =
     (Array.isArray(data.selectedTags) && data.selectedTags.length > 0) ||
     (Array.isArray(data.selectedBrandingTags) && data.selectedBrandingTags.length > 0) ||
-    (Array.isArray(data.designType) && !!data.designType);
+    (!!data.designType && data.designType !== 'blank');
 
-  return hasMockups || hasImage || hasSelectedTags;
+  // 4. Any reference images
+  const hasReferences = Array.isArray(data.referenceImages) && data.referenceImages.length > 0;
+
+  return hasMockups || hasImage || hasUserProgress || hasReferences;
 }
 
 /**

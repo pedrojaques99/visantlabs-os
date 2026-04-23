@@ -38,8 +38,8 @@ export interface PluginRequest {
   };
   selectedBrandFont?: { id: string; name: string };
   brandFonts?: {
-    primary?: { id: string; name: string } | null;
-    secondary?: { id: string; name: string } | null;
+    primary?: { id: string; name: string; family?: string; style?: string } | null;
+    secondary?: { id: string; name: string; family?: string; style?: string } | null;
   };
   selectedBrandColors?: Array<{ name: string; value: string; role?: string }>;
   availableComponents?: any[];
@@ -63,6 +63,7 @@ export interface PluginRequest {
   };
   // UI Components selected in plugin Brand tab
   selectedUIComponents?: Record<string, { key: string; name: string }>;
+  useBrand?: boolean;
 }
 
 export interface DesignSystemJSON {
@@ -264,11 +265,14 @@ export function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thin
   fmtLogo('Accent', logos.accent);
   const logoInfo = logoLines.length > 0 ? '\n' + logoLines.join('\n') : 'Nenhum selecionado';
 
-  // Build font info — support primary + secondary
+  // Build font info — family-first with available weights
   const fonts = req.brandFonts || {};
   const fontLines: string[] = [];
   const fmtFont = (label: string, font: any) => {
-    if (font) fontLines.push(`  ${label}: ${font.name} (ID: "${font.id}")`);
+    if (!font) return;
+    const family = font.family || font.name || '';
+    const weights = font.availableStyles?.length ? ` (pesos: ${font.availableStyles.join(', ')})` : font.style ? ` (${font.style})` : '';
+    fontLines.push(`  ${label}: "${family}"${weights}`);
   };
   fmtFont('Primary (títulos)', fonts.primary || req.selectedBrandFont);
   fmtFont('Secondary (textos)', fonts.secondary);
@@ -276,9 +280,9 @@ export function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thin
 
   const brandColorsInfo = req.selectedBrandColors?.length
     ? req.selectedBrandColors.map(c => {
-        const role = c.role ? ` (${c.role})` : '';
-        return `  - ${c.name}: ${c.value}${role}`;
-      }).join('\n')
+      const role = c.role ? ` (${c.role})` : '';
+      return `  - ${c.name}: ${c.value}${role}`;
+    }).join('\n')
     : 'Nenhuma selecionada';
 
   // Design Tokens info
@@ -298,8 +302,8 @@ export function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thin
   // UI Components info
   const uiComponentsInfo = req.selectedUIComponents && Object.keys(req.selectedUIComponents).length > 0
     ? '\n' + Object.entries(req.selectedUIComponents)
-        .map(([type, comp]) => `  - ${type}: "${comp.name}" (key: "${comp.key}")`)
-        .join('\n')
+      .map(([type, comp]) => `  - ${type}: "${comp.name}" (key: "${comp.key}")`)
+      .join('\n')
     : '';
 
   const isScanPage = !!(req as any).scanPage;
@@ -366,16 +370,16 @@ Exemplo de bate-papo:
 ]
 
 ${thinkModeBlock}${chatHistory ? `═══ HISTÓRICO DE CONVERSA ═══\n${chatHistory}\n` : ''}
-${req.brandGuideline ? buildBrandContext(req.brandGuideline) + '\n' : (req.designSystem ? buildDesignSystemContext(req.designSystem) + '\n' : '')}
+${(req.useBrand !== false && req.brandGuideline) ? buildBrandContext(req.brandGuideline) + '\n' : (req.designSystem ? buildDesignSystemContext(req.designSystem) + '\n' : '')}
 ═══ CONTEXTO DO ARQUIVO ═══
 
-${!req.brandGuideline ? `BRAND GUIDELINES DO USUÁRIO:
+${(req.useBrand !== false && !req.brandGuideline) ? `BRAND GUIDELINES DO USUÁRIO:
 - Logo(s): ${logoInfo}
 - Fonte(s) de marca: ${fontInfo}
 - Cores de marca:
 ${brandColorsInfo}${tokensInfo ? `
 - Design Tokens:${tokensInfo}` : ''}${uiComponentsInfo ? `
-- Componentes de UI mapeados:${uiComponentsInfo}` : ''}` : ''}
+- Componentes de UI mapeados:${uiComponentsInfo}` : ''}` : (req.useBrand === false ? 'BRANDING: O usuário desativou o uso de marca. Use estilos genéricos e modernos (ex: Inter para fontes, cores neutras ou cores vibrantes genéricas se não especificado).' : '')}
 
 FRAMES/CONTAINERS SELECIONADOS (use o "id" como "parentNodeId" para criar DENTRO deles):
 ${containersHint}
@@ -406,7 +410,7 @@ INSTAGRAM:
 
 OUTRAS REDES:
   - YouTube Thumbnail: 1280×720px
-  - LinkedIn Post: 1200×627px
+  - LinkedIn Post: 1200×6210px
   - Facebook Post: 1200×630px
   - Twitter/X Post: 1600×900px
   - TikTok: 1080×1920px
@@ -565,12 +569,12 @@ export function buildSystemPromptV2(
   return assemblePrompt({
     command: req.command,
     selectedElements: req.selectedElements,
-    brandColors: req.selectedBrandColors,
-    brandFonts: req.brandFonts ? {
+    brandColors: req.useBrand !== false ? req.selectedBrandColors : undefined,
+    brandFonts: (req.useBrand !== false && req.brandFonts) ? {
       primary: req.brandFonts.primary ?? undefined,
       secondary: req.brandFonts.secondary ?? undefined,
     } : undefined,
-    brandLogos: req.brandLogos ? {
+    brandLogos: (req.useBrand !== false && req.brandLogos) ? {
       light: req.brandLogos.light ?? undefined,
       dark: req.brandLogos.dark ?? undefined,
     } : undefined,
@@ -578,6 +582,7 @@ export function buildSystemPromptV2(
     colorVariables: req.availableColorVariables,
     chatHistory,
     thinkMode: req.thinkMode,
+    useBrand: req.useBrand,
   });
 }
 

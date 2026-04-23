@@ -19,6 +19,8 @@ interface AnalyzedSummaryCardProps {
     onReplaceImage?: (image: UploadedImage) => void;
     onReferenceImagesChange?: (images: UploadedImage[]) => void;
     isGenerating?: boolean;
+    detectedLanguage?: string | null;
+    detectedText?: string | null;
 }
 
 export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
@@ -29,6 +31,8 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
     onReplaceImage,
     onReferenceImagesChange,
     isGenerating = false,
+    detectedLanguage,
+    detectedText: _detectedText,
 }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
@@ -106,7 +110,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                     <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
                                         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-brand-cyan/10 to-transparent animate-scanline h-20 w-full" />
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="px-4 py-2 bg-black/60 backdrop-blur-md rounded-full border border-brand-cyan/30 animate-pulse">
+                                            <div className="px-4 py-2 bg-black/60 backdrop-blur-md rounded-full border border-brand-cyan/30">
                                                 <span className="text-[10px] font-mono text-brand-cyan tracking-widest uppercase">
                                                     Analyzing Structure...
                                                 </span>
@@ -141,6 +145,18 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                 </SkeletonText>
                             </div>
                         )}
+                        
+                        {/* Detected Language Badge */}
+                        {detectedLanguage && !isAnalyzing && (
+                            <div className="absolute top-2 left-2 z-20 pointer-events-none">
+                                <div className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/80 backdrop-blur-md rounded border border-brand-cyan/30 shadow-lg animate-fade-in">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
+                                    <span className="text-[9px] font-mono text-brand-cyan/90 uppercase tracking-widest">
+                                        {detectedLanguage}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Reference Images Overlay (Inside the same div) */}
                         <div className="absolute bottom-2 left-2 right-2 flex items-end justify-start gap-2 z-10 pointer-events-none">
@@ -149,7 +165,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                     <div key={i} className="relative w-12 h-12 rounded-md overflow-hidden border border-white/20 bg-neutral-800 shadow-lg group/ref">
                                         <img
                                             src={img.url || (img.base64 ? `data:${img.mimeType || 'image/png'};base64,${img.base64}` : '')}
-                                            className="w-full h-full object-contain p-1 opacity-90 group-hover/ref:opacity-300 transition-opacity"
+                                            className="w-full h-full object-contain p-1 opacity-90 group-hover/ref:opacity-100 transition-opacity"
                                             alt={`Ref ${i}`}
                                         />
                                         {onReferenceImagesChange && (

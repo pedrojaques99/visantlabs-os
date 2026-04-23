@@ -29,7 +29,7 @@ export const LinearGradientBackground: React.FC<LinearGradientBackgroundProps> =
 
   // Use responsive opacity classes if opacity prop is default (1), otherwise use the prop value
   const opacityClasses = opacity === 1
-    ? 'opacity-60 md:opacity-80 lg:opacity-300'
+    ? 'opacity-60 md:opacity-80 lg:opacity-100'
     : '';
 
   const styleOpacity = opacity === 1 ? undefined : opacity;

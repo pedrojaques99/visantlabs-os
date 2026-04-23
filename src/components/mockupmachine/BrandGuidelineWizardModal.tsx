@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Modal } from '../ui/Modal';
 import { GlitchLoader } from '../ui/GlitchLoader';
@@ -7,11 +8,25 @@ import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Loader2, FileText, X, ShieldCheck } from 'lucide-react';
+import { Loader2, FileText, X, ShieldCheck, Image as ImageIcon, Upload, Plus, Figma } from 'lucide-react';
 import { MicroTitle } from '../ui/MicroTitle';
-import { pdfToBase64, validatePdfFile } from '@/utils/pdfUtils';
+import { validatePdfFile } from '@/utils/pdfUtils';
+import { buildBrandIngestPayload } from '@/hooks/queries/useBrandImport';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { validateFile } from '@/utils/fileUtils';
+
+const isFigmaUrl = (text: string): boolean => {
+    try {
+        const u = new URL(text);
+        const host = u.hostname;
+        const path = u.pathname;
+        return (host === 'figma.com' || host === 'www.figma.com') &&
+            (path.startsWith('/file/') || path.startsWith('/design/'));
+    } catch {
+        return false;
+    }
+};
 
 interface BrandGuidelineWizardModalProps {
     isOpen: boolean;
@@ -27,10 +42,12 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     editGuideline,
 }) => {
     const { t } = useTranslation();
+    const qc = useQueryClient();
     const isEditMode = !!editGuideline;
 
     const [name, setName] = useState('');
     const [url, setUrl] = useState('');
+    const [figmaUrl, setFigmaUrl] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isIngesting, setIsIngesting] = useState(false);
 
@@ -38,25 +55,145 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     const [pdfFile, setPdfFile] = useState<File | null>(null);
     const pdfInputRef = useRef<HTMLInputElement>(null);
 
+    // Image selection state
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const imageInputRef = useRef<HTMLInputElement>(null);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
     // Local media/logos state for the gallery (edit mode)
     const [media, setMedia] = useState<BrandGuideline['media']>([]);
     const [logos, setLogos] = useState<BrandGuideline['logos']>([]);
 
-    // Pre-fill when editing
+    const DRAFT_KEY = 'visant_brand_wizard_draft';
+
+    // Persist text inputs as draft (new mode only)
+    useEffect(() => {
+        if (!isOpen || isEditMode) return;
+        const draft = { name, url, figmaUrl };
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    }, [name, url, figmaUrl, isOpen, isEditMode]);
+
     useEffect(() => {
         if (isOpen && editGuideline) {
             setName(editGuideline.identity?.name || '');
             setUrl(editGuideline.identity?.website || '');
             setMedia(editGuideline.media || []);
             setLogos(editGuideline.logos || []);
+        } else if (isOpen) {
+            // Restore draft if available
+            try {
+                const saved = localStorage.getItem(DRAFT_KEY);
+                if (saved) {
+                    const draft = JSON.parse(saved);
+                    setName(draft.name || '');
+                    setUrl(draft.url || '');
+                    setFigmaUrl(draft.figmaUrl || '');
+                    setPdfFile(null);
+                    setImageFiles([]);
+                    setImagePreviews([]);
+                    setMedia([]);
+                    setLogos([]);
+                    if (pdfInputRef.current) pdfInputRef.current.value = '';
+                    if (imageInputRef.current) imageInputRef.current.value = '';
+                    return;
+                }
+            } catch {}
             setName('');
             setUrl('');
+            setFigmaUrl('');
             setMedia([]);
             setLogos([]);
             setPdfFile(null);
+            setImageFiles([]);
+            setImagePreviews([]);
             if (pdfInputRef.current) pdfInputRef.current.value = '';
+            if (imageInputRef.current) imageInputRef.current.value = '';
         }
     }, [isOpen, editGuideline]);
+
+    // Handle paste event
+    useEffect(() => {
+        if (!isOpen || isSubmitting || isIngesting) return;
+
+        const handlePaste = (e: ClipboardEvent) => {
+            const target = e.target as HTMLElement;
+            const isTypingInInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+
+            // Detect Figma URL paste anywhere (even in inputs, intercept only if it's a Figma URL)
+            if (e.clipboardData?.types.includes('text/plain')) {
+                const text = e.clipboardData.getData('text/plain').trim();
+                if (isFigmaUrl(text)) {
+                    if (!isTypingInInput || (target as HTMLInputElement).id !== 'brand-wizard-figma') {
+                        e.preventDefault();
+                        setFigmaUrl(text);
+                        toast.success('URL do Figma detectada');
+                        return;
+                    }
+                }
+            }
+
+            // Don't intercept other text pastes in inputs
+            if (isTypingInInput && e.clipboardData?.types.includes('text/plain')) {
+                return;
+            }
+
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            const files: File[] = [];
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.kind === 'file') {
+                    const file = item.getAsFile();
+                    if (file) files.push(file);
+                }
+            }
+
+            if (files.length === 0) return;
+
+            e.preventDefault();
+            const imageFilesFromPaste = files.filter(f => f.type.startsWith('image/'));
+            const pdfFilesFromPaste = files.filter(f => f.type === 'application/pdf');
+
+            if (imageFilesFromPaste.length > 0) {
+                setImageFiles(prevFiles => {
+                    const newFiles = [...prevFiles];
+                    const newPreviews: string[] = [];
+                    let addedCount = 0;
+
+                    for (const file of imageFilesFromPaste) {
+                        if (newFiles.length >= 10) break;
+                        const error = validateFile(file, 'image');
+                        if (error) {
+                            toast.error(`${file.name}: ${error}`);
+                            continue;
+                        }
+                        newFiles.push(file);
+                        newPreviews.push(URL.createObjectURL(file));
+                        addedCount++;
+                    }
+
+                    if (addedCount > 0) {
+                        setImagePreviews(prevPreviews => [...prevPreviews, ...newPreviews]);
+                        toast.success(t('mockup.brandWizardImagesPasted'));
+                    }
+                    return newFiles;
+                });
+            } else if (pdfFilesFromPaste.length > 0) {
+                const file = pdfFilesFromPaste[0];
+                const validation = validatePdfFile(file);
+                if (!validation.isValid) {
+                    toast.error(validation.error);
+                } else {
+                    setPdfFile(file);
+                    toast.success(t('mockup.brandWizardPdfPasted'));
+                }
+            }
+        };
+
+        window.addEventListener('paste', handlePaste);
+        return () => window.removeEventListener('paste', handlePaste);
+    }, [isOpen, isSubmitting, isIngesting, t]);
 
     const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -72,6 +209,45 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         setPdfFile(file);
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        const newFiles = [...imageFiles];
+        const newPreviews = [...imagePreviews];
+
+        for (const file of files) {
+            if (newFiles.length >= 10) break;
+
+            const error = validateFile(file, 'image');
+            if (error) {
+                toast.error(`${file.name}: ${error}`);
+                continue;
+            }
+
+            newFiles.push(file);
+            newPreviews.push(URL.createObjectURL(file));
+        }
+
+        setImageFiles(newFiles);
+        setImagePreviews(newPreviews);
+        if (imageInputRef.current) imageInputRef.current.value = '';
+    };
+
+    const removeImage = (index: number) => {
+        const newFiles = [...imageFiles];
+        const newPreviews = [...imagePreviews];
+
+        // Revoke the URL to avoid memory leaks
+        URL.revokeObjectURL(newPreviews[index]);
+
+        newFiles.splice(index, 1);
+        newPreviews.splice(index, 1);
+
+        setImageFiles(newFiles);
+        setImagePreviews(newPreviews);
+    };
+
     const removePdf = () => {
         setPdfFile(null);
         if (pdfInputRef.current) pdfInputRef.current.value = '';
@@ -80,15 +256,28 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     const trimmedName = name.trim();
     const trimmedUrl = url.trim();
     const hasUrl = trimmedUrl.length > 0;
+    const hasFigma = isFigmaUrl(figmaUrl.trim());
     const canSubmit = trimmedName.length > 0 && !isSubmitting && !isIngesting;
+
+    const handleFormDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        const text = e.dataTransfer.getData('text/plain').trim();
+        if (isFigmaUrl(text)) {
+            setFigmaUrl(text);
+            toast.success('URL do Figma detectada');
+        }
+    };
 
     const handleClose = useCallback(() => {
         if (isSubmitting || isIngesting) return;
         setName('');
         setUrl('');
         setPdfFile(null);
+        setImageFiles([]);
+        imagePreviews.forEach(url => URL.revokeObjectURL(url));
+        setImagePreviews([]);
         onClose();
-    }, [isSubmitting, isIngesting, onClose]);
+    }, [isSubmitting, isIngesting, imagePreviews, onClose]);
 
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
@@ -132,27 +321,56 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 else toast.success(t('mockup.brandWizardSuccess'));
             }
 
-            // Handle PDF Ingestion
-            if (pdfFile) {
+            // Handle Extraction Sources (PDF and/or Images)
+            if (pdfFile || imageFiles.length > 0) {
                 setIsSubmitting(false);
                 setIsIngesting(true);
                 try {
-                    const base64 = await pdfToBase64(pdfFile);
-                    await brandGuidelineApi.ingest(workingId, {
-                        source: 'pdf',
-                        data: base64,
-                        filename: pdfFile.name
-                    });
-                    toast.success(t('mockup.brandWizardSuccessWithExtraction'));
-                } catch {
-                    toast.error(t('mockup.brandWizardErrorPdf'));
+                    const inputFiles: File[] = [];
+                    if (pdfFile) inputFiles.push(pdfFile);
+                    inputFiles.push(...imageFiles);
+                    const payload = await buildBrandIngestPayload(inputFiles);
+                    if (payload) {
+                        await brandGuidelineApi.ingest(workingId, payload);
+                        toast.success(t('mockup.brandWizardSuccessWithExtraction'));
+                    }
+                } catch (err) {
+                    console.error('Ingestion error:', err);
+                    toast.error(t('mockup.brandWizardErrorIngest'));
                 }
                 setIsIngesting(false);
             }
 
+            // Handle Figma URL: link + auto-import all tokens
+            const trimmedFigma = figmaUrl.trim();
+            if (trimmedFigma && isFigmaUrl(trimmedFigma)) {
+                setIsIngesting(true);
+                try {
+                    await brandGuidelineApi.linkFigmaFile(workingId, trimmedFigma);
+                    await brandGuidelineApi.importFromFigma(workingId, {
+                        importColors: true,
+                        importTypography: true,
+                    });
+                    toast.success('Tokens Figma importados — cores e tipografia extraídas');
+                } catch (err: any) {
+                    if (err?.needsToken) {
+                        toast.warning('Token Figma não configurado — vá em Perfil > Configuração');
+                    } else {
+                        toast.warning('Figma linkado, mas extração de tokens falhou');
+                    }
+                } finally {
+                    setIsIngesting(false);
+                }
+            }
+
             setName('');
             setUrl('');
+            setFigmaUrl('');
             setPdfFile(null);
+            setImageFiles([]);
+            setImagePreviews([]);
+            localStorage.removeItem(DRAFT_KEY);
+            await qc.invalidateQueries({ queryKey: ['brand-guidelines'] });
             onSuccess(workingId);
 
         } catch {
@@ -161,15 +379,15 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             setIsSubmitting(false);
             setIsIngesting(false);
         }
-    }, [canSubmit, isEditMode, trimmedName, trimmedUrl, editGuideline, hasUrl, pdfFile, onSuccess, t]);
+    }, [canSubmit, isEditMode, trimmedName, trimmedUrl, editGuideline, hasUrl, pdfFile, onSuccess, t, qc]);
 
     const submitLabel = isIngesting
         ? t('mockup.brandWizardExtracting')
         : isSubmitting
             ? null
             : isEditMode
-                ? t('mockup.brandWizardSave')
-                : hasUrl
+                ? t('common.save')
+                : (hasUrl || pdfFile || imageFiles.length > 0)
                     ? t('mockup.brandWizardSubmit')
                     : t('mockup.brandWizardSubmitNoUrl');
 
@@ -190,7 +408,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                         disabled={isSubmitting || isIngesting}
                         className="px-4 py-2 text-sm font-mono text-neutral-400 hover:text-white transition-colors disabled:opacity-50"
                     >
-                        {t('mockup.brandWizardCancel')}
+                        {t('common.cancel')}
                     </Button>
                     <Button variant="brand"
                         type="submit"
@@ -210,7 +428,13 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 </div>
             }
         >
-            <form id="brand-wizard-form" onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <form
+                id="brand-wizard-form"
+                onSubmit={handleSubmit}
+                onDrop={handleFormDrop}
+                onDragOver={(e) => e.preventDefault()}
+                className="flex flex-col gap-5"
+            >
                 <div className="flex flex-col gap-1.5">
                     <MicroTitle as="label" htmlFor="brand-wizard-name">
                         {t('mockup.brandWizardNameLabel')}
@@ -247,60 +471,135 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                     )}
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                    <MicroTitle as="label" htmlFor="brand-wizard-pdf">
-                        {t('mockup.brandWizardPdfLabel')}
-                    </MicroTitle>
-                    <input
-                        ref={pdfInputRef}
-                        id="brand-wizard-pdf"
-                        type="file"
-                        accept=".pdf"
-                        onChange={handlePdfChange}
-                        className="hidden"
-                        disabled={isSubmitting || isIngesting}
-                    />
-
-                    {!pdfFile ? (
-                        <button
-                            type="button"
-                            onClick={() => pdfInputRef.current?.click()}
+                {/* PDF and Images selection (Combined or separate?) */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                        <MicroTitle as="label" htmlFor="brand-wizard-pdf">
+                            {t('mockup.brandWizardPdfLabel')}
+                        </MicroTitle>
+                        <input
+                            ref={pdfInputRef}
+                            id="brand-wizard-pdf"
+                            type="file"
+                            accept=".pdf"
+                            onChange={handlePdfChange}
+                            className="hidden"
                             disabled={isSubmitting || isIngesting}
-                            className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/5 hover:border-brand-cyan/30 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group"
-                        >
-                            <div className="flex items-center gap-3">
-                                <FileText size={18} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
-                                <span className="text-xs truncate">{t('mockup.brandWizardPdfPlaceholder')}</span>
-                            </div>
-                            <ShieldCheck size={14} className="text-neutral-800 group-hover:text-brand-cyan/40" />
-                        </button>
-                    ) : (
-                        <div className="flex items-center justify-between gap-3 bg-brand-cyan/5 border border-brand-cyan/20 rounded-md px-3 py-2.5 overflow-hidden">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <FileText size={18} className="text-brand-cyan shrink-0" />
-                                <div className="flex flex-col min-w-0">
-                                    <span className="text-[10px] font-mono text-brand-cyan/60 uppercase leading-none mb-1">
-                                        {t('mockup.brandWizardPdfSelected')}
-                                    </span>
-                                    <span className="text-[11px] font-mono text-white truncate">
+                        />
+
+                        {!pdfFile ? (
+                            <button
+                                type="button"
+                                onClick={() => pdfInputRef.current?.click()}
+                                disabled={isSubmitting || isIngesting}
+                                className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/5 hover:border-brand-cyan/30 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group h-[42px]"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <FileText size={16} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
+                                    <span className="text-[10px] uppercase tracking-wider">{t('mockup.brandWizardPdfPlaceholderShort') || 'PDF'}</span>
+                                </div>
+                                <ShieldCheck size={12} className="text-neutral-800 group-hover:text-brand-cyan/40" />
+                            </button>
+                        ) : (
+                            <div className="flex items-center justify-between gap-2 bg-brand-cyan/5 border border-brand-cyan/20 rounded-md px-2 py-1.5 overflow-hidden h-[42px]">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <FileText size={16} className="text-brand-cyan shrink-0" />
+                                    <span className="text-[10px] font-mono text-white truncate max-w-[80px]">
                                         {pdfFile.name}
                                     </span>
                                 </div>
+                                <button
+                                    type="button"
+                                    onClick={removePdf}
+                                    className="p-1 rounded-full hover:bg-white/5 text-neutral-600 hover:text-white transition-colors"
+                                >
+                                    <X size={12} />
+                                </button>
                             </div>
-                            <button
-                                type="button"
-                                onClick={removePdf}
-                                className="p-1.5 rounded-full hover:bg-white/5 text-neutral-600 hover:text-white transition-colors"
-                            >
-                                <X size={14} />
-                            </button>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
-                    <MicroTitle as="p" className="text-neutral-700 mt-0.5 lowercase">
-                        {t('mockup.brandWizardPdfHint')}
-                    </MicroTitle>
+                    <div className="flex flex-col gap-1.5">
+                        <MicroTitle as="label" htmlFor="brand-wizard-images">
+                            {t('mockup.brandWizardImagesLabel') || 'Images'}
+                        </MicroTitle>
+                        <input
+                            ref={imageInputRef}
+                            id="brand-wizard-images"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageChange}
+                            className="hidden"
+                            disabled={isSubmitting || isIngesting || imageFiles.length >= 10}
+                        />
+
+                        <button
+                            type="button"
+                            onClick={() => imageInputRef.current?.click()}
+                            disabled={isSubmitting || isIngesting || imageFiles.length >= 10}
+                            className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/5 hover:border-brand-cyan/30 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group h-[42px] disabled:opacity-30"
+                        >
+                            <div className="flex items-center gap-2">
+                                <ImageIcon size={16} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
+                                <span className="text-[10px] uppercase tracking-wider">
+                                    {imageFiles.length > 0 ? `${imageFiles.length}/10` : (t('mockup.brandWizardImagesPlaceholderShort') || 'IMAGES')}
+                                </span>
+                            </div>
+                            <Plus size={12} className="text-neutral-800 group-hover:text-brand-cyan/40" />
+                        </button>
+                    </div>
                 </div>
+
+                {/* Image Previews Grid */}
+                {imagePreviews.length > 0 && (
+                    <div className="grid grid-cols-5 gap-2 mt-1">
+                        {imagePreviews.map((preview, index) => (
+                            <div key={index} className="relative group aspect-square rounded bg-neutral-900 border border-white/5 overflow-hidden">
+                                <img src={preview} alt="" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                <button
+                                    type="button"
+                                    onClick={() => removeImage(index)}
+                                    className="absolute top-0.5 right-0.5 p-1 bg-black/60 rounded-full text-white/40 hover:text-white opacity-0 group-hover:opacity-100 transition-all"
+                                >
+                                    <X size={10} />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Figma URL */}
+                <div className="flex flex-col gap-1.5">
+                    <MicroTitle as="label" htmlFor="brand-wizard-figma" className="flex items-center gap-1.5">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                            <path d="M8 24C10.208 24 12 22.208 12 20V16H8C5.792 16 4 17.792 4 20C4 22.208 5.792 24 8 24Z" fill="#0ACF83"/>
+                            <path d="M4 12C4 9.792 5.792 8 8 8H12V16H8C5.792 16 4 14.208 4 12Z" fill="#A259FF"/>
+                            <path d="M4 4C4 1.792 5.792 0 8 0H12V8H8C5.792 8 4 6.208 4 4Z" fill="#F24E1E"/>
+                            <path d="M12 0H16C18.208 0 20 1.792 20 4C20 6.208 18.208 8 16 8H12V0Z" fill="#FF7262"/>
+                            <path d="M20 12C20 14.208 18.208 16 16 16C13.792 16 12 14.208 12 12C12 9.792 13.792 8 16 8C18.208 8 20 9.792 20 12Z" fill="#1ABCFE"/>
+                        </svg>
+                        Figma
+                    </MicroTitle>
+                    <Input
+                        id="brand-wizard-figma"
+                        type="url"
+                        value={figmaUrl}
+                        onChange={(e) => setFigmaUrl(e.target.value)}
+                        placeholder="figma.com/file/... ou figma.com/design/..."
+                        disabled={isSubmitting || isIngesting}
+                        className="w-full bg-neutral-900/60 border border-white/10 rounded-md px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral-700 focus:outline-none focus:border-brand-cyan/50 transition-colors disabled:opacity-50"
+                    />
+                    {hasFigma && (
+                        <MicroTitle as="p" className="text-neutral-600 mt-0.5 lowercase">
+                            cores e tipografia serão extraídas automaticamente via API Figma.
+                        </MicroTitle>
+                    )}
+                </div>
+
+                <MicroTitle as="p" className="text-neutral-700 mt-1 lowercase">
+                    {t('mockup.brandWizardExtractionHint') || 'extração essencialista de estratégia, arquétipos e tokens.'}
+                </MicroTitle>
             </form>
 
             {/* Media Kit — only in edit mode (guideline must exist for uploads) */}

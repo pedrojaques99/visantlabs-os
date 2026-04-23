@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { Handle, Position, type NodeProps, NodeResizer, useReactFlow } from '@xyflow/react';
-import { MessageSquare, CheckCircle2, Sparkles, Settings2, PanelRight } from 'lucide-react';
+import { MessageSquare, CheckCircle2, Diamond, Settings2, PanelRight } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { ChatNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -11,9 +11,12 @@ import { LabeledHandle } from './shared/LabeledHandle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { NodeHeader } from './shared/node-header';
 
 import { ChatMessage } from '../shared/chat/ChatMessage';
 import { ChatInput } from '../shared/chat/ChatInput';
+import { ModelSelector } from '../shared/ModelSelector';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
 
 export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
     const nodeId = id as string;
@@ -87,6 +90,12 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         });
     }, [isLoading, nodeData, nodeId, connectedImages]);
 
+    const handleModelChange = useCallback((model: string) => {
+        if (nodeData.onUpdateData) {
+            nodeData.onUpdateData(nodeId, { model: model as any });
+        }
+    }, [nodeId, nodeData]);
+
 
     return (
         <NodeContainer selected={isSelected} dragging={isDragging} className="h-full overflow-hidden">
@@ -99,31 +108,35 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
             <div className="flex flex-col h-full w-full min-h-[600px] overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm">
-                    <div className="flex items-center gap-3 flex-1 truncate">
-                        <div className="p-1.5 rounded-md bg-neutral-900/10 border border-neutral-900/20">
-                            <MessageSquare size={14} className="text-neutral-200" />
-                        </div>
-                        <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight truncate uppercase">
-                            {t('canvasNodes.chatNode.title')}
-                        </h3>
-                    </div>
-                    <div className="flex items-center gap-1.5 ml-4">
-                        {nodeData.onOpenSidebar && (
-                            <NodeButton variant="ghost" size="xs" onClick={() => nodeData.onOpenSidebar!(nodeId)} title={t('canvasNodes.chatNode.openAsPanel')}>
-                                <PanelRight size={14} />
+                <NodeHeader
+                    icon={MessageSquare}
+                    title={t('canvasNodes.chatNode.title')}
+                    selected={isSelected}
+                    className="p-6 node-margin-0"
+                >
+                    <div className="flex items-center gap-4">
+                        <ModelSelector
+                            selectedModel={nodeData.model || GEMINI_MODELS.TEXT}
+                            onModelChange={handleModelChange}
+                            className="w-[120px]"
+                        />
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            {nodeData.onOpenSidebar && (
+                                <NodeButton variant="ghost" size="xs" onClick={() => nodeData.onOpenSidebar!(nodeId)} title={t('canvasNodes.chatNode.openAsPanel')}>
+                                    <PanelRight size={14} />
+                                </NodeButton>
+                            )}
+                            <NodeButton
+                                variant="ghost"
+                                size="xs"
+                                onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
+                                className={cn(showSystemPromptEditor && "text-brand-cyan border-neutral-800 bg-brand-cyan/5")}
+                            >
+                                <Settings2 size={14} />
                             </NodeButton>
-                        )}
-                        <NodeButton
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
-                            className={cn(showSystemPromptEditor && "text-brand-cyan border-brand-cyan/30 bg-brand-cyan/5")}
-                        >
-                            <Settings2 size={14} />
-                        </NodeButton>
+                        </div>
                     </div>
-                </div>
+                </NodeHeader>
 
                 {/* System Prompt Editor */}
                 {showSystemPromptEditor && (
@@ -131,8 +144,8 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                         <div className="flex items-center justify-between mb-2">
                             <label className="text-[10px] font-mono text-neutral-400 font-semibold uppercase ">{t('canvasNodes.chatNode.systemPrompt') || 'System Prompt'}</label>
                             <div className="flex items-center gap-2">
-                                <NodeButton variant="ghost" size="xs" onClick={handleResetSystemPrompt} className="text-[9px]">{t('common.reset') || 'Reset'}</NodeButton>
-                                <NodeButton variant="primary" size="xs" onClick={handleSaveSystemPrompt} className="text-[9px]">{t('common.save') || 'Save'}</NodeButton>
+                                <NodeButton variant="ghost" size="xs" onClick={handleResetSystemPrompt} className="text-[10px]">{t('common.reset') || 'Reset'}</NodeButton>
+                                <NodeButton variant="primary" size="xs" onClick={handleSaveSystemPrompt} className="text-[10px]">{t('common.save') || 'Save'}</NodeButton>
                             </div>
                         </div>
                         <Textarea
@@ -144,7 +157,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 )}
 
                 {/* Messages */}
-                <div ref={messagesAreaRef} className="flex-1 p-4 overflow-y-auto space-y-4 scroll-smooth">
+                <div ref={messagesAreaRef} className="flex-1 p-8 overflow-y-auto space-y-8 scroll-smooth">
                     {messages.length === 0 ? (
                         <div className="text-center py-12 text-neutral-500">
                             <MessageSquare size={32} className="mx-auto mb-4 opacity-40" />
@@ -152,7 +165,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                         </div>
                     ) : (
                         messages.map((msg: any) => (
-                            <ChatMessage 
+                            <ChatMessage
                                 key={msg.id}
                                 role={msg.role}
                                 content={msg.content}
@@ -161,6 +174,8 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                                 onCreateNode={nodeData.onCreateNode}
                                 t={t}
                                 showAvatar={false}
+                                generationId={msg.generationId}
+                                feature="chat"
                             />
                         ))
                     )}
@@ -168,15 +183,15 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 </div>
 
                 {/* Context & Input */}
-                <div className="p-4 border-t border-neutral-700/30 bg-neutral-900/60 backdrop-blur-sm space-y-3">
+                <div className="p-8 border-t border-neutral-700/30 bg-neutral-900/60 backdrop-blur-sm space-y-5">
                     {hasContext && (
                         <div className="flex items-center justify-between pb-3 border-b border-neutral-700/20">
                             <div className="flex gap-2">
                                 <span className="text-[10px] text-brand-cyan flex items-center gap-1 uppercase font-bold tracking-widest"><CheckCircle2 size={10} /> {t('canvasNodes.chatNode.context') || 'Context'}</span>
-                                {connectedImages.length > 0 && <span className="text-[10px] bg-brand-cyan/10 text-brand-cyan px-2 rounded-full border border-brand-cyan/20">{t('canvasNodes.chatNode.images')}: {connectedImages.length}</span>}
+                                {connectedImages.length > 0 && <span className="text-[10px] bg-brand-cyan/10 text-brand-cyan px-2 rounded-full border-node border-neutral-800">{t('canvasNodes.chatNode.images')}: {connectedImages.length}</span>}
                             </div>
                             <NodeButton variant="primary" size="xs" onClick={handleSuggestMockups} disabled={isLoading}>
-                                <Sparkles size={11} className="mr-1.5" /> {t('canvasNodes.chatNode.suggestMockups') || 'Suggest'}
+                                <Diamond size={11} className="mr-1.5" /> {t('canvasNodes.chatNode.suggestMockups') || 'Suggest'}
                             </NodeButton>
                         </div>
                     )}

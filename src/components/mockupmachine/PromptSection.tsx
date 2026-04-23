@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
-import { Info, Pickaxe, Wand2, ArrowLeftRight, PlusIcon } from 'lucide-react';
+import { Info, Pickaxe, Diamond, ArrowLeftRight, PlusIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -241,10 +241,10 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
     >
       <div className="flex items-center justify-between mb-2">
         <SkeletonText loading={isSidebarGenerating}>
-          <button 
-             onClick={() => setIsCollapsed(!isCollapsed)}
-             className={`flex items-center gap-2 text-xs font-mono hover:text-brand-cyan transition-colors focus:outline-none ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
-             <Info size={14} /> {t('mockup.prompt')}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className={`flex items-center gap-2 text-xs font-mono hover:text-brand-cyan transition-colors focus:outline-none ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
+            <Info size={14} /> {t('mockup.prompt')}
             {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
           </button>
         </SkeletonText>
@@ -252,20 +252,20 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         {!isCollapsed && promptPreview.trim() && (
           <div className="flex items-center gap-2 animate-fade-in">
             {isPromptReady ? (
-               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
-                 <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                 <span className="text-[9px] font-mono text-emerald-400 uppercase tracking-wider">{t('mockup.promptSynced')}</span>
-               </div>
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
+                <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">{t('mockup.promptSynced')}</span>
+              </div>
             ) : (
-               <Tooltip content={t('mockup.outOfSyncTooltip')} position="top">
-                 <button 
-                   onClick={onGenerateSmartPrompt}
-                   className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition-all cursor-pointer group/sync"
-                 >
-                   <ArrowLeftRight size={8} className="text-amber-400 group-hover/sync:rotate-180 transition-transform duration-500" />
-                   <span className="text-[9px] font-mono text-amber-400 uppercase tracking-wider">{t('mockup.promptOutOfSync')}</span>
-                 </button>
-               </Tooltip>
+              <Tooltip content={t('mockup.outOfSyncTooltip')} position="top">
+                <button
+                  onClick={onGenerateSmartPrompt}
+                  className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition-all cursor-pointer group/sync"
+                >
+                  <ArrowLeftRight size={8} className="text-amber-400 group-hover/sync:rotate-180 transition-transform duration-500" />
+                  <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">{t('mockup.promptOutOfSync')}</span>
+                </button>
+              </Tooltip>
             )}
           </div>
         )}
@@ -289,26 +289,26 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
 
 
       {isCollapsed ? (
-        <div 
+        <div
           onClick={() => setIsCollapsed(false)}
           className={cn(
-             "flex items-center gap-2 p-2.5 rounded-md border text-xs font-mono cursor-pointer transition-all mt-1",
-             theme === 'dark' ? 'bg-neutral-900/30 border-neutral-800/50 hover:border-brand-cyan/30 text-neutral-400' : 'bg-white border-neutral-200 hover:border-brand-cyan/50 text-neutral-600'
+            "flex items-center gap-2 p-2.5 rounded-md border text-xs font-mono cursor-pointer transition-all mt-1",
+            theme === 'dark' ? 'bg-neutral-900/30 border-neutral-800/50 hover:border-brand-cyan/30 text-neutral-400' : 'bg-white border-neutral-200 hover:border-brand-cyan/50 text-neutral-600'
           )}
         >
           {isGeneratingPrompt ? (
-             <>
-               <GlitchLoader size={10} className="text-brand-cyan shrink-0" />
-               <span className="truncate flex-1">{statusMessages[messageIndex]}...</span>
-             </>
+            <>
+              <GlitchLoader size={10} className="text-brand-cyan shrink-0" />
+              <span className="truncate flex-1">{statusMessages[messageIndex]}...</span>
+            </>
           ) : promptPreview ? (
-             <>
-               <div className="w-1.5 h-1.5 rounded-full bg-green-500/80 shrink-0"></div>
-               <span className="truncate flex-1">Prompt {isSmartPromptActive ? 'configurado pela IA' : 'personalizado pronto'}</span>
-               <span className="text-[9px] uppercase opacity-50 shrink-0 ml-2">Editar</span>
-             </>
+            <>
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500/80 shrink-0"></div>
+              <span className="truncate flex-1">Prompt {isSmartPromptActive ? 'configurado pela IA' : 'personalizado pronto'}</span>
+              <span className="text-[10px] uppercase opacity-50 shrink-0 ml-2">Editar</span>
+            </>
           ) : (
-             <span className="opacity-50">Aguardando contexto...</span>
+            <span className="opacity-50">Aguardando contexto...</span>
           )}
         </div>
       ) : (
@@ -361,15 +361,15 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           />
         </div>
       )}
-      
+
       {/* System Directives Badge / Clarification */}
       {!isCollapsed && promptPreview && (
         <div className="mt-2 pl-1">
           <div className="flex flex-wrap items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
-             <span className="text-[9px] uppercase font-mono tracking-wider mr-1 text-brand-cyan">⚙️ Regras Injetadas:</span>
-             <span className={cn("text-[9px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>🚫 No External Text</span>
-             <span className={cn("text-[9px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>📸 Focus Original Design</span>
-             <span className={cn("text-[9px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>🧍‍♂️ No Humans Interaction</span>
+            <span className="text-[10px] uppercase font-mono tracking-wider mr-1 text-brand-cyan">⚙️ Regras Injetadas:</span>
+            <span className={cn("text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>🚫 No External Text</span>
+            <span className={cn("text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>📸 Focus Original Design</span>
+            <span className={cn("text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>💎�‍♂️ No Humans Interaction</span>
           </div>
         </div>
       )}

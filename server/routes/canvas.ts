@@ -1,11 +1,14 @@
+import crypto from 'crypto';
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
-import { uploadCanvasImage, uploadCanvasPdf, uploadCanvasVideo, isR2Configured, generateCanvasImageUploadUrl, generateCanvasVideoUploadUrl } from '../services/r2Service.js';
+import { uploadCanvasImage, uploadCanvasPdf, uploadCanvasVideo, isR2Configured, generateCanvasImageUploadUrl, generateCanvasVideoUploadUrl, deleteImage } from '../services/r2Service.js';
 import { compressPdfSimple } from '../utils/pdfCompression.js';
 import { validateAdminOrPremium, requireEditAccess, requireViewAccess } from '../middleware/canvasAuth.js';
 import { Liveblocks } from '@liveblocks/node';
 import { rateLimit } from 'express-rate-limit';
+import { redisClient } from '../lib/redis.js';
+import { CACHE_TTL, CacheKey } from '../lib/cache-utils.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -31,7 +34,7 @@ const router = express.Router();
 
 // Generate unique share ID
 const generateShareId = (): string => {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return crypto.randomBytes(16).toString('hex');
 };
 
 // Convert email addresses to user IDs
@@ -268,25 +271,6 @@ function cleanExpiredBase64Images(nodes: any[]): any[] {
 
       // Process MockupNode: remove expired resultImageBase64
       if (node.type === 'mockup' && node.data) {
-        if (node.data.resultImageUrl) {
-          cleanedNode.data = {
-            ...cleanedNode.data,
-            resultImageBase64: undefined,
-            resultImageBase64Timestamp: undefined,
-          };
-        } else if (node.data.resultImageBase64) {
-          if (isBase64Expired(node.data.resultImageBase64Timestamp)) {
-            cleanedNode.data = {
-              ...cleanedNode.data,
-              resultImageBase64: undefined,
-              resultImageBase64Timestamp: undefined,
-            };
-          }
-        }
-      }
-
-      // Process node: remove expired resultImageBase64
-      if (node.data) {
         if (node.data.resultImageUrl) {
           cleanedNode.data = {
             ...cleanedNode.data,
@@ -789,6 +773,14 @@ router.get('/shared/:shareId', apiRateLimiter, async (req, res) => {
   try {
     const { shareId } = req.params;
 
+    // Cache check for public shared projects
+    const cacheKey = CacheKey.sharePublic(shareId);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT share:${shareId.slice(0, 8)}`);
+      return res.json(JSON.parse(cached));
+    }
+
     console.log('[Canvas] Fetching shared project with shareId:', shareId);
 
     const project = await prisma.canvasProject.findFirst({
@@ -810,13 +802,23 @@ router.get('/shared/:shareId', apiRateLimiter, async (req, res) => {
       cleanedNodes = cleanExpiredBase64Images(cleanedNodes);
     }
 
-    res.json({
+    const responseData = {
       project: {
         ...project,
         _id: project.id,
         nodes: cleanedNodes,
       }
-    });
+    };
+
+    // Cache shared project for 7 days
+    await redisClient.setex(
+      cacheKey,
+      CACHE_TTL.SHARE_PUBLIC,
+      JSON.stringify(responseData)
+    );
+    console.log(`[Cache] SET share:${shareId.slice(0, 8)} (7d)`);
+
+    res.json(responseData);
   } catch (error: any) {
     console.error('Error fetching shared project:', error);
     res.status(500).json({
@@ -944,9 +946,9 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
       return res.status(400).json({ error: 'Edges array is required' });
     }
 
-    // Clean expired base64 images and add timestamps to new ones
-    let processedNodes = cleanExpiredBase64Images(nodes);
-    processedNodes = addBase64Timestamps(processedNodes);
+    // Add timestamps to new base64 images and then clean expired ones
+    let processedNodes = addBase64Timestamps(nodes);
+    processedNodes = cleanExpiredBase64Images(processedNodes);
 
     // Process nodes for R2 upload (if configured)
     const canvasId = `temp-${Date.now()}`; // Temporary ID, will be replaced after creation
@@ -1059,9 +1061,9 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     }
 
     if (nodes !== undefined && Array.isArray(nodes)) {
-      // Clean expired base64 images and add timestamps to new ones
-      processedNodes = cleanExpiredBase64Images(nodes);
-      processedNodes = addBase64Timestamps(processedNodes);
+      // Add timestamps to new base64 images and then clean expired ones
+      processedNodes = addBase64Timestamps(nodes);
+      processedNodes = cleanExpiredBase64Images(processedNodes);
 
       // Process nodes to upload base64 images to R2 and replace with URLs
       try {
@@ -1666,9 +1668,8 @@ router.delete('/image', authenticate, async (req: AuthRequest, res) => {
     }
 
     try {
-      const r2Service = await import('../../src/services/r2Service.js');
-      if (r2Service.isR2Configured()) {
-        await r2Service.deleteImage(imageUrl);
+      if (isR2Configured()) {
+        await deleteImage(imageUrl);
         res.json({ success: true, message: 'Image deleted from R2' });
       } else {
         res.json({ success: true, message: 'R2 not configured - skipping deletion' });
@@ -1722,7 +1723,7 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
 });
 
 // Liveblocks authentication endpoint
-router.post('/:id/liveblocks-auth', authenticate, validateAdminOrPremium, requireViewAccess, async (req: AuthRequest, res) => {
+router.post('/:id/liveblocks-auth', authenticate, requireViewAccess, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
 
@@ -1748,13 +1749,35 @@ router.post('/:id/liveblocks-auth', authenticate, validateAdminOrPremium, requir
       return res.status(400).json({ error: 'Project is not in collaborative mode' });
     }
 
-    // Check if user has edit or view permission
     const isOwner = project.userId === req.userId;
-    const canEdit = isOwner || (Array.isArray(project.canEdit) && project.canEdit.includes(req.userId));
-    const canView = isOwner || canEdit || (Array.isArray(project.canView) && project.canView.includes(req.userId));
+    const canEdit = isOwner || (Array.isArray(project.canEdit) && project.canEdit.includes(req.userId!));
 
-    if (!canView) {
-      return res.status(403).json({ error: 'You do not have permission to access this project' });
+    // Owners must have premium to enable collaborative features.
+    // Invited collaborators (canEdit/canView) may be any tier.
+    if (isOwner) {
+      try {
+        const { connectToMongoDB, getDb } = await import('../db/mongodb.js');
+        const { ObjectId } = await import('mongodb');
+        await connectToMongoDB();
+        const db = getDb();
+        const userDoc = await db.collection('users').findOne(
+          { _id: new ObjectId(req.userId) },
+          { projection: { isAdmin: 1, subscriptionStatus: 1, userCategory: 1 } }
+        );
+        const isPremium =
+          userDoc?.isAdmin === true ||
+          userDoc?.subscriptionStatus === 'active' ||
+          userDoc?.userCategory === 'tester';
+        if (!isPremium) {
+          return res.status(403).json({
+            error: 'Access required',
+            message: 'Collaborative features require an active premium subscription',
+          });
+        }
+      } catch (premiumCheckError: any) {
+        console.error('[Liveblocks Auth] Premium check error:', premiumCheckError);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
     }
 
     // Get user info for Liveblocks (use Prisma as primary source)
@@ -1881,7 +1904,7 @@ router.post('/:id/share', apiRateLimiter, authenticate, validateAdminOrPremium, 
 });
 
 // Update share settings (permissions)
-router.put('/:id/share-settings', authenticate, async (req: AuthRequest, res) => {
+router.put('/:id/share-settings', authenticate, validateAdminOrPremium, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const { canEdit, canView } = req.body;

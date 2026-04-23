@@ -58,6 +58,14 @@ const TEMPLATE_PATTERNS = [
   /\bmodelo\b/i,
 ];
 
+// Chart/Data visualization indicators
+const CHART_PATTERNS = [
+  /\b(chart|charts|graph|graphs|grafico|gráfico|graficos|gráficos)\b/i,
+  /\b(barra|barras|bar|bars|linha|line|pizza|pie|scatter|donut)\b/i,
+  /\b(dashboard|dados|data|visualization|visualização|visualizacao)\b/i,
+  /\b(eixo|axis|legenda|legend|serie|series)\b/i,
+];
+
 // Dimension requirement indicators (when format is unknown)
 const NEEDS_DIMENSIONS_PATTERNS = [
   /\b(banner|flyer|poster|cartaz|outdoor|card|modal|popup)\b/i,
@@ -113,6 +121,9 @@ export function classifyIntent(
   // Check if template-related
   const isTemplate = TEMPLATE_PATTERNS.some(p => p.test(normalized));
 
+  // Check if chart/data visualization
+  const isChart = CHART_PATTERNS.some(p => p.test(normalized));
+
   // Check if needs dimensions (unknown format + dimension-needing keywords)
   const needsDimensions =
     format === 'unknown' &&
@@ -130,6 +141,7 @@ export function classifyIntent(
     needsDimensions,
     hasSelection,
     isTemplate,
+    isChart,
     keywords,
   };
 }

@@ -103,14 +103,17 @@ export const brandGuidelineApi = {
     return result.guideline;
   },
 
-  async ingest(id: string, payload: { source: string; url?: string; data?: any; filename?: string }): Promise<{ guideline: BrandGuideline; extracted: any }> {
+  async ingest(id: string, payload: { source: string; url?: string; data?: any; images?: string[]; filename?: string }): Promise<{ guideline: BrandGuideline; extracted: any }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/ingest`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) throw new Error('Failed to ingest brand guideline data');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || 'Failed to ingest brand guideline data');
+    }
     const result = await response.json();
     return result;
   },
@@ -329,4 +332,33 @@ export const brandGuidelineApi = {
     }
     return response.json();
   },
+
+  async listKnowledge(guidelineId: string): Promise<BrandKnowledgeFile[]> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/knowledge`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to list knowledge files');
+    const data = await response.json();
+    return Array.isArray(data.files) ? data.files : [];
+  },
+
+  async deleteKnowledge(guidelineId: string, fileId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/knowledge/${fileId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: 'Failed to delete' }));
+      throw new Error(err.error || 'Failed to delete knowledge file');
+    }
+  },
 };
+
+export interface BrandKnowledgeFile {
+  id: string;
+  fileName: string;
+  source: 'pdf' | 'image' | 'url' | 'text';
+  vectorIds: string[];
+  addedByUserId: string;
+  addedAt: string;
+}

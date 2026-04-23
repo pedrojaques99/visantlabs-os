@@ -1,20 +1,21 @@
 # Visant Labs® | Tools for Designers
 
 <div align="center">
-  <h3>AI-powered canvas-based and other design tools</h3>
-  <p>Create mockups, manage branding, and design with AI assistance</p>
+  <h3>AI-powered design platform for brand creation and creative production</h3>
+  <p>Canvas workflows, brand guidelines as AI input, mockup generation, and a Figma plugin — all in one OSS stack</p>
 </div>
 
 ## Features
 
-- **Canvas Editor**: Powerful node-based canvas for design workflows
-- **AI Image Generation**: Generate mockups and images using Google Gemini
-- **Branding Tools**: Create and manage brand identities
-- **Budget Management**: Plan and track design budgets
-- **Real-time Collaboration**: Work together on canvas projects (optional)
-- **Multiple Export Formats**: Export as images, PDFs, and more
-- **Mockup Machine**: Generate instant mockups for your design projects
-- **Strategy Machine**: Generate strategy content and insights for your branding projects
+- **Canvas Editor**: Node-based canvas with batch runner, data/variable nodes, and pipeline system
+- **Figma Plugin**: In-editor AI chat with context-aware design assistance
+- **Brand Guidelines**: Guidelines feed AI generation — not just static docs
+- **Mockup Machine**: Generate instant mockups from brand assets and prompts
+- **Creative Studio**: Layer-based creative editor with AI-driven composition
+- **Platform MCP**: Model Context Protocol server exposing platform tools to AI agents
+- **Admin Chat**: Rich AI assistant with media kit, brand context, and tool use
+- **AI Image Generation**: Gemini-powered image and mockup generation
+- **Real-time Collaboration**: Optional Liveblocks integration for canvas co-editing
 
 ## Quick Start
 

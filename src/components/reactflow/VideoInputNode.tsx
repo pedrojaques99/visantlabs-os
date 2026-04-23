@@ -118,7 +118,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
         className="w-2 h-2 bg-brand-cyan border-2 border-black node-handle"
       />
 
-      <NodeHeader icon={Video} title={t('canvasNodes.videoInputNode.title') || 'Video Input'} />
+      <NodeHeader icon={Video} title={t('canvasNodes.videoInputNode.title') || 'Video Input'} selected={selected} />
 
       <div className="mb-4">
         <Input
@@ -129,7 +129,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
           className="hidden"
           aria-label={t('common.uploadVideo')}
         />
-        <NodeButton 
+        <NodeButton
           onClick={handleUploadClick}
           onMouseDown={(e) => e.stopPropagation()}
           className="w-full"
@@ -151,7 +151,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
               autoPlay
               muted
               loop
-              className="w-full h-auto min-h-[128px] object-contain rounded border border-[brand-cyan]/30"
+              className="w-full h-auto min-h-[1210px] object-contain rounded border-node border-[brand-cyan]/30"
               onLoadedMetadata={(e) => {
                 const video = e.target as HTMLVideoElement;
                 if (video.videoWidth > 0 && video.videoHeight > 0) {
@@ -180,7 +180,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
               handleVideoRemove();
             }}
             onMouseDown={(e) => e.stopPropagation()}
-            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
+            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 backdrop-blur-sm border-node border-red-500/20 hover:border-red-500/30"
             title={t('canvasNodes.videoInputNode.removeVideo') || 'Remove Video'}
           >
             <X size={12} strokeWidth={2} />

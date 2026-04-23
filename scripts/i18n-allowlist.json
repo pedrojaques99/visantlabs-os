@@ -1,0 +1,35 @@
+{
+  "_comment": "i18n strict-mode allowlist. Keys here are exempt from --strict failures. Use only for: (a) dynamic keys built at runtime t('foo.' + var); (b) known leaf-vs-namespace collisions awaiting refactor. Add a // reason in the comments map below for each entry.",
+  "unresolved": [
+    "${translationKeyPrefix}.addToFavorites",
+    "${translationKeyPrefix}.analyzingImage",
+    "${translationKeyPrefix}.brandKit",
+    "${translationKeyPrefix}.delete",
+    "${translationKeyPrefix}.describeImageWithAI",
+    "${translationKeyPrefix}.downloadImage",
+    "${translationKeyPrefix}.remove",
+    "${translationKeyPrefix}.removeFromFavorites",
+    "${translationKeyPrefix}.removeLogo",
+    "${translationKeyPrefix}.saveToCollection",
+    "${translationKeyPrefix}.viewFullScreen",
+    "canvasNodes.videoNode.mode.${opt.value}",
+    "common.${interval}",
+    "common.tabs.${tab}",
+    "communityPresets.categories.${category}",
+    "communityPresets.categories.${key}",
+    "communityPresets.categories.${migrated.category}",
+    "communityPresets.difficulty${migrated.difficulty.charAt(0).toUpperCase() + migrated.difficulty.slice(1)}",
+    "communityPresets.tabs.${migrated.category}",
+    "communityPresets.tabs.${presetCategory}",
+    "communityPresets.tabs.${type}",
+    "mockup.categoryGroups.${c.name}",
+    "mockup.categoryGroups.${group.key}",
+    "transactions.status.${transaction.status}",
+    "budget.myBudgets.seoDescription",
+    "budget.myBudgets.seoTitle"
+  ],
+  "comments": {
+    "${...}": "All ${...} entries are dynamic key construction — t('prefix.' + var). Their resolved keys must be defined in the locale (we can't validate that statically).",
+    "budget.myBudgets.*": "Collision: budget.myBudgets is used both as a leaf string AND as a namespace prefix in src. JSON cannot represent both. Refactor required: rename one usage."
+  }
+}

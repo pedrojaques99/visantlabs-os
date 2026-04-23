@@ -10,6 +10,7 @@
  */
 
 import { getRequestId } from './request-context.js';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 
 // ═══════════════════════════════════════════
 // Types
@@ -55,9 +56,10 @@ const providerStats: Record<string, { calls: number; tokens: number }> = {};
 
 // Cost per 1M tokens (estimates)
 const COST_PER_1M: Record<string, { input: number; output: number }> = {
-  'gemini-2.0-flash': { input: 0.075, output: 0.30 },
-  'gemini-2.5-flash': { input: 0.15, output: 0.60 },
-  'gemini-2.5-pro': { input: 1.25, output: 5.00 },
+  [GEMINI_MODELS.PRO_3_1]: { input: 1.25, output: 5.00 },
+  [GEMINI_MODELS.FLASH_3]: { input: 0.10, output: 0.40 },
+  [GEMINI_MODELS.FLASH_3_LITE]: { input: 0.05, output: 0.20 },
+  [GEMINI_MODELS.FLASH_2_5]: { input: 0.15, output: 0.60 },
   'claude-3-5-sonnet': { input: 3.00, output: 15.00 },
   'claude-3-opus': { input: 15.00, output: 75.00 },
 };

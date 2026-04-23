@@ -237,7 +237,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
     if (isDev) console.log('👂 [WelcomeScreen] useEffect: Setting up paste event listener');
     window.addEventListener('paste', handlePaste);
     return () => {
-      if (isDev) console.log('🧹 [WelcomeScreen] useEffect: Cleaning up paste event listener');
+      if (isDev) console.log('💎� [WelcomeScreen] useEffect: Cleaning up paste event listener');
       window.removeEventListener('paste', handlePaste);
     };
   }, [processFile]);
@@ -377,7 +377,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
     <div
       className={`welcome-screen relative min-h-screen flex items-center justify-center p-6 overflow-hidden pt-16 md:pt-20 transition-all duration-300 ${theme === 'dark'
         ? `bg-background ${isDragOver ? 'bg-background/90 ring-4 ring-brand-cyan/50' : ''}`
-        : `bg-[#F5F5F5] ${isDragOver ? 'bg-[#F5F5F5]/90 ring-4 ring-brand-cyan/50' : ''}`
+        : `bg-neutral-100 ${isDragOver ? 'bg-neutral-100/90 ring-4 ring-brand-cyan/50' : ''}`
         }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -425,7 +425,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
             </div>
           </Tooltip>
 
-          <MicroTitle as="span" className="text-[10px] md:text-xs opacity-60 hover:opacity-300 transition-opacity">
+          <MicroTitle as="span" className="text-[10px] md:text-xs opacity-60 hover:opacity-100 transition-opacity">
             {t('welcome.pasteTipSmall') || 'ou ctrl + v para colar'}
           </MicroTitle>
 
@@ -483,7 +483,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
 
             {/* Desktop: Full thumbnail preview */}
             <Button variant="ghost" onClick={() => setShowTutorialModal(true)}
-              className="hidden px-4 py-2 md:block w-72 h-36 opacity-60 hover:opacity-300 overflow-hidden rounded-md transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md relative"
+              className="hidden px-4 py-2 md:block w-72 h-36 opacity-60 hover:opacity-100 overflow-hidden rounded-md transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md relative"
             >
               {/* Thumbnail Container */}
               <div className="relative aspect-video w-full h-full">
@@ -529,7 +529,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
               e.stopPropagation();
               setShowTutorialButton(false);
             }}
-              className={`hidden md:flex absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-md items-center justify-center opacity-0 group-hover:opacity-300 hover:opacity-300 transition-all duration-200 z-50 ${theme === 'dark'
+              className={`hidden md:flex absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-md items-center justify-center opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 z-50 ${theme === 'dark'
                 ? 'bg-neutral-950/80 hover:bg-red-500/90 text-neutral-300 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
                 : 'bg-white/80 hover:bg-red-500/90 text-neutral-600 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
                 }`}

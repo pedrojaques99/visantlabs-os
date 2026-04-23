@@ -7,36 +7,39 @@ import { getColorVariablesFromFile, getFontVariablesFromFile } from './variables
 /**
  * Notify UI when context changes (selection, etc.)
  */
+/**
+ * Notify UI when context changes (selection, etc.)
+ * Optimized: Only sends selection info. Full context (components/vars) 
+ * is handled by GET_CONTEXT or explicit triggers to avoid lag.
+ */
 export async function notifyContextChange() {
-  const [components, colors, fonts] = await Promise.all([
-    getComponentsInCurrentFile(),
-    getColorVariablesFromFile(),
-    getFontVariablesFromFile()
-  ]);
   const selection = figma.currentPage.selection;
 
-  // Build detailed selection info
-  const selectionDetails: Array<{ id: string; name: string; type: string }> = [];
+  // Build selection info (lightweight)
+  const selectionDetails: Array<{ id: string; name: string; type: string; width: number; height: number }> = [];
   for (const node of selection) {
-    selectionDetails.push({ id: node.id, name: node.name, type: node.type });
+    const width = 'width' in node ? node.width : 0;
+    const height = 'height' in node ? node.height : 0;
+    selectionDetails.push({ id: node.id, name: node.name, type: node.type, width, height });
   }
 
   postToUI({
     type: 'CONTEXT_UPDATED',
     selectedElements: selection.length,
-    componentsCount: components.length,
-    colorVariables: colors.length,
-    fontVariables: fonts.length,
     selectionDetails
   });
 
-  // Export thumbnail for single selection
+  // Export thumbnail for single selection (with a check to avoid heavy nodes immediately)
   if (selection.length === 1) {
     const node = selection[0];
+    
+    // Skip heavy/large nodes for immediate preview if they are too big
+    if ('width' in node && (node.width > 5000 || node.height > 5000)) return;
+
     try {
       const bytes = await node.exportAsync({
         format: 'PNG',
-        constraint: { type: 'HEIGHT', value: 48 }
+        constraint: { type: 'HEIGHT', value: 64 }
       });
       const b64 = figma.base64Encode(bytes);
       postToUI({

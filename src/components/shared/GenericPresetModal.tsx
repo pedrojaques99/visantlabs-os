@@ -145,7 +145,7 @@ export function GenericPresetModal<T extends string>({
                     )}
                     {/* Community Badge */}
                     {isCommunity && (
-                        <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-brand-cyan/20 border border-[brand-cyan]/30 rounded text-[8px] font-mono text-brand-cyan">
+                        <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-brand-cyan/20 border border-[brand-cyan]/30 rounded text-[10px] font-mono text-brand-cyan">
                             Community
                         </div>
                     )}
@@ -259,7 +259,7 @@ export function GenericPresetModal<T extends string>({
                         className={cn(
                             'transition-all duration-300 ease-in-out',
                             activeTab === 'official'
-                                ? 'opacity-300 translate-y-0'
+                                ? 'opacity-100 translate-y-0'
                                 : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
                         )}
                     >
@@ -276,7 +276,7 @@ export function GenericPresetModal<T extends string>({
                         className={cn(
                             'transition-all duration-300 ease-in-out',
                             activeTab === 'community'
-                                ? 'opacity-300 translate-y-0'
+                                ? 'opacity-100 translate-y-0'
                                 : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
                         )}
                     >

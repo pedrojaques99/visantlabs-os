@@ -23,7 +23,7 @@ function UniversalFooterComponent({ isDarkMode, className = '' }: UniversalFoote
   }, [])
 
   return (
-    <div className={`text-center text-[clamp(9px,1vw,11px)] text-neutral-500/80 ${className}`}>
+    <div className={`text-center text-[clamp(10px,1vw,11px)] text-neutral-500/80 ${className}`}>
       <span className="font-mono tabular-nums select-none opacity-80">{glitchText}  {' | '} VSNLABS® v1.0</span>
     </div>
   )

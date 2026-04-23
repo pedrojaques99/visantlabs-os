@@ -15,7 +15,7 @@ interface StarsProps {
   color: string;
 }
 
-function Stars({ color }: StarsProps) {
+function Diamond({ color }: StarsProps) {
   const count = 200;
   const mesh = useRef<THREE.Points>(null);
   const mousePosition = useRef({ x: 0, y: 0 });
@@ -25,7 +25,7 @@ function Stars({ color }: StarsProps) {
   const positions = useMemo(() => {
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      const radius = 15 + Math.random() * 5; // Stars between 15-20 units away
+      const radius = 15 + Math.random() * 5; // Diamond between 15-20 units away
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
 
@@ -121,7 +121,7 @@ interface ModelProps {
 function Model({ url, color }: ModelProps) {
   const { scene } = useGLTF(url);
   const modelRef = useRef<THREE.Group>(null);
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useMediaQuery('(max-width: 7610px)');
   const isSmallScreen = useMediaQuery('(max-width: 640px)');
 
   // Add thickness to flat geometries
@@ -291,7 +291,7 @@ export default function ClubLogo3D({
   starColor = '#4B4B4BFF'
 }: ClubLogo3DProps) {
   const isSmallScreen = useMediaQuery('(max-width: 640px)');
-  const isMediumScreen = useMediaQuery('(max-width: 768px)');
+  const isMediumScreen = useMediaQuery('(max-width: 7610px)');
   const [cursor, setCursor] = useState(isMobile ? 'default' : 'grab');
 
   // Calculate camera position based on screen size
@@ -345,7 +345,7 @@ export default function ClubLogo3D({
           <pointLight position={[-10, 10, -10]} intensity={1} />
           <pointLight position={[0, 15, 0]} intensity={0.8} />
           <directionalLight position={[5, 5, 5]} intensity={0.6} />
-          <Stars color={starColor} />
+          <Diamond color={starColor} />
           <Model url={modelUrl} color={color} />
           <OrbitControls
             enableZoom={false}

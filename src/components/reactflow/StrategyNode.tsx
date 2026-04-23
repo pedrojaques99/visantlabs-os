@@ -6,6 +6,7 @@ import type { StrategyNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { NodeContainer } from './shared/NodeContainer';
+import { NodeHeader } from './shared/node-header';
 import { Textarea } from '@/components/ui/textarea';
 import { NodeLabel } from './shared/node-label';
 import { NodeButton } from './shared/node-button';
@@ -13,6 +14,8 @@ import { NodeInput } from './shared/node-input';
 import { cleanMarketResearchText } from '@/utils/brandingHelpers';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { NODE_LAYOUT } from '@/constants/nodeLayout';
+import { useBaseNode } from '@/hooks/canvas/useBaseNode';
 
 const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
   minHeight?: number;
@@ -69,7 +72,7 @@ AutoResizeTextarea.displayName = 'AutoResizeTextarea';
 export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
   const nodeData = data as StrategyNodeData;
-  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
+  const { handleResize: baseResize, handleFitToContent: baseFitToContent } = useBaseNode(id, nodeData);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(
     nodeData.expandedSections || {}
   );
@@ -949,19 +952,19 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   }, [sections, expandedSections, hasSectionData, id, nodeData]);
 
   const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize);
-  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+    baseResize(width, height);
+  }, [baseResize]);
 
   const handleFitToContent = useCallback(() => {
-    fitToContent(id, 500, 'auto', nodeData.onResize);
-  }, [id, nodeData.onResize, fitToContent]);
+    baseFitToContent();
+  }, [baseFitToContent]);
 
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="min-w-[500px] flex flex-col"
+      className={cn(`min-w-[${NODE_LAYOUT.STRATEGY_NODE_WIDTH}px] flex flex-col`)}
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
@@ -970,10 +973,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         <NodeResizer
           color="brand-cyan"
           isVisible={selected}
-          minWidth={400}
-          minHeight={800}
-          maxWidth={2000}
-          maxHeight={2000}
+          minWidth={NODE_LAYOUT.STRATEGY_NODE_WIDTH}
+          minHeight={NODE_LAYOUT.STRATEGY_NODE_MIN_HEIGHT}
+          maxWidth={NODE_LAYOUT.MAX_WIDTH}
+          maxHeight={NODE_LAYOUT.MAX_HEIGHT}
           onResize={(_, { width, height }) => {
             handleResize(width, height);
           }}
@@ -991,58 +994,32 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
       />
 
       <div className="flex flex-col h-full min-h-0">
-        {/* Header with action buttons */}
-        <div className="flex items-center justify-between mb-[var(--node-margin-lg)] pb-5 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm -mx-[var(--node-padding)] px-[var(--node-padding)] pt-0">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20">
-              <Target size={16} className="text-brand-cyan" />
-            </div>
-            <div className="flex flex-col">
-              <h3 className="text-sm font-semibold text-neutral-200 font-mono tracking-tight">{t('canvasNodes.strategyNode.title') || 'Strategy Node'}</h3>
-              {projectName && (
-                <span className="text-[10px] text-neutral-400 font-mono mt-0.5 truncate max-w-[200px]" title={projectName}>{projectName}</span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {hasData && (
-              <NodeButton variant="ghost" size="xs" onClick={(e) => {
-                e.stopPropagation();
-                handleOpenInNewTab();
-              }}
-                disabled={!hasData || isGenerating}
-                className="nodrag nopan"
-                title={t('canvasNodes.strategyNode.openInNewTab')}
-              >
-                <ExternalLink size={14} />
-              </NodeButton>
-            )}
-            {nodeData.onGeneratePDF && (
-              <NodeButton variant="ghost" size="xs" onClick={(e) => {
-                e.stopPropagation();
-                handleGeneratePDF();
-              }}
-                disabled={!hasData}
-                className="nodrag nopan"
-                title={t('canvasNodes.strategyNode.downloadPDF')}
-              >
-                <Download size={14} />
-              </NodeButton>
-            )}
-            {nodeData.onSave && (
-              <NodeButton variant="ghost" size="xs" onClick={(e) => {
-                e.stopPropagation();
-                handleSave();
-              }}
-                disabled={!hasData || isGenerating}
-                className="bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan font-semibold nodrag nopan"
-                title={t('canvasNodes.strategyNode.save')}
-              >
-                <Save size={14} />
-              </NodeButton>
-            )}
-          </div>
-        </div>
+        {/* Header */}
+        <NodeHeader icon={Target} title={t('canvasNodes.strategyNode.title') || 'Strategy Node'} selected={selected}>
+          {hasData && (
+            <NodeButton variant="ghost" size="xs" onClick={(e) => { e.stopPropagation(); handleOpenInNewTab(); }}
+              disabled={!hasData || isGenerating} className="nodrag nopan" title={t('canvasNodes.strategyNode.openInNewTab')}>
+              <ExternalLink size={14} />
+            </NodeButton>
+          )}
+          {nodeData.onGeneratePDF && (
+            <NodeButton variant="ghost" size="xs" onClick={(e) => { e.stopPropagation(); handleGeneratePDF(); }}
+              disabled={!hasData} className="nodrag nopan" title={t('canvasNodes.strategyNode.downloadPDF')}>
+              <Download size={14} />
+            </NodeButton>
+          )}
+          {nodeData.onSave && (
+            <NodeButton variant="ghost" size="xs" onClick={(e) => { e.stopPropagation(); handleSave(); }}
+              disabled={!hasData || isGenerating}
+              className="bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan font-semibold nodrag nopan"
+              title={t('common.save')}>
+              <Save size={14} />
+            </NodeButton>
+          )}
+        </NodeHeader>
+        {projectName && (
+          <span className="text-[10px] text-neutral-400 font-mono -mt-2 node-margin truncate max-w-[200px]" title={projectName}>{projectName}</span>
+        )}
 
         {/* Initial State - Project Selector or Create New */}
         {showProjectSelector && !isCreatingNew && (
@@ -1060,7 +1037,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   }
                 }}
                 variant="default"
-                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
               >
                 <FolderOpen size={14} />
                 <span>{t('canvasNodes.strategyNode.selectExistingProject')}</span>
@@ -1075,7 +1052,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   setIsCreatingNew(true);
                 }}
                 variant="primary"
-                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
               >
                 <Plus size={14} />
                 <span>{t('canvasNodes.strategyNode.createNewProject')}</span>
@@ -1108,7 +1085,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               value={prompt}
               onChange={handlePromptChange}
               placeholder={t('canvasNodes.strategyNode.brandDescriptionPlaceholder')}
-              className="text-xs resize-none nodrag nopan bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
+              className="text-xs resize-none nodrag nopan bg-neutral-900/60 border-neutral-700/40 focus:border-neutral-600 focus:ring-1  backdrop-blur-sm"
               rows={3}
               disabled={isGenerating}
             />
@@ -1126,12 +1103,12 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     nodeData.onCancelGeneration?.(id);
                   }}
                   variant="default"
-                  className="flex-1 px-3 py-2.5 gap-3 border-red-500/50 text-red-400 hover:bg-red-500/20 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all nodrag nopan"
+                  className="flex-1 px-3 py-2.5 gap-3 border-red-500/50 text-red-400 hover:bg-red-500/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-all nodrag nopan"
                 >
                   <XCircle size={14} />
-                  <span>{t('canvasNodes.strategyNode.cancel')}</span>
+                  <span>{t('common.cancel')}</span>
                 </NodeButton>
-                <div className="flex-1 px-3 py-2.5 bg-brand-cyan/20 border border-brand-cyan/40 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
+                <div className="flex-1 px-3 py-2.5 bg-brand-cyan/20 border-node border-brand-cyan/40 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
                   <GlitchLoader size={14} color="brand-cyan" />
                   <span className="text-xs font-mono text-brand-cyan font-medium">{t('canvasNodes.strategyNode.analyzing')}</span>
                 </div>
@@ -1191,7 +1168,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 }}
                 disabled={!prompt.trim() || isGenerating}
                 variant="primary"
-                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
               >
                 <Target size={14} />
                 <span>{promptHasChanged && hasData ? t('canvasNodes.strategyNode.reAnalyze') || 'Re-analyze' : t('canvasNodes.strategyNode.analyze') || 'Analyze'}</span>
@@ -1264,7 +1241,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
         {/* Single Generation Status - Shows when any section is generating */}
         {isGenerating && (generatingStep || generatingSteps.length > 0) && (
-          <div className="mb-5 px-3 py-2.5 bg-brand-cyan/10 border border-brand-cyan/40 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+          <div className="mb-5 px-3 py-2.5 bg-brand-cyan/10 border-node border-brand-cyan/40 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
             <div className="flex items-center gap-3">
               <GlitchLoader size={12} color="brand-cyan" />
               <span className="text-xs font-mono text-brand-cyan font-medium">
@@ -1346,7 +1323,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 return (
                   <div
                     key={section.type}
-                    className="border border-neutral-700/40 rounded-md overflow-hidden group bg-neutral-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
+                    className="border-node border-neutral-700/40 rounded-md overflow-hidden group bg-neutral-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
                   >
                     <NodeButton variant="ghost" size="full" onClick={(e) => {
                       e.stopPropagation();
@@ -1358,7 +1335,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                         {sectionHasData && !isGeneratingSection && (
                           <div
                             onClick={(e) => handleDeleteSection(section.type, e)}
-                            className="p-1 hover:bg-red-500/20 rounded-md opacity-0 group-hover:opacity-300 transition-all cursor-pointer"
+                            className="p-1 hover:bg-red-500/20 rounded-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                             title={t('canvasNodes.strategyNode.deleteSection', { section: section.label })}
                             role="button"
                             tabIndex={0}
@@ -1392,7 +1369,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                           <AutoResizeTextarea
                             value={content}
                             onChange={(e) => handleSectionContentChange(section.type, e.target.value)}
-                            className="text-xs resize-none nodrag nopan w-full bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
+                            className="text-xs resize-none nodrag nopan w-full bg-neutral-900/60 border-neutral-700/40 focus:border-neutral-600 focus:ring-1  backdrop-blur-sm"
                             minHeight={40}
                             maxHeight={400}
                             onWheel={(e) => {

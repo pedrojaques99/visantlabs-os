@@ -277,7 +277,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                         className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                       >
                         <Edit size={14} />
-                        {t('budget.edit')}
+                        {t('common.edit')}
                       </Button>
                       <Button variant="ghost" onClick={(e) => handleDeletePresetClick(presetId, e)}
                         disabled={deletingPresetId === presetId}
@@ -339,7 +339,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                       className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                     >
                       <Edit size={14} />
-                      {t('budget.edit')}
+                      {t('common.edit')}
                     </Button>
                     <Button variant="ghost" onClick={(e) => handleDeleteBudgetClick(budget._id, e)}
                       disabled={deletingBudgetId === budget._id}
@@ -369,7 +369,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
         onConfirm={handleDeletePresetConfirm}
         title={t('budget.confirmDeletePresetTitle') || 'Excluir Template'}
         message={t('budget.confirmDeletePreset') || 'Tem certeza que deseja excluir este template? Esta ação não pode ser desfeita.'}
-        confirmText={t('budget.delete') || 'Excluir'}
+        confirmText={t('common.delete') || 'Excluir'}
         cancelText={t('common.cancel') || 'Cancelar'}
         variant="danger"
       />
@@ -384,7 +384,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
         onConfirm={handleDeleteBudgetConfirm}
         title={t('budget.confirmDeleteTitle') || 'Excluir Orçamento'}
         message={t('budget.confirmDelete') || 'Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.'}
-        confirmText={t('budget.delete') || 'Excluir'}
+        confirmText={t('common.delete') || 'Excluir'}
         cancelText={t('common.cancel') || 'Cancelar'}
         variant="danger"
       />

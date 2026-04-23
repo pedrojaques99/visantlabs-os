@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Instagram, Youtube, Twitter, Globe, User, ImageIcon, Sparkles, Edit, Workflow, Play, Heart, Share2 } from 'lucide-react';
+import { Instagram, Youtube, Twitter, Globe, User, ImageIcon, Diamond, Edit, Workflow, Play, Heart, Share2 } from 'lucide-react';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { FullScreenViewer } from '../components/FullScreenViewer';
@@ -315,7 +315,7 @@ export const CommunityProfilePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
         </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
@@ -332,7 +332,7 @@ export const CommunityProfilePage: React.FC = () => {
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
         </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
@@ -354,7 +354,7 @@ export const CommunityProfilePage: React.FC = () => {
         description={profile.bio || t('community.viewProfile', { name: profile.name || profile.username || t('common.user') })}
       />
 
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 relative overflow-hidden">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 relative overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 z-0 pointer-events-none">
         </div>
@@ -400,14 +400,14 @@ export const CommunityProfilePage: React.FC = () => {
                       alt={t('common.cover')}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C0C] via-transparent to-transparent opacity-90" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent opacity-90" />
                   </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-neutral-900/50">
                     <div className="text-neutral-800">
                       <ImageIcon size={64} strokeWidth={0.5} />
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C0C] via-transparent to-transparent opacity-90" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent opacity-90" />
                   </div>
                 )}
               </div>
@@ -418,7 +418,7 @@ export const CommunityProfilePage: React.FC = () => {
 
                   {/* Avatar */}
                   <div className="relative group">
-                    <div className="w-32 h-32 md:w-36 md:h-36 rounded-md bg-neutral-900 border-4 border-[#0C0C0C] overflow-hidden flex items-center justify-center shadow-xl">
+                    <div className="w-32 h-32 md:w-36 md:h-36 rounded-md bg-neutral-900 border-4 border-neutral-950 overflow-hidden flex items-center justify-center shadow-xl">
                       {profile.picture ? (
                         <img
                           src={profile.picture}
@@ -511,7 +511,7 @@ export const CommunityProfilePage: React.FC = () => {
                     </Badge>
                   </TabsTrigger>
                   <TabsTrigger value="presets" className="gap-2">
-                    <Sparkles size={14} />
+                    <Diamond size={14} />
                     Presets
                     <Badge variant="secondary" className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5">
                       {allPresets.length}
@@ -550,7 +550,7 @@ export const CommunityProfilePage: React.FC = () => {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-300 transition-opacity duration-300 flex items-end p-4">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                             <div className="flex items-center gap-2 text-white">
                               <Heart size={14} className={cn(mockup.isLiked ? "fill-red-500 text-red-500" : "text-white")} />
                               <span className="text-xs font-mono">{mockup.likesCount || 0}</span>
@@ -600,7 +600,7 @@ export const CommunityProfilePage: React.FC = () => {
                           )}
 
                           {/* Overlay Actions */}
-                          <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-300 transition-opacity duration-200 flex items-center justify-center gap-2">
+                          <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
                             <Button variant="brand" size="sm"
                               className="gap-2 bg-brand-cyan text-black hover:bg-brand-cyan/90 border-none"
                               onClick={(e) => {
@@ -621,7 +621,7 @@ export const CommunityProfilePage: React.FC = () => {
                             </Button>
                           </div>
 
-                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-300 transition-opacity duration-200">
+                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <Badge variant="secondary" className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700 text-xs">
                               {workflow.category}
                             </Badge>
@@ -675,7 +675,7 @@ export const CommunityProfilePage: React.FC = () => {
               <TabsContent value="presets" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                 {allPresets.length === 0 ? (
                   <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-neutral-800/50 rounded-xl border-dashed">
-                    <Sparkles size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
+                    <Diamond size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
                     <h2 className="text-lg font-semibold font-mono uppercase text-neutral-500 mb-2">
                       No presets yet
                     </h2>
@@ -702,7 +702,7 @@ export const CommunityProfilePage: React.FC = () => {
                               />
                             ) : (
                               <div className="absolute inset-0 flex items-center justify-center">
-                                <Sparkles size={32} className="text-neutral-700" />
+                                <Diamond size={32} className="text-neutral-700" />
                               </div>
                             )}
                             <div className="absolute bottom-2 right-2">

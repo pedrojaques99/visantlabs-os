@@ -64,7 +64,7 @@ const getInitialFormData = (category: PromptCategory = 'presets', presetType?: L
     prompt: '',
     referenceImageUrl: '',
     aspectRatio: '16:9',
-    model: GEMINI_MODELS.FLASH_2_0,
+    model: GEMINI_MODELS.TEXT,
     tags: [],
     useCase: '',
 });
@@ -179,14 +179,14 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || errorData.details || t('communityPresets.errors.failedToUploadImage'));
+                throw new Error(errorData.error || errorData.details || t('common.failedToUploadImage'));
             }
 
             const { url } = await response.json();
             setFormData({ ...formData, referenceImageUrl: url });
-            toast.success(t('communityPresets.messages.imageUploaded'));
+            toast.success(t('common.imageUploadedSuccess'));
         } catch (uploadError: any) {
-            setImageUploadError(uploadError.message || t('communityPresets.errors.failedToUploadImage'));
+            setImageUploadError(uploadError.message || t('common.failedToUploadImage'));
             console.error('Error uploading image:', uploadError);
         } finally {
             setIsUploadingImage(false);
@@ -300,7 +300,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                     <div className="relative w-16 h-16 rounded-md overflow-hidden border border-neutral-700/50 bg-neutral-800 group flex-shrink-0">
                                         <img
                                             src={formData.referenceImageUrl}
-                                            alt={t('communityPresets.referenceImageAlt')}
+                                            alt={t('common.reference')}
                                             className="w-full h-full object-cover"
                                         />
                                         <Button variant="ghost" type="button"
@@ -308,7 +308,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                                 setFormData({ ...formData, referenceImageUrl: '' });
                                                 setImageUploadError(null);
                                             }}
-                                            className="absolute inset-0 bg-neutral-950/60 flex items-center justify-center opacity-0 group-hover:opacity-300 transition-opacity"
+                                            className="absolute inset-0 bg-neutral-950/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
                                             <X className="h-4 w-4 text-white" />
                                         </Button>
@@ -532,7 +532,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         disabled={isLoading}
                         className="px-4 py-2 bg-transparent hover:bg-neutral-800 border border-neutral-700 rounded-md text-neutral-300 text-sm transition-colors disabled:opacity-50"
                     >
-                        {t('communityPresets.actions.cancel')}
+                        {t('common.cancel')}
                     </Button>
                     <Button variant="brand" onClick={handleSubmit}
                         disabled={isLoading || !formData.name || !formData.prompt}
@@ -544,7 +544,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                 <span>Saving...</span>
                             </>
                         ) : (
-                            <span>{t('communityPresets.actions.save')}</span>
+                            <span>{t('common.save')}</span>
                         )}
                     </Button>
                 </div>

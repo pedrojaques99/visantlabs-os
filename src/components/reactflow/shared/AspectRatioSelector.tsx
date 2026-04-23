@@ -41,18 +41,18 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                 className={cn(
                   'flex flex-col items-center justify-center gap-1 w-12 h-11 text-xs font-mono transition-all px-0',
                   isSelected
-                    ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                    : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400',
+                    ? 'bg-white/10 text-white border-white/20'
+                    : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-700 hover:text-brand-cyan',
                   disabled && 'opacity-50 cursor-not-allowed'
                 )}
-                onMouseDown={(e) => e.stopPropagation()}
+              /* onMouseDown removed to allow node selection */
               >
                 <div className={cn(
                   isSquare ? 'w-4 h-4' : isLandscape ? 'w-6 h-3.5' : 'w-3.5 h-6',
                   'border rounded-sm shrink-0',
-                  isSelected ? 'border-[brand-cyan]/60 bg-brand-cyan/20' : 'border-neutral-600/50'
+                  isSelected ? 'border-foreground/60 bg-foreground/20' : 'border-neutral-600/50'
                 )} />
-                <span className="text-[9px] leading-none">{ratio}</span>
+                <span className="text-[10px] leading-none">{ratio}</span>
               </NodeButton>
             );
           })}
@@ -63,13 +63,13 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             className={cn(
               'flex items-center justify-center w-10 h-11 text-xs font-mono transition-all',
               isOtherSelected
-                ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
+                ? 'bg-foreground/10 text-foreground border-foreground/40'
                 : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <span className="text-[9px] leading-none">...</span>
+            <span className="text-[10px] leading-none">...</span>
           </NodeButton>
         </div>
 
@@ -96,7 +96,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     className={cn(
                       'flex flex-col items-center justify-center gap-1 w-12 h-11 text-xs font-mono transition-all px-0',
                       isSelected
-                        ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
+                        ? 'bg-foreground/10 text-foreground border-foreground/40'
                         : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400',
                       disabled && 'opacity-50 cursor-not-allowed'
                     )}
@@ -105,9 +105,9 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     <div className={cn(
                       isSquare ? 'w-4 h-4' : isLandscape ? 'w-6 h-3.5' : 'w-3.5 h-6',
                       'border rounded-sm shrink-0',
-                      isSelected ? 'border-[brand-cyan]/60 bg-brand-cyan/20' : 'border-neutral-600/50'
+                      isSelected ? 'border-foreground/60 bg-foreground/20' : 'border-neutral-600/50'
                     )} />
-                    <span className="text-[9px] leading-none">{ratio}</span>
+                    <span className="text-[10px] leading-none">{ratio}</span>
                   </NodeButton>
                 );
               })}
@@ -136,7 +136,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             className={cn(
               'flex flex-col items-center justify-center gap-1 py-1.5 px-4 md:px-5 text-xs font-mono rounded-md transition-all duration-200 border',
               isSelected
-                ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40 cursor-pointer'
+                ? 'bg-foreground/10 text-foreground border-foreground/40 cursor-pointer'
                 : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400 cursor-pointer',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
@@ -144,7 +144,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             <div className={cn(
               isSquare ? 'w-6 h-6' : isLandscape ? 'w-8 h-5' : 'w-5 h-8',
               'border rounded-md',
-              isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
+              isSelected ? 'border-foreground/60' : 'border-neutral-600/50'
             )} />
             <span className="text-[10px] mt-0.5">{ratio}</span>
           </NodeButton>
@@ -157,7 +157,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
         className={cn(
           'flex flex-col items-center justify-center gap-1 py-1.5 px-4 md:px-5 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer',
           isOtherSelected
-            ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
+            ? 'bg-foreground/10 text-foreground border-foreground/40'
             : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
@@ -187,15 +187,15 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                   className={cn(
                     'flex flex-col items-center justify-center gap-1 py-1.5 px-4 md:px-5 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer',
                     isSelected
-                      ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                      : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400',
+                      ? 'bg-white/10 text-white border-white/20'
+                      : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-700 hover:text-brand-cyan',
                     disabled && 'opacity-50 cursor-not-allowed'
                   )}
                 >
                   <div className={cn(
                     isSquare ? 'w-6 h-6' : isLandscape ? 'w-8 h-5' : 'w-5 h-8',
                     'border rounded-md',
-                    isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
+                    isSelected ? 'border-white/40 bg-white/10' : 'border-neutral-600/50'
                   )} />
                   <span className="text-[10px] mt-0.5">{ratio}</span>
                 </NodeButton>

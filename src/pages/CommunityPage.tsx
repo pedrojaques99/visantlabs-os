@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Globe, Sparkles, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette, FolderOpen } from 'lucide-react';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
-import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
+import { Globe, Diamond, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette, FolderOpen, Figma, Github, Workflow } from 'lucide-react';
+import { PageShell } from '../components/ui/PageShell';
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getAllCommunityPresets, getCommunityStats, clearCommunityPresetsCache } from '../services/communityPresetsService';
 import { mockupApi } from '../services/mockupApi';
 import { cn } from '../lib/utils';
-import { Github } from 'lucide-react';
 import { getGithubUrl } from '../config/branding';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { GlassPanel } from '../components/ui/GlassPanel';
@@ -23,7 +21,6 @@ import { toast } from 'sonner';
 import { workflowApi } from '../services/workflowApi';
 import type { CanvasWorkflow } from '../services/workflowApi';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
-import { Workflow } from 'lucide-react';
 import { Button } from '@/components/ui/button'
 import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 
@@ -42,12 +39,12 @@ const CountUp: React.FC<{ value: number }> = ({ value }) => {
 
 const BackgroundGlow = () => (
   <div className="absolute inset-0 pointer-events-none overflow-hidden">
-    <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-brand-cyan/10 blur-[120px] rounded-full animate-pulse" />
+    <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-brand-cyan/10 blur-[120px] rounded-full" />
     <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-indigo-500/5 blur-[120px] rounded-full" />
   </div>
 );
 
-type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | '3d' | 'presets' | 'aesthetics' | 'themes';
+type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | '3d' | 'presets' | 'aesthetics' | 'themes' | 'ui-prompts' | 'figma-prompts';
 
 interface PresetStats {
   mockup: number;
@@ -59,6 +56,8 @@ interface PresetStats {
   presets: number;
   aesthetics: number;
   themes: number;
+  'ui-prompts': number;
+  'figma-prompts': number;
   total: number;
 }
 
@@ -72,6 +71,8 @@ interface CategoryPresets {
   presets: any[];
   aesthetics: any[];
   themes: any[];
+  'ui-prompts': any[];
+  'figma-prompts': any[];
 }
 
 interface GlobalStats {
@@ -94,6 +95,8 @@ export const CommunityPage: React.FC = () => {
     presets: 0,
     aesthetics: 0,
     themes: 0,
+    'ui-prompts': 0,
+    'figma-prompts': 0,
     total: 0,
   });
   const [categoryPresets, setCategoryPresets] = useState<CategoryPresets>({
@@ -106,6 +109,8 @@ export const CommunityPage: React.FC = () => {
     presets: [],
     aesthetics: [],
     themes: [],
+    'ui-prompts': [],
+    'figma-prompts': [],
   });
   const [globalCommunityStats, setGlobalCommunityStats] = useState<GlobalStats>({
     totalUsers: 0,
@@ -124,7 +129,7 @@ export const CommunityPage: React.FC = () => {
 
   // Check if user is admin (you might need to fetch user details or get from context if available)
   const [isAdmin, setIsAdmin] = useState(false); // Placeholder, ideally get from authService/context
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useMediaQuery('(max-width: 7610px)');
 
   const handleLoadWorkflow = async (workflow: CanvasWorkflow) => {
     try {
@@ -180,6 +185,8 @@ export const CommunityPage: React.FC = () => {
           presets: allPresets.presets?.length || 0,
           aesthetics: allPresets.aesthetics?.length || 0,
           themes: allPresets.themes?.length || 0,
+          'ui-prompts': allPresets['ui-prompts']?.length || 0,
+          'figma-prompts': allPresets['figma-prompts']?.length || 0,
           total: 0,
         };
         newStats.total = Object.values(newStats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
@@ -196,6 +203,8 @@ export const CommunityPage: React.FC = () => {
           presets: removeDuplicates(allPresets.presets || []),
           aesthetics: removeDuplicates(allPresets.aesthetics || []),
           themes: removeDuplicates(allPresets.themes || []),
+          'ui-prompts': removeDuplicates(allPresets['ui-prompts'] || []),
+          'figma-prompts': removeDuplicates(allPresets['figma-prompts'] || []),
         });
 
         // Store latest mockups
@@ -261,9 +270,12 @@ export const CommunityPage: React.FC = () => {
     { type: 'ambience', icon: MapPin, label: t('communityPresets.tabs.ambience'), count: stats.ambience, presets: categoryPresets.ambience },
     { type: 'luminance', icon: Sun, label: t('communityPresets.tabs.luminance'), count: stats.luminance, presets: categoryPresets.luminance },
     { type: '3d', icon: Box, label: t('communityPresets.categories.3d'), count: stats['3d'], presets: categoryPresets['3d'] },
-    { type: 'presets', icon: Settings, label: t('communityPresets.categories.presets'), count: stats.presets, presets: categoryPresets.presets },
+    { type: 'presets', icon: Settings, label: t('common.presets'), count: stats.presets, presets: categoryPresets.presets },
     { type: 'aesthetics', icon: Palette, label: t('communityPresets.categories.aesthetics'), count: stats.aesthetics, presets: categoryPresets.aesthetics },
-    { type: 'themes', icon: Sparkles, label: t('communityPresets.categories.themes'), count: stats.themes, presets: categoryPresets.themes },
+    { type: 'themes', icon: Diamond, label: t('communityPresets.categories.themes'), count: stats.themes, presets: categoryPresets.themes },
+    // AI-generated prompts
+    { type: 'ui-prompts', icon: Diamond, label: 'UI Prompts', count: stats['ui-prompts'], presets: categoryPresets['ui-prompts'] },
+    { type: 'figma-prompts', icon: Figma, label: 'Figma Prompts', count: stats['figma-prompts'], presets: categoryPresets['figma-prompts'] },
   ];
 
   const isAuthenticated = isUserAuthenticated === true;
@@ -325,6 +337,8 @@ export const CommunityPage: React.FC = () => {
         presets: allPresets.presets?.length || 0,
         aesthetics: allPresets.aesthetics?.length || 0,
         themes: allPresets.themes?.length || 0,
+        'ui-prompts': allPresets['ui-prompts']?.length || 0,
+        'figma-prompts': allPresets['figma-prompts']?.length || 0,
         total: 0,
       };
       newStats.total = Object.values(newStats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
@@ -337,34 +351,31 @@ export const CommunityPage: React.FC = () => {
   }, [t]);
 
   return (
-    <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-x-hidden">
+    <PageShell
+      pageId="community"
+      seoTitle={t('communityPresets.title')}
+      seoDescription={t('communityPresets.subtitle')}
+      title={t('communityPresets.title')}
+      microTitle="Systems // Community"
+      description={t('communityPresets.subtitle')}
+      breadcrumb={[
+        { label: t('apps.home'), to: '/' },
+        { label: t('communityPresets.title') }
+      ]}
+      hideHeader // We're using a custom hero section instead of the default header
+    >
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-gradient-to-b from-brand-cyan/5 via-transparent to-transparent opacity-50" />
         <div className="absolute top-[10%] left-[10%] w-[400px] h-[400px] bg-brand-cyan/[0.02] blur-[150px] rounded-full" />
         <div className="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-indigo-500/[0.01] blur-[150px] rounded-full" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 pt-8 pb-16 md:pb-24 relative z-10">
-        <div className="mb-8">
-          <BreadcrumbWithBack to="/">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/">{t('apps.home')}</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{t('communityPresets.title')}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </BreadcrumbWithBack>
-        </div>
+      <div className="relative z-10">
 
         {/* Hero Section */}
         <div className="relative mb-16 min-h-[550px] flex items-center overflow-hidden rounded-3xl border border-white/[0.03] bg-neutral-900/10">
           <BackgroundGlow />
-          
+
           {/* 3D Object - Repositioned for better balance */}
           <div className="absolute right-0 top-0 w-full md:w-1/2 h-full pointer-events-none z-0">
             <Suspense fallback={null}>
@@ -380,13 +391,13 @@ export const CommunityPage: React.FC = () => {
           <div className="relative z-10 w-full max-w-6xl mx-auto px-6 md:px-12 py-16">
             <div className="max-w-2xl">
               {/* Badge - Premium Styling */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-6"
               >
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 backdrop-blur-md">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
                   <span className="text-[10px] font-bold font-mono text-brand-cyan uppercase tracking-widest">
                     Comunidade Ativa
                   </span>
@@ -394,7 +405,7 @@ export const CommunityPage: React.FC = () => {
               </motion.div>
 
               {/* Title - Elegant & Impactful */}
-              <motion.h1 
+              <motion.h1
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
@@ -404,7 +415,7 @@ export const CommunityPage: React.FC = () => {
               </motion.h1>
 
               {/* Description - Refined Typography */}
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
@@ -414,7 +425,7 @@ export const CommunityPage: React.FC = () => {
               </motion.p>
 
               {/* Action Buttons - Consistent & Premium */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
@@ -427,19 +438,19 @@ export const CommunityPage: React.FC = () => {
                   <Plus size={18} />
                   <span>Criar um novo prompt</span>
                 </PremiumButton>
-                
+
                 <div className="flex gap-2">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     onClick={() => navigate('/community/presets')}
                     className="h-12 px-5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 backdrop-blur-md transition-all flex items-center gap-2"
                   >
                     <Globe size={18} className="text-brand-cyan" />
                     <span className="font-manrope font-semibold">Explorar Galeria</span>
                   </Button>
-                  
-                  <Button 
-                    variant="ghost" 
+
+                  <Button
+                    variant="ghost"
                     onClick={() => setShowWorkflowLibrary(true)}
                     className="h-12 px-5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 backdrop-blur-md transition-all flex items-center gap-2"
                   >
@@ -449,7 +460,7 @@ export const CommunityPage: React.FC = () => {
               </motion.div>
 
               {/* Stats - Integrated Grid */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
@@ -468,7 +479,7 @@ export const CommunityPage: React.FC = () => {
                 <GlassPanel padding="sm" className="bg-white/[0.02] border-white/[0.05] hover:border-brand-cyan/30 transition-colors group">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">Criações</span>
-                    <Sparkles size={14} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
+                    <Diamond size={14} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
                   </div>
                   <p className="text-3xl font-bold text-white font-mono tracking-tighter">
                     {isLoading ? '...' : (globalCommunityStats.totalPresets === 0 ? '!' : <CountUp value={globalCommunityStats.totalPresets} />)}
@@ -491,7 +502,7 @@ export const CommunityPage: React.FC = () => {
 
         {isCheckingAuth && (
           <div className="flex items-center justify-center py-20">
-            <p className="text-neutral-400 font-mono animate-pulse">{t('common.loading')}</p>
+            <p className="text-neutral-400 font-mono">{t('common.loading')}</p>
           </div>
         )}
 
@@ -501,7 +512,7 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-10">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-1">
-                  <MicroTitle className="text-brand-cyan/60 tracking-[0.2em]">Curadoria</MicroTitle>
+                  <MicroTitle className="text-brand-cyan/60 tracking-[0.1em]">Curadoria</MicroTitle>
                   <h2 className="text-3xl font-bold text-white font-manrope tracking-tight">Explorar por Categoria</h2>
                 </div>
                 <Link
@@ -532,7 +543,7 @@ export const CommunityPage: React.FC = () => {
                         <span className="text-2xl font-bold font-mono text-white whitespace-nowrap group-hover:text-brand-cyan transition-colors">
                           <CountUp value={category.count} />
                         </span>
-                        <span className="text-[9px] font-bold text-neutral-600 uppercase tracking-widest font-manrope">Presets</span>
+                        <span className="text-[10px] font-bold text-neutral-600 uppercase tracking-widest font-manrope">Presets</span>
                       </div>
                     </div>
 
@@ -588,7 +599,7 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {workflowsLoading ? (
                   Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="bg-[#141414] border border-neutral-800/50 rounded-md p-6 animate-pulse">
+                    <div key={i} className="bg-[#141414] border border-neutral-800/50 rounded-md p-6">
                       <div className="aspect-video bg-neutral-900 rounded-md mb-4" />
                       <div className="h-4 bg-neutral-900 rounded mb-2" />
                       <div className="h-3 bg-neutral-900 rounded w-2/3" />
@@ -696,7 +707,7 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {isLoading ? (
                   Array.from({ length: 10 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-neutral-900 rounded-md animate-pulse border border-neutral-800/50" />
+                    <div key={i} className="aspect-square bg-neutral-900 rounded-md border border-neutral-800/50" />
                   ))
                 ) : (isGalleryExpanded ? allPublicMockups : communityMockups).length > 0 ? (
                   (isGalleryExpanded ? allPublicMockups : communityMockups).map((mockup) => (
@@ -716,14 +727,14 @@ export const CommunityPage: React.FC = () => {
                             <ImageIcon size={48} />
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-300 transition-all duration-300 p-4 flex flex-col justify-end">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 p-4 flex flex-col justify-end">
                           <MicroTitle as="p" className="text-brand-cyan mb-1">Prompt</MicroTitle>
                           <p className="text-xs text-white font-mono line-clamp-2 mb-2">
                             {mockup.prompt}
                           </p>
                           <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                             <Plus size={10} className="text-brand-cyan" />
-                            <span className="text-[9px] text-neutral-400 font-mono uppercase">Usar como referência</span>
+                            <span className="text-[10px] text-neutral-400 font-mono uppercase">Usar como referência</span>
                           </div>
                         </div>
                       </Link>
@@ -788,7 +799,7 @@ export const CommunityPage: React.FC = () => {
                       <span className="font-mono uppercase tracking-widest">Ver Repositório</span>
                       <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </a>
-                    <MicroTitle as="p" className="animate-pulse">
+                    <MicroTitle as="p">
                       v1.0.0-alpha • MIT License
                     </MicroTitle>
                   </div>
@@ -815,7 +826,7 @@ export const CommunityPage: React.FC = () => {
           t={t}
         />
       </div>
-    </div>
+    </PageShell>
   );
 };
 

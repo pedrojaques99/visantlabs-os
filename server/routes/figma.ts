@@ -6,6 +6,9 @@ import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { createUsageRecord } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { redisClient } from '../lib/redis.js';
+import { CacheKey, CACHE_TTL, hashQuery, hashObject } from '../lib/cache-utils.js';
 
 const apiRateLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
@@ -33,6 +36,15 @@ router.post('/generate', apiRateLimiter, authenticate, async (req: AuthRequest, 
       return res.status(400).json({ error: 'Context with nodes array is required' });
     }
 
+    // 🟢 CACHE CHECK
+    const hash = hashQuery(prompt, hashObject(context));
+    const cacheKey = CacheKey.figmaGen(req.userId!, hash);
+    const cached = await redisClient.get(cacheKey).catch(() => null);
+    if (cached) {
+      console.log(`[Cache] HIT figma:gen:${hash.slice(0, 8)}`);
+      return res.json({ ...JSON.parse(cached), fromCache: true });
+    }
+
     let userApiKey: string | undefined;
     try {
       userApiKey = await getGeminiApiKey(req.userId!);
@@ -42,6 +54,9 @@ router.post('/generate', apiRateLimiter, authenticate, async (req: AuthRequest, 
 
     const result = await generateFigmaOperations(prompt.trim(), context, userApiKey);
 
+    // 💾 CACHE SET
+    await redisClient.setex(cacheKey, CACHE_TTL.FIGMA_GEN, JSON.stringify({ operations: result.operations })).catch(() => {});
+
     (async () => {
       try {
         await connectToMongoDB();
@@ -49,7 +64,7 @@ router.post('/generate', apiRateLimiter, authenticate, async (req: AuthRequest, 
         const usageRecord = createUsageRecord(
           req.userId!,
           0,
-          'gemini-2.5-flash',
+          GEMINI_MODELS.TEXT,
           false,
           prompt.length,
           undefined,

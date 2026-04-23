@@ -21,8 +21,9 @@ import {
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { GuidelinesSidebar } from '@/components/brand/guidelines/GuidelinesSidebar';
 import { GuidelineDetail } from '@/components/brand/guidelines/GuidelineDetail';
+import { DesignSystemValidation } from '@/components/brand/guidelines/DesignSystemValidation';
 import { ShareGuidelineDialog } from '@/components/brand/guidelines/ShareGuidelineDialog';
-import { Palette, Layers, AlignLeft, Share2, Eye, Plus } from 'lucide-react';
+import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -44,7 +45,7 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
                     <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
                         {t('brandGuidelines.emptyState')}
                     </h2>
-                    <p className="text-neutral-500 text-sm leading-relaxed max-w-xs mx-auto">
+                    <p className="text-neutral-400 text-sm leading-relaxed max-w-xs mx-auto">
                         Crie e organize suas diretrizes de marca em um único lugar centralizado e profissional.
                     </p>
                 </div>
@@ -75,8 +76,8 @@ const NoSelectionState = () => {
             </div>
 
             <div className="space-y-2">
-                <h3 className="text-neutral-400 font-medium tracking-wide uppercase text-[10px]">Awaiting Selection</h3>
-                <p className="text-neutral-600 text-sm max-w-xs mx-auto">
+                <h3 className="text-neutral-300 font-medium tracking-widest uppercase text-[11px]">Awaiting Selection</h3>
+                <p className="text-neutral-500 text-sm max-w-xs mx-auto">
                     Selecione uma marca no menu lateral para visualizar e editar suas diretrizes.
                 </p>
             </div>
@@ -119,6 +120,13 @@ export const BrandGuidelinesPage: React.FC = () => {
             setActiveSections(g.activeSections);
         } else {
             const sections = ['identity', 'logos', 'colors', 'typography', 'figma'];
+
+            // Special case for "Feira" - enable Media Kit by default
+            const isFeira = g.folder?.toLowerCase().includes('feira') || g.name?.toLowerCase().includes('feira');
+            if (isFeira) {
+                sections.push('media');
+            }
+
             // Add strategy only if it has content
             if (g.strategy?.manifesto || (g.strategy?.archetypes?.length ?? 0) > 0 || (g.strategy?.personas?.length ?? 0) > 0) {
                 sections.push('strategy');
@@ -128,6 +136,7 @@ export const BrandGuidelinesPage: React.FC = () => {
             if (g.tokens && (Object.keys(g.tokens.spacing || {}).length > 0 || Object.keys(g.tokens.radius || {}).length > 0)) sections.push('tokens');
             if (g.guidelines?.voice || (g.guidelines?.dos?.length ?? 0) > 0) sections.push('editorial');
             if (g.guidelines?.accessibility) sections.push('accessibility');
+            if ((g.knowledgeFiles?.length ?? 0) > 0) sections.push('knowledge');
             setActiveSections([...new Set(sections)]);
         }
     }, []);
@@ -152,11 +161,15 @@ export const BrandGuidelinesPage: React.FC = () => {
         [guidelines, selectedId]
     );
 
+    const [reviewGuidelineId, setReviewGuidelineId] = useState<string | null>(null);
+
     const handleWizardSuccess = useCallback((id: string) => {
         setIsWizardOpen(false);
         setEditingGuideline(null);
         setSelectedId(id);
-    }, []);
+        // Auto-open review after new brand creation (not edit)
+        if (!editingGuideline) setReviewGuidelineId(id);
+    }, [editingGuideline]);
 
     const toggleSection = useCallback((section: string) => {
         setActiveSections((prev) => {
@@ -180,7 +193,12 @@ export const BrandGuidelinesPage: React.FC = () => {
     }, []);
 
     return (
-        <div className="brand-guidelines-root">
+        <div
+            className="brand-guidelines-root"
+            data-vsn-page="brand-guidelines"
+            data-vsn-component="brand-explorer"
+            data-vsn-selected-id={selectedId}
+        >
             <SEO
                 title={t('brandGuidelines.seoTitle')}
                 description={t('brandGuidelines.seoDescription')}
@@ -190,7 +208,12 @@ export const BrandGuidelinesPage: React.FC = () => {
             <div className="min-h-screen bg-transparent relative z-10 flex">
                 {/* Desktop Sidebar */}
                 {!isLoading && guidelines.length > 0 && (
-                    <aside className="hidden lg:flex flex-col fixed top-10 md:top-14 left-0 bottom-0 w-[260px] xl:w-[280px] border-r border-white/10 bg-neutral-950/80 backdrop-blur-xl z-30">
+                    <aside
+                        role="navigation"
+                        aria-label="Brand Guidelines Selection"
+                        className="hidden lg:flex flex-col fixed top-10 md:top-14 left-0 bottom-0 w-[260px] xl:w-[280px] border-r border-white/10 bg-neutral-950/80 backdrop-blur-xl z-30"
+                        data-vsn-region="sidebar"
+                    >
                         <GuidelinesSidebar
                             guidelines={guidelines}
                             selectedId={selectedId}
@@ -203,10 +226,15 @@ export const BrandGuidelinesPage: React.FC = () => {
                 )}
 
                 {/* Main Content Area */}
-                <main className={cn(
-                    "flex-1 w-full min-h-screen transition-all duration-300",
-                    !isLoading && guidelines.length > 0 ? "lg:ml-[260px] xl:ml-[280px]" : ""
-                )}>
+                <main
+                    role="main"
+                    aria-label="Brand Guideline Content"
+                    className={cn(
+                        "flex-1 w-full min-h-screen transition-all duration-300",
+                        !isLoading && guidelines.length > 0 ? "lg:ml-[260px] xl:ml-[280px]" : ""
+                    )}
+                    data-vsn-region="content"
+                >
                     <div className={cn(
                         "mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16",
                         !isLoading && guidelines.length > 0 ? "max-w-5xl" : "max-w-7xl"
@@ -228,19 +256,19 @@ export const BrandGuidelinesPage: React.FC = () => {
                         </div>
 
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                            <div className="sr-only">
-                                <h1 className="text-3xl font-bold text-neutral-100 flex items-center gap-3">
-                                    <Palette className="text-brand-cyan h-8 w-8 hidden lg:block" />
+                            <div>
+                                <h1 className="text-xl font-bold text-neutral-100 flex items-center gap-2">
+                                    <Palette className="text-brand-cyan h-5 w-5 hidden lg:block" aria-hidden="true" />
                                     {t('brandGuidelines.title')}
                                 </h1>
-                                <p className="text-neutral-500 mt-1">{t('brandGuidelines.subtitle')}</p>
+                                <p className="text-neutral-500 text-sm mt-0.5">{t('brandGuidelines.subtitle')}</p>
                             </div>
 
                             <div className="lg:hidden fixed top-[72px] left-4 z-[45]">
                                 <Sheet>
                                     <SheetTrigger asChild>
-                                        <Button variant="outline" size="icon" className="h-10 w-10 rounded-full bg-neutral-950/80 backdrop-blur-xl border-white/10 text-brand-cyan shadow-2xl hover:scale-110 active:scale-95 transition-all">
-                                            <AlignLeft className="h-5 w-5" />
+                                        <Button variant="outline" size="icon" aria-label="Open brand guidelines menu" className="h-10 w-10 rounded-full bg-neutral-950/80 backdrop-blur-xl border-white/10 text-brand-cyan shadow-2xl hover:scale-110 active:scale-95 transition-all">
+                                            <AlignLeft className="h-5 w-5" aria-hidden="true" />
                                         </Button>
                                     </SheetTrigger>
                                     <SheetContent side="left" className="w-[85vw] max-w-sm p-0 border-r border-white/10 bg-neutral-950/95 backdrop-blur-xl">
@@ -293,7 +321,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                     className="flex flex-col items-center justify-center py-40 gap-6"
                                 >
                                     <GlitchLoader size={40} />
-                                    <MicroTitle className="text-neutral-700 text-[9px] animate-pulse uppercase">
+                                    <MicroTitle className="text-white/40 text-[11px] font-mono animate-pulse uppercase tracking-[0.1em]">
                                         Synchronizing Workspace
                                     </MicroTitle>
                                 </motion.div>
@@ -308,11 +336,42 @@ export const BrandGuidelinesPage: React.FC = () => {
                                 >
                                     {selected ? (
                                         <div className="w-full">
-                                            <GuidelineDetail
-                                                guideline={selected}
-                                                activeSections={activeSections}
-                                                onOpenWizard={() => handleOpenWizard(selected)}
-                                            />
+                                            {reviewGuidelineId === selected.id ? (
+                                                <DesignSystemValidation
+                                                    guideline={selected}
+                                                    onUpdate={(patch) => updateMutation.mutate({ id: selected.id!, data: patch })}
+                                                    onComplete={() => setReviewGuidelineId(null)}
+                                                    onEditSection={(sectionId) => {
+                                                        setReviewGuidelineId(null);
+                                                        if (!activeSections.includes(sectionId)) toggleSection(sectionId);
+                                                    }}
+                                                />
+                                            ) : (
+                                                <>
+                                                    {/* Review trigger button */}
+                                                    {selected.validation && Object.values(selected.validation).some(v => v !== 'approved') && (
+                                                        <button
+                                                            onClick={() => setReviewGuidelineId(selected.id!)}
+                                                            className="mb-6 w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-brand-cyan/20 bg-brand-cyan/5 hover:bg-brand-cyan/10 hover:border-brand-cyan/30 transition-all group"
+                                                        >
+                                                            <ClipboardCheck size={16} className="text-brand-cyan shrink-0" />
+                                                            <div className="flex-1 text-left">
+                                                                <p className="text-[11px] font-bold text-brand-cyan">Design System Review pending</p>
+                                                                <p className="text-[10px] text-neutral-500">
+                                                                    {Object.values(selected.validation).filter(v => v === 'approved').length}/{Object.keys(selected.validation).length} sections approved
+                                                                </p>
+                                                            </div>
+                                                            <span className="text-[10px] font-mono text-brand-cyan/60 group-hover:text-brand-cyan transition-colors">Review →</span>
+                                                        </button>
+                                                    )}
+                                                    <GuidelineDetail
+                                                        guideline={selected}
+                                                        activeSections={activeSections}
+                                                        onOpenWizard={() => handleOpenWizard(selected)}
+                                                        onStartReview={() => setReviewGuidelineId(selected.id!)}
+                                                    />
+                                                </>
+                                            )}
                                         </div>
                                     ) : (
                                         <NoSelectionState />

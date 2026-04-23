@@ -21,7 +21,7 @@ export const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className={`w-full min-h-screen relative ${theme === 'dark' ? 'bg-[#0C0C0C] text-neutral-300' : 'bg-neutral-50 text-neutral-800'
+    <div className={`w-full min-h-screen relative ${theme === 'dark' ? 'bg-neutral-950 text-neutral-300' : 'bg-neutral-50 text-neutral-800'
       }`}>
       <div className="fixed inset-0 z-0">
       </div>
@@ -61,7 +61,7 @@ export const NotFoundPage: React.FC = () => {
             </div>
 
             {/* Message */}
-            <div className="space-y-4" style={{ marginBottom: '19px' }}>
+            <div className="space-y-4" style={{ marginBottom: '110px' }}>
               <h2 className={`text-2xl md:text-3xl lg:text-4xl font-semibold font-manrope ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
                 }`}>
                 {t('notFound.title') || 'Página não encontrada'}

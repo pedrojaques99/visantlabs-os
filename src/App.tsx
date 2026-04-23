@@ -1,10 +1,11 @@
 import React, { Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ErrorBoundaryWrapper } from './components/ErrorBoundaryWrapper';
 import { GlitchLoader } from './components/ui/GlitchLoader';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { CanvasHeaderProvider } from './components/canvas/CanvasHeaderContext';
+import { ActiveBrandKitProvider } from './contexts/BrandKitContext';
 
 // Lazy load all pages for code-splitting with automatic retry
 const HomePage = lazyWithRetry(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
@@ -21,10 +22,12 @@ const MockupsPage = lazyWithRetry(() => import('./pages/MockupsPage').then(m => 
 const MyOutputsPage = lazyWithRetry(() => import('./pages/MyOutputsPage').then(m => ({ default: m.MyOutputsPage })));
 const CanvasPage = lazyWithRetry(() => import('./pages/CanvasPage').then(m => ({ default: m.CanvasPage })));
 const CanvasProjectsPage = lazyWithRetry(() => import('./pages/CanvasProjectsPage').then(m => ({ default: m.CanvasProjectsPage })));
+const CreativeProjectsPage = lazyWithRetry(() => import('./pages/CreativeProjectsPage').then(m => ({ default: m.CreativeProjectsPage })));
 const CanvasSharedPage = lazyWithRetry(() => import('./pages/CanvasSharedPage').then(m => ({ default: m.CanvasSharedPage })));
 const AdminPage = lazyWithRetry(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
 const AdminPresetsPage = lazyWithRetry(() => import('./pages/AdminPresetsPage').then(m => ({ default: m.AdminPresetsPage })));
 const AdminProductsPage = lazyWithRetry(() => import('./pages/AdminProductsPage').then(m => ({ default: m.AdminProductsPage })));
+const SmartAnalyzerPage = lazyWithRetry(() => import('./pages/SmartAnalyzerPage').then(m => ({ default: m.SmartAnalyzerPage })));
 const CommunityPage = lazyWithRetry(() => import('./pages/CommunityPage').then(m => ({ default: m.CommunityPage })));
 const CommunityPresetsPage = lazyWithRetry(() => import('./pages/CommunityPresetsPage').then(m => ({ default: m.CommunityPresetsPage })));
 const CommunityProfilePage = lazyWithRetry(() => import('./pages/CommunityProfilePage').then(m => ({ default: m.CommunityProfilePage })));
@@ -34,6 +37,7 @@ const BudgetMachinePage = lazyWithRetry(() => import('./pages/BudgetMachinePage'
 const MyBudgetsPage = lazyWithRetry(() => import('./pages/MyBudgetsPage').then(m => ({ default: m.MyBudgetsPage })));
 const BudgetSharedPage = lazyWithRetry(() => import('./pages/BudgetSharedPage').then(m => ({ default: m.BudgetSharedPage })));
 const AppsPage = lazyWithRetry(() => import('./pages/AppsPage').then(m => ({ default: m.AppsPage })));
+const ExtractorPage = lazyWithRetry(() => import('./pages/ExtractorPage'));
 const QRCodePage = lazyWithRetry(() => import('./pages/QRCodePage').then(m => ({ default: m.QRCodePage })));
 const AboutPage = lazyWithRetry(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
 const PrivacyPolicyPage = lazyWithRetry(() => import('./pages/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })));
@@ -47,6 +51,11 @@ const ApiKeysPage = lazyWithRetry(() => import('./pages/ApiKeysPage').then(m => 
 const BrandGuidelinesPage = lazyWithRetry(() => import('./pages/BrandGuidelinesPage').then(m => ({ default: m.BrandGuidelinesPage })));
 const PublicBrandGuideline = lazyWithRetry(() => import('./pages/PublicBrandGuideline').then(m => ({ default: m.PublicBrandGuideline })));
 const BrandingExpertPage = lazyWithRetry(() => import('./pages/BrandingExpertPage').then(m => ({ default: m.BrandingExpertPage })));
+const CreatePage = lazyWithRetry(() => import('./pages/CreatePage').then(m => ({ default: m.CreatePage })));
+const AdminChatPage = lazyWithRetry(() => import('./pages/AdminChatPage').then(m => ({ default: m.AdminChatPage })));
+const OnboardPage = lazyWithRetry(() => import('./pages/OnboardPage').then(m => ({ default: m.OnboardPage })));
+const MoodboardStudioPage = lazyWithRetry(() => import('./pages/MoodboardStudioPage').then(m => ({ default: m.MoodboardStudioPage })));
+
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
@@ -58,6 +67,7 @@ const App: React.FC = () => {
   return (
     <ErrorBoundaryWrapper>
       <CanvasHeaderProvider>
+        <ActiveBrandKitProvider>
         <Layout>
           <ErrorBoundaryWrapper>
             <Suspense fallback={<LoadingFallback />}>
@@ -84,8 +94,12 @@ const App: React.FC = () => {
                 <Route path="/my-budgets" element={<MyBudgetsPage />} />
                 <Route path="/budget/shared/:shareId" element={<BudgetSharedPage />} />
                 <Route path="/apps" element={<AppsPage />} />
+                <Route path="/extractor" element={<ExtractorPage />} />
+                <Route path="/moodboard" element={<MoodboardStudioPage />} />
+                <Route path="/instagram-extractor" element={<Navigate to="/extractor" replace />} />
                 <Route path="/qrcode" element={<QRCodePage />} />
                 <Route path="/about" element={<AboutPage />} />
+                <Route path="/onboard" element={<OnboardPage />} />
                 <Route path="/privacy" element={<PrivacyPolicyPage />} />
                 <Route path="/brand-guidelines" element={<BrandGuidelinesPage />} />
                 <Route path="/brand/:slug" element={<PublicBrandGuideline />} />
@@ -96,8 +110,13 @@ const App: React.FC = () => {
                 <Route path="/waitlist" element={<WaitlistPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin/chat" element={<AdminChatPage />} />
                 <Route path="/admin/presets" element={<AdminPresetsPage />} />
                 <Route path="/admin/products" element={<AdminProductsPage />} />
+                <Route path="/admin/smart-analyzer" element={<SmartAnalyzerPage />} />
+
+                <Route path="/create" element={<CreatePage />} />
+                <Route path="/create/projects" element={<CreativeProjectsPage />} />
                 <Route path="/community" element={<CommunityPage />} />
                 <Route path="/community/presets" element={<CommunityPresetsPage />} />
                 <Route path="/profile/:identifier" element={<CommunityProfilePage />} />
@@ -106,6 +125,7 @@ const App: React.FC = () => {
             </Suspense>
           </ErrorBoundaryWrapper>
         </Layout>
+        </ActiveBrandKitProvider>
       </CanvasHeaderProvider>
     </ErrorBoundaryWrapper>
   );

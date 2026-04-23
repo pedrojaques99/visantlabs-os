@@ -67,7 +67,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
                   className="max-h-[80%] max-w-[80%] object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] group-hover/logo-item:scale-105 transition-transform duration-500"
                 />
               </div>
-              <span className="text-[10px] font-mono text-neutral-500 uppercase  truncate max-w-full">
+              <span className="text-[11px] font-mono text-neutral-400 uppercase tracking-widest truncate max-w-full">
                 {logo.label || `Logo ${i + 1}`}
               </span>
             </div>
@@ -94,7 +94,10 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
                 <Loader2 size={32} className="animate-spin text-brand-cyan" />
                 <div className="absolute inset-0 blur-xl bg-brand-cyan/20 animate-pulse" />
               </div>
-              <span className="text-[10px] font-mono text-brand-cyan uppercase tracking-[0.2em] font-bold">Processing Assets</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] font-bold font-mono text-brand-cyan uppercase tracking-widest">Processing Assets</span>
+                <div className="h-[1px] flex-1 bg-white/[0.03]" />
+              </div>
             </div>
           </div>
         )}
@@ -104,12 +107,12 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
             {/* Main Stage */}
             <div className="relative flex-1 w-full flex items-center justify-center rounded-3xl bg-neutral-950/40 border border-white/[0.03] group-hover/section:bg-neutral-950/60 group-hover/section:border-white/[0.06] transition-all duration-700 overflow-hidden shadow-[inset_0_0_80px_rgba(0,0,0,0.4)]">
               {/* Background Glow */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-brand-cyan/5 blur-[120px] rounded-full opacity-0 group-hover/section:opacity-300 transition-opacity duration-1000" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-brand-cyan/5 blur-[120px] rounded-full opacity-0 group-hover/section:opacity-100 transition-opacity duration-1000" />
 
               {/* Floating Label (On Hover) */}
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover/section:opacity-300 transition-all duration-500 pointer-events-none">
-                <div className="px-3 py-1 rounded-full bg-neutral-900/80 backdrop-blur-md border border-white/[0.08] shadow-xl">
-                  <span className="text-[9px] font-mono text-neutral-400 uppercase tracking-widest leading-none">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover/section:opacity-100 transition-all duration-500 pointer-events-none">
+                <div className="px-3 py-1.5 rounded-lg bg-neutral-900/40 border border-white/[0.03] text-[11px] text-neutral-200 transition-all cursor-default font-medium tracking-tight flex items-center gap-2 group/tag">
+                  <span className="uppercase tracking-widest leading-none">
                     {logos[Math.min(currentIndex, logos.length - 1)].label || `Logo ${currentIndex + 1}`}
                   </span>
                 </div>
@@ -128,13 +131,13 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
                 <>
                   <button
                     onClick={() => setCurrentIndex((prev) => (prev - 1 + logos.length) % logos.length)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full bg-neutral-900/40 backdrop-blur-md border border-white/[0.06] text-neutral-400 hover:text-white hover:bg-neutral-800/80 hover:border-brand-cyan/40 opacity-0 group-hover/section:opacity-300 -translate-x-4 group-hover/section:translate-x-0 transition-all duration-500"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full bg-neutral-900/40 backdrop-blur-md border border-white/[0.06] text-neutral-400 hover:text-white hover:bg-neutral-800/80 hover:border-brand-cyan/40 opacity-0 group-hover/section:opacity-100 -translate-x-4 group-hover/section:translate-x-0 transition-all duration-500"
                   >
                     <ChevronLeft size={20} />
                   </button>
                   <button
                     onClick={() => setCurrentIndex((prev) => (prev + 1) % logos.length)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full bg-neutral-900/40 backdrop-blur-md border border-white/[0.06] text-neutral-400 hover:text-white hover:bg-neutral-800/80 hover:border-brand-cyan/40 opacity-0 group-hover/section:opacity-300 translate-x-4 group-hover/section:translate-x-0 transition-all duration-500"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full bg-neutral-900/40 backdrop-blur-md border border-white/[0.06] text-neutral-400 hover:text-white hover:bg-neutral-800/80 hover:border-brand-cyan/40 opacity-0 group-hover/section:opacity-100 translate-x-4 group-hover/section:translate-x-0 transition-all duration-500"
                   >
                     <ChevronRight size={20} />
                   </button>
@@ -161,7 +164,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1 opacity-300">
+          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1 opacity-100">
             {[
               { label: 'Main Logo', icon: ImageIcon },
               { label: 'Symbol', icon: Palette },
@@ -176,7 +179,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
                 <div className="w-12 h-12 flex items-center justify-center rounded-lg text-neutral-800 border border-dashed border-white/5">
                   <p.icon size={20} strokeWidth={1} />
                 </div>
-                <span className="text-[8px] font-mono uppercase tracking-widest text-neutral-700">{p.label}</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{p.label}</span>
               </div>
             ))}
           </div>

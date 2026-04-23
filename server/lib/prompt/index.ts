@@ -12,7 +12,9 @@ import { buildPresetContext, getFormatDimensions, buildFullPresetsReference } fr
 import { CREATE_RULES, CREATE_EXAMPLE, MULTIPLE_FRAMES_RULES } from './modules/create.js';
 import { EDIT_RULES, EDIT_EXAMPLE, TEXT_EDIT_WARNING } from './modules/edit.js';
 import { TEMPLATE_RULES, TEMPLATE_EXAMPLE } from './modules/template.js';
+import { CHART_RULES, CHART_EXAMPLE } from './modules/charts.js';
 import { BRAND_PRIORITY_RULE, buildCompactBrandContext } from './modules/brand.js';
+import { DESIGN_EXCELLENCE_RULES } from './modules/design-excellence.js';
 import { buildSelectionContext, buildContainersHint } from './modules/context.js';
 
 // Re-export for external use
@@ -24,12 +26,13 @@ export interface PromptAssemblerInput {
   command: string;
   selectedElements?: any[];
   brandColors?: Array<{ name: string; value: string; role?: string }>;
-  brandFonts?: { primary?: { name: string }; secondary?: { name: string } };
+  brandFonts?: { primary?: { family?: string; style?: string; size?: number }; secondary?: { family?: string; style?: string; size?: number } };
   brandLogos?: { light?: { name: string; key?: string }; dark?: { name: string; key?: string } };
   availableComponents?: any[];
   colorVariables?: Array<{ id: string; name: string; value?: string }>;
   chatHistory?: string;
   thinkMode?: boolean;
+  useBrand?: boolean;
 }
 
 /**
@@ -78,6 +81,7 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
 
     if (intent.complexity !== 'simple') {
       modules.push({ id: 'create_example', content: CREATE_EXAMPLE, priority: 70 });
+      modules.push({ id: 'sexy_design', content: DESIGN_EXCELLENCE_RULES, priority: 82 });
     }
 
     // Multiple frames hint for complex creations
@@ -103,14 +107,28 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
     modules.push({ id: 'template_example', content: TEMPLATE_EXAMPLE, priority: 70 });
   }
 
+  // 3.5. Chart rules (if detected)
+  if (intent.isChart) {
+    modules.push({ id: 'chart_rules', content: CHART_RULES, priority: 82 });
+    modules.push({ id: 'chart_example', content: CHART_EXAMPLE, priority: 72 });
+  }
+
   // 4. Brand context (if available)
-  const brandContext = buildCompactBrandContext(
-    input.brandColors,
-    input.brandFonts,
-    input.brandLogos,
-  );
-  if (brandContext) {
-    modules.push({ id: 'brand', content: BRAND_PRIORITY_RULE + '\n' + brandContext, priority: 85 });
+  if (input.useBrand !== false) {
+    const brandContext = buildCompactBrandContext(
+      input.brandColors,
+      input.brandFonts,
+      input.brandLogos,
+    );
+    if (brandContext) {
+      modules.push({ id: 'brand', content: BRAND_PRIORITY_RULE + '\n' + brandContext, priority: 85 });
+    }
+  } else {
+    modules.push({
+      id: 'brand_disabled',
+      content: 'BRANDING: O usuário desativou o uso de marca. Use estilos genéricos e modernos (ex: Inter para fontes, cores neutras ou cores vibrantes genéricas se não especificado).',
+      priority: 85
+    });
   }
 
   // 5. Selection context (if has selection)

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, FileText, ChevronDown, ChevronUp, Edit, Pickaxe, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, MapPin, RefreshCw, Pencil, Heart } from 'lucide-react';
+import { X, FileText, ChevronDown, ChevronUp, Edit, Pickaxe, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, MapPin, RefreshCw, Pencil, Heart, ThumbsUp, ThumbsDown, Download } from 'lucide-react';
 import type { Mockup } from '../services/mockupApi';
 import { getImageUrl, isSafeUrl } from '@/utils/imageUtils';
 import { translateTag } from '@/utils/localeUtils';
@@ -10,6 +10,9 @@ import { LightingSelector } from './mockupmachine/LightingSelector';
 import { ReImaginePanel } from './ReImaginePanel';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button'
+import { useGenerationFeedback } from '@/hooks/useGenerationFeedback';
+import { type FeedbackContext, type FeedbackRating } from '@/services/feedbackApi';
+import { cn } from '@/lib/utils';
 
 // Get API URL from environment or use current origin for production
 const getApiBaseUrl = () => {
@@ -76,6 +79,12 @@ interface FullScreenViewerProps {
   onLikeStateChange?: (newIsLiked: boolean) => void;
   isLiked?: boolean;
   showActions?: boolean;
+  // Feedback (thumbs up/down for RAG training)
+  generationId?: string | null;
+  feedbackContext?: FeedbackContext | (() => FeedbackContext);
+  /** Controlled feedback rating — lifted state synced with MockupCard */
+  feedbackRating?: FeedbackRating | null;
+  onFeedbackRatingChange?: (rating: FeedbackRating | null) => void;
 }
 
 export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
@@ -108,18 +117,32 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
   onToggleLike,
   onLikeStateChange,
   isLiked = false,
-  showActions = false
+  showActions = false,
+  generationId,
+  feedbackContext,
+  feedbackRating,
+  onFeedbackRatingChange,
 }) => {
   const { t } = useTranslation();
   const [showPrompt, setShowPrompt] = useState(false);
   const [showReImaginePanel, setShowReImaginePanel] = useState(false);
   const [localIsLiked, setLocalIsLiked] = useState(isLiked);
   const [isConvertingImage, setIsConvertingImage] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Sync local liked state with prop
   useEffect(() => {
     setLocalIsLiked(isLiked);
   }, [isLiked]);
+
+  // RAG feedback (thumbs up/down) — controlled when parent lifts state
+  const feedback = useGenerationFeedback({
+    generationId,
+    feature: 'mockup',
+    context: feedbackContext || {},
+    controlledRating: feedbackRating,
+    onRatingChange: onFeedbackRatingChange,
+  });
 
   // Check if edit buttons should be shown (only when showActions is true and props are provided)
   const showEditButtons = showActions && !!(onZoomIn || onZoomOut || onNewAngle || onNewBackground || onNewLighting || onReImagine);
@@ -132,6 +155,30 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
         onLikeStateChange(newLikedState);
       }
       onToggleLike();
+    }
+  };
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    if (!safeImageUrl || isDownloading) return;
+    e.stopPropagation();
+    setIsDownloading(true);
+    try {
+      const response = await fetch(safeImageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `visant-image-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Fallback
+      window.open(safeImageUrl, '_blank');
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -331,22 +378,68 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               />
             )}
 
-            {/* Like button - top right corner (only when provided) */}
-            {onToggleLike && (
-              <Button variant="ghost" onClick={(e) => {
-                e.stopPropagation();
-                handleToggleLike();
-              }}
-                className={`absolute top-4 right-4 p-2 rounded-md transition-all z-30 backdrop-blur-sm ${localIsLiked
-                  ? 'bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30'
-                  : 'bg-neutral-950/70 text-neutral-400 hover:bg-neutral-950/60 hover:text-neutral-200'
-                  }`}
-                title={localIsLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
-                aria-label={localIsLiked ? 'Unlike' : 'Like'}
-              >
-                <Heart size={18} className={localIsLiked ? 'fill-current' : ''} aria-hidden="true" />
-              </Button>
-            )}
+            {/* Like + Feedback buttons - top right corner */}
+            <div className="absolute top-4 right-4 flex items-center gap-2 z-30">
+              {/* Download Button */}
+              {hasImage && !isLoading && (
+                <Button variant="ghost" onClick={handleDownload}
+                  disabled={isDownloading}
+                  className="p-2 rounded-md bg-neutral-950/70 text-neutral-400 hover:text-white hover:bg-neutral-950/60 transition-all backdrop-blur-sm border border-white/5"
+                  title={t('common.download') || "Download"}
+                >
+                  {isDownloading ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
+                </Button>
+              )}
+
+              {/* RAG Feedback (thumbs up/down) */}
+              {generationId && (
+                <div className="flex items-center gap-1 rounded-lg bg-neutral-950/70 backdrop-blur-sm border border-white/5 p-1">
+                  <Button variant="ghost" size="icon"
+                    aria-label={feedback.rating === 'up' ? "Remover feedback positivo" : "Feedback positivo — melhora o modelo"}
+                    onClick={(e) => { e.stopPropagation(); feedback.submit('up'); }}
+                    className={cn(
+                      "w-8 h-8 rounded-md transition-all",
+                      feedback.rating === 'up'
+                        ? "text-green-400 bg-green-400/10 hover:bg-green-400/20"
+                        : "text-neutral-400 hover:text-white hover:bg-white/10"
+                    )}
+                    disabled={feedback.isLoading}
+                  >
+                    <ThumbsUp size={14} aria-hidden="true" className={cn(feedback.rating === 'up' && "fill-current")} />
+                  </Button>
+                  <Button variant="ghost" size="icon"
+                    aria-label={feedback.rating === 'down' ? "Remover feedback negativo" : "Feedback negativo — reportar problema"}
+                    onClick={(e) => { e.stopPropagation(); feedback.submit('down'); }}
+                    className={cn(
+                      "w-8 h-8 rounded-md transition-all",
+                      feedback.rating === 'down'
+                        ? "text-red-400 bg-red-400/10 hover:bg-red-400/20"
+                        : "text-neutral-400 hover:text-white hover:bg-white/10"
+                    )}
+                    disabled={feedback.isLoading}
+                  >
+                    <ThumbsDown size={14} className={cn(feedback.rating === 'down' && "fill-current")} />
+                  </Button>
+                </div>
+              )}
+
+              {/* Like/Favorite button */}
+              {onToggleLike && (
+                <Button variant="ghost" onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleLike();
+                }}
+                  className={`p-2 rounded-md transition-all backdrop-blur-sm ${localIsLiked
+                    ? 'bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30'
+                    : 'bg-neutral-950/70 text-neutral-400 hover:bg-neutral-950/60 hover:text-neutral-200'
+                    }`}
+                  title={localIsLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
+                  aria-label={localIsLiked ? 'Unlike' : 'Like'}
+                >
+                  <Heart size={18} className={localIsLiked ? 'fill-current' : ''} aria-hidden="true" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 

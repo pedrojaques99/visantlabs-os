@@ -249,4 +249,125 @@ describe('OperationValidator', () => {
     expect(result.valid).toBe(false);
     expect(result.errors[0]).toContain('null or undefined');
   });
+
+  // ── SET_AUTO_LAYOUT ────────────────────────────────────────────────────────
+
+  it('should accept valid SET_AUTO_LAYOUT with VERTICAL layoutMode', () => {
+    const op = {
+      type: 'SET_AUTO_LAYOUT',
+      nodeId: '1:1',
+      layoutMode: 'VERTICAL',
+      itemSpacing: 24,
+      primaryAxisSizingMode: 'FIXED',
+      counterAxisSizingMode: 'FIXED',
+    };
+    const result = operationValidator.validate(op);
+    expect(result.valid).toBe(true);
+  });
+
+  it('should accept SET_AUTO_LAYOUT with HORIZONTAL layoutMode', () => {
+    const op = {
+      type: 'SET_AUTO_LAYOUT',
+      nodeId: '1:2',
+      layoutMode: 'HORIZONTAL',
+    };
+    const result = operationValidator.validate(op);
+    expect(result.valid).toBe(true);
+  });
+
+  it('should reject SET_AUTO_LAYOUT without layoutMode', () => {
+    const op = {
+      type: 'SET_AUTO_LAYOUT',
+      nodeId: '1:1',
+    } as any;
+    const result = operationValidator.validate(op);
+    expect(result.valid).toBe(false);
+  });
+
+  it('should reject SET_AUTO_LAYOUT with invalid layoutMode value', () => {
+    const op = {
+      type: 'SET_AUTO_LAYOUT',
+      nodeId: '1:1',
+      layoutMode: 'DIAGONAL',
+    } as any;
+    const result = operationValidator.validate(op);
+    expect(result.valid).toBe(false);
+  });
+
+  it('should accept SET_AUTO_LAYOUT without optional fields', () => {
+    const op = {
+      type: 'SET_AUTO_LAYOUT',
+      nodeId: '1:1',
+      layoutMode: 'VERTICAL',
+    };
+    const result = operationValidator.validate(op);
+    expect(result.valid).toBe(true);
+  });
+
+  // ── SET_TEXT_STYLE ─────────────────────────────────────────────────────────
+
+  it('should accept SET_TEXT_STYLE with fontFamily', () => {
+    const op = {
+      type: 'SET_TEXT_STYLE',
+      nodeId: '2:1',
+      fontFamily: 'Bebas Neue',
+      fontStyle: 'Bold',
+      fontSize: 48,
+    };
+    const result = operationValidator.validate(op);
+    expect(result.valid).toBe(true);
+  });
+
+  it('should accept SET_TEXT_STYLE with fills only (color-only edit)', () => {
+    const op = {
+      type: 'SET_TEXT_STYLE',
+      nodeId: '2:1',
+      fills: [{ type: 'SOLID', color: { r: 0.8, g: 0.2, b: 0.1 } }],
+    };
+    const result = operationValidator.validate(op);
+    expect(result.valid).toBe(true);
+  });
+
+  it('should reject SET_TEXT_STYLE without nodeId', () => {
+    const op = {
+      type: 'SET_TEXT_STYLE',
+      fontFamily: 'Inter',
+    } as any;
+    const result = operationValidator.validate(op);
+    expect(result.valid).toBe(false);
+  });
+
+  // ── RESIZE ─────────────────────────────────────────────────────────────────
+
+  it('should accept valid RESIZE operation', () => {
+    const op = {
+      type: 'RESIZE',
+      nodeId: '3:1',
+      width: 1080,
+      height: 1920,
+    };
+    const result = operationValidator.validate(op);
+    expect(result.valid).toBe(true);
+  });
+
+  it('should reject RESIZE with negative width', () => {
+    const op = {
+      type: 'RESIZE',
+      nodeId: '3:1',
+      width: -10,
+      height: 100,
+    };
+    const result = operationValidator.validate(op);
+    expect(result.valid).toBe(false);
+  });
+
+  it('should reject RESIZE without nodeId', () => {
+    const op = {
+      type: 'RESIZE',
+      width: 100,
+      height: 100,
+    } as any;
+    const result = operationValidator.validate(op);
+    expect(result.valid).toBe(false);
+  });
 });

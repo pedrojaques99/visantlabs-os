@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { useNavigate, useBlocker, useLocation } from 'react-router-dom';
+import { useNavigate, useBlocker, useLocation, useSearchParams } from 'react-router-dom';
 import { Menu, PanelLeftOpen, Pickaxe, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImageUploader } from '../components/ui/ImageUploader';
@@ -17,6 +17,7 @@ import { getCreditsRequired } from '@/utils/creditCalculator';
 import { subscriptionService } from '../services/subscriptionService';
 import { authService } from '../services/authService';
 import { mockupApi } from '../services/mockupApi';
+import type { FeedbackRating } from '../services/feedbackApi';
 import { useLayout } from '@/hooks/useLayout';
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../types/types';
 import { toast } from 'sonner';
@@ -34,6 +35,7 @@ import type { AmbiencePreset } from '../types/ambiencePresets';
 import type { LuminancePreset } from '../types/luminancePresets';
 import type { SurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
 import { MockupProvider, useMockup } from '../components/mockupmachine/MockupContext';
+import { getCombinedVibeConfig, type VibeSegment, type VibeStyle } from '@/constants/mockupVibes';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useCreditValidation } from '@/hooks/useCreditValidation';
@@ -41,7 +43,7 @@ import { useAnalysisOverlay } from '@/hooks/useAnalysisOverlay';
 import { formatMockupError } from '@/utils/mockupErrorHandling';
 import { compressImage } from '@/utils/imageCompression';
 
-const MOCKUP_COUNT = 2;
+const MOCKUP_COUNT = 1;
 
 import { isLocalDevelopment } from '@/utils/env';
 import {
@@ -77,6 +79,7 @@ const MockupMachinePageContent: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { subscriptionStatus, isAuthenticated, isCheckingAuth, onSubscriptionModalOpen, onCreditPackagesModalOpen, setSubscriptionStatus, registerUnsavedOutputsHandler, registerResetHandler } = useLayout();
 
   const {
@@ -136,9 +139,23 @@ const MockupMachinePageContent: React.FC = () => {
     isSurpriseMeMode,
     setIsSurpriseMeMode,
     surpriseMePool,
+    autoGenerate,
+    setAutoGenerate,
     imageProvider,
     setImageProvider,
     selectedBrandGuideline,
+    seed,
+    setSeed,
+    seedLocked,
+    setSeedLocked,
+    generationIds,
+    setGenerationIds,
+    selectedVibeSegment,
+    selectedVibeStyle,
+    detectedLanguage,
+    setDetectedLanguage,
+    detectedText,
+    setDetectedText,
   } = useMockup();
 
   // Custom hooks for common operations (after getting mockupCount from context)
@@ -152,14 +169,21 @@ const MockupMachinePageContent: React.FC = () => {
   } = useMockupTags();
 
   const promptWasReadyBeforeEditRef = useRef<boolean>(false);
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [isRestoring, setIsRestoring] = useState(true);
   const [autoMode, setAutoMode] = useState<'idle' | 'prompt-only' | 'prompt-and-generate'>('idle');
   const [savedIndices, setSavedIndices] = useState<Set<number>>(new Set());
   const [mockupLikedStatus, setMockupLikedStatus] = useState<Map<number, boolean>>(new Map()); // Map index -> isLiked
+  const [feedbackRatings, setFeedbackRatings] = useState<Map<number, FeedbackRating | null>>(new Map());
+  const handleFeedbackRatingChange = useCallback((index: number, rating: FeedbackRating | null) => {
+    setFeedbackRatings(prev => {
+      const next = new Map(prev);
+      if (rating === null) next.delete(index); else next.set(index, rating);
+      return next;
+    });
+  }, []);
   const [savedMockupIds, setSavedMockupIds] = useState<Map<number, string>>(new Map()); // Map index -> mockup ID
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [isDiceAnimating, setIsDiceAnimating] = useState(false);
-  const [autoGenerate, setAutoGenerate] = useState(true);
 
   // React to external tag changes (e.g. SurpriseMeSelectedTagsDisplay reroll)
   useEffect(() => {
@@ -207,8 +231,25 @@ const MockupMachinePageContent: React.FC = () => {
   const promptTagsSnapshotRef = useRef<string | null>(null);
   const generateOutputsButtonRef = useRef<HTMLButtonElement>(null);
   const hasRestoredStateRef = useRef(false);
-  const isRestoringRef = useRef(true); // true until first restoration attempt completes
   const generatedSmartPromptRef = useRef<string | null>(null);
+
+
+  const getFeedbackContext = useCallback(() => ({
+    prompt: promptPreview,
+    designType: designType || 'layout',
+    tags: {
+      category: selectedTags,
+      branding: selectedBrandingTags,
+      location: selectedLocationTags,
+      angle: selectedAngleTags,
+      lighting: selectedLightingTags,
+      effect: selectedEffectTags,
+      material: selectedMaterialTags,
+    },
+    brandGuidelineId: selectedBrandGuideline || undefined,
+    model: selectedModel || 'gemini-1.5-flash',
+    aspectRatio: aspectRatio,
+  }), [promptPreview, designType, selectedTags, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedMaterialTags, selectedBrandGuideline, selectedModel, aspectRatio]);
 
   // Restore state from localStorage on mount (prioritize edit-mockup if exists)
   useEffect(() => {
@@ -230,7 +271,7 @@ const MockupMachinePageContent: React.FC = () => {
           localStorage.removeItem('edit-mockup');
         }
         // Don't restore persisted state if edit-mockup exists
-        isRestoringRef.current = false;
+        setIsRestoring(false);
         return;
       }
 
@@ -244,12 +285,12 @@ const MockupMachinePageContent: React.FC = () => {
         setDesignType(persistedState.designType);
         setSelectedModel(persistedState.selectedModel);
         setHasGenerated(persistedState.hasGenerated);
-        setMockupCount(persistedState.mockupCount);
+        // Force mockupCount to 1 as requested - Essentialist approach
+        setMockupCount(1);
         
         // Let all tag arrays initialize empty. Zumbi State prevented.
 
-        // Hide welcome screen and show mockups
-        setShowWelcome(false);
+        // Let all tag arrays initialize empty. Zumbi State prevented.
 
         // Adjust loading array to match mockups length
         setIsLoading(Array(persistedState.mockups.length).fill(false));
@@ -261,7 +302,7 @@ const MockupMachinePageContent: React.FC = () => {
       }
     } finally {
       // Mark restoration complete so save effect and render don't flash
-      isRestoringRef.current = false;
+      setIsRestoring(false);
     }
   }, []); // Only run once on mount
 
@@ -299,19 +340,10 @@ const MockupMachinePageContent: React.FC = () => {
     }
   }, [selectedModel, subscriptionStatus, promptPreview, onCreditPackagesModalOpen]);
 
-  // Note: mockupCount changes should NOT affect already generated images
-  // It only affects the number of images for the next generation
-
-
-  // Note: showWelcome state is kept for handleStartOver/handleImageUpload but
-  // the render decision uses `shouldShowWelcome = !uploadedImage` (line ~2680),
-  // so no effect needed here — the effect was triggering wasteful re-renders.
-
-  // Save state to localStorage when mockups are generated (with debounce)
   // Using a longer debounce (1500ms) to prevent excessive saves and localStorage quota issues
   useEffect(() => {
     // Skip save during state restoration to prevent cascading re-renders
-    if (isRestoringRef.current) return;
+    if (isRestoring) return;
 
     // Save if there are generated mockups OR if an image has been uploaded (to persist analysis)
     const hasAnyMockups = mockups.some(m => m !== null);
@@ -381,6 +413,7 @@ const MockupMachinePageContent: React.FC = () => {
     removeText,
     negativePrompt,
     additionalPrompt,
+    autoGenerate,
     // Note: isPromptReady is intentionally excluded - it's not persisted and causes extra saves
     suggestedTags,
     suggestedBrandingTags,
@@ -414,8 +447,100 @@ const MockupMachinePageContent: React.FC = () => {
     selectedColors.length, designType, aspectRatio, generateText, withHuman
   ]);
 
+  // Capture incoming state from Smart Analyzer or other sources
+  useEffect(() => {
+    if (location.state?.prompt) {
+      console.log('[🚀 MockupMachine] Incoming state detected:', {
+        hasPrompt: !!location.state.prompt,
+        hasImage: !!location.state.image
+      });
+      
+      setPromptPreview(location.state.prompt);
+      setIsSmartPromptActive(true);
+      setIsPromptManuallyEdited(false);
+      promptWasReadyBeforeEditRef.current = true;
+      
+      if (location.state.image) {
+        setUploadedImage(location.state.image);
+      }
+      
+      // Mark as ready to generate immediately
+      promptTagsSnapshotRef.current = getTagsHash();
+      
+      setHasGenerated(false);
+      
+      // Clean up state to prevent re-processing on re-renders
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, getTagsHash]);
+
+  // Restore fullscreen view from URL ?view=generationId param (shareable)
+  useEffect(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam !== null) {
+      const index = generationIds.findIndex(id => id === viewParam);
+      if (index !== -1 && index < mockups.length && mockups[index]) {
+        setFullScreenImageIndex(index);
+      }
+    }
+  }, [generationIds]); // Re-check when generationIds populate
+
   // Derived: prompt is ready if we have a prompt and tags haven't changed since generation
+  const handleOpenFullScreen = useCallback((index: number) => {
+    setFullScreenImageIndex(index);
+    const genId = generationIds[index];
+    if (genId) {
+      setSearchParams(prev => { prev.set('view', genId); return prev; }, { replace: true });
+    }
+  }, [setFullScreenImageIndex, setSearchParams, generationIds]);
+
+  const handleCloseFullScreen = useCallback(() => {
+    setFullScreenImageIndex(null);
+    setSearchParams(prev => { prev.delete('view'); return prev; }, { replace: true });
+  }, [setFullScreenImageIndex, setSearchParams]);
+
+  const prepareForNewMockupSlot = useCallback((count: number = 1) => {
+    if (count <= 0) return 0;
+    
+    // Close fullscreen modal immediately
+    handleCloseFullScreen();
+
+    // Ensure we follow the workspace flow and collapse sidebar if needed later
+    if (!hasGenerated) {
+      setHasGenerated(true);
+    }
+
+    // Capture current length
+    const previousLength = mockups.length;
+
+    // Prepend new slots — consistent with runGeneration's appendMode (which is actually prepend)
+    const newSlots = Array(count).fill(null);
+    const newLoadingSlots = Array(count).fill(true);
+    
+    setMockups(prev => {
+        // If we already have a fresh loading placeholder at the start, don't double add
+        const alreadyLoading = prev.length >= count && prev.slice(0, count).every(m => m === null) && isLoading.slice(0, count).every(l => l === true);
+        if (alreadyLoading) return prev;
+        return [...newSlots, ...prev];
+    });
+    
+    setIsLoading(prev => {
+        const alreadyLoading = mockups.length >= count && mockups.slice(0, count).every(m => m === null) && prev.slice(0, count).every(l => l === true);
+        if (alreadyLoading) return prev;
+        return [...newLoadingSlots, ...prev];
+    });
+    
+    setGenerationIds(prev => {
+        const currentGenId = prev[0] ?? null;
+        const newIds = Array(count).fill(currentGenId);
+        return [...newIds, ...prev];
+    });
+
+    return 0; // The new items are at the beginning
+  }, [handleCloseFullScreen, hasGenerated, mockups, isLoading]);
+
   const isPromptReady = useMemo(() => {
+
     if (!promptPreview.trim()) return false;
     if (!promptTagsSnapshotRef.current) return false;
     return promptTagsSnapshotRef.current === getTagsHash();
@@ -473,7 +598,429 @@ const MockupMachinePageContent: React.FC = () => {
     return basePrompt;
   }, [designType, selectedTags, aspectRatio, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedMaterialTags, selectedColors, generateText, withHuman, negativePrompt, additionalPrompt, referenceImages]);
 
-  const handleGenerateSmartPrompt = useCallback(async () => {
+  const executeImageEditOperation = useCallback(async (params: {
+    base64Image: string;
+    prompt: string;
+    onSuccess: (result: string) => void;
+    setIsLoading: (loading: boolean) => void;
+    promptLength?: number;
+  }): Promise<void> => {
+    const { base64Image, prompt, onSuccess, setIsLoading, promptLength = 0 } = params;
+
+    const modelToUse = selectedModel || GEMINI_MODELS.FLASH;
+    const resolutionToUse = modelToUse === GEMINI_MODELS.PRO ? resolution : undefined;
+
+    const canProceed = await validateCredits({ model: modelToUse, resolution: resolutionToUse });
+    if (!canProceed) return;
+
+    setIsLoading(true);
+
+    try {
+      // Normalize image to base64 (handles URLs correctly)
+      const normalizedBase64 = await normalizeImageToBase64(base64Image);
+      const mimeType = detectMimeType(base64Image);
+
+      const referenceImage: UploadedImage = {
+        base64: normalizedBase64,
+        mimeType: mimeType
+      };
+
+      // Process reference image if needed (compression disabled)
+      const processedReferenceImage = referenceImage || undefined;
+      if (!processedReferenceImage) {
+        throw new Error(t('messages.failedToProcessReferenceImage'));
+      }
+
+      // Process reference images if available (compression disabled)
+      const processedReferenceImages = referenceImages.length > 0 ? referenceImages : undefined;
+
+      // Use reference images if available (Pro: up to 3, HD: up to 1)
+      const referenceImagesToUse = processedReferenceImages && processedReferenceImages.length > 0
+        ? processedReferenceImages
+        : undefined;
+
+      // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
+      // Prefer url over base64 for referenceImages so Gemini can read when we only have R2 URL
+      const result = await mockupApi.generate({
+        promptText: prompt,
+        baseImage: {
+          base64: processedReferenceImage.base64,
+          mimeType: processedReferenceImage.mimeType
+        },
+        model: modelToUse,
+        resolution: resolutionToUse,
+        aspectRatio: aspectRatio,
+        referenceImages: referenceImagesToUse?.map(img =>
+          img.url ? { url: img.url, mimeType: img.mimeType } : { base64: img.base64, mimeType: img.mimeType }
+        ),
+        imagesCount: 1,
+        provider: imageProvider,
+      });
+
+      onSuccess(result.imageUrl || result.imageBase64 || '');
+
+      // Show credit deduction notification
+      if (result.isAdmin) {
+        toast.info(t('credits.notificationUsedAdmin'));
+      } else if (result.creditsDeducted > 0) {
+        const plural = result.creditsDeducted > 1 ? 's' : '';
+        const remainingPlural = result.creditsRemaining > 1 ? 's' : '';
+        toast.success(
+          `${t('credits.notificationUsed', { count: result.creditsDeducted, plural })}. ${t('credits.notificationRemaining', { remaining: result.creditsRemaining, plural: remainingPlural })}`
+        );
+      }
+
+      // Credits were already deducted by backend before generation
+      // Update subscription status to reflect new credits
+      try {
+        const updatedStatus = await subscriptionService.getSubscriptionStatus();
+        setSubscriptionStatus(updatedStatus);
+      } catch (statusError: any) {
+        if (isLocalDevelopment()) {
+          console.error('Failed to refresh subscription status:', statusError);
+        }
+        // Non-critical - credits were already deducted, just status refresh failed
+      }
+    } catch (err) {
+      if (isLocalDevelopment()) {
+        console.error('Error in image edit operation:', err);
+      }
+      const errorInfo = formatMockupError(err, t);
+      toast.error(errorInfo.message, {
+        description: errorInfo.suggestion,
+        duration: 7000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [validateCredits, selectedModel, resolution, aspectRatio, onSubscriptionModalOpen, setSubscriptionStatus, referenceImages, t]);
+
+  const runGeneration = useCallback(async (indexToUpdate?: number, promptOverride?: string, appendMode: boolean = false) => {
+    // Prevent multiple simultaneous calls to runGeneration
+    // Check if any generation is currently in progress
+    // Prevent multiple simultaneous calls to runGeneration ONLY if not in append mode
+    // We want to allow concurrent generations if we are adding new images
+    if (isLoading.some(Boolean) && !appendMode && indexToUpdate === undefined) {
+      if (isLocalDevelopment()) {
+        console.warn('[runGeneration] Generation already in progress and not in append mode, ignoring duplicate call');
+      }
+      return;
+    }
+
+    if (!selectedModel) {
+      toast.error(t('messages.selectModelBeforeGenerating'), { duration: 5000 });
+      return;
+    }
+
+    const modelToUse = selectedModel || GEMINI_MODELS.FLASH;
+    const resolutionToUse = modelToUse === GEMINI_MODELS.PRO ? resolution : undefined;
+
+    const canProceed = await validateCredits({ model: modelToUse, resolution: resolutionToUse });
+    if (!canProceed) return;
+
+    // Prioritize promptOverride, then latest generated prompt from ref, then state preview
+    const promptToUse = promptOverride || generatedSmartPromptRef.current || promptPreview;
+    
+    // Allow generation if: has reference images OR (has design type AND has uploaded image) AND has prompt
+    const hasReferenceImages = referenceImages.length > 0;
+    const hasValidSetup = hasReferenceImages || (designType && uploadedImage && designType !== 'blank');
+    
+    if (!hasValidSetup || !promptToUse.trim()) {
+      if (isLocalDevelopment()) {
+        console.warn('[runGeneration] Validation failed:', { hasValidSetup, promptLength: promptToUse.trim().length, designType, hasUploadedImage: !!uploadedImage, hasReferenceImages });
+      }
+      toast.error(t('messages.completeSteps'), { duration: 5000 });
+      return;
+    }
+
+    if (!hasGenerated) setHasGenerated(true);
+
+    const generateAndSet = async (index: number) => {
+      let imageGenerated = false;
+
+      try {
+        // Note: Credit validation and deduction now happens in backend endpoint
+        // No need to validate here - backend will return error if insufficient credits
+
+        // No modo normal, passa imagem (não existe mais modo blank)
+        const baseImageForGeneration = (uploadedImage || undefined);
+
+        // Process base image if needed (compression disabled)
+        const processedBaseImage = baseImageForGeneration || undefined;
+
+        // Use reference images directly (compression disabled)
+        const processedReferenceImages = referenceImages.length > 0 ? referenceImages : undefined;
+
+        // Use reference images if available (Pro: up to 3, HD: up to 1)
+        const referenceImagesToUse = processedReferenceImages && processedReferenceImages.length > 0
+          ? processedReferenceImages
+          : undefined;
+
+        // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
+        // This prevents abuse and ensures credits are always deducted atomically
+        // Pass slot index as uniqueId to allow parallel batch requests with same parameters
+        const result = await mockupApi.generate({
+          promptText: promptToUse,
+          baseImage: processedBaseImage
+            ? processedBaseImage.url
+              ? { url: processedBaseImage.url, mimeType: processedBaseImage.mimeType }
+              : { base64: processedBaseImage.base64, mimeType: processedBaseImage.mimeType }
+            : undefined,
+          model: modelToUse,
+          resolution: resolutionToUse,
+          aspectRatio: aspectRatio,
+          referenceImages: referenceImagesToUse?.map(img =>
+            img.url ? { url: img.url, mimeType: img.mimeType } : { base64: img.base64, mimeType: img.mimeType }
+          ),
+          imagesCount: 1,
+          feature: 'mockupmachine',
+          uniqueId: index, // Use slot index to differentiate parallel batch requests
+          provider: imageProvider,
+          brandGuidelineId: selectedBrandGuideline || undefined, // Auto-inject brand context
+          seed: seedLocked ? seed : undefined, // Pass seed only when locked
+        });
+
+        // Track generationId for feedback system
+        if (result.requestId) {
+          setGenerationIds(prev => {
+            const newIds = [...prev];
+            newIds[index] = result.requestId || null;
+            return newIds;
+          });
+        }
+
+        // Image successfully generated - set it in state (prefer URL; if only base64, try client-side upload)
+        imageGenerated = true;
+        let finalImage: string | null;
+        if (result.imageUrl) {
+          finalImage = result.imageUrl;
+        } else if (result.imageBase64) {
+          try {
+            finalImage = await mockupApi.uploadTempImage(result.imageBase64, 'image/png');
+          } catch {
+            finalImage = result.imageBase64; // persistence will null it; still show in UI
+          }
+        } else {
+          finalImage = null;
+        }
+        setMockups(prev => { const newMockups = [...prev]; newMockups[index] = finalImage; return newMockups; });
+
+        // Show credit deduction notification
+        if (result.isAdmin) {
+          toast.info(t('credits.notificationUsedAdmin'));
+        } else if (result.creditsDeducted > 0) {
+          const plural = result.creditsDeducted > 1 ? 's' : '';
+          const remainingPlural = result.creditsRemaining > 1 ? 's' : '';
+          toast.success(
+            `${t('credits.notificationUsed', { count: result.creditsDeducted, plural })}. ${t('credits.notificationRemaining', { remaining: result.creditsRemaining, plural: remainingPlural })}`
+          );
+        }
+
+        // Credits were already deducted by backend before generation
+        // Update subscription status to reflect new credits
+        try {
+          const updatedStatus = await subscriptionService.getSubscriptionStatus();
+          setSubscriptionStatus(updatedStatus);
+        } catch (statusError: any) {
+          if (isLocalDevelopment()) {
+            console.error('Failed to refresh subscription status:', statusError);
+          }
+          // Non-critical - credits were already deducted, just status refresh failed
+        }
+      } catch (err) {
+        if (isLocalDevelopment()) {
+          console.error(`Error generating mockup for slot ${index}:`, err);
+        }
+        const errorInfo = formatMockupError(err, t);
+
+        // Only show error if image wasn't generated
+        if (!imageGenerated) {
+          toast.error(errorInfo.message, {
+            description: errorInfo.suggestion,
+            duration: 7000,
+          });
+          setMockups(prev => { const newMockups = [...prev]; newMockups[index] = null; return newMockups; });
+        }
+      } finally {
+        setIsLoading(prev => { const newLoading = [...prev]; newLoading[index] = false; return newLoading; });
+      }
+    };
+
+    if (indexToUpdate !== undefined) {
+      setIsLoading(prev => { const newLoading = [...prev]; newLoading[indexToUpdate] = true; return newLoading; });
+      await generateAndSet(indexToUpdate);
+    } else {
+      if (appendMode) {
+        // Append mode (Prepend logic): add new slots at the BEGINNING
+        // Get current length before adding new slots
+        const currentLength = mockups.length;
+
+        // We need to shift saved indices and IDs because we are inserting at 0
+        // This must happen synchronously before async operations
+
+        // Shift saved indices
+        setSavedIndices(prev => {
+          const newSet = new Set<number>();
+          prev.forEach(index => {
+            newSet.add(index + mockupCount);
+          });
+          return newSet;
+        });
+
+        // Shift saved mockup IDs
+        setSavedMockupIds(prev => {
+          const newMap = new Map<number, string>();
+          prev.forEach((id, index) => {
+            newMap.set(index + mockupCount, id);
+          });
+          return newMap;
+        });
+
+        // Shift liked status
+        setMockupLikedStatus(prev => {
+          const newMap = new Map<number, boolean>();
+          prev.forEach((status, index) => {
+            newMap.set(index + mockupCount, status);
+          });
+          return newMap;
+        });
+
+        // Insert available slots at the beginning
+        setMockups(prev => {
+          // If we already have fresh loading placeholders (e.g. from handleSurpriseMe), reuse them
+          const alreadyHasLoadingSlots = prev.length >= mockupCount && 
+                                        prev.slice(0, mockupCount).every(m => m === null) && 
+                                        isLoading.slice(0, mockupCount).every(l => l === true);
+          
+          if (alreadyHasLoadingSlots && appendMode) {
+              return prev;
+          }
+
+          if (appendMode) {
+            const newMockups = [...prev];
+            const newSlots = Array(mockupCount).fill(null);
+            return [...newSlots, ...newMockups];
+          }
+          return prev;
+        });
+
+        setIsLoading(prev => {
+          // If we already have fresh loading placeholders, reuse them
+          const alreadyHasLoadingSlots = mockups.length >= mockupCount && 
+                                        mockups.slice(0, mockupCount).every(m => m === null) && 
+                                        prev.slice(0, mockupCount).every(l => l === true);
+                                          
+          if (alreadyHasLoadingSlots && appendMode) {
+              return prev;
+          }
+
+          if (appendMode) {
+            const newLoading = [...prev];
+            const newSlots = Array(mockupCount).fill(true);
+            return [...newSlots, ...newLoading];
+          }
+          return prev;
+        });
+
+        // Expand generationIds to match — new slots inherit current genId
+        setGenerationIds(prev => {
+          const currentGenId = prev[0] ?? null;
+          const newSlots = Array(mockupCount).fill(currentGenId);
+          return [...newSlots, ...prev];
+        });
+
+        setPromptSuggestions([]);
+
+        // Generate all new mockups in parallel
+        // The indices for the NEW items are 0 to mockupCount-1
+        const promises = Array.from({ length: mockupCount }, (_, i) =>
+          generateAndSet(i)
+        );
+        await Promise.allSettled(promises);
+
+        // Refresh subscription status after all generations complete
+        const isLocal = isLocalDevelopment();
+        if (!isLocal) {
+          try {
+            const updatedStatus = await subscriptionService.getSubscriptionStatus();
+            setSubscriptionStatus(updatedStatus);
+          } catch (statusError: any) {
+            if (isLocalDevelopment()) {
+              console.error('Failed to refresh subscription status after append generation:', statusError);
+            }
+          }
+        }
+      } else {
+        // Normal mode: adjust arrays to match mockupCount when generating new images
+        setMockups(prev => {
+          const newMockups = [...prev];
+          // Only expand if needed, never shrink to preserve existing images
+          while (newMockups.length < mockupCount) {
+            newMockups.push(null);
+          }
+          // Reset only the slots that will be generated (up to mockupCount)
+          for (let i = 0; i < mockupCount; i++) {
+            newMockups[i] = null;
+          }
+          return newMockups;
+        });
+
+        setIsLoading(prev => {
+          const newLoading = [...prev];
+          // Only expand if needed
+          while (newLoading.length < mockupCount) {
+            newLoading.push(false);
+          }
+          // Set loading for slots that will be generated
+          for (let i = 0; i < mockupCount; i++) {
+            newLoading[i] = true;
+          }
+          return newLoading;
+        });
+
+        setPromptSuggestions([]);
+
+        // Track which images were successfully generated for batch tracking
+        const successfulIndices: number[] = [];
+        const promises = Array.from({ length: mockupCount }, (_, i) =>
+          generateAndSet(i)
+            .then(() => {
+              // Only count as successful if image was actually generated
+              // generateAndSet always tracks usage for each successfully generated image
+              if (mockups[i] !== null) {
+                successfulIndices.push(i);
+              }
+            })
+            .catch(() => { })
+        );
+        await Promise.allSettled(promises);
+
+        // Count successful generations
+        const successfulCount = successfulIndices.length;
+
+        // Note: Usage tracking is automatically handled in generateAndSet for each image
+        // Each successfully generated mockup will have a corresponding usage_record
+        // This ensures accurate tracking and credits are only deducted for successful generations
+
+        // Refresh subscription status after all generations complete
+        // Note: Usage tracking is handled in generateAndSet for each image
+        // In local development, credits aren't deducted so no need to refresh
+        const isLocal = isLocalDevelopment();
+        if (successfulCount > 0 && !isLocal) {
+          try {
+            const updatedStatus = await subscriptionService.getSubscriptionStatus();
+            setSubscriptionStatus(updatedStatus);
+          } catch (statusError: any) {
+            if (isLocalDevelopment()) {
+              console.error('Failed to refresh subscription status after batch generation:', statusError);
+            }
+          }
+        }
+      }
+    }
+  }, [uploadedImage, selectedTags, selectedBrandingTags, promptPreview, hasGenerated, designType, mockupCount, subscriptionStatus, aspectRatio, selectedModel, resolution, validateCredits, onSubscriptionModalOpen, setSubscriptionStatus, mockups, referenceImages, t, imageProvider, selectedBrandGuideline]);
+
+  const handleGenerateSmartPrompt = useCallback(async (shouldAutoGenerate: boolean = false) => {
     if (isGeneratingPrompt) {
       if (isLocalDevelopment()) {
         console.warn('Prompt generation already in progress, skipping duplicate call');
@@ -529,6 +1076,7 @@ const MockupMachinePageContent: React.FC = () => {
         angleTags: selectedAngleTags,
         lightingTags: selectedLightingTags,
         effectTags: selectedEffectTags,
+        materialTags: selectedMaterialTags,
         selectedColors: selectedColors,
         aspectRatio: aspectRatio,
         generateText: generateText,
@@ -538,6 +1086,8 @@ const MockupMachinePageContent: React.FC = () => {
         negativePrompt: negativePrompt,
         additionalPrompt: additionalPrompt,
         instructions: instructions,
+        brandGuidelineId: selectedBrandGuideline || undefined,
+        detectedLanguage: detectedLanguage,
       });
 
       // Handle both old string format and new object format
@@ -578,6 +1128,13 @@ const MockupMachinePageContent: React.FC = () => {
 
       setPromptPreview(finalPrompt);
       generatedSmartPromptRef.current = finalPrompt; // Store for use in auto-generate
+      
+      // Store generation ID for feedback (👍/👎) — fallback to client-side UUID if server didn't provide one
+      const genId = (typeof smartPromptResult === 'object' && smartPromptResult.generationId)
+        ? smartPromptResult.generationId
+        : crypto.randomUUID();
+      setGenerationIds(Array(mockupCount).fill(genId));
+      
       promptTagsSnapshotRef.current = getTagsHash(); // Save snapshot for isPromptReady derivation
       setIsSmartPromptActive(true);
       setIsPromptManuallyEdited(false);
@@ -604,6 +1161,9 @@ const MockupMachinePageContent: React.FC = () => {
           generateOutputsButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, scrollDelay);
+      
+      // runGeneration is now handled by the unified autoMode effect or explicit callers
+      // to prevent double-triggering
     } catch (err) {
       const errorInfo = formatMockupError(err, t);
       if (isLocalDevelopment()) {
@@ -685,6 +1245,7 @@ const MockupMachinePageContent: React.FC = () => {
     setSavedIndices(new Set());
     setSavedMockupIds(new Map());
     setMockupLikedStatus(new Map());
+    setFeedbackRatings(new Map());
     setUploadedImage(null);
     setInstructions('');
     // Clear localStorage when resetting
@@ -705,9 +1266,10 @@ const MockupMachinePageContent: React.FC = () => {
 
     if (!silent) {
       setIsAnalyzing(true);
-      showTemporaryOverlay(5000); // Mostrar overlay por no máximo 5 segundos
+      // showTemporaryOverlay(5000); // Removed full-screen overlay for a smoother journey
 
       // Após 5 segundos, mostrar o próximo passo mesmo que a análise não tenha completado
+
       nextStepTimeoutId = window.setTimeout(() => {
         if (import.meta.env.DEV) console.log('[dev] analyze: showing next step after 5s (analysis may still be running)');
         nextStepShownRef.current = true;
@@ -756,6 +1318,8 @@ const MockupMachinePageContent: React.FC = () => {
       setSuggestedLightingTags(analysis.lighting);
       setSuggestedEffectTags(analysis.effects);
       setSuggestedMaterialTags(analysis.materials);
+      setDetectedLanguage(analysis.detectedLanguage || null);
+      setDetectedText(analysis.detectedText || null);
       // Design type is now manually selected by user, not auto-set from analysis
 
       if (imageToUse.base64) {
@@ -799,7 +1363,7 @@ const MockupMachinePageContent: React.FC = () => {
         setIsAnalyzing(false);
         // Garantir que o overlay seja ocultado quando a análise terminar
         // (mesmo que ainda não tenham passado os 5 segundos)
-        hideOverlay();
+        // hideOverlay(); // Removed full-screen overlay
 
         // Limpar timeout se ainda existir
         if (nextStepTimeoutId !== null) {
@@ -814,7 +1378,215 @@ const MockupMachinePageContent: React.FC = () => {
     void handleAnalyze();
   }, [handleAnalyze]);
 
+  const handleSurpriseMe = useCallback(async (autoGenerate: boolean = false) => {
+    // If auto-generating, prepare slots immediately so user sees "generating" cards while prompt is being created
+    if (autoGenerate) {
+        prepareForNewMockupSlot(mockupCount);
+    } else if (mockups.length === 0 || (mockups.length === 1 && mockups[0] === null)) {
+        setMockups([null]);
+        setIsLoading([true]);
+    }
+
+    // Ensure model is selected
+    if (!selectedModel) setSelectedModel(GEMINI_MODELS.FLASH);
+
+    // Ensure designType is set
+    if (!designType) setDesignType('logo');
+
+    const brandingTagsToUse = selectedBrandingTags.length > 0 ? selectedBrandingTags : [];
+
+    // Helper: pick random item from array
+    const rand = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+
+    // ─── VIBE-AWARE PATH ───
+    // When user selected segment + style, use getCombinedVibeConfig as the
+    // art direction foundation. Only randomize the PRODUCT (category).
+    const hasVibeDirection = !!(selectedVibeSegment && selectedVibeStyle);
+
+    if (hasVibeDirection) {
+      const vibeConfig = getCombinedVibeConfig(
+        selectedVibeSegment as VibeSegment,
+        selectedVibeStyle as VibeStyle,
+      );
+
+      console.log('[SurpriseMe] Using vibe direction:', selectedVibeSegment, '×', selectedVibeStyle);
+
+      // 1. Category (product) — always randomize, vibe doesn't dictate product
+      const aiCategories = suggestedTags || [];
+      const categoryPool = aiCategories.length > 0 ? aiCategories : availableMockupTags;
+      setSelectedTags([rand(categoryPool)]);
+
+      // 2. Apply vibe tags with slight variety (pick 1-2 from each vibe pool)
+      const pickFromVibe = (vibeTags: string[], allAvailable: readonly string[]) => {
+        if (vibeTags.length === 0) return [];
+        // 80% chance: pick from vibe pool. 20%: pick from full pool for variety
+        if (Math.random() < 0.8 || allAvailable.length === 0) {
+          return [rand(vibeTags)];
+        }
+        return [rand([...allAvailable])];
+      };
+
+      setSelectedLocationTags(pickFromVibe(vibeConfig.locationTags, AVAILABLE_LOCATION_TAGS));
+      setSelectedLightingTags(pickFromVibe(vibeConfig.lightingTags, AVAILABLE_LIGHTING_TAGS));
+      setSelectedAngleTags(pickFromVibe(vibeConfig.angleTags, AVAILABLE_ANGLE_TAGS));
+      setSelectedEffectTags(Math.random() < 0.6 ? pickFromVibe(vibeConfig.effectTags, AVAILABLE_EFFECT_TAGS) : []);
+      setSelectedMaterialTags(designType === 'logo' ? pickFromVibe(vibeConfig.materialTags, AVAILABLE_MATERIAL_TAGS) : []);
+
+    } else {
+      // ─── LEGACY ARCHETYPE PATH (no vibe selected) ───
+      // Use pool from Context when Pool Mode is active
+      const selectedTagsSettings: SurpriseMeSelectedTags = isSurpriseMeMode ? surpriseMePool : {
+        selectedCategoryTags: [],
+        selectedLocationTags: [],
+        selectedAngleTags: [],
+        selectedLightingTags: [],
+        selectedEffectTags: [],
+        selectedMaterialTags: [],
+      };
+
+      // 1. Category
+      const aiSuggestedCategories = suggestedTags || [];
+      const userAllowedCategories = selectedTagsSettings.selectedCategoryTags;
+      const filteredAiCategories = aiSuggestedCategories.filter(tag =>
+        userAllowedCategories.length === 0 || userAllowedCategories.includes(tag)
+      );
+
+      let selectedCategory: string;
+      if (filteredAiCategories.length > 0) {
+        selectedCategory = rand(filteredAiCategories);
+      } else {
+        const poolToUse = userAllowedCategories.length > 0
+          ? availableMockupTags.filter(tag => userAllowedCategories.includes(tag))
+          : availableMockupTags;
+        selectedCategory = rand(poolToUse.length > 0 ? poolToUse : availableMockupTags);
+      }
+      setSelectedTags([selectedCategory]);
+
+      // 2. Location
+      let selectedBackground: string;
+      const aiSuggestedLocations = suggestedLocationTags || [];
+      const userAllowedLocations = selectedTagsSettings.selectedLocationTags;
+      const filteredAiLocations = aiSuggestedLocations.filter(tag =>
+        userAllowedLocations.length === 0 || userAllowedLocations.includes(tag)
+      );
+
+      if (filteredAiLocations.length > 0) {
+        selectedBackground = rand(filteredAiLocations);
+      } else {
+        const suitableBackgrounds = getBackgroundsForBranding(brandingTagsToUse);
+        const filteredBackgrounds = suitableBackgrounds.filter(bg =>
+          bg !== 'Nature landscape' && (userAllowedLocations.length === 0 || userAllowedLocations.includes(bg))
+        );
+        const preferredOptions = ['Light Box', 'Minimalist Studio'];
+        const filteredPreferred = userAllowedLocations.length > 0
+          ? preferredOptions.filter(opt => userAllowedLocations.includes(opt))
+          : preferredOptions;
+        const optionsToUse = filteredPreferred.length > 0 ? filteredPreferred : preferredOptions;
+        const backgroundsToUse = filteredBackgrounds.length > 0
+          ? [...new Set([...optionsToUse, ...filteredBackgrounds])]
+          : [...new Set([...optionsToUse, ...suitableBackgrounds])];
+        const finalBackgrounds = backgroundsToUse.length > 0 ? backgroundsToUse : availableLocationTags;
+        selectedBackground = rand(finalBackgrounds);
+      }
+      setSelectedLocationTags([selectedBackground]);
+
+      // 3. Archetype-based tag selection
+      try {
+        const { determineArchetypeFromBranding, getRandomArchetype } = await import('@/utils/promptHelpers');
+        let currentArchetype = determineArchetypeFromBranding(brandingTagsToUse);
+        if (!currentArchetype || Math.random() < 0.2) {
+          currentArchetype = getRandomArchetype();
+        }
+        console.log('[SurpriseMe] Selected Archetype:', currentArchetype.name);
+
+        const pickTagWithVariety = (archetypeTags: string[], availableTags: string[], userAllowed: string[] = []): string => {
+          let pool = userAllowed.length > 0 ? availableTags.filter(t => userAllowed.includes(t)) : availableTags;
+          if (Math.random() < 0.8 && archetypeTags.length > 0) {
+            const archetypePool = archetypeTags.filter(t => userAllowed.length === 0 || userAllowed.includes(t));
+            if (archetypePool.length > 0) return rand(archetypePool);
+          }
+          return pool.length > 0 ? rand(pool) : "";
+        };
+
+        if (currentArchetype.visuals.locations) {
+          selectedBackground = pickTagWithVariety(currentArchetype.visuals.locations, AVAILABLE_LOCATION_TAGS, userAllowedLocations);
+        }
+        setSelectedLocationTags([selectedBackground || selectRandomBackground(brandingTagsToUse)]);
+
+        const userAllowedLighting = selectedTagsSettings.selectedLightingTags;
+        let lightingTag = currentArchetype.visuals.lighting
+          ? pickTagWithVariety(currentArchetype.visuals.lighting, AVAILABLE_LIGHTING_TAGS, userAllowedLighting) : "";
+        if (!lightingTag) {
+          const pool = userAllowedLighting.length > 0 ? userAllowedLighting : AVAILABLE_LIGHTING_TAGS;
+          lightingTag = rand(pool);
+        }
+        setSelectedLightingTags([lightingTag]);
+
+        const userAllowedEffects = selectedTagsSettings.selectedEffectTags;
+        if (Math.random() < 0.5) {
+          let effectTag = currentArchetype.visuals.effects
+            ? pickTagWithVariety(currentArchetype.visuals.effects, AVAILABLE_EFFECT_TAGS, userAllowedEffects) : "";
+          if (!effectTag) {
+            const pool = userAllowedEffects.length > 0 ? userAllowedEffects : AVAILABLE_EFFECT_TAGS;
+            effectTag = rand(pool);
+          }
+          setSelectedEffectTags([effectTag]);
+        } else {
+          setSelectedEffectTags([]);
+        }
+
+        if (designType === 'logo') {
+          const userAllowedMaterials = selectedTagsSettings.selectedMaterialTags;
+          let materialTag = currentArchetype.visuals.materials
+            ? pickTagWithVariety(currentArchetype.visuals.materials, AVAILABLE_MATERIAL_TAGS, userAllowedMaterials) : "";
+          if (!materialTag) {
+            const pool = userAllowedMaterials.length > 0 ? userAllowedMaterials : AVAILABLE_MATERIAL_TAGS;
+            materialTag = rand(pool);
+          }
+          setSelectedMaterialTags([materialTag]);
+        }
+
+        const userAllowedAngles = selectedTagsSettings.selectedAngleTags;
+        const angPool = userAllowedAngles.length > 0 ? userAllowedAngles : AVAILABLE_ANGLE_TAGS;
+        setSelectedAngleTags([rand(angPool)]);
+      } catch (error) {
+        console.warn('[SurpriseMe] Archetype fallback:', error);
+        // Simple random fallback
+        setSelectedLightingTags([rand([...AVAILABLE_LIGHTING_TAGS])]);
+        setSelectedAngleTags([rand([...AVAILABLE_ANGLE_TAGS])]);
+        setSelectedEffectTags(Math.random() < 0.4 ? [rand([...AVAILABLE_EFFECT_TAGS])] : []);
+        setSelectedMaterialTags(designType === 'logo' ? [rand([...AVAILABLE_MATERIAL_TAGS])] : []);
+      }
+    }
+
+    setSelectedColors([]);
+
+    // Reset prompt state for auto-generation
+    setPromptPreview('');
+    promptTagsSnapshotRef.current = null;
+    setIsPromptManuallyEdited(false);
+    setIsAllCategoriesOpen(true);
+    setIsAdvancedOpen(true);
+
+    const randomWithHuman = Math.random() < 0.5;
+    setWithHuman(randomWithHuman);
+
+    // Trigger auto generation
+    setTimeout(() => {
+      promptTagsSnapshotRef.current = null;
+      setAutoMode(autoGenerate ? 'prompt-and-generate' : 'prompt-only');
+    }, 100);
+  }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups, isSurpriseMeMode, surpriseMePool, selectedVibeSegment, selectedVibeStyle]);
+
+  const handleSurpriseMeWithDice = useCallback((autoGen: boolean) => {
+    setIsDiceAnimating(true);
+    showTemporaryOverlay(300);
+    handleSurpriseMe(autoGen);
+    setTimeout(() => setIsDiceAnimating(false), 800);
+  }, [handleSurpriseMe, showTemporaryOverlay]);
+
   const handleImageUpload = useCallback(async (image: UploadedImage) => {
+
     // Check authentication
     if (!(await requireAuth())) return;
 
@@ -851,21 +1623,28 @@ const MockupMachinePageContent: React.FC = () => {
     // Navega para a rota /mockupmachine
     navigate('/mockupmachine');
 
-    // Auto-extract colors from uploaded image (local only, sem chamar análise de IA)
+    // AUTO-JOURNEY: Move straight to dashboard mode and trigger analysis + automatic generation
+    setHasAnalyzed(true);
+    setIsAllCategoriesOpen(false);
+    setIsAdvancedOpen(false);
+    
+    // Auto-extract colors from uploaded image (local only)
     try {
       const { extractColors } = await import('@/utils/colorExtraction');
       const colorResult = await extractColors(image.base64, image.mimeType, 8);
       setSuggestedColors(colorResult.colors);
-      if (isLocalDevelopment()) {
-        console.log('🎨 Auto-extracted colors:', colorResult.colors);
-      }
-    } catch (colorErr) {
-      if (isLocalDevelopment()) {
-        console.error("Error auto-extracting colors:", colorErr);
-      }
-      // Non-critical - don't block UX if color extraction fails
+    } catch (colorErr) {}
+
+    // Start full AI analysis in background without blocking with a modal
+    handleAnalyze(image, true);
+
+    // If auto-generate is enabled, trigger a first "Surprise Me" batch immediately
+    if (autoGenerate) {
+       setTimeout(() => {
+         handleSurpriseMeWithDice(true);
+       }, 500);
     }
-  }, [designType, resetControls, isAuthenticated, isCheckingAuth, t]);
+  }, [designType, resetControls, isAuthenticated, isCheckingAuth, t, handleAnalyze, autoGenerate, handleSurpriseMeWithDice]);
 
   const handleReplaceImage = useCallback(async (image: UploadedImage) => {
     // Check authentication
@@ -926,7 +1705,6 @@ const MockupMachinePageContent: React.FC = () => {
     setUploadedImage(null);
     setReferenceImages([]);
     resetControls();
-    setShowWelcome(true);
     // Clear persisted state from localStorage
     clearMockupState();
     localStorage.removeItem('edit-mockup');
@@ -1099,688 +1877,8 @@ const MockupMachinePageContent: React.FC = () => {
   };
 
 
-  const executeImageEditOperation = useCallback(async (params: {
-    base64Image: string;
-    prompt: string;
-    onSuccess: (result: string) => void;
-    setIsLoading: (loading: boolean) => void;
-    promptLength?: number;
-  }): Promise<void> => {
-    const { base64Image, prompt, onSuccess, setIsLoading, promptLength = 0 } = params;
 
-    const modelToUse = selectedModel || GEMINI_MODELS.FLASH;
-    const resolutionToUse = modelToUse === GEMINI_MODELS.PRO ? resolution : undefined;
 
-    const canProceed = await validateCredits({ model: modelToUse, resolution: resolutionToUse });
-    if (!canProceed) return;
-
-    setIsLoading(true);
-
-    try {
-      // Normalize image to base64 (handles URLs correctly)
-      const normalizedBase64 = await normalizeImageToBase64(base64Image);
-      const mimeType = detectMimeType(base64Image);
-
-      const referenceImage: UploadedImage = {
-        base64: normalizedBase64,
-        mimeType: mimeType
-      };
-
-      // Process reference image if needed (compression disabled)
-      const processedReferenceImage = referenceImage || undefined;
-      if (!processedReferenceImage) {
-        throw new Error(t('messages.failedToProcessReferenceImage'));
-      }
-
-      // Process reference images if available (compression disabled)
-      const processedReferenceImages = referenceImages.length > 0 ? referenceImages : undefined;
-
-      // Use reference images if available (Pro: up to 3, HD: up to 1)
-      const referenceImagesToUse = processedReferenceImages && processedReferenceImages.length > 0
-        ? processedReferenceImages
-        : undefined;
-
-      // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
-      // Prefer url over base64 for referenceImages so Gemini can read when we only have R2 URL
-      const result = await mockupApi.generate({
-        promptText: prompt,
-        baseImage: {
-          base64: processedReferenceImage.base64,
-          mimeType: processedReferenceImage.mimeType
-        },
-        model: modelToUse,
-        resolution: resolutionToUse,
-        aspectRatio: aspectRatio,
-        referenceImages: referenceImagesToUse?.map(img =>
-          img.url ? { url: img.url, mimeType: img.mimeType } : { base64: img.base64, mimeType: img.mimeType }
-        ),
-        imagesCount: 1,
-        provider: imageProvider,
-      });
-
-      onSuccess(result.imageUrl || result.imageBase64 || '');
-
-      // Show credit deduction notification
-      if (result.isAdmin) {
-        toast.info(t('credits.notificationUsedAdmin'));
-      } else if (result.creditsDeducted > 0) {
-        const plural = result.creditsDeducted > 1 ? 's' : '';
-        const remainingPlural = result.creditsRemaining > 1 ? 's' : '';
-        toast.success(
-          `${t('credits.notificationUsed', { count: result.creditsDeducted, plural })}. ${t('credits.notificationRemaining', { remaining: result.creditsRemaining, plural: remainingPlural })}`
-        );
-      }
-
-      // Credits were already deducted by backend before generation
-      // Update subscription status to reflect new credits
-      try {
-        const updatedStatus = await subscriptionService.getSubscriptionStatus();
-        setSubscriptionStatus(updatedStatus);
-      } catch (statusError: any) {
-        if (isLocalDevelopment()) {
-          console.error('Failed to refresh subscription status:', statusError);
-        }
-        // Non-critical - credits were already deducted, just status refresh failed
-      }
-    } catch (err) {
-      if (isLocalDevelopment()) {
-        console.error('Error in image edit operation:', err);
-      }
-      const errorInfo = formatMockupError(err, t);
-      toast.error(errorInfo.message, {
-        description: errorInfo.suggestion,
-        duration: 7000,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [validateCredits, selectedModel, resolution, aspectRatio, onSubscriptionModalOpen, setSubscriptionStatus, referenceImages, t]);
-
-
-
-  const runGeneration = useCallback(async (indexToUpdate?: number, promptOverride?: string, appendMode: boolean = false) => {
-    // Prevent multiple simultaneous calls to runGeneration
-    // Check if any generation is currently in progress
-    // Prevent multiple simultaneous calls to runGeneration ONLY if not in append mode
-    // We want to allow concurrent generations if we are adding new images
-    if (isLoading.some(Boolean) && !appendMode && indexToUpdate === undefined) {
-      if (isLocalDevelopment()) {
-        console.warn('[runGeneration] Generation already in progress and not in append mode, ignoring duplicate call');
-      }
-      return;
-    }
-
-    if (!selectedModel) {
-      toast.error(t('messages.selectModelBeforeGenerating'), { duration: 5000 });
-      return;
-    }
-
-    const modelToUse = selectedModel || GEMINI_MODELS.FLASH;
-    const resolutionToUse = modelToUse === GEMINI_MODELS.PRO ? resolution : undefined;
-
-    const canProceed = await validateCredits({ model: modelToUse, resolution: resolutionToUse });
-    if (!canProceed) return;
-
-    // Prioritize promptOverride, then latest generated prompt from ref, then state preview
-    const promptToUse = promptOverride || generatedSmartPromptRef.current || promptPreview;
-    
-    // Allow generation if: has reference images OR (has design type AND has uploaded image) AND has prompt
-    const hasReferenceImages = referenceImages.length > 0;
-    const hasValidSetup = hasReferenceImages || (designType && uploadedImage && designType !== 'blank');
-    
-    if (!hasValidSetup || !promptToUse.trim()) {
-      if (isLocalDevelopment()) {
-        console.warn('[runGeneration] Validation failed:', { hasValidSetup, promptLength: promptToUse.trim().length, designType, hasUploadedImage: !!uploadedImage, hasReferenceImages });
-      }
-      toast.error(t('messages.completeSteps'), { duration: 5000 });
-      return;
-    }
-
-    if (!hasGenerated) setHasGenerated(true);
-
-    const generateAndSet = async (index: number) => {
-      let imageGenerated = false;
-
-      try {
-        // Note: Credit validation and deduction now happens in backend endpoint
-        // No need to validate here - backend will return error if insufficient credits
-
-        // No modo normal, passa imagem (não existe mais modo blank)
-        const baseImageForGeneration = (uploadedImage || undefined);
-
-        // Process base image if needed (compression disabled)
-        const processedBaseImage = baseImageForGeneration || undefined;
-
-        // Use reference images directly (compression disabled)
-        const processedReferenceImages = referenceImages.length > 0 ? referenceImages : undefined;
-
-        // Use reference images if available (Pro: up to 3, HD: up to 1)
-        const referenceImagesToUse = processedReferenceImages && processedReferenceImages.length > 0
-          ? processedReferenceImages
-          : undefined;
-
-        // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
-        // This prevents abuse and ensures credits are always deducted atomically
-        // Pass slot index as uniqueId to allow parallel batch requests with same parameters
-        const result = await mockupApi.generate({
-          promptText: promptToUse,
-          baseImage: processedBaseImage
-            ? processedBaseImage.url
-              ? { url: processedBaseImage.url, mimeType: processedBaseImage.mimeType }
-              : { base64: processedBaseImage.base64, mimeType: processedBaseImage.mimeType }
-            : undefined,
-          model: modelToUse,
-          resolution: resolutionToUse,
-          aspectRatio: aspectRatio,
-          referenceImages: referenceImagesToUse?.map(img =>
-            img.url ? { url: img.url, mimeType: img.mimeType } : { base64: img.base64, mimeType: img.mimeType }
-          ),
-          imagesCount: 1,
-          feature: 'mockupmachine',
-          uniqueId: index, // Use slot index to differentiate parallel batch requests
-          provider: imageProvider,
-          brandGuidelineId: selectedBrandGuideline || undefined, // Auto-inject brand context
-        });
-
-        // Image successfully generated - set it in state (prefer URL; if only base64, try client-side upload)
-        imageGenerated = true;
-        let finalImage: string | null;
-        if (result.imageUrl) {
-          finalImage = result.imageUrl;
-        } else if (result.imageBase64) {
-          try {
-            finalImage = await mockupApi.uploadTempImage(result.imageBase64, 'image/png');
-          } catch {
-            finalImage = result.imageBase64; // persistence will null it; still show in UI
-          }
-        } else {
-          finalImage = null;
-        }
-        setMockups(prev => { const newMockups = [...prev]; newMockups[index] = finalImage; return newMockups; });
-
-        // Show credit deduction notification
-        if (result.isAdmin) {
-          toast.info(t('credits.notificationUsedAdmin'));
-        } else if (result.creditsDeducted > 0) {
-          const plural = result.creditsDeducted > 1 ? 's' : '';
-          const remainingPlural = result.creditsRemaining > 1 ? 's' : '';
-          toast.success(
-            `${t('credits.notificationUsed', { count: result.creditsDeducted, plural })}. ${t('credits.notificationRemaining', { remaining: result.creditsRemaining, plural: remainingPlural })}`
-          );
-        }
-
-        // Credits were already deducted by backend before generation
-        // Update subscription status to reflect new credits
-        try {
-          const updatedStatus = await subscriptionService.getSubscriptionStatus();
-          setSubscriptionStatus(updatedStatus);
-        } catch (statusError: any) {
-          if (isLocalDevelopment()) {
-            console.error('Failed to refresh subscription status:', statusError);
-          }
-          // Non-critical - credits were already deducted, just status refresh failed
-        }
-      } catch (err) {
-        if (isLocalDevelopment()) {
-          console.error(`Error generating mockup for slot ${index}:`, err);
-        }
-        const errorInfo = formatMockupError(err, t);
-
-        // Only show error if image wasn't generated
-        if (!imageGenerated) {
-          toast.error(errorInfo.message, {
-            description: errorInfo.suggestion,
-            duration: 7000,
-          });
-          setMockups(prev => { const newMockups = [...prev]; newMockups[index] = null; return newMockups; });
-        }
-      } finally {
-        setIsLoading(prev => { const newLoading = [...prev]; newLoading[index] = false; return newLoading; });
-      }
-    };
-
-    if (indexToUpdate !== undefined) {
-      setIsLoading(prev => { const newLoading = [...prev]; newLoading[indexToUpdate] = true; return newLoading; });
-      await generateAndSet(indexToUpdate);
-    } else {
-      if (appendMode) {
-        // Append mode (Prepend logic): add new slots at the BEGINNING
-        // Get current length before adding new slots
-        const currentLength = mockups.length;
-
-        // We need to shift saved indices and IDs because we are inserting at 0
-        // This must happen synchronously before async operations
-
-        // Shift saved indices
-        setSavedIndices(prev => {
-          const newSet = new Set<number>();
-          prev.forEach(index => {
-            newSet.add(index + mockupCount);
-          });
-          return newSet;
-        });
-
-        // Shift saved mockup IDs
-        setSavedMockupIds(prev => {
-          const newMap = new Map<number, string>();
-          prev.forEach((id, index) => {
-            newMap.set(index + mockupCount, id);
-          });
-          return newMap;
-        });
-
-        // Shift liked status
-        setMockupLikedStatus(prev => {
-          const newMap = new Map<number, boolean>();
-          prev.forEach((status, index) => {
-            newMap.set(index + mockupCount, status);
-          });
-          return newMap;
-        });
-
-        // Insert available slots at the beginning
-        setMockups(prev => {
-          const newMockups = [...prev];
-          // Add new slots at the beginning
-          const newSlots = Array(mockupCount).fill(null);
-          return [...newSlots, ...newMockups];
-        });
-
-        setIsLoading(prev => {
-          const newLoading = [...prev];
-          const newSlots = Array(mockupCount).fill(true);
-          return [...newSlots, ...newLoading];
-        });
-
-        setPromptSuggestions([]);
-
-        // Generate all new mockups in parallel
-        // The indices for the NEW items are 0 to mockupCount-1
-        const promises = Array.from({ length: mockupCount }, (_, i) =>
-          generateAndSet(i)
-        );
-        await Promise.allSettled(promises);
-
-        // Refresh subscription status after all generations complete
-        const isLocal = isLocalDevelopment();
-        if (!isLocal) {
-          try {
-            const updatedStatus = await subscriptionService.getSubscriptionStatus();
-            setSubscriptionStatus(updatedStatus);
-          } catch (statusError: any) {
-            if (isLocalDevelopment()) {
-              console.error('Failed to refresh subscription status after append generation:', statusError);
-            }
-          }
-        }
-      } else {
-        // Normal mode: adjust arrays to match mockupCount when generating new images
-        setMockups(prev => {
-          const newMockups = [...prev];
-          // Only expand if needed, never shrink to preserve existing images
-          while (newMockups.length < mockupCount) {
-            newMockups.push(null);
-          }
-          // Reset only the slots that will be generated (up to mockupCount)
-          for (let i = 0; i < mockupCount; i++) {
-            newMockups[i] = null;
-          }
-          return newMockups;
-        });
-
-        setIsLoading(prev => {
-          const newLoading = [...prev];
-          // Only expand if needed
-          while (newLoading.length < mockupCount) {
-            newLoading.push(false);
-          }
-          // Set loading for slots that will be generated
-          for (let i = 0; i < mockupCount; i++) {
-            newLoading[i] = true;
-          }
-          return newLoading;
-        });
-
-        setPromptSuggestions([]);
-
-        // Track which images were successfully generated for batch tracking
-        const successfulIndices: number[] = [];
-        const promises = Array.from({ length: mockupCount }, (_, i) =>
-          generateAndSet(i)
-            .then(() => {
-              // Only count as successful if image was actually generated
-              // generateAndSet always tracks usage for each successfully generated image
-              if (mockups[i] !== null) {
-                successfulIndices.push(i);
-              }
-            })
-            .catch(() => { })
-        );
-        await Promise.allSettled(promises);
-
-        // Count successful generations
-        const successfulCount = successfulIndices.length;
-
-        // Note: Usage tracking is automatically handled in generateAndSet for each image
-        // Each successfully generated mockup will have a corresponding usage_record
-        // This ensures accurate tracking and credits are only deducted for successful generations
-
-        // Refresh subscription status after all generations complete
-        // Note: Usage tracking is handled in generateAndSet for each image
-        // In local development, credits aren't deducted so no need to refresh
-        const isLocal = isLocalDevelopment();
-        if (successfulCount > 0 && !isLocal) {
-          try {
-            const updatedStatus = await subscriptionService.getSubscriptionStatus();
-            setSubscriptionStatus(updatedStatus);
-          } catch (statusError: any) {
-            if (isLocalDevelopment()) {
-              console.error('Failed to refresh subscription status after batch generation:', statusError);
-            }
-          }
-        }
-      }
-    }
-  }, [uploadedImage, selectedTags, selectedBrandingTags, promptPreview, hasGenerated, designType, mockupCount, subscriptionStatus, aspectRatio, selectedModel, resolution, validateCredits, onSubscriptionModalOpen, setSubscriptionStatus, mockups, referenceImages, t, imageProvider, selectedBrandGuideline]);
-
-  const handleSurpriseMe = useCallback(async (autoGenerate: boolean = false) => {
-    // Ensure model is selected (default to gemini-2.5-flash-image if not set)
-    const modelToUse = selectedModel || GEMINI_MODELS.FLASH;
-    if (!selectedModel) {
-      setSelectedModel(GEMINI_MODELS.FLASH);
-    }
-
-    // Ensure designType is set (default to 'logo' if not set, since Surprise Me works best with a type)
-    const designTypeToUse = designType || 'logo';
-    if (!designType) {
-      setDesignType('logo');
-    }
-
-    // Keep existing branding tags - don't change them
-    // Use current branding tags from state
-    const brandingTagsToUse = selectedBrandingTags.length > 0 ? selectedBrandingTags : [];
-
-    // Use pool from Context when Pool Mode is active, otherwise use empty arrays (no restrictions)
-    const selectedTagsSettings: SurpriseMeSelectedTags = isSurpriseMeMode ? surpriseMePool : {
-      selectedCategoryTags: [],
-      selectedLocationTags: [],
-      selectedAngleTags: [],
-      selectedLightingTags: [],
-      selectedEffectTags: [],
-      selectedMaterialTags: [],
-    };
-
-    // 1. Categories: Prioritize AI suggestions
-    let selectedCategory: string;
-    const aiSuggestedCategories = suggestedTags || [];
-    const userAllowedCategories = selectedTagsSettings.selectedCategoryTags;
-
-    // First filter AI suggestions by user's "Surprise Me" settings
-    const filteredAiCategories = aiSuggestedCategories.filter(tag =>
-      userAllowedCategories.length === 0 || userAllowedCategories.includes(tag)
-    );
-
-    if (filteredAiCategories.length > 0) {
-      selectedCategory = filteredAiCategories[Math.floor(Math.random() * filteredAiCategories.length)];
-    } else {
-      // Fallback: Use available dynamic tags instead of static list
-      // filtered by user settings if any
-      const poolToUse = userAllowedCategories.length > 0
-        ? availableMockupTags.filter(tag => userAllowedCategories.includes(tag))
-        : availableMockupTags;
-
-      // If pool is empty (edge case), fallback to full list
-      const finalPool = poolToUse.length > 0 ? poolToUse : availableMockupTags;
-
-      selectedCategory = finalPool[Math.floor(Math.random() * finalPool.length)];
-    }
-    setSelectedTags([selectedCategory]);
-
-    // 2. Location: Prioritize AI suggestions
-    let selectedBackground: string;
-    const aiSuggestedLocations = suggestedLocationTags || [];
-    const userAllowedLocations = selectedTagsSettings.selectedLocationTags;
-
-    // First filter AI suggestions by user's "Surprise Me" settings
-    const filteredAiLocations = aiSuggestedLocations.filter(tag =>
-      userAllowedLocations.length === 0 || userAllowedLocations.includes(tag)
-    );
-
-    if (filteredAiLocations.length > 0) {
-      selectedBackground = filteredAiLocations[Math.floor(Math.random() * filteredAiLocations.length)];
-    } else {
-      // Fallback: Pick based on branding but respect user selection
-      const suitableBackgrounds = getBackgroundsForBranding(brandingTagsToUse);
-      const filteredBackgrounds = suitableBackgrounds.filter(bg =>
-        bg !== 'Nature landscape' && (
-          userAllowedLocations.length === 0 ||
-          userAllowedLocations.includes(bg)
-        )
-      );
-
-      // Add preferred options if not already included
-      const preferredOptions = ['Light Box', 'Minimalist Studio'];
-
-      // Filter preferred options by user allowed list if set
-      const filteredPreferredOptions = userAllowedLocations.length > 0
-        ? preferredOptions.filter(opt => userAllowedLocations.includes(opt))
-        : preferredOptions;
-
-      // Ensure we have something to pick from
-      const optionsToUse = filteredPreferredOptions.length > 0 ? filteredPreferredOptions : preferredOptions;
-
-      const backgroundsToUse = filteredBackgrounds.length > 0
-        ? [...new Set([...optionsToUse, ...filteredBackgrounds])]
-        : [...new Set([...optionsToUse, ...suitableBackgrounds])];
-
-      // Final availability check with full location list fallback
-      const finalBackgrounds = backgroundsToUse.length > 0
-        ? backgroundsToUse
-        : availableLocationTags; // Fallback to all dynamic locations
-
-      selectedBackground = finalBackgrounds[Math.floor(Math.random() * finalBackgrounds.length)];
-    }
-    setSelectedLocationTags([selectedBackground]);
-
-    // 3. Presets and Tags: Prioritize AI suggestions for Angle, Lighting, Effect, etc.
-    let selectedPresets: {
-      angle?: AnglePreset;
-      texture?: TexturePreset;
-      ambience?: AmbiencePreset;
-      luminance?: LuminancePreset;
-    } = {};
-
-    try {
-      const { determineArchetypeFromBranding, getRandomArchetype } = await import('@/utils/promptHelpers');
-      const [allAnglePresets, allTexturePresets, allAmbiencePresets, allLuminancePresets] = await Promise.all([
-        getAllAnglePresetsAsync().catch(() => [] as AnglePreset[]),
-        getAllTexturePresetsAsync().catch(() => [] as TexturePreset[]),
-        getAllAmbiencePresetsAsync().catch(() => [] as AmbiencePreset[]),
-        getAllLuminancePresetsAsync().catch(() => [] as LuminancePreset[]),
-      ]);
-
-      // --- ARCHETYPE LOGIC START ---
-      // Determine archetype based on branding OR random chance
-      let currentArchetype = determineArchetypeFromBranding(brandingTagsToUse);
-
-      // 20% chance to ignore branding and pick a random archetype for variety
-      // OR if no branding tags provided
-      if (!currentArchetype || Math.random() < 0.2) {
-        currentArchetype = getRandomArchetype();
-      }
-
-      console.log('[SurpriseMe] Selected Archetype:', currentArchetype.name);
-
-      // Helper to pick a tag from archetype preference (80% chance) or random (20% chance)
-      const pickTagWithVariety = (archetypeTags: string[], availableTags: string[], userAllowedTags: string[] = []): string => {
-        const shouldUseArchetype = Math.random() < 0.8;
-        let pool = availableTags;
-
-        // Filter by user allowed tags if any
-        if (userAllowedTags.length > 0) {
-          pool = pool.filter(t => userAllowedTags.includes(t));
-        }
-
-        if (shouldUseArchetype && archetypeTags && archetypeTags.length > 0) {
-          // Try to find archetype tags that are also in the allowed pool
-          const archetypePool = archetypeTags.filter(t =>
-            userAllowedTags.length === 0 || userAllowedTags.includes(t)
-          );
-
-          if (archetypePool.length > 0) {
-            return archetypePool[Math.floor(Math.random() * archetypePool.length)];
-          }
-        }
-
-        // Fallback to random from pool
-        return pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : "";
-      };
-
-      // SELECT LOCATION
-      const userAllowedLocations = selectedTagsSettings.selectedLocationTags;
-      if (currentArchetype.visuals.locations) {
-        selectedBackground = pickTagWithVariety(currentArchetype.visuals.locations, AVAILABLE_LOCATION_TAGS, userAllowedLocations);
-      }
-      setSelectedLocationTags([selectedBackground || selectRandomBackground(brandingTagsToUse)]);
-
-      // SELECT LIGHTING
-      const userAllowedLighting = selectedTagsSettings.selectedLightingTags;
-      let lightingTag = "";
-      if (currentArchetype.visuals.lighting) {
-        lightingTag = pickTagWithVariety(currentArchetype.visuals.lighting, AVAILABLE_LIGHTING_TAGS, userAllowedLighting);
-      }
-      if (!lightingTag) {
-        // Fallback
-        const availableLighting = userAllowedLighting.length > 0 ? userAllowedLighting : AVAILABLE_LIGHTING_TAGS;
-        lightingTag = availableLighting[Math.floor(Math.random() * availableLighting.length)];
-      }
-      setSelectedLightingTags([lightingTag]);
-
-      // SELECT EFFECT (Optional - 50% chance)
-      const userAllowedEffects = selectedTagsSettings.selectedEffectTags;
-      if (Math.random() < 0.5) {
-        let effectTag = "";
-        if (currentArchetype.visuals.effects) {
-          effectTag = pickTagWithVariety(currentArchetype.visuals.effects, AVAILABLE_EFFECT_TAGS, userAllowedEffects);
-        }
-        if (!effectTag) {
-          const availableEffects = userAllowedEffects.length > 0 ? userAllowedEffects : AVAILABLE_EFFECT_TAGS;
-          effectTag = availableEffects[Math.floor(Math.random() * availableEffects.length)];
-        }
-        setSelectedEffectTags([effectTag]);
-      } else {
-        setSelectedEffectTags([]);
-      }
-
-      // SELECT MATERIAL (If Logo)
-      if (designType === 'logo') {
-        const userAllowedMaterials = selectedTagsSettings.selectedMaterialTags;
-        let materialTag = "";
-        if (currentArchetype.visuals.materials) {
-          materialTag = pickTagWithVariety(currentArchetype.visuals.materials, AVAILABLE_MATERIAL_TAGS, userAllowedMaterials);
-        }
-        if (!materialTag) {
-          const availableMaterials = userAllowedMaterials.length > 0 ? userAllowedMaterials : AVAILABLE_MATERIAL_TAGS;
-          materialTag = availableMaterials[Math.floor(Math.random() * availableMaterials.length)];
-        }
-        setSelectedMaterialTags([materialTag]);
-      }
-
-      // SELECT ANGLE (Random but consistent)
-      const userAllowedAngles = selectedTagsSettings.selectedAngleTags;
-      const availableAngles = userAllowedAngles.length > 0 ? userAllowedAngles : AVAILABLE_ANGLE_TAGS;
-      const angleTag = availableAngles[Math.floor(Math.random() * availableAngles.length)];
-      setSelectedAngleTags([angleTag]);
-
-      // --- ARCHETYPE LOGIC END ---
-
-      // Fallback filtering for presets (keeping existing logic for safety)
-      const filteredAnglePresets = filterPresetsByBranding(allAnglePresets, brandingTagsToUse);
-      const filteredTexturePresets = filterPresetsByBranding(allTexturePresets, brandingTagsToUse);
-      const filteredAmbiencePresets = filterPresetsByBranding(allAmbiencePresets, brandingTagsToUse);
-      const filteredLuminancePresets = filterPresetsByBranding(allLuminancePresets, brandingTagsToUse);
-
-      if (filteredAnglePresets.length > 0 && Math.random() < 0.4) {
-        selectedPresets.angle = filteredAnglePresets[Math.floor(Math.random() * filteredAnglePresets.length)];
-      }
-      if (filteredTexturePresets.length > 0 && Math.random() < 0.3) {
-        selectedPresets.texture = filteredTexturePresets[Math.floor(Math.random() * filteredTexturePresets.length)];
-      }
-      if (filteredAmbiencePresets.length > 0 && Math.random() < 0.5) {
-        selectedPresets.ambience = filteredAmbiencePresets[Math.floor(Math.random() * filteredAmbiencePresets.length)];
-      }
-      if (filteredLuminancePresets.length > 0 && Math.random() < 0.5) {
-        selectedPresets.luminance = filteredLuminancePresets[Math.floor(Math.random() * filteredLuminancePresets.length)];
-      }
-    } catch (error) {
-      console.warn('Failed to load presets, using fallback logic:', error);
-    }
-
-    // Helper for picking tags (prioritizing AI suggestions)
-    const pickTag = (suggested: string[], availableFromSettings: string[], allAvailable: string[], probability: number) => {
-      if (Math.random() > probability) return null;
-
-      // Filter suggested by settings
-      const filteredSuggested = suggested.filter(tag =>
-        availableFromSettings.length === 0 || availableFromSettings.includes(tag)
-      );
-
-      if (filteredSuggested.length > 0) {
-        return filteredSuggested[Math.floor(Math.random() * filteredSuggested.length)];
-      }
-
-      // Fallback to settings-allowed tags
-      if (availableFromSettings.length > 0) {
-        return availableFromSettings[Math.floor(Math.random() * availableFromSettings.length)];
-      }
-
-      // Final fallback
-      return allAvailable[Math.floor(Math.random() * allAvailable.length)];
-    };
-
-    const userAllowedAngles = selectedTagsSettings.selectedAngleTags;
-    const userAllowedLightings = selectedTagsSettings.selectedLightingTags;
-    const userAllowedEffects = selectedTagsSettings.selectedEffectTags;
-    const userAllowedMaterials = selectedTagsSettings.selectedMaterialTags;
-
-    const randomAngle = selectedPresets.angle ? null : pickTag(suggestedAngleTags || [], userAllowedAngles, AVAILABLE_ANGLE_TAGS, 0.5);
-    const randomLighting = selectedPresets.luminance ? null : pickTag(suggestedLightingTags || [], userAllowedLightings, AVAILABLE_LIGHTING_TAGS, 0.6);
-    const randomEffect = pickTag(suggestedEffectTags || [], userAllowedEffects, AVAILABLE_EFFECT_TAGS, 0.4);
-    const randomMaterial = pickTag(suggestedMaterialTags || [], userAllowedMaterials, AVAILABLE_MATERIAL_TAGS, 0.3);
-
-    setSelectedAngleTags(randomAngle ? [randomAngle] : []);
-    setSelectedLightingTags(randomLighting ? [randomLighting] : []);
-    setSelectedEffectTags(randomEffect ? [randomEffect] : []);
-    setSelectedMaterialTags(randomMaterial ? [randomMaterial] : []);
-    setSelectedColors([]);
-
-    // Reset prompt and manual edit state so auto-generation can proceed
-    setPromptPreview('');
-    promptTagsSnapshotRef.current = null;
-    setIsPromptManuallyEdited(false);
-
-    setIsAllCategoriesOpen(true);
-    setIsAdvancedOpen(true);
-
-    // Alternar o checkbox "generate human" de forma aleatória
-    const randomWithHuman = Math.random() < 0.5;
-    setWithHuman(randomWithHuman);
-
-    // Always generate prompt automatically
-    // The autoGenerate checkbox only controls if outputs are also generated automatically
-    // Optimized: Minimal delay to trigger auto generation flows
-    setTimeout(() => {
-      promptTagsSnapshotRef.current = null;
-      setAutoMode(autoGenerate ? 'prompt-and-generate' : 'prompt-only');
-    }, 100);
-  }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups, isSurpriseMeMode, surpriseMePool]);
-
-  const handleSurpriseMeWithDice = useCallback((autoGen: boolean) => {
-    setIsDiceAnimating(true);
-    showTemporaryOverlay(300);
-    handleSurpriseMe(autoGen);
-    setTimeout(() => setIsDiceAnimating(false), 800);
-  }, [handleSurpriseMe, showTemporaryOverlay]);
 
   useEffect(() => {
     if (isGeneratingPrompt) setIsDiceAnimating(false);
@@ -1918,6 +2016,7 @@ const MockupMachinePageContent: React.FC = () => {
       // Auto-trigger generation if mode is active
       if (autoGenerate) {
         const hasExistingOutputs = mockups.some(m => m !== null);
+        if (hasExistingOutputs) prepareForNewMockupSlot(mockupCount); // Immediate feedback
         await runGeneration(undefined, generatedSmartPromptRef.current || undefined, hasExistingOutputs);
         setIsSidebarVisibleMobile(false);
       }
@@ -2018,8 +2117,7 @@ const MockupMachinePageContent: React.FC = () => {
   }, [isAuthenticated, mockupLikedStatus, promptPreview, designType, selectedTags, selectedBrandingTags, aspectRatio, t]);
 
   const handleRedrawClick = (index: number) => runGeneration(index);
-  const handleOpenFullScreen = (index: number) => setFullScreenImageIndex(index);
-  const handleCloseFullScreen = () => setFullScreenImageIndex(null);
+
 
   // Handler for syncing like state directly (used when hook updates state)
   const handleLikeStateChange = useCallback((index: number) => (newIsLiked: boolean) => {
@@ -2117,15 +2215,19 @@ const MockupMachinePageContent: React.FC = () => {
     const removeMockupAndAdjustIndices = () => {
       setMockups(prev => prev.filter((_, i) => i !== index));
       setIsLoading(prev => prev.filter((_, i) => i !== index));
+      setGenerationIds(prev => prev.filter((_, i) => i !== index));
 
       // Adjust fullScreenImageIndex: close modal if viewing deleted mockup, adjust index if viewing later mockup
       if (fullScreenImageIndex !== null) {
         if (fullScreenImageIndex === index) {
-          // Close modal if viewing the deleted mockup
-          setFullScreenImageIndex(null);
+          handleCloseFullScreen();
         } else if (fullScreenImageIndex > index) {
-          // Adjust index if viewing a mockup after the deleted one
-          setFullScreenImageIndex(fullScreenImageIndex - 1);
+          const newIndex = fullScreenImageIndex - 1;
+          setFullScreenImageIndex(newIndex);
+          const newGenId = generationIds.filter((_, i) => i !== index)[newIndex];
+          if (newGenId) {
+            setSearchParams(prev => { prev.set('view', newGenId); return prev; }, { replace: true });
+          }
         }
       }
 
@@ -2170,6 +2272,16 @@ const MockupMachinePageContent: React.FC = () => {
         });
         return newMap;
       });
+
+      // Adjust feedbackRatings: same shift logic
+      setFeedbackRatings(prev => {
+        const newMap = new Map<number, FeedbackRating | null>();
+        prev.forEach((rating, ratedIndex) => {
+          if (ratedIndex < index) newMap.set(ratedIndex, rating);
+          else if (ratedIndex > index) newMap.set(ratedIndex - 1, rating);
+        });
+        return newMap;
+      });
     };
 
     if (!isSaved) {
@@ -2200,30 +2312,7 @@ const MockupMachinePageContent: React.FC = () => {
     handleNewLightingFromOutputWithPreset(index, lighting);
   };
 
-  const prepareForNewMockupSlot = useCallback(() => {
-    // Close fullscreen modal immediately
-    handleCloseFullScreen();
 
-    // Ensure we stay on MockupMachinePage
-    setShowWelcome(false);
-    if (!hasGenerated) {
-      setHasGenerated(true);
-    }
-
-    // Open sidebar on mobile if it's closed
-    if (!isSidebarVisibleMobile) {
-      setIsSidebarVisibleMobile(true);
-    }
-
-    // Calculate new index before appending
-    const newIndex = mockups.length;
-
-    // Append new slot
-    setMockups(prev => [...prev, null]);
-    setIsLoading(prev => [...prev, true]);
-
-    return newIndex;
-  }, [handleCloseFullScreen, hasGenerated, isSidebarVisibleMobile, mockups.length]);
 
   const handleNewAngleFromOutput = useCallback(async (index: number, angle: string) => {
     const outputImage = mockups[index];
@@ -2545,6 +2634,8 @@ Generate the new mockup image with the requested changes applied.`;
     const shouldGenerateImages = autoMode === 'prompt-and-generate';
     setAutoMode('idle'); // Reset immediately to prevent re-triggers
 
+    if (shouldGenerateImages) prepareForNewMockupSlot(mockupCount);
+    
     handleGenerateSmartPrompt().then(() => {
       if (shouldGenerateImages) {
         // Use the ref value to ensure we use the prompt just generated, avoiding stale state issues
@@ -2635,23 +2726,32 @@ Generate the new mockup image with the requested changes applied.`;
   const isSetupMode = !hasAnalyzed;
   const isDashboardMode = hasAnalyzed;
 
-  // Se vazio, mostrar a WelcomeScreen por cima, pro user sempre upar a imagem pela WelcomeScreen
-  const shouldShowWelcome = !uploadedImage;
+  // Mas não mostrar se estiver restaurando estado ou se já tiver conteúdo gerado/referências
+  const isActuallyEmpty = !uploadedImage && !hasGenerated && referenceImages.length === 0;
+  const shouldShowWelcome = !isRestoring && isActuallyEmpty;
 
   return (
     <>
-      <SEO
+      <SEO 
         title={t('mockup.seoTitle')}
         description={t('mockup.seoDescription')}
         keywords={t('mockup.seoKeywords')}
       />
+      
+      {/* Dynamic Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(82,221,235,0.05)_0%,transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(82,221,235,0.02)_0%,transparent_50%)]" />
+      </div>
+
       <SoftwareApplicationSchema
         name="Mockup Machine"
         description="Gere mockups profissionais com inteligência artificial. Ferramenta integrada de geração rápida de mockups e assets para designers."
         applicationCategory="DesignApplication"
       />
       <WebSiteSchema />
-      <AnalyzingImageOverlay isVisible={isAnalysisOverlayVisible} />
+      {/* Note: AnalyzingImageOverlay removed for a cleaner journey - analyze happens in background */}
+
 
       {shouldShowWelcome ? (
         <WelcomeScreen
@@ -2670,10 +2770,11 @@ Generate the new mockup image with the requested changes applied.`;
               isSetupMode ? "w-full" : [
                 "fixed inset-0 lg:relative lg:inset-auto",
                 isSidebarVisibleMobile ? "flex items-center justify-center bg-background/95 backdrop-blur-md" : "hidden lg:flex lg:items-center lg:justify-center",
-                isSidebarCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none" : "lg:w-auto lg:opacity-100"
+                isSidebarCollapsed ? "lg:w-16" : "lg:w-auto"
               ]
             )}>
               <SidebarOrchestrator
+                isCollapsed={isSidebarCollapsed}
                 sidebarWidth={sidebarWidth}
                 sidebarRef={sidebarRef}
                 onSidebarWidthChange={setSidebarWidth}
@@ -2703,17 +2804,22 @@ Generate the new mockup image with the requested changes applied.`;
                 isSidebarCollapsed && "lg:pl-16 shadow-[inset_20px_0_30px_-20px_rgba(0,0,0,0.3)]"
               )}>
 
-                {/* Desktop Sidebar Toggle - PanelLeftOpen when collapsed (expand), X when expanded (close) */}
-                <div className="hidden lg:block absolute left-4 top-6 z-40">
-                  <Button variant="ghost" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                {/* Desktop Sidebar Toggle - Subtly docked to the sidebar edge near vertical center */}
+                <div className={cn(
+                  "hidden lg:block absolute z-[45] transition-all duration-300",
+                  isSidebarCollapsed ? "left-0 translate-x-3" : "left-[-20px]"
+                )} style={{ top: 'calc(50% - 20px)' }}>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     size="icon"
-                    className="w-10 h-10 rounded-xl bg-neutral-900/50 backdrop-blur-md border border-white/5 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan shadow-xl transition-all group"
+                    className="w-10 h-10 rounded-full bg-neutral-900 border border-white/5 hover:bg-neutral-800 text-neutral-500 hover:text-white shadow-2xl transition-all group"
                     title={isSidebarCollapsed ? (t('mockup.openSidebar') || 'Abrir barra lateral') : (t('mockup.closeSidebar') || 'Fechar barra lateral')}
                   >
                     {isSidebarCollapsed ? (
-                      <PanelLeftOpen className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                      <PanelLeftOpen className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                     ) : (
-                      <X className="h-5 w-5 transition-transform duration-300" />
+                      <X className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                     )}
                   </Button>
                 </div>
@@ -2736,6 +2842,7 @@ Generate the new mockup image with the requested changes applied.`;
                     <MockupDisplay
                       mockups={mockups}
                       isLoading={isLoading}
+                      isGeneratingPrompt={isGeneratingPrompt}
                       isSidebarCollapsed={isSidebarCollapsed}
                       onRedraw={handleRedrawClick}
                       onView={handleOpenFullScreen}
@@ -2746,6 +2853,7 @@ Generate the new mockup image with the requested changes applied.`;
                       savedIndices={savedIndices}
                       savedMockupIds={savedMockupIds}
                       onToggleLike={handleToggleLike}
+                      onLikeStateChange={handleLikeStateChange}
                       likedIndices={mockupLikedStatus}
                       onRemove={handleRemoveMockup}
                       prompt={promptPreview}
@@ -2755,61 +2863,14 @@ Generate the new mockup image with the requested changes applied.`;
                       aspectRatio={aspectRatio as '16:9' | '4:3' | '1:1'}
                       editButtonsDisabled={isEditOperationDisabled}
                       creditsPerOperation={creditsNeededForEdit}
+                      generationIds={generationIds}
+                      feedbackContext={getFeedbackContext}
+                      feedbackRatings={feedbackRatings}
+                      onFeedbackRatingChange={handleFeedbackRatingChange}
                     />
                   </div>
                 </div>
 
-                {/* Global Floating Control Bar (Inside Main to respect Footer) */}
-                {isDashboardMode && (hasAnalyzed || shouldShowGenerateButton) && (
-                  <div 
-                    className={cn(
-                      "absolute bottom-10 inset-x-0 z-[100] px-4 pointer-events-none flex justify-center transition-all duration-500 ease-in-out"
-                    )}
-                  >
-                    <div className="pointer-events-auto flex items-center gap-3 animate-in fade-in slide-in-from-bottom-8 duration-500">
-                      {/* Mobile Sidebar Shortcut */}
-                      {!isSidebarVisibleMobile && (
-                        <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(true)}
-                          size="icon"
-                          className="lg:hidden shrink-0 w-12 h-12 rounded-2xl border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl hover:bg-neutral-800 hover:border-brand-cyan/40 text-neutral-400 hover:text-brand-cyan transition-all group"
-                          title={t('mockup.openSidebar') || 'Abrir barra lateral'}
-                        >
-                          <PanelLeftOpen className="h-6 w-6 group-hover:scale-110 transition-all" />
-                        </Button>
-                      )}
-
-                      <div className="w-auto max-w-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl relative">
-                        <SurpriseMeControl
-                          onSurpriseMe={handleSurpriseMeWithDice}
-                          isGeneratingPrompt={isGeneratingPrompt}
-                          isDiceAnimating={isDiceAnimating}
-                          isSurpriseMeMode={isSurpriseMeMode}
-                          setIsSurpriseMeMode={setIsSurpriseMeMode}
-                          autoGenerate={autoGenerate}
-                          setAutoGenerate={setAutoGenerate}
-                          selectedModel={selectedModel}
-                          mockupCount={mockupCount}
-                          resolution={resolution}
-                          showBackground={true}
-                          onGeneratePrompt={handleGenerateSmartPrompt}
-                          onGenerateOutputs={handleGenerateClick}
-                          isGenerateDisabled={isGenerateDisabled}
-                          isGeneratingOutputs={isLoading.some(Boolean)}
-                          isPromptReady={isPromptReady}
-                          setSelectedModel={setSelectedModel}
-                          imageProvider={imageProvider}
-                          setImageProvider={setImageProvider}
-                          uploadedImage={uploadedImage}
-                          setMockupCount={setMockupCount}
-                          setResolution={setResolution}
-                          aspectRatio={aspectRatio}
-                          setAspectRatio={setAspectRatio}
-                          showGenerateButtons={true}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
               </main>
             )}
           </div>
@@ -2845,6 +2906,10 @@ Generate the new mockup image with the requested changes applied.`;
           isLiked={mockupLikedStatus.get(fullScreenImageIndex) ?? false}
           editButtonsDisabled={isEditOperationDisabled}
           creditsPerOperation={creditsNeededForEdit}
+          generationId={generationIds[fullScreenImageIndex]}
+          feedbackContext={getFeedbackContext}
+          feedbackRating={feedbackRatings.get(fullScreenImageIndex) ?? null}
+          onFeedbackRatingChange={(r) => handleFeedbackRatingChange(fullScreenImageIndex, r)}
         />
       )}
 

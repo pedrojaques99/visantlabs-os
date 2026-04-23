@@ -15,7 +15,7 @@ router.get('/', async (_req, res: Response) => {
     return res.json({ apps });
   } catch (error: any) {
     console.error('Failed to fetch apps:', error);
-    return res.status(500).json({ error: 'Failed to fetch apps' });
+    return res.status(500).json({ error: 'Failed to fetch apps', message: error.message });
   }
 });
 
@@ -42,6 +42,7 @@ router.post('/seed', validateAdmin, async (req: AuthRequest, res: Response) => {
           isExternal: app.isExternal || false,
           free: app.free ?? true,
           span: app.span,
+          isHidden: app.isHidden || false,
         },
         create: {
           appId: app.id || app.appId,
@@ -55,6 +56,7 @@ router.post('/seed', validateAdmin, async (req: AuthRequest, res: Response) => {
           isExternal: app.isExternal || false,
           free: app.free ?? true,
           span: app.span,
+          isHidden: app.isHidden || false,
         },
       });
       results.push(result);
@@ -103,6 +105,7 @@ router.post('/', validateAdmin, async (req: AuthRequest, res: Response) => {
         span: appData.span,
         databaseInfo: appData.databaseInfo,
         displayOrder: appData.displayOrder || 0,
+        isHidden: appData.isHidden || false,
       },
     });
     return res.json({ app: newApp });
@@ -137,29 +140,32 @@ router.put('/:id', validateAdmin, async (req: AuthRequest, res: Response) => {
     // Support both ObjectID and appId as ID
     const filter = id.match(/^[0-9a-fA-F]{24}$/) ? { id } : { appId: id };
 
+    // Construct update data object only with provided fields
+    const data: any = {};
+    const fields = [
+      'appId', 'name', 'description', 'link', 'thumbnail', 
+      'badge', 'badgeVariant', 'category', 'isExternal', 
+      'free', 'span', 'databaseInfo', 'displayOrder', 'isHidden'
+    ];
+
+    fields.forEach(field => {
+      if (updates[field] !== undefined) {
+        data[field] = updates[field];
+      }
+    });
+
     const updatedApp = await (prisma as any).appConfig.update({
       where: filter,
-      data: {
-        appId: updates.appId,
-        name: updates.name,
-        description: updates.description,
-        link: updates.link,
-        thumbnail: updates.thumbnail,
-        badge: updates.badge,
-        badgeVariant: updates.badgeVariant,
-        category: updates.category,
-        isExternal: updates.isExternal,
-        free: updates.free,
-        span: updates.span,
-        databaseInfo: updates.databaseInfo,
-        displayOrder: updates.displayOrder,
-      },
+      data,
     });
 
     return res.json({ app: updatedApp });
   } catch (error: any) {
     console.error('Failed to update app:', error);
-    return res.status(500).json({ error: 'Failed to update app' });
+    if (error.code === 'P2025') {
+       return res.status(404).json({ error: 'App not found in database' });
+    }
+    return res.status(500).json({ error: 'Failed to update app', message: error.message });
   }
 });
 

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Wand2, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, Sparkles, MessageSquare, Clipboard, LayoutTemplate } from 'lucide-react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import { Command } from 'cmdk';
+import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Diamond, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, MessageSquare, Clipboard, LayoutTemplate, Blocks } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SearchBar } from '@/components/ui/SearchBar';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
 import { Button } from '@/components/ui/button'
@@ -33,6 +33,7 @@ interface ContextMenuProps {
   onAddStrategy?: () => void;
   onAddBrandCore?: () => void;
   onAddChat?: () => void;
+  onAddNodeBuilder?: () => void;
   onExport?: () => void;
   sourceNodeId?: string;
   nodes?: Node<FlowNodeData>[];
@@ -78,6 +79,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onAddStrategy,
   onAddBrandCore,
   onAddChat,
+  onAddNodeBuilder,
   onExport,
   sourceNodeId,
   nodes,
@@ -85,18 +87,11 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onPaste,
   onToggleUI,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [position, setPosition] = useState({ x, y });
-  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({
+  const [menuStyle, setMenuStyle] = React.useState<React.CSSProperties>({
     left: `${x}px`,
     top: `${y}px`,
   });
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setPosition({ x, y });
-  }, [x, y]);
 
   // Calculate menu position to avoid being cut off
   useLayoutEffect(() => {
@@ -106,7 +101,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     const windowWidth = window.innerWidth;
     const isBottomHalf = y > windowHeight / 2;
 
-    // Wait for menu to render to get its dimensions
     const timeoutId = setTimeout(() => {
       const menuRect = menuRef.current?.getBoundingClientRect();
       if (!menuRect) return;
@@ -117,29 +111,16 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       let finalX = x;
       let finalY = y;
 
-      // If in bottom half, position above mouse
       if (isBottomHalf) {
-        finalY = y - menuHeight - 8; // 8px offset
-        // Ensure menu doesn't go above viewport
-        if (finalY < 8) {
-          finalY = 8;
-        }
+        finalY = y - menuHeight - 8;
+        if (finalY < 8) finalY = 8;
       } else {
-        // If in top half, position below mouse
-        finalY = y + 8; // 8px offset
-        // Ensure menu doesn't go below viewport
-        if (finalY + menuHeight > windowHeight - 8) {
-          finalY = windowHeight - menuHeight - 8;
-        }
+        finalY = y + 8;
+        if (finalY + menuHeight > windowHeight - 8) finalY = windowHeight - menuHeight - 8;
       }
 
-      // Adjust horizontal position if menu goes off screen
-      if (finalX + menuWidth > windowWidth - 8) {
-        finalX = windowWidth - menuWidth - 8;
-      }
-      if (finalX < 8) {
-        finalX = 8;
-      }
+      if (finalX + menuWidth > windowWidth - 8) finalX = windowWidth - menuWidth - 8;
+      if (finalX < 8) finalX = 8;
 
       setMenuStyle({
         left: `${finalX}px`,
@@ -151,43 +132,16 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     return () => clearTimeout(timeoutId);
   }, [x, y]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 100);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      } else if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      } else if (e.key === '/' && document.activeElement !== searchInputRef.current) {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      clearTimeout(timer);
-    };
-  }, [onClose]);
-
-  // Close menu when clicking outside
+  // Close menu on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as HTMLElement)) {
         onClose();
       }
-    }
-
-    // Use a small delay to avoid closing immediately when the menu opens
+    };
     const timeoutId = setTimeout(() => {
       document.addEventListener('mousedown', handleClickOutside);
     }, 100);
-
     return () => {
       clearTimeout(timeoutId);
       document.removeEventListener('mousedown', handleClickOutside);
@@ -214,7 +168,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       onClick: () => { onToggleUI(); onClose(); },
       section: 'view' as const,
     }] : []),
-    // Input nodes - hide ImageNode and VideoNode if source is ImageNode
+    // Input nodes
     ...(isSourceImageNode ? [] : [{
       id: 'image',
       label: 'Image Node',
@@ -222,7 +176,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       onClick: () => { onAddImage(); onClose(); },
       section: 'input' as const,
     }]),
-    // Hide Text Node if source is ImageNode
     ...(isSourceImageNode ? [] : (onAddText ? [{
       id: 'text',
       label: 'Text Node',
@@ -230,7 +183,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       onClick: () => { onAddText!(); onClose(); },
       section: 'input' as const,
     }] : [])),
-    // Hide all media upload nodes (Logo, PDF) if source is ImageNode
     ...(isSourceImageNode ? [] : (onAddLogo ? [{
       id: 'logo',
       label: 'Logo Node',
@@ -245,19 +197,11 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       onClick: () => { onAddPDF!(); onClose(); },
       section: 'input' as const,
     }] : [])),
-    // Video Input hidden
-    // ...(onAddVideoInput ? [{
-    //   id: 'videoInput',
-    //   label: 'Video Input',
-    //   icon: <Video size={16} />,
-    //   onClick: () => { onAddVideoInput!(); onClose(); },
-    //   section: 'input' as const,
-    // }] : []),
     // Processing nodes - Generate
     {
       id: 'prompt',
       label: 'Prompt Node',
-      icon: <Wand2 size={16} />,
+      icon: <Diamond size={16} />,
       onClick: () => { onAddPrompt(); onClose(); },
       section: 'processing',
       category: 'Generate',
@@ -270,7 +214,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing',
       category: 'Generate',
     },
-    // Hide VideoNode if source is ImageNode (it's a media upload node)
     ...(isSourceImageNode ? [] : [{
       id: 'video',
       label: 'Video Node',
@@ -279,7 +222,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing' as const,
       category: 'Generate',
     }]),
-    // Mockup - moved to Generate section
     {
       id: 'mockup',
       label: 'Mockup Preset',
@@ -338,7 +280,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing' as const,
       category: 'Effects',
     }] : []),
-
     // Branding
     {
       id: 'brand',
@@ -348,7 +289,15 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing',
       category: 'Branding',
     },
-
+    // Node Builder
+    ...(onAddNodeBuilder ? [{
+      id: 'nodeBuilder',
+      label: 'Node Builder',
+      icon: <Blocks size={16} />,
+      onClick: () => { onAddNodeBuilder!(); onClose(); },
+      section: 'processing' as const,
+      category: 'Custom',
+    }] : []),
     // Export
     ...(onExport && sourceNodeId ? [{
       id: 'export',
@@ -360,107 +309,64 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     }] : []),
   ];
 
-  const filteredItems = searchQuery
-    ? menuItems.filter(item =>
-      item.label.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    : menuItems;
-
-  const inputItems = filteredItems.filter(item => item.section === 'input');
-  const processingItems = filteredItems.filter(item => item.section === 'processing');
-  const exportItems = filteredItems.filter(item => item.section === 'export');
-  const editItems = filteredItems.filter(item => item.section === 'edit');
-  const viewItems = filteredItems.filter(item => item.section === 'view');
-
-  // Group processing items by category
-  const groupedProcessingItems = processingItems.reduce((acc, item) => {
-    const category = item.category || 'Other';
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(item);
-    return acc;
-  }, {} as Record<string, typeof processingItems>);
-
-  const highlightText = (text: string, query: string) => {
-    if (!query) return text;
-    const parts = text.split(new RegExp(`(${query})`, 'gi'));
-    return parts.map((part, i) =>
-      part.toLowerCase() === query.toLowerCase() ? (
-        <mark key={i} className="bg-brand-cyan/20 text-brand-cyan px-0.5 rounded">
-          {part}
-        </mark>
-      ) : (
-        part
-      )
-    );
-  };
-
-  const MenuItemButton: React.FC<{ item: MenuItem; index: number }> = ({ item, index }) => (
-    <Button variant="ghost"
-      onClick={item.onClick}
-      className={cn(
-        "w-full px-2 py-1.5",
-        "backdrop-blur-md",
-        "border rounded-md",
-        "transition-colors duration-150",
-        "flex items-center gap-2 cursor-pointer",
-        item.highlight
-          ? "border-[brand-cyan]/40 bg-brand-cyan/10 text-brand-cyan"
-          : "border-neutral-800/40 hover:border-[brand-cyan]/40 hover:bg-neutral-800/50"
-      )}
-      style={{
-        backgroundColor: item.highlight
-          ? undefined
-          : 'rgba(0, 0, 0, 0.3)',
-        color: item.highlight ? 'var(--brand-cyan)' : '#a3a3a3', // neutral-400
-      }}
-      onMouseEnter={(e) => {
-        if (!item.highlight) {
-          e.currentTarget.style.color = '#ffffff';
-          e.currentTarget.style.borderColor = 'var(--brand-cyan)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!item.highlight) {
-          e.currentTarget.style.color = '#a3a3a3';
-          e.currentTarget.style.borderColor = 'rgba(38, 38, 38, 0.4)'; // border-neutral-800/40
-        }
-      }}
-    >
-      <span className={cn(
-        "transition-colors duration-150 flex-shrink-0",
-        item.highlight ? "text-brand-cyan" : "text-neutral-400"
-      )}
-        style={{ color: 'inherit' }}
-      >
-        {item.icon}
-      </span>
-      <span
-        className="text-[11px] font-medium whitespace-nowrap flex-1 text-left tracking-wide"
-        style={{ color: 'inherit' }}
-      >
-        {highlightText(item.label, searchQuery)}
-      </span>
-    </Button>
-  );
-
   const categoryOrder = ['Generate', 'Composition', 'Effects', 'Branding'];
 
   const GroupLabel: React.FC<{ title: string }> = ({ title }) => (
     <div className="px-3 py-1.5">
-      <span className="text-[9px] font-semibold text-neutral-500 uppercase ">
+      <span className="text-[10px] font-semibold text-neutral-500 uppercase">
         {title}
       </span>
     </div>
   );
+
+  const renderItem = (item: MenuItem) => (
+    <Command.Item
+      key={item.id}
+      value={item.label}
+      onSelect={item.onClick}
+      className={cn(
+        "w-full px-2 py-1.5 mb-0.5",
+        "backdrop-blur-md",
+        "border-node rounded-md",
+        "transition-colors duration-150",
+        "flex items-center gap-2 cursor-pointer",
+        "aria-selected:bg-neutral-800/50 aria-selected:text-white",
+        item.highlight
+          ? "border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan"
+          : "border-neutral-800/40 bg-black/30 text-neutral-400 hover:border-neutral-700 hover:bg-neutral-800/50 hover:text-white"
+      )}
+    >
+      <span className={cn(
+        "transition-colors duration-150 flex-shrink-0",
+        item.highlight ? "text-brand-cyan" : "text-neutral-400"
+      )}>
+        {item.icon}
+      </span>
+      <span className="text-[11px] font-medium whitespace-nowrap flex-1 text-left tracking-wide">
+        {item.label}
+      </span>
+    </Command.Item>
+  );
+
+  const inputItems = menuItems.filter(item => item.section === 'input');
+  const processingItems = menuItems.filter(item => item.section === 'processing');
+  const exportItems = menuItems.filter(item => item.section === 'export');
+  const editItems = menuItems.filter(item => item.section === 'edit');
+  const viewItems = menuItems.filter(item => item.section === 'view');
+
+  const groupedProcessingItems = processingItems.reduce((acc, item) => {
+    const category = item.category || 'Other';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(item);
+    return acc;
+  }, {} as Record<string, typeof processingItems>);
 
   return (
     <div
       ref={menuRef}
       data-context-menu
       className={cn(
-        "fixed z-50 bg-neutral-950/70 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl",
+        "fixed z-50 bg-neutral-950/70 backdrop-blur-xl border-node border-neutral-800/50 rounded-md shadow-2xl",
         "min-w-[220px] max-w-[280px]",
         "transition-all duration-200 ease-out"
       )}
@@ -469,116 +375,84 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       onWheel={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      {/* Header with Search */}
-      <div className="sticky top-0 bg-neutral-950/70 backdrop-blur-xl border-b border-neutral-800/30 z-10 rounded-t-2xl">
-        <div className="px-3 py-2.5 flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-neutral-300 uppercase ">
-            Add Node
-          </span>
-          <Button variant="ghost" onClick={onClose}
-            className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
-            aria-label="Close menu"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <X size={16} />
-          </Button>
+      <Command shouldFilter={true} loop>
+        {/* Header with Search */}
+        <div className="sticky top-0 bg-neutral-950/70 backdrop-blur-xl border-b border-neutral-800/30 z-10 rounded-t-2xl">
+          <div className="px-3 py-2.5 flex items-center justify-between gap-2">
+            <span className="text-xs font-semibold text-neutral-300 uppercase">
+              Add Node
+            </span>
+            <Button variant="ghost" onClick={onClose}
+              className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
+              aria-label="Close menu"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <X size={16} />
+            </Button>
+          </div>
+
+          <div className="px-3 pb-2.5" onMouseDown={(e) => e.stopPropagation()}>
+            <Command.Input
+              placeholder="Search nodes..."
+              autoFocus
+              className={cn(
+                "w-full bg-neutral-900/60 border border-neutral-800/50 rounded-md",
+                "px-3 py-1.5 text-xs text-neutral-200 placeholder:text-neutral-500",
+                "focus:outline-none focus:border-neutral-600",
+                "transition-colors duration-150"
+              )}
+              onMouseDown={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') { e.stopPropagation(); onClose(); }
+              }}
+            />
+          </div>
         </div>
 
-        {/* Search Input */}
-        <div className="px-3 pb-2.5" onMouseDown={(e) => e.stopPropagation()}>
-          <SearchBar
-            ref={searchInputRef}
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search nodes..."
-            iconSize={14}
-            className="text-xs"
-            onMouseDown={(e) => e.stopPropagation()}
-          />
-        </div>
-      </div>
-
-      {/* Menu Content */}
-      <div className="px-2 py-2 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
-        {filteredItems.length === 0 ? (
-          <div className="px-3 py-8 text-center">
+        {/* Menu Content */}
+        <Command.List className="px-2 py-2 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
+          <Command.Empty className="px-3 py-8 text-center">
             <p className="text-sm text-neutral-500">No results found</p>
             <p className="text-xs text-neutral-600 mt-1">Try a different search term</p>
-          </div>
-        ) : (
-          <div className="space-y-0.5">
-            {/* Edit & View */}
-            {(editItems.length > 0 || viewItems.length > 0) && (
-              <>
-                <GroupLabel title="Actions" />
-                {editItems.map((item, index) => (
-                  <MenuItemButton key={item.id} item={item} index={index} />
-                ))}
-                {viewItems.map((item, index) => (
-                  <MenuItemButton key={item.id} item={item} index={editItems.length + index} />
-                ))}
-                <div className="h-px bg-neutral-800/30 my-1.5" />
-              </>
-            )}
+          </Command.Empty>
 
-            {/* Upload Media */}
-            {inputItems.length > 0 && (
-              <>
-                <GroupLabel title="Upload Media" />
-                {inputItems.map((item, index) => (
-                  <MenuItemButton key={item.id} item={item} index={index} />
-                ))}
-                {(processingItems.length > 0 || exportItems.length > 0) && (
-                  <div className="h-px bg-neutral-800/30 my-1.5" />
-                )}
-              </>
-            )}
+          {/* Edit & View */}
+          {(editItems.length > 0 || viewItems.length > 0) && (
+            <Command.Group heading={<GroupLabel title="Actions" />}>
+              {editItems.map(renderItem)}
+              {viewItems.map(renderItem)}
+              <div className="h-px bg-neutral-800/30 my-1.5" />
+            </Command.Group>
+          )}
 
-            {/* Processing Groups with dividers */}
-            {categoryOrder.map((category, categoryIndex) => {
-              const categoryItems = groupedProcessingItems[category] || [];
-              if (categoryItems.length === 0) return null;
+          {/* Upload Media */}
+          {inputItems.length > 0 && (
+            <Command.Group heading={<GroupLabel title="Upload Media" />}>
+              {inputItems.map(renderItem)}
+              <div className="h-px bg-neutral-800/30 my-1.5" />
+            </Command.Group>
+          )}
 
-              const hasItemsBefore = categoryIndex > 0 && categoryOrder.slice(0, categoryIndex).some(
-                cat => groupedProcessingItems[cat]?.length > 0
-              );
-              const hasItemsAfter = categoryOrder.slice(categoryIndex + 1).some(
-                cat => groupedProcessingItems[cat]?.length > 0 ||
-                  (cat === categoryOrder[categoryOrder.length - 1] && exportItems.length > 0)
-              );
+          {/* Processing Groups */}
+          {categoryOrder.map((category) => {
+            const categoryItems = groupedProcessingItems[category] || [];
+            if (categoryItems.length === 0) return null;
+            return (
+              <Command.Group key={category} heading={<GroupLabel title={category} />}>
+                {categoryItems.map(renderItem)}
+              </Command.Group>
+            );
+          })}
 
-              return (
-                <React.Fragment key={category}>
-                  {hasItemsBefore && (
-                    <div className="h-px bg-neutral-800/30 my-1.5" />
-                  )}
-                  <GroupLabel title={category} />
-                  {categoryItems.map((item) => (
-                    <MenuItemButton key={item.id} item={item} index={0} />
-                  ))}
-                  {categoryIndex === categoryOrder.length - 1 && exportItems.length > 0 && (
-                    <div className="h-px bg-neutral-800/30 my-1.5" />
-                  )}
-                </React.Fragment>
-              );
-            })}
-
-            {/* Export Items */}
-            {exportItems.length > 0 && (
-              <>
-                {processingItems.length > 0 && (
-                  <div className="h-px bg-neutral-800/30 my-1.5" />
-                )}
-                <GroupLabel title="Export" />
-                {exportItems.map((item, index) => (
-                  <MenuItemButton key={item.id} item={item} index={inputItems.length + processingItems.length + index} />
-                ))}
-              </>
-            )}
-
-          </div>
-        )}
-      </div>
+          {/* Export Items */}
+          {exportItems.length > 0 && (
+            <Command.Group heading={<GroupLabel title="Export" />}>
+              <div className="h-px bg-neutral-800/30 my-1.5" />
+              {exportItems.map(renderItem)}
+            </Command.Group>
+          )}
+        </Command.List>
+      </Command>
     </div>
   );
 };

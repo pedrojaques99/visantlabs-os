@@ -465,7 +465,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                       </div>
                       <Button variant="ghost"
                         onClick={(e) => deleteTemplate(template.id, e)}
-                        className="opacity-0 group-hover:opacity-300 p-1 text-red-400 hover:text-red-300 transition-opacity"
+                        className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-opacity"
                         title="Remover template"
                       >
                         <Trash2 size={16} />

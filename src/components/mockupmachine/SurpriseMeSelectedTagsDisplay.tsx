@@ -5,7 +5,7 @@ import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { useDynamicSuggestions } from '@/hooks/useDynamicSuggestions';
 import { translateTag } from '@/utils/localeUtils';
-import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3, Settings2 } from 'lucide-react';
+import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3, Settings2, Diamond } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { MockupTagCategory } from '@/services/mockupTagService';
@@ -204,7 +204,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
       >
         <span className="truncate">
           {isGenerating ? (
-            <span className="inline-block w-16 h-3 rounded animate-pulse bg-neutral-700/50" />
+            <span className="inline-block w-16 h-3 rounded bg-neutral-700/50" />
           ) : (
             selectedTags.length > 0
               ? (selectedTags.length === 1 ? translateTag(selectedTags[0]) : `${translateTag(selectedTags[0])} +${selectedTags.length - 1}`)
@@ -264,7 +264,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
                     : 'text-brand-cyan hover:bg-neutral-100'
                 )}
               >
-                <Plus size={10} className="shrink-0" />
+                <Diamond size={12} className="text-brand-cyan" />
                 <span className="truncate">Adicionar "{searchQuery.trim()}"</span>
               </Button>
             )}
@@ -274,7 +274,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
               groupedTags.groups.map((group, idx) => (
                 <div key={group.categoryName} className={cn(idx > 0 && "mt-1")}>
                   <div className={cn(
-                    "px-2.5 py-1 text-[8px] font-bold font-mono uppercase tracking-widest",
+                    "px-2.5 py-1 text-[10px] font-bold font-mono uppercase tracking-widest",
                     theme === 'dark' ? 'text-neutral-600 bg-black/20' : 'text-neutral-400 bg-neutral-50'
                   )}>
                     {group.categoryName}
@@ -348,8 +348,8 @@ interface SurpriseMeSelectedTagsDisplayProps {
   sidebarWidth?: number;
 }
 
-export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDisplayProps> = ({ 
-  onRerollAll, 
+export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDisplayProps> = ({
+  onRerollAll,
   isGenerating = false,
   sidebarWidth = 400
 }) => {
@@ -543,14 +543,14 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
           >
             <Shuffle size={14} className={cn(
               "text-neutral-500 group-hover/reroll:text-brand-cyan transition-all duration-300",
-              isGenerating ? "animate-diceRoll" : "group-hover/reroll:rotate-180"
+              isGenerating ? "rotate-180" : "group-hover/reroll:rotate-180"
             )} />
           </Button>
         )}
       </div>
 
       {/* Tag Dropdowns - Now 1 column for better layout flow */}
-      <div 
+      <div
         key={JSON.stringify(sectionData)}
         className={cn(
           "gap-3 mb-3 animate-fade-in",
@@ -575,7 +575,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
               <SkeletonText loading={isGenerating}>
                 <span
                   className={cn(
-                    "text-[9px] font-mono uppercase ",
+                    "text-[10px] font-mono uppercase ",
                     theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                   )}
                 >
@@ -606,8 +606,8 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
 
       {/* Checkboxes - hidden behind Advanced Options */}
       <div className="mt-2 pt-2 border-t border-neutral-800/10">
-        <div 
-          className="flex items-center justify-between cursor-pointer group py-1" 
+        <div
+          className="flex items-center justify-between cursor-pointer group py-1"
           onClick={() => setShowOptions(!showOptions)}
         >
           <span className={cn("text-[10px] font-mono flex items-center gap-1.5 transition-colors", theme === 'dark' ? 'text-neutral-500 group-hover:text-neutral-300' : 'text-neutral-500 group-hover:text-neutral-800')}>
@@ -615,7 +615,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
           </span>
           <ChevronDown size={12} className={cn("text-neutral-500 transition-transform", showOptions && "rotate-180")} />
         </div>
-        
+
         {showOptions && (
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mt-3 animate-fade-in">
             <ToggleCheckbox

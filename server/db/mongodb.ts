@@ -129,10 +129,10 @@ const _performConnection = async (): Promise<Db> => {
 
   // Debug: Log connection info (without exposing password)
   const uriForLogging = MONGODB_URI ? MONGODB_URI.replace(/:([^:@]+)@/, ':****@') : 'not set';
-  console.log('🔍 MongoDB Connection Debug:');
-  console.log('  - URI (masked):', uriForLogging);
-  console.log('  - DB Name:', DB_NAME);
-  console.log('  - Connection type:', isLocalMongoDB ? 'Local' : isAtlasMongoDB ? 'Atlas' : 'Unknown');
+  // console.log('🔍 MongoDB Connection Debug:');
+  // console.log('  - URI (masked):', uriForLogging);
+  // console.log('  - DB Name:', DB_NAME);
+  // console.log('  - Connection type:', isLocalMongoDB ? 'Local' : isAtlasMongoDB ? 'Atlas' : 'Unknown');
 
   // Only warn about default URI if not in production
   if (!MONGODB_URI || MONGODB_URI === 'mongodb://localhost:27017') {

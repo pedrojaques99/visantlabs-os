@@ -13,7 +13,7 @@ import { getTexturePreset } from '@/services/texturePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
 import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 import { uploadImageToR2Auto } from '@/hooks/canvas/utils/r2UploadUtils';
-import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBrandContext';
+import { buildPromptWithBrandContext } from '@/hooks/canvas/useBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface UseTextureNodeHandlersParams {
@@ -55,8 +55,7 @@ export const useTextureNodeHandlers = ({
     const node = nodesRef.current.find(n => n.id === nodeId);
     const textureData = node?.data as TextureNodeData;
 
-    const { tokens } = getBrandContextForNode(nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
-    const promptOverride = tokens ? buildEnhancement(preset.prompt, tokens) : undefined;
+    const promptOverride = buildPromptWithBrandContext(preset.prompt, nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
 
     await generateImageWithPreset({
       nodeId,

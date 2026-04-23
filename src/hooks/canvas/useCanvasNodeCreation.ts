@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, TextNodeData, ChatNodeData } from '@/types/reactFlow';
+import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, TextNodeData, ChatNodeData, VariablesNodeData, DataNodeData, BatchRunnerNodeData } from '@/types/reactFlow';
 import type { UploadedImage } from '@/types/types';
 import type { Mockup } from '@/services/mockupApi';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
@@ -1747,6 +1747,143 @@ export const useCanvasNodeCreation = (
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
+  const addVariablesNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
+    if (!reactFlowInstance) {
+      toast.error('Canvas not ready. Please wait a moment and try again.');
+      return;
+    }
+
+    const screenPos = customPosition || {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+    };
+
+    let position;
+    try {
+      position = reactFlowInstance.screenToFlowPosition(screenPos);
+      if (!position || isNaN(position.x) || isNaN(position.y)) position = { x: 0, y: 0 };
+    } catch {
+      position = { x: 0, y: 0 };
+    }
+
+    addToHistory(nodes, edges);
+
+    const newNode: Node<FlowNodeData> = {
+      id: generateNodeId('variables'),
+      type: 'variables',
+      position,
+      draggable: true,
+      connectable: true,
+      selectable: true,
+      data: {
+        type: 'variables',
+        variables: [{ key: '', value: '' }],
+        onUpdateData: (handlersRef.current as any)?.handleVariablesNodeDataUpdate || (() => {}),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
+      } as VariablesNodeData,
+    };
+
+    setNodes((nds: Node<FlowNodeData>[]) => {
+      const newNodes = [...nds, newNode];
+      setTimeout(() => addToHistory(newNodes, edges), 0);
+      return newNodes;
+    });
+
+    return newNode.id;
+  }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
+
+  const addDataNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
+    if (!reactFlowInstance) {
+      toast.error('Canvas not ready. Please wait a moment and try again.');
+      return;
+    }
+
+    const screenPos = customPosition || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let position;
+    try {
+      position = reactFlowInstance.screenToFlowPosition(screenPos);
+      if (!position || isNaN(position.x) || isNaN(position.y)) position = { x: 0, y: 0 };
+    } catch {
+      position = { x: 0, y: 0 };
+    }
+
+    addToHistory(nodes, edges);
+
+    const newNode: Node<FlowNodeData> = {
+      id: generateNodeId('data'),
+      type: 'data',
+      position,
+      draggable: true,
+      connectable: true,
+      selectable: true,
+      data: {
+        type: 'data',
+        rows: [],
+        columns: [],
+        selectedRowIndex: 0,
+        onUpdateData: (handlersRef.current as any)?.handleDataNodeDataUpdate || (() => {}),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
+      } as DataNodeData,
+    };
+
+    setNodes((nds: Node<FlowNodeData>[]) => {
+      const newNodes = [...nds, newNode];
+      setTimeout(() => addToHistory(newNodes, edges), 0);
+      return newNodes;
+    });
+
+    return newNode.id;
+  }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
+
+  const addBatchRunnerNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
+    if (!reactFlowInstance) {
+      toast.error('Canvas not ready. Please wait a moment and try again.');
+      return;
+    }
+
+    const screenPos = customPosition || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let position;
+    try {
+      position = reactFlowInstance.screenToFlowPosition(screenPos);
+      if (!position || isNaN(position.x) || isNaN(position.y)) position = { x: 0, y: 0 };
+    } catch {
+      position = { x: 0, y: 0 };
+    }
+
+    addToHistory(nodes, edges);
+
+    const handlers = handlersRef.current as any;
+    const newNode: Node<FlowNodeData> = {
+      id: generateNodeId('batchRunner'),
+      type: 'batchRunner',
+      position,
+      draggable: true,
+      connectable: true,
+      selectable: true,
+      data: {
+        type: 'batchRunner',
+        status: 'idle',
+        results: [],
+        concurrency: 1,
+        onRun: handlers?.handleBatchRun || (() => {}),
+        onCancel: handlers?.handleBatchCancel || (() => {}),
+        onUpdateData: handlers?.handleBatchNodeDataUpdate || (() => {}),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
+      } as BatchRunnerNodeData,
+    };
+
+    setNodes((nds: Node<FlowNodeData>[]) => {
+      const newNodes = [...nds, newNode];
+      setTimeout(() => addToHistory(newNodes, edges), 0);
+      return newNodes;
+    });
+
+    return newNode.id;
+  }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
+
   const addChatNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
     if (!reactFlowInstance) {
       toast.error('Canvas not ready. Please wait a moment and try again.');
@@ -1862,6 +1999,42 @@ export const useCanvasNodeCreation = (
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef, handleDelete, handleDuplicate]);
 
+  const addNodeBuilderNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
+    if (!reactFlowInstance) {
+      toast.error('Canvas not ready. Please wait a moment and try again.');
+      return;
+    }
+
+    const screenPos = customPosition || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let position;
+    try {
+      position = reactFlowInstance.screenToFlowPosition(screenPos);
+      if (!position || isNaN(position.x) || isNaN(position.y)) position = { x: 0, y: 0 };
+    } catch {
+      position = { x: 0, y: 0 };
+    }
+
+    addToHistory(nodes, edges);
+
+    const newNode: Node<FlowNodeData> = {
+      id: generateNodeId('nodeBuilder'),
+      type: 'nodeBuilder',
+      position,
+      draggable: true,
+      connectable: true,
+      selectable: true,
+      data: { messages: [] } as any,
+    };
+
+    setNodes((nds: Node<FlowNodeData>[]) => {
+      const newNodes = [...nds, newNode];
+      setTimeout(() => addToHistory(newNodes, edges), 0);
+      return newNodes;
+    });
+
+    return newNode.id;
+  }, [reactFlowInstance, nodes, edges, addToHistory, setNodes]);
+
   // ========== UPDATE NODE CREATORS REF ==========
   // Keep nodeCreatorsRef updated with the latest node creation functions
   useEffect(() => {
@@ -1901,8 +2074,12 @@ export const useCanvasNodeCreation = (
     addBrandCoreNode,
     addColorExtractorNode,
     addTextNode,
+    addVariablesNode,
+    addDataNode,
+    addBatchRunnerNode,
     addChatNode,
     addDirectorNode,
+    addNodeBuilderNode,
   };
 };
 

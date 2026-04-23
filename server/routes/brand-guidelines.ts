@@ -5,17 +5,20 @@ import { nanoid } from 'nanoid'
 import { authenticate, AuthRequest } from '../middleware/auth.js'
 import { prisma } from '../db/prisma.js'
 import { rateLimit } from 'express-rate-limit'
+import { Liveblocks } from '@liveblocks/node'
 import { BrandGuideline, BrandGuidelineMedia, BrandGuidelineLogo, calculateCompleteness } from '../types/brandGuideline.js'
 import { parseUrl, parsePdf, parseImage, parseJson } from '../lib/brand-parse.js'
-import { extractBrandData } from '../lib/brand-extract.js'
+import { extractBrandData, type AssetClassification } from '../lib/brand-extract.js'
 import { mergeBrandGuidelines } from '../lib/brand-merge.js'
 import { uploadBrandMedia, deleteImage } from '../services/r2Service.js'
 import { brandSharedService } from '../services/brandSharedService.js'
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js'
+import { vectorService } from '../services/vectorService.js'
 import { checkBrandCompliance, type ComplianceCheckInput } from '../services/complianceService.js'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
 import { calculateChangedFields, createSnapshot, generateChangeNote, generateDiff, formatVersionListItem } from '../lib/versionUtils.js'
 import { extractFigmaFileKey, isValidFigmaUrl } from '../lib/figmaUtils.js'
+import { BrandGuidelineSchema, BrandGuidelinePatchSchema } from '../../src/lib/brandGuidelineSchema.js'
 
 const router = express.Router()
 
@@ -25,6 +28,16 @@ const apiRateLimiter = rateLimit({
   message: { error: 'Too many requests. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+})
+
+// Stricter limiter for unauthenticated public endpoints (no JWT = higher abuse surface)
+const publicRateLimiter = rateLimit({
+  windowMs: 60_000,
+  max: parseInt(process.env.RATE_LIMIT_MAX_PUBLIC || '30', 10),
+  message: { error: 'Too many requests to public endpoint. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip ?? 'unknown',
 })
 
 // GET /api/brand-guidelines — list all user's brand guidelines
@@ -54,7 +67,11 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
   try {
     if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
 
-    const data: Partial<BrandGuideline> = req.body
+    const parsed = BrandGuidelineSchema.safeParse(req.body)
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid brand guideline payload', issues: parsed.error.issues })
+    }
+    const data: Partial<BrandGuideline> = parsed.data as any
     const completeness = calculateCompleteness(data)
 
     const guideline = await prisma.brandGuideline.create({
@@ -107,19 +124,24 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
 
     if (!existing) return res.status(404).json({ error: 'Not found' })
 
-    const update: Partial<BrandGuideline> = req.body
+    const parsed = BrandGuidelinePatchSchema.safeParse(req.body)
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid brand guideline patch', issues: parsed.error.issues })
+    }
+    const update: Partial<BrandGuideline> = parsed.data as any
     const { changeNote } = req.body // Optional user-provided change note
-    const merged: any = {}
-    const fields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections', 'folder'] as const
+    const merged: Partial<BrandGuideline> = {}
+    const fields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections', 'folder', 'strategy', 'orderedBlocks', 'gradients', 'shadows', 'motion', 'borders', 'validation', 'isPublic', 'publicSlug'] as const
 
     for (const field of fields) {
       if (update[field] !== undefined) {
-        merged[field] = update[field]
+        (merged as any)[field] = update[field]
       }
     }
 
+
     // Calculate changed fields for version tracking
-    const changedFields = calculateChangedFields(existing as any, merged)
+    const changedFields = calculateChangedFields(existing as any, merged as any)
 
     // Only save version if something actually changed
     if (changedFields.length > 0) {
@@ -149,15 +171,17 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     extraction.completeness = completeness
     merged.extraction = extraction
 
+    const { id: _id, userId: _userId, ...cleanUpdateData } = merged
     const guideline = await prisma.brandGuideline.update({
       where: { id: existing.id },
-      data: merged,
+      data: cleanUpdateData as any,
     })
+
 
     res.json({ guideline: { ...guideline, _id: guideline.id } })
   } catch (error: any) {
-    console.error('Error updating brand guideline:', error)
-    res.status(500).json({ error: 'Failed to update brand guideline' })
+    console.error('Error updating brand guideline:', error?.message || error)
+    res.status(500).json({ error: 'Failed to update brand guideline', message: error?.message })
   }
 })
 
@@ -232,9 +256,9 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
     })
     if (!existing) return res.status(404).json({ error: 'Brand guideline not found' })
 
-    const { source, url, data, filename } = req.body
+    const { source, url, data, filename, images: imagesPayload } = req.body
     let chunks: any[] = []
-    let imageBase64: string | undefined
+    let imagesToExtract: string[] | undefined = imagesPayload
 
     switch (source) {
       case 'url':
@@ -248,7 +272,12 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
       case 'image':
         if (!data) return res.status(400).json({ error: 'Image data required' })
         chunks = parseImage(filename || 'image.png')
-        imageBase64 = data.replace(/^data:image\/\w+;base64,/, '')
+        if (!imagesToExtract) imagesToExtract = [data]
+        break
+      case 'images':
+        if (!imagesPayload || !Array.isArray(imagesPayload)) return res.status(400).json({ error: 'Images array required' })
+        chunks = parseImage(filename || 'images.zip')
+        // imagesToExtract already set from imagesPayload
         break
       case 'json': {
         if (!data) return res.status(400).json({ error: 'JSON data required' })
@@ -262,13 +291,68 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
         return res.status(400).json({ error: `Invalid source: ${source}` })
     }
 
-    const extracted = await extractBrandData(chunks, imageBase64, req.userId)
+    const extracted = await extractBrandData(chunks, imagesToExtract, req.userId)
     const merged = mergeBrandGuidelines(existing as any, extracted)
 
+    // Classify and store uploaded images into logos/media
+    if (imagesToExtract && imagesToExtract.length > 0 && extracted.assetClassifications?.length) {
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { subscriptionTier: true, isAdmin: true },
+      })
+      const existingLogos: BrandGuidelineLogo[] = (merged.logos as BrandGuidelineLogo[]) || []
+      const existingMedia: BrandGuidelineMedia[] = (merged.media as BrandGuidelineMedia[]) || []
+
+      await Promise.allSettled(
+        extracted.assetClassifications.map(async (cls) => {
+          const imgData = imagesToExtract![cls.index]
+          if (!imgData) return
+          const assetId = crypto.randomUUID()
+          const ct = imgData.match(/^data:([^;]+);/)?.[1] || 'image/png'
+          const storedUrl = await uploadBrandMedia(
+            imgData, req.userId!, existing.id, assetId, ct,
+            user?.subscriptionTier || undefined, user?.isAdmin || undefined,
+          )
+
+          if (cls.category === 'logo' || cls.category === 'icon') {
+            existingLogos.push({
+              id: assetId,
+              url: storedUrl,
+              variant: cls.category === 'icon' ? 'icon' : (cls.logoVariant || 'custom'),
+              label: cls.label,
+              source: 'upload',
+            } as BrandGuidelineLogo)
+          } else {
+            existingMedia.push({
+              id: assetId,
+              url: storedUrl,
+              type: 'image',
+              label: cls.label,
+            } as BrandGuidelineMedia)
+          }
+        })
+      )
+
+      merged.logos = existingLogos
+      merged.media = existingMedia
+    }
+
     // Track source
-    merged.extraction = merged.extraction || { sources: [], completeness: 0 }
-    merged.extraction.sources.push({ type: source, ref: url || filename, date: new Date().toISOString() })
-    merged.extraction.completeness = calculateCompleteness(merged)
+    if (!merged.extraction) {
+      merged.extraction = { sources: [], completeness: 0 }
+    }
+    const extraction = merged.extraction
+    if (!Array.isArray(extraction.sources)) {
+      extraction.sources = []
+    }
+    
+    extraction.sources.push({ 
+      type: (source as any), 
+      ref: url || filename, 
+      date: new Date().toISOString() 
+    })
+    extraction.completeness = calculateCompleteness(merged)
+
 
     const guideline = await prisma.brandGuideline.update({
       where: { id: existing.id },
@@ -290,8 +374,18 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
       extracted, // what AI found — user can review
     })
   } catch (error: any) {
-    console.error('[Brand Ingest] Error:', error)
-    res.status(500).json({ error: 'Ingestion failed', message: error.message })
+    console.error('[Brand Ingest] CRITICAL ERROR:', {
+      message: error.message,
+      stack: error.stack,
+      guidelineId: req.params.id,
+      userId: req.userId,
+      source: req.body?.source
+    })
+    res.status(500).json({ 
+      error: 'Ingestion failed', 
+      message: error.message || 'Internal server error during brand ingestion',
+      code: error.code || 'UNKNOWN_ERROR'
+    })
   }
 })
 
@@ -495,31 +589,62 @@ router.post('/:id/logos', apiRateLimiter, authenticate, async (req: AuthRequest,
     })
     if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
 
-    const { data, url, variant = 'primary', label } = req.body
+    const {
+      data, url, variant = 'primary', label,
+      source, thumbnailData, thumbnailUrl: incomingThumbUrl, format,
+      figmaKey, figmaNodeId, figmaFileKey,
+    } = req.body
     const logoId = crypto.randomUUID()
-    let logoUrl: string
+    let logoUrl: string | undefined
+    let thumbnailUrl: string | undefined = incomingThumbUrl
 
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { subscriptionTier: true, isAdmin: true },
+    })
+
+    // Primary media (uploaded file or explicit URL)
     if (data) {
-      const contentType = 'image/png'
-      const user = await prisma.user.findUnique({
-        where: { id: req.userId },
-        select: { subscriptionTier: true, isAdmin: true },
-      })
-
+      const ct = data.startsWith('data:image/svg') ? 'image/svg+xml'
+        : data.startsWith('data:application/pdf') ? 'application/pdf'
+        : data.startsWith('data:image/jpeg') ? 'image/jpeg'
+        : 'image/png'
       logoUrl = await uploadBrandMedia(
-        data, req.userId, guideline.id, `logo-${logoId}`, contentType,
+        data, req.userId, guideline.id, `logo-${logoId}`, ct,
         user?.subscriptionTier || undefined, user?.isAdmin || undefined,
       )
     } else if (url) {
       logoUrl = url
-    } else {
-      return res.status(400).json({ error: 'Either data (base64) or url is required' })
     }
 
-    const validVariants = ['primary', 'dark', 'light', 'icon', 'custom'] as const
-    const safeVariant = validVariants.includes(variant) ? variant : 'custom'
+    // Thumbnail (always rasterized PNG) — required for Figma-linked logos and PDFs
+    if (thumbnailData && !thumbnailUrl) {
+      thumbnailUrl = await uploadBrandMedia(
+        thumbnailData, req.userId, guideline.id, `logo-${logoId}-thumb`, 'image/png',
+        user?.subscriptionTier || undefined, user?.isAdmin || undefined,
+      )
+    }
 
-    const newLogo: BrandGuidelineLogo = { id: logoId, url: logoUrl, variant: safeVariant, label }
+    if (!logoUrl && !thumbnailUrl && !figmaKey && !figmaNodeId) {
+      return res.status(400).json({ error: 'Provide data, url, thumbnailData, or a figma reference' })
+    }
+
+    const validVariants = ['primary', 'dark', 'light', 'icon', 'accent', 'custom'] as const
+    const safeVariant = validVariants.includes(variant) ? variant : 'custom'
+    const safeSource = source === 'figma' ? 'figma' : 'upload'
+
+    const newLogo: BrandGuidelineLogo = {
+      id: logoId,
+      url: logoUrl ?? thumbnailUrl ?? '',
+      variant: safeVariant,
+      label,
+      ...(thumbnailUrl ? { thumbnailUrl } : {}),
+      ...(format ? { format } : {}),
+      source: safeSource,
+      ...(figmaKey ? { figmaKey } : {}),
+      ...(figmaNodeId ? { figmaNodeId } : {}),
+      ...(figmaFileKey ? { figmaFileKey } : {}),
+    } as BrandGuidelineLogo
     const existingLogos = (guideline.logos as unknown as BrandGuidelineLogo[] | null) || []
     const updatedLogos = [...existingLogos, newLogo]
 
@@ -729,7 +854,7 @@ router.delete('/:id/share', apiRateLimiter, authenticate, async (req: AuthReques
 })
 
 // GET /api/brand-guidelines/public/:slug — public read-only access (NO AUTH)
-router.get('/public/:slug', apiRateLimiter, async (req, res) => {
+router.get('/public/:slug', publicRateLimiter, async (req, res) => {
   try {
     const guideline = await prisma.brandGuideline.findFirst({
       where: { publicSlug: req.params.slug, isPublic: true },
@@ -765,7 +890,7 @@ router.get('/public/:slug', apiRateLimiter, async (req, res) => {
  *   - MCP servers querying brand information
  *   - Third-party apps integrating with brand guidelines
  */
-router.get('/public/:slug/context', apiRateLimiter, async (req, res) => {
+router.get('/public/:slug/context', publicRateLimiter, async (req, res) => {
   try {
     const { format = 'full', output = 'text' } = req.query as { format?: string; output?: string }
 
@@ -914,7 +1039,7 @@ router.post('/:id/compliance-check', apiRateLimiter, authenticate, async (req: A
     // Run compliance check
     const result = await checkBrandCompliance(
       { colors, text, image, checkContrast, checkColors, checkTone },
-      guideline as unknown as BrandGuideline,
+      guideline as any,
       userApiKey
     )
 
@@ -1487,6 +1612,130 @@ router.post('/figma-preview-url', apiRateLimiter, authenticate, async (req: Auth
   } catch (error: any) {
     console.error('[Figma Preview URL] Error:', error)
     res.status(500).json({ error: 'Failed to fetch Figma data', message: error.message })
+  }
+})
+
+// ═══ KNOWLEDGE FILES (RAG universe for this brand) ═══
+// Files are ingested by admin chat when a brandGuidelineId is linked.
+// Stored as JSON array on the guideline; vectors live in Pinecone keyed by vectorIds.
+
+interface KnowledgeFile {
+  id: string;
+  fileName: string;
+  source: 'pdf' | 'image' | 'url' | 'text';
+  vectorIds: string[];
+  addedByUserId: string;
+  addedAt: string;
+}
+
+router.get('/:id/knowledge', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true, knowledgeFiles: true },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Not found' })
+
+    const files = (guideline.knowledgeFiles as unknown as KnowledgeFile[] | null) || []
+    res.json({ files })
+  } catch (error: any) {
+    console.error('Error listing knowledge files:', error)
+    res.status(500).json({ error: 'Failed to list knowledge files' })
+  }
+})
+
+router.delete('/:id/knowledge/:fileId', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true, knowledgeFiles: true },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Not found' })
+
+    const files = (guideline.knowledgeFiles as unknown as KnowledgeFile[] | null) || []
+    const target = files.find(f => f.id === req.params.fileId)
+    if (!target) return res.status(404).json({ error: 'Knowledge file not found' })
+
+    // Best-effort delete from Pinecone (don't fail the whole op if one vector deletion errors)
+    await Promise.allSettled(
+      (target.vectorIds || []).map(vid => vectorService.delete(vid))
+    )
+
+    const remaining = files.filter(f => f.id !== req.params.fileId)
+    await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { knowledgeFiles: remaining as any },
+    })
+
+    res.json({ success: true, remaining: remaining.length })
+  } catch (error: any) {
+    console.error('Error deleting knowledge file:', error)
+    res.status(500).json({ error: 'Failed to delete knowledge file' })
+  }
+})
+
+// ═══════════════════════════════════════════════════
+// COLLABORATIVE EDITING — LIVEBLOCKS AUTH
+// ═══════════════════════════════════════════════════
+
+/**
+ * POST /api/brand-guidelines/:id/liveblocks-auth
+ *
+ * Issues a Liveblocks session token for collaborative editing of a brand guideline.
+ * Only the owner and users in canEdit[] receive FULL_ACCESS.
+ * Users in canView[] receive READ_ACCESS (used for real-time cursor presence during review).
+ *
+ * Room ID convention: `brand-${guidelineId}` — distinct from canvas rooms (`canvas-*`).
+ */
+router.post('/:id/liveblocks-auth', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findUnique({
+      where: { id },
+      select: { userId: true, canEdit: true, canView: true },
+    }) as { userId: string; canEdit?: unknown; canView?: unknown } | null
+
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const isOwner = guideline.userId === req.userId
+    const canEdit = isOwner || (Array.isArray(guideline.canEdit) && (guideline.canEdit as string[]).includes(req.userId!))
+    const canView = isOwner || canEdit || (Array.isArray(guideline.canView) && (guideline.canView as string[]).includes(req.userId!))
+
+    if (!canView) return res.status(403).json({ error: 'Access denied' })
+
+    const LIVEBLOCKS_SECRET_KEY = process.env.LIVEBLOCKS_SECRET_KEY
+    if (!LIVEBLOCKS_SECRET_KEY) {
+      return res.status(500).json({ error: 'Liveblocks is not configured' })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { email: true, name: true, picture: true },
+    })
+
+    const liveblocks = new Liveblocks({ secret: LIVEBLOCKS_SECRET_KEY })
+    const session = liveblocks.prepareSession(req.userId, {
+      userInfo: {
+        name: user?.name || user?.email || 'Anonymous',
+        email: user?.email ?? undefined,
+        picture: user?.picture ?? undefined,
+      },
+    })
+
+    const roomId = `brand-${id}`
+    session.allow(roomId, canEdit ? session.FULL_ACCESS : session.READ_ACCESS)
+
+    const { body, status } = await session.authorize()
+    res.status(status).end(body)
+  } catch (error: any) {
+    console.error('[BrandGuideline Liveblocks Auth] Error:', error)
+    res.status(500).json({ error: 'Failed to authenticate with Liveblocks' })
   }
 })
 

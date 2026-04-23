@@ -19,6 +19,8 @@ export const DROPPABLE_NODE_TYPES = [
     'brandcore',
     'text',
     'chat',
+    'nodeBuilder',
+    'director',
 ] as const;
 
 export type DroppableNodeType = typeof DROPPABLE_NODE_TYPES[number];

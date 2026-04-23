@@ -5,7 +5,7 @@
 export type IntentType = 'create' | 'edit' | 'chat' | 'clone' | 'delete' | 'arrange';
 
 export type FormatType =
-  | 'instagram_feed' | 'instagram_stories' | 'instagram_highlight'
+  | 'instagram_feed' | 'instagram_portrait' | 'instagram_stories' | 'instagram_highlight'
   | 'youtube_thumbnail' | 'linkedin_post' | 'facebook_post'
   | 'twitter_post' | 'tiktok' | 'pinterest'
   | 'slide_16_9' | 'slide_4_3'
@@ -21,6 +21,7 @@ export interface ClassifiedIntent {
   needsDimensions: boolean;
   hasSelection: boolean;
   isTemplate: boolean;
+  isChart: boolean;
   keywords: string[];
 }
 

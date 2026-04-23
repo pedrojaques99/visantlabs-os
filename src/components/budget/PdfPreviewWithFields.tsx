@@ -1067,7 +1067,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                     color: '#000000',
                     backgroundColor: 'rgba(82, 221, 235, 0.2)',
                     border: '2px dashed brand-cyan',
-                    padding: '4px 8px',
+                    padding: '4px 10px',
                     borderRadius: 'var(--radius)',
                     pointerEvents: 'none',
                     zIndex: 150,
@@ -1102,8 +1102,8 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                     position: 'absolute',
                     left: `${fieldX}px`,
                     top: `${fieldY}px`,
-                    width: '8px',
-                    height: '8px',
+                    width: '10px',
+                    height: '10px',
                     borderRadius: '50%',
                     backgroundColor: 'brand-cyan',
                     border: '2px solid #ffffff',
@@ -1351,7 +1351,7 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
     padding: editable ? '3px 6px' : '0',
     borderRadius: editable ? 'var(--radius)' : '0',
     boxShadow: editable && isDragging
-      ? '0 8px 16px rgba(82, 221, 235, 0.4)'
+      ? '0 10px 16px rgba(82, 221, 235, 0.4)'
       : editable && isSelected
         ? '0 4px 12px rgba(82, 221, 235, 0.3)'
         : editable
@@ -1453,7 +1453,7 @@ const DraggableFieldOverlay: React.FC<DraggableFieldOverlayProps> = ({
         border: '2px solid brand-cyan',
         padding: '3px 6px',
         borderRadius: 'var(--radius)',
-        boxShadow: '0 8px 24px rgba(82, 221, 235, 0.5)',
+        boxShadow: '0 10px 24px rgba(82, 221, 235, 0.5)',
         transform: 'scale(1.1)',
         opacity: 0.95,
         whiteSpace: 'nowrap',
