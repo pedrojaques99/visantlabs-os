@@ -125,6 +125,9 @@ export interface PluginStore {
   scanPage: boolean;
   mode: 'simple' | 'advanced';
 
+  // Server
+  serverUrl: string;
+
   // Auth
   authToken: string | null;
   authEmail: string | null;
@@ -172,6 +175,7 @@ export interface PluginStore {
   updateSelection: (selection: SelectionDetail[]) => void;
   addChatMessage: (message: ChatMessage) => void;
   clearChatHistory: () => void;
+  setServerUrl: (url: string) => void;
   setAuthToken: (token: string | null) => void;
   setAuthEmail: (email: string | null) => void;
   updateCredits: (credits: Credits) => void;

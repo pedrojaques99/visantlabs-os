@@ -1,19 +1,20 @@
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { createClient, type Client } from './client';
-import { API_BASE_URL } from '../config';
 import { usePluginStore } from '../store';
 
 const ClientCtx = createContext<Client | null>(null);
 
 export function ClientProvider({ children }: { children: ReactNode }) {
+  const serverUrl = usePluginStore((s) => s.serverUrl);
+
   const client = useMemo(
     () => createClient({
-      baseUrl: API_BASE_URL,
+      baseUrl: serverUrl,
       getToken: () => usePluginStore.getState().authToken,
       getBrandId: () => (usePluginStore.getState() as any).activeBrandId ?? null,
       onUnauthorized: () => usePluginStore.setState({ authToken: null, authEmail: null } as any),
     }),
-    []
+    [serverUrl]
   );
 
   useEffect(() => () => client.dispose(), [client]);

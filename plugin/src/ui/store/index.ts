@@ -35,6 +35,9 @@ export const usePluginStore = create<PluginStore>()(
     scanPage: false,
     mode: 'simple',
 
+    // Server
+    serverUrl: (typeof window !== 'undefined' && (window as any).__VISANT_API_URL__) || 'http://localhost:3001',
+
     // Auth
     authToken: null,
     authEmail: null,
@@ -90,6 +93,11 @@ export const usePluginStore = create<PluginStore>()(
     clearChatHistory: () =>
       set((state) => {
         state.chatHistory = [];
+      }),
+
+    setServerUrl: (url) =>
+      set((state) => {
+        state.serverUrl = url.replace(/\/$/, '');
       }),
 
     setAuthToken: (token) =>

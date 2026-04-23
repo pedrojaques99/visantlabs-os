@@ -1,6 +1,7 @@
 import type { GeminiModel, Resolution, SeedreamModel, ImageProvider } from '../types/types';
 import { GEMINI_MODELS } from '../constants/geminiModels';
 import { isSeedreamModel } from '../constants/seedreamModels';
+import { isOpenAIImageModel } from '../constants/openaiModels';
 
 /**
  * Get credits required for image generation based on model, resolution, and provider
@@ -14,6 +15,22 @@ export function getCreditsRequired(
   // Guard against undefined model
   if (!model) {
     return 2; // Default fallback
+  }
+
+  // OpenAI GPT Image 2
+  if (provider === 'openai' || isOpenAIImageModel(model)) {
+    switch (resolution) {
+      case '512px':
+      case 'HD':
+      case '1K':
+        return 2; // medium quality
+      case '2K':
+        return 4; // high quality, landscape
+      case '4K':
+        return 4; // high quality, portrait
+      default:
+        return 2;
+    }
   }
 
   // Seedream / Seededit models (via APIFree.ai)

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "visant": {
+      "command": "npx",
+      "args": ["tsx", "mcp-server/index.ts"],
+      "env": {
+        "VISANT_API_URL": "http://localhost:3000/api",
+        "VISANT_API_TOKEN": "visant_sk_07d9b8184d728c2e6a78fcb3aa6abd354b47beee8ca008736ca2c67b7e2259f9"
+      }
+    }
+  }
+}

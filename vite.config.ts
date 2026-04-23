@@ -24,6 +24,9 @@ export default defineConfig(({ mode }) => {
           secure: false,
           timeout: 600000,
           proxyTimeout: 600000,
+          configure: (proxy) => {
+            proxy.on('error', () => {}); // suppress ECONNREFUSED flood while server boots
+          },
         }
       }
     },

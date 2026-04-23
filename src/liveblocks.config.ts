@@ -17,12 +17,14 @@ declare global {
       selectedNodeId: string | null;
       nodePosition: { nodeId: string; x: number; y: number } | null;
       isMoving: boolean;
+      /** Active brand guideline section, e.g. "colors" | "typography" */
+      activeSection: string | null;
     };
 
     // The Storage tree for the room, for useMutation, useStorage, etc.
     Storage: {
-      nodes: LiveList<LiveObject<any>>;
-      edges: LiveList<LiveObject<any>>;
+      nodes: LiveList<LiveObject<Record<string, any>>>;
+      edges: LiveList<LiveObject<Record<string, any>>>;
     };
 
     // Custom user info set when authenticating with a secret key

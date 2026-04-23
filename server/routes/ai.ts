@@ -973,5 +973,98 @@ router.get('/metrics', authenticate, async (req: AuthRequest, res) => {
   }
 });
 
+/**
+ * POST /ai/generate-naming
+ * Generate brand/product name suggestions from a brief.
+ */
+router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  const { brief, count = 10, style, brandGuidelineId } = req.body;
+  if (!brief) return res.status(400).json({ error: 'brief is required' });
+
+  try {
+    const apiKey = await getGeminiApiKey(req.userId!);
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.FLASH });
+
+    let brandContext = '';
+    if (brandGuidelineId) {
+      const g = await prisma.brandGuideline.findUnique({ where: { id: brandGuidelineId } });
+      if (g) brandContext = buildBrandContextForImageGen(g as any);
+    }
+
+    const styleHint = style ? `Style preference: ${style}.` : '';
+    const prompt = `${brandContext ? `Brand context:\n${brandContext}\n\n` : ''}You are a professional brand naming strategist.
+Generate exactly ${count} creative and memorable name suggestions for the following brief.
+${styleHint}
+Brief: ${brief}
+
+Rules:
+- Mix different naming approaches: invented words, compound words, metaphors, real words repurposed
+- Each name should be unique, pronounceable, and brand-able
+- Avoid generic or overused words
+- Respond ONLY with valid JSON: { "names": [{ "name": string, "rationale": string }] }`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text().trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return res.status(500).json({ error: 'Failed to parse naming response' });
+    res.json(JSON.parse(jsonMatch[0]));
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /ai/extract-colors
+ * Extract a color palette from an image URL or base64.
+ */
+router.post('/extract-colors', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  const { image } = req.body; // { base64?, url?, mimeType? }
+  if (!image) return res.status(400).json({ error: 'image is required' });
+
+  try {
+    const apiKey = await getGeminiApiKey(req.userId!);
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.FLASH });
+
+    let base64Data = image.base64;
+    let mimeType = image.mimeType || 'image/png';
+
+    if (!base64Data && image.url) {
+      const { safeFetch } = await import('../utils/securityValidation.js');
+      const resp = await safeFetch(image.url);
+      if (!resp.ok) return res.status(400).json({ error: 'Failed to fetch image URL' });
+      const buf = Buffer.from(await resp.arrayBuffer());
+      base64Data = buf.toString('base64');
+      mimeType = resp.headers.get('content-type') || mimeType;
+    }
+
+    if (!base64Data) return res.status(400).json({ error: 'Could not resolve image data' });
+
+    const result = await model.generateContent([
+      {
+        inlineData: { data: base64Data, mimeType },
+      },
+      `Analyze this image and extract the dominant color palette.
+Respond ONLY with valid JSON:
+{
+  "colors": [
+    { "hex": string, "name": string, "role": "primary"|"secondary"|"accent"|"background"|"neutral", "frequency": "dominant"|"common"|"rare" }
+  ]
+}
+Order colors from most dominant to least dominant. Extract between 4 and 10 colors.`,
+    ]);
+
+    const text = result.response.text().trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return res.status(500).json({ error: 'Failed to parse color extraction response' });
+    res.json(JSON.parse(jsonMatch[0]));
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
 

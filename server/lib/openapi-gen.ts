@@ -344,7 +344,12 @@ export function generateOpenAPISpec(
                 resolution: { type: 'string', enum: ['hd', '1k', '2k', '4k'] },
                 model: {
                   type: 'string',
-                  enum: ['gemini-2.5-flash-image', 'gemini-3.1-flash-image-preview', 'claude-opus-4.6'],
+                  enum: ['gemini-2.5-flash-image', 'gemini-3.1-flash-image-preview', 'gemini-3-pro-image-preview', 'seedream-4.5', 'seedream-4.0', 'gpt-image-2'],
+                },
+                provider: {
+                  type: 'string',
+                  enum: ['gemini', 'seedream', 'openai'],
+                  description: 'Image generation provider. Defaults to gemini.',
                 },
               },
               required: ['promptText', 'baseImage'],
@@ -536,6 +541,310 @@ export function generateOpenAPISpec(
         },
       },
     },
+    // ============ AI / PROMPT TOOLS (7) ============
+    {
+      path: '/ai/improve-prompt',
+      method: 'POST',
+      summary: 'Improve an image generation prompt',
+      description: 'Refine and enhance a prompt to produce better AI image generation results.',
+      tags: ['ai'],
+      security: [{ type: 'http', scheme: 'bearer' }],
+      parameters: [],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: { prompt: { type: 'string', description: 'The prompt to improve' } },
+              required: ['prompt'],
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: 'Improved prompt text', schema: { type: 'object', properties: { improved: { type: 'string' } } } },
+      },
+    },
+    {
+      path: '/ai/generate-smart-prompt',
+      method: 'POST',
+      summary: 'Generate an optimized image prompt from structured inputs',
+      description: 'Build a high-quality image generation prompt from design type, style tags, colors, and optional brand context.',
+      tags: ['ai'],
+      security: [{ type: 'http', scheme: 'bearer' }],
+      parameters: [],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                designType: { type: 'string', description: 'Type of design (e.g. product mockup, social media post)' },
+                additionalPrompt: { type: 'string' },
+                aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'] },
+                brandingTags: { type: 'array', items: { type: 'string' } },
+                brandGuidelineId: { type: 'string' },
+                negativePrompt: { type: 'string' },
+              },
+              required: ['designType'],
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: 'Generated prompt', schema: { type: 'object', properties: { prompt: { type: 'string' } } } },
+      },
+    },
+    {
+      path: '/ai/suggest-prompt-variations',
+      method: 'POST',
+      summary: 'Generate variations of an existing prompt',
+      tags: ['ai'],
+      security: [{ type: 'http', scheme: 'bearer' }],
+      parameters: [],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: { prompt: { type: 'string' } },
+              required: ['prompt'],
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: 'Array of prompt variations', schema: { type: 'object', properties: { variations: { type: 'array', items: { type: 'string' } } } } },
+      },
+    },
+    {
+      path: '/ai/describe-image',
+      method: 'POST',
+      summary: 'Describe / extract prompt from an image',
+      description: 'Analyze an image and return a detailed description suitable for use as a generation prompt.',
+      tags: ['ai'],
+      security: [{ type: 'http', scheme: 'bearer' }],
+      parameters: [],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                image: {
+                  type: 'object',
+                  properties: {
+                    url: { type: 'string', format: 'uri' },
+                    base64: { type: 'string' },
+                    mimeType: { type: 'string' },
+                  },
+                },
+              },
+              required: ['image'],
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: 'Image description / extracted prompt', schema: { type: 'object', properties: { description: { type: 'string' } } } },
+      },
+    },
+    {
+      path: '/ai/extract-colors',
+      method: 'POST',
+      summary: 'Extract dominant color palette from an image',
+      description: 'Analyze an image and return hex codes, color names, semantic roles (primary/accent/background/neutral), and frequency.',
+      tags: ['ai'],
+      security: [{ type: 'http', scheme: 'bearer' }],
+      parameters: [],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                image: {
+                  type: 'object',
+                  properties: {
+                    url: { type: 'string', format: 'uri' },
+                    base64: { type: 'string' },
+                    mimeType: { type: 'string' },
+                  },
+                },
+              },
+              required: ['image'],
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'Extracted color palette',
+          schema: {
+            type: 'object',
+            properties: {
+              colors: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    hex: { type: 'string' },
+                    name: { type: 'string' },
+                    role: { type: 'string', enum: ['primary', 'secondary', 'accent', 'background', 'neutral'] },
+                    frequency: { type: 'string', enum: ['dominant', 'common', 'rare'] },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    {
+      path: '/ai/generate-naming',
+      method: 'POST',
+      summary: 'Generate brand or product name suggestions',
+      description: 'Generate creative and memorable name suggestions from a brief. Optionally biased by a brand guideline.',
+      tags: ['ai'],
+      security: [{ type: 'http', scheme: 'bearer' }],
+      parameters: [],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                brief: { type: 'string', description: 'Brand or product description' },
+                count: { type: 'integer', default: 10, description: 'Number of name suggestions' },
+                style: { type: 'string', description: 'Naming style (invented word, metaphor, compound, real word)' },
+                brandGuidelineId: { type: 'string' },
+              },
+              required: ['brief'],
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'Name suggestions with rationale',
+          schema: {
+            type: 'object',
+            properties: {
+              names: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string' },
+                    rationale: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    // ============ BRANDING GENERATION (7) ============
+    {
+      path: '/branding/generate-step',
+      method: 'POST',
+      summary: 'Generate a branding step (persona, archetype, SWOT, colors, moodboard, etc.)',
+      description: `Multi-step branding generation engine. Each step generates a specific brand asset using AI.
+Step values:
+- 1: Market Research — benchmarking paragraph
+- 5: Competitors — competitive landscape
+- 6: References — visual design inspirations
+- 7: SWOT — strengths/weaknesses/opportunities/threats
+- 8: Color Palettes — AI color recommendations with hex codes
+- 9: Visual Elements — icons, patterns, textures
+- 10: Persona — audience persona (demographics, psychographics, pain points)
+- 11: Concept Ideas — product mockup and usage scenarios
+- 12: Moodboard — mood and aesthetic direction
+- 13: Archetypes — brand archetype analysis (Hero, Sage, Lover, Caregiver, etc.)`,
+      tags: ['branding'],
+      security: [{ type: 'http', scheme: 'bearer' }],
+      parameters: [],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                step: { type: 'integer', enum: [1, 5, 6, 7, 8, 9, 10, 11, 12, 13], description: 'Branding step to generate' },
+                prompt: { type: 'string', description: 'Brand or product brief' },
+                previousData: { type: 'object', description: 'Prior branding data for context-aware generation (e.g. { marketResearch, swot, colors })' },
+              },
+              required: ['step', 'prompt'],
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: 'Generated branding step result', schema: { type: 'object', properties: { result: { type: 'object' } } } },
+        402: { description: 'Insufficient credits', schema: { type: 'object' } },
+      },
+    },
+    // ============ MOCKUP BATCH (1) ============
+    {
+      path: '/mockups/batch-generate',
+      method: 'POST',
+      summary: 'Generate multiple mockup images in parallel',
+      description: 'Generate up to 20 mockup images in parallel from an array of prompts. All images share the same model and output settings.',
+      tags: ['mockups'],
+      security: [{ type: 'http', scheme: 'bearer' }],
+      parameters: [],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                prompts: { type: 'array', items: { type: 'string' }, description: 'Array of prompts (max 20)' },
+                provider: { type: 'string', enum: ['gemini', 'openai', 'seedream'], default: 'openai' },
+                model: { type: 'string', default: 'gpt-image-2' },
+                aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'], default: '1:1' },
+                resolution: { type: 'string', enum: ['1K', '2K', '4K'], default: '1K' },
+                brandGuidelineId: { type: 'string' },
+                baseImage: { type: 'object', properties: { url: { type: 'string', format: 'uri' }, base64: { type: 'string' } } },
+              },
+              required: ['prompts'],
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'Batch generation results',
+          schema: {
+            type: 'object',
+            properties: {
+              total: { type: 'integer' },
+              results: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    index: { type: 'integer' },
+                    success: { type: 'boolean' },
+                    data: { type: 'object' },
+                    error: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     // ============ PLUGIN (7) ============
     {
       path: '/plugin',
@@ -676,6 +985,8 @@ export function generateOpenAPISpec(
       { name: 'mockups', description: 'Mockup generation' },
       { name: 'brand-guidelines', description: 'Brand guidelines API - public endpoints require no auth' },
       { name: 'plugin', description: 'Figma plugin integration' },
+      { name: 'ai', description: 'AI tools — prompt generation, image analysis, color extraction, naming' },
+      { name: 'branding', description: 'Brand identity generation — persona, archetype, SWOT, colors, moodboard' },
       { name: 'canvas', description: 'Canvas management' },
       { name: 'api-keys', description: 'API key management for agent access' },
       { name: 'mcp', description: 'MCP (Model Context Protocol) server — connect at /api/mcp via SSE' },

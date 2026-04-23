@@ -8,6 +8,8 @@ import type { GeminiModel, SeedreamModel, AspectRatio, Resolution } from '@/type
 import { cn } from '@/lib/utils';
 import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel as isAdvancedModelFn, getMaxHandles } from '@/constants/geminiModels';
 import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
+import { isOpenAIImageModel } from '@/constants/openaiModels';
+import { resolveProvider } from '@/utils/canvas/generationContext';
 import { PromptInput } from '@/components/PromptInput';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { NodeContainer } from './shared/NodeContainer';
@@ -87,10 +89,10 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const isSuggestingPrompts = nodeData.isSuggestingPrompts || false;
   const promptSuggestions = nodeData.promptSuggestions || [];
   const isSeedream = isSeedreamModel(model);
-  const isAdvanced = !isSeedream && isAdvancedModelFn(model as GeminiModel);
-  // For Seedream: pass resolution directly (credit differs by resolution). For Gemini: only advanced models use it.
-  const effectiveResolution = isSeedream ? resolution : (isAdvanced ? resolution : undefined);
-  const provider = isSeedream ? 'seedream' as const : 'gemini' as const;
+  const isOpenAI = isOpenAIImageModel(model);
+  const isAdvanced = !isSeedream && !isOpenAI && isAdvancedModelFn(model as GeminiModel);
+  const effectiveResolution = (isSeedream || isOpenAI) ? resolution : (isAdvanced ? resolution : undefined);
+  const provider = resolveProvider(model);
   const creditsRequired = getCreditsRequired(model, effectiveResolution, provider);
 
   // Determine number of handles based on model

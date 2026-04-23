@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Camera, CreditCard, ExternalLink, Share2, Copy, Heart, Users, HardDrive, Plus, ArrowRight, UserCog } from 'lucide-react';
+import { User, Camera, CreditCard, ExternalLink, Share2, Copy, Heart, Users, HardDrive, Plus, ArrowRight, UserCog, KeyRound } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { type User as UserType } from '@/services/authService';
 import { type SubscriptionStatus } from '@/services/subscriptionService';
@@ -205,6 +205,16 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                             <div className="flex items-center gap-3">
                                 <Users size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
                                 <span>{t('communityPresets.title') || 'Presets da Comunidade'}</span>
+                            </div>
+                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                        </Link>
+                        <Link
+                            to="/settings/api-keys"
+                            className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
+                        >
+                            <div className="flex items-center gap-3">
+                                <KeyRound size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
+                                <span>API Keys</span>
                             </div>
                             <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                         </Link>

@@ -294,7 +294,7 @@ export const mockupApi = {
     referenceImages?: Array<{ base64?: string; url?: string; mimeType: string }>;
     imagesCount?: number;
     feature?: 'mockupmachine' | 'canvas';
-    provider?: 'gemini' | 'seedream'; // Image generation provider
+    provider?: 'gemini' | 'seedream' | 'openai'; // Image generation provider
     uniqueId?: string | number; // Optional unique identifier for parallel batch requests (e.g., slot index)
     brandGuidelineId?: string; // Optional brand guideline ID for context injection
     seed?: number; // Optional seed for deterministic generation

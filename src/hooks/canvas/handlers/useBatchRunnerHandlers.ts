@@ -85,14 +85,14 @@ export function useBatchRunnerHandlers({
 
     const results = [...initialResults];
 
-    for (let i = 0; i < rows.length; i++) {
+    // Concurrency cap — avoids hammering the API with 20 simultaneous requests
+    const CONCURRENCY = 4;
+
+    const runRow = async (i: number) => {
       if (cancelRef.current) {
         results[i] = { ...results[i], status: 'error', error: 'Cancelled' };
-        // mark remaining as cancelled too
-        for (let j = i; j < rows.length; j++) {
-          results[j] = { ...results[j], status: 'error', error: 'Cancelled' };
-        }
-        break;
+        updateNodeData<BatchRunnerNodeData>(batchNodeId, { results: [...results] }, 'batchRunner');
+        return;
       }
 
       results[i] = { ...results[i], status: 'running' };
@@ -100,7 +100,6 @@ export function useBatchRunnerHandlers({
 
       try {
         const resolvedPrompt = applyVariables(prompt, rows[i]);
-
         const result = await mockupApi.generate({
           promptText: resolvedPrompt,
           model: selectedModel,
@@ -110,15 +109,24 @@ export function useBatchRunnerHandlers({
           feature: 'canvas',
           provider,
         });
-
         const outputUrl = result.imageUrl || result.imageBase64 || '';
         results[i] = { ...results[i], status: 'done', outputImageUrl: outputUrl };
       } catch (err: any) {
         results[i] = { ...results[i], status: 'error', error: err?.message || 'Generation failed' };
       }
-
       updateNodeData<BatchRunnerNodeData>(batchNodeId, { results: [...results] }, 'batchRunner');
-    }
+    };
+
+    // Parallel execution with concurrency limit
+    const queue = rows.map((_, i) => i);
+    const workers = Array.from({ length: Math.min(CONCURRENCY, rows.length) }, async () => {
+      while (queue.length > 0) {
+        const i = queue.shift();
+        if (i === undefined) break;
+        await runRow(i);
+      }
+    });
+    await Promise.allSettled(workers);
 
     const hadCancel = cancelRef.current;
     updateNodeData<BatchRunnerNodeData>(batchNodeId, {

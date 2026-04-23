@@ -299,7 +299,7 @@ router.get('/presets/public', apiRateLimiter, async (req, res) => {
 
     return res.json(grouped);
   } catch (error) {
-    console.error('Failed to load community presets:', error);
+    if (process.env.NODE_ENV === 'production') console.error('Failed to load community presets:', error);
     return res.json({
       '3d': [],
       'presets': [],
