@@ -248,6 +248,10 @@
       "description": "Extract HD images from Google, URL, Instagram or Documents.",
       "name": "Universal Extractor"
     },
+    "moodboardStudio": {
+      "name": "Moodboard Studio",
+      "description": "Extract, upscale and animate images from moodboards. Generate cinematic videos with Veo 3."
+    },
     "mockupMachine": {
       "description": "Generate professional mockups with AI",
       "name": "Mockup Machine"
@@ -1499,6 +1503,7 @@
   },
   "communityPresets": {
     "actions": {
+      "deleteConfirm": "Delete Preset",
       "duplicate": "Duplicate",
       "duplicateButton": "Duplicate",
       "duplicateConfirm": "Duplicate Preset",
