@@ -45,13 +45,13 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
         type="target"
         position={Position.Left}
         id="data-in"
-        style={{ top: '35%', left: -6, width: 10, height: 10, background: '#a78bfa', border: '2px solid #0C0C0C' }}
+        style={{ top: '35%', left: -6, width: 10, height: 10, background: 'var(--color-violet-400)', border: '2px solid var(--color-neutral-950)' }}
       />
       <Handle
         type="target"
         position={Position.Left}
         id="prompt-in"
-        style={{ top: '65%', left: -6, width: 10, height: 10, background: '#60a5fa', border: '2px solid #0C0C0C' }}
+        style={{ top: '65%', left: -6, width: 10, height: 10, background: 'var(--color-blue-400)', border: '2px solid var(--color-neutral-950)' }}
       />
 
       {/* Header */}
@@ -115,7 +115,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
                 <img
                   src={r.outputImageUrl.startsWith('data:') ? r.outputImageUrl : r.outputImageUrl}
                   alt=""
-                  className="w-6 h-6 rounded object-cover border border-white/10"
+                  className="w-6 h-6 rounded object-cover border-node border-white/10"
                 />
               )}
               {r.status === 'error' && r.error && (

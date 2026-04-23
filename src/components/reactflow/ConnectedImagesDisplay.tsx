@@ -46,7 +46,7 @@ export const ConnectedImagesDisplay: React.FC<ConnectedImagesDisplayProps> = ({
     <div className={cn('mb-3 space-y-2', className)}>
       {showLabel && label && (
         <div className="flex items-center gap-2 mb-1.5">
-          <div className="w-2 h-2 bg-brand-cyan border border-black rounded-md" />
+          <div className="w-2 h-2 bg-brand-cyan border-node border-black rounded-md" />
           <span className="text-xs font-mono text-neutral-500">{label}</span>
         </div>
       )}
@@ -63,7 +63,7 @@ export const ConnectedImagesDisplay: React.FC<ConnectedImagesDisplayProps> = ({
           </div>
         ))}
         {validImages.length > maxThumbnails && (
-          <div className="w-20 h-20 flex items-center justify-center bg-neutral-900/50 border border-neutral-700/30 rounded">
+          <div className="w-20 h-20 flex items-center justify-center bg-neutral-900/50 border-node border-neutral-700/30 rounded">
             <span className="text-xs font-mono text-neutral-500">+{validImages.length - maxThumbnails}</span>
           </div>
         )}

@@ -421,7 +421,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       )}
 
       {nodeData.connectedVideo && (
-        <div className="node-margin bg-neutral-900/50 border border-neutral-800 rounded p-2 flex items-center gap-2">
+        <div className="node-margin bg-neutral-900/50 border-node border-neutral-800 rounded p-2 flex items-center gap-2">
           <VideoIcon size={14} className="text-brand-cyan" />
           <span className="text-xs text-neutral-400">
             {t('canvasNodes.videoNode.videoInputConnected') || 'Video Input Connected'}
@@ -430,7 +430,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       )}
 
       {/* Advanced Settings Accordion */}
-      <div className="node-margin border border-neutral-800 rounded-md bg-neutral-900/30">
+      <div className="node-margin border-node border-neutral-800 rounded-md bg-neutral-900/30">
         <NodeButton
           variant="ghost"
           size="sm"
@@ -447,7 +447,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       </div>
 
       {isAdvancedOpen && (
-        <div className="node-margin p-3 space-y-3 border border-neutral-800 rounded-md bg-neutral-900/50">
+        <div className="node-margin p-3 space-y-3 border-node border-neutral-800 rounded-md bg-neutral-900/50">
           {/* Model */}
           <div>
             <NodeLabel>{t('canvasNodes.videoNode.model') || 'Model'}</NodeLabel>
@@ -525,7 +525,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           <div>
             <NodeLabel>{t('canvasNodes.videoNode.negativePrompt') || 'Negative Prompt'}</NodeLabel>
             <Input
-              className="w-full bg-neutral-900 border border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-brand-cyan outline-none placeholder:text-neutral-600"
+              className="w-full bg-neutral-900 border-node border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-brand-cyan outline-none placeholder:text-neutral-600"
               placeholder={t('canvasNodes.videoNode.whatToAvoid') || 'What to avoid...'}
               value={negativePrompt}
               onChange={(e) => {

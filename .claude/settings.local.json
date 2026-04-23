@@ -215,7 +215,9 @@
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('mcpServers',{}\\), indent=2\\)\\)\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('imageUrl','no url'\\)\\)\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(type\\(d\\), len\\(d\\) if isinstance\\(d,list\\) else d\\)\")",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(f'{len\\(d\\)} mockups encontrados'\\)\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(f'{len\\(d\\)} mockups encontrados'\\)\")",
+      "Read(//c/Users/Usuario/.claude/**)",
+      "mcp__claude_ai_Canva__generate-design"
     ]
   }
 }

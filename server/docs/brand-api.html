@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brand Guidelines API - Visant Copilot</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --border: #262626;
+      --text: #fafafa;
+      --text-muted: #a1a1aa;
+      --primary: #8b5cf6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    .subtitle { color: var(--text-muted); margin-bottom: 2rem; }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-public { background: var(--success); color: #000; }
+    .badge-auth { background: var(--warning); color: #000; }
+    .badge-get { background: #3b82f6; color: #fff; }
+    .badge-post { background: #22c55e; color: #fff; }
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    h2 { font-size: 1.25rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    h3 { font-size: 1rem; margin: 1.5rem 0 0.5rem; color: var(--text-muted); }
+    .endpoint {
+      font-family: 'SF Mono', Monaco, monospace;
+      background: var(--bg);
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      margin: 0.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    pre {
+      background: var(--bg);
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 0.875rem;
+      font-family: 'SF Mono', Monaco, monospace;
+      margin: 0.5rem 0;
+    }
+    code {
+      font-family: 'SF Mono', Monaco, monospace;
+      background: var(--bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 3px;
+      font-size: 0.875rem;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
+    th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-muted); font-weight: 500; }
+    .note {
+      background: rgba(139, 92, 246, 0.1);
+      border-left: 3px solid var(--primary);
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 0 4px 4px 0;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Brand Guidelines API</h1>
+    <p class="subtitle">Public API for accessing brand guidelines. No authentication required for public endpoints.</p>
+
+    <section>
+      <h2>Overview</h2>
+      <p>The Brand Guidelines API allows external tools, AI agents, and third-party applications to access brand context programmatically. Public endpoints require no authentication — just a public slug.</p>
+      <div class="note">
+        <strong>Key Differentiator:</strong> Brand guidelines are INPUT for AI generation, not just OUTPUT documentation. Use these endpoints to inject brand context into your AI workflows.
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="badge badge-public">NO AUTH</span> Public Endpoints</h2>
+
+      <h3>Get Public Brand Guideline</h3>
+      <div class="endpoint">
+        <span class="badge badge-get">GET</span>
+        <span>/api/brand-guidelines/public/{slug}</span>
+      </div>
+      <p>Returns the full brand guideline data for a public slug.</p>
+
+      <h3>curl Example</h3>
+      <pre># Get public brand guideline
+curl -X GET "https://api.visantlabs.com/api/brand-guidelines/public/my-brand-slug"</pre>
+
+      <h3>Response Example</h3>
+      <pre>{
+  "guideline": {
+    "_id": "abc123",
+    "name": "Acme Corp",
+    "isPublic": true,
+    "publicSlug": "acme-corp",
+    "identity": { "name": "Acme Corp", "tagline": "Innovation First" },
+    "colors": { "primary": "#8B5CF6", "secondary": "#22C55E" },
+    "typography": { "headings": "Inter", "body": "Inter" },
+    "logos": [],
+    "guidelines": []
+  }
+}</pre>
+    </section>
+
+    <section>
+      <h2><span class="badge badge-public">NO AUTH</span> Brand Context for LLMs</h2>
+
+      <h3>Get Brand Context</h3>
+      <div class="endpoint">
+        <span class="badge badge-get">GET</span>
+        <span>/api/brand-guidelines/public/{slug}/context</span>
+      </div>
+      <p>Returns LLM-ready formatted brand context. Perfect for AI agents and MCP integrations.</p>
+
+      <h3>Query Parameters</h3>
+      <table>
+        <tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        <tr>
+          <td><code>format</code></td>
+          <td>string</td>
+          <td><code>full</code></td>
+          <td><code>full</code> — Complete brand context &nbsp;|&nbsp; <code>compact</code> — Optimized for image generation</td>
+        </tr>
+        <tr>
+          <td><code>output</code></td>
+          <td>string</td>
+          <td><code>text</code></td>
+          <td><code>text</code> — Plain text for direct LLM injection &nbsp;|&nbsp; <code>json</code> — Structured JSON</td>
+        </tr>
+      </table>
+
+      <h3>curl Examples</h3>
+      <pre># Get full context as plain text (default)
+curl "https://api.visantlabs.com/api/brand-guidelines/public/my-brand/context"
+
+# Get compact context as JSON (optimized for image gen)
+curl "https://api.visantlabs.com/api/brand-guidelines/public/my-brand/context?format=compact&output=json"
+
+# Get full context as JSON with structured data
+curl "https://api.visantlabs.com/api/brand-guidelines/public/my-brand/context?output=json"</pre>
+
+      <h3>Response Example (JSON output)</h3>
+      <pre>{
+  "slug": "my-brand",
+  "brandName": "Acme Corp",
+  "format": "compact",
+  "context": "Brand: Acme Corp. Primary color: #8B5CF6. Font: Inter...",
+  "data": {
+    "colors": { "primary": "#8B5CF6", "secondary": "#22C55E" },
+    "typography": { "headings": "Inter", "body": "Inter" },
+    "guidelines": [],
+    "tokens": {}
+  }
+}</pre>
+
+      <h3>Response Example (Text output)</h3>
+      <pre>Brand: Acme Corp
+Tagline: Innovation First
+
+Colors:
+- Primary: #8B5CF6
+- Secondary: #22C55E
+
+Typography:
+- Headings: Inter
+- Body: Inter
+
+Guidelines:
+- Use primary color for CTAs
+- Maintain 16px minimum font size</pre>
+    </section>
+
+    <section>
+      <h2>Use Cases</h2>
+      <table>
+        <tr><th>Use Case</th><th>Recommended Endpoint</th><th>Parameters</th></tr>
+        <tr><td>AI Image Generation</td><td><code>/context</code></td><td><code>format=compact&amp;output=json</code></td></tr>
+        <tr><td>LLM Context Injection</td><td><code>/context</code></td><td><code>output=text</code></td></tr>
+        <tr><td>MCP Agent Integration</td><td><code>/context</code></td><td><code>output=json</code></td></tr>
+        <tr><td>Display Brand Info</td><td><code>/public/{slug}</code></td><td>-</td></tr>
+        <tr><td>Agency Client Sharing</td><td><code>/public/{slug}</code></td><td>-</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>Error Responses</h2>
+      <table>
+        <tr><th>Status</th><th>Description</th><th>Response</th></tr>
+        <tr><td><code>404</code></td><td>Brand not found or not public</td><td><code>{ "error": "Brand guideline not found or not public" }</code></td></tr>
+        <tr><td><code>429</code></td><td>Rate limit exceeded</td><td><code>{ "error": "Too many requests" }</code></td></tr>
+        <tr><td><code>500</code></td><td>Server error</td><td><code>{ "error": "Failed to fetch public guideline" }</code></td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>Related Resources</h2>
+      <ul>
+        <li><a href="/api/docs/api/spec">OpenAPI Specification</a> — Full API spec (JSON)</li>
+        <li><a href="/api/docs/plugin/mcp.json">MCP Specification</a> — MCP tools for agents</li>
+        <li><a href="/api/docs/search?q=brand">Search API Docs</a> — Search for brand endpoints</li>
+      </ul>
+    </section>
+
+    <footer style="text-align: center; margin-top: 2rem; color: var(--text-muted);">
+      <p>Visant Copilot API v{{VERSION}}</p>
+    </footer>
+  </div>
+</body>
+</html>

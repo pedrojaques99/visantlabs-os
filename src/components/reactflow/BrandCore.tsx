@@ -321,7 +321,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
             {hasLogo ? (
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-md overflow-hidden bg-neutral-950/40 border border-neutral-700/50 p-1 flex items-center justify-center shadow-inner">
+                <div className="w-16 h-16 rounded-md overflow-hidden bg-neutral-950/40 border-node border-neutral-700/50 p-1 flex items-center justify-center shadow-inner">
                   <img
                     src={logoBase64.startsWith('data:') ? logoBase64 : `data:image/png;base64,${logoBase64}`}
                     alt="Logo"
@@ -382,7 +382,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
             {hasIdentity ? (
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-md bg-neutral-950/40 border border-neutral-700/50 shadow-inner">
+                <div className="p-3 rounded-md bg-neutral-950/40 border-node border-neutral-700/50 shadow-inner">
                   <FileText size={20} className="text-brand-cyan/70" />
                 </div>
                 <div className="flex-1 overflow-hidden">
@@ -462,7 +462,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
         {/* Analysis Status */}
         {isAnalyzing && (
-          <div className="px-3 py-2.5 bg-brand-cyan/10 border border-brand-cyan/20 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+          <div className="px-3 py-2.5 bg-brand-cyan/10 border-node border-brand-cyan/20 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
             <div className="flex items-center gap-3">
               <div className="p-1.5 rounded-full bg-brand-cyan/20">
                 <GlitchLoader size={12} color="brand-cyan" />
@@ -501,7 +501,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               <div className="mt-4 space-y-4 text-[11px] animate-in fade-in slide-in-from-top-1 duration-300">
                 {/* Logo Details */}
                 {(brandIdentity.logo.colors.length > 0 || brandIdentity.logo.style || brandIdentity.logo.elements.length > 0) && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20 backdrop-blur-sm">
                     <div className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Logo DNA</div>
                     <div className="space-y-3">
                       {brandIdentity.logo.colors.length > 0 && (
@@ -509,10 +509,10 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                           {brandIdentity.logo.colors.map((color, idx) => (
                             <div
                               key={idx}
-                              className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/40 rounded border border-neutral-700/30 shadow-sm"
+                              className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/40 rounded border-node border-neutral-700/30 shadow-sm"
                             >
                               <div
-                                className="w-2.5 h-2.5 rounded border border-white/10 shadow-sm"
+                                className="w-2.5 h-2.5 rounded border-node border-white/10 shadow-sm"
                                 style={{ backgroundColor: color }}
                               />
                               <span className="text-neutral-400 font-mono text-[10px] uppercase">{color}</span>
@@ -547,7 +547,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Brand Colors - Simplified but elegant */}
                 {(brandIdentity.colors.primary.length > 0 || brandIdentity.colors.secondary.length > 0 || brandIdentity.colors.accent.length > 0) && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20 backdrop-blur-sm">
                     <div className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Color Palettes</div>
                     <div className="space-y-3">
                       {[
@@ -561,10 +561,10 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                             {palette.map((color, idx) => (
                               <div key={idx} className="group/color relative">
                                 <div
-                                  className="w-6 h-6 rounded border border-white/10 shadow-sm transition-transform group-hover/color:scale-110"
+                                  className="w-6 h-6 rounded border-node border-white/10 shadow-sm transition-transform group-hover/color:scale-110"
                                   style={{ backgroundColor: color }}
                                 />
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-neutral-950 text-white text-[10px] font-mono rounded opacity-0 group-hover/color:opacity-100 transition-opacity z-10 whitespace-nowrap border border-neutral-700">
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-neutral-950 text-white text-[10px] font-mono rounded opacity-0 group-hover/color:opacity-100 transition-opacity z-10 whitespace-nowrap border-node border-neutral-700">
                                   {color}
                                 </div>
                               </div>
@@ -578,7 +578,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Personality & Tone */}
                 {(brandIdentity.personality.tone || brandIdentity.personality.feeling || brandIdentity.personality.values?.length > 0) && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20 backdrop-blur-sm">
                     <div className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Brand Personality</div>
                     <div className="space-y-2.5 text-neutral-400">
                       <div className="grid grid-cols-2 gap-3">
@@ -599,7 +599,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                       {brandIdentity.personality.values && brandIdentity.personality.values.length > 0 && (
                         <div className="flex flex-wrap gap-1 pt-1.5 border-t border-neutral-700/10">
                           {brandIdentity.personality.values.map((value, idx) => (
-                            <span key={idx} className="px-2 py-0.5 bg-neutral-950/40 rounded text-[10px] text-brand-cyan/70 border border-brand-cyan/20 uppercase ">
+                            <span key={idx} className="px-2 py-0.5 bg-neutral-950/40 rounded text-[10px] text-brand-cyan/70 border-node border-brand-cyan/20 uppercase ">
                               {value}
                             </span>
                           ))}
@@ -639,7 +639,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         )}
                       </NodeButton>
                     </div>
-                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-32 overflow-y-auto">
+                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-32 overflow-y-auto">
                       {visualPrompts.mockupPrompt}
                     </div>
                   </div>
@@ -659,7 +659,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         )}
                       </NodeButton>
                     </div>
-                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-24 overflow-y-auto">
+                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-24 overflow-y-auto">
                       {visualPrompts.compositionPrompt}
                     </div>
                   </div>
@@ -679,7 +679,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         )}
                       </NodeButton>
                     </div>
-                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-24 overflow-y-auto">
+                    <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-24 overflow-y-auto">
                       {visualPrompts.stylePrompt}
                     </div>
                   </div>
@@ -718,7 +718,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     )}
                   </NodeButton>
                 </div>
-                <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-64 overflow-y-auto whitespace-pre-wrap">
+                <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-64 overflow-y-auto whitespace-pre-wrap">
                   {consolidateStrategiesToText(strategicPrompts.consolidated)}
                 </div>
               </div>
@@ -728,7 +728,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
         {/* Generating Prompts Status */}
         {isGeneratingPrompts && (
-          <div className="mt-4 px-3 py-2 bg-brand-cyan/20 border border-[brand-cyan]/30 rounded flex items-center gap-3">
+          <div className="mt-4 px-3 py-2 bg-brand-cyan/20 border-node border-[brand-cyan]/30 rounded flex items-center gap-3">
             <GlitchLoader size={14} color="brand-cyan" />
             <span className="text-xs font-mono text-brand-cyan">Generating prompts...</span>
           </div>

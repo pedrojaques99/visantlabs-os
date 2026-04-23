@@ -96,6 +96,7 @@
    * 
    * NodeContainer automatically applies --node-padding unless overridden.
    */
+  --node-border-width: 1px;
   --node-padding: 2rem;
   /* p-8 = 32px - default padding for all nodes */
   --node-gap: 1rem;
@@ -1279,6 +1280,7 @@
   padding: 6px;
   transform-origin: center;
   transition: opacity 0.15s ease;
+  z-index: 10;
 }
 
 .react-flow__handle[data-handlepos="left"] {
@@ -1535,6 +1537,12 @@
   height: auto;
   /* Text color based on contrast - automatically adjusts */
   color: var(--node-text-color, #e5e7eb);
+}
+
+/* ── Node border-width token — use `border-node` utility in node components ── */
+@utility border-node {
+  border-style: solid;
+  border-width: var(--node-border-width);
 }
 
 /* Node text color utilities - use CSS variables for automatic contrast */

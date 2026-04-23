@@ -119,20 +119,10 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
         className="w-2 h-2 bg-brand-cyan border-2 border-black node-handle"
       />
 
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
-            <FileText size={16} className="text-brand-cyan" />
-          </div>
-          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
-            {t('canvasNodes.pdfNode.title') || 'PDF Node'}
-          </h3>
-        </div>
-      </div>
+      <NodeHeader icon={FileText} title={t('canvasNodes.pdfNode.title') || 'PDF Node'} selected={selected} />
 
       {/* PDF Upload Section */}
-      <div className="p-4 flex-1 flex flex-col gap-[var(--node-gap)]">
+      <div className="node-margin flex-1 flex flex-col gap-[var(--node-gap)]">
         {pdfBase64 || nodeData.pdfUrl ? (
           <div className="space-y-3">
             <div className="relative group/pdf">
@@ -142,10 +132,10 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
                   pdfUrl={nodeData.pdfUrl}
                   fileName={fileName}
                   onRemove={handleRemovePdf}
-                  className="w-full h-32 rounded-md border border-neutral-700/30 overflow-hidden"
+                  className="w-full h-32 rounded-md border-node border-neutral-700/30 overflow-hidden"
                 />
               ) : (
-                <div className="w-full h-32 bg-neutral-900/50 border border-neutral-700/30 rounded-md flex items-center justify-center">
+                <div className="w-full h-32 bg-neutral-900/50 border-node border-neutral-700/30 rounded-md flex items-center justify-center">
                   <FileText size={16} className="text-neutral-600" />
                 </div>
               )}

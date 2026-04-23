@@ -68,7 +68,7 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
     return (
       <Modal isOpen={isOpen} onClose={onClose} title="Brand Media Library" size="lg">
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-16 h-16 rounded-full bg-neutral-900 flex items-center justify-center mb-4 border border-dashed border-neutral-800">
+          <div className="w-16 h-16 rounded-full bg-neutral-900 flex items-center justify-center mb-4 border-node border-dashed border-neutral-800">
             <LayoutGrid className="text-neutral-600" size={32} />
           </div>
           <h3 className="text-sm font-mono text-neutral-400 uppercase tracking-widest mb-2 font-bold">No Brand Selected</h3>
@@ -105,7 +105,7 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
   const renderSkeletons = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
       {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-        <div key={i} className="aspect-square rounded-2xl bg-neutral-900/30 border border-white/5 p-3 flex flex-col gap-3">
+        <div key={i} className="aspect-square rounded-2xl bg-neutral-900/30 border-node border-white/5 p-3 flex flex-col gap-3">
           <SkeletonLoader height="100%" width="100%" className="rounded-xl" />
           <SkeletonLoader height="10px" width="60%" />
         </div>
@@ -124,7 +124,7 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
       <div className="flex flex-col h-[600px]">
         {/* Controls Header */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 pb-6 border-b border-white/5">
-          <div className="flex items-center p-1 bg-neutral-900/50 border border-white/5 rounded-lg">
+          <div className="flex items-center p-1 bg-neutral-900/50 border-node border-white/5 rounded-lg">
             {(['all', 'logos', 'media', 'colors'] as TabType[]).map((tab) => (
               <button
                 key={tab}
@@ -149,7 +149,7 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
                 placeholder="SEARCH ASSETS..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-neutral-900/50 border border-white/5 rounded-lg pl-9 pr-4 py-1.5 text-xs text-white placeholder:text-neutral-700 focus:outline-none focus:border-brand-cyan/30 font-mono"
+                className="w-full bg-neutral-900/50 border-node border-white/5 rounded-lg pl-9 pr-4 py-1.5 text-xs text-white placeholder:text-neutral-700 focus:outline-none focus:border-brand-cyan/30 font-mono"
               />
             </div>
             <div className="flex items-center p-1 bg-neutral-900/30 rounded-lg">
@@ -251,7 +251,7 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
                         }}
                       >
                         <div
-                          className="w-16 h-16 rounded-xl border border-white/5 shadow-lg group-hover:scale-105 transition-transform"
+                          className="w-16 h-16 rounded-xl border-node border-white/5 shadow-lg group-hover:scale-105 transition-transform"
                           style={{ backgroundColor: color.hex }}
                         />
                         <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-tight">{color.hex}</span>
@@ -315,7 +315,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
       <div
         draggable
         onDragStart={handleDragStart}
-        className="flex items-center gap-4 p-2 rounded-lg bg-neutral-900/30 border border-white/5 hover:border-brand-cyan/30 hover:bg-neutral-900/50 transition-all group cursor-pointer"
+        className="flex items-center gap-4 p-2 rounded-lg bg-neutral-900/30 border-node border-white/5 hover:border-brand-cyan/30 hover:bg-neutral-900/50 transition-all group cursor-pointer"
         onClick={onClick}
       >
         <div className="w-10 h-10 aspect-square rounded-md overflow-hidden bg-neutral-950 flex items-center justify-center">
@@ -329,7 +329,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
           {onAdd && (
             <button
               onClick={(e) => { e.stopPropagation(); onAdd(); }}
-              className="p-1.5 rounded-md bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 border border-brand-cyan/20"
+              className="p-1.5 rounded-md bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 border-node border-brand-cyan/20"
               title="Add to board"
             >
               <Plus size={12} />
@@ -347,7 +347,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
     <div
       draggable
       onDragStart={handleDragStart}
-      className="flex flex-col gap-3 p-3 rounded-2xl bg-neutral-900/30 border border-white/5 hover:border-brand-cyan/30 transition-all group cursor-pointer"
+      className="flex flex-col gap-3 p-3 rounded-2xl bg-neutral-900/30 border-node border-white/5 hover:border-brand-cyan/30 transition-all group cursor-pointer"
       onClick={onClick}
     >
       <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-neutral-950 flex items-center justify-center p-4">
@@ -362,7 +362,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
               <Plus size={16} strokeWidth={2.5} />
             </button>
           )}
-          <div className="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-md text-white flex items-center justify-center border border-white/20">
+          <div className="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-md text-white flex items-center justify-center border-node border-white/20">
             <ImageIcon size={14} />
           </div>
         </div>

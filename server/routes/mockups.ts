@@ -766,7 +766,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
 
     // Replace original images with processed ones (now containing base64)
     const finalBaseImage = processedBaseImage;
-    const finalReferenceImages = processedReferenceImages?.filter(img => img !== null);
+    let finalReferenceImages = processedReferenceImages?.filter(img => img !== null);
 
     // Build final prompt with optional brand context injection
     let finalPromptText = promptText;
@@ -791,10 +791,64 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
           const brandContext = buildBrandContextForImageGen(guidelineData);
           // Prepend brand context to prompt
           finalPromptText = `${brandContext}\n\n--- USER PROMPT ---\n${promptText}`;
+
+          // Inject brand logos as reference images (prepended, so logo comes first)
+          const logos: Array<{ url: string; variant: string; label?: string }> = guidelineData.logos || [];
+          if (logos.length > 0) {
+            // Priority: primary > icon > light > dark > first available
+            const priority = ['primary', 'icon', 'light', 'dark'];
+            const sorted = [...logos].sort((a, b) => {
+              const ai = priority.indexOf(a.variant);
+              const bi = priority.indexOf(b.variant);
+              return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+            });
+            const logoReferenceImages: Array<{ base64: string; mimeType: string }> = [];
+            for (const logo of sorted.slice(0, 2)) {
+              if (!logo.url) continue;
+              try {
+                const processed = await processImageInput({ url: logo.url });
+                if (processed) logoReferenceImages.push(processed as any);
+              } catch {
+                // non-critical
+              }
+            }
+            if (logoReferenceImages.length > 0) {
+              finalReferenceImages = [
+                ...logoReferenceImages,
+                ...(finalReferenceImages || []),
+              ];
+              console.log(`${logPrefix} [BRAND] Injected ${logoReferenceImages.length} brand logo(s) as reference images`);
+            }
+          }
+
+          // Inject media kit images as style reference images (up to 2, appended after logos)
+          const mediaItems: Array<{ url: string; type: string; label?: string }> = guidelineData.media || [];
+          const styleMedia = mediaItems.filter(m => m.type === 'image').slice(0, 2);
+          if (styleMedia.length > 0) {
+            const mediaReferenceImages: Array<{ base64: string; mimeType: string }> = [];
+            for (const media of styleMedia) {
+              if (!media.url) continue;
+              try {
+                const processed = await processImageInput({ url: media.url });
+                if (processed) mediaReferenceImages.push(processed as any);
+              } catch {
+                // non-critical
+              }
+            }
+            if (mediaReferenceImages.length > 0) {
+              finalReferenceImages = [
+                ...(finalReferenceImages || []),
+                ...mediaReferenceImages,
+              ];
+              console.log(`${logPrefix} [BRAND] Injected ${mediaReferenceImages.length} media kit image(s) as style references`);
+            }
+          }
+
           console.log(`${logPrefix} [BRAND] Injected brand context from guideline:`, {
             guidelineId: brandGuidelineId,
             brandName: (guidelineData.identity as any)?.name || 'Unknown',
             contextLength: brandContext.length,
+            logoCount: (guidelineData.logos as any[])?.length || 0,
           });
         } else {
           console.warn(`${logPrefix} [BRAND] Brand guideline not found:`, brandGuidelineId);
@@ -1136,8 +1190,8 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       imageBase64 = seedreamResult.base64;
       usedSeed = seedreamResult.seed;
     } else if (provider === 'openai' || isOpenAIImageModel(model)) {
-      // Use OpenAI GPT Image 2
-      const openaiModel = isOpenAIImageModel(model) ? model : 'gpt-image-2';
+      // Use OpenAI image generation
+      const openaiModel = isOpenAIImageModel(model) ? model : 'gpt-image-1';
       console.log(`${logPrefix} [GENERATION] Using OpenAI provider`, {
         model: openaiModel,
         resolution,

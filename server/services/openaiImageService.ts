@@ -30,7 +30,7 @@ export interface OpenAIImageResult {
 }
 
 function getClient(apiKey?: string): OpenAI {
-  const key = apiKey || process.env.OPENAI_API_KEY;
+  const key = apiKey || process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
   if (!key) throw new Error('OpenAI API key is not configured');
   return new OpenAI({ apiKey: key });
 }
@@ -79,7 +79,6 @@ export async function generateOpenAIImage(params: GenerateOpenAIImageParams): Pr
       prompt,
       size: size as any,
       n: 1,
-      response_format: 'b64_json',
     });
 
     const result = response.data[0];
@@ -98,14 +97,15 @@ export async function generateOpenAIImage(params: GenerateOpenAIImageParams): Pr
     size: size as any,
     quality,
     n: 1,
-    response_format: 'b64_json',
   });
 
   const result = response.data[0];
-  if (!result?.b64_json) throw new Error('OpenAI image generation returned no image data');
+  // gpt-image-1/2 return b64_json by default; fallback to url if needed
+  const b64 = result?.b64_json;
+  if (!b64) throw new Error('OpenAI image generation returned no image data');
 
   return {
-    base64: result.b64_json,
-    revisedPrompt: result.revised_prompt,
+    base64: b64,
+    revisedPrompt: (result as any).revised_prompt,
   };
 }

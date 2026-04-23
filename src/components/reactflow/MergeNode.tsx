@@ -283,7 +283,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
             <img
               src={data.resultImageUrl || (data.resultImageBase64 ? `data:image/png;base64,${data.resultImageBase64}` : '')}
               alt={t('canvasNodes.mergeNode.result')}
-              className="w-full h-auto rounded-md border border-neutral-700/30 shadow-sm"
+              className="w-full h-auto rounded-md border-node border-neutral-700/30 shadow-sm"
               onLoad={(e) => {
                 const img = e.target as HTMLImageElement;
                 if (img.naturalWidth > 0 && img.naturalHeight > 0) {

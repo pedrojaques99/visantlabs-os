@@ -313,10 +313,12 @@ export function buildBrandContext(
  * @returns Compact formatted string for image generation context
  */
 export function buildBrandContextForImageGen(bg: BrandGuideline): string {
+  // Full context (not compact) so strategy, voice, tone, imagery guidelines are included.
+  // Logos and media are excluded from TEXT — they are injected as referenceImages by the caller.
   return buildBrandContext(bg, {
     includeLogos: false,
     includeMedia: false,
-    compact: true,
+    compact: false,
   });
 }
 

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brand-Aware AI Prompting — Visant</title>
+  <style>
+    :root { --bg:#0a0a0a; --surface:#141414; --border:#262626; --text:#fafafa; --muted:#a1a1aa; --accent:#3DBEE9; --green:#22c55e; --red:#ef4444; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; padding:2rem; }
+    .container { max-width:860px; margin:0 auto; }
+    h1 { font-size:2rem; margin-bottom:.25rem; }
+    .lead { color:var(--muted); margin-bottom:2.5rem; font-size:1.1rem; }
+    h2 { font-size:1.3rem; margin:2rem 0 .75rem; color:var(--accent); }
+    h3 { font-size:.8rem; margin:1.5rem 0 .5rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+    section { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1.5rem; margin-bottom:1.5rem; }
+    pre { background:var(--bg); padding:1rem; border-radius:6px; overflow-x:auto; font-size:.85rem; font-family:'SF Mono',monospace; margin:.5rem 0; }
+    code { font-family:'SF Mono',monospace; background:var(--bg); padding:.1rem .35rem; border-radius:3px; font-size:.85rem; color:var(--accent); }
+    .good { border-left:3px solid var(--green); padding-left:1rem; margin:.5rem 0; }
+    .bad  { border-left:3px solid var(--red);   padding-left:1rem; margin:.5rem 0; }
+    .tag { display:inline-block; padding:.15rem .5rem; border-radius:4px; font-size:.75rem; font-weight:600; margin-right:.4rem; }
+    .tag-good { background:rgba(34,197,94,.15); color:var(--green); }
+    .tag-bad  { background:rgba(239,68,68,.15);  color:var(--red); }
+    table { width:100%; border-collapse:collapse; margin:.5rem 0; font-size:.9rem; }
+    th,td { padding:.65rem .75rem; border-bottom:1px solid var(--border); text-align:left; }
+    th { color:var(--muted); font-weight:500; }
+    a { color:var(--accent); }
+    .note { background:rgba(61,190,233,.07); border-left:3px solid var(--accent); padding:1rem; border-radius:0 6px 6px 0; margin:1rem 0; }
+    ul { padding-left:1.5rem; }
+    li { margin:.3rem 0; }
+  </style>
+</head>
+<body><div class="container">
+  <h1>Brand-Aware AI Prompting</h1>
+  <p class="lead">How to use Visant brand guidelines to generate on-brand mockups — without describing logos or typography in your prompt.</p>
+
+  <section>
+    <h2>The Core Rule</h2>
+    <div class="note">
+      Pass <code>brandGuidelineId</code> and let the system inject brand assets automatically.<br>
+      <strong>Never describe the logo or font in the prompt text.</strong> The model will hallucinate them.
+    </div>
+    <div class="bad"><span class="tag tag-bad">BAD</span> <em>"Add the SPORTS 248 logo with concentric circles bullseye icon in bold white Archivo font at the bottom..."</em></div>
+    <div class="good"><span class="tag tag-good">GOOD</span> <em>"Product post for Sports 248. Dark navy background, cricket bats centered, brand logo at bottom."</em> + <code>brandGuidelineId</code></div>
+  </section>
+
+  <section>
+    <h2>What gets injected automatically</h2>
+    <p>When you pass <code>brandGuidelineId</code> to <code>mockup-generate</code> or <code>mockup-batch-generate</code>, the server automatically:</p>
+    <ul>
+      <li><strong>Logos</strong> — fetched from the guideline's <code>logos[]</code> array and passed as <code>referenceImages</code> (up to 2, priority: primary → icon → light → dark)</li>
+      <li><strong>Media kit images</strong> — style reference photos from <code>media[]</code> are appended as additional <code>referenceImages</code> (up to 2)</li>
+      <li><strong>Brand context text</strong> — colors, typography, tone of voice, do's/don'ts, imagery guidelines, strategy/positioning, archetypes, target personas — prepended to the prompt</li>
+    </ul>
+    <div class="note">Total referenceImages = your own (if any) + logos (≤2) + media (≤2). OpenAI gpt-image-1 supports up to 16 reference images total.</div>
+  </section>
+
+  <section>
+    <h2>API Usage</h2>
+    <h3>Single mockup</h3>
+    <pre>POST /api/mockups/generate
+Authorization: Bearer visant_sk_...
+
+{
+  "promptText": "Product post. Dark navy background. Cricket bats centered. Brand logo at bottom.",
+  "brandGuidelineId": "69e7c4af3f7d1be9a660a658",
+  "provider": "openai",
+  "model": "gpt-image-1",
+  "aspectRatio": "1:1",
+  "resolution": "1K"
+}</pre>
+
+    <h3>Batch (parallel)</h3>
+    <pre>POST /api/mockups/batch-generate
+{
+  "prompts": [
+    "Product post. Dark navy background. Cricket bats centered.",
+    "Story poster. Sky blue background. BUILT FOR THE MATCH bold headline. Athlete with motion blur.",
+    "Hero banner. Dark navy. Typography mask, sport photo through letterforms. Left-side headline."
+  ],
+  "brandGuidelineId": "69e7c4af3f7d1be9a660a658",
+  "provider": "openai",
+  "model": "gpt-image-1",
+  "aspectRatio": "1:1"
+}</pre>
+  </section>
+
+  <section>
+    <h2>MCP Tool Usage (Claude / Cursor)</h2>
+    <pre>// First — get the guideline id
+list_brand_guidelines()  // or get by name
+
+// Then — generate
+generate_mockup({
+  promptText: "Product post. Dark navy. Cricket bats centered.",
+  brandGuidelineId: "69e7c4af3f7d1be9a660a658",
+  provider: "openai",
+  model: "gpt-image-1"
+})
+
+// Or batch
+batch_generate_mockups({
+  prompts: ["...", "...", "..."],
+  brandGuidelineId: "69e7c4af3f7d1be9a660a658",
+  provider: "openai",
+  model: "gpt-image-1"
+})</pre>
+  </section>
+
+  <section>
+    <h2>Prompt Writing Rules</h2>
+    <table>
+      <tr><th>Do</th><th>Don't</th></tr>
+      <tr><td>Describe composition, layout, mood, scene</td><td>Describe the logo visually (shape, colors, icon)</td></tr>
+      <tr><td>Mention the brand name as a label: "brand logo at bottom"</td><td>Try to reproduce typography by describing font weight/style</td></tr>
+      <tr><td>Use color names from the brand ("deep navy", "action blue")</td><td>Use generic color descriptions that contradict the brand</td></tr>
+      <tr><td>Reference product category: "cricket bats", "darts"</td><td>Invent product details not in the brief</td></tr>
+      <tr><td>Describe photography style: "motion blur", "studio crisp"</td><td>Ask for text overlays — these are unreliable with image models</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Related Endpoints</h2>
+    <ul>
+      <li><a href="/api/docs/platform/mcp.json">Platform MCP Spec (JSON)</a> — all MCP tools</li>
+      <li><a href="/api/docs/brand">Brand Guidelines API</a> — public endpoints reference</li>
+      <li><a href="/api/docs/api/spec">OpenAPI Spec (JSON)</a> — full REST API</li>
+      <li><a href="/api/docs/brand-prompting.json">This guide as JSON</a> — LLM-consumable version</li>
+    </ul>
+  </section>
+
+  <footer style="text-align:center;margin-top:2rem;color:var(--muted);">Visant Labs — v{{VERSION}}</footer>
+</div></body></html>

@@ -33,7 +33,7 @@ const CATEGORIES = [
     id: 'trans',
     name: 'Transform',
     icon: Diamond,
-    color: '#a855f7',
+    color: 'var(--color-violet-400)',
     hints: [
       'Apply a futuristic VHS glitch',
       'Convert to 8-bit dithered art',
@@ -44,7 +44,7 @@ const CATEGORIES = [
     id: 'matrix',
     name: 'Matrix',
     icon: Grid3x3,
-    color: '#f97316',
+    color: 'var(--color-orange-500)',
     hints: [
       'Compare 4 different AI models',
       'Generate 3 camera angles',
@@ -55,7 +55,7 @@ const CATEGORIES = [
     id: 'pipe',
     name: 'Pipeline',
     icon: GitBranch,
-    color: '#22c55e',
+    color: 'var(--color-green-500)',
     hints: [
       'Generate → Analyze → Refine loop',
       'Custom 3-step image pipeline',
@@ -213,7 +213,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                     <button
                       key={cat.id}
                       onClick={() => setActiveCategory(cat.id)}
-                      className="nodrag nopan flex items-center gap-3 p-2.5 rounded-xl bg-neutral-900/50 border border-white/5 hover:border-white/10 hover:bg-neutral-900 transition-all group text-left"
+                      className="nodrag nopan flex items-center gap-3 p-2.5 rounded-md bg-neutral-900/50 border-node border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900 transition-all group text-left"
                     >
                       <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
                         <cat.icon size={16} style={{ color: cat.color }} />
@@ -244,7 +244,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                         setInput(hint);
                         textareaRef.current?.focus();
                       }}
-                      className="nodrag nopan w-full flex items-center justify-between p-2 rounded-lg bg-neutral-900/30 border border-white/5 hover:border-brand-cyan/30 hover:bg-neutral-900 transition-all group group"
+                      className="nodrag nopan w-full flex items-center justify-between p-2 rounded-md bg-neutral-900/30 border-node border-neutral-800 hover:border-brand-cyan/30 hover:bg-neutral-900 transition-all group group"
                     >
                       <span className="text-[10px] font-mono text-neutral-400 group-hover:text-brand-cyan transition-colors truncate">"{hint}"</span>
                       <Plus size={10} className="text-neutral-600 group-hover:text-brand-cyan shrink-0" />
@@ -272,7 +272,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
               </div>
             ))}
             {isLoading && (
-              <div className="flex items-center gap-3 px-3 py-2 bg-brand-cyan/5 border border-brand-cyan/20 rounded-2xl rounded-tl-none mr-8">
+              <div className="flex items-center gap-3 px-3 py-2 bg-brand-cyan/5 border-node border-brand-cyan/20 rounded-2xl rounded-tl-none mr-8">
                 <GlitchLoader size={14} color="var(--brand-cyan)" />
                 <span className="text-brand-cyan/70 text-[10px] font-mono uppercase tracking-widest font-bold">
                   {PROCESSING_STEPS[processingStep].label}
@@ -296,7 +296,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             'flex flex-col gap-3 p-4 rounded-2xl border bg-brand-cyan/[0.03] border-brand-cyan/30 shadow-[0_0_20px_rgba(0,195,255,0.05)]'
           )}>
             <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-xl bg-brand-cyan/10 border border-brand-cyan/20">
+              <div className="p-2.5 rounded-xl bg-brand-cyan/10 border-node border-brand-cyan/20">
                 <Zap size={20} className="text-brand-cyan" />
               </div>
               <div className="flex-1 min-w-0">

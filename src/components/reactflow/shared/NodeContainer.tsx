@@ -60,7 +60,7 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
       onDoubleClick={handleDoubleClick}
       className={cn(
         // Keep all visual styles consistent during dragging
-        'border border-white/8 rounded-2xl relative node-container flex flex-col backdrop-blur-xl',
+        'border-node border-white/8 rounded-2xl relative node-container flex flex-col backdrop-blur-xl',
         'min-w-[200px] h-fit rounded-2xl',
         // Default gap and space-y if not overridden
         'gap-[var(--node-gap)]',

@@ -64,10 +64,10 @@ export const DocsPage: React.FC = () => {
     [mcpToolNames]
   );
 
-  // Use modular markdown generator
+  // Use modular markdown generator — platform spec and pricing from server (single source of truth)
   const getMarkdown = useCallback(
-    (tab: string) => generateTabMarkdown(tab as any, mcpSpec, openApiSpec),
-    [mcpSpec, openApiSpec]
+    (tab: string) => generateTabMarkdown(tab as any, mcpSpec, openApiSpec, platformMcpSpec, pricingData),
+    [mcpSpec, openApiSpec, platformMcpSpec, pricingData]
   );
 
   const markCopied = useCallback(() => {

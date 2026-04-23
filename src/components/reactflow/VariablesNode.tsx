@@ -68,7 +68,7 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
           <div key={idx} className="flex items-center gap-1">
             <input
               className={cn(
-                'flex-1 min-w-0 bg-white/5 border border-white/10 rounded px-2 py-1',
+                'flex-1 min-w-0 bg-white/5 border-node border-white/10 rounded px-2 py-1',
                 'text-[11px] text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cyan/50'
               )}
               placeholder="name"
@@ -78,7 +78,7 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
             <span className="text-white/30 text-[11px] shrink-0">=</span>
             <input
               className={cn(
-                'flex-[2] min-w-0 bg-white/5 border border-white/10 rounded px-2 py-1',
+                'flex-[2] min-w-0 bg-white/5 border-node border-white/10 rounded px-2 py-1',
                 'text-[11px] text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cyan/50'
               )}
               placeholder="value"
@@ -115,7 +115,7 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
         type="source"
         position={Position.Right}
         id="variables-out"
-        style={{ top: '50%', right: -6, width: 10, height: 10, background: '#00f5c4', border: '2px solid #0C0C0C' }}
+        style={{ top: '50%', right: -6, width: 10, height: 10, background: 'var(--brand-cyan)', border: '2px solid var(--color-neutral-950)' }}
       />
     </NodeContainer>
   );

@@ -138,7 +138,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
           )}
           <div className="flex items-center gap-2 ml-auto">
             {/* Zoom Controls */}
-            <div className="flex items-center gap-1 bg-neutral-950/70 backdrop-blur-sm rounded-md border border-neutral-700/50 p-1">
+            <div className="flex items-center gap-1 bg-neutral-950/70 backdrop-blur-sm rounded-md border-node border-neutral-700/50 p-1">
               <Button variant="action"
                 onClick={handleZoomOut}
                 
@@ -161,7 +161,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
             {/* Rotate */}
             <Button variant="ghost"
               onClick={handleRotate}
-              className="p-1.5 bg-neutral-950/70 backdrop-blur-sm hover:bg-neutral-800/50 rounded text-neutral-400 hover:text-white transition-colors border border-neutral-700/50"
+              className="p-1.5 bg-neutral-950/70 backdrop-blur-sm hover:bg-neutral-800/50 rounded text-neutral-400 hover:text-white transition-colors border-node border-neutral-700/50"
               title={t('common.rotate')}
             >
               <RotateCw size={14} strokeWidth={2} />
@@ -170,7 +170,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
             {/* Download */}
             <Button variant="ghost"
               onClick={handleDownload}
-              className="p-1.5 bg-neutral-950/70 backdrop-blur-sm hover:bg-neutral-800/50 rounded text-neutral-400 hover:text-white transition-colors border border-neutral-700/50"
+              className="p-1.5 bg-neutral-950/70 backdrop-blur-sm hover:bg-neutral-800/50 rounded text-neutral-400 hover:text-white transition-colors border-node border-neutral-700/50"
               title={t('common.download')}
             >
               <Download size={14} strokeWidth={2} />
@@ -179,7 +179,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
             {/* Close */}
             <Button variant="destructive"
               onClick={onClose}
-              className="p-1.5 bg-neutral-950/70 backdrop-blur-sm hover:bg-red-500/80 rounded text-neutral-400 hover:text-white transition-colors border border-neutral-700/50"
+              className="p-1.5 bg-neutral-950/70 backdrop-blur-sm hover:bg-red-500/80 rounded text-neutral-400 hover:text-white transition-colors border-node border-neutral-700/50"
               title={t('common.closeEsc')}
             >
               <X size={14} strokeWidth={2} />
@@ -230,7 +230,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
         {(zoom !== 1 || rotation !== 0 || panX !== 0 || panY !== 0) && (
           <Button variant="ghost"
             onClick={handleReset}
-            className="absolute bottom-4 right-4 z-10 px-3 py-1.5 bg-neutral-950/60 backdrop-blur-sm hover:bg-neutral-950/80 rounded text-xs font-mono text-neutral-400 hover:text-white transition-colors border border-neutral-700/50"
+            className="absolute bottom-4 right-4 z-10 px-3 py-1.5 bg-neutral-950/60 backdrop-blur-sm hover:bg-neutral-950/80 rounded text-xs font-mono text-neutral-400 hover:text-white transition-colors border-node border-neutral-700/50"
             title={t('common.resetView')}
           >
             {t('common.reset')}

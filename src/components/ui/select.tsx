@@ -161,8 +161,8 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     };
 
     const baseStyles = variant === 'node'
-      ? "w-full px-3 py-2 bg-neutral-950/40 border border-white/5 rounded-xl text-xs text-neutral-300"
-      : "w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-xl text-neutral-200 text-sm";
+      ? "w-full px-3 py-2 bg-neutral-950/40 border-node border-neutral-800 rounded-md text-xs text-neutral-300"
+      : "w-full px-3 py-2.5 bg-neutral-800 border-node border-neutral-800 rounded-xl text-neutral-200 text-sm";
 
     const focusStyles = variant === 'node'
       ? "focus:outline-none focus:border-brand-cyan/50"
@@ -173,7 +173,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
         ref={dropdownRef}
         className={cn(
           "bg-neutral-950/90 backdrop-blur-xl",
-          "border border-neutral-800/50 rounded-md",
+          "border-node border-neutral-800/50 rounded-md",
           "shadow-2xl overflow-hidden",
           variant !== 'node' && cn(
             "absolute w-full",
@@ -230,7 +230,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           })}
         </ul>
         {footer && (
-          <div className="border-t border-white/5">
+          <div className="border-t border-neutral-800/30">
             {footer}
           </div>
         )}

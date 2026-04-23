@@ -108,7 +108,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
       onClick={onClose}
     >
       <div
-        className="bg-[#141414] border border-neutral-800/60 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col"
+        className="bg-neutral-950 border-node border-neutral-800/60 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -128,7 +128,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
             placeholder={t('canvasNodes.brandingProjectSelectModal.searchProjectsPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-700/30 rounded text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
+            className="w-full px-3 py-2 bg-neutral-900/50 border-node border-neutral-700/30 rounded text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
             autoFocus
           />
         </div>

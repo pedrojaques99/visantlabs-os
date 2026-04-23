@@ -185,17 +185,17 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                         }}
                         disabled={isLoading}
                         className={cn(
-                            'w-full flex items-center gap-3 p-1.5 rounded border transition-all text-left node-interactive',
-                            'bg-foreground/10 border-foreground/40 hover:bg-foreground/15',
+                            'w-full flex items-center gap-3 p-1.5 rounded-md border-node transition-all text-left node-interactive',
+                            'bg-neutral-900/30 border-neutral-800 hover:bg-neutral-800/50 hover:border-neutral-700',
                             isLoading && 'opacity-50 cursor-not-allowed'
                         )}
                     >
                         {selectedPreset?.id ? (
-                            <div className="w-10 h-10 bg-neutral-900/30 border border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            <div className="w-10 h-10 bg-neutral-900/30 border-node border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
                                 <Icon size={14} className="text-neutral-400" />
                             </div>
                         ) : (
-                            <div className="w-10 h-10 bg-neutral-900/30 border border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0">
+                            <div className="w-10 h-10 bg-neutral-900/30 border-node border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0">
                                 <Icon size={14} className="text-neutral-400" />
                             </div>
                         )}

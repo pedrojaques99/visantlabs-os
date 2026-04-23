@@ -70,7 +70,7 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         <button
           onClick={() => fileInputRef.current?.click()}
           className={cn(
-            'mx-3 my-3 flex flex-col items-center gap-2 rounded border border-dashed border-white/15',
+            'mx-3 my-3 flex flex-col items-center gap-2 rounded border-node border-dashed border-white/15',
             'p-4 text-white/30 hover:border-brand-cyan/40 hover:text-white/50 transition-colors w-[calc(100%-24px)]'
           )}
         >
@@ -157,7 +157,7 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         type="source"
         position={Position.Right}
         id="data-out"
-        style={{ top: '50%', right: -6, width: 10, height: 10, background: '#00f5c4', border: '2px solid #0C0C0C' }}
+        style={{ top: '50%', right: -6, width: 10, height: 10, background: 'var(--brand-cyan)', border: '2px solid var(--color-neutral-950)' }}
       />
     </NodeContainer>
   );

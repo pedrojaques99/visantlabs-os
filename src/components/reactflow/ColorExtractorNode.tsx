@@ -206,7 +206,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         </NodeLabel>
         {imageUrl ? (
           <div className="relative">
-            <div className="relative w-full h-auto min-h-[1210px] bg-neutral-900/50 rounded border border-neutral-700/30 overflow-hidden">
+            <div className="relative w-full h-auto min-h-[1210px] bg-neutral-900/50 rounded border-node border-neutral-700/30 overflow-hidden">
               <img
                 src={imageUrl}
                 alt={t('canvasNodes.colorExtractorNode.imageToExtractFrom') || "Image to extract colors from"}
@@ -291,12 +291,12 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
             {extractedColors.map((color, index) => (
               <div
                 key={`${color}-${index}`}
-                className="flex items-center gap-2 p-2 bg-neutral-900/50 rounded border border-neutral-700/30 hover:border-[brand-cyan]/50 transition-colors group/color cursor-pointer hover:bg-neutral-800/50 relative"
+                className="flex items-center gap-2 p-2 bg-neutral-900/50 rounded border-node border-neutral-700/30 hover:border-[brand-cyan]/50 transition-colors group/color cursor-pointer hover:bg-neutral-800/50 relative"
                 onClick={() => handleCopyColor(color)}
                 title={t('canvasNodes.colorExtractorNode.clickToCopy') || "Click to copy hex code"}
               >
                 <div
-                  className="w-8 h-8 rounded border border-neutral-700/50 flex-shrink-0"
+                  className="w-8 h-8 rounded border-node border-neutral-700/50 flex-shrink-0"
                   style={{ backgroundColor: color }}
                 />
                 <span className="text-xs font-mono text-neutral-400 flex-1 truncate">
@@ -322,7 +322,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
                       onChange={(e) => handleColorChange(index, e.target.value)}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
                     />
-                    <div className="w-2.5 h-2.5 rounded-full border border-neutral-400/50 bg-neutral-400" />
+                    <div className="w-2.5 h-2.5 rounded-full border-node border-neutral-400/50 bg-neutral-400" />
                   </div>
                 </div>
               </div>
@@ -338,7 +338,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
               e.stopPropagation();
               handleRemoveImage();
             }}
-            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
+            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 backdrop-blur-sm border-node border-red-500/20 hover:border-red-500/30"
             title={t('canvasNodes.imageNode.removeImage')}
             onMouseDown={(e) => e.stopPropagation()}
           >

@@ -86,7 +86,7 @@ export const SeedControl: React.FC<SeedControlProps> = ({
           placeholder={seedLocked ? '—' : 'Random'}
           disabled={disabled}
           className={cn(
-            "flex-1 min-w-0 h-7 px-2 rounded-md text-xs font-mono bg-neutral-900/60 border border-neutral-700/40 text-neutral-300",
+            "flex-1 min-w-0 h-7 px-2 rounded-md text-xs font-mono bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-300",
             "placeholder:text-neutral-600 focus:border-brand-cyan/40 focus:outline-none transition-colors",
             "nodrag nopan",
             disabled && "opacity-50 cursor-not-allowed"
@@ -101,7 +101,7 @@ export const SeedControl: React.FC<SeedControlProps> = ({
             disabled={disabled}
             className={cn(
               "shrink-0 h-7 w-7 flex items-center justify-center rounded-md",
-              "bg-neutral-900/60 border border-neutral-700/40 text-neutral-500",
+              "bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-500",
               "hover:text-neutral-300 hover:border-neutral-600 transition-colors",
               "nodrag nopan",
               disabled && "opacity-50 cursor-not-allowed"
@@ -120,8 +120,8 @@ export const SeedControl: React.FC<SeedControlProps> = ({
             className={cn(
               "shrink-0 h-7 w-7 flex items-center justify-center rounded-md transition-colors nodrag nopan",
               seedLocked
-                ? "bg-foreground/10 border border-foreground/30 text-foreground"
-                : "bg-neutral-900/60 border border-neutral-700/40 text-neutral-500 hover:text-neutral-300 hover:border-neutral-600",
+                ? "bg-foreground/10 border-node border-foreground/30 text-foreground"
+                : "bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-500 hover:text-neutral-300 hover:border-neutral-600",
               disabled && "opacity-50 cursor-not-allowed"
             )}
           >
@@ -138,7 +138,7 @@ export const SeedControl: React.FC<SeedControlProps> = ({
               disabled={disabled}
               className={cn(
                 "shrink-0 h-7 w-7 flex items-center justify-center rounded-md",
-                "bg-neutral-900/60 border border-neutral-700/40 text-neutral-500",
+                "bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-500",
                 "hover:text-neutral-300 hover:border-neutral-600 transition-colors",
                 "nodrag nopan",
                 disabled && "opacity-50 cursor-not-allowed"

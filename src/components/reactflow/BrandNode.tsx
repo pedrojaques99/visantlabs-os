@@ -51,7 +51,7 @@ const ColorEditRow = ({
 
   return (
     <div className="flex items-center gap-1.5">
-      <div className="relative w-6 h-6 rounded border border-neutral-700/50 overflow-hidden shrink-0">
+      <div className="relative w-6 h-6 rounded border-node border-neutral-700/50 overflow-hidden shrink-0">
         <div className="absolute inset-0" style={{ backgroundColor: color }} />
         <input
           type="color"
@@ -425,12 +425,12 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             {colors.map((color, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-1 px-1.5 py-0.5 bg-neutral-950/50 rounded border border-neutral-700/30 cursor-pointer hover:border-neutral-500 transition-colors"
+                className="flex items-center gap-1 px-1.5 py-0.5 bg-neutral-950/50 rounded border-node border-neutral-700/30 cursor-pointer hover:border-neutral-500 transition-colors"
                 title={t('canvas.clickToEdit') || "Click to edit"}
                 onClick={() => setEditingCategory(category)}
               >
                 <div
-                  className="w-2.5 h-2.5 rounded-sm border border-neutral-700/50"
+                  className="w-2.5 h-2.5 rounded-sm border-node border-neutral-700/50"
                   style={{ backgroundColor: color }}
                 />
                 <span className="text-neutral-400 font-mono text-[10px]">{color}</span>
@@ -517,7 +517,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       <div className="flex flex-col gap-[var(--node-gap)]">
         {/* Logo Upload Section */}
-        <div className="p-3 rounded-md bg-neutral-900/40 border border-neutral-700/20">
+        <div className="p-3 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
           <div className="flex items-center justify-between mb-2">
             <NodeLabel className="text-[10px]">
               {t('canvasNodes.brandNode.logoDna') || "Logo DNA"}
@@ -536,7 +536,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
           {logoImageUrl ? (
             <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-md overflow-hidden bg-neutral-950/50 border border-neutral-700/30 p-1 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-md overflow-hidden bg-neutral-950/50 border-node border-neutral-700/30 p-1 flex items-center justify-center">
                 <img
                   src={logoImageUrl}
                   alt="Logo"
@@ -568,7 +568,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         </div>
 
         {/* Identity Guide Upload Section (PDF or PNG) */}
-        <div className="p-3 rounded-md bg-neutral-900/40 border border-neutral-700/20">
+        <div className="p-3 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
           <div className="flex items-center justify-between mb-2">
             <NodeLabel className="text-[10px]">
               {t('canvasNodes.brandNode.identity') || "Brand Guidelines"}
@@ -587,7 +587,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
           {(identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl) ? (
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-md bg-neutral-950/50 border border-neutral-700/30">
+              <div className="p-2.5 rounded-md bg-neutral-950/50 border-node border-neutral-700/30">
                 <FileText size={18} className="text-brand-cyan/70" />
               </div>
               <div className="flex-1 overflow-hidden">
@@ -652,7 +652,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             {isExpanded && (
               <div className="mt-3 space-y-3 text-[11px]">
                 {/* Colors */}
-                <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20">
+                <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
                   <div className="flex items-center justify-between mb-2">
                     <NodeLabel className="text-[10px]">{t('canvasNodes.brandNode.paletteMatrix') || "Palette"}</NodeLabel>
                     <NodeButton
@@ -675,7 +675,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Typography */}
                 {brandIdentity.typography.primary && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
                     <NodeLabel className="text-[10px] mb-1.5">{t('canvasNodes.brandNode.typography') || "Typography"}</NodeLabel>
                     <div className="space-y-1">
                       <div className="text-neutral-300 text-[11px]">{brandIdentity.typography.primary}</div>
@@ -688,7 +688,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Personality */}
                 {(brandIdentity.personality.tone || brandIdentity.personality.feeling) && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
                     <NodeLabel className="text-[10px] mb-1.5">{t('canvasNodes.brandNode.persona') || "Persona"}</NodeLabel>
                     <div className="space-y-1.5 text-[11px] text-neutral-400">
                       {brandIdentity.personality.tone && (
@@ -703,11 +703,11 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Visual Elements */}
                 {brandIdentity.visualElements.length > 0 && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
                     <NodeLabel className="text-[10px] mb-1.5">{t('canvasNodes.brandNode.visualLanguage') || "Visual Elements"}</NodeLabel>
                     <div className="flex flex-wrap gap-1.5">
                       {brandIdentity.visualElements.slice(0, 8).map((element, idx) => (
-                        <span key={idx} className="px-2 py-0.5 bg-neutral-950/50 rounded text-[10px] text-neutral-400 border border-neutral-700/30">
+                        <span key={idx} className="px-2 py-0.5 bg-neutral-950/50 rounded text-[10px] text-neutral-400 border-node border-neutral-700/30">
                           {element}
                         </span>
                       ))}

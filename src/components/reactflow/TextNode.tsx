@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, useReactFlow, NodeResizer } from '@xyflow/react';
-import { FileText, Diamond, Type, Copy, Check } from 'lucide-react';
+import { Diamond, Type, Copy, Check } from 'lucide-react';
+import { NodeHeader } from './shared/node-header';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { TextNodeData } from '@/types/reactFlow';
 import { Textarea } from '@/components/ui/textarea';
@@ -119,44 +120,23 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         />
       )}
 
-      {/* Enhanced Header with Glassmorphism */}
-      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
-            <Type size={16} className="text-brand-cyan" />
-          </div>
-          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
-            {t('canvasNodes.textNode.title') || 'Text Node'}
-          </h3>
-        </div>
-
-        {/* Header Actions */}
-        <div className="flex items-center gap-1.5 ml-4">
-          {/* Copy Button */}
-          {text.trim() && (
-            <NodeButton
-              variant="ghost"
-              size="xs"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCopyText();
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              className="nodrag shadow-sm backdrop-blur-sm"
-              title={t('canvasNodes.textNode.copy') || 'Copy text'}
-            >
-              {isCopied ? (
-                <Check size={14} className="text-brand-cyan" />
-              ) : (
-                <Copy size={14} />
-              )}
-            </NodeButton>
-          )}
-        </div>
-      </div>
+      <NodeHeader icon={Type} title={t('canvasNodes.textNode.title') || 'Text Node'} selected={selected}>
+        {text.trim() && (
+          <NodeButton
+            variant="ghost"
+            size="xs"
+            onClick={(e) => { e.stopPropagation(); handleCopyText(); }}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="nodrag"
+            title={t('canvasNodes.textNode.copy') || 'Copy text'}
+          >
+            {isCopied ? <Check size={14} className="text-brand-cyan" /> : <Copy size={14} />}
+          </NodeButton>
+        )}
+      </NodeHeader>
 
       {/* Text Input Area */}
-      <div className="p-4 flex-1 flex flex-col overflow-hidden">
+      <div className="node-margin flex-1 flex flex-col overflow-hidden">
         <div className="relative group flex-1 overflow-hidden">
           <Textarea
             ref={textareaRef}
@@ -212,7 +192,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             "absolute bottom-2 right-2 text-[10px] font-mono transition-all duration-200",
             "px-2 py-0.5 rounded-full backdrop-blur-sm",
             isVeryLongText
-              ? "text-amber-400 bg-amber-400/10 border border-amber-400/20"
+              ? "text-amber-400 bg-amber-400/10 border-node border-amber-400/20"
               : isLongText
                 ? "text-neutral-400 bg-neutral-800/50"
                 : "text-neutral-500 bg-neutral-800/30"

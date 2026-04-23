@@ -117,23 +117,13 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
         style={{ top: '50%' }}
       />
 
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
-            <Compass size={16} className="text-brand-cyan" />
-          </div>
-          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
-            {t('canvasNodes.directorNode.title') || 'Director'}
-          </h3>
-        </div>
-      </div>
+      <NodeHeader icon={Compass} title={t('canvasNodes.directorNode.title') || 'Director'} selected={selected} />
 
-      <div className="p-4 flex flex-col gap-[var(--node-gap)]">
+      <div className="node-margin flex flex-col gap-[var(--node-gap)]">
         {/* Connected Image Preview */}
         <div className="">
           {connectedImage ? (
-            <div className="relative rounded-md overflow-hidden border border-neutral-700/50 bg-neutral-900/50 shadow-sm">
+            <div className="relative rounded-md overflow-hidden border-node border-neutral-700/50 bg-neutral-900/50 shadow-sm">
               <img
                 src={
                   connectedImage.startsWith('data:')
@@ -145,12 +135,12 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 alt="Connected"
                 className="w-full h-32 object-cover"
               />
-              <div className="absolute top-2 right-2 bg-neutral-950/60 rounded-full p-1 border border-neutral-700/30 shadow-md">
+              <div className="absolute top-2 right-2 bg-neutral-950/60 rounded-full p-1 border-node border-neutral-700/30 shadow-md">
                 <Check size={12} className="text-brand-cyan" />
               </div>
             </div>
           ) : (
-            <div className="w-full h-24 rounded-md border border-dashed border-neutral-700/50 bg-neutral-900/30 flex flex-col items-center justify-center gap-2 opacity-70">
+            <div className="w-full h-24 rounded-md border-node border-dashed border-neutral-700/50 bg-neutral-900/30 flex flex-col items-center justify-center gap-2 opacity-70">
               <ImageIcon size={16} className="text-neutral-600" />
               <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
                 {t('canvasNodes.directorNode.noImage') || 'No image'}
@@ -201,7 +191,7 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
         {/* Generated Prompt Preview (if exists) */}
         {generatedPrompt && (
-          <div className="p-3 rounded-md border border-neutral-700/20 bg-neutral-900/40 backdrop-blur-sm shadow-sm">
+          <div className="p-3 rounded-md border-node border-neutral-700/20 bg-neutral-900/40 backdrop-blur-sm shadow-sm">
             <div className="text-[10px] font-mono text-neutral-500 mb-2 uppercase tracking-widest font-bold">
               {t('canvasNodes.directorNode.generatedPrompt') || 'Generated Prompt'}
             </div>
