@@ -32,7 +32,7 @@ const getArg = (flag, fallback) => {
   return i !== -1 && args[i + 1] ? args[i + 1] : fallback;
 };
 const BRAND_NAME = getArg('--brand', process.env.BRAND || '');
-const COUNT = Math.min(parseInt(getArg('--count', '5'), 10), 10);
+const COUNT = Math.min(parseInt(getArg('--count', '5'), 10) || 5, 10);
 
 if (!BRAND_NAME) {
   console.error('Uso: node scripts/gen-brand-mockups.mjs --brand "Nome da Marca" [--count 5]');
