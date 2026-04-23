@@ -123,7 +123,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
   return (
     <NodeContainer selected={selected} dragging={dragging} className="min-w-[400px] max-w-[440px] !bg-neutral-950/90 border-brand-cyan/20">
       {/* Header */}
-      <div className="flex items-center justify-between node-margin-lg border-b border-white/5 pb-3">
+      <div className="flex items-center justify-between node-margin-lg border-b border-neutral-800 pb-3">
         <div className="flex items-center gap-3">
           <div className="p-1.5 rounded-lg bg-brand-cyan/10 ring-1 ring-brand-cyan/20">
             <Blocks size={18} className="text-brand-cyan" />
@@ -161,11 +161,11 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                   <div
                     key={i}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-xl border transition-all duration-500',
+                      'flex items-center gap-3 px-3 py-2 rounded-xl border-node transition-all duration-500',
                       isActive
                         ? 'bg-brand-cyan/10 border-brand-cyan/30 shadow-[0_0_12px_rgba(0,195,255,0.08)]'
                         : isPast
-                          ? 'bg-neutral-900/30 border-white/5 opacity-40'
+                          ? 'bg-neutral-900/30 border-neutral-800 opacity-40'
                           : 'bg-transparent border-transparent opacity-20'
                     )}
                   >
@@ -262,9 +262,9 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                 msg.role === 'user' ? 'items-end ml-8' : 'items-start mr-8'
               )}>
                 <div className={cn(
-                  'rounded-2xl px-3 py-2 text-[11px] font-mono leading-relaxed border shadow-sm',
+                  'rounded-2xl px-3 py-2 text-[11px] font-mono leading-relaxed border-node shadow-sm',
                   msg.role === 'user'
-                    ? 'bg-neutral-900 border-white/5 text-neutral-200 rounded-tr-none'
+                    ? 'bg-neutral-900 border-neutral-800 text-neutral-200 rounded-tr-none'
                     : 'bg-brand-cyan/5 border-neutral-800 text-brand-cyan/90 rounded-tl-none'
                 )}>
                   {msg.content}
@@ -293,7 +293,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
       {pendingDefinition && !isLoading && (
         <div className="node-margin pt-2 animate-in zoom-in-95 duration-300">
           <div className={cn(
-            'flex flex-col gap-3 p-4 rounded-2xl border bg-brand-cyan/[0.03] border-brand-cyan/30 shadow-[0_0_20px_rgba(0,195,255,0.05)]'
+            'flex flex-col gap-3 p-4 rounded-2xl border-node bg-brand-cyan/[0.03] border-brand-cyan/30 shadow-[0_0_20px_rgba(0,195,255,0.05)]'
           )}>
             <div className="flex items-start gap-3">
               <div className="p-2.5 rounded-xl bg-brand-cyan/10 border-node border-neutral-800">
@@ -321,7 +321,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
       {/* Input Area */}
       <div className="node-margin mt-auto">
         <div className={cn(
-          "relative flex items-end gap-2 p-2 rounded-2xl border bg-black/40 transition-all duration-300",
+          "relative flex items-end gap-2 p-2 rounded-2xl border-node bg-black/40 transition-all duration-300",
           isLoading || !!pendingDefinition ? "opacity-50 pointer-events-none" : "hover:border-neutral-700",
           selected ? "border-brand-cyan/40 shadow-[0_0_15px_rgba(0,195,255,0.05)]" : "border-white/10"
         )}>

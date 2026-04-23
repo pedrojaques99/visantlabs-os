@@ -1739,4 +1739,115 @@ router.post('/:id/liveblocks-auth', authenticate, async (req: AuthRequest, res) 
   }
 })
 
+// GET /api/brand-guidelines/:id/collaborators — list current collaborators
+router.get('/:id/collaborators', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { canEdit: true, canView: true },
+    }) as { canEdit: unknown; canView: unknown } | null
+
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const editorIds = Array.isArray(guideline.canEdit) ? (guideline.canEdit as string[]) : []
+    const viewerIds = Array.isArray(guideline.canView) ? (guideline.canView as string[]) : []
+    const allIds = [...new Set([...editorIds, ...viewerIds])]
+
+    const users = allIds.length
+      ? await prisma.user.findMany({
+          where: { id: { in: allIds } },
+          select: { id: true, email: true, name: true, picture: true },
+        })
+      : []
+
+    const collaborators = users.map(u => ({
+      ...u,
+      role: editorIds.includes(u.id) ? 'editor' : 'viewer',
+    }))
+
+    res.json({ collaborators })
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to fetch collaborators', message: error.message })
+  }
+})
+
+// POST /api/brand-guidelines/:id/collaborators — add collaborator by email
+router.post('/:id/collaborators', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const { email, role } = req.body as { email?: string; role?: string }
+    if (!email) return res.status(400).json({ error: 'email is required' })
+    if (role !== 'editor' && role !== 'viewer') return res.status(400).json({ error: 'role must be editor or viewer' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true, canEdit: true, canView: true },
+    }) as { id: string; canEdit: unknown; canView: unknown } | null
+
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const invitee = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+      select: { id: true, email: true, name: true, picture: true },
+    })
+    if (!invitee) return res.status(404).json({ error: 'No user found with that email' })
+    if (invitee.id === req.userId) return res.status(400).json({ error: 'Cannot invite yourself' })
+
+    let canEdit = Array.isArray(guideline.canEdit) ? [...(guideline.canEdit as string[])] : []
+    let canView = Array.isArray(guideline.canView) ? [...(guideline.canView as string[])] : []
+
+    // Remove from both arrays first (role change support)
+    canEdit = canEdit.filter(id => id !== invitee.id)
+    canView = canView.filter(id => id !== invitee.id)
+
+    if (role === 'editor') {
+      canEdit.push(invitee.id)
+    } else {
+      canView.push(invitee.id)
+    }
+
+    await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { canEdit, canView },
+    })
+
+    res.json({ collaborator: { ...invitee, role } })
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to add collaborator', message: error.message })
+  }
+})
+
+// DELETE /api/brand-guidelines/:id/collaborators/:userId — remove collaborator
+router.delete('/:id/collaborators/:userId', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true, canEdit: true, canView: true },
+    }) as { id: string; canEdit: unknown; canView: unknown } | null
+
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const canEdit = Array.isArray(guideline.canEdit)
+      ? (guideline.canEdit as string[]).filter(id => id !== req.params.userId)
+      : []
+    const canView = Array.isArray(guideline.canView)
+      ? (guideline.canView as string[]).filter(id => id !== req.params.userId)
+      : []
+
+    await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { canEdit, canView },
+    })
+
+    res.json({ success: true })
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to remove collaborator', message: error.message })
+  }
+})
+
 export default router
