@@ -41,7 +41,7 @@ export const NodeFeedbackButtons: React.FC<NodeFeedbackButtonsProps> = ({
   const disabled = !generationId || feedback.isLoading;
 
   return (
-    <div className="flex items-center gap-0.5 rounded-md bg-neutral-900/50 border border-neutral-700/30 backdrop-blur-sm p-0.5 nodrag nopan">
+    <div className="flex items-center gap-0.5 rounded-md bg-neutral-900/50 border-node border-neutral-700/30 backdrop-blur-sm p-0.5 nodrag nopan">
       <NodeButton
         variant="ghost"
         size="xs"

@@ -23,7 +23,7 @@ export function PipelinePanel({ config, log, isLoading }: Props) {
           <div className="flex items-center gap-1 flex-wrap">
             {config.steps.map((step, i) => (
               <React.Fragment key={step.id}>
-                <span className="px-1.5 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-[10px] font-mono text-neutral-300">
+                <span className="px-1.5 py-0.5 rounded bg-neutral-900 border-node border-neutral-800 text-[10px] font-mono text-neutral-300">
                   {step.label}
                 </span>
                 {i < config.steps.length - 1 && (

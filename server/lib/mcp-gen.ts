@@ -145,7 +145,7 @@ export function generateMCPSpec(): MCPSpec {
 }
 
 /**
- * Generate Platform MCP specification (22 tools for Claude.ai Connectors)
+ * Generate Platform MCP specification (39 tools for Claude.ai Connectors)
  */
 export function generatePlatformMCPSpec(): MCPSpec {
   try {

@@ -1,69 +1,39 @@
 /**
  * Markdown Generators for DocsPage
- * Generates clean markdown for "Copy as Markdown" feature
- * Optimized for LLM context injection
+ * Generates clean markdown for "Copy as Markdown" feature — optimized for LLM context injection.
+ * All content sourced from server — no hardcoded static data.
  */
 
-import type { OpenAPISpec, MCPSpec } from '../hooks/useDocsData';
-import { PLATFORM_MCP_TOOLS, generateMcpToolsMarkdown } from '../data/platformMcpTools';
-import { generatePricingMarkdown } from '../data/pricingData';
+import type { OpenAPISpec, MCPSpec, PricingData } from '../hooks/useDocsData';
 
 type TabId = 'overview' | 'api' | 'mcp' | 'plugin' | 'figma-nodes' | 'canvas-api' | 'brand-guidelines' | 'agents' | 'pricing';
 
 export function generateTabMarkdown(
   tab: TabId,
   mcpSpec: MCPSpec | null,
-  openApiSpec: OpenAPISpec | null
+  openApiSpec: OpenAPISpec | null,
+  platformMcpSpec?: MCPSpec | null,
+  pricingData?: PricingData | null
 ): string {
-  const lines: string[] = [];
-
   switch (tab) {
-    case 'canvas-api':
-      return generateCanvasApiMarkdown();
-
-    case 'mcp':
-      return generateMcpMarkdown(mcpSpec);
-
-    case 'api':
-      return generateRestApiMarkdown(openApiSpec);
-
-    case 'figma-nodes':
-      return generateFigmaNodesMarkdown();
-
-    case 'brand-guidelines':
-      return generateBrandGuidelinesMarkdown();
-
-    case 'agents':
-      return generateAgentsMarkdown();
-
-    case 'plugin':
-      return generatePluginMarkdown();
-
-    case 'pricing':
-      return generatePricingMarkdown();
-
+    case 'canvas-api':      return generateCanvasApiMarkdown();
+    case 'mcp':             return generateMcpMarkdown(mcpSpec);
+    case 'api':             return generateRestApiMarkdown(openApiSpec);
+    case 'figma-nodes':     return generateFigmaNodesMarkdown();
+    case 'brand-guidelines':return generateBrandGuidelinesMarkdown();
+    case 'agents':          return generateAgentsMarkdown(platformMcpSpec);
+    case 'plugin':          return generatePluginMarkdown();
+    case 'pricing':         return generatePricingMarkdown(pricingData);
     case 'overview':
-    default:
-      return generateOverviewMarkdown();
+    default:                return generateOverviewMarkdown();
   }
 }
 
 function generateOverviewMarkdown(): string {
-  return `# Visant Copilot Documentation
+  return `# Visant Copilot API
 
-## Sections
-- **REST API** — HTTP endpoints for auth, mockups, and canvas manipulation.
-- **Canvas API** — Create and manipulate canvas projects and nodes programmatically.
-- **MCP Tools** — Model Context Protocol tools for Claude and AI agent integration.
-- **Figma Plugin** — Design automation inside Figma.
-- **Figma Node JSON** — Data-driven node creation spec for the plugin renderer.
-
-## Authentication
-All endpoints: \`Authorization: Bearer <jwt_token>\`
-Obtain token: \`POST /api/auth/login\` → \`{ "email": "...", "password": "..." }\`
-
-## Base URL
-\`https://your-domain.com/api\``;
+Auth: \`Authorization: Bearer <jwt_token>\`
+Token: \`POST /api/auth/login\` → \`{ "email": "...", "password": "..." }\``;
 }
 
 function generatePluginMarkdown(): string {
@@ -85,8 +55,17 @@ function generatePluginMarkdown(): string {
 The plugin communicates with the server via WebSocket (pluginBridge). Agents can send commands via the \`/api/plugin/agent-command\` endpoint which validates and queues operations for execution inside Figma.`;
 }
 
-function generateAgentsMarkdown(): string {
-  const lines = [
+function generateAgentsMarkdown(platformMcpSpec?: MCPSpec | null): string {
+  const tools = platformMcpSpec?.tools ?? [];
+  const toolCount = tools.length;
+
+  const toolTable = tools.length > 0
+    ? ['| Tool | Description | Cost |', '|------|-------------|------|',
+       ...tools.map(t => `| \`${t.name}\` | ${t.description} | ${t['x-cost'] ?? 'free'} |`)
+      ].join('\n')
+    : '_Tool list not loaded — fetch /api/docs/platform/mcp.json_';
+
+  return [
     '# AI Agent Integration Guide',
     '',
     'Visant Labs provides three main ways for AI agents to interact with the platform: Discovery, MCP Tools, and REST API.',
@@ -106,9 +85,9 @@ function generateAgentsMarkdown(): string {
     'Endpoint: `/api/mcp`',
     'Session: `sessionId` required for message correlation',
     '',
-    '## Available MCP Tools (22 total)',
+    `## Available MCP Tools (${toolCount} total)`,
     '',
-    generateMcpToolsMarkdown(PLATFORM_MCP_TOOLS),
+    toolTable,
     '',
     '## Credits & Limits',
     '- Read operations (**list**, **get**) are always Free.',
@@ -120,8 +99,7 @@ function generateAgentsMarkdown(): string {
     '2. Connect to MCP via SSE at `/api/mcp`',
     '3. Call `account-usage` to check balance',
     '4. Call `mockup-generate` and check `_meta.credits_remaining`',
-  ];
-  return lines.join('\n');
+  ].join('\n');
 }
 
 function generateBrandGuidelinesMarkdown(): string {
@@ -330,6 +308,72 @@ function generateRestApiMarkdown(openApiSpec: OpenAPISpec | null): string {
       lines.push('');
     });
   });
+
+  return lines.join('\n');
+}
+
+function generatePricingMarkdown(pricingData?: PricingData | null): string {
+  if (!pricingData) return '# Pricing\n\nPricing data not loaded yet.';
+
+  const { creditCosts, creditPackages, infraCosts } = pricingData;
+  const lines: string[] = ['# Visant Copilot — Pricing Guide', ''];
+
+  // Credit cost breakdown
+  lines.push('## Credit Costs by Model & Resolution', '');
+  lines.push('| Model | Resolution | Google Price (USD) | Visant Overhead | Total Cost | Credits |');
+  lines.push('|-------|------------|--------------------|-----------------|------------|---------|');
+
+  const imageCosts = creditCosts.filter(t => t.category === 'image');
+  const imageTotalOverhead = infraCosts
+    ? (infraCosts.IMAGE_PROCESSING ?? 0) + (infraCosts.IMAGE_CDN ?? 0) + (infraCosts.IMAGE_API_OVERHEAD ?? 0)
+    : 0.013;
+
+  imageCosts.forEach(t => {
+    const total = t.googlePriceUSD + imageTotalOverhead;
+    lines.push(`| ${t.model} | ${t.resolution} | $${t.googlePriceUSD.toFixed(3)} | $${imageTotalOverhead.toFixed(3)} | **$${total.toFixed(3)}** | ${t.creditsRequired} |`);
+  });
+  lines.push('');
+
+  // Video costs
+  const videoCosts = creditCosts.filter(t => t.category === 'video');
+  if (videoCosts.length > 0) {
+    lines.push('## Video Generation', '');
+    lines.push('| Model | Resolution | Cost per 8s | Credits |');
+    lines.push('|-------|------------|-------------|---------|');
+    videoCosts.forEach(t => {
+      lines.push(`| ${t.model} | ${t.resolution} | $${t.googlePriceUSD.toFixed(2)} | ${t.creditsRequired} |`);
+    });
+    lines.push('');
+  }
+
+  // Other costs
+  const otherCosts = creditCosts.filter(t => t.category !== 'image' && t.category !== 'video');
+  if (otherCosts.length > 0) {
+    lines.push('## Other Operations', '');
+    otherCosts.forEach(t => {
+      lines.push(`- **${t.model}** (${t.resolution}): ${t.creditsRequired} credit${t.creditsRequired > 1 ? 's' : ''}`);
+    });
+    lines.push('');
+  }
+
+  // Infrastructure breakdown
+  if (infraCosts) {
+    lines.push('## Infrastructure Overhead (per image)', '');
+    if (infraCosts.IMAGE_PROCESSING) lines.push(`- **Image processing** — Resizing, optimization, format conversion ($${infraCosts.IMAGE_PROCESSING.toFixed(3)})`);
+    if (infraCosts.IMAGE_CDN) lines.push(`- **CDN delivery** — Cloudflare R2 storage + global delivery ($${infraCosts.IMAGE_CDN.toFixed(3)})`);
+    if (infraCosts.IMAGE_API_OVERHEAD) lines.push(`- **API overhead** — Rate limiting, auth, monitoring ($${infraCosts.IMAGE_API_OVERHEAD.toFixed(3)})`);
+    lines.push('');
+  }
+
+  // Credit packages
+  if (creditPackages?.length > 0) {
+    lines.push('## Credit Packages', '');
+    lines.push('| Credits | Price (BRL) | Price (USD) | Per Credit | ~HD Images | ~4K Images | ~Fast Videos |');
+    lines.push('|---------|-------------|-------------|------------|-----------|-----------|-------------|');
+    creditPackages.forEach(pkg => {
+      lines.push(`| ${pkg.credits} | R$${pkg.priceBRL.toFixed(2)} | $${pkg.priceUSD.toFixed(2)} | $${pkg.pricePerCreditUSD.toFixed(3)} | ~${pkg.imagesHD} | ~${pkg.images4K} | ~${pkg.videosFast} |`);
+    });
+  }
 
   return lines.join('\n');
 }

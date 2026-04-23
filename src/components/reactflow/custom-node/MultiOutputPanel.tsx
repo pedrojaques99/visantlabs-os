@@ -29,7 +29,7 @@ export function MultiOutputPanel({ config, prompts, onChange, disabled }: Props)
             disabled={disabled}
             placeholder={isSinglePrompt ? 'Prompt...' : `Prompt ${i + 1}...`}
             rows={2}
-            className="nodrag nopan w-full resize-none rounded-md border border-neutral-800 bg-neutral-950 px-2.5 py-1.5 text-[11px] font-mono text-neutral-200 placeholder:text-neutral-600 focus:border-brand-cyan/40 focus:outline-none transition-colors disabled:opacity-40"
+            className="nodrag nopan w-full resize-none rounded-md border-node border-neutral-800 bg-neutral-950 px-2.5 py-1.5 text-[11px] font-mono text-neutral-200 placeholder:text-neutral-600 focus:border-brand-cyan/40 focus:outline-none transition-colors disabled:opacity-40"
           />
         </div>
       ))}

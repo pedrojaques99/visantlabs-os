@@ -6,6 +6,7 @@ import type { StrategyNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { NodeContainer } from './shared/NodeContainer';
+import { NodeHeader } from './shared/node-header';
 import { Textarea } from '@/components/ui/textarea';
 import { NodeLabel } from './shared/node-label';
 import { NodeButton } from './shared/node-button';
@@ -993,58 +994,32 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
       />
 
       <div className="flex flex-col h-full min-h-0">
-        {/* Header with action buttons */}
-        <div className="flex items-center justify-between mb-[var(--node-margin-lg)] pb-5 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm -mx-[var(--node-padding)] px-[var(--node-padding)] pt-0">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20">
-              <Target size={16} className="text-brand-cyan" />
-            </div>
-            <div className="flex flex-col">
-              <h3 className="text-sm font-semibold text-neutral-200 font-mono tracking-tight">{t('canvasNodes.strategyNode.title') || 'Strategy Node'}</h3>
-              {projectName && (
-                <span className="text-[10px] text-neutral-400 font-mono mt-0.5 truncate max-w-[200px]" title={projectName}>{projectName}</span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {hasData && (
-              <NodeButton variant="ghost" size="xs" onClick={(e) => {
-                e.stopPropagation();
-                handleOpenInNewTab();
-              }}
-                disabled={!hasData || isGenerating}
-                className="nodrag nopan"
-                title={t('canvasNodes.strategyNode.openInNewTab')}
-              >
-                <ExternalLink size={14} />
-              </NodeButton>
-            )}
-            {nodeData.onGeneratePDF && (
-              <NodeButton variant="ghost" size="xs" onClick={(e) => {
-                e.stopPropagation();
-                handleGeneratePDF();
-              }}
-                disabled={!hasData}
-                className="nodrag nopan"
-                title={t('canvasNodes.strategyNode.downloadPDF')}
-              >
-                <Download size={14} />
-              </NodeButton>
-            )}
-            {nodeData.onSave && (
-              <NodeButton variant="ghost" size="xs" onClick={(e) => {
-                e.stopPropagation();
-                handleSave();
-              }}
-                disabled={!hasData || isGenerating}
-                className="bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan font-semibold nodrag nopan"
-                title={t('common.save')}
-              >
-                <Save size={14} />
-              </NodeButton>
-            )}
-          </div>
-        </div>
+        {/* Header */}
+        <NodeHeader icon={Target} title={t('canvasNodes.strategyNode.title') || 'Strategy Node'} selected={selected}>
+          {hasData && (
+            <NodeButton variant="ghost" size="xs" onClick={(e) => { e.stopPropagation(); handleOpenInNewTab(); }}
+              disabled={!hasData || isGenerating} className="nodrag nopan" title={t('canvasNodes.strategyNode.openInNewTab')}>
+              <ExternalLink size={14} />
+            </NodeButton>
+          )}
+          {nodeData.onGeneratePDF && (
+            <NodeButton variant="ghost" size="xs" onClick={(e) => { e.stopPropagation(); handleGeneratePDF(); }}
+              disabled={!hasData} className="nodrag nopan" title={t('canvasNodes.strategyNode.downloadPDF')}>
+              <Download size={14} />
+            </NodeButton>
+          )}
+          {nodeData.onSave && (
+            <NodeButton variant="ghost" size="xs" onClick={(e) => { e.stopPropagation(); handleSave(); }}
+              disabled={!hasData || isGenerating}
+              className="bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan font-semibold nodrag nopan"
+              title={t('common.save')}>
+              <Save size={14} />
+            </NodeButton>
+          )}
+        </NodeHeader>
+        {projectName && (
+          <span className="text-[10px] text-neutral-400 font-mono -mt-2 node-margin truncate max-w-[200px]" title={projectName}>{projectName}</span>
+        )}
 
         {/* Initial State - Project Selector or Create New */}
         {showProjectSelector && !isCreatingNew && (
@@ -1133,7 +1108,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   <XCircle size={14} />
                   <span>{t('common.cancel')}</span>
                 </NodeButton>
-                <div className="flex-1 px-3 py-2.5 bg-brand-cyan/20 border border-brand-cyan/40 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
+                <div className="flex-1 px-3 py-2.5 bg-brand-cyan/20 border-node border-brand-cyan/40 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
                   <GlitchLoader size={14} color="brand-cyan" />
                   <span className="text-xs font-mono text-brand-cyan font-medium">{t('canvasNodes.strategyNode.analyzing')}</span>
                 </div>
@@ -1266,7 +1241,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
         {/* Single Generation Status - Shows when any section is generating */}
         {isGenerating && (generatingStep || generatingSteps.length > 0) && (
-          <div className="mb-5 px-3 py-2.5 bg-brand-cyan/10 border border-brand-cyan/40 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+          <div className="mb-5 px-3 py-2.5 bg-brand-cyan/10 border-node border-brand-cyan/40 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
             <div className="flex items-center gap-3">
               <GlitchLoader size={12} color="brand-cyan" />
               <span className="text-xs font-mono text-brand-cyan font-medium">
@@ -1348,7 +1323,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 return (
                   <div
                     key={section.type}
-                    className="border border-neutral-700/40 rounded-md overflow-hidden group bg-neutral-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
+                    className="border-node border-neutral-700/40 rounded-md overflow-hidden group bg-neutral-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
                   >
                     <NodeButton variant="ghost" size="full" onClick={(e) => {
                       e.stopPropagation();

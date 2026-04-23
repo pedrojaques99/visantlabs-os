@@ -3852,10 +3852,10 @@ export const CanvasPage: React.FC = () => {
       seoTitle={`${canvasHeader.projectName || 'Canvas'} | Visant Canvas`}
       seoDescription="Powerful node-based workflow editor for creative generation and image processing."
       hideHeader
-      contentClassName="p-0"
+      contentClassName="p-0 sm:p-0 lg:p-0"
     >
-      <div 
-        className="flex flex-col h-[calc(100vh-3.5rem)] relative overflow-hidden select-none bg-neutral-950" 
+      <div
+        className="flex flex-col h-screen relative overflow-hidden select-none bg-neutral-950" 
         onMouseMove={handleGlobalMouseMove} 
         onMouseUp={handleGlobalMouseUp}
         onDragOver={(e) => {

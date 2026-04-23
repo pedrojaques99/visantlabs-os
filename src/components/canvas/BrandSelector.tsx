@@ -3,6 +3,7 @@ import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { Select, SelectOption } from '@/components/ui/select';
 import { Palette, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BrandAvatar } from '@/components/brand/BrandAvatar';
 
 interface BrandSelectorProps {
   value: string | null | undefined;
@@ -36,6 +37,7 @@ export const BrandSelector: React.FC<BrandSelectorProps> = ({
     ...guidelines.map((g) => ({
       value: g.id!,
       label: g.identity?.name || g.name || 'Untitled',
+      icon: <BrandAvatar brand={g} size={16} rounded="sm" />,
     })),
   ];
 

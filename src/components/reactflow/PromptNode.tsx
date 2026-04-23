@@ -518,7 +518,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         <div className="node-margin">
           <Tooltip content={isBrandActive ? "Brand assets will be used in generation" : "Brand assets connected but inactive"}>
             <div className={cn(
-              "flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-[10px] font-mono transition-all duration-300",
+              "flex items-center gap-2 px-2.5 py-1.5 rounded-lg border-node text-[10px] font-mono transition-all duration-300",
               isBrandActive
                 ? "bg-foreground/10 border-foreground/30 text-foreground shadow-[0_0_15px_rgba(255,255,255,0.05)]"
                 : "bg-neutral-900/40 border-neutral-800/40 text-neutral-400 opacity-80"
@@ -533,8 +533,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 {t('canvasNodes.promptNode.brandConnected') || 'Brand Guidelines'}
               </span>
               <div className="flex items-center gap-1.5 ml-auto">
-                {connectedLogo && <span className="px-1.5 py-0.5 bg-black/20 rounded border border-white/5 text-[10px]">LOGO</span>}
-                {connectedIdentity && <span className="px-1.5 py-0.5 bg-black/20 rounded border border-white/5 text-[10px]">IDENTITY</span>}
+                {connectedLogo && <span className="px-1.5 py-0.5 bg-black/20 rounded border-node border-neutral-800 text-[10px]">LOGO</span>}
+                {connectedIdentity && <span className="px-1.5 py-0.5 bg-black/20 rounded border-node border-neutral-800 text-[10px]">IDENTITY</span>}
               </div>
             </div>
           </Tooltip>
@@ -637,7 +637,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                       nodeData.onUpdateData(id, { promptSuggestions: [] });
                     }
                   }}
-                  className="w-full text-left font-mono border border-foreground/10 hover:border-brand-cyan/20 hover:bg-brand-cyan/5 hover:text-brand-cyan transition-colors"
+                  className="w-full text-left font-mono border-node border-foreground/10 hover:border-brand-cyan/20 hover:bg-brand-cyan/5 hover:text-brand-cyan transition-colors"
                 >
                   <span className="truncate">{suggestion}</span>
                 </NodeButton>
@@ -678,7 +678,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         />
 
         {/* Advanced Options Accordion */}
-        <div className="border border-neutral-800 rounded-md bg-neutral-900/30">
+        <div className="border-node border-neutral-800 rounded-md bg-neutral-900/30">
           <NodeButton
             variant="ghost"
             size="sm"

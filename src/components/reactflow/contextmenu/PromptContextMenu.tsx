@@ -64,7 +64,7 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
             <div
                 ref={menuRef}
                 data-context-menu
-                className="fixed z-50 bg-neutral-950/70 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl min-w-[200px] flex flex-col overflow-hidden transition-all duration-200 ease-out"
+                className="fixed z-50 bg-neutral-950/70 backdrop-blur-xl border-node border-neutral-800/50 rounded-md shadow-2xl min-w-[200px] flex flex-col overflow-hidden transition-all duration-200 ease-out"
                 style={menuStyle}
                 onClick={(e) => e.stopPropagation()}
                 onWheel={(e) => e.stopPropagation()}
