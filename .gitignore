@@ -126,3 +126,4 @@ secrets-to-remove.txt
 /scripts
 
 .vercel
+/.claude
