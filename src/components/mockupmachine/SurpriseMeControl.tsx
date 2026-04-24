@@ -445,45 +445,41 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                 </div>
 
                                 {setResolution && (
-                                    <div className="space-y-2">
+                                    <div className="space-y-1">
                                         <MicroTitle as="span" className="text-[10px] ml-1 opacity-50">Resolução / Qualidade</MicroTitle>
-                                        <div className="flex bg-neutral-950/40 rounded-xl p-1 border border-white/5 h-[310px]">
+                                        <div className="flex gap-1.5 h-[32px]">
                                             {(imageProvider === 'gemini' ? ['HD', '1K', '2K', '4K'] : ['2K', '4K']).map((res) => (
-                                                <button key={res}
+                                                <Button variant="ghost" key={res}
                                                     onClick={() => setResolution(res as Resolution)}
                                                     className={cn(
-                                                        "flex-1 text-[10px] font-bold font-mono rounded-lg transition-all uppercase tracking-widest",
-                                                        resolution === res
-                                                            ? "bg-brand-cyan/10 text-brand-cyan shadow-sm"
-                                                            : "text-neutral-500 hover:text-neutral-300"
+                                                        "flex-1 text-[10px] font-mono rounded border transition-all",
+                                                        resolution === res ? "bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40" : "bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300"
                                                     )}
                                                 >
                                                     {res}
-                                                </button>
+                                                </Button>
                                             ))}
                                         </div>
                                     </div>
                                 )}
 
                                 {aspectRatio && setAspectRatio && (
-                                    <div className="space-y-2">
+                                    <div className="space-y-1">
                                         <div className="flex justify-between items-center ml-1">
                                             <MicroTitle as="span" className="text-[10px] opacity-50">Proporção</MicroTitle>
                                             <span className="text-[10px] font-mono text-neutral-600 tracking-widest">{aspectRatio}</span>
                                         </div>
-                                        <div className="flex bg-neutral-950/40 rounded-xl p-1 border border-white/5 h-[310px]">
+                                        <div className="grid grid-cols-5 gap-1.5">
                                             {['1:1', '9:16', '16:9', '4:3', '3:4'].map(ratio => (
-                                                <button key={ratio}
+                                                <Button variant="ghost" key={ratio}
                                                     onClick={() => setAspectRatio(ratio as AspectRatio)}
                                                     className={cn(
-                                                        "flex-1 flex flex-col items-center justify-center rounded-lg transition-all",
-                                                        aspectRatio === ratio
-                                                            ? "bg-brand-cyan/10 text-brand-cyan shadow-sm"
-                                                            : "text-neutral-500 hover:text-neutral-300"
+                                                        "flex flex-col items-center justify-center py-1 rounded-sm border transition-all",
+                                                        aspectRatio === ratio ? "bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40" : "bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300"
                                                     )}
                                                 >
-                                                    <span className="text-[10px] font-mono font-bold">{ratio}</span>
-                                                </button>
+                                                    <span className="text-[10px] font-mono">{ratio}</span>
+                                                </Button>
                                             ))}
                                         </div>
                                     </div>
