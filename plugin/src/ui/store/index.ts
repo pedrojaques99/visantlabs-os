@@ -36,7 +36,7 @@ export const usePluginStore = create<PluginStore>()(
     mode: 'simple',
 
     // Server
-    serverUrl: (typeof window !== 'undefined' && (window as any).__VISANT_API_URL__) || 'http://localhost:3001',
+    serverUrl: (typeof window !== 'undefined' && (window as any).__VISANT_API_URL__) || 'https://api.visantlabs.com',
 
     // Auth
     authToken: null,

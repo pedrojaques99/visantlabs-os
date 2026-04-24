@@ -4,7 +4,7 @@
 // 3. fallback to localhost:3001
 export let API_BASE_URL: string =
   (typeof window !== 'undefined' && (window as any).__VISANT_API_URL__) ||
-  'http://localhost:3001';
+  'https://api.visantlabs.com';
 
 // RPC call to load the stored server URL from figma.clientStorage
 // Called once at startup; updates API_BASE_URL in-place

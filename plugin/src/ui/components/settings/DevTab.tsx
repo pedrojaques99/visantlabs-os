@@ -5,12 +5,94 @@ import { LintingSection } from '../tools/LintingSection';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Code2, Zap, ShieldCheck, Cpu, LayoutGrid } from 'lucide-react';
+import { Code2, Zap, ShieldCheck, Cpu, LayoutGrid, Server, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { useSmartAnalyze } from '../../hooks/useSmartAnalyze';
 import { usePluginStore } from '../../store';
 import { OpButton } from '../common/OpButton';
 import { BrandSection } from '../brand/BrandSection';
+import { useClient } from '../../lib/ClientProvider';
+
+const PRESETS = [
+  { label: 'Production', url: 'https://api.visantlabs.com' },
+  { label: 'Local', url: 'http://localhost:3001' },
+];
+
+function ServerSection() {
+  const serverUrl = usePluginStore((s) => s.serverUrl);
+  const setServerUrl = usePluginStore((s) => s.setServerUrl);
+  const client = useClient();
+  const [draft, setDraft] = useState(serverUrl);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const save = async (url: string) => {
+    const normalized = url.replace(/\/$/, '');
+    setSaving(true);
+    try {
+      setServerUrl(normalized);
+      await client.request('storage.set', { key: 'serverUrl', value: normalized });
+      setDraft(normalized);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const ping = async () => {
+    setStatus('loading');
+    try {
+      const res = await fetch(`${draft.replace(/\/$/, '')}/api/plugin/auth/status`);
+      setStatus(res.ok ? 'success' : 'error');
+    } catch {
+      setStatus('error');
+    }
+  };
+
+  return (
+    <BrandSection title="Server Connection" icon={Server} collapsible defaultOpen={true}>
+      <div className="space-y-3">
+        <div className="flex gap-1">
+          {PRESETS.map((p) => (
+            <Button
+              key={p.url}
+              variant={draft === p.url ? 'default' : 'outline'}
+              size="sm"
+              className="text-[10px] h-6 px-2"
+              onClick={() => setDraft(p.url)}
+            >
+              {p.label}
+            </Button>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <Input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            className="text-xs h-7 font-mono"
+            placeholder="https://api.visantlabs.com"
+          />
+          <Button
+            onClick={() => save(draft)}
+            disabled={saving || draft === serverUrl}
+            size="sm"
+            className="text-xs h-7 shrink-0"
+          >
+            {saving ? <Loader2 size={12} className="animate-spin" /> : 'Save'}
+          </Button>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] text-muted-foreground font-mono truncate">{serverUrl}</span>
+          <Button variant="ghost" size="sm" className="text-[10px] h-6 gap-1 shrink-0" onClick={ping}>
+            {status === 'loading' && <Loader2 size={10} className="animate-spin" />}
+            {status === 'success' && <CheckCircle2 size={10} className="text-green-500" />}
+            {status === 'error' && <AlertCircle size={10} className="text-red-500" />}
+            Ping
+          </Button>
+        </div>
+      </div>
+    </BrandSection>
+  );
+}
 
 export function DevTab() {
   const [jsonInput, setJsonInput] = useState('');
@@ -46,6 +128,8 @@ export function DevTab() {
 
   return (
     <div className="space-y-4 max-w-2xl">
+      <ServerSection />
+
       {/* Advanced Tools */}
       <BrandSection title="Advanced Analysis" icon={Cpu} badge="ADV" collapsible defaultOpen={true}>
         <div className="space-y-2">

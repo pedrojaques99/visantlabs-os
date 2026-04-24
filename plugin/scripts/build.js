@@ -105,7 +105,7 @@ body {
     // Set API URL before React app loads
     // In development: http://localhost:3001
     // In production: set via environment variable
-    window.__VISANT_API_URL__ = '${process.env.VISANT_API_URL || 'http://localhost:3001'}';
+    window.__VISANT_API_URL__ = '${process.env.VISANT_API_URL || 'https://api.visantlabs.com'}';
   </script>
   <script>
 ${jsContent}
