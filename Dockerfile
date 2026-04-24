@@ -11,8 +11,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-RUN npm cache clean --force && \
-    npm install --ignore-scripts && \
+RUN npm install --ignore-scripts --no-package-lock && \
     npx prisma generate
 
 COPY . .
