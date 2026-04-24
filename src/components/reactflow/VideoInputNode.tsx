@@ -151,7 +151,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
               autoPlay
               muted
               loop
-              className="w-full h-auto min-h-[1210px] object-contain rounded border-node border-[brand-cyan]/30"
+              className="w-full h-auto min-h-[1210px] object-contain rounded border-node border-neutral-800"
               onLoadedMetadata={(e) => {
                 const video = e.target as HTMLVideoElement;
                 if (video.videoWidth > 0 && video.videoHeight > 0) {

@@ -571,7 +571,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               isSaving
                 ? "bg-neutral-950/70 text-neutral-500 cursor-wait border-node border-neutral-700/30"
                 : isLiked
-                  ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border-node border-[brand-cyan]/20"
+                  ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border-node border-neutral-800"
                   : "bg-neutral-950/70 hover:bg-neutral-950/60 border-node border-neutral-700/30"
             )}
             title={isLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
