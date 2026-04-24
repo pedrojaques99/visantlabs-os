@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scissors, Video, Upload, X, Play, Plus, Loader2 } from 'lucide-react';
+import { Scissors, Video, Upload, X, Play, Plus, Loader2, Sparkles, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageShell } from '../components/ui/PageShell';
 import { Button } from '../components/ui/button';
@@ -16,6 +16,9 @@ import { applyShaderEffect } from '../utils/shaders/shaderRenderer';
 import { generateThumbnail, revokeThumbnail } from '../utils/moodboard/thumbnail';
 import type { CroppedImage, AnimationPreset, RenderSlide, TransitionType } from '../types/moodboard';
 import type { ImageProvider } from '../types/types';
+import { GEMINI_MODELS } from '../constants/geminiModels';
+import { getCreditsRequired } from '../utils/creditCalculator';
+import { ModelSelector } from '../components/shared/ModelSelector';
 
 async function callVideoApi(body: object): Promise<string> {
   const token = authService.getToken();
@@ -41,9 +44,69 @@ const generateVideoFromFrames = (startFrame: string, endFrame: string, prompt: s
 const generateVideoFromMoodboard = (referenceImages: string[], prompt: string, allowSound: boolean) =>
   callVideoApi({ referenceImages, prompt, includeAudio: allowSound });
 
+// ---------------------------------------------------------------------------
+// Regen queue — model-agnostic, processes one job at a time
+// ---------------------------------------------------------------------------
+interface RegenJob { id: string; model: string; provider: ImageProvider; }
+
+function useRegenQueue(runJob: (job: RegenJob) => Promise<void>) {
+  const queue = useRef<RegenJob[]>([]);
+  const running = useRef(false);
+
+  const flush = useCallback(async () => {
+    if (running.current) return;
+    running.current = true;
+    while (queue.current.length > 0) {
+      const job = queue.current.shift()!;
+      await runJob(job).catch(() => {}); // errors handled inside runJob
+    }
+    running.current = false;
+  }, [runJob]);
+
+  const enqueue = useCallback((job: RegenJob) => {
+    queue.current.push(job);
+    flush();
+  }, [flush]);
+
+  const enqueueAll = useCallback((jobs: RegenJob[]) => {
+    queue.current.push(...jobs);
+    flush();
+  }, [flush]);
+
+  return { enqueue, enqueueAll };
+}
+
+const SESSION_KEY = 'moodboard-session-v1';
+
+function loadSession(): { sourceImage: string | null; croppedImages: CroppedImage[] } {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return { sourceImage: null, croppedImages: [] };
+    return JSON.parse(raw);
+  } catch { return { sourceImage: null, croppedImages: [] }; }
+}
+
+function saveSession(sourceImage: string | null, croppedImages: CroppedImage[]) {
+  try {
+    const toSave = {
+      sourceImage,
+      croppedImages: croppedImages.map(c => ({
+        ...c,
+        thumbnailUrl: undefined, // blob URL — não persistir
+        isUpscaling: false,
+        isAnimating: false,
+        upscaleStartTime: undefined,
+        animationStartTime: undefined,
+      })),
+    };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(toSave));
+  } catch { /* quota exceeded — ignore */ }
+}
+
 function MoodboardStudio() {
-  const [sourceImage, setSourceImage] = useState<string | null>(null);
-  const [croppedImages, setCroppedImages] = useState<CroppedImage[]>([]);
+  const saved = loadSession();
+  const [sourceImage, setSourceImage] = useState<string | null>(saved.sourceImage);
+  const [croppedImages, setCroppedImages] = useState<CroppedImage[]>(saved.croppedImages);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
   const [videoModalUrl, setVideoModalUrl] = useState<string | null>(null);
@@ -58,8 +121,12 @@ function MoodboardStudio() {
   const [isAISuggesting, setIsAISuggesting] = useState(false);
   const [isCreatingFullVideo, setIsCreatingFullVideo] = useState(false);
   const [regeneratingIds, setRegeneratingIds] = useState<Set<string>>(new Set());
+  const [batchRegenModel, setBatchRegenModel] = useState<string>(GEMINI_MODELS.IMAGE_FLASH);
+  const [batchRegenProvider, setBatchRegenProvider] = useState<ImageProvider>('gemini');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { saveSession(sourceImage, croppedImages); }, [sourceImage, croppedImages]);
 
   const getImageDimensions = (url: string): Promise<{ width: number; height: number }> =>
     new Promise(resolve => {
@@ -206,39 +273,45 @@ function MoodboardStudio() {
     }
   };
 
-  const handleRegenerate = async (id: string, model: string, provider: ImageProvider) => {
-    const crop = croppedImages.find(c => c.id === id);
-    if (!crop?.url || regeneratingIds.has(id)) return;
+  const croppedImagesRef = useRef(croppedImages);
+  useEffect(() => { croppedImagesRef.current = croppedImages; }, [croppedImages]);
+
+  const runRegenJob = useCallback(async ({ id, model, provider }: RegenJob) => {
+    const crop = croppedImagesRef.current.find(c => c.id === id);
+    if (!crop?.url) return;
     setRegeneratingIds(prev => new Set(prev).add(id));
     try {
       const token = authService.getToken();
       const base64 = crop.upscaledUrl || crop.url;
       const pureBase64 = base64.startsWith('data:') ? base64.split(',')[1] : base64;
       const mimeType = base64.startsWith('data:') ? base64.split(';')[0].slice(5) : 'image/jpeg';
-      const res = await fetch('/api/mockup/generate', {
+      const res = await fetch('/api/mockups/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({
-          promptText: 'Reimagine em 4k — enhance quality, lighting and detail while preserving the original composition and style',
-          baseImage: { base64: pureBase64, mimeType },
-          model,
-          provider,
-        }),
+        body: JSON.stringify({ promptText: `Reimagine em 4k — enhance quality, lighting and detail while preserving the original composition and style [${Date.now()}]`, baseImage: { base64: pureBase64, mimeType }, model, provider }),
       });
       if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.error || 'Regeneration failed'); }
       const { imageBase64, imageUrl } = await res.json();
       if (!imageBase64 && !imageUrl) throw new Error('No image returned');
-      const newUrl = imageUrl || `data:image/png;base64,${imageBase64}`;
-      let thumbnailUrl: string | undefined;
-      try { thumbnailUrl = await generateThumbnail(newUrl, id); } catch {}
-      setCroppedImages(prev => prev.map(c => c.id === id ? { ...c, url: newUrl, thumbnailUrl, upscaledUrl: undefined } : c));
-      toast.success('Regenerated successfully');
+      const regeneratedUrl = imageUrl || `data:image/png;base64,${imageBase64}`;
+      setCroppedImages(prev => prev.map(c => c.id === id ? { ...c, regeneratedUrl } : c));
+      toast.success('AI Regeneration ready', {
+        description: 'Accept or discard on the image card.',
+        action: { label: 'Download', onClick: () => downloadImage(regeneratedUrl, `regen-${id}-${Date.now()}.png`) },
+        duration: 10000,
+      });
     } catch (err: any) {
-      toast.error(err.message || 'Regeneration failed');
+      toast.error(`Item ${id.slice(-4)}: ${err.message || 'Regeneration failed'}`);
     } finally {
       setRegeneratingIds(prev => { const n = new Set(prev); n.delete(id); return n; });
     }
-  };
+  }, []);
+
+  const { enqueue: enqueueRegen, enqueueAll: enqueueRegenAll } = useRegenQueue(runRegenJob);
+
+  const handleRegenerate = useCallback((id: string, model: string, provider: ImageProvider) => {
+    enqueueRegen({ id, model, provider });
+  }, [enqueueRegen]);
 
   const handleFrameAnimate = async (start: string, end: string, prompt: string) => {
     setShowFrameModal(false);
@@ -325,6 +398,12 @@ function MoodboardStudio() {
   const handleReset = () => {
     croppedImages.forEach(c => revokeThumbnail(c.id));
     setSourceImage(null); setCroppedImages([]); setSelectedIds(new Set());
+    sessionStorage.removeItem(SESSION_KEY);
+  };
+
+  const handleRegenAll = () => {
+    const targets = selectedIds.size > 0 ? croppedImages.filter(c => selectedIds.has(c.id) && c.url) : croppedImages.filter(c => c.url);
+    enqueueRegenAll(targets.map(c => ({ id: c.id, model: batchRegenModel, provider: batchRegenProvider })));
   };
 
   const handleAddManualCard = () => {
@@ -401,7 +480,24 @@ function MoodboardStudio() {
                   </Button>
                 )}
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <ModelSelector
+                  type="image"
+                  variant="node"
+                  selectedModel={batchRegenModel}
+                  onModelChange={(m, p) => { setBatchRegenModel(m); if (p) setBatchRegenProvider(p); }}
+                  className="w-[160px]"
+                />
+                <Button variant="secondary" size="sm" onClick={handleRegenAll} disabled={regeneratingIds.size > 0}>
+                  <Sparkles size={13} className="mr-1.5" />
+                  Regenerar todos
+                  <span className="ml-1.5 text-[9px] opacity-60">
+                    {getCreditsRequired(batchRegenModel, undefined, batchRegenProvider) * croppedImages.filter(c => c.url).length}cr
+                  </span>
+                </Button>
+                <Button variant="secondary" size="sm" onClick={downloadAll}>
+                  <Download size={13} className="mr-1.5" />Baixar todos
+                </Button>
                 <Button variant="ghost" size="sm" onClick={handleReset}>Reset</Button>
                 <Button variant="secondary" size="sm" onClick={handleAddManualCard}><Plus size={13} className="mr-1" />Add</Button>
               </div>
@@ -425,6 +521,8 @@ function MoodboardStudio() {
                   onUpdateImage={(file) => handleUpdateCardImage(crop.id, file)}
                   onRegenerate={handleRegenerate}
                   isRegenerating={regeneratingIds.has(crop.id)}
+                  onAcceptRegenerated={id => setCroppedImages(prev => prev.map(c => c.id === id && c.regeneratedUrl ? { ...c, url: c.regeneratedUrl, thumbnailUrl: undefined, upscaledUrl: undefined, regeneratedUrl: undefined } : c))}
+                  onDiscardRegenerated={id => setCroppedImages(prev => prev.map(c => c.id === id ? { ...c, regeneratedUrl: undefined } : c))}
                 />
               ))}
             </div>

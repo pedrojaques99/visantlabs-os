@@ -169,6 +169,212 @@ export function createPlatformMcpServer(): McpServer {
   };
 
   // ═══════════════════════════════════════════
+  // Auth — Register & Login (public, no API key required)
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'auth-register',
+    'Create a new Visant Labs account. Returns a JWT token and user info. After registering, use api-key-create (passing the JWT) to generate a visant_sk_xxx API key for MCP/API access.',
+    {
+      email: z.string().email().describe('User email address.'),
+      password: z.string().min(8).describe('Password (min 8 characters).'),
+      name: z.string().optional().describe('Display name.'),
+    },
+    async ({ email, password, name }) => {
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, name: name || email.split('@')[0] }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.validation(result?.error || result?.message || `Registration failed (${resp.status})`);
+        return jsonResponse({
+          message: 'Account created. Use api-key-create with the returned token to generate your visant_sk_xxx API key.',
+          token: result.token,
+          user: { id: result.user?.id, email: result.user?.email, name: result.user?.name },
+        });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'auth-login',
+    'Sign in to an existing Visant Labs account. Returns a JWT token. Use api-key-create (passing this token) to generate a visant_sk_xxx API key for persistent MCP/API access.',
+    {
+      email: z.string().email().describe('Account email.'),
+      password: z.string().describe('Account password.'),
+    },
+    async ({ email, password }) => {
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/auth/signin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.validation(result?.error || result?.message || `Login failed (${resp.status})`);
+        return jsonResponse({
+          message: 'Signed in. Use api-key-create with this token to generate a persistent visant_sk_xxx API key.',
+          token: result.token,
+          user: { id: result.user?.id, email: result.user?.email, name: result.user?.name },
+        });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'api-key-create',
+    'Create a new Visant API key (visant_sk_xxx). Requires either an active API key (Bearer token) OR a JWT from auth-login/auth-register. The raw key is shown only once — save it immediately.',
+    {
+      name: z.string().max(100).describe('A label for this key, e.g. "Claude.ai MCP" or "Production".'),
+      scopes: z.array(z.enum(['read', 'write', 'generate'])).default(['read', 'write', 'generate']).describe('Permission scopes.'),
+      jwt: z.string().optional().describe('JWT token from auth-login or auth-register (if you have no API key yet).'),
+    },
+    async ({ name, scopes, jwt }) => {
+      const currentUserId = getMcpUserId();
+      // Allow either MCP API key auth OR a JWT passed directly
+      const authHeader = currentUserId
+        ? `x-mcp-user-id: ${currentUserId}` // will be handled below
+        : jwt ? null : null;
+
+      if (!currentUserId && !jwt) {
+        return ERR.validation('Authentication required. Pass a JWT from auth-login, or connect with an existing API key.');
+      }
+      try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (currentUserId) {
+          headers['x-mcp-user-id'] = currentUserId;
+        } else if (jwt) {
+          headers['Authorization'] = `Bearer ${jwt}`;
+        }
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/api-keys/create`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ name, scopes }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Key creation failed (${resp.status})`);
+        return jsonResponse({
+          message: 'API key created. Save the key — it will not be shown again.',
+          key: result.key,
+          keyPrefix: result.keyPrefix,
+          name: result.name,
+          scopes: result.scopes,
+          usage: 'Authorization: Bearer ' + result.key,
+          mcpUrl: 'https://visantlabs.com/api/mcp',
+        });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'api-key-list',
+    'List all API keys for the authenticated user. Shows prefix, name, scopes, last used, and expiry — but not the raw key value.',
+    {},
+    async () => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/api-keys`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Failed to list keys (${resp.status})`);
+        return jsonResponse({ keys: result.keys });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Moodboard — Detect, Upscale, Suggest
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'moodboard-detect-grid',
+    'Detect individual image bounding boxes in a moodboard or grid image. Returns cell coordinates so each section can be cropped and extracted individually.',
+    {
+      imageBase64: z.string().describe('Base64-encoded moodboard image to analyze.'),
+    },
+    async ({ imageBase64 }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/moodboard/detect-grid`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ imageBase64 }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Detection failed (${resp.status})`);
+        return jsonResponse({ boxes: result.boxes, count: result.boxes?.length ?? 0 });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'moodboard-upscale',
+    'Upscale an image to 1K, 2K, or 4K resolution using Gemini image enhancement. Use after extracting a cell from a moodboard to get a high-resolution standalone version.',
+    {
+      imageBase64: z.string().describe('Base64-encoded image to upscale.'),
+      size: z.enum(['1K', '2K', '4K']).default('4K').describe('Target resolution.'),
+    },
+    async ({ imageBase64, size }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/moodboard/upscale`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ imageBase64, size }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Upscale failed (${resp.status})`);
+        return jsonResponse({ upscaledBase64: result.upscaledBase64, size });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'moodboard-suggest',
+    'Analyze images from a moodboard and suggest Remotion animation presets and Veo video generation prompts for each cell. Useful for turning static moodboard cells into motion content.',
+    {
+      images: z.array(z.object({
+        id: z.string().describe('Cell identifier (e.g. "cell-1").'),
+        base64: z.string().describe('Base64-encoded image data for this cell.'),
+      })).min(1).max(9).describe('Array of moodboard cells to analyze.'),
+    },
+    async ({ images }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/moodboard/suggest`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ images }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Suggest failed (${resp.status})`);
+        return jsonResponse({ suggestions: result.suggestions });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
   // Account
   // ═══════════════════════════════════════════
 
@@ -298,42 +504,44 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'mockup-generate',
-    'Generate a new mockup image using AI. Costs credits based on model/resolution. Returns the generated image URL.',
+    'Generate a mockup image using AI. Brand context (colors, typography, logos, voice) is auto-injected when brandGuidelineId is provided — never describe the logo in the prompt. Costs credits based on model and resolution.',
     {
-      prompt: z.string().min(1).describe('Description of the mockup to generate.'),
-      designType: z.string().optional().describe('Design type hint (e.g. "business-card", "social-media").'),
-      aspectRatio: z.string().optional().describe('Aspect ratio (e.g. "16:9", "1:1", "4:3").'),
-      brandGuidelineId: z.string().optional().describe('Brand guideline ID to inject brand context into generation.'),
+      prompt: z.string().min(1).describe('Scene description. Do NOT describe the logo or font — they are injected automatically from brandGuidelineId.'),
+      brandGuidelineId: z.string().optional().describe('Brand guideline ID. Injects logo (as reference image), colors, typography, voice, and strategy into the generation automatically.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('Image model. gpt-image-2=best quality+brand fidelity, gemini=fast/creative, seedream=photorealistic lifestyle.'),
+      aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('Output aspect ratio. 1:1=square/Instagram, 9:16=story/Reels, 16:9=landscape/cover, 4:5=portrait feed.'),
+      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Output resolution. 1K=standard, 2K=high quality, 4K=print/large format. Higher = more credits.'),
+      designType: z.string().optional().describe('Design type hint: business-card, social-media, packaging, apparel, signage, etc.'),
+      baseImageUrl: z.string().optional().describe('Base image URL for image-to-image generation (optional).'),
     },
-    async ({ prompt, designType, aspectRatio, brandGuidelineId }) => {
+    async ({ prompt, brandGuidelineId, model, aspectRatio, resolution, designType, baseImageUrl }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
         const response = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-mcp-user-id': currentUserId,
-          },
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({
             promptText: prompt,
-            designType: designType || 'blank',
-            aspectRatio: aspectRatio || '1:1',
-            feature: 'agent',
             brandGuidelineId,
+            model,
+            aspectRatio,
+            resolution,
+            designType: designType || 'blank',
+            baseImageUrl,
+            feature: 'agent',
           }),
         });
-
-        const result = await response.json();
-        if (!response.ok) {
-          return jsonResponse({ error: result.error || 'Generation failed', status: response.status });
-        }
-
+        const result = await response.json() as any;
+        if (!response.ok) return jsonResponse({ error: result.error || 'Generation failed', status: response.status });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({
-          summary: 'Mockup generated successfully.',
           imageUrl: result.imageUrl || null,
           hasImage: !!result.imageBase64 || !!result.imageUrl,
+          model,
+          aspectRatio,
+          resolution,
+          creditsUsed: result.creditsUsed,
           _meta: quota,
         });
       } catch (err: any) {

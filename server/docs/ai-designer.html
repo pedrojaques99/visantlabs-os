@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Designer Agent — Visant Labs</title>
+  <style>
+    :root { --bg:#0a0a0a; --surface:#141414; --border:#262626; --text:#fafafa; --muted:#a1a1aa; --accent:#3DBEE9; --yellow:#FFFFA8; --green:#22c55e; --red:#ef4444; --orange:#f97316; --purple:#a78bfa; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; padding:2rem; }
+    .container { max-width:920px; margin:0 auto; }
+    h1 { font-size:2rem; margin-bottom:.25rem; }
+    .lead { color:var(--muted); margin-bottom:2.5rem; font-size:1.1rem; }
+    h2 { font-size:1.3rem; margin:2rem 0 .75rem; color:var(--accent); }
+    h3 { font-size:.8rem; margin:1.5rem 0 .5rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+    section { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1.5rem; margin-bottom:1.5rem; }
+    pre { background:var(--bg); padding:1rem; border-radius:6px; overflow-x:auto; font-size:.83rem; font-family:'SF Mono',monospace; margin:.5rem 0; }
+    code { font-family:'SF Mono',monospace; background:var(--bg); padding:.1rem .35rem; border-radius:3px; font-size:.85rem; color:var(--accent); }
+    .good  { border-left:3px solid var(--green);  padding-left:1rem; margin:.5rem 0; }
+    .bad   { border-left:3px solid var(--red);    padding-left:1rem; margin:.5rem 0; }
+    .note  { background:rgba(61,190,233,.07); border-left:3px solid var(--accent); padding:1rem; border-radius:0 6px 6px 0; margin:1rem 0; }
+    .warn  { background:rgba(249,115,22,.07);  border-left:3px solid var(--orange); padding:1rem; border-radius:0 6px 6px 0; margin:1rem 0; }
+    .step  { display:flex; gap:1rem; margin:.75rem 0; align-items:flex-start; }
+    .step-num { background:var(--accent); color:#000; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:700; flex-shrink:0; margin-top:.2rem; }
+    table { width:100%; border-collapse:collapse; margin:.5rem 0; font-size:.9rem; }
+    th,td { padding:.65rem .75rem; border-bottom:1px solid var(--border); text-align:left; vertical-align:top; }
+    th { color:var(--muted); font-weight:500; }
+    a { color:var(--accent); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    ul,ol { padding-left:1.5rem; }
+    li { margin:.3rem 0; }
+    .pill  { display:inline-flex; align-items:center; gap:.35rem; background:var(--bg); border:1px solid var(--border); border-radius:999px; padding:.2rem .7rem; font-size:.8rem; margin:.2rem; }
+    .dot-g { width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0; }
+    .dot-r { width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0; }
+    .tag   { display:inline-block;padding:.15rem .5rem;border-radius:4px;font-size:.75rem;font-weight:600;margin-right:.3rem; }
+    .mcp   { background:rgba(61,190,233,.15);color:var(--accent); }
+    .api   { background:rgba(255,255,168,.15);color:var(--yellow); }
+    .tool  { background:rgba(167,139,250,.15);color:var(--purple); }
+    .flow  { display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;margin:.75rem 0; }
+    .flow-box { background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.4rem .8rem;font-size:.83rem;font-family:'SF Mono',monospace; }
+    .flow-arrow { color:var(--muted);font-size:.9rem; }
+  </style>
+</head>
+<body><div class="container">
+
+  <h1>AI Designer Agent</h1>
+  <p class="lead">Complete reference for LLMs acting as design copilots. Covers onboarding, authentication, brand context, autonomous configuration, generation, moodboard extraction, and upscaling — via MCP, REST API, or Tool Call.</p>
+
+  <!-- ── ONBOARDING ── -->
+  <section>
+    <h2>Step 0 — Onboarding &amp; Authentication</h2>
+    <p>Before any generation, the agent must ensure the user is authenticated. Ask in this order:</p>
+
+    <div class="step"><div class="step-num">1</div><div><strong>Ask for Visant API key.</strong><br>
+      <em>"To use Visant as your design copilot, I need your API key. Get one at <a href="https://visantlabs.com/settings/api-keys">visantlabs.com/settings/api-keys</a> (free account). Paste it here and I'll configure everything."</em><br>
+      Key format: <code>visant_sk_xxx</code> — used as <code>Authorization: Bearer visant_sk_xxx</code>.
+    </div></div>
+
+    <div class="step"><div class="step-num">2</div><div><strong>Verify the key works.</strong><br>
+      Call <code>account-usage</code> (MCP) or <code>GET /api/account/usage</code> (REST) with the key.<br>
+      Returns: credits remaining, plan, limits. If 401 → key invalid, ask again.
+    </div></div>
+
+    <div class="step"><div class="step-num">3</div><div><strong>Check for existing brand guidelines.</strong><br>
+      Call <code>brand-guidelines-list</code>. If empty → offer to create one or ingest from URL/text.<br>
+      If multiple → ask which to use for this session.
+    </div></div>
+
+    <div class="note">The agent should <strong>never assume</strong> a key exists. Always validate before proceeding. If the user is new, guide them to register at <a href="https://visantlabs.com">visantlabs.com</a> then return with their key.</div>
+  </section>
+
+  <!-- ── AUTONOMOUS CONFIG ── -->
+  <section>
+    <h2>Autonomous Configuration</h2>
+    <p>The agent should autonomously decide or ask for these parameters. Defaults shown — override based on user intent.</p>
+
+    <table>
+      <thead><tr><th>Parameter</th><th>Options</th><th>Default</th><th>When to ask</th></tr></thead>
+      <tbody>
+        <tr><td><code>model</code></td><td><code>gpt-image-2</code>, <code>gpt-image-1</code>, <code>gemini-3.1-flash-image-preview</code>, <code>seedream-3-0</code></td><td><code>gpt-image-2</code></td><td>Only if user requests a specific style (photorealistic → seedream, fast → gemini)</td></tr>
+        <tr><td><code>aspectRatio</code></td><td><code>1:1</code>, <code>9:16</code>, <code>16:9</code>, <code>4:5</code></td><td><code>1:1</code></td><td>Infer from context: "Instagram story" → 9:16, "cover" → 16:9</td></tr>
+        <tr><td><code>resolution</code></td><td><code>1K</code>, <code>2K</code>, <code>4K</code></td><td><code>1K</code></td><td>Ask only if user says "high quality" or "print". Costs more credits.</td></tr>
+        <tr><td><code>brandGuidelineId</code></td><td>Any guideline ID from <code>brand-guidelines-list</code></td><td>First found</td><td>Always set. If multiple, ask which brand.</td></tr>
+        <tr><td><code>promptText</code></td><td>String describing scene, mood, composition</td><td>—</td><td>Never describe logo or font. Brand tokens are auto-injected.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Model selection logic</h3>
+    <pre>if (userWantsPhotorealism)  → seedream-3-0
+if (userWantsFast)          → gemini-3.1-flash-image-preview
+if (userWantsBestQuality)   → gpt-image-2  (default)
+if (userNeedsTextInImage)   → gpt-image-2  (best text rendering)</pre>
+  </section>
+
+  <!-- ── FULL PIPELINE ── -->
+  <section>
+    <h2>Full Generation Pipeline</h2>
+    <div class="flow">
+      <div class="flow-box">1. Get API key</div><div class="flow-arrow">→</div>
+      <div class="flow-box">2. brand-guidelines-list</div><div class="flow-arrow">→</div>
+      <div class="flow-box">3. brand-guidelines-get (format=structured)</div><div class="flow-arrow">→</div>
+      <div class="flow-box">4. Build prompt (no logo description)</div><div class="flow-arrow">→</div>
+      <div class="flow-box">5. mockup-generate</div><div class="flow-arrow">→</div>
+      <div class="flow-box">6. (optional) moodboard/detect-grid</div><div class="flow-arrow">→</div>
+      <div class="flow-box">7. (optional) moodboard/upscale</div>
+    </div>
+
+    <h3>MCP — full example</h3>
+    <pre>// 1. List guidelines
+const list = await mcp('brand-guidelines-list', {});
+const brand = list.guidelines[0]; // or let user choose
+
+// 2. Get full context
+const detail = await mcp('brand-guidelines-get', { id: brand.id, format: 'structured' });
+
+// 3. Generate (brand context auto-injected by server)
+const result = await mcp('mockup-generate', {
+  promptText: 'Product hero shot. Dark studio. Brand logo at bottom.',
+  brandGuidelineId: brand.id,
+  model: 'gpt-image-2',
+  aspectRatio: '1:1',
+  resolution: '1K',
+});</pre>
+
+    <h3>REST API — same pipeline</h3>
+    <pre>POST /api/mockups/generate
+Authorization: Bearer visant_sk_xxx
+Content-Type: application/json
+
+{
+  "promptText": "Product hero shot. Dark studio. Brand logo at bottom.",
+  "brandGuidelineId": "{{id}}",
+  "model": "gpt-image-2",
+  "aspectRatio": "1:1",
+  "resolution": "1K"
+}</pre>
+
+    <h3>Batch (up to 20 in parallel)</h3>
+    <pre>POST /api/mockups/batch-generate
+{
+  "prompts": ["Scene A", "Scene B", "Scene C"],
+  "brandGuidelineId": "{{id}}",
+  "model": "gpt-image-2",
+  "aspectRatio": "1:1"
+}</pre>
+  </section>
+
+  <!-- ── MOODBOARD EXTRACT ── -->
+  <section>
+    <h2>Moodboard Pipeline — Generate → Extract → Upscale</h2>
+    <p>Generate a grid image (1 API call describing 9 sections), then extract individual cells and optionally upscale them.</p>
+
+    <div class="flow">
+      <div class="flow-box">Generate 3x3 moodboard</div><div class="flow-arrow">→</div>
+      <div class="flow-box">POST /api/moodboard/detect-grid</div><div class="flow-arrow">→</div>
+      <div class="flow-box">Extract cells (crop by bounding boxes)</div><div class="flow-arrow">→</div>
+      <div class="flow-box">POST /api/moodboard/upscale (per cell)</div><div class="flow-arrow">→</div>
+      <div class="flow-box">POST /api/moodboard/suggest (animation)</div>
+    </div>
+
+    <h3>1. Detect grid cells</h3>
+    <pre>POST /api/moodboard/detect-grid
+Authorization: Bearer visant_sk_xxx
+{ "imageBase64": "{{base64 of the moodboard image}}" }
+
+// Returns: { boxes: [{ id, x, y, width, height }, ...] }</pre>
+
+    <h3>2. Upscale a cell</h3>
+    <pre>POST /api/moodboard/upscale
+Authorization: Bearer visant_sk_xxx
+{ "imageBase64": "{{cropped cell base64}}", "size": "4K" }
+// size: "1K" | "2K" | "4K"
+// Returns: { upscaledBase64 }</pre>
+
+    <h3>3. Animation suggestions (optional)</h3>
+    <pre>POST /api/moodboard/suggest
+Authorization: Bearer visant_sk_xxx
+{ "images": [{ "id": "cell-1", "base64": "..." }, ...] }
+// Returns: { suggestions: [{ id, animationPreset, veoPrrompt }] }</pre>
+
+    <div class="note">The moodboard prompt pattern: describe 9 sections inline as <em>"Row 1: (1) ... (2) ... (3) ... Row 2: ..."</em> — the model composes the grid. No stitching needed.</div>
+  </section>
+
+  <!-- ── LOGO REFERENCE ── -->
+  <section>
+    <h2>Logo Reference Rule</h2>
+    <div class="warn"><strong>NEVER describe the logo in text.</strong> "A stacked geometric symbol with horizontal bars" → model will hallucinate. Always inject as reference image.</div>
+
+    <table>
+      <thead><tr><th>Situation</th><th>Endpoint</th><th>How</th></tr></thead>
+      <tbody>
+        <tr><td>Logo needed in scene</td><td><code>POST /v1/images/edits</code></td><td>multipart, <code>image[]</code> = logo base64 blob</td></tr>
+        <tr><td>No logo needed</td><td><code>POST /v1/images/generations</code></td><td>JSON, string prompt</td></tr>
+        <tr><td>Via Visant API</td><td><code>POST /api/mockups/generate</code></td><td>Pass <code>brandGuidelineId</code> — server injects logo automatically</td></tr>
+      </tbody>
+    </table>
+    <p>When using the Visant API, logo injection is <strong>automatic</strong> — just pass <code>brandGuidelineId</code>. Priority: icon → primary → light → dark.</p>
+  </section>
+
+  <!-- ── WHAT GETS INJECTED ── -->
+  <section>
+    <h2>Auto-Injected Brand Context</h2>
+    <p>When <code>brandGuidelineId</code> is passed, the server prepends to the prompt:</p>
+    <ul>
+      <li><strong>Logos</strong> — up to 2, as <code>referenceImages</code> (never described in text)</li>
+      <li><strong>Media kit</strong> — up to 2 style references from <code>media[]</code></li>
+      <li><strong>Colors</strong> — full palette (hex + name + role)</li>
+      <li><strong>Typography</strong> — font families and roles</li>
+      <li><strong>Voice &amp; tone</strong> — do's/don'ts, imagery guidelines</li>
+      <li><strong>Strategy</strong> — positioning, archetypes, personas</li>
+      <li><strong>Gradients &amp; tokens</strong> — if defined in guideline</li>
+    </ul>
+  </section>
+
+  <!-- ── PROMPT RULES ── -->
+  <section>
+    <h2>Prompt Rules</h2>
+    <table>
+      <thead><tr><th>Rule</th><th>✅ Do</th><th>❌ Don't</th></tr></thead>
+      <tbody>
+        <tr><td>Logo</td><td><em>"brand logo at bottom"</em> + brandGuidelineId</td><td>Describe logo shape, colors, structure</td></tr>
+        <tr><td>3D renders</td><td>"no grain, no particles, no noise, pure black background"</td><td>Omit — adds noise by default</td></tr>
+        <tr><td>Brand color</td><td>"#FFFFA8 as warm rim light source"</td><td>"object in #FFFFA8" → looks generic gold</td></tr>
+        <tr><td>Moodboard</td><td>1 prompt with "Row 1: (1)... (2)... Row 2:..."</td><td>9 separate calls + canvas stitch</td></tr>
+        <tr><td>Font</td><td>"brand typography" — server injects automatically</td><td>Describe font weight, name, or style</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Vocabulary for dark premium renders</h3>
+    <span class="pill"><span class="dot-g"></span>rim light on edges</span>
+    <span class="pill"><span class="dot-g"></span>void background</span>
+    <span class="pill"><span class="dot-g"></span>shallow depth of field</span>
+    <span class="pill"><span class="dot-g"></span>surgical precision lighting</span>
+    <span class="pill"><span class="dot-g"></span>Apple-quality product CGI</span>
+    <span class="pill"><span class="dot-g"></span>single softbox from upper left</span>
+    <span class="pill"><span class="dot-g"></span>dark smoked glass</span>
+    <span class="pill"><span class="dot-g"></span>matte anodized aluminum</span>
+    <span class="pill"><span class="dot-r"></span>no grain</span>
+    <span class="pill"><span class="dot-r"></span>no particles</span>
+    <span class="pill"><span class="dot-r"></span>no noise</span>
+    <span class="pill"><span class="dot-r"></span>no reflections on background</span>
+  </section>
+
+  <!-- ── MODELS ── -->
+  <section>
+    <h2>Models</h2>
+    <table>
+      <thead><tr><th>Model ID</th><th>Provider</th><th>Best for</th><th>Logo ref</th></tr></thead>
+      <tbody>
+        <tr><td><code>gpt-image-2</code></td><td>OpenAI</td><td>Best quality, text, brand fidelity (default)</td><td>✅ /edits</td></tr>
+        <tr><td><code>gpt-image-1</code></td><td>OpenAI</td><td>Good quality, wider availability</td><td>✅ /edits</td></tr>
+        <tr><td><code>gemini-3.1-flash-image-preview</code></td><td>Google</td><td>Fast, stylized, creative</td><td>✅ inline</td></tr>
+        <tr><td><code>seedream-3-0</code></td><td>Seedream</td><td>Photorealistic lifestyle</td><td>✅</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── BRAND GUIDELINE TOOLS ── -->
+  <section>
+    <h2>Brand Guideline MCP Tools (15)</h2>
+    <table>
+      <thead><tr><th>Tool</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><code>brand-guidelines-list</code></td><td>List all guidelines</td></tr>
+        <tr><td><code>brand-guidelines-get</code></td><td>Get full guideline (format=structured|prompt)</td></tr>
+        <tr><td><code>brand-guidelines-create</code></td><td>Create new guideline</td></tr>
+        <tr><td><code>brand-guidelines-update</code></td><td>Partial update</td></tr>
+        <tr><td><code>brand-guidelines-delete</code></td><td>Delete guideline</td></tr>
+        <tr><td><code>brand-guidelines-upload-logo</code></td><td>Upload logo (base64 or URL) + variant + label</td></tr>
+        <tr><td><code>brand-guidelines-delete-logo</code></td><td>Remove logo by ID</td></tr>
+        <tr><td><code>brand-guidelines-upload-media</code></td><td>Upload media/PDF to media kit</td></tr>
+        <tr><td><code>brand-guidelines-delete-media</code></td><td>Remove media by ID</td></tr>
+        <tr><td><code>brand-guidelines-duplicate</code></td><td>Clone full guideline</td></tr>
+        <tr><td><code>brand-guidelines-restore-version</code></td><td>Roll back to previous version</td></tr>
+        <tr><td><code>brand-guidelines-compliance-check</code></td><td>AI score: contrast, voice, completeness</td></tr>
+        <tr><td><code>brand-guidelines-ingest</code></td><td>Extract brand from URL or raw text</td></tr>
+        <tr><td><code>brand-guidelines-share</code></td><td>Generate public read-only link</td></tr>
+        <tr><td><code>brand-guidelines-versions</code></td><td>Version history</td></tr>
+      </tbody>
+    </table>
+    <a href="/api/docs/platform/mcp.json">→ Full MCP spec (JSON)</a>
+  </section>
+
+  <!-- ── RELATED ── -->
+  <section>
+    <h2>Related Docs</h2>
+    <ul>
+      <li><a href="/api/docs/brand-prompting">Brand-Aware Prompting Guide</a> — detailed prompt rules</li>
+      <li><a href="/api/docs/brand">Brand Guidelines API Reference</a></li>
+      <li><a href="/api/docs/platform/mcp.json">Platform MCP Spec (JSON)</a></li>
+      <li><a href="/api/docs/ai-designer.json">This doc as JSON (machine-readable)</a></li>
+      <li><a href="/llms.txt">llms.txt — agent discovery</a></li>
+    </ul>
+  </section>
+
+</div></body>
+</html>
