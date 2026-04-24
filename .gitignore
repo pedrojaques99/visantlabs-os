@@ -127,3 +127,4 @@ secrets-to-remove.txt
 
 .vercel
 /.claude
+.claude/settings.local.json
