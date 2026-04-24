@@ -50,8 +50,9 @@ interface AdminUser {
   totalSpentBRL: number;
   totalSpentUSD: number;
   apiCostUSD: number;
-  totalGenerations?: number; // Total images generated (from User model)
-  totalTokensUsed?: number;  // Total tokens used (from User model)
+  totalGenerations?: number;
+  totalTokensUsed?: number;
+  byok?: { gemini: boolean; seedream: boolean; openai: boolean };
 }
 
 interface GenerationStats {

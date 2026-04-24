@@ -151,6 +151,9 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
         storageUsedBytes: true,
         totalGenerations: true,
         totalTokensUsed: true,
+        encryptedGeminiApiKey: true,
+        encryptedSeedreamApiKey: true,
+        encryptedOpenAiApiKey: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -242,6 +245,14 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
           totalSpentBRL,
           totalSpentUSD,
           apiCostUSD,
+          byok: {
+            gemini: !!user.encryptedGeminiApiKey,
+            seedream: !!user.encryptedSeedreamApiKey,
+            openai: !!user.encryptedOpenAiApiKey,
+          },
+          encryptedGeminiApiKey: undefined,
+          encryptedSeedreamApiKey: undefined,
+          encryptedOpenAiApiKey: undefined,
         };
       })
     );
