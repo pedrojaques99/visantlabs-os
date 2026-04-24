@@ -225,7 +225,16 @@
       "mcp__claude_ai_Vercel__get_runtime_logs",
       "mcp__claude_ai_Vercel__list_deployments",
       "mcp__claude_ai_Vercel__get_deployment_build_logs",
-      "Skill(gsd:discuss-phase)"
+      "Skill(gsd:discuss-phase)",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); guidelines=data.get\\('guidelines',[]\\); movitera=[g for g in guidelines if 'movitera' in \\(g.get\\('name',''\\) or ''\\).lower\\(\\)]; print\\(json.dumps\\(movitera, indent=2\\)\\)\")",
+      "Bash(ssh *)",
+      "Read(//c/Users/Usuario/.ssh/**)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:dasroot.net)",
+      "WebFetch(domain:upstash.com)",
+      "WebFetch(domain:supabase.com)",
+      "Bash(vercel env *)",
+      "Bash(vercel link *)"
     ]
   }
 }

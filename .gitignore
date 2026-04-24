@@ -124,3 +124,5 @@ scripts/output/sports248/
 secrets-to-remove.txt
 /scripts/output
 /scripts
+
+.vercel
