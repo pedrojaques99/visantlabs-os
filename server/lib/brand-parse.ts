@@ -1,5 +1,7 @@
 // server/lib/brand-parse.ts
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
+// pdfjs-dist is imported lazily inside parsePdf to avoid crashing the
+// Vercel serverless cold-start — the package uses @napi-rs/canvas and
+// DOMMatrix at module-evaluation time, which don't exist in Lambda.
 
 export interface ParsedChunk {
   text: string
@@ -26,6 +28,7 @@ export async function parseUrl(url: string): Promise<ParsedChunk[]> {
 
 export async function parsePdf(buffer: Buffer, filename?: string): Promise<ParsedChunk[]> {
   try {
+    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
     // Convert Buffer to Uint8Array for pdfjs-dist compatibility
     const uint8Array = new Uint8Array(buffer)
     const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise
