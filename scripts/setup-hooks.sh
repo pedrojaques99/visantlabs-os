@@ -2,6 +2,11 @@
 # Run once after cloning: configures git to use project hooks
 set -e
 
+if ! command -v git &>/dev/null; then
+  echo "Git not found — skipping hooks setup (CI/Docker environment)."
+  exit 0
+fi
+
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 HOOKS_DIR="$REPO_ROOT/.githooks"
 
