@@ -4,7 +4,7 @@ import crypto from 'crypto'
 import { nanoid } from 'nanoid'
 import { authenticate, AuthRequest } from '../middleware/auth.js'
 import { prisma } from '../db/prisma.js'
-import { rateLimit } from 'express-rate-limit'
+import { rateLimit, ipKeyGenerator } from 'express-rate-limit'
 import { Liveblocks } from '@liveblocks/node'
 import { BrandGuideline, BrandGuidelineMedia, BrandGuidelineLogo, calculateCompleteness } from '../types/brandGuideline.js'
 import { parseUrl, parsePdf, parseImage, parseJson } from '../lib/brand-parse.js'
@@ -37,7 +37,7 @@ const publicRateLimiter = rateLimit({
   message: { error: 'Too many requests to public endpoint. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip ?? 'unknown',
+  keyGenerator: (req) => ipKeyGenerator(req),
 })
 
 // GET /api/brand-guidelines — list all user's brand guidelines
