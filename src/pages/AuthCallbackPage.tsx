@@ -30,8 +30,13 @@ export const AuthCallbackPage: React.FC = () => {
 
           if (user) {
             toast.success(t('auth.signedInSuccess'), { duration: 2000 });
-            // Clean URL and redirect to home
-            navigate('/', { replace: true });
+            const redirectBack = searchParams.get('redirect_back');
+            if (redirectBack?.startsWith('/oauth/authorize')) {
+              const apiBase = import.meta.env.VITE_API_URL || 'https://api.visantlabs.com';
+              window.location.href = `${apiBase}${redirectBack}&token=${encodeURIComponent(token)}`;
+            } else {
+              navigate('/', { replace: true });
+            }
           } else {
             setError(t('auth.authenticationFailed'));
             setIsProcessing(false);
