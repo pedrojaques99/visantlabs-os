@@ -1,3 +1,10 @@
+/**
+ * LEGACY: This file was the Vercel serverless entry point.
+ * The backend now runs as a persistent server via server/index.ts on the VPS.
+ * Kept for reference. Vercel no longer routes /api/* here.
+ * See deploy/coolify.md for current deployment setup.
+ */
+
 // Vercel serverless function handler
 // This file is automatically detected by Vercel for /api/* routes
 import express from 'express';
