@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Maximize2, Download, CheckSquare, Square, Video, Play, Loader2, Film, Sparkles, Check, RotateCcw } from 'lucide-react';
+import { X, Maximize2, Download, CheckSquare, Square, Video, Play, Loader2, Film, Zap, Check, RotateCcw } from 'lucide-react';
 import { CroppedImage, AnimationPreset } from '../../types/moodboard';
 import { ModelSelector } from '@/components/shared/ModelSelector';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
@@ -70,7 +70,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
               {crop.regeneratedUrl && (
                 <div className="absolute bottom-0 inset-x-0 bg-black/80 backdrop-blur-sm p-2 flex items-center justify-between gap-2 z-20">
                   <span className="text-[8px] font-bold uppercase tracking-widest text-purple-400 flex items-center gap-1">
-                    <Sparkles size={9} />AI Result
+                    <Zap size={9} />AI Result
                   </span>
                   <div className="flex gap-1.5">
                     <button onClick={e => { e.stopPropagation(); onDiscardRegenerated?.(crop.id); }}
@@ -183,7 +183,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
 
                 {onRegenerate && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-1.5"><Sparkles size={11} className="text-neutral-600" /><span className="text-[8px] font-bold uppercase tracking-widest text-neutral-600">Regenerate with AI</span></div>
+                    <div className="flex items-center gap-1.5"><Zap size={11} className="text-neutral-600" /><span className="text-[8px] font-bold uppercase tracking-widest text-neutral-600">Regenerate with AI</span></div>
                     <div className="flex gap-2 items-center">
                       <ModelSelector
                         type="image"
@@ -197,7 +197,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
                         disabled={!crop.url || isRegenerating}
                         className="px-3 py-2 rounded-lg bg-neutral-800 border border-border text-neutral-300 hover:bg-white hover:text-black text-[9px] font-bold uppercase tracking-widest transition-all disabled:opacity-30 flex items-center gap-1.5 shrink-0"
                       >
-                        {isRegenerating ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                        {isRegenerating ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
                       </button>
                     </div>
                   </div>

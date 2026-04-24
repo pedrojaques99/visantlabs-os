@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scissors, Video, Upload, X, Play, Plus, Loader2, Sparkles, Download } from 'lucide-react';
+import { Scissors, Video, Upload, X, Play, Plus, Loader2, Zap, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageShell } from '../components/ui/PageShell';
 import { Button } from '../components/ui/button';
@@ -489,7 +489,7 @@ function MoodboardStudio() {
                   className="w-[160px]"
                 />
                 <Button variant="secondary" size="sm" onClick={handleRegenAll} disabled={regeneratingIds.size > 0}>
-                  <Sparkles size={13} className="mr-1.5" />
+                  <Zap size={13} className="mr-1.5" />
                   Regenerar todos
                   <span className="ml-1.5 text-[9px] opacity-60">
                     {getCreditsRequired(batchRegenModel, undefined, batchRegenProvider) * croppedImages.filter(c => c.url).length}cr
