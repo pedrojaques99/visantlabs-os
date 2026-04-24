@@ -179,7 +179,7 @@
     "tailwindcss": "^4.1.17",
     "temporary-email-address-validator": "^1.0.3",
     "three": "^0.182.0",
-    "visantchi": "^0.1.5",
+    "visantchi": "^0.2.3",
     "ws": "^8.16.0",
     "zod": "^4.3.6",
     "zundo": "^2.3.0",

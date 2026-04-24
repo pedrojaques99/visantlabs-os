@@ -32,7 +32,7 @@ const getArg = (flag, fallback) => {
   return i !== -1 && args[i + 1] ? args[i + 1] : fallback;
 };
 const BRAND_NAME = getArg('--brand', process.env.BRAND || '');
-const COUNT = Math.min(parseInt(getArg('--count', '5'), 10), 10);
+const COUNT = Math.min(parseInt(getArg('--count', '5'), 10) || 5, 10);
 
 if (!BRAND_NAME) {
   console.error('Uso: node scripts/gen-brand-mockups.mjs --brand "Nome da Marca" [--count 5]');
@@ -45,8 +45,10 @@ const MCP_URL    = `http://localhost:${API_PORT}/api/mcp`;
 const VISANT_KEY = process.env.VISANT_API_TOKEN;
 const OPENAI_KEY = process.env.OPENAI_KEY;
 
-if (!VISANT_KEY) throw new Error('VISANT_API_TOKEN env var is required');
-if (!OPENAI_KEY) throw new Error('OPENAI_KEY env var is required');
+if (!VISANT_KEY || !OPENAI_KEY) {
+  console.error('Error: VISANT_API_TOKEN and OPENAI_KEY environment variables are required.');
+  process.exit(1);
+}
 
 const slug = name => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 const OUTPUT_DIR = join(__dirname, 'output', slug(BRAND_NAME));

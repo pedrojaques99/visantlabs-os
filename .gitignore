@@ -121,3 +121,4 @@ scripts/feedback/
 scripts/lib/
 scripts/gen-sports248-*.mjs
 scripts/output/sports248/
+secrets-to-remove.txt
