@@ -77,6 +77,63 @@ export async function hasGeminiApiKey(): Promise<boolean> {
   }
 }
 
+// ── OpenAI BYOK ────────────────────────────────────────────────────────────
+
+/** Save user's OpenAI API key (encrypted on backend). Key is never echoed back. */
+export async function saveOpenAiApiKey(apiKey: string): Promise<void> {
+  const token = authService.getToken();
+  if (!token) throw new Error('Authentication required');
+
+  const response = await fetch(`${API_BASE_URL}/users/settings/openai-api-key`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ apiKey }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: 'Failed to save API key' }));
+    throw new Error(err.error || err.message || 'Failed to save OpenAI API key');
+  }
+}
+
+/** Remove the user's saved OpenAI API key. */
+export async function deleteOpenAiApiKey(): Promise<void> {
+  const token = authService.getToken();
+  if (!token) throw new Error('Authentication required');
+
+  const response = await fetch(`${API_BASE_URL}/users/settings/openai-api-key`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: 'Failed to delete API key' }));
+    throw new Error(err.error || err.message || 'Failed to delete OpenAI API key');
+  }
+}
+
+/** Check whether the user has a saved OpenAI API key. Returns boolean — never the key. */
+export async function hasOpenAiApiKey(): Promise<boolean> {
+  const token = authService.getToken();
+  if (!token) return false;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/settings/openai-api-key`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) return false;
+    const data = await response.json();
+    return data.hasApiKey === true;
+  } catch {
+    return false;
+  }
+}
+
+// ── Canvas settings ────────────────────────────────────────────────────────
+
 /**
  * Get user's canvas settings
  */

@@ -11,7 +11,7 @@ import { SpecGenerationError, ValidationError } from './docs-errors.js';
 import { FIGMA_TOOLS, FigmaTool } from './tools/registry.js';
 
 type ToolCost = 'free' | 'credits';
-type ToolCategory = 'account' | 'mockups' | 'ai' | 'branding' | 'brand-guidelines' | 'canvas' | 'budget' | 'community';
+type ToolCategory = 'account' | 'mockups' | 'ai' | 'branding' | 'brand-guidelines' | 'canvas' | 'budget' | 'community' | 'auth' | 'moodboard';
 
 interface PlatformToolDef {
   name: string;
@@ -26,6 +26,17 @@ interface PlatformToolDef {
 // Single source of truth for all platform MCP tools.
 // This array is served via GET /api/docs/platform/mcp.json — do NOT duplicate elsewhere.
 const PLATFORM_TOOLS: PlatformToolDef[] = [
+  // ---- Auth (public) ----
+  { name: 'auth-register', description: 'Create a new Visant Labs account. Returns JWT. Then use api-key-create (passing the JWT) to generate visant_sk_xxx for MCP access.', required: ['email', 'password'], properties: { email: { type: 'string', format: 'email' }, password: { type: 'string', minLength: 8 }, name: { type: 'string' } }, cost: 'free', category: 'auth', auth: false },
+  { name: 'auth-login', description: 'Sign in to an existing Visant Labs account. Returns JWT. Use api-key-create (passing JWT) to generate persistent API key.', required: ['email', 'password'], properties: { email: { type: 'string', format: 'email' }, password: { type: 'string' } }, cost: 'free', category: 'auth', auth: false },
+  { name: 'api-key-create', description: 'Create a new API key (visant_sk_xxx). Pass jwt from auth-login if you have no key yet. Raw key shown once — save immediately.', required: ['name'], properties: { name: { type: 'string', maxLength: 100 }, scopes: { type: 'array', items: { type: 'string', enum: ['read', 'write', 'generate'] } }, jwt: { type: 'string' } }, cost: 'free', category: 'auth', auth: false },
+  { name: 'api-key-list', description: 'List all API keys for the authenticated user (prefix, name, scopes, last used). Raw key value not returned.', required: [], properties: {}, cost: 'free', category: 'auth', auth: true },
+
+  // ---- Moodboard ----
+  { name: 'moodboard-detect-grid', description: 'Detect individual image bounding boxes in a moodboard/grid image. Returns cell coordinates for extraction.', required: ['imageBase64'], properties: { imageBase64: { type: 'string' } }, cost: 'free', category: 'moodboard', auth: true },
+  { name: 'moodboard-upscale', description: 'Upscale an image to 1K, 2K, or 4K using Gemini image enhancement.', required: ['imageBase64'], properties: { imageBase64: { type: 'string' }, size: { type: 'string', enum: ['1K', '2K', '4K'], default: '4K' } }, cost: 'credits', category: 'moodboard', auth: true },
+  { name: 'moodboard-suggest', description: 'Suggest Remotion animation presets and Veo video prompts for each moodboard cell.', required: ['images'], properties: { images: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, base64: { type: 'string' } } } } }, cost: 'credits', category: 'moodboard', auth: true },
+
   // ---- Account ----
   { name: 'account-usage', description: 'Get credit usage, remaining balance, plan limits, and billing cycle info for the authenticated account.', required: [], properties: {}, cost: 'free', category: 'account', auth: true },
   { name: 'account-profile', description: 'Get the authenticated user profile including name, email, avatar, and subscription plan.', required: [], properties: {}, cost: 'free', category: 'account', auth: true },
@@ -62,6 +73,19 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
   // ---- Brand Guidelines ----
   { name: 'brand-guidelines-list', description: 'List all brand guidelines (identity vaults) owned by the authenticated user.', required: [], properties: {}, cost: 'free', category: 'brand-guidelines', auth: true },
   { name: 'brand-guidelines-get', description: 'Get a detailed brand guideline by ID, including colors, typography, logos, and strategy. format=structured|prompt (LLM-ready text).', required: ['id'], properties: { id: { type: 'string' }, format: { type: 'string', enum: ['structured', 'prompt'], default: 'structured' } }, cost: 'free', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-create', description: 'Create a new brand guideline. Requires at minimum identity.name. All other sections optional.', required: ['identity'], properties: { identity: { type: 'object' }, colors: { type: 'array' }, typography: { type: 'array' }, guidelines: { type: 'object' }, strategy: { type: 'object' } }, cost: 'free', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-update', description: 'Partially update a brand guideline by ID. Pass only the fields to change.', required: ['id'], properties: { id: { type: 'string' } }, cost: 'free', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-delete', description: 'Delete a brand guideline by ID.', required: ['id'], properties: { id: { type: 'string' } }, cost: 'free', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-upload-logo', description: 'Upload a logo to a brand guideline. Accepts base64-encoded image data or a public URL. Returns uploaded logo with URL and ID.', required: ['id'], properties: { id: { type: 'string' }, data: { type: 'string' }, url: { type: 'string' }, variant: { type: 'string', enum: ['primary', 'dark', 'light', 'icon', 'accent', 'custom'], default: 'primary' }, label: { type: 'string' } }, cost: 'free', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-delete-logo', description: 'Delete a logo from a brand guideline by its logo ID.', required: ['id', 'logoId'], properties: { id: { type: 'string' }, logoId: { type: 'string' } }, cost: 'free', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-upload-media', description: 'Upload a media asset (image or PDF) to the brand media kit. Accepts base64 or URL.', required: ['id'], properties: { id: { type: 'string' }, data: { type: 'string' }, url: { type: 'string' }, type: { type: 'string', enum: ['image', 'pdf'], default: 'image' }, label: { type: 'string' } }, cost: 'free', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-delete-media', description: 'Delete a media asset from a brand guideline by its media ID.', required: ['id', 'mediaId'], properties: { id: { type: 'string' }, mediaId: { type: 'string' } }, cost: 'free', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-duplicate', description: 'Duplicate a brand guideline, creating an independent copy with "(copy)" appended to the name.', required: ['id'], properties: { id: { type: 'string' } }, cost: 'free', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-restore-version', description: 'Restore a brand guideline to a previous version. Current state is preserved as a version before restoring.', required: ['id', 'version'], properties: { id: { type: 'string' }, version: { type: 'integer' } }, cost: 'free', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-compliance-check', description: 'Run an AI compliance check — validates color contrast, typography consistency, voice coherence, and completeness. Returns scored report.', required: ['id'], properties: { id: { type: 'string' } }, cost: 'free', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-ingest', description: 'Extract brand data from a URL or raw text and merge into an existing guideline.', required: ['id', 'source'], properties: { id: { type: 'string' }, source: { type: 'string', enum: ['url', 'text'] }, url: { type: 'string' }, text: { type: 'string' } }, cost: 'credits', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-share', description: 'Generate a public read-only link for a brand guideline. Pass disable=true to revoke.', required: ['id'], properties: { id: { type: 'string' }, disable: { type: 'boolean' } }, cost: 'free', category: 'brand-guidelines', auth: true },
+  { name: 'brand-guidelines-versions', description: 'List the version history of a brand guideline in reverse chronological order.', required: ['id'], properties: { id: { type: 'string' }, limit: { type: 'integer', default: 10 } }, cost: 'free', category: 'brand-guidelines', auth: true },
   { name: 'brand-guidelines-public', description: 'Get a public brand guideline by its slug. No authentication required.', required: ['slug'], properties: { slug: { type: 'string' } }, cost: 'free', category: 'brand-guidelines', auth: false },
 
   // ---- Canvas ----

@@ -16,6 +16,7 @@ export interface CroppedImage {
   upscaledUrl?: string;
   isUpscaling: boolean;
   upscaleStartTime?: number;
+  regeneratedUrl?: string;
   videoUrl?: string;
   isAnimating: boolean;
   animationStartTime?: number;

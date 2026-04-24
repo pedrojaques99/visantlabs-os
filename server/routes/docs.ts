@@ -212,6 +212,106 @@ router.get('/brand', (_req: Request, res: Response) => {
 });
 
 /**
+ * GET /docs/ai-designer
+ * AI Designer Agent — model-agnostic brand-aware generation guide (HTML)
+ */
+router.get('/ai-designer', (_req: Request, res: Response) => {
+  try {
+    sendCachedHTML(res, readTemplate('ai-designer.html'));
+  } catch (err) {
+    handleDocsError(err, res);
+  }
+});
+
+/**
+ * GET /docs/ai-designer.json
+ * Machine-readable AI Designer Agent spec for LLM agents and MCP clients
+ */
+router.get('/ai-designer.json', (_req: Request, res: Response) => {
+  sendCachedJSON(res, {
+    title: 'AI Designer Agent',
+    version: VERSION,
+    description: 'Complete guide for LLMs acting as design copilots. Covers onboarding, auth, brand context, autonomous config, generation, moodboard extraction, and upscaling.',
+    onboarding: {
+      step1: 'Ask user for Visant API key (format: visant_sk_xxx). Get one at https://visantlabs.com/settings/api-keys',
+      step2: 'Validate key: call account-usage (MCP) or GET /api/account/usage (REST). If 401 key is invalid.',
+      step3: 'Call brand-guidelines-list. If empty offer to create or ingest from URL/text. If multiple ask which to use.',
+      note: 'Never assume a key exists. Guide new users to register at visantlabs.com then return with key.',
+    },
+    accessPatterns: [
+      { method: 'MCP', how: 'mockup-generate + brandGuidelineId', clients: 'Claude.ai, Cursor, any MCP client' },
+      { method: 'REST API', how: 'POST /api/mockups/generate + brandGuidelineId', clients: 'Server-to-server, scripts, n8n' },
+      { method: 'Tool Call', how: 'Gemini/Claude function declarations calling same REST endpoint', clients: 'Custom LLM agents' },
+    ],
+    autonomousConfig: {
+      model: { options: ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'], default: 'gpt-image-2', logic: 'photorealistic->seedream, fast->gemini, text/quality->gpt-image-2' },
+      aspectRatio: { options: ['1:1', '9:16', '16:9', '4:5'], default: '1:1', logic: 'infer from context: story->9:16, cover->16:9, square->1:1' },
+      resolution: { options: ['1K', '2K', '4K'], default: '1K', logic: 'ask only if user says high quality or print' },
+      brandGuidelineId: 'Always set. If multiple guidelines, ask which brand.',
+      promptText: 'Describe scene, mood, composition. Never describe logo or font — auto-injected from brand guideline.',
+    },
+    fullPipeline: [
+      '1. Get/validate API key (account-usage)',
+      '2. brand-guidelines-list -> choose guideline',
+      '3. brand-guidelines-get (format=structured) -> read tokens',
+      '4. Build prompt (no logo/font description)',
+      '5. mockup-generate with brandGuidelineId + model + aspectRatio + resolution',
+      '6. (optional) POST /api/moodboard/detect-grid -> get bounding boxes of cells',
+      '7. (optional) POST /api/moodboard/upscale per cell -> 1K|2K|4K',
+      '8. (optional) POST /api/moodboard/suggest -> animation presets per cell',
+    ],
+    moodboardPipeline: {
+      generate: 'Single prompt: "Row 1: (1) desc. (2) desc. (3) desc. Row 2:..." -> 1 image, 1 API call, consistent style.',
+      detectGrid: { endpoint: 'POST /api/moodboard/detect-grid', body: '{ imageBase64 }', returns: '{ boxes: [{ id, x, y, width, height }] }' },
+      upscale: { endpoint: 'POST /api/moodboard/upscale', body: '{ imageBase64, size: "1K"|"2K"|"4K" }', returns: '{ upscaledBase64 }' },
+      animationSuggest: { endpoint: 'POST /api/moodboard/suggest', body: '{ images: [{ id, base64 }] }', returns: '{ suggestions: [{ id, animationPreset, veoPrompt }] }' },
+    },
+    autoInjectedWhenBrandGuidelineIdProvided: {
+      logos: 'Up to 2, priority: icon -> primary -> light -> dark. Never described in text.',
+      media: 'Up to 2 style references from media[] as referenceImages.',
+      colors: 'Full palette with hex, name, role.',
+      typography: 'Font families and roles.',
+      voice: 'Dos, donts, imagery guidelines.',
+      strategy: 'Positioning, archetypes, personas, manifesto.',
+      gradients: 'If defined in guideline.',
+    },
+    endpointDecisionTree: {
+      visantAPI: 'POST /api/mockups/generate + brandGuidelineId -> handles everything automatically',
+      directWithLogo: 'POST /v1/images/edits (multipart, image[])',
+      directNoLogo: 'POST /v1/images/generations (JSON, string prompt)',
+      note: '/generations does NOT accept reference images. /edits is the only direct logo injection path.',
+    },
+    promptRules: {
+      do: ['Describe scene, mood, composition', 'Use "brand logo at bottom" + brandGuidelineId', 'Infer style from brand voice/archetypes'],
+      dont: ['Describe logo visually', 'Describe font weight or name', 'Use hex colors in prompt (brand palette is injected)'],
+      forCleanDarkRenders: ['no grain', 'no particles', 'no noise', 'pure black background', 'no reflections on background'],
+      forElegantLighting: ['rim light on edges', 'single softbox from upper left', 'surgical precision lighting', 'void background'],
+      brandColorAsLight: 'accent color as warm rim light source, not as object fill color',
+    },
+    models: [
+      { id: 'gpt-image-2', provider: 'openai', strengths: 'Best quality, text, brand fidelity', logoRef: '/edits', default: true },
+      { id: 'gpt-image-1', provider: 'openai', strengths: 'Good quality, wider availability', logoRef: '/edits' },
+      { id: 'gemini-3.1-flash-image-preview', provider: 'gemini', strengths: 'Fast, stylized, creative', logoRef: 'inline base64' },
+      { id: 'seedream-3-0', provider: 'seedream', strengths: 'Photorealistic lifestyle', logoRef: 'supported' },
+    ],
+    brandGuidelineTools: [
+      'brand-guidelines-list', 'brand-guidelines-get', 'brand-guidelines-create', 'brand-guidelines-update', 'brand-guidelines-delete',
+      'brand-guidelines-upload-logo', 'brand-guidelines-delete-logo',
+      'brand-guidelines-upload-media', 'brand-guidelines-delete-media',
+      'brand-guidelines-duplicate', 'brand-guidelines-restore-version',
+      'brand-guidelines-compliance-check', 'brand-guidelines-ingest',
+      'brand-guidelines-share', 'brand-guidelines-versions',
+    ],
+    relatedDocs: {
+      brandPrompting: '/api/docs/brand-prompting',
+      brandApi: '/api/docs/brand',
+      mcpSpec: '/api/docs/platform/mcp.json',
+      llmsTxt: '/llms.txt',
+    },
+  }, 3600);
+});
+
+/**
  * GET /docs/brand-prompting
  * Human-readable guide: how to write AI prompts using brand guidelines (HTML)
  */

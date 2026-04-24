@@ -49,14 +49,26 @@ export default defineConfig(({ mode }) => {
       esbuild: {
         target: 'es2022',
         legalComments: 'none',
+        // Strip all console.* calls and debugger statements from the
+        // production bundle — keeps the user's DevTools clean.
+        // console.error is preserved via the drop list (only 'console' drops
+        // console.log/warn/info/debug; error is intentionally kept for
+        // Sentry-style error reporting).
+        drop: mode === 'production' ? ['debugger'] : [],
+        pure: mode === 'production' ? ['console.log', 'console.warn', 'console.info', 'console.debug'] : [],
       },
       rollupOptions: {
         output: {
           manualChunks: (id) => {
-            // React and React DOM - Keep in main bundle to ensure they load first
-            // This prevents "Cannot read properties of undefined (reading 'createContext')" errors
-            // when components like Layout.tsx use React.createContext at module load time
-            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+            // React, ReactDOM, and Radix UI - Keep in main bundle to ensure they load first
+            // Prevents "Cannot read properties of undefined (reading 'createContext'/'forwardRef')"
+            // errors when components use React APIs at module load time
+            if (
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/@radix-ui/') ||
+              id.includes('node_modules/lucide-react/')
+            ) {
               return undefined; // Keep in main bundle
             }
 
@@ -92,12 +104,6 @@ export default defineConfig(({ mode }) => {
               id.includes('node_modules/remark-') ||
               id.includes('node_modules/rehype-')) {
               return 'markdown-vendor';
-            }
-
-            // UI libraries
-            if (id.includes('node_modules/@radix-ui/') ||
-              id.includes('node_modules/lucide-react/')) {
-              return 'ui-vendor';
             }
 
             // Stripe and payment

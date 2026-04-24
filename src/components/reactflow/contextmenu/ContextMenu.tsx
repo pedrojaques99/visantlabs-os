@@ -332,7 +332,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         "flex items-center gap-2 cursor-pointer",
         "aria-selected:bg-neutral-800/50 aria-selected:text-white",
         item.highlight
-          ? "border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan"
+          ? "border-neutral-800 bg-brand-cyan/10 text-brand-cyan"
           : "border-neutral-800/40 bg-black/30 text-neutral-400 hover:border-neutral-700 hover:bg-neutral-800/50 hover:text-white"
       )}
     >

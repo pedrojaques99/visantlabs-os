@@ -25,6 +25,7 @@ export const SEEDREAM_IMAGE_MODELS: SeedreamModelId[] = [
 // ── Per-model configuration ────────────────────────────────────────────────────
 export interface SeedreamModelConfig {
   label: string;
+  badge?: 'latest' | 'popular' | 'fast' | 'edit';
   /** Short description shown in UI tooltips */
   description: string;
   /**
@@ -56,6 +57,7 @@ export interface SeedreamModelConfig {
 export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig> = {
   [SEEDREAM_MODELS.SD_4_5]: {
     label: 'Seedream 4.5',
+    badge: 'latest' as const,
     description: 'Latest — 2K/4K, batch, multi-ref',
     maxRefImages: 14,
     requiresImage: false,
@@ -68,7 +70,7 @@ export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig>
     providerDomain: 'bytedance.com',
   },
   [SEEDREAM_MODELS.SD_4_0]: {
-    label: 'Seedream 4.0',
+    label: 'Seedream 4',
     description: '1K/2K/4K, batch, multi-ref',
     maxRefImages: 14,
     requiresImage: false,
@@ -81,7 +83,7 @@ export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig>
     providerDomain: 'bytedance.com',
   },
   [SEEDREAM_MODELS.SD_3_T2I]: {
-    label: 'Seedream 3.0',
+    label: 'Seedream 3',
     description: 'Text-to-image, seed control',
     maxRefImages: 0,
     requiresImage: false,
@@ -95,7 +97,8 @@ export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig>
     providerDomain: 'bytedance.com',
   },
   [SEEDREAM_MODELS.SE_3_I2I]: {
-    label: 'Seededit 3.0',
+    label: 'Seededit 3',
+    badge: 'edit' as const,
     description: 'Image editing, adaptive size',
     maxRefImages: 1,
     requiresImage: true,

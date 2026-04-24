@@ -169,6 +169,212 @@ export function createPlatformMcpServer(): McpServer {
   };
 
   // ═══════════════════════════════════════════
+  // Auth — Register & Login (public, no API key required)
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'auth-register',
+    'Create a new Visant Labs account. Returns a JWT token and user info. After registering, use api-key-create (passing the JWT) to generate a visant_sk_xxx API key for MCP/API access.',
+    {
+      email: z.string().email().describe('User email address.'),
+      password: z.string().min(8).describe('Password (min 8 characters).'),
+      name: z.string().optional().describe('Display name.'),
+    },
+    async ({ email, password, name }) => {
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, name: name || email.split('@')[0] }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.validation(result?.error || result?.message || `Registration failed (${resp.status})`);
+        return jsonResponse({
+          message: 'Account created. Use api-key-create with the returned token to generate your visant_sk_xxx API key.',
+          token: result.token,
+          user: { id: result.user?.id, email: result.user?.email, name: result.user?.name },
+        });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'auth-login',
+    'Sign in to an existing Visant Labs account. Returns a JWT token. Use api-key-create (passing this token) to generate a visant_sk_xxx API key for persistent MCP/API access.',
+    {
+      email: z.string().email().describe('Account email.'),
+      password: z.string().describe('Account password.'),
+    },
+    async ({ email, password }) => {
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/auth/signin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.validation(result?.error || result?.message || `Login failed (${resp.status})`);
+        return jsonResponse({
+          message: 'Signed in. Use api-key-create with this token to generate a persistent visant_sk_xxx API key.',
+          token: result.token,
+          user: { id: result.user?.id, email: result.user?.email, name: result.user?.name },
+        });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'api-key-create',
+    'Create a new Visant API key (visant_sk_xxx). Requires either an active API key (Bearer token) OR a JWT from auth-login/auth-register. The raw key is shown only once — save it immediately.',
+    {
+      name: z.string().max(100).describe('A label for this key, e.g. "Claude.ai MCP" or "Production".'),
+      scopes: z.array(z.enum(['read', 'write', 'generate'])).default(['read', 'write', 'generate']).describe('Permission scopes.'),
+      jwt: z.string().optional().describe('JWT token from auth-login or auth-register (if you have no API key yet).'),
+    },
+    async ({ name, scopes, jwt }) => {
+      const currentUserId = getMcpUserId();
+      // Allow either MCP API key auth OR a JWT passed directly
+      const authHeader = currentUserId
+        ? `x-mcp-user-id: ${currentUserId}` // will be handled below
+        : jwt ? null : null;
+
+      if (!currentUserId && !jwt) {
+        return ERR.validation('Authentication required. Pass a JWT from auth-login, or connect with an existing API key.');
+      }
+      try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (currentUserId) {
+          headers['x-mcp-user-id'] = currentUserId;
+        } else if (jwt) {
+          headers['Authorization'] = `Bearer ${jwt}`;
+        }
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/api-keys/create`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ name, scopes }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Key creation failed (${resp.status})`);
+        return jsonResponse({
+          message: 'API key created. Save the key — it will not be shown again.',
+          key: result.key,
+          keyPrefix: result.keyPrefix,
+          name: result.name,
+          scopes: result.scopes,
+          usage: 'Authorization: Bearer ' + result.key,
+          mcpUrl: 'https://visantlabs.com/api/mcp',
+        });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'api-key-list',
+    'List all API keys for the authenticated user. Shows prefix, name, scopes, last used, and expiry — but not the raw key value.',
+    {},
+    async () => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/api-keys`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Failed to list keys (${resp.status})`);
+        return jsonResponse({ keys: result.keys });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Moodboard — Detect, Upscale, Suggest
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'moodboard-detect-grid',
+    'Detect individual image bounding boxes in a moodboard or grid image. Returns cell coordinates so each section can be cropped and extracted individually.',
+    {
+      imageBase64: z.string().describe('Base64-encoded moodboard image to analyze.'),
+    },
+    async ({ imageBase64 }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/moodboard/detect-grid`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ imageBase64 }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Detection failed (${resp.status})`);
+        return jsonResponse({ boxes: result.boxes, count: result.boxes?.length ?? 0 });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'moodboard-upscale',
+    'Upscale an image to 1K, 2K, or 4K resolution using Gemini image enhancement. Use after extracting a cell from a moodboard to get a high-resolution standalone version.',
+    {
+      imageBase64: z.string().describe('Base64-encoded image to upscale.'),
+      size: z.enum(['1K', '2K', '4K']).default('4K').describe('Target resolution.'),
+    },
+    async ({ imageBase64, size }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/moodboard/upscale`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ imageBase64, size }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Upscale failed (${resp.status})`);
+        return jsonResponse({ upscaledBase64: result.upscaledBase64, size });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'moodboard-suggest',
+    'Analyze images from a moodboard and suggest Remotion animation presets and Veo video generation prompts for each cell. Useful for turning static moodboard cells into motion content.',
+    {
+      images: z.array(z.object({
+        id: z.string().describe('Cell identifier (e.g. "cell-1").'),
+        base64: z.string().describe('Base64-encoded image data for this cell.'),
+      })).min(1).max(9).describe('Array of moodboard cells to analyze.'),
+    },
+    async ({ images }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/moodboard/suggest`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ images }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Suggest failed (${resp.status})`);
+        return jsonResponse({ suggestions: result.suggestions });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
   // Account
   // ═══════════════════════════════════════════
 
@@ -184,7 +390,7 @@ export function createPlatformMcpServer(): McpServer {
         if (!quota) return jsonResponse({ error: 'User not found' });
         return jsonResponse({ ...quota, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -207,7 +413,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ id: currentUserId, ...user, _id: undefined, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -237,7 +443,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ mockups, total: mockups.length, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -259,7 +465,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...mockup, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -291,53 +497,64 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ presets, total: presets.length, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
 
   server.tool(
     'mockup-generate',
-    'Generate a new mockup image using AI. Costs credits based on model/resolution. Returns the generated image URL.',
+    'Generate a mockup image using AI. Brand context (colors, typography, logos, voice) is auto-injected when brandGuidelineId is provided — never describe the logo in the prompt. Costs credits based on model and resolution.',
     {
-      prompt: z.string().min(1).describe('Description of the mockup to generate.'),
-      designType: z.string().optional().describe('Design type hint (e.g. "business-card", "social-media").'),
-      aspectRatio: z.string().optional().describe('Aspect ratio (e.g. "16:9", "1:1", "4:3").'),
-      brandGuidelineId: z.string().optional().describe('Brand guideline ID to inject brand context into generation.'),
+      prompt: z.string().min(1).describe('Scene description. Do NOT describe the logo or font — they are injected automatically from brandGuidelineId.'),
+      brandGuidelineId: z.string().optional().describe('Brand guideline ID. Injects logo (as reference image), colors, typography, voice, and strategy into the generation automatically.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('Image model. gpt-image-2=best quality+brand fidelity, gemini=fast/creative, seedream=photorealistic lifestyle.'),
+      provider: z.enum(['openai', 'gemini', 'seedream']).optional().describe('Provider override. Inferred from model by default. Use to force a specific provider when model name is ambiguous.'),
+      aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('Output aspect ratio. 1:1=square/Instagram, 9:16=story/Reels, 16:9=landscape/cover, 4:5=portrait feed.'),
+      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Output resolution. 1K=standard, 2K=high quality, 4K=print/large format. Higher = more credits.'),
+      designType: z.string().optional().describe('Design type hint: business-card, social-media, packaging, apparel, signage, etc.'),
+      baseImageUrl: z.string().optional().describe('Base image URL for image-to-image generation (optional).'),
+      referenceImages: z.array(z.string()).optional().describe('Additional reference image URLs to guide style/composition. Brand logos are injected automatically via brandGuidelineId — use this for extra style references only.'),
+      seed: z.number().int().optional().describe('Random seed for deterministic/reproducible generation. Same seed + same prompt = same image (model-dependent).'),
     },
-    async ({ prompt, designType, aspectRatio, brandGuidelineId }) => {
+    async ({ prompt, brandGuidelineId, model, provider, aspectRatio, resolution, designType, baseImageUrl, referenceImages, seed }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
         const response = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-mcp-user-id': currentUserId,
-          },
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({
             promptText: prompt,
-            designType: designType || 'blank',
-            aspectRatio: aspectRatio || '1:1',
-            feature: 'agent',
             brandGuidelineId,
+            model,
+            provider,
+            aspectRatio,
+            resolution,
+            designType: designType || 'blank',
+            baseImageUrl,
+            referenceImages,
+            seed,
+            feature: 'agent',
           }),
         });
-
-        const result = await response.json();
-        if (!response.ok) {
-          return jsonResponse({ error: result.error || 'Generation failed', status: response.status });
-        }
-
+        const result = await response.json() as any;
+        if (!response.ok) return ERR.internal(result.error || `Generation failed (${response.status})`);
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({
-          summary: 'Mockup generated successfully.',
           imageUrl: result.imageUrl || null,
+          mockupId: result.id || result.mockup?.id || null,
           hasImage: !!result.imageBase64 || !!result.imageUrl,
+          model,
+          provider: result.provider || provider,
+          aspectRatio,
+          resolution,
+          seed: result.seed ?? seed ?? null,
+          creditsUsed: result.creditsUsed ?? null,
           _meta: quota,
         });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -362,7 +579,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ projects, total: projects.length, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -384,45 +601,35 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...project, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
 
   server.tool(
     'branding-generate',
-    'Generate a complete brand identity (logo, colors, typography) from a text prompt. Optionally inject an existing brand guideline as context. Costs credits.',
+    'Generate brand identity elements from a text prompt. Use step="full" for complete generation or target a specific step for iterative refinement. Costs credits.',
     {
-      prompt: z.string().min(1).describe('Description of the brand to generate (e.g. "modern tech startup called Acme").'),
-      brandGuidelineId: z.string().optional().describe('Brand guideline ID to use as context/reference for generation.'),
+      prompt: z.string().min(1).describe('Brand brief (e.g. "modern tech startup called Acme, targets developers, dark aesthetic").'),
+      step: z.enum(['full', 'market-research', 'swot', 'persona', 'archetype', 'concept-ideas', 'color-palettes', 'moodboard']).default('full').describe('Generation step. "full" runs the complete pipeline. Other values target a specific step for iterative refinement.'),
+      previousData: z.record(z.string(), z.unknown()).optional().describe('Output from a previous step to use as context for the next step. Pass the result of the previous branding-generate call here.'),
+      brandGuidelineId: z.string().optional().describe('Existing brand guideline ID to use as context/reference.'),
     },
-    async ({ prompt, brandGuidelineId }) => {
+    async ({ prompt, step, previousData, brandGuidelineId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
         const response = await fetch(`${INTERNAL_API_BASE}/api/branding/generate-step`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-mcp-user-id': currentUserId,
-          },
-          body: JSON.stringify({
-            prompt,
-            step: 'full',
-            feature: 'agent',
-            brandGuidelineId,
-          }),
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ prompt, step, previousData, brandGuidelineId, feature: 'agent' }),
         });
-
-        const result = await response.json();
-        if (!response.ok) {
-          return jsonResponse({ error: result.error || 'Branding generation failed', status: response.status });
-        }
-
+        const result = await response.json() as any;
+        if (!response.ok) return ERR.internal(result.error || `Branding generation failed (${response.status})`);
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, _meta: quota });
+        return jsonResponse({ ...result, step, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -447,7 +654,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ projects, total: projects.length, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -469,7 +676,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...project, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -490,7 +697,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...project, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -515,7 +722,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ budgets, total: budgets.length, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -537,7 +744,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...budget, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -574,7 +781,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...budget, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -599,7 +806,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ improvedPrompt: result.improvedPrompt, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -631,7 +838,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ description: result.description, title: result.title, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -656,7 +863,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ guidelines, total: guidelines.length, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -686,7 +893,7 @@ export function createPlatformMcpServer(): McpServer {
 
         return jsonResponse({ ...guideline, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -708,7 +915,7 @@ export function createPlatformMcpServer(): McpServer {
         const { userId, ...publicData } = guideline as any;
         return jsonResponse({ guideline: publicData });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -1086,6 +1293,211 @@ export function createPlatformMcpServer(): McpServer {
   );
 
   // ═══════════════════════════════════════════
+  // Brand Guidelines — Assets & Actions
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'brand-guidelines-upload-logo',
+    'Upload a logo to a brand guideline. Accepts base64-encoded image data or a public URL. Returns the uploaded logo with its URL and ID.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      data: z.string().optional().describe('Base64-encoded image data (PNG, SVG, WEBP).'),
+      url: z.string().optional().describe('Public URL of the logo image (alternative to base64 data).'),
+      variant: z.enum(['primary', 'dark', 'light', 'icon', 'accent', 'custom']).default('primary').describe('Logo variant.'),
+      label: z.string().optional().describe('Human-readable label, e.g. "Horizontal", "Dark mode".'),
+    },
+    async ({ id, data, url, variant, label }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      if (!data && !url) return ERR.validation('Either data (base64) or url is required.');
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/logos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ data, url, variant, label }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
+        return jsonResponse({ logo: result.logo, allLogos: result.allLogos, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-delete-logo',
+    'Delete a logo from a brand guideline by its logo ID.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      logoId: z.string().describe('Logo ID to delete (from the logos array).'),
+    },
+    async ({ id, logoId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/logos/${logoId}`, {
+          method: 'DELETE',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!resp.ok) {
+          const errBody = await resp.json().catch(() => ({})) as any;
+          return ERR.internal(errBody?.error || `Delete failed (${resp.status})`);
+        }
+        return jsonResponse({ success: true, deleted: logoId, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-upload-media',
+    'Upload a media asset (image or PDF) to a brand guideline media kit. Accepts base64-encoded data or a public URL.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      data: z.string().optional().describe('Base64-encoded image or PDF data.'),
+      url: z.string().optional().describe('Public URL of the media asset (alternative to base64 data).'),
+      type: z.enum(['image', 'pdf']).default('image').describe('Asset type.'),
+      label: z.string().optional().describe('Label for this media asset, e.g. "Brand Presentation", "Campaign Photo".'),
+    },
+    async ({ id, data, url, type, label }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      if (!data && !url) return ERR.validation('Either data (base64) or url is required.');
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/media`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ data, url, type, label }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
+        return jsonResponse({ media: result.media, allMedia: result.allMedia, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-delete-media',
+    'Delete a media asset from a brand guideline by its media ID.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      mediaId: z.string().describe('Media asset ID to delete.'),
+    },
+    async ({ id, mediaId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/media/${mediaId}`, {
+          method: 'DELETE',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!resp.ok) {
+          const errBody = await resp.json().catch(() => ({})) as any;
+          return ERR.internal(errBody?.error || `Delete failed (${resp.status})`);
+        }
+        return jsonResponse({ success: true, deleted: mediaId, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-duplicate',
+    'Duplicate a brand guideline, creating an independent copy with "(copy)" appended to the name. Useful for creating variants or testing changes without affecting the original.',
+    {
+      id: z.string().describe('Brand guideline ID to duplicate.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/duplicate`, {
+          method: 'POST',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Duplicate failed (${resp.status})`);
+        return jsonResponse({ guideline: result.guideline, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-restore-version',
+    'Restore a brand guideline to a previous version. The current state is preserved as a version before restoring.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      version: z.number().int().min(1).describe('Version number to restore (from brand-guidelines-versions).'),
+    },
+    async ({ id, version }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/versions/${version}/restore`, {
+          method: 'POST',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Restore failed (${resp.status})`);
+        return jsonResponse({ success: true, restoredTo: version, id, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-compliance-check',
+    'Run an AI compliance check on a brand guideline — validates color contrast, typography consistency, voice coherence, and completeness. Returns a scored report with actionable suggestions.',
+    {
+      id: z.string().describe('Brand guideline ID to check.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/compliance-check`, {
+          method: 'POST',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Compliance check failed (${resp.status})`);
+        return jsonResponse({ ...result, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
   // Community (public, no auth needed)
   // ═══════════════════════════════════════════
 
@@ -1108,7 +1520,7 @@ export function createPlatformMcpServer(): McpServer {
         const total = await db.collection('community_presets').countDocuments({ public: true });
         return jsonResponse({ presets, total, page: { limit, skip, hasMore: skip + limit < total } });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -1131,7 +1543,7 @@ export function createPlatformMcpServer(): McpServer {
         });
         return jsonResponse({ profiles: users, total: users.length, page: { limit, skip } });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -1160,7 +1572,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -1184,7 +1596,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -1218,7 +1630,7 @@ export function createPlatformMcpServer(): McpServer {
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -1273,16 +1685,21 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'creative-full',
-    'Full creative pipeline in one call. Generates layout plan, generates background image, renders to PNG, and saves the project. Returns imageUrl + projectId. Use this instead of chaining creative-generate + mockup-generate + creative-render manually.',
+    'Full creative pipeline in one call. Generates layout plan → background image → renders to PNG → saves project. Returns imageUrl, projectId, plan, and per-step credits. Use this instead of chaining creative-generate + mockup-generate + creative-render manually.',
     {
       prompt: z.string().min(1).describe('Creative brief describing the desired visual.'),
       brandGuidelineId: z.string().optional().describe('Brand guideline ID to inject brand context.'),
       format: z.enum(['1:1', '16:9', '9:16', '4:5']).default('1:1').describe('Output aspect ratio.'),
-      autoSave: z.boolean().default(true).describe('Whether to persist the result as a creative project.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('Model for background image generation.'),
+      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Resolution for background image generation.'),
+      autoSave: z.boolean().default(true).describe('Persist result as a creative project.'),
     },
-    async ({ prompt, brandGuidelineId, format, autoSave }) => {
+    async ({ prompt, brandGuidelineId, format, model, resolution, autoSave }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
+
+      const credits: Record<string, number | null> = { plan: null, background: null, render: null };
+
       try {
         // Step 1: Generate creative plan
         const planRes = await fetch(`${INTERNAL_API_BASE}/api/creative/plan`, {
@@ -1290,19 +1707,21 @@ export function createPlatformMcpServer(): McpServer {
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({ prompt, brandGuidelineId, format, feature: 'agent' }),
         });
-        const planData = await planRes.json();
-        if (!planRes.ok) return jsonResponse({ error: planData.error || 'Creative plan generation failed', step: 'plan' });
+        const planData = await planRes.json() as any;
+        if (!planRes.ok) return ERR.internal(planData.error || `Creative plan failed (${planRes.status})`);
         const plan = planData.plan ?? planData;
+        credits.plan = planData.creditsUsed ?? null;
 
-        // Step 2: Generate background image from plan's background prompt
+        // Step 2: Generate background image
         const bgPrompt = plan?.background?.prompt || prompt;
         const mockupRes = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-          body: JSON.stringify({ prompt: bgPrompt, aspectRatio: format, designType: 'background', feature: 'agent' }),
+          body: JSON.stringify({ promptText: bgPrompt, brandGuidelineId, model, resolution, aspectRatio: format, designType: 'background', feature: 'agent' }),
         });
-        const mockupData = await mockupRes.json();
+        const mockupData = await mockupRes.json() as any;
         const backgroundImageUrl: string | undefined = mockupData.imageUrl ?? mockupData.mockup?.imageUrl;
+        credits.background = mockupData.creditsUsed ?? null;
 
         // Step 3: Render creative to PNG
         const renderRes = await fetch(`${INTERNAL_API_BASE}/api/creative/render`, {
@@ -1310,9 +1729,13 @@ export function createPlatformMcpServer(): McpServer {
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({ plan, backgroundImageUrl, format }),
         });
-        const renderData = await renderRes.json();
-        if (!renderRes.ok) return jsonResponse({ error: renderData.error || 'Render failed', step: 'render', plan, backgroundImageUrl });
+        const renderData = await renderRes.json() as any;
+        if (!renderRes.ok) {
+          // Partial success — return what we have so the agent can retry render
+          return jsonResponse({ error: renderData.error || `Render failed (${renderRes.status})`, step: 'render', plan, backgroundImageUrl, creditsUsed: credits });
+        }
         const imageUrl: string = renderData.imageUrl ?? renderData.imageBase64;
+        credits.render = renderData.creditsUsed ?? null;
 
         // Step 4: Optionally save project
         let projectId: string | undefined;
@@ -1321,8 +1744,7 @@ export function createPlatformMcpServer(): McpServer {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
             body: JSON.stringify({
-              prompt,
-              format,
+              prompt, format,
               brandId: brandGuidelineId || null,
               backgroundUrl: backgroundImageUrl || null,
               layers: plan.layers ?? [],
@@ -1331,12 +1753,12 @@ export function createPlatformMcpServer(): McpServer {
               name: `Creative — ${prompt.slice(0, 50)}`,
             }),
           });
-          const saveData = await saveRes.json();
+          const saveData = await saveRes.json() as any;
           projectId = saveData.project?.id;
         }
 
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ plan, backgroundImageUrl, imageUrl, projectId, _meta: quota });
+        return jsonResponse({ imageUrl, backgroundImageUrl, plan, projectId, creditsUsed: credits, _meta: quota });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1771,7 +2193,7 @@ export function createPlatformMcpServer(): McpServer {
           note: rows.length < lines.length - 1 ? `Showing ${rows.length} of ${lines.length - 1} rows` : undefined,
         });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );
@@ -1803,7 +2225,7 @@ export function createPlatformMcpServer(): McpServer {
         });
         return jsonResponse({ projects: summary, total: summary.length });
       } catch (err: any) {
-        return jsonResponse({ error: err.message });
+        return ERR.internal(err.message);
       }
     }
   );

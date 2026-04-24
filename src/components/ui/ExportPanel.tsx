@@ -162,13 +162,13 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
           onClick={handleExport}
           disabled={!imageUrl || isExporting}
           className={cn(
-            'w-full px-4 py-2.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-2',
+            'w-full px-4 py-2.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-800 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-2',
             (!imageUrl || isExporting) && 'opacity-50 cursor-not-allowed'
           )}
         >
           {isExporting ? (
             <>
-              <div className="w-3 h-3 border-2 border-[brand-cyan] border-t-transparent rounded-md animate-spin" />
+              <div className="w-3 h-3 border-2 border-neutral-400 border-t-transparent rounded-md animate-spin" />
               Exporting...
             </>
           ) : (
