@@ -187,6 +187,22 @@ router.get('/platform/mcp.json', (req: Request, res: Response) => {
 });
 
 /**
+ * GET /docs/mcp-setup
+ * MCP onboarding guide — served from docs/SETUP_MCP.md
+ */
+router.get('/mcp-setup', (_req: Request, res: Response) => {
+  try {
+    const mdPath = resolve(__dirname, '../../docs/SETUP_MCP.md');
+    const content = readFileSync(mdPath, 'utf-8');
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(content);
+  } catch (err) {
+    handleDocsError(err, res);
+  }
+});
+
+/**
  * GET /docs/pricing
  * Credit costs, packages, storage plans, Google pricing — single source of truth
  */
