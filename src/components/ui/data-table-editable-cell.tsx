@@ -76,7 +76,7 @@ export const DataTableEditableCell = <TData,>({
                     }}
                     onBlur={onBlur}
                     className={cn(
-                        "w-full bg-neutral-900 border border-brand-cyan/50 text-neutral-200 rounded p-1 text-xs focus:outline-none",
+                        "w-full bg-neutral-900 border border-neutral-800 text-neutral-200 rounded p-1 text-xs focus:outline-none",
                         className
                     )}
                 >
@@ -99,7 +99,7 @@ export const DataTableEditableCell = <TData,>({
                     onBlur={onBlur}
                     onKeyDown={handleKeyDown}
                     className={cn(
-                        "w-full bg-neutral-900 border border-brand-cyan/50 text-neutral-200 rounded p-1 text-xs focus:outline-none min-h-[60px]",
+                        "w-full bg-neutral-900 border border-neutral-800 text-neutral-200 rounded p-1 text-xs focus:outline-none min-h-[60px]",
                         className
                     )}
                 />
@@ -114,7 +114,7 @@ export const DataTableEditableCell = <TData,>({
                 onBlur={onBlur}
                 onKeyDown={handleKeyDown}
                 className={cn(
-                    "w-full bg-neutral-900 border border-brand-cyan/50 text-neutral-200 rounded p-1 text-sm focus:outline-none",
+                    "w-full bg-neutral-900 border border-neutral-800 text-neutral-200 rounded p-1 text-sm focus:outline-none",
                     className
                 )}
             />

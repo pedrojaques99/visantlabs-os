@@ -117,7 +117,7 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         className={`relative block w-full p-4 bg-neutral-900 border rounded-md cursor-pointer transition-all duration-300 ${isDragging
-          ? 'border-dashed border-2 border-[brand-cyan]/40 bg-brand-cyan/10 shadow-2xl shadow-[brand-cyan]/10'
+          ? 'border-dashed border-2 border-neutral-800 bg-brand-cyan/10 shadow-2xl shadow-[brand-cyan]/10'
           : 'border-neutral-800/10 hover:border-neutral-800/20'
           } ${isProcessing || disabled ? 'cursor-wait opacity-50' : ''}`}
       >
