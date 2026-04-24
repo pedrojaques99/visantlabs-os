@@ -11,42 +11,35 @@ import { BatchToolbar } from '../components/moodboard/BatchToolbar';
 import { RemotionPlayerModal } from '../components/moodboard/RemotionPlayerModal';
 import { FrameAnimateModal } from '../components/moodboard/FrameAnimateModal';
 import { moodboardApi } from '../services/moodboardApi';
+import { authService } from '../services/authService';
+import { applyShaderEffect } from '../utils/shaders/shaderRenderer';
 import { generateThumbnail, revokeThumbnail } from '../utils/moodboard/thumbnail';
 import type { CroppedImage, AnimationPreset, RenderSlide, TransitionType } from '../types/moodboard';
+import type { ImageProvider } from '../types/types';
 
-// Existing video API (reuse /api/video/generate — already supports all 3 modes)
-async function generateVideoFromImage(imageBase64: string, prompt: string, allowSound: boolean): Promise<string> {
+async function callVideoApi(body: object): Promise<string> {
+  const token = authService.getToken();
   const res = await fetch('/api/video/generate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ imageBase64, prompt, includeAudio: allowSound }),
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
   });
   if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.error || 'Video generation failed'); }
   const { videoUrl, videoBase64 } = await res.json();
   return videoUrl || (videoBase64 ? `data:video/mp4;base64,${videoBase64}` : '');
 }
 
-async function generateVideoFromFrames(startFrame: string, endFrame: string, prompt: string, allowSound: boolean): Promise<string> {
-  const res = await fetch('/api/video/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ startFrame, endFrame, prompt, includeAudio: allowSound }),
-  });
-  if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.error || 'Video generation failed'); }
-  const { videoUrl, videoBase64 } = await res.json();
-  return videoUrl || (videoBase64 ? `data:video/mp4;base64,${videoBase64}` : '');
-}
+const generateVideoFromImage = (imageBase64: string, prompt: string, allowSound: boolean) =>
+  callVideoApi({ imageBase64, prompt, includeAudio: allowSound });
 
-async function generateVideoFromMoodboard(referenceImages: string[], prompt: string, allowSound: boolean): Promise<string> {
-  const res = await fetch('/api/video/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ referenceImages, prompt, includeAudio: allowSound }),
-  });
-  if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.error || 'Video generation failed'); }
-  const { videoUrl, videoBase64 } = await res.json();
-  return videoUrl || (videoBase64 ? `data:video/mp4;base64,${videoBase64}` : '');
-}
+const generateVideoFromFrames = (startFrame: string, endFrame: string, prompt: string, allowSound: boolean) =>
+  callVideoApi({ startFrame, endFrame, prompt, includeAudio: allowSound });
+
+const generateVideoFromMoodboard = (referenceImages: string[], prompt: string, allowSound: boolean) =>
+  callVideoApi({ referenceImages, prompt, includeAudio: allowSound });
 
 function MoodboardStudio() {
   const [sourceImage, setSourceImage] = useState<string | null>(null);
@@ -64,6 +57,7 @@ function MoodboardStudio() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAISuggesting, setIsAISuggesting] = useState(false);
   const [isCreatingFullVideo, setIsCreatingFullVideo] = useState(false);
+  const [regeneratingIds, setRegeneratingIds] = useState<Set<string>>(new Set());
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -187,7 +181,11 @@ function MoodboardStudio() {
     if (!crop || crop.upscaledUrl || crop.isUpscaling) return;
     setCroppedImages(prev => prev.map(c => c.id === id ? { ...c, isUpscaling: true, upscaleStartTime: Date.now() } : c));
     try {
-      const { upscaledBase64 } = await moodboardApi.upscale(crop.url);
+      const upscaledBase64 = await applyShaderEffect(crop.url, undefined, undefined, {
+        shaderType: 'upscale',
+        scaleFactor: 2.0,
+        upscaleSharpening: 0.3,
+      });
       setCroppedImages(prev => prev.map(c => c.id === id ? { ...c, upscaledUrl: upscaledBase64, isUpscaling: false } : c));
     } catch (err: any) {
       toast.error(err.message || 'Upscale failed');
@@ -205,6 +203,40 @@ function MoodboardStudio() {
     } catch (err: any) {
       toast.error(err.message || 'Video generation failed');
       setCroppedImages(prev => prev.map(c => c.id === id ? { ...c, isAnimating: false } : c));
+    }
+  };
+
+  const handleRegenerate = async (id: string, model: string, provider: ImageProvider) => {
+    const crop = croppedImages.find(c => c.id === id);
+    if (!crop?.url || regeneratingIds.has(id)) return;
+    setRegeneratingIds(prev => new Set(prev).add(id));
+    try {
+      const token = authService.getToken();
+      const base64 = crop.upscaledUrl || crop.url;
+      const pureBase64 = base64.startsWith('data:') ? base64.split(',')[1] : base64;
+      const mimeType = base64.startsWith('data:') ? base64.split(';')[0].slice(5) : 'image/jpeg';
+      const res = await fetch('/api/mockup/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({
+          promptText: 'Reimagine em 4k — enhance quality, lighting and detail while preserving the original composition and style',
+          baseImage: { base64: pureBase64, mimeType },
+          model,
+          provider,
+        }),
+      });
+      if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.error || 'Regeneration failed'); }
+      const { imageBase64, imageUrl } = await res.json();
+      if (!imageBase64 && !imageUrl) throw new Error('No image returned');
+      const newUrl = imageUrl || `data:image/png;base64,${imageBase64}`;
+      let thumbnailUrl: string | undefined;
+      try { thumbnailUrl = await generateThumbnail(newUrl, id); } catch {}
+      setCroppedImages(prev => prev.map(c => c.id === id ? { ...c, url: newUrl, thumbnailUrl, upscaledUrl: undefined } : c));
+      toast.success('Regenerated successfully');
+    } catch (err: any) {
+      toast.error(err.message || 'Regeneration failed');
+    } finally {
+      setRegeneratingIds(prev => { const n = new Set(prev); n.delete(id); return n; });
     }
   };
 
@@ -391,6 +423,8 @@ function MoodboardStudio() {
                   onFullscreen={setFullscreenUrl}
                   onViewVideo={setVideoModalUrl}
                   onUpdateImage={(file) => handleUpdateCardImage(crop.id, file)}
+                  onRegenerate={handleRegenerate}
+                  isRegenerating={regeneratingIds.has(crop.id)}
                 />
               ))}
             </div>

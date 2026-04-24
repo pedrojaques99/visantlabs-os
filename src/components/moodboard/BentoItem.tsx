@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Maximize2, Download, CheckSquare, Square, Video, Play, Loader2, Film } from 'lucide-react';
+import { X, Maximize2, Download, CheckSquare, Square, Video, Play, Loader2, Film, Sparkles } from 'lucide-react';
 import { CroppedImage, AnimationPreset } from '../../types/moodboard';
+import { ModelSelector } from '@/components/shared/ModelSelector';
+import type { ImageProvider } from '@/types/types';
 
 interface BentoItemProps {
   crop: CroppedImage;
@@ -16,6 +18,8 @@ interface BentoItemProps {
   onFullscreen: (url: string) => void;
   onViewVideo: (url: string) => void;
   onUpdateImage?: (file: File) => void;
+  onRegenerate?: (id: string, model: string, provider: ImageProvider) => void;
+  isRegenerating?: boolean;
 }
 
 const Timer: React.FC<{ startTime: number }> = ({ startTime }) => {
@@ -30,8 +34,11 @@ const Timer: React.FC<{ startTime: number }> = ({ startTime }) => {
 export const BentoItem: React.FC<BentoItemProps> = React.memo(({
   crop, index, isSelected, onToggleSelect, onRemove, onUpscale,
   onAnimate, onRemotionAnimate, onDownload, onFullscreen, onViewVideo, onUpdateImage,
+  onRegenerate, isRegenerating,
 }) => {
   const [prompt, setPrompt] = useState(crop.animationPrompt || '');
+  const [regenModel, setRegenModel] = useState('gemini-2.0-flash-exp-image-generation');
+  const [regenProvider, setRegenProvider] = useState<ImageProvider>('gemini');
 
   const handleAnimate = () => {
     if (!prompt.trim()) return;
@@ -153,6 +160,28 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
                     </button>
                   </div>
                 </div>
+
+                {onRegenerate && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5"><Sparkles size={11} className="text-neutral-600" /><span className="text-[8px] font-bold uppercase tracking-widest text-neutral-600">Regenerate with AI</span></div>
+                    <div className="flex gap-2 items-center">
+                      <ModelSelector
+                        type="image"
+                        variant="node"
+                        selectedModel={regenModel}
+                        onModelChange={(model, provider) => { setRegenModel(model); if (provider) setRegenProvider(provider); }}
+                        className="flex-1"
+                      />
+                      <button
+                        onClick={() => onRegenerate(crop.id, regenModel, regenProvider)}
+                        disabled={!crop.url || isRegenerating}
+                        className="px-3 py-2 rounded-lg bg-neutral-800 border border-border text-neutral-300 hover:bg-white hover:text-black text-[9px] font-bold uppercase tracking-widest transition-all disabled:opacity-30 flex items-center gap-1.5 shrink-0"
+                      >
+                        {isRegenerating ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

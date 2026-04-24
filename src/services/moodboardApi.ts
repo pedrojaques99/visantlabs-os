@@ -1,10 +1,16 @@
 import { BoundingBox, AnimationSuggestion, MoodboardProject, CroppedImage } from '../types/moodboard';
+import { authService } from './authService';
 
 const BASE = '/api/moodboard';
 
 async function req<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = authService.getToken();
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...((options as any).headers || {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...((options as any).headers || {}),
+    },
     ...options,
   });
   if (!res.ok) {
