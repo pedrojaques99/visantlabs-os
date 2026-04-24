@@ -144,7 +144,7 @@
     "html2canvas": "^1.4.1",
     "ioredis": "^5.10.1",
     "jsonwebtoken": "^9.0.2",
-    "jspdf": "^3.0.4",
+    "jspdf": "^4.2.1",
     "jszip": "^3.10.1",
     "knip": "^5.82.1",
     "lru-cache": "^11.2.7",
