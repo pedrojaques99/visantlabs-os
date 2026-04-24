@@ -403,7 +403,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           disabled={isLoading}
           className={cn(
             'w-full flex items-center gap-3 p-1.5 rounded-md border-node transition-all text-left node-interactive',
-            'bg-brand-cyan/10 border-[brand-cyan]/50 hover:bg-brand-cyan/15',
+            'bg-brand-cyan/10 border-neutral-800 hover:bg-brand-cyan/15',
             isLoading && 'opacity-50 cursor-not-allowed'
           )}
         >
@@ -482,7 +482,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             />
           )}
           {connectedTextDirection && (
-            <div className="p-2 rounded border-node border-[brand-cyan]/30 bg-brand-cyan/5">
+            <div className="p-2 rounded border-node border-neutral-800 bg-brand-cyan/5">
               <div className="text-xs font-mono text-brand-cyan mb-1">{t('canvasNodes.mockupNode.textDirectionFromBrandCore')}</div>
               <div className="text-xs text-neutral-400 line-clamp-3">{connectedTextDirection}</div>
             </div>
@@ -728,7 +728,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               >
                 <div className={cn(
                   "w-3.5 h-3.5 rounded-md flex items-center justify-center border-node transition-all duration-200",
-                  withHuman ? 'bg-brand-cyan/80 border-[brand-cyan]' : 'bg-neutral-700 border-neutral-600'
+                  withHuman ? 'bg-brand-cyan/80 border-neutral-800' : 'bg-neutral-700 border-neutral-600'
                 )}>
                   {withHuman && (
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">

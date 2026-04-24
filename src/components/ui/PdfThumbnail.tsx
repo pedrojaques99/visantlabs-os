@@ -86,7 +86,7 @@ export const PdfThumbnail: React.FC<PdfThumbnailProps> = ({
             onLoadError={onDocumentLoadError}
             loading={
               <div className="w-full h-full flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-[brand-cyan] border-t-transparent rounded-md animate-spin" />
+                <div className="w-8 h-8 border-2 border-neutral-400 border-t-transparent rounded-md animate-spin" />
               </div>
             }
             className="w-full h-full flex items-center justify-center"

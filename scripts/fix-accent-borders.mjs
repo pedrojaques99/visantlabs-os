@@ -61,8 +61,12 @@ const REPLACEMENTS = [
   // clean up orphaned `focus:ring-1` or `focus:ring-2` left after removing the color
   [/focus:ring-\d+\s+(?=focus:|$|")/g,              ''],
   [/focus-visible:ring-\d+\s+(?=focus:|$|")/g,      ''],
-  // static border
-  [/(?<![?:'"])border-brand-cyan\/(5|10|20|30)\b/g, 'border-neutral-800'],
+  // static border-brand-cyan with any opacity or bare
+  [/(?<![?:'"\w-])border-brand-cyan\/\d+\b/g,       'border-neutral-800'],
+  [/(?<![?:'"\w-])border-brand-cyan\b(?!\/)/g,      'border-neutral-800'],
+  // static border-[brand-cyan] with any opacity or bare
+  [/(?<![?:'"\w])border-\[brand-cyan\]\/\d+\b/g,    'border-neutral-800'],
+  [/(?<![?:'"\w])border-\[brand-cyan\]\b(?!\/)/g,   'border-neutral-800'],
 ];
 
 let violations = 0;
