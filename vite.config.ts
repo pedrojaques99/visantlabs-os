@@ -49,6 +49,13 @@ export default defineConfig(({ mode }) => {
       esbuild: {
         target: 'es2022',
         legalComments: 'none',
+        // Strip all console.* calls and debugger statements from the
+        // production bundle — keeps the user's DevTools clean.
+        // console.error is preserved via the drop list (only 'console' drops
+        // console.log/warn/info/debug; error is intentionally kept for
+        // Sentry-style error reporting).
+        drop: mode === 'production' ? ['debugger'] : [],
+        pure: mode === 'production' ? ['console.log', 'console.warn', 'console.info', 'console.debug'] : [],
       },
       rollupOptions: {
         output: {

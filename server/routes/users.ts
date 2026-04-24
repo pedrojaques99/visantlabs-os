@@ -570,6 +570,94 @@ router.get('/settings/gemini-api-key', apiRateLimiter, authenticate, async (req:
   }
 });
 
+// ═══ OPENAI API KEY ENDPOINTS ═══
+// SEC: keys stored AES-256-GCM encrypted; never returned to the client.
+
+// Save / update OpenAI API key
+router.put('/settings/openai-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    const { apiKey } = req.body;
+    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+      return res.status(400).json({ error: 'API key is required' });
+    }
+
+    const trimmedKey = apiKey.trim();
+
+    // OpenAI keys start with "sk-" (legacy) or "sk-proj-" (project keys).
+    // Minimum realistic length: "sk-" (3) + 48 chars = 51.
+    if (!trimmedKey.startsWith('sk-') || trimmedKey.length < 40) {
+      return res.status(400).json({
+        error: 'Invalid OpenAI API key format',
+        message: 'OpenAI API keys must start with "sk-" and be at least 40 characters long.',
+      });
+    }
+
+    // Reject keys that contain obviously leaked content (newlines, spaces mid-key)
+    if (/\s/.test(trimmedKey)) {
+      return res.status(400).json({ error: 'API key must not contain whitespace characters' });
+    }
+
+    if (!process.env.API_KEY_ENCRYPTION_KEY) {
+      return res.status(500).json({ error: 'API key encryption is not configured. Contact support.' });
+    }
+
+    const { encryptApiKey } = await import('../utils/encryption.js');
+    const encryptedKey = encryptApiKey(trimmedKey);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { encryptedOpenAiApiKey: encryptedKey },
+    });
+
+    res.json({ success: true, message: 'OpenAI API key saved successfully' });
+  } catch (error: any) {
+    // Never leak encryption internals to the client
+    if (error.message?.includes('encrypt') || error.message?.includes('decrypt')) {
+      return res.status(500).json({ error: 'Failed to save API key', message: 'An encryption error occurred.' });
+    }
+    res.status(500).json({ error: 'Failed to save API key', message: error.message });
+  }
+});
+
+// Delete OpenAI API key
+router.delete('/settings/openai-api-key', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { encryptedOpenAiApiKey: null },
+    });
+
+    res.json({ success: true, message: 'OpenAI API key deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to delete API key', message: error.message });
+  }
+});
+
+// Check if user has an OpenAI API key saved — returns boolean only, NEVER the key
+router.get('/settings/openai-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { encryptedOpenAiApiKey: true },
+    });
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json({ hasApiKey: !!user.encryptedOpenAiApiKey });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to check API key', message: error.message });
+  }
+});
+
 // ═══ FIGMA TOKEN ENDPOINTS ═══
 
 // Save/Update Figma Personal Access Token
@@ -954,6 +1042,7 @@ router.get('/settings/byok-status', apiRateLimiter, authenticate, async (req: Au
       select: {
         encryptedGeminiApiKey: true,
         encryptedSeedreamApiKey: true,
+        encryptedOpenAiApiKey: true,
         subscriptionTier: true,
         storageProductId: true,
         storageLimitBytes: true,
@@ -967,7 +1056,8 @@ router.get('/settings/byok-status', apiRateLimiter, authenticate, async (req: Au
 
     const hasGeminiKey = !!user.encryptedGeminiApiKey;
     const hasSeedreamKey = !!user.encryptedSeedreamApiKey;
-    const isByokActive = hasGeminiKey || hasSeedreamKey;
+    const hasOpenAiKey = !!user.encryptedOpenAiApiKey;
+    const isByokActive = hasGeminiKey || hasSeedreamKey || hasOpenAiKey;
     const hasStoragePlan = !!user.storageProductId || (user.subscriptionTier !== 'free');
 
     res.json({
@@ -986,6 +1076,14 @@ router.get('/settings/byok-status', apiRateLimiter, authenticate, async (req: Au
           benefits: [
             'Access to Seedream models',
             'Separate from Gemini quota',
+          ],
+        },
+        openai: {
+          enabled: hasOpenAiKey,
+          benefits: [
+            'No credit deduction for GPT-Image models',
+            'Pay OpenAI directly at their rates',
+            'Use your own OpenAI API quota',
           ],
         },
       },

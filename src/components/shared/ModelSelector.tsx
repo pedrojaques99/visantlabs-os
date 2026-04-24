@@ -88,7 +88,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
           : config.label;
 
-        return { value: modelId, label: label || modelId, icon };
+        return { value: modelId, label: label || modelId, icon, badge: config.badge };
       }).filter(Boolean) as any[];
 
       const seedreamOptions = SEEDREAM_IMAGE_MODELS.map(modelId => {
@@ -112,7 +112,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
           : config.label;
 
-        return { value: modelId, label: label || modelId, icon };
+        return { value: modelId, label: label || modelId, icon, badge: config.badge };
       }).filter(Boolean) as any[];
 
       const openaiOptions = OPENAI_IMAGE_MODEL_LIST.map(modelId => {
@@ -136,7 +136,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
           : config.label;
 
-        return { value: modelId, label: label || modelId, icon };
+        return { value: modelId, label: label || modelId, icon, badge: config.badge };
       }).filter(Boolean) as any[];
 
       return [...geminiOptions, ...seedreamOptions, ...openaiOptions];
