@@ -19,7 +19,7 @@
     "url": "https://github.com/pedrojaques99/visantlabs-os"
   },
   "scripts": {
-    "prepare": "bash scripts/setup-hooks.sh",
+    "prepare": "sed -i 's/\\r//' scripts/setup-hooks.sh 2>/dev/null; bash scripts/setup-hooks.sh",
     "type-check": "tsc",
     "dev": "vite",
     "dev:server": "tsx watch server/index.ts",
