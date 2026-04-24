@@ -7,6 +7,18 @@
         "VISANT_API_URL": "http://localhost:3000/api",
         "VISANT_API_TOKEN": "${VISANT_API_TOKEN}"
       }
+    },
+    "visant-remote": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://visantlabs.com/api/mcp",
+        "--header",
+        "Authorization:Bearer ${VISANT_API_TOKEN}"
+      ],
+      "env": {
+        "VISANT_API_TOKEN": "${VISANT_API_TOKEN}"
+      }
     }
   }
 }

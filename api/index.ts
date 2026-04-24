@@ -30,6 +30,12 @@ import pluginRoutes from '../server/routes/plugin.js';
 import brandGuidelinesRoutes from '../server/routes/brand-guidelines.js';
 import appsRoutes from '../server/routes/apps.js';
 import { errorHandler } from '../server/middleware/errorHandler.js';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { TOOLS, handleTool } from '../mcp-server/shared.js';
+import { authenticateApiKey } from '../server/middleware/apiKeyAuth.js';
+import { AuthRequest } from '../server/middleware/auth.js';
 
 // Load environment variables
 dotenv.config();
@@ -213,6 +219,55 @@ const healthCheckLimiter = rateLimit({
 
 app.get('/health', healthCheckLimiter, (req, res) => {
     res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// MCP: discovery (no auth)
+app.get('/mcp', (_req, res) => {
+  res.json({
+    name: 'visant-labs',
+    version: '0.1.0',
+    transport: 'streamable-http',
+    mode: 'stateless',
+    tools: TOOLS.length,
+    endpoint: 'POST /api/mcp',
+    auth: 'Bearer visant_sk_*',
+  });
+});
+
+// MCP: tool execution (requires visant_sk_ Bearer token)
+app.post('/mcp', async (req: AuthRequest, res) => {
+  const authed = await authenticateApiKey(req);
+  if (!authed) {
+    res.status(401).json({ error: 'Unauthorized — provide a valid visant_sk_ token in Authorization: Bearer header' });
+    return;
+  }
+
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+    enableJsonResponse: true,
+  });
+
+  const server = new Server(
+    { name: 'visant-labs', version: '0.1.0' },
+    { capabilities: { tools: {} } }
+  );
+
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+
+  server.setRequestHandler(CallToolRequestSchema, async (mcpReq) => {
+    const { name, arguments: args } = mcpReq.params;
+    try {
+      return await handleTool(name, (args ?? {}) as Record<string, unknown>);
+    } catch (err: any) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Error: ${err?.message ?? 'unknown'}` }],
+      };
+    }
+  });
+
+  await server.connect(transport);
+  await transport.handleRequest(req, res, req.body);
 });
 
 app.use(errorHandler);
