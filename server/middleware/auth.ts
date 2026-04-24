@@ -55,23 +55,48 @@ export const authenticate = async (
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      userId?: string;
+      email?: string;
+      sub?: string;
+      aud?: string | string[];
+      scope?: string;
+    };
+
+    // OAuth 2.1 access token path — has `sub` + `aud` (MCP resource)
+    const mcpResource = `${process.env.API_BASE_URL || 'https://api.visantlabs.com'}/api/mcp`;
+    const aud = decoded.aud;
+    const isOAuthToken =
+      decoded.sub &&
+      (aud === mcpResource ||
+        (Array.isArray(aud) && aud.includes(mcpResource)));
+
+    if (isOAuthToken && decoded.sub) {
+      req.userId = decoded.sub;
+      return next();
+    }
+
+    // Legacy JWT path — has `userId`
+    const userId = decoded.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Invalid token payload' });
+    }
 
     const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
+      where: { id: userId },
     });
 
     if (!user) {
       if (isDev) {
         console.error('[authenticate] ❌ User not found in Prisma', {
-          userId: decoded.userId,
+          userId,
           path: req.path,
         });
       }
       return res.status(401).json({ error: 'User not found' });
     }
 
-    req.userId = decoded.userId;
+    req.userId = userId;
     req.userEmail = decoded.email;
     req.isAdmin = !!user.isAdmin;
 

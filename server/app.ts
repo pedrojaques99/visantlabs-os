@@ -51,6 +51,7 @@ import chatRoutes from './routes/chat.js';
 import apiKeysRoutes from './routes/apiKeys.js';
 import pipelineRoutes from './routes/pipeline.js';
 import campaignRoutes from './routes/campaign.js';
+import oauthRoutes from './routes/oauth.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
@@ -60,6 +61,8 @@ import { createPlatformMcpServer, setMcpUserId, getMcpToolNames, getMcpToolCount
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { authenticateApiKey } from './middleware/apiKeyAuth.js';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from './utils/jwtSecret.js';
 
 export function createApp() {
   const app = express();
@@ -230,6 +233,8 @@ export function createApp() {
     app.use(`${routePrefix}${path}`, router);
   }
 
+  app.use('/', oauthRoutes);
+
   // ── MCP Discovery ────────────────────────────────────────────────────────
   app.get('/.well-known/mcp.json', (_req, res) => {
     const base = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
@@ -282,9 +287,35 @@ export function createApp() {
     const authReq = req as any;
     authReq.userId = undefined;
     authReq.userEmail = undefined;
-    const isAuth = await authenticateApiKey(authReq);
-    setMcpUserId(isAuth ? authReq.userId : null);
-    return isAuth;
+
+    // 1. Try API key auth (visant_sk_ Bearer tokens)
+    const isApiKey = await authenticateApiKey(authReq);
+    if (isApiKey) {
+      setMcpUserId(authReq.userId);
+      return true;
+    }
+
+    // 2. Try OAuth 2.1 JWT Bearer token
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.slice(7);
+      try {
+        const mcpResource = `${process.env.API_BASE_URL || 'https://api.visantlabs.com'}/api/mcp`;
+        const decoded = jwt.verify(token, JWT_SECRET) as { sub?: string; aud?: string | string[] };
+        const aud = decoded.aud;
+        const audValid = aud === mcpResource || (Array.isArray(aud) && aud.includes(mcpResource));
+        if (decoded.sub && audValid) {
+          authReq.userId = decoded.sub;
+          setMcpUserId(decoded.sub);
+          return true;
+        }
+      } catch {
+        // invalid JWT — fall through to return false
+      }
+    }
+
+    setMcpUserId(null);
+    return false;
   };
 
   // Bootstrap tool registry on startup (createPlatformMcpServer populates _registeredToolNames)
@@ -309,7 +340,19 @@ export function createApp() {
         id: null,
       });
     }
-    await authenticateMcpRequest(req);
+    const mcpApiBase = process.env.API_BASE_URL || 'https://api.visantlabs.com';
+    const isAuthenticated = await authenticateMcpRequest(req);
+    if (!isAuthenticated) {
+      res.setHeader(
+        'WWW-Authenticate',
+        `Bearer realm="Visant Labs", resource_metadata="${mcpApiBase}/.well-known/oauth-protected-resource"`
+      );
+      return res.status(401).json({
+        jsonrpc: '2.0',
+        error: { code: -32600, message: 'Unauthorized' },
+        id: null,
+      });
+    }
     try {
       const server = createPlatformMcpServer();
       const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });

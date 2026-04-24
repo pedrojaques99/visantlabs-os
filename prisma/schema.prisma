@@ -561,6 +561,32 @@ model BrandGuidelineVersion {
   @@map("brand_guideline_versions")
 }
 
+model OAuthClient {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  clientId     String   @unique
+  clientName   String
+  redirectUris String[]
+  grantTypes   String[]
+  createdAt    DateTime @default(now())
+
+  @@map("oauth_clients")
+}
+
+model OAuthAuthCode {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  code          String   @unique
+  clientId      String
+  userId        String
+  codeChallenge String
+  resource      String
+  scopes        String[]
+  expiresAt     DateTime
+  used          Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@map("oauth_auth_codes")
+}
+
 model AppConfig {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   appId        String   @unique // e.g., 'mockup-machine'

@@ -12,7 +12,7 @@
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://visantlabs.com/api/mcp",
+        "https://api.visantlabs.com/api/mcp",
         "--header",
         "Authorization:Bearer ${VISANT_API_TOKEN}"
       ],
