@@ -7,9 +7,14 @@
  * fontSize is stored at 1080px reference height and scaled proportionally.
  */
 
-import { createCanvas, loadImage, GlobalFonts } from '@napi-rs/canvas';
+// @napi-rs/canvas is lazy-imported inside functions to avoid crashing
+// Vercel Lambda at cold-start (native binary not available in sandbox).
 import * as path from 'path';
 import * as fs from 'fs';
+
+async function getCanvas() {
+  return import('@napi-rs/canvas');
+}
 
 // ─── Types (mirror of client-side schema) ─────────────────────────────────────
 
@@ -111,11 +116,11 @@ function parseAccentSegments(content: string): TextSegment[] {
 
 let fontsRegistered = false;
 
-function ensureFonts() {
+async function ensureFonts() {
   if (fontsRegistered) return;
   fontsRegistered = true;
 
-  // Try to load Inter from common system paths (Linux/VPS)
+  const { GlobalFonts } = await getCanvas();
   const candidates = [
     '/usr/share/fonts/truetype/inter/Inter-Regular.ttf',
     '/usr/share/fonts/inter/Inter-Regular.ttf',
@@ -138,7 +143,8 @@ export async function renderCreativePlan(
   plan: CreativePlan,
   options: RenderOptions = {}
 ): Promise<Buffer> {
-  ensureFonts();
+  const { createCanvas, loadImage } = await getCanvas();
+  await ensureFonts();
 
   const { format = '1:1', accentColor = '#ffffff', quality = 92 } = options;
   const dims = FORMAT_DIMS[format] ?? FORMAT_DIMS['1:1'];

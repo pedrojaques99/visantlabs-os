@@ -12,6 +12,10 @@ export interface ByokStatus {
       enabled: boolean;
       benefits: string[];
     };
+    openai: {
+      enabled: boolean;
+      benefits: string[];
+    };
   };
   storage: {
     hasActivePlan: boolean;

@@ -1048,20 +1048,12 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
           }
         }
       } else if (provider === 'openai') {
-        // Check for OpenAI API Key (user BYOK)
-        const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId!) });
-        if (user?.encryptedOpenAIApiKey) {
-          const { decryptApiKey } = await import('../utils/encryption.js');
-          try {
-            userApiKey = decryptApiKey(user.encryptedOpenAIApiKey);
-            if (userApiKey) {
-              usingUserKey = true;
-              apiKeySource = 'user';
-              console.log(`${logPrefix} [API KEY] Using user OpenAI API key`);
-            }
-          } catch (decryptError) {
-            console.error(`${logPrefix} [API KEY] Failed to decrypt OpenAI key:`, decryptError);
-          }
+        // Check for OpenAI API Key (user BYOK) via helper — never access raw key field directly
+        const { getOpenAiApiKey } = await import('../utils/openAiApiKey.js');
+        userApiKey = await getOpenAiApiKey(req.userId!, { skipFallback: true });
+        if (userApiKey) {
+          usingUserKey = true;
+          apiKeySource = 'user';
         }
       } else {
         // Check for Gemini API Key (Default)

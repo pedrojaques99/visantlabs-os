@@ -31,6 +31,7 @@ export const DEFAULT_ASPECT_RATIO: AspectRatio = '16:9';
 // ── Per-model configuration ────────────────────────────────────────────────
 export interface ModelConfig {
   label: string;
+  badge?: 'latest' | 'popular' | 'fast' | 'edit';
   emoji: string;
   /** Max input image handles on canvas nodes */
   maxHandles: number;
@@ -100,7 +101,8 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_FLASH]: {
-    label: 'Gemini 2.5 Flash',
+    label: 'Flash',
+    badge: 'fast',
     emoji: '🎨',
     maxHandles: 2,
     maxRefImages: 1,
@@ -112,7 +114,8 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_NB2]: {
-    label: 'Nano Banana 2',
+    label: 'NB2',
+    badge: 'popular',
     emoji: '🍌',
     maxHandles: 4,
     maxRefImages: 10,
@@ -124,7 +127,8 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_PRO]: {
-    label: 'Gemini 3 Pro',
+    label: 'Pro',
+    badge: 'latest',
     emoji: '💎',
     maxHandles: 4,
     maxRefImages: 5,
