@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Maximize2, Download, CheckSquare, Square, Video, Play, Loader2, Film, Sparkles } from 'lucide-react';
+import { X, Maximize2, Download, CheckSquare, Square, Video, Play, Loader2, Film, Sparkles, Check, RotateCcw } from 'lucide-react';
 import { CroppedImage, AnimationPreset } from '../../types/moodboard';
 import { ModelSelector } from '@/components/shared/ModelSelector';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
 import type { ImageProvider } from '@/types/types';
 
 interface BentoItemProps {
@@ -19,6 +20,8 @@ interface BentoItemProps {
   onViewVideo: (url: string) => void;
   onUpdateImage?: (file: File) => void;
   onRegenerate?: (id: string, model: string, provider: ImageProvider) => void;
+  onAcceptRegenerated?: (id: string) => void;
+  onDiscardRegenerated?: (id: string) => void;
   isRegenerating?: boolean;
 }
 
@@ -34,10 +37,10 @@ const Timer: React.FC<{ startTime: number }> = ({ startTime }) => {
 export const BentoItem: React.FC<BentoItemProps> = React.memo(({
   crop, index, isSelected, onToggleSelect, onRemove, onUpscale,
   onAnimate, onRemotionAnimate, onDownload, onFullscreen, onViewVideo, onUpdateImage,
-  onRegenerate, isRegenerating,
+  onRegenerate, onAcceptRegenerated, onDiscardRegenerated, isRegenerating,
 }) => {
   const [prompt, setPrompt] = useState(crop.animationPrompt || '');
-  const [regenModel, setRegenModel] = useState('gemini-2.0-flash-exp-image-generation');
+  const [regenModel, setRegenModel] = useState<string>(GEMINI_MODELS.IMAGE_FLASH);
   const [regenProvider, setRegenProvider] = useState<ImageProvider>('gemini');
 
   const handleAnimate = () => {
@@ -58,12 +61,29 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
           {crop.url ? (
             <>
               <img
-                src={crop.thumbnailUrl || crop.url}
+                src={crop.regeneratedUrl || crop.thumbnailUrl || crop.url}
                 alt={`Item ${index + 1}`}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                onClick={() => onFullscreen(crop.upscaledUrl || crop.url)}
+                onClick={() => onFullscreen(crop.regeneratedUrl || crop.upscaledUrl || crop.url)}
                 loading="lazy"
               />
+              {crop.regeneratedUrl && (
+                <div className="absolute bottom-0 inset-x-0 bg-black/80 backdrop-blur-sm p-2 flex items-center justify-between gap-2 z-20">
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-purple-400 flex items-center gap-1">
+                    <Sparkles size={9} />AI Result
+                  </span>
+                  <div className="flex gap-1.5">
+                    <button onClick={e => { e.stopPropagation(); onDiscardRegenerated?.(crop.id); }}
+                      className="p-1.5 rounded-lg bg-neutral-800 border border-border/70 text-neutral-400 hover:text-red-400 hover:border-red-500/40 transition-all" title="Discard">
+                      <RotateCcw size={11} />
+                    </button>
+                    <button onClick={e => { e.stopPropagation(); onAcceptRegenerated?.(crop.id); }}
+                      className="p-1.5 rounded-lg bg-white text-black hover:opacity-90 transition-all" title="Accept">
+                      <Check size={11} />
+                    </button>
+                  </div>
+                </div>
+              )}
               <button
                 onClick={e => { e.stopPropagation(); onToggleSelect(crop.id); }}
                 className={`absolute top-3 left-3 p-2 rounded-xl backdrop-blur-md transition-all z-20 border shadow-lg ${isSelected ? 'bg-white text-black border-white scale-110' : 'bg-black/40 text-white border-white/20 opacity-0 group-hover:opacity-100'}`}
