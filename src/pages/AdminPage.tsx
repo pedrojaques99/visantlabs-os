@@ -851,6 +851,24 @@ export const AdminPage: React.FC = () => {
       enableSorting: true,
     },
     {
+      id: 'byok',
+      header: 'BYOK',
+      cell: ({ row }) => {
+        const b = row.original.byok;
+        if (!b) return <span className="text-neutral-600 text-xs">—</span>;
+        const active = [b.gemini && 'G', b.seedream && 'SD', b.openai && 'OAI'].filter(Boolean);
+        if (!active.length) return <span className="text-neutral-600 text-xs">—</span>;
+        return (
+          <div className="flex gap-1 flex-wrap">
+            {b.gemini   && <span className="px-1 py-px rounded text-[9px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">G</span>}
+            {b.seedream && <span className="px-1 py-px rounded text-[9px] font-bold bg-orange-500/15 text-orange-400 border border-orange-500/30">SD</span>}
+            {b.openai   && <span className="px-1 py-px rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">OAI</span>}
+          </div>
+        );
+      },
+      size: 90,
+    },
+    {
       id: 'actions',
       header: 'Histórico',
       cell: ({ row }) => (

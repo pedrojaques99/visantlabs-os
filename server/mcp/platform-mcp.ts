@@ -1086,6 +1086,211 @@ export function createPlatformMcpServer(): McpServer {
   );
 
   // ═══════════════════════════════════════════
+  // Brand Guidelines — Assets & Actions
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'brand-guidelines-upload-logo',
+    'Upload a logo to a brand guideline. Accepts base64-encoded image data or a public URL. Returns the uploaded logo with its URL and ID.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      data: z.string().optional().describe('Base64-encoded image data (PNG, SVG, WEBP).'),
+      url: z.string().optional().describe('Public URL of the logo image (alternative to base64 data).'),
+      variant: z.enum(['primary', 'dark', 'light', 'icon', 'accent', 'custom']).default('primary').describe('Logo variant.'),
+      label: z.string().optional().describe('Human-readable label, e.g. "Horizontal", "Dark mode".'),
+    },
+    async ({ id, data, url, variant, label }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      if (!data && !url) return ERR.validation('Either data (base64) or url is required.');
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/logos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ data, url, variant, label }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
+        return jsonResponse({ logo: result.logo, allLogos: result.allLogos, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-delete-logo',
+    'Delete a logo from a brand guideline by its logo ID.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      logoId: z.string().describe('Logo ID to delete (from the logos array).'),
+    },
+    async ({ id, logoId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/logos/${logoId}`, {
+          method: 'DELETE',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!resp.ok) {
+          const errBody = await resp.json().catch(() => ({})) as any;
+          return ERR.internal(errBody?.error || `Delete failed (${resp.status})`);
+        }
+        return jsonResponse({ success: true, deleted: logoId, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-upload-media',
+    'Upload a media asset (image or PDF) to a brand guideline media kit. Accepts base64-encoded data or a public URL.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      data: z.string().optional().describe('Base64-encoded image or PDF data.'),
+      url: z.string().optional().describe('Public URL of the media asset (alternative to base64 data).'),
+      type: z.enum(['image', 'pdf']).default('image').describe('Asset type.'),
+      label: z.string().optional().describe('Label for this media asset, e.g. "Brand Presentation", "Campaign Photo".'),
+    },
+    async ({ id, data, url, type, label }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      if (!data && !url) return ERR.validation('Either data (base64) or url is required.');
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/media`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ data, url, type, label }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
+        return jsonResponse({ media: result.media, allMedia: result.allMedia, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-delete-media',
+    'Delete a media asset from a brand guideline by its media ID.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      mediaId: z.string().describe('Media asset ID to delete.'),
+    },
+    async ({ id, mediaId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/media/${mediaId}`, {
+          method: 'DELETE',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!resp.ok) {
+          const errBody = await resp.json().catch(() => ({})) as any;
+          return ERR.internal(errBody?.error || `Delete failed (${resp.status})`);
+        }
+        return jsonResponse({ success: true, deleted: mediaId, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-duplicate',
+    'Duplicate a brand guideline, creating an independent copy with "(copy)" appended to the name. Useful for creating variants or testing changes without affecting the original.',
+    {
+      id: z.string().describe('Brand guideline ID to duplicate.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/duplicate`, {
+          method: 'POST',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Duplicate failed (${resp.status})`);
+        return jsonResponse({ guideline: result.guideline, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-restore-version',
+    'Restore a brand guideline to a previous version. The current state is preserved as a version before restoring.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      version: z.number().int().min(1).describe('Version number to restore (from brand-guidelines-versions).'),
+    },
+    async ({ id, version }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/versions/${version}/restore`, {
+          method: 'POST',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Restore failed (${resp.status})`);
+        return jsonResponse({ success: true, restoredTo: version, id, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-compliance-check',
+    'Run an AI compliance check on a brand guideline — validates color contrast, typography consistency, voice coherence, and completeness. Returns a scored report with actionable suggestions.',
+    {
+      id: z.string().describe('Brand guideline ID to check.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/compliance-check`, {
+          method: 'POST',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Compliance check failed (${resp.status})`);
+        return jsonResponse({ ...result, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
   // Community (public, no auth needed)
   // ═══════════════════════════════════════════
 
