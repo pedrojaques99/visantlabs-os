@@ -267,7 +267,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                           className={cn(
                             "w-full text-left px-3 py-1.5 text-xs font-mono rounded transition-colors relative",
                             isSectionActive
-                              ? 'text-brand-cyan bg-brand-cyan/10 border-l-2 border-brand-cyan'
+                              ? 'text-brand-cyan bg-brand-cyan/10 border-l-2 border-neutral-800'
                               : activeItemId === item.id
                                 ? 'text-neutral-300 hover:text-neutral-200'
                                 : 'text-neutral-500 hover:text-neutral-300',

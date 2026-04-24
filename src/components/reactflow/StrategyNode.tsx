@@ -1108,7 +1108,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   <XCircle size={14} />
                   <span>{t('common.cancel')}</span>
                 </NodeButton>
-                <div className="flex-1 px-3 py-2.5 bg-brand-cyan/20 border-node border-brand-cyan/40 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
+                <div className="flex-1 px-3 py-2.5 bg-brand-cyan/20 border-node border-neutral-800 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
                   <GlitchLoader size={14} color="brand-cyan" />
                   <span className="text-xs font-mono text-brand-cyan font-medium">{t('canvasNodes.strategyNode.analyzing')}</span>
                 </div>
@@ -1241,7 +1241,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
         {/* Single Generation Status - Shows when any section is generating */}
         {isGenerating && (generatingStep || generatingSteps.length > 0) && (
-          <div className="mb-5 px-3 py-2.5 bg-brand-cyan/10 border-node border-brand-cyan/40 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+          <div className="mb-5 px-3 py-2.5 bg-brand-cyan/10 border-node border-neutral-800 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
             <div className="flex items-center gap-3">
               <GlitchLoader size={12} color="brand-cyan" />
               <span className="text-xs font-mono text-brand-cyan font-medium">

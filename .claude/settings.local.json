@@ -217,7 +217,8 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(type\\(d\\), len\\(d\\) if isinstance\\(d,list\\) else d\\)\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(f'{len\\(d\\)} mockups encontrados'\\)\")",
       "Read(//c/Users/Usuario/.claude/**)",
-      "mcp__claude_ai_Canva__generate-design"
+      "mcp__claude_ai_Canva__generate-design",
+      "mcp__claude_ai_Vercel__deploy_to_vercel"
     ]
   }
 }

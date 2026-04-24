@@ -216,7 +216,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                     className={cn(
                                         "flex flex-col items-start p-3 rounded-md border transition-all text-left",
                                         isPublic
-                                            ? "bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan"
+                                            ? "bg-brand-cyan/10 border-neutral-800 text-brand-cyan"
                                             : "bg-transparent border-neutral-700/50 text-neutral-500 hover:border-neutral-600 hover:bg-neutral-800/30"
                                     )}
                                 >

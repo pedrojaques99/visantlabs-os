@@ -728,7 +728,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
         {/* Generating Prompts Status */}
         {isGeneratingPrompts && (
-          <div className="mt-4 px-3 py-2 bg-brand-cyan/20 border-node border-[brand-cyan]/30 rounded flex items-center gap-3">
+          <div className="mt-4 px-3 py-2 bg-brand-cyan/20 border-node border-neutral-800 rounded flex items-center gap-3">
             <GlitchLoader size={14} color="brand-cyan" />
             <span className="text-xs font-mono text-brand-cyan">Generating prompts...</span>
           </div>
