@@ -41,13 +41,13 @@ export const PipelineInbox: React.FC<PipelineInboxProps> = ({ onUseAsset }) => {
         className={cn(
           'relative flex items-center justify-center w-8 h-8 rounded-lg border transition-colors',
           count > 0
-            ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan hover:bg-brand-cyan/30'
+            ? 'bg-neutral-800/50 border-neutral-600 text-neutral-300 hover:bg-neutral-700/50'
             : 'bg-neutral-900/50 border-neutral-700/30 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
         )}
       >
         <Inbox size={14} strokeWidth={2} />
         {count > 0 && (
-          <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 rounded-full bg-brand-cyan text-neutral-950 text-[9px] font-bold">
+          <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 rounded-full bg-neutral-600 text-neutral-100 text-[9px] font-bold">
             {count}
           </span>
         )}
@@ -56,7 +56,7 @@ export const PipelineInbox: React.FC<PipelineInboxProps> = ({ onUseAsset }) => {
       {open && (
         <div className="absolute left-10 top-0 z-50 bg-neutral-950 border border-neutral-700/50 rounded-xl shadow-2xl w-72">
           <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-800">
-            <span className="text-xs font-mono text-neutral-300">Pipeline Inbox</span>
+            <span className="text-xs text-neutral-300">Pipeline Inbox</span>
             <button onClick={() => setOpen(false)} className="text-neutral-500 hover:text-neutral-300">
               <X size={12} />
             </button>
@@ -86,18 +86,18 @@ export const PipelineInbox: React.FC<PipelineInboxProps> = ({ onUseAsset }) => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-neutral-300 truncate">{asset.label || 'Asset'}</p>
-                  <p className="text-[10px] text-neutral-500">from {asset.source}</p>
+                  <p className="text-xs text-neutral-500">from {asset.source}</p>
                 </div>
                 <div className="flex flex-col gap-1">
                   <button
                     onClick={() => handleUse(asset)}
-                    className="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-brand-cyan/30"
+                    className="text-xs px-2 py-0.5 rounded bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600"
                   >
                     Use
                   </button>
                   <button
                     onClick={() => handleDiscard(asset)}
-                    className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-800 text-neutral-500 hover:text-neutral-300"
+                    className="text-xs px-2 py-0.5 rounded bg-neutral-800 text-neutral-500 hover:text-neutral-300"
                   >
                     Dismiss
                   </button>

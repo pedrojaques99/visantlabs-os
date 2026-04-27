@@ -335,7 +335,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                 {variant === 'sheet' && (
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <Users className="h-5 w-5 text-brand-cyan" />
+                            <Users className="h-5 w-5 text-neutral-400" />
                             <h2 className="text-neutral-200 font-semibold">{t('communityPresets.title')}</h2>
                         </div>
                     </div>
@@ -380,7 +380,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={t('communityPresets.searchPlaceholder') || "Search presets..."}
-                        className="w-full pl-9 pr-4 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/50"
+                        className="w-full pl-9 pr-4 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500/50"
                     />
                 </div>
 
@@ -395,9 +395,9 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                             <Button variant="ghost" key={category}
                                 onClick={() => setActiveTab(category)}
                                 className={cn(
-                                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-mono whitespace-nowrap transition-all",
+                                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs whitespace-nowrap transition-all",
                                     isActive
-                                        ? "bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan"
+                                        ? "bg-neutral-700 border-neutral-600 text-neutral-200"
                                         : "bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:text-neutral-400"
                                 )}
                             >

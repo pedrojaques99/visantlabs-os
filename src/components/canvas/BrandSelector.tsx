@@ -22,7 +22,7 @@ export const BrandSelector: React.FC<BrandSelectorProps> = ({
 
   if (isLoading) {
     return (
-      <div className={cn("px-4 py-2 text-xs text-neutral-500 font-mono", className)}>
+      <div className={cn("px-4 py-2 text-xs text-neutral-500", className)}>
         Loading...
       </div>
     );
@@ -45,7 +45,7 @@ export const BrandSelector: React.FC<BrandSelectorProps> = ({
     options.push({
       value: 'ADD_NEW',
       label: 'Novo Brand DNA...',
-      icon: <Plus size={12} className="text-brand-cyan" />
+      icon: <Plus size={12} className="text-neutral-400" />
     });
   }
 
@@ -65,7 +65,7 @@ export const BrandSelector: React.FC<BrandSelectorProps> = ({
         value={value || 'none'}
         onChange={handleSelect}
         variant="node"
-        className="h-full w-[130px] bg-transparent border-none text-[10px] font-mono hover:text-neutral-200 shadow-none focus:ring-0"
+        className="h-full w-[130px] bg-transparent border-none text-xs hover:text-neutral-200 shadow-none focus:ring-0"
       />
     </div>
   );

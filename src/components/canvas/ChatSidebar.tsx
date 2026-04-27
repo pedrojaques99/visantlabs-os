@@ -247,10 +247,10 @@ export const ChatSidebar = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm min-w-0">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shrink-0">
-              <MessageSquare size={16} className="text-brand-cyan" />
+            <div className="p-1.5 rounded-md bg-neutral-800/50 border border-neutral-700/40 shrink-0">
+              <MessageSquare size={16} className="text-neutral-400" />
             </div>
-            <h3 className="text-sm font-semibold text-neutral-200 font-mono tracking-tight truncate">{t('canvasNodes.chatNode.title')}</h3>
+            <h3 className="text-sm font-semibold text-neutral-200 tracking-tight truncate">{t('canvasNodes.chatNode.title')}</h3>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Button variant="ghost" onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
@@ -275,7 +275,7 @@ export const ChatSidebar = ({
               <div className="flex items-center gap-2">
                 {systemPrompt && (
                   <Button variant="ghost" onClick={handleResetSystemPrompt}
-                    className="text-[10px] px-2 py-1 rounded border border-neutral-600/40 text-neutral-400 hover:text-neutral-200 hover:border-neutral-500/60 transition-all"
+                    className="text-xs px-2 py-1 rounded border border-neutral-600/40 text-neutral-400 hover:text-neutral-200 hover:border-neutral-500/60 transition-all"
                   >
                     {t('canvasNodes.chatNode.resetToDefault') || 'Reset to Default'}
                   </Button>
@@ -294,18 +294,18 @@ export const ChatSidebar = ({
               className="resize-none bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm text-xs font-mono min-h-[120px] max-h-[300px]"
               disabled={isLoading}
             />
-            <MicroTitle className="text-[10px] mt-2 "> {t('canvasNodes.chatNode.systemPromptHint') || 'This prompt defines how the AI assistant behaves. Use it to customize tone, style, and expertise.'} </MicroTitle>
+            <MicroTitle className="text-xs mt-2 "> {t('canvasNodes.chatNode.systemPromptHint') || 'This prompt defines how the AI assistant behaves. Use it to customize tone, style, and expertise.'} </MicroTitle>
           </div>
         )}
 
         {/* Credit Indicator */}
         <div className="px-4 py-2.5 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30 backdrop-blur-sm">
           <div className="flex items-center justify-between text-xs mb-2">
-            <span className="text-neutral-300 font-medium"> {t('canvasNodes.chatNode.messages')}: <span className="text-brand-cyan">{userMessageCount}</span> </span>
-            <span className="text-neutral-400 text-[10px]"> {t('canvasNodes.chatNode.nextCreditIn')} {messagesUntilNextCredit} {messagesUntilNextCredit > 1 ? t('canvasNodes.chatNode.messagesPlural') : t('canvasNodes.chatNode.message')} </span>
+            <span className="text-neutral-300 font-medium"> {t('canvasNodes.chatNode.messages')}: <span className="text-neutral-200">{userMessageCount}</span> </span>
+            <span className="text-neutral-400 text-xs"> {t('canvasNodes.chatNode.nextCreditIn')} {messagesUntilNextCredit} {messagesUntilNextCredit > 1 ? t('canvasNodes.chatNode.messagesPlural') : t('canvasNodes.chatNode.message')} </span>
           </div>
           <div className="h-1.5 bg-neutral-800/40 rounded-full overflow-hidden shadow-inner">
-            <div className="h-full bg-gradient-to-r from-brand-cyan to-brand-cyan/80 transition-all duration-300 ease-out shadow-sm" style={{ width: `${((userMessageCount % 4) / 4) * 100}%` }} />
+            <div className="h-full bg-gradient-to-r from-neutral-500 to-neutral-500/80 transition-all duration-300 ease-out shadow-sm" style={{ width: `${((userMessageCount % 4) / 4) * 100}%` }} />
           </div>
         </div>
 
@@ -315,8 +315,8 @@ export const ChatSidebar = ({
             <div className="text-center text-sm text-muted-foreground py-12">
               {hasContext ? (
                 <div className="space-y-3">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 mb-2">
-                    <MessageSquare size={20} className="text-brand-cyan/70" />
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-neutral-800/50 border border-neutral-700/30 mb-2">
+                    <MessageSquare size={20} className="text-neutral-500" />
                   </div>
                   <p className="text-neutral-300 font-medium">{t('canvasNodes.chatNode.startConversationWithContext')}</p>
                   <p className="text-xs ">{t('canvasNodes.chatNode.chatWillUseImagesAndTexts')}</p>
@@ -359,27 +359,27 @@ export const ChatSidebar = ({
           <div className="px-4 py-3 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm min-w-0">
             <div className="flex items-center justify-between gap-4 min-w-0">
               <div className="flex items-center gap-3 overflow-x-auto py-0.5 min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 shrink-0 border-r border-neutral-700/40 pr-3 mr-1">
-                  <CheckCircle2 size={11} className="text-brand-cyan" />
+                <div className="flex items-center gap-1.5 text-xs text-neutral-400 shrink-0 border-r border-neutral-700/40 pr-3 mr-1">
+                  <CheckCircle2 size={11} className="text-neutral-400" />
                   <span className="font-medium">{t('canvasNodes.chatNode.context')}</span>
                 </div>
 
                 {connectedImages.length > 0 && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-cyan/10 border border-brand-cyan/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
-                    <ImageIcon size={11} className="text-brand-cyan" />
-                    <MicroTitle className="text-[10px] text-brand-cyan font-bold">{connectedImages.length}</MicroTitle>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-neutral-800/50 border border-neutral-700/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                    <ImageIcon size={11} className="text-neutral-400" />
+                    <MicroTitle className="text-xs text-neutral-300 font-bold">{connectedImages.length}</MicroTitle>
                   </div>
                 )}
                 {connectedText && (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
                     <FileText size={11} className="text-purple-400" />
-                    <span className="text-[10px] text-purple-400 font-bold">{connectedText.length}</span>
+                    <span className="text-xs text-purple-400 font-bold">{connectedText.length}</span>
                   </div>
                 )}
                 {connectedStrategyData && (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
                     <Target size={11} className="text-amber-400" />
-                    <span className="text-[10px] text-amber-400 font-bold">{strategySections.length}</span>
+                    <span className="text-xs text-amber-400 font-bold">{strategySections.length}</span>
                   </div>
                 )}
               </div>
@@ -402,7 +402,7 @@ export const ChatSidebar = ({
             {expandedStrategy && (
               <div className="mt-3 pt-3 border-t border-neutral-700/20 space-y-3 animate-in slide-in-from-bottom-1 duration-200">
                 {connectedImages.length > 0 && (
-                  <div className="bg-neutral-900/60 p-2 rounded-md border border-brand-cyan/20 backdrop-blur-sm shadow-sm">
+                  <div className="bg-neutral-900/60 p-2 rounded-md border border-neutral-700/30 backdrop-blur-sm shadow-sm">
                     <ConnectedImagesDisplay
                       images={connectedImages}
                       label=""

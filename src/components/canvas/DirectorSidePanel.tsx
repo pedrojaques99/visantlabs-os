@@ -83,7 +83,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
               {title}
             </span>
             {!isExpanded && hasSelection && (
-              <MicroTitle className="text-[10px] truncate max-w-[200px] text-brand-cyan">
+              <MicroTitle className="text-xs truncate max-w-[200px] text-neutral-300">
                 {selectionSummary}
               </MicroTitle>
             )}
@@ -91,7 +91,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {hasSelection && (
-            <span className="text-[10px] text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
+            <span className="text-xs text-neutral-300 bg-neutral-700/50 px-1.5 py-0.5 rounded">
               {groupSelectedTags.length}
             </span>
           )}
@@ -249,22 +249,22 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
           {icon && <div className="flex-shrink-0">{icon}</div>}
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
             <span className={cn(
-              'text-[10px]',
+              'text-xs',
               theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
             )}>
               {title}
             </span>
             {!isExpanded && (hasSelection || poolCount > 0) && (
-              <MicroTitle className="text-[10px] truncate max-w-[200px] text-brand-cyan">
+              <MicroTitle className="text-xs truncate max-w-[200px] text-neutral-300">
                 {selectionSummary}
               </MicroTitle>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
+          {isSurpriseMeMode && <Dices size={12} className="text-neutral-500" />}
           {hasSelection && (
-            <span className="text-[10px] text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
+            <span className="text-xs text-neutral-300 bg-neutral-700/50 px-1.5 py-0.5 rounded">
               {selectedTags.length}
             </span>
           )}
@@ -279,7 +279,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
         <div className="p-3 pt-0 animate-fade-in">
           {suggestedTags.length > 0 && (
             <div className="mb-2">
-              <span className="text-[10px] text-brand-cyan/70 mb-1 block">
+              <span className="text-xs text-neutral-400 mb-1 block">
                 {t('mockup.suggested') || 'Suggested'}
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -327,10 +327,10 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 onBlur={handleBlur}
                 placeholder={t('mockup.customCategoryPlaceholder')}
                 className={cn(
-                  'px-3 py-1.5 text-[10px] font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px]',
+                  'px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-neutral-600/30 focus:outline-none focus:ring-0 min-w-[120px]',
                   theme === 'dark'
-                    ? 'bg-brand-cyan/10 text-brand-cyan'
-                    : 'bg-brand-cyan/5 text-neutral-800'
+                    ? 'bg-neutral-800/50 text-neutral-300'
+                    : 'bg-neutral-100/50 text-neutral-800'
                 )}
                 autoFocus
               />
@@ -401,7 +401,7 @@ const ColorSection: React.FC<ColorSectionProps> = ({
         <div className="flex items-center gap-2">
           <Palette size={14} className="" />
           <span className={cn(
-            'text-[10px]',
+            'text-xs',
             theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
           )}>
             {t('mockup.colorPalette') || 'Color Palette'}
@@ -527,8 +527,8 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
     >
       <div className="flex items-center justify-between p-4 border-b border-neutral-800/50">
         <div className="flex items-center gap-3">
-          <Compass size={20} className="text-brand-cyan" />
-          <h2 className="text-sm font-semibold text-neutral-200 font-mono uppercase">
+          <Compass size={20} className="text-neutral-400" />
+          <h2 className="text-sm font-semibold text-neutral-200 uppercase">
             {t('canvasNodes.directorNode.title') || 'Director'}
           </h2>
         </div>
@@ -561,7 +561,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 className={cn(
                   'w-full px-4 py-3 rounded-md border transition-all duration-200',
                   'flex items-center justify-center gap-2',
-                  'text-sm font-mono',
+                  'text-sm',
                   isAnalyzing
                     ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400 cursor-not-allowed'
                     : 'bg-brand-cyan/10 border-[brand-cyan]/30 text-brand-cyan hover:bg-brand-cyan/20'
@@ -606,7 +606,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   }}
                   theme={theme}
                   t={t}
-                  icon={<Shirt size={14} className="text-brand-cyan" />}
+                  icon={<Shirt size={14} className="text-neutral-400" />}
                 />
 
                 <CollapsableTagSection
@@ -632,7 +632,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   }}
                   theme={theme}
                   t={t}
-                  icon={<MapPin size={14} className="text-brand-cyan" />}
+                  icon={<MapPin size={14} className="text-neutral-400" />}
                 />
 
                 <CollapsableTagSection
@@ -658,7 +658,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   }}
                   theme={theme}
                   t={t}
-                  icon={<Camera size={14} className="text-brand-cyan" />}
+                  icon={<Camera size={14} className="text-neutral-400" />}
                 />
 
                 <CollapsableTagSection
@@ -684,7 +684,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   }}
                   theme={theme}
                   t={t}
-                  icon={<Lightbulb size={14} className="text-brand-cyan" />}
+                  icon={<Lightbulb size={14} className="text-neutral-400" />}
                 />
 
                 <CollapsableTagSection
@@ -710,7 +710,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   }}
                   theme={theme}
                   t={t}
-                  icon={<Diamond size={14} className="text-brand-cyan" />}
+                  icon={<Diamond size={14} className="text-neutral-400" />}
                 />
 
                 <CollapsableTagSection
@@ -736,7 +736,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   }}
                   theme={theme}
                   t={t}
-                  icon={<Layers size={14} className="text-brand-cyan" />}
+                  icon={<Layers size={14} className="text-neutral-400" />}
                 />
 
                 <ColorSection
@@ -753,9 +753,9 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 />
 
                 {(generatedPrompt || isGeneratingPrompt) && (
-                  <div className="bg-neutral-800/20 border border-brand-cyan/20 rounded-md p-3 space-y-2">
+                  <div className="bg-neutral-800/20 border border-neutral-700/30 rounded-md p-3 space-y-2">
                     <div className="flex items-center gap-2">
-                      <FileText size={14} className="text-brand-cyan flex-shrink-0" />
+                      <FileText size={14} className="text-neutral-400 flex-shrink-0" />
                       <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
                         {t('mockup.generatedPrompt') || 'Generated Prompt'}
                       </span>
@@ -765,7 +765,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                         <GlitchLoader size="sm" />
                       </div>
                     ) : (
-                      <p className="text-[11px] text-neutral-300 leading-relaxed">
+                      <p className="text-xs text-neutral-300 leading-relaxed">
                         {generatedPrompt}
                       </p>
                     )}
@@ -776,7 +776,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   <Button
                     variant="outline"
                     onClick={onGeneratePrompt}
-                    className="w-full text-[10px] py-2"
+                    className="w-full text-xs py-2"
                   >
                     {t('mockup.generatePrompt') || 'Generate Prompt'}
                   </Button>
@@ -787,7 +787,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
         ) : (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Smartphone size={32} className="text-neutral-600 mb-3" />
-            <p className="text-sm text-neutral-500 font-mono">
+            <p className="text-sm text-neutral-500">
               {t('canvasNodes.directorNode.connectImageFirst') || 'Connect an image to the Director node to start'}
             </p>
           </div>

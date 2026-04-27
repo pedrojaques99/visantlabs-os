@@ -167,7 +167,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
       <div className="px-2 sm:px-4 md:px-6 flex items-center justify-between h-12 gap-2 py-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <BackButton onClick={onBack} className="mt-8 flex-shrink-0" />
-          <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400 min-w-0">
+          <div className="flex items-center gap-1.5 text-xs text-neutral-400 min-w-0">
             <Button variant="ghost" onClick={() => navigate('/canvas')}
               className="hover:text-neutral-300 transition-colors truncate cursor-pointer"
             >
@@ -182,7 +182,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
                 onChange={(e) => setLocalName(e.target.value)}
                 onBlur={handleSaveProjectName}
                 onKeyDown={handleKeyDown}
-                className="text-xs font-mono text-neutral-300 bg-transparent border-b border-neutral-600 focus:border-[brand-cyan] focus:outline-none px-1 min-w-[80px] sm:min-w-[100px] max-w-[200px] sm:max-w-none"
+                className="text-xs text-neutral-300 bg-transparent border-b border-neutral-600 focus:border-neutral-500 focus:outline-none px-1 min-w-[80px] sm:min-w-[100px] max-w-[200px] sm:max-w-none"
               />
             ) : (
               <span
@@ -207,7 +207,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
               variant="ghost"
               onClick={() => openBrandLibrary()}
               disabled={!linkedGuidelineId}
-              className={cn(headerButtonClass, "hover:border-brand-cyan/30 flex-shrink-0 disabled:opacity-30")}
+              className={cn(headerButtonClass, "hover:border-neutral-600/30 flex-shrink-0 disabled:opacity-30")}
               title={t('mockup.openMediaLibrary') || 'Brand Media Library'}
             >
               <Library size={16} />
@@ -271,28 +271,28 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             </Button>
             <div className="absolute right-0 top-full mt-1 w-52 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
               <Button variant="ghost" onClick={() => onExportImagesRequest?.()}
-                className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
+                className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2"
               >
-                <Download size={12} className="text-brand-cyan" />
+                <Download size={12} className="text-neutral-400" />
                 Exportar imagens...
               </Button>
               <Button variant="ghost" onClick={() => onExportAllImagesRequest?.()}
-                className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
+                className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2"
               >
-                <Check size={12} className="text-brand-cyan" />
+                <Check size={12} className="text-neutral-400" />
                 Exportar todas (PNG)
               </Button>
               <div className="border-t border-neutral-800/60 my-1" />
               <Button variant="ghost" onClick={() => onExportJson?.()}
-                className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
+                className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2"
               >
-                <FileJson size={12} className="text-brand-cyan" />
+                <FileJson size={12} className="text-neutral-400" />
                 Exportar como JSON
               </Button>
               <Button variant="ghost" onClick={() => onImportJson?.()}
-                className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
+                className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2"
               >
-                <Upload size={12} className="text-brand-cyan" />
+                <Upload size={12} className="text-neutral-400" />
                 Importar de JSON
               </Button>
             </div>

@@ -263,7 +263,7 @@ export const ShaderControlsSidebar = ({
               </div>
               {/* Shader Type Select */}
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-neutral-500 uppercase ">
+                <label className="text-xs font-semibold text-neutral-500 uppercase ">
                   {t('shaderControls.shaderType')}
                 </label>
                 <Select
@@ -288,7 +288,7 @@ export const ShaderControlsSidebar = ({
               {/* Halftone Variant Select (only when halftone is selected) */}
               {shaderType === 'halftone' && (
                 <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-neutral-500 uppercase ">
+                  <label className="text-xs font-semibold text-neutral-500 uppercase ">
                     {t('shaderControls.halftoneVariant')}
                   </label>
                   <Select
@@ -378,7 +378,7 @@ export const ShaderControlsSidebar = ({
                       "border transition-all",
                       "hover:bg-neutral-800/30",
                       halftoneInvert > 0.5
-                        ? "border-[brand-cyan]/40 bg-brand-cyan/10 text-brand-cyan"
+                        ? "border-neutral-600/40 bg-neutral-700/30 text-neutral-300"
                         : "border-neutral-700/30 bg-transparent text-neutral-500 hover:text-neutral-400 hover:border-neutral-600/40"
                     )}
                     title={t('shaderControls.labels.invert')}
@@ -396,7 +396,7 @@ export const ShaderControlsSidebar = ({
                 <>
                   {/* Animation Toggle Button */}
                   <div className="flex items-center justify-between py-1">
-                    <label className="text-[10px] font-semibold text-neutral-500 uppercase ">
+                    <label className="text-xs font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.animation')}
                     </label>
                     <Button variant="brand" onClick={toggleAnimation}
@@ -405,7 +405,7 @@ export const ShaderControlsSidebar = ({
                         "border transition-all",
                         "text-xs font-mono uppercase ",
                         isAnimating
-                          ? "bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan hover:bg-brand-cyan/30"
+                          ? "bg-neutral-700/50 border-neutral-600/50 text-neutral-300 hover:bg-neutral-600/50"
                           : "bg-neutral-800/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-700/50 hover:border-neutral-600/50"
                       )}
                       title={isAnimating ? t('shaderControls.tooltips.stopAnimation') : t('shaderControls.tooltips.startAnimation')}
@@ -500,7 +500,7 @@ export const ShaderControlsSidebar = ({
               {shaderType === 'ascii' && (
                 <>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-neutral-500 uppercase ">
+                    <label className="text-xs font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.characterSet')}
                     </label>
                     <Select
@@ -565,7 +565,7 @@ export const ShaderControlsSidebar = ({
                   />
 
                   <div className="flex items-center justify-between py-1">
-                    <label className="text-[10px] font-semibold text-neutral-500 uppercase ">
+                    <label className="text-xs font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.colored')}
                     </label>
                     <Button variant="ghost" onClick={() => {
@@ -576,7 +576,7 @@ export const ShaderControlsSidebar = ({
                       className={cn(
                         "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase ",
                         asciiColored > 0.5
-                          ? "bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan"
+                          ? "bg-neutral-700/50 border-neutral-600/50 text-neutral-300"
                           : "bg-neutral-800/50 border-neutral-700/50 text-neutral-400"
                       )}
                     >
@@ -585,7 +585,7 @@ export const ShaderControlsSidebar = ({
                   </div>
 
                   <div className="flex items-center justify-between py-1">
-                    <label className="text-[10px] font-semibold text-neutral-500 uppercase ">
+                    <label className="text-xs font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.invert')}
                     </label>
                     <Button variant="ghost" onClick={() => {
@@ -596,7 +596,7 @@ export const ShaderControlsSidebar = ({
                       className={cn(
                         "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase ",
                         asciiInvert > 0.5
-                          ? "bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan"
+                          ? "bg-neutral-700/50 border-neutral-600/50 text-neutral-300"
                           : "bg-neutral-800/50 border-neutral-700/50 text-neutral-400"
                       )}
                     >
@@ -610,7 +610,7 @@ export const ShaderControlsSidebar = ({
               {shaderType === 'matrixDither' && (
                 <>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-neutral-500 uppercase ">
+                    <label className="text-xs font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.matrixSize')}
                     </label>
                     <Select
@@ -705,7 +705,7 @@ export const ShaderControlsSidebar = ({
                   />
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-neutral-500 uppercase ">
+                    <label className="text-xs font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.palette')}
                     </label>
                     <Select
@@ -733,7 +733,7 @@ export const ShaderControlsSidebar = ({
                 <>
                   {/* Shadow Color Picker */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-neutral-500 uppercase ">
+                    <label className="text-xs font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.shadowColor')}
                     </label>
                     <div className="flex items-center gap-2">
@@ -793,7 +793,7 @@ export const ShaderControlsSidebar = ({
 
                   {/* Highlight Color Picker */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-neutral-500 uppercase ">
+                    <label className="text-xs font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.highlightColor')}
                     </label>
                     <div className="flex items-center gap-2">

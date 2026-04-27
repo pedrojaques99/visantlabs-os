@@ -290,7 +290,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   }}
                   className={cn(
                     'relative w-10 h-10 flex items-center justify-center rounded-md transition-colors duration-150',
-                    'focus:outline-none focus:ring-1 focus:ring-brand-cyan/50',
+                    'focus:outline-none focus:ring-1 focus:ring-neutral-500/50',
                     isActive
                       ? 'bg-brand-cyan/20'
                       : isLight
@@ -504,7 +504,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                           )}
                           style={{ backgroundColor: strokeColor }}
                         />
-                        <div className="flex-1 text-xs font-mono" style={{ color: textColors.primary }}>{strokeColor.toUpperCase()}</div>
+                        <div className="flex-1 text-xs" style={{ color: textColors.primary }}>{strokeColor.toUpperCase()}</div>
                       </div>
                     </div>
                   )}
@@ -539,7 +539,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                 onClick={() => handleShapeSelect(shapeTool.id)}
                 className={cn(
                   'relative w-10 h-10 flex items-center justify-center rounded-md transition-colors duration-150',
-                  'focus:outline-none focus:ring-1 focus:ring-brand-cyan/50',
+                  'focus:outline-none focus:ring-1 focus:ring-neutral-500/50',
                   isActive
                     ? 'bg-brand-cyan/20'
                     : isLight
@@ -581,7 +581,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                 onClick={onToggleToolbar}
                 className={cn(
                   'relative w-10 h-10 flex items-center justify-center rounded-md transition-colors duration-150',
-                  'focus:outline-none focus:ring-1 focus:ring-brand-cyan/50',
+                  'focus:outline-none focus:ring-1 focus:ring-neutral-500/50',
                   isToolbarCollapsed
                     ? isLight
                       ? 'hover:bg-neutral-200/50'
