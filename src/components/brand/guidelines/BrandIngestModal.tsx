@@ -314,20 +314,23 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
       const result = await brandGuidelineApi.applyFigTokens(guideline.id!, payload);
       console.log('[apply-fig] success', result);
 
-      // Strategy items
+      // Start with the guideline returned by applyFigTokens
+      let latestGuideline = result.guideline;
+
+      // Strategy items — apply via PUT and merge into latestGuideline
       const stratItems = getItems(state, 'strategy');
       const selStrat = stratItems.filter((_: any, i: number) => itemSel.get('strategy')?.has(i));
       if (selStrat.length) {
-        const ex = guideline as any;
+        const ex = latestGuideline as any;
         const update: any = {};
         const manifesto    = selStrat.find((s: any) => s.field === 'manifesto')?.value;
         const tagline      = selStrat.find((s: any) => s.field === 'tagline')?.value;
         const description  = selStrat.find((s: any) => s.field === 'description')?.value;
         const claims       = selStrat.filter((s: any) => s.field === 'claim').map((s: any) => s.value);
 
-        if (tagline)    update.identity  = { ...(ex.identity  || {}), tagline };
-        if (description) update.identity = { ...(update.identity || ex.identity || {}), description };
-        if (manifesto)  update.strategy  = { ...(ex.strategy  || {}), manifesto };
+        if (tagline)     update.identity  = { ...(ex.identity  || {}), tagline };
+        if (description) update.identity  = { ...(update.identity || ex.identity || {}), description };
+        if (manifesto)   update.strategy  = { ...(ex.strategy  || {}), manifesto };
         if (claims.length) {
           const existingDos = ex.guidelines?.dos || [];
           const newDos = claims.filter((c: string) => !existingDos.includes(c));
@@ -335,13 +338,17 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
         }
         if (Object.keys(update).length) {
           console.log('[apply-fig] strategy update', Object.keys(update));
-          await brandGuidelineApi.update(guideline.id!, update as any);
+          const stratResult = await brandGuidelineApi.update(guideline.id!, update as any);
+          latestGuideline = stratResult;
         }
       }
 
-      // Refresh via refetch to pick up all changes (applyFigTokens + strategy update)
-      await queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] });
-      await queryClient.refetchQueries({ queryKey: ['brand-guidelines'] });
+      // Update React Query cache directly with the fully-updated guideline
+      queryClient.setQueryData(['brand-guidelines'], (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((g: any) => g.id === latestGuideline.id ? { ...latestGuideline, _id: latestGuideline.id } : g);
+      });
+
       toast.success('Brand tokens applied');
       onSuccess();
     } catch (err: any) {
