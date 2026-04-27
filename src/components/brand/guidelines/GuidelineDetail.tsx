@@ -4,7 +4,9 @@ import { useUpdateGuideline, useDeleteGuideline, useIngestGuideline } from '@/ho
 import { motion } from 'framer-motion';
 import { ClipboardCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import { useHotkeys } from 'react-hotkeys-hook';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { useBrandGuidelineDraft } from '@/hooks/useBrandGuidelineDraft';
 
 import {
   IdentitySection, ColorsSection, TypographySection, TagsSection,
@@ -50,10 +52,19 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
     setLocalLogos(guideline.logos || []);
   }, [guideline.id]);
 
-  const handleUpdate = (patch: Partial<BrandGuideline>) => {
-    if (!guideline.id) return;
-    updateMutation.mutate({ id: guideline.id, data: patch });
-  };
+  const { draft, updateDraft, undo, redo, isDirty, isSaving } = useBrandGuidelineDraft({
+    guideline,
+    onSave: (patch) => {
+      if (!guideline.id) return;
+      updateMutation.mutate({ id: guideline.id, data: patch });
+    },
+  });
+
+  const handleUpdate = updateDraft;
+
+  useHotkeys('mod+z', (e) => { e.preventDefault(); undo(); }, { enableOnFormTags: true });
+  useHotkeys('mod+shift+z', (e) => { e.preventDefault(); redo(); }, { enableOnFormTags: true });
+  useHotkeys('mod+s', (e) => { e.preventDefault(); }, { enableOnFormTags: true });
 
   const handleReIngest = () => {
     if (!guideline.id || !guideline.identity?.website) return;
@@ -67,49 +78,50 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
   };
 
   const renderSection = (id: string) => {
+    const g = draft;
     switch (id) {
       case 'identity':
-        return <IdentitySection key="identity" guideline={guideline} onUpdate={handleUpdate} onReIngest={guideline.identity?.website ? handleReIngest : undefined} onOpenWizard={onOpenWizard} onDelete={handleDelete} isDeleting={deleteMutation.isPending} span="full" />;
+        return <IdentitySection key="identity" guideline={g} onUpdate={handleUpdate} onReIngest={guideline.identity?.website ? handleReIngest : undefined} onOpenWizard={onOpenWizard} onDelete={handleDelete} isDeleting={deleteMutation.isPending} span="full" />;
       case 'strategy':
-        return <StrategySection key="strategy" guideline={guideline} onUpdate={handleUpdate} span="full" />;
+        return <StrategySection key="strategy" guideline={g} onUpdate={handleUpdate} span="full" />;
       case 'logos':
-        return <LogosSection key="logos" guideline={guideline} logos={localLogos} onLogosChange={setLocalLogos} span="1" />;
+        return <LogosSection key="logos" guideline={g} logos={localLogos} onLogosChange={setLocalLogos} span="1" />;
       case 'colors':
-        return <ColorsSection key="colors" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+        return <ColorsSection key="colors" guideline={g} onUpdate={handleUpdate} span="1" />;
       case 'typography':
-        return <TypographySection key="typography" guideline={guideline} onUpdate={handleUpdate} span="full" />;
+        return <TypographySection key="typography" guideline={g} onUpdate={handleUpdate} span="full" />;
       case 'tags':
-        return <TagsSection key="tags" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+        return <TagsSection key="tags" guideline={g} onUpdate={handleUpdate} span="1" />;
       case 'editorial':
-        return <EditorialSection key="editorial" guideline={guideline} onUpdate={handleUpdate} span="full" />;
+        return <EditorialSection key="editorial" guideline={g} onUpdate={handleUpdate} span="full" />;
       case 'tokens':
-        return <TokensSection key="tokens" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+        return <TokensSection key="tokens" guideline={g} onUpdate={handleUpdate} span="1" />;
       case 'accessibility':
-        return <AccessibilitySection key="accessibility" guideline={guideline} onUpdate={handleUpdate} span="full" />;
+        return <AccessibilitySection key="accessibility" guideline={g} onUpdate={handleUpdate} span="full" />;
       case 'media':
         return <MediaSection key="media" guidelineId={guideline.id!} media={localMedia} logos={localLogos} onMediaChange={setLocalMedia} onLogosChange={setLocalLogos} span="full" />;
       case 'figma':
-        return <FigmaLinkSection key="figma" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+        return <FigmaLinkSection key="figma" guideline={g} onUpdate={handleUpdate} span="1" />;
       case 'knowledge':
-        return <KnowledgeSection key="knowledge" guideline={guideline} span="full" />;
+        return <KnowledgeSection key="knowledge" guideline={g} span="full" />;
       case 'gradients':
-        return <GradientSection key="gradients" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+        return <GradientSection key="gradients" guideline={g} onUpdate={handleUpdate} span="1" />;
       case 'shadows':
-        return <ShadowSection key="shadows" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+        return <ShadowSection key="shadows" guideline={g} onUpdate={handleUpdate} span="1" />;
       case 'motion':
-        return <MotionSection key="motion" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+        return <MotionSection key="motion" guideline={g} onUpdate={handleUpdate} span="1" />;
       case 'borders':
-        return <BorderSection key="borders" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+        return <BorderSection key="borders" guideline={g} onUpdate={handleUpdate} span="1" />;
       case 'manifesto':
-        return <ManifestoSection key="manifesto" guideline={guideline} onUpdate={handleUpdate} span="full" />;
+        return <ManifestoSection key="manifesto" guideline={g} onUpdate={handleUpdate} span="full" />;
       case 'archetypes':
-        return <ArchetypesSection key="archetypes" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+        return <ArchetypesSection key="archetypes" guideline={g} onUpdate={handleUpdate} span="1" />;
       case 'mensagem_central':
-        return <MensagemCentralSection key="mensagem_central" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+        return <MensagemCentralSection key="mensagem_central" guideline={g} onUpdate={handleUpdate} span="1" />;
       case 'voice':
-        return <VoiceSection key="voice" guideline={guideline} onUpdate={handleUpdate} span="1" />;
+        return <VoiceSection key="voice" guideline={g} onUpdate={handleUpdate} span="1" />;
       case 'personas':
-        return <PersonasSection key="personas" guideline={guideline} onUpdate={handleUpdate} span="full" />;
+        return <PersonasSection key="personas" guideline={g} onUpdate={handleUpdate} span="full" />;
       default:
         return null;
     }
@@ -134,6 +146,11 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
       </SectionHideContext.Provider>
 
       <div className="flex items-center justify-between pt-2">
+        {(isDirty || isSaving) && (
+          <span className="text-[10px] font-mono uppercase tracking-widest transition-colors text-neutral-600">
+            {isSaving ? 'Salvando...' : '✓ Salvo'}
+          </span>
+        )}
         {onStartReview && (
           <button
             onClick={onStartReview}
