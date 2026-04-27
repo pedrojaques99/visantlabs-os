@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { Button } from '@/components/ui/button';
-import { Layers, Plus } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface TokensSectionProps {
@@ -13,109 +12,60 @@ interface TokensSectionProps {
 }
 
 export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdate, span }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [tokensJson, setTokensJson] = useState('');
+  // json is UI-only state (controlled textarea buffer for partial JSON input)
+  const [json, setJson] = useState(JSON.stringify(guideline.tokens || {}, null, 2));
+  const [isValid, setIsValid] = useState(true);
 
-  useEffect(() => {
-    setTokensJson(JSON.stringify(guideline.tokens || {}, null, 2));
-  }, [guideline.id]);
+  // Reset json buffer when guideline changes (different brand)
+  useEffect(() => { setJson(JSON.stringify(guideline.tokens || {}, null, 2)); }, [guideline.id]);
 
-  const handleSave = () => {
+  const persist = useCallback((value: string) => {
     try {
-      const tokens = JSON.parse(tokensJson);
+      const tokens = JSON.parse(value);
+      setIsValid(true);
       onUpdate({ tokens });
-      setIsEditing(false);
-    } catch { }
-  };
+    } catch {
+      setIsValid(false);
+    }
+  }, [onUpdate]);
 
-  const renderTokenGrid = (label: string, entries: Record<string, number>) => (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 px-1">
-        <span className="text-[10px] font-mono text-neutral-700 uppercase tracking-widest font-bold opacity-30">{label}</span>
-        <div className="h-[1px] flex-1 bg-white/[0.02]" />
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        {Object.entries(entries).slice(0, 9).map(([k, v]) => (
-          <div key={k} className="bg-white/[0.02] group/token px-2 py-2.5 rounded-xl border border-white/[0.05] text-center hover:border-brand-cyan/20 hover:bg-brand-cyan/[0.02] transition-all duration-300">
-            <span className="text-[10px] font-mono text-neutral-700 block uppercase tracking-tight mb-1 opacity-30 group-hover/token:text-brand-cyan/60">{k}</span>
-            <span className="text-[11px] font-mono text-neutral-400 font-bold group-hover/token:text-white transition-colors">{v}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const tokens = guideline.tokens || {};
 
   return (
-    <SectionBlock
-      id="tokens"
-      icon={<Layers size={14} />}
-      title="Design Tokens"
-      isEditing={isEditing}
-      onEdit={() => setIsEditing(true)}
-      onSave={handleSave}
-      onCancel={() => { setTokensJson(JSON.stringify(guideline.tokens || {}, null, 2)); setIsEditing(false); }}
-      span={span as any}
-      expandedContent={(guideline.tokens?.spacing || guideline.tokens?.radius) ? (
-        <div className="space-y-8">
-          {guideline.tokens?.spacing && (
-            <div className="space-y-3">
-              <span className="text-[10px] font-mono text-brand-cyan/60 uppercase tracking-widest font-bold">Spacing</span>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                {Object.entries(guideline.tokens.spacing).map(([k, v]) => (
-                  <div key={k} className="bg-white/[0.02] group/token p-3 rounded-xl border border-white/[0.05] text-center hover:border-brand-cyan/20 hover:bg-brand-cyan/[0.02] transition-all">
-                    <span className="text-[10px] font-mono text-neutral-600 block uppercase tracking-tight mb-1">{k}</span>
-                    <span className="text-[12px] font-mono text-white font-bold">{v as any}</span>
-                  </div>
-                ))}
+    <SectionBlock id="tokens" icon={<Layers size={14} />} title="Design Tokens" span={span as any}>
+      <div className="space-y-3 py-1">
+        {/* View: flat token rows */}
+        {(tokens.spacing || tokens.radius) && (
+          <div className="space-y-2">
+            {tokens.spacing && (
+              <div className="space-y-1">
+                <MicroTitle className="text-neutral-600">Spacing</MicroTitle>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5">
+                  {Object.entries(tokens.spacing).map(([k, v]) => (
+                    <span key={k} className="text-[10px] font-mono text-neutral-500"><span className="text-neutral-600">{k}:</span> {String(v)}</span>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          {guideline.tokens?.radius && (
-            <div className="space-y-3">
-              <span className="text-[10px] font-mono text-brand-cyan/60 uppercase tracking-widest font-bold">Radius</span>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                {Object.entries(guideline.tokens.radius).map(([k, v]) => (
-                  <div key={k} className="bg-white/[0.02] group/token p-3 rounded-xl border border-white/[0.05] text-center hover:border-brand-cyan/20 hover:bg-brand-cyan/[0.02] transition-all">
-                    <span className="text-[10px] font-mono text-neutral-600 block uppercase tracking-tight mb-1">{k}</span>
-                    <span className="text-[12px] font-mono text-white font-bold">{v as any}</span>
-                  </div>
-                ))}
+            )}
+            {tokens.radius && (
+              <div className="space-y-1">
+                <MicroTitle className="text-neutral-600">Radius</MicroTitle>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5">
+                  {Object.entries(tokens.radius).map(([k, v]) => (
+                    <span key={k} className="text-[10px] font-mono text-neutral-500"><span className="text-neutral-600">{k}:</span> {String(v)}</span>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      ) : undefined}
-      actions={(
-        <Button variant="ghost" size="icon" aria-label="Add item" className="h-6 w-6 text-neutral-500 hover:text-white"
-          onClick={() => {
-            if (!isEditing) setIsEditing(true);
-          }}>
-          <Plus size={12} />
-        </Button>
-      )}
-    >
-      <div className="space-y-6 py-2">
-        {isEditing ? (
-          <div className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <MicroTitle className="text-[10px] opacity-100 uppercase tracking-widest pl-1">Design Tokens (JSON)</MicroTitle>
-              <Textarea
-                value={tokensJson}
-                onChange={(e) => setTokensJson(e.target.value)}
-                className="text-[10px] font-mono bg-neutral-900/50 border-white/5 min-h-[180px] focus:border-brand-cyan/20 transition-all p-4"
-                placeholder='{"spacing": {"s": "4px"}, "radius": {"m": "10px"}}'
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {guideline.tokens?.spacing && renderTokenGrid('Spacing', guideline.tokens.spacing)}
-            {guideline.tokens?.radius && renderTokenGrid('Radius', guideline.tokens.radius)}
-            {(!guideline.tokens?.spacing && !guideline.tokens?.radius) && (
-              <div className="py-12 text-center opacity-30 text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-2xl">No Design Tokens</div>
             )}
           </div>
         )}
+        <Textarea
+          value={json}
+          onChange={(e) => { setJson(e.target.value); persist(e.target.value); }}
+          className={`border-white/5 text-[10px] font-mono min-h-[120px] resize-none placeholder:text-neutral-700 ${!isValid ? 'border-red-500/30' : ''}`}
+          placeholder={'{"spacing": {"s": "4px"}, "radius": {"m": "10px"}}'}
+        />
+        {!isValid && <p className="text-[10px] text-red-400 font-mono">Invalid JSON</p>}
       </div>
     </SectionBlock>
   );

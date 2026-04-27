@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { identitySchema } from '@/schemas/brandGuideline.schema';
+import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
-import { FileText, RefreshCw, Diamond, Trash2, Loader2, Plus, Globe, Instagram, Linkedin, Briefcase, Twitter } from 'lucide-react';
+import { FileText, RefreshCw, Trash2, Globe, Instagram, Linkedin, Briefcase, Twitter } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { cn } from '@/lib/utils';
 
 interface IdentitySectionProps {
   guideline: BrandGuideline;
@@ -22,215 +19,119 @@ interface IdentitySectionProps {
   rowSpan?: string;
 }
 
+type IdentityFields = {
+  name: string; tagline: string; description: string;
+  website: string; portfolio: string; instagram: string; linkedin: string; x: string;
+};
+
 export const IdentitySection: React.FC<IdentitySectionProps> = ({
-  guideline,
-  onUpdate,
-  onReIngest,
-  onOpenWizard,
-  onDelete,
-  isDeleting,
-  span,
-  rowSpan,
+  guideline, onUpdate, onReIngest, onDelete, isDeleting, span, rowSpan,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const form = useForm({
-    resolver: zodResolver(identitySchema),
-    defaultValues: {
-      name: guideline.identity?.name || guideline.name || '',
-      website: guideline.identity?.website || '',
-      portfolio: guideline.identity?.portfolio || '',
-      instagram: guideline.identity?.instagram || '',
-      linkedin: guideline.identity?.linkedin || '',
-      x: guideline.identity?.x || '',
-      tagline: guideline.identity?.tagline || guideline.tagline || '',
-      description: guideline.identity?.description || guideline.description || '',
-    },
-  });
+  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
+  const local: IdentityFields = {
+    name: guideline.identity?.name || guideline.name || '',
+    tagline: guideline.identity?.tagline || guideline.tagline || '',
+    description: guideline.identity?.description || guideline.description || '',
+    website: guideline.identity?.website || '',
+    portfolio: guideline.identity?.portfolio || '',
+    instagram: guideline.identity?.instagram || '',
+    linkedin: guideline.identity?.linkedin || '',
+    x: guideline.identity?.x || '',
+  };
 
-  useEffect(() => {
-    form.reset({
-      name: guideline.identity?.name || guideline.name || '',
-      website: guideline.identity?.website || '',
-      portfolio: guideline.identity?.portfolio || '',
-      instagram: guideline.identity?.instagram || '',
-      linkedin: guideline.identity?.linkedin || '',
-      x: guideline.identity?.x || '',
-      tagline: guideline.identity?.tagline || guideline.tagline || '',
-      description: guideline.identity?.description || guideline.description || '',
-    });
-  }, [guideline.id]);
+  const persist = useCallback((fields: IdentityFields) => {
+    onUpdate({ identity: { ...guideline.identity, ...fields }, name: fields.name, tagline: fields.tagline, description: fields.description });
+  }, [onUpdate, guideline.identity]);
 
-  const handleSave = form.handleSubmit((data) => {
-    onUpdate({
-      identity: { ...guideline.identity, ...data },
-      // Keep flat fields in sync for backwards compat
-      ...data,
-    });
-    setIsEditing(false);
-  });
-
-  const socialLinks = [
-    { key: 'website', icon: <Globe size={16} />, label: 'Website', value: guideline.identity?.website },
-    { key: 'portfolio', icon: <Briefcase size={16} />, label: 'Portfolio', value: guideline.identity?.portfolio },
-    { key: 'instagram', icon: <Instagram size={16} />, label: 'Instagram', value: guideline.identity?.instagram },
-    { key: 'linkedin', icon: <Linkedin size={16} />, label: 'LinkedIn', value: guideline.identity?.linkedin },
-    { key: 'x', icon: <Twitter size={16} />, label: 'X (Twitter)', value: guideline.identity?.x },
-  ].filter(link => link.value);
+  const update = (patch: Partial<IdentityFields>) => {
+    const next = { ...local, ...patch };
+    persist(next);
+  };
 
   const primaryLogo = guideline.logos?.find(l => l.variant === 'primary') || guideline.logos?.[0];
 
   return (
     <SectionBlock
       id="identity"
-      icon={<FileText size={16} />}
+      icon={<FileText size={14} />}
       title="Identity"
-      isEditing={isEditing}
-      onEdit={() => setIsEditing(true)}
-      onSave={handleSave}
-      onCancel={() => { form.reset(); setIsEditing(false); }}
       span={span as any}
       rowSpan={rowSpan as any}
       actions={(
-        <Button variant="ghost" size="icon" aria-label="Add item" className="h-6 w-6 text-neutral-500 hover:text-white"
-          onClick={() => {
-            if (!isEditing) setIsEditing(true);
-          }}>
-          <Plus size={12} aria-hidden="true" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {onReIngest && (
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={onReIngest} title="Re-ingest from website" aria-label="Re-ingest">
+              <RefreshCw size={11} />
+            </Button>
+          )}
+          {onDelete && (
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-600 hover:text-red-400" onClick={onDelete} disabled={isDeleting} aria-label="Delete guideline">
+              <Trash2 size={11} />
+            </Button>
+          )}
+        </div>
       )}
     >
-      <div className="flex flex-col gap-4 py-2">
-        {isEditing ? (
-          <div className="space-y-4 pt-2">
-            <div className="space-y-1.5 min-w-0">
-              <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">Brand Name</MicroTitle>
-              <Input
-                {...form.register('name')}
-                className="h-8 text-sm font-semibold bg-neutral-900/50 border-white/5 text-white placeholder:text-neutral-700 focus:border-brand-cyan/20"
-                placeholder="Enter Brand Name"
-              />
+      <div className="space-y-3 py-1">
+        {/* Logo + Name */}
+        <div className="flex items-center gap-3 pb-2 border-b border-white/[0.04]">
+          {primaryLogo && (
+            <div className="w-9 h-9 shrink-0 flex items-center justify-center rounded overflow-hidden bg-neutral-900/60">
+              <img src={primaryLogo.url} alt="Logo" className="max-w-full max-h-full object-contain" />
             </div>
+          )}
+          <Input
+            value={local.name}
+            onChange={(e) => update({ name: e.target.value })}
+            className="h-7 text-sm font-semibold bg-transparent border-none px-0 text-neutral-100 focus-visible:ring-0 placeholder:text-neutral-700"
+            placeholder="Brand name"
+          />
+        </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">Website</MicroTitle>
+        <Input
+          value={local.tagline}
+          onChange={(e) => update({ tagline: e.target.value })}
+          className="h-6 bg-transparent border-none px-0 text-xs text-neutral-400 focus-visible:ring-0 placeholder:text-neutral-700"
+          placeholder="Tagline"
+        />
+
+        <Textarea
+          value={local.description}
+          onChange={(e) => update({ description: e.target.value })}
+          className="border-white/[0.06] text-xs min-h-[70px] resize-none text-neutral-400 placeholder:text-neutral-700 bg-transparent"
+          placeholder="Brand description..."
+        />
+
+        <div className="pt-1 border-t border-white/[0.04] flex flex-wrap gap-x-3 gap-y-0">
+          {[
+            { key: 'website' as const, icon: <Globe size={10} />, placeholder: 'Website' },
+            { key: 'portfolio' as const, icon: <Briefcase size={10} />, placeholder: 'Portfolio' },
+            { key: 'instagram' as const, icon: <Instagram size={10} />, placeholder: 'Instagram' },
+            { key: 'linkedin' as const, icon: <Linkedin size={10} />, placeholder: 'LinkedIn' },
+            { key: 'x' as const, icon: <Twitter size={10} />, placeholder: 'X / Twitter' },
+          ].map(({ key, icon, placeholder }) => {
+            const isEmpty = !local[key];
+            return (
+              <div key={key} className={cn(
+                'flex items-center gap-1.5 group/link transition-all',
+                isEmpty ? 'w-fit py-0.5' : 'w-full py-1 border-b border-white/[0.04] last:border-0'
+              )}>
+                <span className={cn('shrink-0 transition-colors', isEmpty ? 'text-neutral-800 group-hover/link:text-neutral-600' : 'text-neutral-600')}>{icon}</span>
                 <Input
-                  {...form.register('website')}
-                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20"
-                  placeholder="https://..."
+                  value={local[key]}
+                  onChange={(e) => update({ [key]: e.target.value })}
+                  className={cn(
+                    'bg-transparent border-none px-0 text-xs font-mono focus-visible:ring-0 transition-all',
+                    isEmpty
+                      ? 'auto-input h-5 text-neutral-700 placeholder:text-neutral-800 hover:placeholder:text-neutral-600 cursor-text'
+                      : 'h-7 flex-1 text-neutral-400 placeholder:text-neutral-700'
+                  )}
+                  placeholder={isEmpty ? `+ ${placeholder}` : placeholder}
                 />
               </div>
-              <div className="space-y-1.5">
-                <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">Portfolio</MicroTitle>
-                <Input
-                  {...form.register('portfolio')}
-                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20"
-                  placeholder="Portfolio URL"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">Instagram</MicroTitle>
-                <Input
-                  {...form.register('instagram')}
-                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20"
-                  placeholder="@handle or URL"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">LinkedIn</MicroTitle>
-                <Input
-                  {...form.register('linkedin')}
-                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20"
-                  placeholder="LinkedIn Profile"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">X (Twitter)</MicroTitle>
-                <Input
-                  {...form.register('x')}
-                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20"
-                  placeholder="X Profile"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5 min-w-0">
-              <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">Tagline</MicroTitle>
-              <Input
-                {...form.register('tagline')}
-                className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20"
-                placeholder="Brand Tagline"
-              />
-            </div>
-            <div className="space-y-1.5 min-w-0">
-              <MicroTitle className="text-[11px] opacity-60 uppercase tracking-widest text-neutral-400">Description</MicroTitle>
-              <Textarea
-                {...form.register('description')}
-                className="min-h-[80px] text-[11px] leading-relaxed bg-neutral-900/50 border-white/5 text-neutral-300 focus:border-brand-cyan/20 py-2"
-                placeholder="Brand description and values..."
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6 py-4 px-2">
-            <div className="flex flex-col md:flex-row md:items-start gap-8">
-              {primaryLogo && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center p-4 rounded-3xl bg-neutral-900/50 border border-white/5 shadow-2xl relative group/logo overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-brand-cyan/5 opacity-0 group-hover/logo:opacity-100 transition-opacity" />
-                  <img
-                    src={primaryLogo.url}
-                    alt="Brand Logo"
-                    className="max-w-full max-h-full object-contain filter drop-shadow-lg relative z-10"
-                  />
-                </motion.div>
-              )}
-              <div className="relative flex-1">
-                <div className="space-y-2">
-                  <h2 className="text-4xl md:text-5xl font-semibold text-white leading-none tracking-tight">
-                    {guideline.identity?.name || guideline.name || 'Company'}
-                  </h2>
-
-                  <div className="flex flex-wrap items-center gap-4 pt-1">
-                    {(guideline.identity?.tagline || guideline.tagline) && (
-                      <p className="text-[11px] font-mono text-brand-cyan uppercase tracking-widest opacity-90">
-                        {guideline.identity?.tagline || guideline.tagline}
-                      </p>
-                    )}
-
-                    {socialLinks.length > 0 && (
-                      <div className="flex items-center gap-3">
-                        <div className="h-3 w-[1px] bg-white/10 mx-1" />
-                        {socialLinks.map((link) => (
-                          <a
-                            key={link.key}
-                            href={link.value?.startsWith('http') ? link.value : `https://${link.value}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-neutral-400 hover:text-white transition-colors p-1 hover:bg-white/5 rounded-md"
-                            title={link.label}
-                          >
-                            {link.icon}
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="h-[1px] w-12 bg-white/10" />
-              <p className="text-[13px] md:text-[14px] text-neutral-400 leading-relaxed max-w-xl font-medium tracking-tight">
-                {guideline.identity?.description || guideline.description || 'Define your brand essence and core values here.'}
-              </p>
-            </div>
-          </div>
-        )}
+            );
+          })}
+        </div>
       </div>
     </SectionBlock>
   );

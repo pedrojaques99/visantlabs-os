@@ -1,12 +1,37 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
-import { Compass, Diamond, User, MessageCircle, Plus, Trash2, Heart } from 'lucide-react';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Compass, Plus, Trash2 } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
-import { cn } from '@/lib/utils';
+
+interface ArchetypePreset {
+  nome: string;
+  objetivo: string;
+  valores: string[];
+  exemplos: string[];
+  image: string;
+}
+
+const ARCHETYPE_PRESETS: ArchetypePreset[] = [
+  { nome: 'O Explorador',    objetivo: 'Descobrir novos caminhos e romper limites.',                                  valores: ['curiosidade', 'exploração', 'mente aberta', 'desafio'],       exemplos: ['Jeep', 'The North Face', 'SpaceX'],        image: '/archetypes/O Explorador-1.png'    },
+  { nome: 'O Governante',    objetivo: 'Transmitir ordem, estabilidade e prestígio.',                                 valores: ['autoridade', 'liderança', 'responsabilidade', 'controle'],    exemplos: ['Rolex', 'Mercedes-Benz', 'AmEx'],          image: '/archetypes/O Governante-1.png'    },
+  { nome: 'O Herói',         objetivo: 'Resolver grandes desafios e motivar o cliente.',                              valores: ['superação', 'vitória', 'conquista', 'eficiência'],            exemplos: ['Nike', 'BMW', 'RedBull'],                  image: '/archetypes/O Herói-1.png'         },
+  { nome: 'O Inocente',      objetivo: 'Vender segurança emocional com mensagens claras e limpas.',                   valores: ['positivismo', 'leveza', 'união', 'paz'],                       exemplos: ["Johnson's Baby", 'Coca-Cola', 'Natura'],   image: '/archetypes/O Inocente-1.png'      },
+  { nome: 'O Mago',          objetivo: 'Quebrar velhos paradigmas por meio da inteligência.',                         valores: ['inovação', 'insight visionário', 'mudança', 'disrupção'],     exemplos: ['Apple', 'Tesla', 'Disney'],                image: '/archetypes/O Mago-1.png'          },
+  { nome: 'O Rebelde',       objetivo: 'Romper padrões, quebrar tradições e destruir o que está ultrapassado.',       valores: ['mudança', 'liberdade', 'verdade crua'],                        exemplos: ['Harley-Davidson', 'Dr. Martens', 'MTV'],   image: '/archetypes/O Rebelde-1.png'       },
+  { nome: 'O Sábio',         objetivo: 'Explicar contextos, revelar verdades e ajudar a enxergar o quadro completo.',valores: ['conhecimento', 'clareza', 'autoridade', 'lucidez'],           exemplos: ['Google', 'TED', 'National Geographic'],   image: '/archetypes/O Sábio-1.png'         },
+  { nome: 'O Amante',        objetivo: 'Criar vínculos fortes e relacionamentos estratégicos.',                       valores: ['acolhimento', 'proximidade', 'pertencimento'],                 exemplos: ['LinkedIn', 'AirBnb', 'Meta'],              image: '/archetypes/O Amante-1.png'        },
+  { nome: 'O Bobo da Corte', objetivo: 'Criar conexão por riso e zombar do próprio mercado.',                         valores: ['irreverência', 'humor inteligente', 'diferenciação'],         exemplos: ['Duolingo', 'Skol', 'Burger King'],         image: '/archetypes/O Bobo da Corte-1.png' },
+  { nome: 'O Cara Comum',    objetivo: 'Abraçar a autenticidade da vida cotidiana sem elitismo.',                     valores: ['conexão', 'pertencimento', 'empatia', 'realismo'],            exemplos: ['Hering', 'Gap', 'IKEA'],                   image: '/archetypes/O Cara Comum-1.png'    },
+  { nome: 'O Criador',       objetivo: 'Dar forma a visões, construir coisas com significado e deixar um legado.',    valores: ['criatividade', 'expressão', 'inovação', 'originalidade'],     exemplos: ['Lego', 'Adobe', 'Canva'],                  image: '/archetypes/O Criador-1.png'       },
+  { nome: 'O Cuidador',      objetivo: 'Proteger, nutrir e colocar o bem-estar dos outros acima de tudo.',            valores: ['cuidado', 'proteção', 'generosidade', 'empatia'],             exemplos: ['Dove', 'Johnson & Johnson', 'Cruz Vermelha'], image: '/archetypes/O Cuidador-1.png'   },
+];
 
 interface StrategySectionProps {
   guideline: BrandGuideline;
@@ -15,77 +40,31 @@ interface StrategySectionProps {
 }
 
 export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onUpdate, span }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [localStrategy, setLocalStrategy] = useState(guideline.strategy || {});
-  const [isSaving, setIsSaving] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
+  const local = guideline.strategy || {};
 
-  // Sync local state when server data changes (only when not editing)
-  useEffect(() => {
-    if (!isEditing) {
-      setLocalStrategy(guideline.strategy || {});
-    }
-  }, [guideline.strategy, isEditing]);
-
-  const strategy = isEditing ? localStrategy : (guideline.strategy || {});
-
-  const persistStrategy = useCallback((data: any) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    setIsSaving(true);
-    debounceRef.current = setTimeout(() => {
-      onUpdate({ strategy: data });
-      setIsSaving(false);
-    }, 800);
+  const persist = useCallback((data: any) => {
+    onUpdate({ strategy: data });
   }, [onUpdate]);
 
-  const handleUpdateStrategy = (updatedStrategy: any) => {
-    const next = { ...localStrategy, ...updatedStrategy };
-    setLocalStrategy(next);
-    persistStrategy(next);
+  const update = (patch: any) => {
+    persist({ ...local, ...patch });
   };
 
-  const handleCancel = () => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    setLocalStrategy(guideline.strategy || {});
-    setIsSaving(false);
-    setIsEditing(false);
+  const addItem = (type: 'archetype' | 'persona' | 'voice') => {
+    const next = { ...local };
+    if (type === 'archetype') next.archetypes = [...(local.archetypes || []), { name: '', description: '', role: 'primary' }];
+    else if (type === 'persona') next.personas = [...(local.personas || []), { name: '', age: 0, traits: [], desires: [], bio: '' }];
+    else next.voiceValues = [...(local.voiceValues || []), { title: '', description: '', example: '' }];
+    persist(next);
   };
 
-  // Flush pending save and exit editing
-  const handleDone = () => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-      onUpdate({ strategy: localStrategy });
-    }
-    setIsSaving(false);
-    setIsEditing(false);
-  };
-
-  const addItem = (type: string) => {
-    if (!isEditing) setIsEditing(true);
-    let next = { ...localStrategy };
-    if (type === 'archetype') {
-      next.archetypes = [...(localStrategy.archetypes || []), { name: 'New Archetype', description: '', role: 'primary' }];
-    } else if (type === 'persona') {
-      next.personas = [...(localStrategy.personas || []), { name: 'New Persona', age: 30, traits: [], desires: [], bio: '' }];
-    } else if (type === 'voice') {
-      next.voiceValues = [...(localStrategy.voiceValues || []), { title: 'Tone Name', description: '', example: '' }];
-    }
-    setLocalStrategy(next);
-    persistStrategy(next);
-  };
-
-  const removeItem = (type: string, index: number) => {
-    let next = { ...localStrategy };
-    if (type === 'archetype') {
-      next.archetypes = (localStrategy.archetypes || []).filter((_, i) => i !== index);
-    } else if (type === 'persona') {
-      next.personas = (localStrategy.personas || []).filter((_, i) => i !== index);
-    } else if (type === 'voice') {
-      next.voiceValues = (localStrategy.voiceValues || []).filter((_, i) => i !== index);
-    }
-    setLocalStrategy(next);
-    persistStrategy(next);
+  const removeItem = (type: 'archetype' | 'persona' | 'voice', index: number) => {
+    const next = { ...local };
+    if (type === 'archetype') next.archetypes = (local.archetypes || []).filter((_, i) => i !== index);
+    else if (type === 'persona') next.personas = (local.personas || []).filter((_, i) => i !== index);
+    else next.voiceValues = (local.voiceValues || []).filter((_, i) => i !== index);
+    persist(next);
   };
 
   return (
@@ -93,213 +72,104 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
       id="strategy"
       icon={<Compass size={14} />}
       title="Brand Strategy"
-      isEditing={isEditing}
-      isSaving={isSaving}
-      onEdit={() => setIsEditing(true)}
-      onSave={handleDone}
-      onCancel={handleCancel}
       span={span as any}
-      expandedContent={
-        <div className="space-y-8">
-          {/* Manifesto View */}
-          {strategy.manifesto && (
-            <div className="space-y-3">
-              <MicroTitle className="text-brand-cyan/60 uppercase tracking-widest">Brand Manifesto</MicroTitle>
-              <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] relative overflow-hidden group">
-                <Heart className="absolute -right-4 -bottom-4 text-brand-cyan/5 w-32 h-32 group-hover:scale-110 transition-transform duration-700" />
-                <p className="text-lg md:text-xl text-neutral-300 leading-relaxed font-light  relative z-10">
-                  {strategy.manifesto}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Archetypes View */}
-          {strategy.archetypes && strategy.archetypes.length > 0 && (
-            <div className="space-y-4">
-              <MicroTitle className="text-brand-cyan/60 uppercase tracking-widest">Brand Archetypes</MicroTitle>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {strategy.archetypes.map((arch, i) => (
-                  <div key={i} className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex gap-6 hover:border-brand-cyan/20 transition-all group">
-                    <div className="w-16 h-16 rounded-xl bg-neutral-900 border border-white/5 flex items-center justify-center shrink-0">
-                      <Diamond size={24} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-white tracking-tight">{arch.name}</h4>
-                        {arch.role && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan uppercase font-bold">{arch.role}</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-neutral-400 leading-relaxed">{arch.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Personas View */}
-          {strategy.personas && strategy.personas.length > 0 && (
-            <div className="space-y-4">
-              <MicroTitle className="text-brand-cyan/60 uppercase tracking-widest">Target Personas</MicroTitle>
-              <div className="grid grid-cols-1 gap-4">
-                {strategy.personas.map((persona, i) => (
-                  <div key={i} className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex flex-col md:flex-row gap-8 hover:border-brand-cyan/20 transition-all">
-                    <div className="flex flex-col items-center gap-2 shrink-0">
-                      <div className="w-12 h-12 rounded-full bg-neutral-800 border border-white/10 flex items-center justify-center">
-                        <User size={20} className="text-neutral-500" />
-                      </div>
-                      <span className="text-[10px] font-bold text-white uppercase">{persona.name}, {persona.age}</span>
-                    </div>
-                    <div className="flex-1 space-y-3">
-                      <p className="text-xs text-neutral-400  line-clamp-2">"{persona.bio}"</p>
-                      <div className="flex flex-wrap gap-2">
-                        {persona.desires?.map((desire, idx) => (
-                          <span key={idx} className="text-[10px] px-2 py-1 rounded-md bg-white/5 border border-white/5 text-neutral-500 whitespace-nowrap">{desire}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      }
     >
       <div className="space-y-6">
-        {isEditing ? (
-          <div className="space-y-8">
-            {/* Editing Manifesto */}
-            <div className="space-y-2">
-              <MicroTitle className="opacity-60 uppercase text-[11px] tracking-widest text-neutral-400">Manifesto</MicroTitle>
-              <Textarea
-                value={strategy.manifesto || ''}
-                onChange={(e) => handleUpdateStrategy({ manifesto: e.target.value })}
-                className="bg-neutral-850 border-white/5 min-h-[120px] text-xs focus:border-brand-cyan/30"
-                placeholder="Write the brand manifesto..."
-              />
-            </div>
+        {/* Manifesto */}
+        <div className="space-y-1.5">
+          <MicroTitle className="text-neutral-500">Manifesto</MicroTitle>
+          <Textarea
+            value={local.manifesto || ''}
+            onChange={(e) => update({ manifesto: e.target.value })}
+            className="border-white/5 min-h-[80px] text-xs resize-none"
+            placeholder="Brand manifesto..."
+          />
+        </div>
 
-            {/* Editing Archetypes */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <MicroTitle className="opacity-60 uppercase text-[11px] tracking-widest text-neutral-400">Archetypes</MicroTitle>
-                <Button variant="ghost" size="icon" aria-label="Add archetype" className="h-6 w-6" onClick={() => addItem('archetype')}>
-                  <Plus size={12} />
+        {/* Archetypes */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <MicroTitle className="text-neutral-500">Archetypes</MicroTitle>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-5 w-5" aria-label="Add archetype">
+                  <Plus size={11} />
                 </Button>
-              </div>
-              <div className="space-y-3">
-                {strategy.archetypes?.map((arch, i) => (
-                  <div key={i} className="p-4 rounded-xl bg-neutral-900/50 border border-white/5 space-y-3">
-                    <div className="flex gap-2">
-                      <Input
-                        value={arch.name}
-                        onChange={(e) => {
-                          const archetypes = [...(strategy.archetypes || [])];
-                          archetypes[i].name = e.target.value;
-                          handleUpdateStrategy({ archetypes });
-                        }}
-                        className="h-8 bg-neutral-850 border-white/5 text-xs"
-                        placeholder="Name (e.g. O Mago)"
-                      />
-                      <Button variant="ghost" size="icon" aria-label="Remove archetype" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('archetype', i)}>
-                        <Trash2 size={12} />
-                      </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 max-h-72 overflow-y-auto p-1">
+                {ARCHETYPE_PRESETS.map((preset) => (
+                  <DropdownMenuItem
+                    key={preset.nome}
+                    className="flex items-center gap-2.5 px-2 py-1.5 cursor-pointer"
+                    onClick={() => {
+                      const next = { ...local };
+                      next.archetypes = [...(local.archetypes || []), {
+                        name: preset.nome,
+                        description: preset.objetivo,
+                        role: 'primary',
+                        image: preset.image,
+                      }];
+                      persist(next);
+                    }}
+                  >
+                    <img src={preset.image} alt={preset.nome} className="w-7 h-9 object-cover rounded shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-neutral-200 truncate">{preset.nome}</p>
+                      <p className="text-[10px] text-neutral-600 truncate">{preset.valores.slice(0, 2).join(', ')}</p>
                     </div>
-                    <Textarea
-                      value={arch.description}
-                      onChange={(e) => {
-                        const archetypes = [...(strategy.archetypes || [])];
-                        archetypes[i].description = e.target.value;
-                        handleUpdateStrategy({ archetypes });
-                      }}
-                      className="bg-neutral-850 border-white/5 text-xs min-h-[60px]"
-                      placeholder="Archetype description..."
-                    />
-                  </div>
+                  </DropdownMenuItem>
                 ))}
-              </div>
-            </div>
-
-            {/* Editing Voice Values */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <MicroTitle className="opacity-60 uppercase text-[11px] tracking-widest text-neutral-400">Tone of Voice Values</MicroTitle>
-                <Button variant="ghost" size="icon" aria-label="Add voice value" className="h-6 w-6" onClick={() => addItem('voice')}>
-                  <Plus size={12} />
-                </Button>
-              </div>
-              <div className="space-y-3">
-                {strategy.voiceValues?.map((val, i) => (
-                  <div key={i} className="p-4 rounded-xl bg-neutral-900/50 border border-white/5 space-y-3">
-                    <div className="flex gap-2">
-                      <Input
-                        value={val.title}
-                        onChange={(e) => {
-                          const voiceValues = [...(strategy.voiceValues || [])];
-                          voiceValues[i].title = e.target.value;
-                          handleUpdateStrategy({ voiceValues });
-                        }}
-                        className="h-8 bg-neutral-850 border-white/5 text-xs"
-                        placeholder="Title"
-                      />
-                      <Button variant="ghost" size="icon" aria-label="Remove voice value" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => removeItem('voice', i)}>
-                        <Trash2 size={12} />
-                      </Button>
-                    </div>
-                    <Input
-                      value={val.description}
-                      onChange={(e) => {
-                        const voiceValues = [...(strategy.voiceValues || [])];
-                        voiceValues[i].description = e.target.value;
-                        handleUpdateStrategy({ voiceValues });
-                      }}
-                      className="h-8 bg-neutral-850 border-white/5 text-xs"
-                      placeholder="How it sounds..."
-                    />
-                    <Input
-                      value={val.example}
-                      onChange={(e) => {
-                        const voiceValues = [...(strategy.voiceValues || [])];
-                        voiceValues[i].example = e.target.value;
-                        handleUpdateStrategy({ voiceValues });
-                      }}
-                      className="h-8 bg-neutral-850 border-white/5 text-xs"
-                      placeholder="Example phrase..."
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+                <DropdownMenuItem
+                  className="text-[10px] text-neutral-600 border-t border-white/5 mt-1 pt-2"
+                  onClick={() => addItem('archetype')}
+                >
+                  + Custom
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3 w-full h-full flex-1">
-            {[
-              { label: 'Manifesto', icon: Heart, type: 'manifesto' },
-              { label: 'Archetypes', icon: Diamond, type: 'archetype' },
-              { label: 'Personas', icon: User, type: 'persona' },
-              { label: 'Voice Values', icon: MessageCircle, type: 'voice' },
-            ].map((p, i) => (
-              <div
-                key={i}
-                className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-white/[0.05] bg-white/[0.01] h-full w-full cursor-pointer hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300"
-                onClick={() => {
-                  setIsEditing(true);
-                  if (p.type !== 'manifesto') {
-                    addItem(p.type);
-                  }
-                }}
-              >
-                <div className="w-12 h-12 flex items-center justify-center rounded-xl text-neutral-500 border border-white/5 bg-neutral-900/50">
-                  <p.icon size={20} strokeWidth={1} />
+          {(local.archetypes || []).map((arch, i) => {
+            const preset = ARCHETYPE_PRESETS.find(p => p.nome === arch.name);
+            const img = (arch as any).image || preset?.image;
+            return (
+              <div key={i} className="flex gap-3 items-start py-2 border-b border-white/[0.04] last:border-0 group/item">
+                {img && (
+                  <img src={img} alt={arch.name} className="w-8 h-10 object-cover rounded shrink-0 opacity-80" />
+                )}
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={arch.name}
+                      onChange={(e) => { const a = [...(local.archetypes || [])]; a[i] = { ...a[i], name: e.target.value }; update({ archetypes: a }); }}
+                      className="h-6 bg-transparent border-none px-0 text-xs font-medium text-neutral-200 focus-visible:ring-0 placeholder:text-neutral-700 flex-1"
+                      placeholder="Name"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { const a = [...(local.archetypes || [])]; a[i] = { ...a[i], role: arch.role === 'primary' ? 'secondary' : 'primary' }; update({ archetypes: a }); }}
+                      className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded border border-white/10 text-neutral-600 hover:text-neutral-400 hover:border-white/20 transition-colors shrink-0"
+                    >
+                      {arch.role || 'primary'}
+                    </button>
+                  </div>
+                  <Input
+                    value={arch.description}
+                    onChange={(e) => { const a = [...(local.archetypes || [])]; a[i] = { ...a[i], description: e.target.value }; update({ archetypes: a }); }}
+                    className="h-6 bg-transparent border-none px-0 text-xs text-neutral-500 focus-visible:ring-0 placeholder:text-neutral-700"
+                    placeholder="Objetivo..."
+                  />
+                  {preset && (
+                    <p className="text-[10px] text-neutral-700 font-mono">{preset.valores.join(' · ')}</p>
+                  )}
                 </div>
-                <span className="pt-4 text-center text-[11px] font-mono tracking-[0.1em] uppercase w-full text-neutral-400">{p.label}</span>
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-700 hover:text-red-400 opacity-0 group-hover/item:opacity-100 shrink-0 mt-0.5" onClick={() => removeItem('archetype', i)} aria-label="Remove">
+                  <Trash2 size={10} />
+                </Button>
               </div>
-            ))}
-          </div>
-        )}
+            );
+          })}
+          {!local.archetypes?.length && <p className="text-[11px] text-neutral-700 pl-0.5">No archetypes</p>}
+        </div>
       </div>
     </SectionBlock>
   );

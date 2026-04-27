@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,8 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Blend, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline, BrandGuidelineGradient } from '@/lib/figma-types';
+import { buildGradientCss } from '@/utils/brand-css';
+import { makeId } from '@/utils/id';
 
 interface GradientSectionProps {
   guideline: BrandGuideline;
@@ -14,231 +16,105 @@ interface GradientSectionProps {
 }
 
 type GradientUsage = 'hero' | 'decorative' | 'fill' | 'overlay';
-const USAGE_LABELS: Record<GradientUsage, string> = {
-  hero: 'Hero',
-  decorative: 'Decorative',
-  fill: 'Fill',
-  overlay: 'Overlay',
-};
-
-function buildCss(g: BrandGuidelineGradient): string {
-  const stops = g.stops.map(s => `${s.color} ${s.position}%`).join(', ');
-  if (g.type === 'radial') return `radial-gradient(circle, ${stops})`;
-  return `linear-gradient(${g.angle}deg, ${stops})`;
-}
-
-function makeId() {
-  return Math.random().toString(36).slice(2, 9);
-}
+const USAGE_LABELS: Record<GradientUsage, string> = { hero: 'Hero', decorative: 'Decorative', fill: 'Fill', overlay: 'Overlay' };
 
 export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onUpdate, span }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [items, setItems] = useState<BrandGuidelineGradient[]>([]);
+  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
+  const items = guideline.gradients || [];
 
-  useEffect(() => {
-    setItems(guideline.gradients || []);
-  }, [guideline.id]);
+  const persist = useCallback((next: BrandGuidelineGradient[]) => {
+    onUpdate({ gradients: next.map(g => ({ ...g, css: buildGradientCss(g) })) });
+  }, [onUpdate]);
 
-  const handleSave = () => {
-    const updated = items.map(g => ({ ...g, css: buildCss(g) }));
-    onUpdate({ gradients: updated });
-    setIsEditing(false);
+  const updateItem = (idx: number, patch: Partial<BrandGuidelineGradient>) => {
+    const next = items.map((g, i) => i === idx ? { ...g, ...patch } : g);
+    persist(next);
+  };
+
+  const updateStop = (gi: number, si: number, field: 'color' | 'position', value: string | number) => {
+    const next = items.map((g, i) => i !== gi ? g : { ...g, stops: g.stops.map((s, j) => j === si ? { ...s, [field]: value } : s) });
+    persist(next);
+  };
+
+  const addStop = (gi: number) => {
+    const next = items.map((g, i) => i !== gi ? g : { ...g, stops: [...g.stops, { color: '#ffffff', position: 50 }] });
+    persist(next);
+  };
+
+  const removeStop = (gi: number, si: number) => {
+    const next = items.map((g, i) => i !== gi ? g : { ...g, stops: g.stops.filter((_, j) => j !== si) });
+    persist(next);
   };
 
   const addGradient = () => {
-    const primaryHex = guideline.colors?.[0]?.hex || '#52DDEB';
-    const secondaryHex = guideline.colors?.[1]?.hex || '#1F7878';
-    setItems(prev => [...prev, {
-      id: makeId(),
-      name: 'New Gradient',
-      type: 'linear',
-      angle: 135,
-      stops: [{ color: primaryHex, position: 0 }, { color: secondaryHex, position: 100 }],
-      usage: 'decorative',
-    }]);
-    if (!isEditing) setIsEditing(true);
+    const p = guideline.colors?.[0]?.hex || '#52DDEB';
+    const s = guideline.colors?.[1]?.hex || '#1F7878';
+    const next = [...items, { id: makeId(), name: 'New Gradient', type: 'linear' as const, angle: 135, stops: [{ color: p, position: 0 }, { color: s, position: 100 }], usage: 'decorative' as GradientUsage }];
+    persist(next);
   };
 
-  const updateItem = (idx: number, patch: Partial<BrandGuidelineGradient>) => {
-    setItems(prev => prev.map((g, i) => i === idx ? { ...g, ...patch } : g));
+  const removeGradient = (idx: number) => {
+    const next = items.filter((_, i) => i !== idx);
+    persist(next);
   };
-
-  const updateStop = (gradIdx: number, stopIdx: number, field: 'color' | 'position', value: string | number) => {
-    setItems(prev => prev.map((g, i) => {
-      if (i !== gradIdx) return g;
-      const stops = g.stops.map((s, j) => j === stopIdx ? { ...s, [field]: value } : s);
-      return { ...g, stops };
-    }));
-  };
-
-  const addStop = (gradIdx: number) => {
-    setItems(prev => prev.map((g, i) => i === gradIdx
-      ? { ...g, stops: [...g.stops, { color: '#ffffff', position: 50 }] }
-      : g
-    ));
-  };
-
-  const removeStop = (gradIdx: number, stopIdx: number) => {
-    setItems(prev => prev.map((g, i) => i === gradIdx
-      ? { ...g, stops: g.stops.filter((_, j) => j !== stopIdx) }
-      : g
-    ));
-  };
-
-  const previewItems = guideline.gradients || [];
 
   return (
-    <SectionBlock
-      id="gradients"
-      icon={<Blend size={14} className="text-brand-cyan" />}
-      title="Gradients"
-      isEditing={isEditing}
-      onEdit={() => setIsEditing(true)}
-      onSave={handleSave}
-      onCancel={() => { setItems(guideline.gradients || []); setIsEditing(false); }}
-      span={span as any}
-      actions={(
-        <Button variant="ghost" size="icon" aria-label="Add gradient" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={addGradient}>
-          <Plus size={12} />
-        </Button>
-      )}
+    <SectionBlock id="gradients" icon={<Blend size={14} />} title="Gradients" span={span as any}
+      actions={<Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={addGradient} aria-label="Add gradient"><Plus size={12} /></Button>}
     >
-      <div className="space-y-4 py-2">
-        {isEditing ? (
-          <div className="space-y-6">
-            {items.map((g, gi) => (
-              <div key={g.id} className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-4 space-y-4 group/grad relative">
-                {/* Preview bar */}
-                <div
-                  className="h-14 w-full rounded-xl border border-white/5"
-                  style={{ background: buildCss(g) }}
-                />
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <MicroTitle className="text-[10px] opacity-40 uppercase pl-1 tracking-widest">Name</MicroTitle>
-                    <Input
-                      value={g.name}
-                      onChange={e => updateItem(gi, { name: e.target.value })}
-                      className="bg-neutral-950/80 border-white/5 text-[11px] font-mono text-white h-9 rounded-xl focus:border-brand-cyan/30"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <MicroTitle className="text-[10px] opacity-40 uppercase pl-1 tracking-widest">Usage</MicroTitle>
-                    <div className="flex gap-1 flex-wrap">
-                      {(Object.keys(USAGE_LABELS) as GradientUsage[]).map(u => (
-                        <button
-                          key={u}
-                          type="button"
-                          onClick={() => updateItem(gi, { usage: u })}
-                          className={cn(
-                            'px-2 py-1 rounded-md border text-[9px] font-mono uppercase tracking-wider transition-all',
-                            g.usage === u
-                              ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
-                              : 'border-white/5 bg-white/[0.02] text-neutral-600 hover:border-white/10'
-                          )}
-                        >
-                          {USAGE_LABELS[u]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <div className="space-y-1.5 flex-1">
-                    <MicroTitle className="text-[10px] opacity-40 uppercase pl-1 tracking-widest">Type</MicroTitle>
-                    <div className="flex gap-1">
-                      {(['linear', 'radial'] as const).map(t => (
-                        <button key={t} type="button" onClick={() => updateItem(gi, { type: t })}
-                          className={cn(
-                            'flex-1 h-8 rounded-lg border text-[10px] font-mono uppercase tracking-wider transition-all',
-                            g.type === t ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan' : 'border-white/5 bg-white/[0.02] text-neutral-500'
-                          )}
-                        >{t}</button>
-                      ))}
-                    </div>
-                  </div>
+      <div className="space-y-2 py-1">
+        {items.length === 0 && <p className="text-[11px] text-neutral-700 py-2">No gradients yet. Click + to add.</p>}
+        {items.map((g, gi) => (
+          <div key={g.id} className="group/grad border-b border-white/[0.04] last:border-0 overflow-hidden">
+            {/* Always visible: preview + name */}
+            <div className="flex items-center gap-2 p-2">
+              <div className="w-10 h-6 rounded shrink-0 border border-white/5" style={{ background: buildGradientCss(g) }} />
+              <Input value={g.name} onChange={e => updateItem(gi, { name: e.target.value })} className="h-6 flex-1 bg-transparent border-none p-0 text-xs text-neutral-300 focus-visible:ring-0 placeholder:text-neutral-700" placeholder="Gradient name" />
+              <span className="text-[10px] font-mono text-neutral-700">{g.type} {g.type === 'linear' ? `${g.angle}°` : ''}</span>
+              <Button variant="ghost" size="icon" className="h-5 w-5 text-neutral-800 hover:text-red-400 opacity-0 group-hover/grad:opacity-100 transition-all shrink-0" onClick={() => removeGradient(gi)} aria-label="Remove"><Trash2 size={10} /></Button>
+            </div>
+            {/* Hover-reveal: detail controls */}
+            <div className="hover-reveal group-hover/grad:max-h-[400px] group-focus-within/grad:max-h-[400px]">
+              <div className="pt-1 pb-2 space-y-2 border-t border-white/[0.04]">
+                <div className="flex gap-2 pt-2">
+                  {(['linear', 'radial'] as const).map(t => (
+                    <button key={t} type="button" onClick={() => updateItem(gi, { type: t })}
+                      className={cn('flex-1 h-6 rounded border text-[9px] font-mono uppercase transition-all', g.type === t ? 'border-white/20 bg-white/[0.06] text-neutral-200' : 'border-white/5 text-neutral-600 hover:border-white/10')}
+                    >{t}</button>
+                  ))}
                   {g.type === 'linear' && (
-                    <div className="space-y-1.5 w-24">
-                      <MicroTitle className="text-[10px] opacity-40 uppercase pl-1 tracking-widest">Angle</MicroTitle>
-                      <Input
-                        type="number"
-                        value={g.angle}
-                        onChange={e => updateItem(gi, { angle: Number(e.target.value) })}
-                        className="bg-neutral-950/80 border-white/5 text-[11px] font-mono text-white h-9 rounded-xl focus:border-brand-cyan/30"
-                        min={0} max={360}
-                      />
-                    </div>
+                    <Input type="number" value={g.angle} onChange={e => updateItem(gi, { angle: Number(e.target.value) })} className="h-6 w-14 border-white/5 text-[10px] font-mono text-center" min={0} max={360} />
                   )}
                 </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between px-1">
-                    <MicroTitle className="text-[10px] opacity-40 uppercase tracking-widest">Stops</MicroTitle>
-                    <button type="button" onClick={() => addStop(gi)} className="text-[9px] font-mono text-neutral-600 hover:text-brand-cyan transition-colors">+ add stop</button>
+                <div className="flex flex-wrap gap-1">
+                  {(Object.keys(USAGE_LABELS) as GradientUsage[]).map(u => (
+                    <button key={u} type="button" onClick={() => updateItem(gi, { usage: u })}
+                      className={cn('px-2 h-5 rounded border text-[9px] font-mono transition-all', g.usage === u ? 'border-white/20 bg-white/[0.06] text-neutral-200' : 'border-white/5 text-neutral-600 hover:border-white/10')}
+                    >{USAGE_LABELS[u]}</button>
+                  ))}
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <MicroTitle className="text-neutral-700">Stops</MicroTitle>
+                    <button type="button" onClick={() => addStop(gi)} className="text-[9px] font-mono text-neutral-700 hover:text-neutral-400 transition-colors">+ stop</button>
                   </div>
                   {g.stops.map((s, si) => (
-                    <div key={si} className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={s.color}
-                        onChange={e => updateStop(gi, si, 'color', e.target.value)}
-                        className="w-8 h-8 rounded-lg border border-white/10 bg-transparent cursor-pointer"
-                      />
-                      <span className="text-[10px] font-mono text-neutral-500 w-16">{s.color}</span>
-                      <input
-                        type="range"
-                        min={0} max={100}
-                        value={s.position}
-                        onChange={e => updateStop(gi, si, 'position', Number(e.target.value))}
-                        className="flex-1 accent-brand-cyan h-1"
-                      />
-                      <span className="text-[10px] font-mono text-neutral-600 w-8 text-right">{s.position}%</span>
-                      {g.stops.length > 2 && (
-                        <button type="button" onClick={() => removeStop(gi, si)} className="text-neutral-700 hover:text-red-400 transition-colors">
-                          <Trash2 size={11} />
-                        </button>
-                      )}
+                    <div key={si} className="flex items-center gap-1.5">
+                      <div className="relative w-6 h-6 shrink-0">
+                        <div className="w-full h-full rounded border border-white/10" style={{ backgroundColor: s.color }} />
+                        <input type="color" value={s.color} onChange={e => updateStop(gi, si, 'color', e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                      </div>
+                      <span className="text-[10px] font-mono text-neutral-600 w-14">{s.color}</span>
+                      <input type="range" min={0} max={100} value={s.position} onChange={e => updateStop(gi, si, 'position', Number(e.target.value))} className="flex-1 h-1 accent-white" />
+                      <span className="text-[10px] font-mono text-neutral-600 w-7 text-right">{s.position}%</span>
+                      {g.stops.length > 2 && <button type="button" onClick={() => removeStop(gi, si)} className="text-neutral-700 hover:text-red-400 transition-colors"><Trash2 size={10} /></button>}
                     </div>
                   ))}
                 </div>
-
-                <Button
-                  variant="ghost" size="icon" type="button"
-                  className="absolute top-2 right-2 h-6 w-6 text-neutral-700 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover/grad:opacity-100 transition-all"
-                  onClick={() => setItems(prev => prev.filter((_, i) => i !== gi))}
-                >
-                  <Trash2 size={11} />
-                </Button>
               </div>
-            ))}
-
-            <Button
-              variant="outline" type="button" onClick={addGradient}
-              className="w-full h-10 border-dashed border-white/10 hover:border-brand-cyan/30 bg-transparent text-neutral-500 hover:text-brand-cyan group transition-all rounded-2xl"
-            >
-              <Plus size={14} className="mr-2 group-hover:scale-125 transition-transform" />
-              <span className="text-[10px] font-mono uppercase tracking-widest">Add Gradient</span>
-            </Button>
-          </div>
-        ) : (
-          previewItems.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3">
-              {previewItems.map(g => (
-                <button type="button" key={g.id} aria-label="Editar gradient" className="group/gp rounded-xl overflow-hidden border border-white/[0.04] cursor-pointer hover:border-brand-cyan/20 transition-all text-left" onClick={() => setIsEditing(true)}>
-                  <div className="h-16" style={{ background: g.css || buildCss(g) }} />
-                  <div className="p-2 bg-white/[0.02]">
-                    <p className="text-[10px] font-mono text-neutral-400 truncate">{g.name}</p>
-                    <p className="text-[9px] font-mono text-neutral-700 uppercase tracking-wider">{g.usage}</p>
-                  </div>
-                </button>
-              ))}
             </div>
-          ) : (
-            <div className="py-10 text-center text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 opacity-30 rounded-2xl">No Gradients Defined</div>
-          )
-        )}
+          </div>
+        ))}
       </div>
     </SectionBlock>
   );
