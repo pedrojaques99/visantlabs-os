@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, Copy, Share2, Users, Edit, Eye, Trash2, Check } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { canvasApi } from '@/services/canvasApi';
@@ -28,6 +29,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
   canView = [],
   onShareUpdate,
 }) => {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);

@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { Player, PlayerRef } from '@remotion/player';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Video, Settings2, Clock, Maximize2, MoveHorizontal, Zap } from 'lucide-react';
@@ -32,6 +33,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
   isOpen, onClose, imageUrl, preset = 'zoom-in', slides: propSlides,
   transition = 'fade', transitionDurationFrames = 15, name, thumbnailUrl,
 }) => {
+  useScrollLock(isOpen);
   const playerRef = useRef<PlayerRef>(null);
   const { enqueue } = useRenderQueue();
   const fps = 30;

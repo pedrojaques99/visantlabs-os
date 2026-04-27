@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Film, Send, Image as ImageIcon, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -21,6 +22,7 @@ interface FrameAnimateModalProps {
 export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
   isOpen, onClose, onAnimate, sourceImage, allowSound, onSoundToggle,
 }) => {
+  useScrollLock(isOpen);
   const [startImage] = useState<string>(sourceImage);
   const [endImage, setEndImage] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');

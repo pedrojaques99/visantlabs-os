@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X } from 'lucide-react';
 import { FormInput } from '@/components/ui/form-input';
 import type { BudgetData } from '@/types/types';
@@ -49,6 +50,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
   currentValue,
   onConfirm,
 }) => {
+  useScrollLock(isOpen);
   const [customValue, setCustomValue] = useState(currentValue || '');
   const defaultValue = getDefaultValue(data, fieldId);
   const isCustomField = fieldId.startsWith('custom_');

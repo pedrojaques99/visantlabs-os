@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, MessageCircle, Bug } from 'lucide-react';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -23,6 +24,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({
   userName = '',
   userEmail = '',
 }) => {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const [contactType, setContactType] = useState<ContactType>('customerService');
   const [name, setName] = useState('');

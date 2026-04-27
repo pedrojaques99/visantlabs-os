@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2, Beaker, Diamond, Link } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button'
@@ -53,6 +54,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   edgeStrokeWidth = 'normal',
   onEdgeStrokeWidthChange,
 }) => {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const [bgColor, setBgColor] = useState(backgroundColor);
   const [gridCol, setGridCol] = useState(gridColor);

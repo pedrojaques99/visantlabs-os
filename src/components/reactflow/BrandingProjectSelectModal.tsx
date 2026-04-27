@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, FolderOpen, Plus } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { toast } from 'sonner';
@@ -27,6 +28,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
   onSelectProject,
   onCreateNew,
 }) => {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const [projects, setProjects] = useState<BrandingProject[]>([]);
   const [isLoading, setIsLoading] = useState(false);

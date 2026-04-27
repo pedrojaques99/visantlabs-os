@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { useNavigate } from 'react-router-dom';
 import { X, CreditCard, Plus, Minus, Pickaxe, QrCode, Info, FileText, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 import { getUserLocale, formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
@@ -93,6 +94,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
   subscriptionStatus = null,
   initialTab = 'creditos'
 }) => {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [currencyInfo, setCurrencyInfo] = useState<CurrencyInfo | null>(null);

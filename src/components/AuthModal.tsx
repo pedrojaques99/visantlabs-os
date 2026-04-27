@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X } from 'lucide-react';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { PillButton } from './ui/pill-button';
@@ -29,6 +30,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   setIsSignUp: externalSetIsSignUp,
   defaultIsSignUp = false
 }) => {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

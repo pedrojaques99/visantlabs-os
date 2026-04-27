@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, Download, Check, Square, CheckSquare, Search, Filter, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { exportImageWithScale } from '@/utils/exportUtils';
@@ -31,6 +32,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
     nodes,
     projectName,
 }) => {
+    useScrollLock(isOpen);
     const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
     const [exportFormat, setExportFormat] = useState<ExportFormat>('PNG');
     const [searchQuery, setSearchQuery] = useState('');

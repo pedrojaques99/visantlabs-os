@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, ZoomIn, ZoomOut, Download, RotateCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NodeSlider } from './node-slider';
@@ -40,6 +41,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
   const imageRef = useRef<HTMLImageElement>(null);
 
   const finalImageUrl = imageUrl || (imageBase64 ? `data:image/png;base64,${imageBase64}` : null);
+  useScrollLock(!!finalImageUrl);
   const { handleDownload } = useNodeDownload(finalImageUrl, 'image');
 
   // Handle keyboard shortcuts
