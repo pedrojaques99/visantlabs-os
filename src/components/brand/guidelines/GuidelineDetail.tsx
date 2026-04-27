@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useUpdateGuideline, useDeleteGuideline, useIngestGuideline } from '@/hooks/queries/useBrandGuidelines';
+import { useDeleteGuideline, useIngestGuideline } from '@/hooks/queries/useBrandGuidelines';
 import { motion } from 'framer-motion';
 import { ClipboardCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useHotkeys } from 'react-hotkeys-hook';
 import type { BrandGuideline } from '@/lib/figma-types';
-import { useBrandGuidelineDraft } from '@/hooks/useBrandGuidelineDraft';
+import { useBrandGuidelineEditor } from '@/contexts/BrandGuidelineEditorContext';
 
 import {
   IdentitySection, ColorsSection, TypographySection, TagsSection,
@@ -40,7 +40,6 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
   onStartReview,
 }) => {
   const { t } = useTranslation();
-  const updateMutation = useUpdateGuideline();
   const deleteMutation = useDeleteGuideline();
   const ingestMutation = useIngestGuideline();
 
@@ -52,13 +51,7 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
     setLocalLogos(guideline.logos || []);
   }, [guideline.id]);
 
-  const { draft, updateDraft, undo, redo, isDirty, isSaving } = useBrandGuidelineDraft({
-    guideline,
-    onSave: (patch) => {
-      if (!guideline.id) return;
-      updateMutation.mutate({ id: guideline.id, data: patch });
-    },
-  });
+  const { draft, updateDraft, undo, redo, isDirty, isSaving } = useBrandGuidelineEditor();
 
   const handleUpdate = updateDraft;
 

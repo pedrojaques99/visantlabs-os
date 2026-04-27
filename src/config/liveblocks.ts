@@ -62,4 +62,5 @@ export const {
   useSelf,
   useUpdateMyPresence,
   useStatus,
+  useHistory,
 } = createRoomContext(client);

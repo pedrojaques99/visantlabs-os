@@ -4,6 +4,9 @@ import { useBrandCollaboration } from '@/hooks/brand/useBrandCollaboration';
 import { getPresenceColor } from '@/lib/liveblocks-presence';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { Users } from 'lucide-react';
+import { LiveObject } from '@liveblocks/client';
+import type { BrandGuideline } from '@/lib/figma-types';
+import { LiveblocksEditorProvider, LocalEditorProvider } from '@/contexts/BrandGuidelineEditorContext';
 
 // ─── Section presence dot ─────────────────────────────────────────────────────
 
@@ -82,16 +85,27 @@ export const BrandCollaboratorAvatars: React.FC = () => {
 
 interface BrandRoomProviderProps {
   guidelineId: string;
+  guideline: BrandGuideline;
+  onSave: (patch: Partial<BrandGuideline>) => void;
   children: React.ReactNode;
 }
 
 /**
- * Wraps guideline editor in a Liveblocks room.
- * Renders children immediately even if Liveblocks is not configured (graceful degradation).
+ * Wraps guideline editor in a Liveblocks room with collaborative storage.
+ * Falls back to local draft mode when VITE_LIVEBLOCKS_PUBLIC_KEY is not set.
  */
-export const BrandRoomProvider: React.FC<BrandRoomProviderProps> = ({ guidelineId, children }) => {
+export const BrandRoomProvider: React.FC<BrandRoomProviderProps> = ({
+  guidelineId,
+  guideline,
+  onSave,
+  children,
+}) => {
   if (!import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY) {
-    return <>{children}</>;
+    return (
+      <LocalEditorProvider guideline={guideline} onSave={onSave}>
+        {children}
+      </LocalEditorProvider>
+    );
   }
 
   return (
@@ -107,10 +121,13 @@ export const BrandRoomProvider: React.FC<BrandRoomProviderProps> = ({ guidelineI
       initialStorage={{
         nodes: [] as any,
         edges: [] as any,
+        guideline: new LiveObject(guideline as unknown as Record<string, any>),
       }}
     >
       <Suspense fallback={null}>
-        {children}
+        <LiveblocksEditorProvider guideline={guideline} onSave={onSave}>
+          {children}
+        </LiveblocksEditorProvider>
       </Suspense>
     </RoomProvider>
   );
