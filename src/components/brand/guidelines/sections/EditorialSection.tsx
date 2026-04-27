@@ -37,7 +37,6 @@ type LocalState = {
 };
 
 export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const g = guideline.guidelines || {};
   const local: LocalState = {
     voice: g.voice || '',

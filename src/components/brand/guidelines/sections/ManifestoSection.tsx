@@ -11,7 +11,6 @@ interface ManifestoSectionProps {
 }
 
 export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const text = guideline.strategy?.manifesto || '';
 
   const persist = useCallback((value: string) => {

@@ -69,7 +69,6 @@ const Avatar: React.FC<{
 };
 
 export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const personas = guideline.strategy?.personas || [];
 
   const persist = useCallback((next: BrandPersona[]) => {

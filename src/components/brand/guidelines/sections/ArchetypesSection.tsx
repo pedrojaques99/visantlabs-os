@@ -39,7 +39,6 @@ interface ArchetypesSectionProps {
 }
 
 export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const local = guideline.strategy?.archetypes || [];
 
   const persist = useCallback((archetypes: typeof local) => {

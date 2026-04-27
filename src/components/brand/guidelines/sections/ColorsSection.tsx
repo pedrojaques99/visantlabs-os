@@ -27,7 +27,6 @@ interface ContrastPair {
 }
 
 export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const local = guideline.colors || [];
   const [showWCAG, setShowWCAG] = useState(false);
 

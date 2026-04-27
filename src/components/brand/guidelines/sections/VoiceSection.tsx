@@ -12,7 +12,6 @@ interface VoiceSectionProps {
 }
 
 export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const values = guideline.strategy?.voiceValues || [];
 
   const persist = useCallback((next: BrandToneOfVoiceValue[]) => {

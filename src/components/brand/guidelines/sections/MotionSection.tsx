@@ -35,7 +35,6 @@ const DEFAULT_MOTION: BrandGuidelineMotion = {
 };
 
 export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const motion = guideline.motion || {};
 
   const persist = useCallback((next: BrandGuidelineMotion) => {

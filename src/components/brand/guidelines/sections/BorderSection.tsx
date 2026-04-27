@@ -25,7 +25,6 @@ const DEFAULT_BORDERS: Omit<BrandGuidelineBorder, 'id'>[] = [
 ];
 
 export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const items = guideline.borders || [];
 
   const persist = useCallback((next: BrandGuidelineBorder[]) => {

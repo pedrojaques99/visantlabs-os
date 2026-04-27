@@ -24,7 +24,6 @@ const DEFAULT_SHADOWS: Omit<BrandGuidelineShadow, 'id'>[] = [
 ];
 
 export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const items = guideline.shadows || [];
 
   const persist = useCallback((next: BrandGuidelineShadow[]) => {

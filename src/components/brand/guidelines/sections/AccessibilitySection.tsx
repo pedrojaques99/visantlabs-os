@@ -11,7 +11,6 @@ interface AccessibilitySectionProps {
 }
 
 export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const text = guideline.guidelines?.accessibility || '';
 
   const persist = useCallback((value: string) => {

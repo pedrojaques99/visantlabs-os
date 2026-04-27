@@ -23,7 +23,6 @@ const toPositioning = (parts: Parts): string[] =>
   [parts.produto, parts.diferencial, parts.eloEmocional];
 
 export const MensagemCentralSection: React.FC<MensagemCentralSectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const parts = fromPositioning(guideline.strategy?.positioning);
 
   const persist = useCallback((p: Parts) => {

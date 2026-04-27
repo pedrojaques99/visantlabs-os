@@ -19,7 +19,6 @@ type GradientUsage = 'hero' | 'decorative' | 'fill' | 'overlay';
 const USAGE_LABELS: Record<GradientUsage, string> = { hero: 'Hero', decorative: 'Decorative', fill: 'Fill', overlay: 'Overlay' };
 
 export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const items = guideline.gradients || [];
 
   const persist = useCallback((next: BrandGuidelineGradient[]) => {

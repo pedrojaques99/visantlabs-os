@@ -29,7 +29,6 @@ const normalize = (raw: any[]): FontEntry[] =>
   }));
 
 export const TypographySection: React.FC<TypographySectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const local = normalize(guideline.typography || []);
 
   const persist = useCallback((fonts: FontEntry[]) => {

@@ -40,7 +40,6 @@ interface StrategySectionProps {
 }
 
 export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onUpdate, span }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const local = guideline.strategy || {};
 
   const persist = useCallback((data: any) => {

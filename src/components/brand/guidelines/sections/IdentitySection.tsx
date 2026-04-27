@@ -27,7 +27,6 @@ type IdentityFields = {
 export const IdentitySection: React.FC<IdentitySectionProps> = ({
   guideline, onUpdate, onReIngest, onDelete, isDeleting, span, rowSpan,
 }) => {
-  // No local state — draft is owned by GuidelineDetail via useBrandGuidelineDraft
   const local: IdentityFields = {
     name: guideline.identity?.name || guideline.name || '',
     tagline: guideline.identity?.tagline || guideline.tagline || '',
