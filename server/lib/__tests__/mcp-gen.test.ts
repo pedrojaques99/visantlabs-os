@@ -19,21 +19,28 @@ describe('MCP Generator', () => {
       expect(Array.isArray(spec.tools)).toBe(true);
     });
 
-    it('should include all 9 MCP tools', () => {
+    it('should include all 15 MCP tools', () => {
       const spec = generateMCPSpec();
 
-      expect(spec.tools.length).toBe(9);
+      expect(spec.tools.length).toBe(15);
 
+      // generateMCPSpec lowercases all tool names from the registry
       const toolNames = spec.tools.map((t) => t.name);
-      expect(toolNames).toContain('get_selection');
+      expect(toolNames).toContain('message');
+      expect(toolNames).toContain('get_design_context');
+      expect(toolNames).toContain('search_design_system');
       expect(toolNames).toContain('create_frame');
+      expect(toolNames).toContain('create_component');
+      expect(toolNames).toContain('combine_as_variants');
+      expect(toolNames).toContain('create_svg');
+      expect(toolNames).toContain('set_image_fill');
       expect(toolNames).toContain('create_rectangle');
       expect(toolNames).toContain('create_text');
-      expect(toolNames).toContain('set_fill');
-      expect(toolNames).toContain('rename_node');
+      expect(toolNames).toContain('rename');
       expect(toolNames).toContain('delete_node');
-      expect(toolNames).toContain('chat');
-      expect(toolNames).toContain('generate_mockup');
+      expect(toolNames).toContain('create_component_instance');
+      expect(toolNames).toContain('group_nodes');
+      expect(toolNames).toContain('set_text_style');
     });
 
     it('should include proper tool structure', () => {
@@ -89,7 +96,7 @@ describe('MCP Generator', () => {
       const createFrame = spec.tools.find((t) => t.name === 'create_frame');
 
       expect(createFrame).toBeDefined();
-      expect(createFrame?.inputSchema.required).toContain('fileId');
+      expect(createFrame?.inputSchema.required).toContain('props');
     });
   });
 
@@ -98,7 +105,7 @@ describe('MCP Generator', () => {
       const spec = generateMCPSpec();
       const count = countMCPTools(spec);
 
-      expect(count).toBe(9);
+      expect(count).toBe(15);
     });
 
     it('should throw ValidationError for invalid spec', () => {
@@ -163,7 +170,7 @@ describe('MCP Generator', () => {
       }).toThrow(ValidationError);
     });
 
-    it('should retrieve all 9 tools individually', () => {
+    it('should retrieve all 15 tools individually', () => {
       const spec = generateMCPSpec();
       const toolNames = spec.tools.map((t) => t.name);
 

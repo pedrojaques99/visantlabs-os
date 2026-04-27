@@ -53,18 +53,16 @@ describe('docsCache', () => {
   });
 
   it('expires entries after TTL', async () => {
-    vi.useFakeTimers();
-    try {
-      let calls = 0;
-      const gen = () => ++calls;
+    // lru-cache captures Date.now at construction time so vi.useFakeTimers()
+    // doesn't advance the internal clock of the singleton. Use a real short
+    // sleep with a 1 ms TTL instead — negligible overhead, reliable signal.
+    let calls = 0;
+    const gen = () => ++calls;
 
-      docsCache.getOrGenerate('ttl-key', gen, 1000);
-      vi.advanceTimersByTime(1500);
-      docsCache.getOrGenerate('ttl-key', gen, 1000);
+    docsCache.getOrGenerate('ttl-key', gen, 1);
+    await new Promise((r) => setTimeout(r, 10));
+    docsCache.getOrGenerate('ttl-key', gen, 1);
 
-      expect(calls).toBe(2);
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(calls).toBe(2);
   });
 });

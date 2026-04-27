@@ -38,11 +38,12 @@ describe('executeAdminChatTool', () => {
       'Bearer fake-token'
     );
 
-    expect(fetchMock).toHaveBeenCalledOnce();
-    const calledUrl = fetchMock.mock.calls[0][0] as string;
-    // This is the regression guard for ERR_INVALID_URL from Node fetch on relative paths.
-    expect(calledUrl).toMatch(/^https?:\/\//);
-    expect(calledUrl).toContain('/api/mockups/generate');
+    // generate_or_update_mockup fires two parallel fetches: /api/mockups/generate + /api/creative/plan
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const urls = fetchMock.mock.calls.map((c) => c[0] as string);
+    // Regression guard for ERR_INVALID_URL: Node fetch requires absolute URLs.
+    expect(urls.every((u) => /^https?:\/\//.test(u))).toBe(true);
+    expect(urls.some((u) => u.includes('/api/mockups/generate'))).toBe(true);
   });
 
   it('forwards the Authorization header to the internal endpoint', async () => {

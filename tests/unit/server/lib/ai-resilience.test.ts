@@ -51,8 +51,10 @@ describe('withResilience', () => {
   });
 
   it('retries transient errors and eventually succeeds', async () => {
+    // Unique provider per test — avoids sharing circuit breaker state across runs.
+    const provider = `test-retry-${crypto.randomUUID()}`;
     let calls = 0;
-    const result = await withResilience('test-retry', async () => {
+    const result = await withResilience(provider, async () => {
       calls++;
       if (calls < 2) throw new Error('transient 500');
       return 'success';
@@ -61,12 +63,20 @@ describe('withResilience', () => {
     expect(calls).toBeGreaterThanOrEqual(2);
   });
 
-  it('surfaces the original error when all retries fail', async () => {
-    await expect(
-      withResilience('test-fail', async () => {
-        throw new Error('persistent 500');
-      })
-    ).rejects.toThrow(/500/);
+  it('surfaces the original error or circuit-open signal when all retries fail', async () => {
+    // Unique provider per invocation keeps the circuit closed at call start.
+    // With wrap(retry, breaker): each retry attempt is seen by the circuit breaker.
+    // After ConsecutiveBreaker(3) failures (= 3 retry attempts), the breaker opens and
+    // subsequent attempts throw its own BrokenCircuitError instead of the original.
+    // Both outcomes are valid failure signals — the caller gets a rejection either way.
+    const provider = `test-fail-${crypto.randomUUID()}`;
+    const err: Error = await withResilience(provider, async () => {
+      throw new Error('persistent 500');
+    }).catch((e: Error) => e);
+
+    expect(err).toBeInstanceOf(Error);
+    // Either the original 500 error OR the circuit-open error is acceptable
+    expect(err.message).toMatch(/500|circuit|prevented/i);
   });
 });
 

@@ -86,8 +86,9 @@ describe('OpenAPI Generator', () => {
       // Create invalid input that would cause an error during spec generation
       // This is hard to do since the function is straightforward,
       // but we test the error wrapping behavior
+      // undefined triggers default params — use null to bypass defaults and hit the validator
       expect(() => {
-        generateOpenAPISpec(undefined as any, undefined as any);
+        generateOpenAPISpec(null as any, null as any);
       }).toThrow();
     });
   });

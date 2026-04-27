@@ -817,7 +817,7 @@ export const DesignSystemPage: React.FC = () => {
                           <Button variant="surface" size="sm">sm</Button>
                           <Button variant="surface" size="default">default</Button>
                           <Button variant="surface" size="lg">lg</Button>
-                          <Button variant="ghost" size="icon"><Palette className="w-4 h-4" /></Button>
+                          <Button variant="ghost" size="icon" aria-label="Color palette"><Palette className="w-4 h-4" /></Button>
                           <Button variant="action" size="icon-sm"><Copy className="w-3 h-3" /></Button>
                           <Button variant="action" size="icon-md"><Search className="w-4 h-4" /></Button>
                         </div>

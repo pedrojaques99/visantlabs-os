@@ -21,6 +21,19 @@ export async function startTestMongo(): Promise<string> {
   process.env.MONGODB_URI = uri;
   process.env.DATABASE_URL = uri;
   process.env.MONGODB_DB_NAME = 'test';
+
+  // Create critical unique indexes that Prisma would normally set via `db push`.
+  // Without this, uniqueness constraints are not enforced by the in-memory replica set.
+  const { MongoClient } = await import('mongodb');
+  const client = new MongoClient(uri);
+  try {
+    await client.connect();
+    const db = client.db('test');
+    await db.collection('users').createIndex({ email: 1 }, { unique: true, sparse: false });
+  } finally {
+    await client.close();
+  }
+
   return uri;
 }
 

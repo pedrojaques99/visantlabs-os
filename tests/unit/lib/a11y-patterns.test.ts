@@ -162,9 +162,15 @@ describe('Accessibility anti-pattern scanner', () => {
 
   it('no inline position:fixed styles (use Tailwind fixed/z-* utilities)', () => {
     // Inline styles bypass the design token system and are harder to audit
-    // Exclude ui/ primitives that legitimately use inline positioning for portals/dropdowns
+    // Exclude ui/ primitives that legitimately use inline positioning for portals/dropdowns.
+    // Exclude contextmenu/ components: Radix DropdownMenu.Trigger uses position:fixed with
+    // dynamic mouse coords (left: x, top: y) — impossible to express with Tailwind classes.
     const targetFiles = allFiles.filter(
-      (f) => (f.includes('pages') || f.includes('components')) && !f.includes('components\\ui\\') && !f.includes('components/ui/')
+      (f) =>
+        (f.includes('pages') || f.includes('components')) &&
+        !f.includes('components\\ui\\') &&
+        !f.includes('components/ui/') &&
+        !f.includes('contextmenu')
     );
     const violations: string[] = [];
 

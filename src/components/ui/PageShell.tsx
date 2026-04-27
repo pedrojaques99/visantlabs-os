@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { GridDotsBackground } from './GridDotsBackground';
 import { SEO } from '../SEO';
 import {
   BreadcrumbWithBack,
@@ -96,8 +97,7 @@ export const PageShell: React.FC<PageShellProps> = ({
       {/* Background layer */}
       {!noBackground && (
         <div className="fixed inset-0 z-0 bg-neutral-950">
-          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-brand-cyan/5 rounded-full blur-[120px] pointer-events-none" />
-          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-brand-cyan/5 rounded-full blur-[100px] pointer-events-none" />
+          <GridDotsBackground />
         </div>
       )}
 

@@ -245,7 +245,17 @@
       "Bash(sed -i 's|LIVEBLOCKS_WEBHOOK_SECRET_KEY=.*|LIVEBLOCKS_WEBHOOK_SECRET_KEY=LIVEBLOCKS_WEBHOOK_SECRET_REMOVED|' Z:/Cursor/visantlabs-os/.env.local)",
       "Bash(git log *)",
       "Bash(git diff *)",
-      "mcp__claude_ai_Vercel__get_project"
+      "mcp__claude_ai_Vercel__get_project",
+      "Bash(python3 -c \"import json,sys; apps=json.load\\(sys.stdin\\); [print\\(a['uuid'], a['name']\\) for a in apps]\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('status'\\), d.get\\('created_at'\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('status'\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; logs=json.load\\(sys.stdin\\); [print\\(l.get\\('output',''\\)[:120]\\) for l in logs[-20:]]\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(e['uuid'], e['key']\\) for e in d if 'FRONTEND' in e.get\\('key',''\\)]\")",
+      "Bash(sed -n '125,135p' src/components/moodboard/BentoItem.tsx)",
+      "Bash(sed -n '74,84p' src/components/moodboard/FrameAnimateModal.tsx)",
+      "Bash(sed -n '18,28p' src/components/reactflow/contextmenu/EdgeContextMenu.tsx)",
+      "Bash(sed -n '70,80p' src/components/reactflow/contextmenu/ImageContextMenu.tsx)",
+      "Bash(sed -n '23,33p' src/components/reactflow/contextmenu/NodeContextMenu.tsx)"
     ]
   }
 }

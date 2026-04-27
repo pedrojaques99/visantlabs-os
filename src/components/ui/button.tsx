@@ -16,8 +16,8 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         // ── Brand ────────────────────────────────────────────────────────────
-        brand: "bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black border border-neutral-800 hover:border-neutral-700 shadow-lg shadow-brand-cyan/20",
-        sidebarAction: "bg-neutral-800/50 hover:bg-brand-cyan/10 disabled:bg-neutral-700 disabled:text-neutral-500 text-neutral-400 hover:text-brand-cyan border border-neutral-700/50 hover:border-neutral-700 shadow-lg hover:shadow-brand-cyan/10 transform hover:scale-[1.02] active:scale-100 disabled:hover:scale-100",
+        brand: "bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black border border-neutral-800 hover:border-neutral-700 shadow-lg",
+        sidebarAction: "bg-neutral-800/50 hover:bg-brand-cyan/10 disabled:bg-neutral-700 disabled:text-neutral-500 text-neutral-400 hover:text-brand-cyan border border-neutral-700/50 hover:border-neutral-700 shadow-lg transform hover:scale-[1.02] active:scale-100 disabled:hover:scale-100",
         // ── Surface actions ──────────────────────────────────────────────────
         // Bordered muted button — toolbars, page headers, inline forms
         // Usage: px-4 py-2, border, muted text, subtle bg hover

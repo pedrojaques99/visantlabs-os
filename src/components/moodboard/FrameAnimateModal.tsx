@@ -75,7 +75,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
 
               <div className="flex flex-col gap-3">
                 <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-neutral-500">End Frame</span>
-                <div onClick={() => endInputRef.current?.click()}
+                <div onClick={() => endInputRef.current?.click()} role="button" tabIndex={0} aria-label="Select end frame image"
                   className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-dashed border-border/70 hover:border-neutral-500 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group"
                 >
                   {endImage ? (

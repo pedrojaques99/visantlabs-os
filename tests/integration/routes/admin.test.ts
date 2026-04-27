@@ -12,7 +12,7 @@ import { signTestToken, bearer } from '../../helpers/auth.js';
  */
 const endpoints: Array<[method: 'get' | 'post', path: string]> = [
   ['get', '/api/admin/users'],
-  ['get', '/api/admin/stats'],
+  ['get', '/api/admin/feedback/stats'],
 ];
 
 describe('admin RBAC', () => {

@@ -126,7 +126,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
           )}
 
           {crop.videoUrl && !crop.isAnimating && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-all cursor-pointer" onClick={() => onViewVideo(crop.videoUrl!)}>
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-all cursor-pointer" onClick={() => onViewVideo(crop.videoUrl!)} role="button" tabIndex={0} aria-label="View video">
               <Play size={28} className="text-white drop-shadow-2xl translate-x-0.5" fill="currentColor" />
             </div>
           )}
