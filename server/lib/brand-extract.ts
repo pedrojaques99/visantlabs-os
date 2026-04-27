@@ -5,7 +5,7 @@ import { BrandGuideline } from '../types/brandGuideline.js'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js'
 
-const EXTRACTION_PROMPT = `You are a brand identity extraction expert. Analyze the content and extract brand guideline information.
+const EXTRACTION_PROMPT = `You are a brand identity extraction expert. Analyze the content and extract ALL brand guideline information you can find.
 
 Return ONLY a JSON object with fields you can identify with confidence. Omit unknown fields. Do NOT guess.
 
@@ -14,25 +14,32 @@ Schema:
   "identity": { "name": "...", "website": "...", "tagline": "...", "description": "..." },
   "colors": [{ "hex": "#RRGGBB", "name": "...", "role": "primary|secondary|accent|background|text|cta" }],
   "typography": [{ "family": "Font Name", "style": "Bold|Regular", "role": "heading|body|accent|mono" }],
-  "tags": { "brand_values": [...], "tone": [...], "aesthetic": [...] },
-  "guidelines": { "voice": "...", "dos": [...], "donts": [...], "imagery": "..." },
-  "tokens": { "spacing": { "xs": 4, ... }, "radius": { "sm": 4, ... } },
-  "strategy": { "manifesto": "...", "archetypes": ["..."], "personas": ["..."], "voiceValues": ["..."], "positioning": "..." },
+  "tags": { "brand_values": ["value1", "value2"], "tone": ["tone1"], "aesthetic": ["aes1"] },
+  "guidelines": { "voice": "overall tone summary", "dos": ["do this", "..."], "donts": ["avoid this", "..."], "imagery": "visual style description" },
+  "tokens": { "spacing": { "xs": 4 }, "radius": { "sm": 4 } },
+  "strategy": {
+    "manifesto": "full manifesto text",
+    "positioning": ["positioning statement 1", "positioning statement 2"],
+    "archetypes": [
+      { "name": "Archetype Name", "role": "primary|secondary", "description": "what this archetype means for the brand", "examples": ["Brand A", "Brand B"] }
+    ],
+    "personas": [
+      { "name": "Persona Name", "age": 26, "occupation": "Job title", "traits": ["trait1", "trait2"], "bio": "brief bio", "desires": ["desire1", "desire2"], "painPoints": ["pain1"] }
+    ],
+    "voiceValues": [
+      { "title": "Voice Quality Name", "description": "how it sounds in practice", "example": "Example phrase in this voice" }
+    ]
+  },
   "assetClassifications": [
-    {
-      "index": 0,
-      "category": "logo|icon|photo|mockup|pattern|strategy|other",
-      "logoVariant": "primary|dark|light|icon|accent|custom",
-      "label": "descriptive name for this asset"
-    }
+    { "index": 0, "category": "logo|icon|photo|mockup|pattern|strategy|other", "logoVariant": "primary|dark|light|icon|accent|custom", "label": "descriptive name" }
   ]
 }
 
 Asset classification rules (apply to each image passed, by index order):
-- "logo": wordmarks, logotypes, brandmarks with the brand name or symbol — use logoVariant to describe which version
-- "icon": standalone symbols/marks without text, app icons, favicon-style
+- "logo": wordmarks, logotypes, brandmarks with the brand name or symbol
+- "icon": standalone symbols/marks without text, app icons
 - "photo": lifestyle photos, editorial photography, real-world scenes
-- "mockup": product mockups, packaging renders, branded item visuals, template previews
+- "mockup": product mockups, packaging renders, branded item visuals
 - "pattern": repeating patterns, textures, backgrounds
 - "strategy": strategy boards, presentations, brand guideline pages, competitor analysis, mood boards
 - "other": anything that doesn't fit above
@@ -40,6 +47,8 @@ Asset classification rules (apply to each image passed, by index order):
 Rules:
 - Colors MUST be valid hex (#RGB or #RRGGBB)
 - Font families must be exact names (e.g., "Inter", not "sans-serif")
+- For strategy documents: extract ALL personas, archetypes, tone of voice values, positioning, manifesto, brand values
+- archetypes/personas/voiceValues MUST be objects (not plain strings)
 - assetClassifications must have one entry per image, in the same order images were provided
 - Return ONLY valid JSON, no markdown fences, no explanation`
 
@@ -65,7 +74,7 @@ export async function extractBrandData(
   const combinedText = chunks
     .map(c => `--- ${c.source} (${c.type}) ---\n${c.text}`)
     .join('\n\n')
-    .slice(0, 8000) // limit tokens
+    .slice(0, 20000) // limit tokens — strategy docs need more space
 
   const genAI = new GoogleGenerativeAI(apiKey)
   // GEMINI_MODELS.TEXT is gemini-3-flash which is multimodal

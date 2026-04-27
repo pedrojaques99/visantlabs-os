@@ -138,6 +138,9 @@ export function buildBrandContextJSON(bg: BrandGuideline): BrandContextJSON {
       components: bg.tokens.components,
     } : undefined,
     tags: bg.tags,
+    knowledge: bg.knowledgeFiles?.length
+      ? bg.knowledgeFiles.map((f: any) => ({ fileName: f.fileName, source: f.source }))
+      : undefined,
   };
 }
 
@@ -300,6 +303,10 @@ export function buildBrandContext(
   if (!compact && bg.tokens?.components) {
     const compKeys = Object.keys(bg.tokens.components);
     if (compKeys.length) lines.push(`COMPONENT TOKENS: ${compKeys.join(', ')}`);
+  }
+  if (!compact && bg.knowledgeFiles?.length) {
+    const names = (bg.knowledgeFiles as any[]).map((f: any) => f.fileName).filter(Boolean);
+    if (names.length) lines.push(`KNOWLEDGE BASE: ${names.join(', ')} (use as brand reference)`);
   }
 
   return lines.join('\n');

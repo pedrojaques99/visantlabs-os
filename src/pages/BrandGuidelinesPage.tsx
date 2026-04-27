@@ -17,7 +17,7 @@ import { BrandRoomProvider } from '@/components/brand/guidelines/BrandCollaborat
 import { DesignSystemValidation } from '@/components/brand/guidelines/DesignSystemValidation';
 import { ShareGuidelineDialog } from '@/components/brand/guidelines/ShareGuidelineDialog';
 import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButton';
-import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck } from 'lucide-react';
+import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -256,6 +256,14 @@ export const BrandGuidelinesPage: React.FC = () => {
                             </div>
 
                             <div className="flex items-center gap-1.5 shrink-0">
+                                {selected && (
+                                    <Link to={`/create?brandId=${selected.id}`}>
+                                        <Button className="h-8 px-3 gap-1.5 text-xs bg-white/[0.06] border border-white/15 text-neutral-200 hover:bg-white/[0.10]">
+                                            <Zap size={13} />
+                                            <span className="hidden sm:inline">Generate</span>
+                                        </Button>
+                                    </Link>
+                                )}
                                 {selected && (
                                     <BrandIngestButton
                                         guideline={selected}

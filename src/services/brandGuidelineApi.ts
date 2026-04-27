@@ -103,7 +103,23 @@ export const brandGuidelineApi = {
     return result.guideline;
   },
 
-  async ingest(id: string, payload: { source: string; url?: string; data?: any; images?: string[]; filename?: string }): Promise<{ guideline: BrandGuideline; extracted: any }> {
+  async extractFig(id: string, file: File): Promise<{ extracted: any; preview: BrandGuideline; dryRun: true }> {
+    const form = new FormData();
+    form.append('file', file);
+    const { Authorization } = getAuthHeaders() as any;
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/extract-fig`, {
+      method: 'POST',
+      headers: Authorization ? { Authorization } : {},
+      body: form,
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to extract .fig file');
+    }
+    return response.json();
+  },
+
+  async ingest(id: string, payload: { source: string; url?: string; data?: any; images?: string[]; filename?: string; dryRun?: boolean }): Promise<{ guideline?: BrandGuideline; extracted: any; preview?: BrandGuideline; dryRun?: boolean }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/ingest`, {
       method: 'POST',
       headers: getAuthHeaders(),

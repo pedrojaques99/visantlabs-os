@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { Palette, Type, Box, LayoutGrid, Copy, Check, Home, Diamond, ChevronLeft, ChevronRight, Users, Search, Command } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { useResolvedTokens } from '@/hooks/useResolvedTokens';
+import { COLOR_TOKENS, SPACING_TOKENS, TAILWIND_SPACING_SCALE, TYPOGRAPHY_TOKENS } from '@/lib/design-tokens';
+import type { ColorToken } from '@/lib/design-tokens';
 import { SEO } from '../components/SEO';
 import { BreadcrumbWithBack } from '../components/ui/BreadcrumbWithBack';
 import {
@@ -37,26 +39,23 @@ import { PremiumButton } from '../components/ui/PremiumButton';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { MicroTitle } from '../components/ui/MicroTitle';
 
-/**
- * Helper component to display a color swatch with copy functionality.
- */
 const ColorSwatch: React.FC<{
   name: string;
   variable: string;
+  resolvedValue?: string;
   description?: string;
-}> = ({ name, variable, description }) => {
+}> = ({ name, variable, resolvedValue, description }) => {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = () => {
-    const value = `var(${variable})`;
-    navigator.clipboard.writeText(value);
+    navigator.clipboard.writeText(`var(${variable})`);
     setCopied(true);
     toast.success('Copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="bg-card border border-neutral-800/20 rounded-xl p-4 px-6 py-4 hover:border-brand-cyan/20 transition-all">
+    <div className="bg-card border border-neutral-800/20 rounded-xl px-6 py-4 hover:border-brand-cyan/20 transition-all">
       <div className="flex items-start gap-4">
         <div
           className="w-16 h-16 rounded-xl border border-neutral-800/50 flex-shrink-0"
@@ -76,9 +75,10 @@ const ColorSwatch: React.FC<{
               )}
             </Button>
           </div>
-          <p className="font-mono text-xs text-neutral-500 mb-2 break-all">
-            {variable}
-          </p>
+          <p className="font-mono text-xs text-neutral-500 mb-1 break-all">{variable}</p>
+          {resolvedValue && (
+            <p className="font-mono text-[10px] text-neutral-600 mb-1 break-all">{resolvedValue}</p>
+          )}
           {description && (
             <p className="text-sm text-neutral-400 font-mono">{description}</p>
           )}
@@ -88,45 +88,41 @@ const ColorSwatch: React.FC<{
   );
 };
 
-/**
- * Helper component to visualize spacing values.
- */
 const SpacingExample: React.FC<{
   name: string;
-  value: string;
-  size: number;
-}> = ({ name, value, size }) => {
-  return (
-    <div className="flex items-center gap-4">
-      <div className="w-24 font-mono text-sm text-neutral-400">{name}</div>
-      <div className="flex-1">
-        <div className="h-8 bg-neutral-800/50 rounded-lg flex items-center">
-          <div
-            className="bg-brand-cyan/30 h-full flex items-center justify-center text-xs font-mono text-brand-cyan rounded-lg"
-            style={{ width: `${size}px`, minWidth: '20px' }}
-          >
-            {size}px
-          </div>
+  px: number;
+  tailwind?: string;
+}> = ({ name, px, tailwind }) => (
+  <div className="flex items-center gap-4">
+    <div className="w-24 font-mono text-sm text-neutral-400">{name}</div>
+    <div className="flex-1">
+      <div className="h-8 bg-neutral-800/50 rounded-lg flex items-center">
+        <div
+          className="bg-brand-cyan/30 h-full flex items-center justify-center text-xs font-mono text-brand-cyan rounded-lg"
+          style={{ width: `${px}px`, minWidth: '20px' }}
+        >
+          {px}px
         </div>
       </div>
-      <div className="w-32 font-mono text-xs text-neutral-500">{value}</div>
     </div>
-  );
-};
+    <div className="w-32 font-mono text-xs text-neutral-500">{tailwind ?? `${px}px`}</div>
+  </div>
+);
 
-/**
- * DesignSystemPage Component
- * 
- * This is the main documentation page for the application's design system.
- * It showcases all available UI components, color tokens, typography, and spacing scales.
- *
- * Features:
- * - Interactive navigation sidebar with section tracking
- * - Live component previews
- * - Copy-pasteable design tokens
- * - Search functionality via Command Palette (Ctrl+K)
- * - Responsive layout adaptation
- */
+const CssTokenRow: React.FC<{
+  variable: string;
+  resolvedValue?: string;
+  description?: string;
+}> = ({ variable, resolvedValue, description }) => (
+  <div className="flex items-center justify-between py-2 border-b border-neutral-800/30 last:border-0">
+    <div>
+      <span className="font-mono text-xs text-brand-cyan">{variable}</span>
+      {description && <span className="ml-3 text-xs text-neutral-500 font-mono">{description}</span>}
+    </div>
+    <span className="font-mono text-xs text-neutral-400">{resolvedValue || '—'}</span>
+  </div>
+);
+
 export const DesignSystemPage: React.FC = () => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -142,55 +138,20 @@ export const DesignSystemPage: React.FC = () => {
   });
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const colors = [
-    { name: 'Primary', variable: '--primary', description: 'Main brand color' },
-    { name: 'Primary Foreground', variable: '--primary-foreground', description: 'Text on primary' },
-    { name: 'Secondary', variable: '--secondary', description: 'Secondary background' },
-    { name: 'Secondary Foreground', variable: '--secondary-foreground', description: 'Text on secondary' },
-    { name: 'Accent', variable: '--accent', description: 'Accent color' },
-    { name: 'Accent Foreground', variable: '--accent-foreground', description: 'Text on accent' },
-    { name: 'Background', variable: '--background', description: 'Main background' },
-    { name: 'Foreground', variable: '--foreground', description: 'Main text color' },
-    { name: 'Card', variable: '--card', description: 'Card background' },
-    { name: 'Card Foreground', variable: '--card-foreground', description: 'Text on card' },
-    { name: 'Muted', variable: '--muted', description: 'Muted background' },
-    { name: 'Muted Foreground', variable: '--muted-foreground', description: 'Muted text' },
-    { name: 'Destructive', variable: '--destructive', description: 'Error/danger color' },
-    { name: 'Destructive Foreground', variable: '--destructive-foreground', description: 'Text on destructive' },
-    { name: 'Border', variable: '--border', description: 'Border color' },
-    { name: 'Input', variable: '--input', description: 'Input border' },
-    { name: 'Ring', variable: '--ring', description: 'Focus ring' },
-    { name: 'Brand Cyan', variable: '--brand-cyan', description: 'Brand accent color' },
-  ];
+  const allTokenVariables = useMemo(
+    () => [...COLOR_TOKENS.map(c => c.variable), ...SPACING_TOKENS.map(s => s.variable)],
+    []
+  );
+  const resolvedTokens = useResolvedTokens(allTokenVariables, theme);
 
-  const chartColors = [
-    { name: 'Chart 1', variable: '--chart-1' },
-    { name: 'Chart 2', variable: '--chart-2' },
-    { name: 'Chart 3', variable: '--chart-3' },
-    { name: 'Chart 4', variable: '--chart-4' },
-    { name: 'Chart 5', variable: '--chart-5' },
-  ];
-
-  const typography = [
-    { name: 'Manrope', className: 'font-manrope', description: 'Primary font family' },
-    { name: 'Red Hat Mono', className: 'font-redhatmono', description: 'Monospace font' },
-    { name: 'Dancing Script', className: 'font-signature', description: 'Signature font' },
-  ];
-
-  const spacingScale = [
-    { name: '0', value: '0px', size: 0 },
-    { name: '1', value: '0.25rem (4px)', size: 4 },
-    { name: '2', value: '0.5rem (10px)', size: 8 },
-    { name: '3', value: '0.75rem (12px)', size: 12 },
-    { name: '4', value: '1rem (16px)', size: 16 },
-    { name: '5', value: '1.25rem (20px)', size: 20 },
-    { name: '6', value: '1.5rem (24px)', size: 24 },
-    { name: '8', value: '2rem (32px)', size: 32 },
-    { name: '10', value: '2.5rem (40px)', size: 40 },
-    { name: '12', value: '3rem (410px)', size: 48 },
-    { name: '16', value: '4rem (64px)', size: 64 },
-    { name: '20', value: '5rem (80px)', size: 80 },
-  ];
+  const colorsByGroup = useMemo(() =>
+    COLOR_TOKENS.reduce<Record<string, ColorToken[]>>((acc, token) => {
+      (acc[token.group] ??= []).push(token);
+      return acc;
+    }, {}),
+    []
+  );
+  const { semantic: semanticColors = [], chart: chartColors = [], sidebar: sidebarColors = [], brand: brandColors = [] } = colorsByGroup;
 
   const [selectValue, setSelectValue] = useState('option1');
   const [switchChecked, setSwitchChecked] = useState(false);
@@ -444,7 +405,7 @@ export const DesignSystemPage: React.FC = () => {
         <div className="flex items-center justify-between gap-4">
           {previousTab ? (
             <Button variant="ghost" onClick={() => handleNavigationClick(previousTab)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-brand-cyan/30"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-white/10"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>{t('designSystem.navigation.previous') || 'Previous'}</span>
@@ -456,7 +417,7 @@ export const DesignSystemPage: React.FC = () => {
           )}
           {nextTab && (
             <Button variant="ghost" onClick={() => handleNavigationClick(nextTab)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-brand-cyan/30 ml-auto"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-white/10 ml-auto"
             >
               <span className="text-neutral-500">{getTabLabel(nextTab)}</span>
               <span className="text-neutral-500">•</span>
@@ -530,7 +491,7 @@ export const DesignSystemPage: React.FC = () => {
                 {activeTab === 'home' && (
                   <div className="flex items-center justify-between gap-4 mb-8">
                     <div className="flex items-center gap-4">
-                      <Palette className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
+                      <Palette className="h-6 w-6 md:h-8 md:w-8 text-neutral-500" />
                       <div className="flex-1">
                         <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-300">
                           {t('designSystem.title')}
@@ -548,7 +509,7 @@ export const DesignSystemPage: React.FC = () => {
                       });
                       document.dispatchEvent(event);
                     }}
-                      className="hidden md:flex items-center gap-2 px-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-brand-cyan/30 transition-colors text-sm font-mono"
+                      className="hidden md:flex items-center gap-2 px-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-white/10 transition-colors text-sm font-mono"
                       title={t('designSystem.commandPalette.searchShortcut') || 'Search (Ctrl+K)'}
                     >
                       <Search className="w-4 h-4" />
@@ -568,7 +529,7 @@ export const DesignSystemPage: React.FC = () => {
                     <Card className="overflow-hidden">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <Diamond className="w-5 h-5 text-brand-cyan" />
+                          <Diamond className="w-5 h-5 text-neutral-500" />
                           {t('designSystem.home.welcome') || 'Welcome to the Design System'}
                         </CardTitle>
                         <CardDescription>
@@ -578,12 +539,12 @@ export const DesignSystemPage: React.FC = () => {
                       <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                           <Card
-                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-neutral-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
+                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-all duration-200 group"
                             onClick={() => setActiveTab('colors')}
                           >
                             <CardHeader>
-                              <Palette className="w-8 h-8 text-brand-cyan mb-2" />
-                              <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.colors')}</CardTitle>
+                              <Palette className="w-8 h-8 text-neutral-500 mb-2" />
+                              <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">{t('designSystem.tabs.colors')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                               <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
@@ -592,12 +553,12 @@ export const DesignSystemPage: React.FC = () => {
                             </CardContent>
                           </Card>
                           <Card
-                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-neutral-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
+                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-all duration-200 group"
                             onClick={() => setActiveTab('typography')}
                           >
                             <CardHeader>
                               <Type className="w-8 h-8 text-brand-cyan mb-2" />
-                              <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.typography')}</CardTitle>
+                              <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">{t('designSystem.tabs.typography')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                               <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
@@ -606,12 +567,12 @@ export const DesignSystemPage: React.FC = () => {
                             </CardContent>
                           </Card>
                           <Card
-                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-neutral-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
+                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-all duration-200 group"
                             onClick={() => setActiveTab('components')}
                           >
                             <CardHeader>
                               <Box className="w-8 h-8 text-brand-cyan mb-2" />
-                              <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.components')}</CardTitle>
+                              <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">{t('designSystem.tabs.components')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                               <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
@@ -620,12 +581,12 @@ export const DesignSystemPage: React.FC = () => {
                             </CardContent>
                           </Card>
                           <Card
-                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-neutral-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
+                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-all duration-200 group"
                             onClick={() => setActiveTab('spacing')}
                           >
                             <CardHeader>
                               <LayoutGrid className="w-8 h-8 text-brand-cyan mb-2" />
-                              <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.spacing')}</CardTitle>
+                              <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">{t('designSystem.tabs.spacing')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                               <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
@@ -683,11 +644,12 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                          {colors.map((color) => (
+                          {semanticColors.map((color) => (
                             <ColorSwatch
                               key={color.variable}
                               name={color.name}
                               variable={color.variable}
+                              resolvedValue={resolvedTokens[color.variable]}
                               description={color.description}
                             />
                           ))}
@@ -709,6 +671,47 @@ export const DesignSystemPage: React.FC = () => {
                               key={color.variable}
                               name={color.name}
                               variable={color.variable}
+                              resolvedValue={resolvedTokens[color.variable]}
+                            />
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card id="sidebar-colors" className="overflow-hidden bg-transparent">
+                      <CardHeader>
+                        <CardTitle>Sidebar Colors</CardTitle>
+                        <CardDescription>Tokens used by the navigation sidebar</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                          {sidebarColors.map((color) => (
+                            <ColorSwatch
+                              key={color.variable}
+                              name={color.name}
+                              variable={color.variable}
+                              resolvedValue={resolvedTokens[color.variable]}
+                              description={color.description}
+                            />
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card id="brand-colors" className="overflow-hidden bg-transparent">
+                      <CardHeader>
+                        <CardTitle>Brand Colors</CardTitle>
+                        <CardDescription>Visant Labs brand accent tokens</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                          {brandColors.map((color) => (
+                            <ColorSwatch
+                              key={color.variable}
+                              name={color.name}
+                              variable={color.variable}
+                              resolvedValue={resolvedTokens[color.variable]}
+                              description={color.description}
                             />
                           ))}
                         </div>
@@ -727,19 +730,19 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
-                        {typography.map((font) => (
+                        {TYPOGRAPHY_TOKENS.map((font) => (
                           <div key={font.className} className="border border-neutral-800/20 rounded-xl p-6 bg-neutral-900/40">
-                            <h3 className="font-semibold text-neutral-200 mb-2">{font.name}</h3>
-                            <p className="text-sm text-neutral-400 mb-4">{font.description}</p>
-                            <p className={cn('text-2xl', font.className)}>
-                              Aa
-                            </p>
-                            <p className={cn('text-lg mt-2', font.className)}>
-                              ABCDEFGHIJKLMNOPQRSTUVWXYZ
-                            </p>
-                            <p className={cn('text-lg mt-2', font.className)}>
-                              0123456789 !@#$%^&*()
-                            </p>
+                            <div className="flex items-start justify-between mb-4">
+                              <div>
+                                <h3 className="font-semibold text-neutral-200 mb-1">{font.name}</h3>
+                                <p className="text-sm text-neutral-400">{font.description}</p>
+                              </div>
+                              <span className="font-mono text-[10px] text-neutral-600 bg-neutral-800/50 px-2 py-1 rounded">{font.className}</span>
+                            </div>
+                            <p className={cn('text-2xl', font.className)}>Aa</p>
+                            <p className={cn('text-lg mt-2', font.className)}>ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+                            <p className={cn('text-lg mt-2', font.className)}>0123456789 !@#$%^&*()</p>
+                            <p className="font-mono text-[10px] text-neutral-600 mt-3">{font.fontFamily}</p>
                           </div>
                         ))}
                       </CardContent>
@@ -1834,12 +1837,12 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          {spacingScale.map((spacing) => (
+                          {TAILWIND_SPACING_SCALE.map((spacing) => (
                             <SpacingExample
                               key={spacing.name}
                               name={spacing.name}
-                              value={spacing.value}
-                              size={spacing.size}
+                              px={spacing.px}
+                              tailwind={spacing.tailwind}
                             />
                           ))}
                         </div>
@@ -1853,21 +1856,15 @@ export const DesignSystemPage: React.FC = () => {
                           {t('designSystem.spacing.custom.description')}
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="font-mono text-sm space-y-2">
-                          <div>
-                            <span className="text-neutral-400">--node-padding:</span>{' '}
-                            <span className="text-brand-cyan">1.75rem (210px)</span>
-                          </div>
-                          <div>
-                            <span className="text-neutral-400">--node-gap:</span>{' '}
-                            <span className="text-brand-cyan">0.75rem (12px)</span>
-                          </div>
-                          <div>
-                            <span className="text-neutral-400">--radius:</span>{' '}
-                            <span className="text-brand-cyan">0.625rem (10px)</span>
-                          </div>
-                        </div>
+                      <CardContent>
+                        {SPACING_TOKENS.map((token) => (
+                          <CssTokenRow
+                            key={token.variable}
+                            variable={token.variable}
+                            resolvedValue={resolvedTokens[token.variable]}
+                            description={token.description}
+                          />
+                        ))}
                       </CardContent>
                     </Card>
                     <TabNavigation />

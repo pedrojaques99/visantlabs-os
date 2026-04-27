@@ -255,7 +255,18 @@
       "Bash(sed -n '74,84p' src/components/moodboard/FrameAnimateModal.tsx)",
       "Bash(sed -n '18,28p' src/components/reactflow/contextmenu/EdgeContextMenu.tsx)",
       "Bash(sed -n '70,80p' src/components/reactflow/contextmenu/ImageContextMenu.tsx)",
-      "Bash(sed -n '23,33p' src/components/reactflow/contextmenu/NodeContextMenu.tsx)"
+      "Bash(sed -n '23,33p' src/components/reactflow/contextmenu/NodeContextMenu.tsx)",
+      "Bash(xargs -I {} head -30 {})",
+      "Bash(xargs cat *)",
+      "Skill(gsd:execute-phase)",
+      "Bash(npm search *)",
+      "Bash(rm -f \"z:/Cursor/visantlabs-os/server/scripts/test-fig-import.ts\")",
+      "Bash(rm -f \"z:/Cursor/visantlabs-os/server/scripts/test-uzip.ts\")",
+      "Bash(rm -f \"z:/Cursor/visantlabs-os/server/scripts/test-kiwi.ts\")",
+      "Bash(rm -f \"z:/Cursor/visantlabs-os/server/scripts/test-fzstd.ts\")",
+      "Bash(rm -f \"z:/Cursor/visantlabs-os/server/scripts/test-fig-extract.ts\")",
+      "Bash(rm -f \"z:/Cursor/visantlabs-os/server/scripts/test-kiwi2.ts\")",
+      "Bash(npm i *)"
     ]
   }
 }

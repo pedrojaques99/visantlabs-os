@@ -20,7 +20,10 @@ import { calculateChangedFields, createSnapshot, generateChangeNote, generateDif
 import { extractFigmaFileKey, isValidFigmaUrl } from '../lib/figmaUtils.js'
 import { BrandGuidelineSchema, BrandGuidelinePatchSchema } from '../../src/lib/brandGuidelineSchema.js'
 
+import multer from 'multer'
+
 const router = express.Router()
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 600 * 1024 * 1024 } })
 
 const apiRateLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
@@ -256,7 +259,7 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
     })
     if (!existing) return res.status(404).json({ error: 'Brand guideline not found' })
 
-    const { source, url, data, filename, images: imagesPayload } = req.body
+    const { source, url, data, filename, images: imagesPayload, dryRun } = req.body
     let chunks: any[] = []
     let imagesToExtract: string[] | undefined = imagesPayload
 
@@ -287,12 +290,53 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
         chunks = parseJson(jsonStr, filename)
         break
       }
+      case 'fig_file': {
+        if (!data) return res.status(400).json({ error: 'Fig file data required' })
+        // .fig is a ZIP — extract images without any Figma token
+        const JSZip = (await import('jszip')).default
+        const zip = await JSZip.loadAsync(
+          Buffer.from(data.replace(/^data:[^;]+;base64,/, ''), 'base64')
+        )
+        const figImages: string[] = []
+
+        // 1. Thumbnail (best single preview of the whole file)
+        const thumb = zip.file('thumbnail.png')
+        if (thumb) {
+          const b64 = await thumb.async('base64')
+          figImages.push(`data:image/png;base64,${b64}`)
+        }
+
+        // 2. Embedded assets in /images/ (logos, icons, rasters)
+        const assetEntries = Object.keys(zip.files).filter(n =>
+          !zip.files[n].dir &&
+          (n.startsWith('images/') || /\.(png|jpg|jpeg|svg)$/i.test(n))
+        )
+        for (const entry of assetEntries.slice(0, 12)) {
+          const file = zip.file(entry)
+          if (!file) continue
+          const b64 = await file.async('base64')
+          const ext = /\.jpe?g$/i.test(entry) ? 'jpeg' : 'png'
+          figImages.push(`data:image/${ext};base64,${b64}`)
+        }
+
+        if (figImages.length === 0) {
+          return res.status(422).json({ error: 'No images found inside .fig file — try exporting frames as PNG from Figma first' })
+        }
+        chunks = parseImage(filename || 'design.fig')
+        imagesToExtract = figImages
+        break
+      }
       default:
         return res.status(400).json({ error: `Invalid source: ${source}` })
     }
 
     const extracted = await extractBrandData(chunks, imagesToExtract, req.userId)
     const merged = mergeBrandGuidelines(existing as any, extracted)
+
+    // DRY RUN — return preview without saving anything
+    if (dryRun) {
+      return res.json({ dryRun: true, extracted, preview: merged })
+    }
 
     // Classify and store uploaded images into logos/media
     if (imagesToExtract && imagesToExtract.length > 0 && extracted.assetClassifications?.length) {
@@ -1847,6 +1891,34 @@ router.delete('/:id/collaborators/:userId', apiRateLimiter, authenticate, async 
     res.json({ success: true })
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to remove collaborator', message: error.message })
+  }
+})
+
+// POST /api/brand-guidelines/:id/extract-fig — multipart .fig file upload + structured extraction
+// No Figma API token required. Uses parseFigFile (kiwi-schema) to read binary directly.
+router.post('/:id/extract-fig', apiRateLimiter, authenticate, upload.single('file'), async (req: AuthRequest, res) => {
+  try {
+    const existing = await prisma.brandGuideline.findFirst({ where: { id: req.params.id, userId: req.userId } })
+    if (!existing) return res.status(404).json({ error: 'Brand guideline not found' })
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+
+    const { extractFigTokens } = await import('../lib/fig-extract.js')
+    const { colors, typography, components, images } = await extractFigTokens(req.file.buffer)
+
+    res.json({
+      dryRun: true,
+      extracted: { colors, typography, components, images },
+      preview: {
+        ...existing,
+        colors: colors.length ? colors : (existing.colors as any),
+        typography: typography.length ? typography : (existing.typography as any),
+      },
+      // Pass images so client can show thumbnails in approval modal
+      images,
+    })
+  } catch (err: any) {
+    console.error('[extract-fig]', err)
+    res.status(500).json({ error: err.message || 'Failed to parse .fig file' })
   }
 })
 
