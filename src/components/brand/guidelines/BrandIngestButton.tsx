@@ -219,6 +219,7 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline,
           extracted={approval.extracted}
           preview={approval.preview}
           existing={guideline}
+          images={approval.images}
           onApprove={apply}
           onReject={() => setApproval(null)}
           isApplying={applying}

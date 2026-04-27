@@ -140,28 +140,46 @@ export async function extractFigTokens(buffer: Buffer): Promise<{
   // ── Embedded images from ZIP (logos, icons, rasters) ─────────────────────
   const images: string[] = []
   if (zip) {
-    // Thumbnail first
+    // Thumbnail first (always named thumbnail.png)
     const thumb = zip.file('thumbnail.png')
     if (thumb) {
       const b64 = await thumb.async('base64')
       images.push(`data:image/png;base64,${b64}`)
     }
-    // Images folder — skip huge files (>500KB raw = decorative photos, not logos)
+
+    // images/ folder — blobs have NO extension, type detected from magic bytes
+    // Strategy: skip files > 600KB (full-page screenshots/photos); take first 20 smaller ones
     const assetPaths = Object.keys(zip.files).filter(n =>
-      !zip!.files[n].dir &&
-      /\.(png|jpg|jpeg|svg)$/i.test(n) &&
-      n !== 'thumbnail.png'
+      !zip!.files[n].dir && n.startsWith('images/') && n !== 'thumbnail.png'
     )
-    for (const path of assetPaths.slice(0, 30)) {
+
+    let taken = 0
+    for (const path of assetPaths) {
+      if (taken >= 20) break
       const entry = zip.file(path)
       if (!entry) continue
-      // Check uncompressed size before loading
-      const size = (zip.files[path] as any)._datalen ?? (zip.files[path] as any).compressedSize ?? Infinity
-      if (size > 600_000) continue  // skip files > 600KB
-      const b64 = await entry.async('base64')
-      if (b64.length > 800_000) continue  // double-check after decode
-      const ext = /\.jpe?g$/i.test(path) ? 'jpeg' : /\.svg$/i.test(path) ? 'svg+xml' : 'png'
-      images.push(`data:image/${ext};base64,${b64}`)
+
+      // JSZip stores compressed size in internal _data object
+      const compressedSize: number = (zip.files[path] as any)._data?.compressedSize
+        ?? (zip.files[path] as any)._data?.length
+        ?? Infinity
+      // Skip large files — logos/icons are typically < 300KB; product photos 1MB+
+      if (compressedSize > 400_000) continue
+
+      const bytes = await entry.async('uint8array')
+
+      // Detect MIME type from magic bytes
+      let mime: string
+      if (bytes[0] === 0x89 && bytes[1] === 0x50) mime = 'image/png'           // PNG
+      else if (bytes[0] === 0xFF && bytes[1] === 0xD8) mime = 'image/jpeg'     // JPEG
+      else if (bytes[0] === 0x47 && bytes[1] === 0x49) mime = 'image/gif'      // GIF
+      else if (bytes[0] === 0x52 && bytes[1] === 0x49) mime = 'image/webp'     // WEBP (RIFF)
+      else if (bytes[0] === 0x3C) mime = 'image/svg+xml'                        // SVG (<)
+      else continue  // unknown format, skip
+
+      const b64 = Buffer.from(bytes).toString('base64')
+      images.push(`data:${mime};base64,${b64}`)
+      taken++
     }
   }
 

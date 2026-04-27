@@ -74,6 +74,7 @@ export interface BrandContextJSON {
     components?: Record<string, any>;
   };
   tags?: Record<string, string[]>;
+  knowledge?: Array<{ fileName: string; source: string }>;
 }
 
 /**

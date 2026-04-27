@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,8 +10,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Plus, FileText, RefreshCw, Settings, Search, MoreVertical,
-  Copy, Trash2, X, Folder, FolderOpen,
+  Copy, Trash2, X, Folder, FolderOpen, Zap,
 } from 'lucide-react';
+import { creativeProjectApi } from '@/services/creativeProjectApi';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { useDuplicateGuideline, useDeleteGuideline, useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
@@ -33,6 +35,14 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
   const duplicateMutation = useDuplicateGuideline();
   const deleteMutation = useDeleteGuideline();
   const updateMutation = useUpdateGuideline();
+
+  const { data: recentProjects = [] } = useQuery({
+    queryKey: ['creative-projects-brand', selectedId],
+    queryFn: () => creativeProjectApi.list(selectedId ?? undefined),
+    enabled: !!selectedId,
+    select: (projects) => projects.slice(0, 4),
+    staleTime: 30_000,
+  });
 
   const folders = useMemo(() => {
     const s = new Set<string>();
@@ -187,6 +197,33 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Recent generations for selected brand */}
+      {selectedId && recentProjects.length > 0 && (
+        <div className="px-1 border-t border-white/[0.03] pt-4 space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <p className="text-[10px] font-mono text-neutral-600 uppercase">Recent</p>
+            <Link to={`/create?brandId=${selectedId}`} className="text-[10px] font-mono text-neutral-700 hover:text-neutral-400 transition-colors">
+              + New
+            </Link>
+          </div>
+          <div className="grid grid-cols-4 gap-1">
+            {recentProjects.map(p => (
+              <Link key={p.id} to={`/create?project=${p.id}`} title={p.name}>
+                <div className="aspect-square rounded overflow-hidden border border-white/[0.06] bg-neutral-900/60 hover:border-white/15 transition-colors">
+                  {p.thumbnailUrl ? (
+                    <img src={p.thumbnailUrl} alt={p.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Zap size={10} className="text-neutral-700" />
+                    </div>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mt-auto space-y-4 pt-4 pb-2">
         <div className="px-1 border-t border-white/[0.03] pt-4 space-y-2">

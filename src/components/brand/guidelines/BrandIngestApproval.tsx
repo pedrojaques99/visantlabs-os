@@ -10,13 +10,15 @@ interface BrandIngestApprovalProps {
   extracted: any;
   preview: BrandGuideline;
   existing: BrandGuideline;
+  /** Raw base64 images extracted from .fig file — shown as preview before AI classifies logos/media */
+  images?: string[];
   onApprove: () => void;
   onReject: () => void;
   isApplying?: boolean;
 }
 
 export const BrandIngestApproval: React.FC<BrandIngestApprovalProps> = ({
-  extracted, preview, existing, onApprove, onReject, isApplying,
+  extracted, preview, existing, images, onApprove, onReject, isApplying,
 }) => {
   const newColors = (preview.colors || []).filter(
     c => !(existing.colors || []).some(e => e.hex?.toLowerCase() === c.hex?.toLowerCase())
@@ -157,6 +159,24 @@ export const BrandIngestApproval: React.FC<BrandIngestApprovalProps> = ({
                   <img src={m.url} alt={m.label || ''} className="w-full h-full object-cover" />
                 </div>
               ))}
+            </div>
+          </Section>
+        )}
+
+        {/* .fig extracted images — shown before AI classification */}
+        {images && images.length > 0 && (
+          <Section title={`Assets from .fig (${images.length} — will be classified as logos/media on apply)`}>
+            <div className="flex flex-wrap gap-1.5">
+              {images.slice(0, 16).map((src, i) => (
+                <div key={i} className="w-14 h-14 rounded border border-white/[0.06] bg-neutral-900/60 overflow-hidden shrink-0">
+                  <img src={src} alt={`asset-${i}`} className="w-full h-full object-contain p-0.5" />
+                </div>
+              ))}
+              {images.length > 16 && (
+                <div className="w-14 h-14 rounded border border-white/[0.06] bg-neutral-900/60 flex items-center justify-center shrink-0">
+                  <span className="text-[10px] text-neutral-600 font-mono">+{images.length - 16}</span>
+                </div>
+              )}
             </div>
           </Section>
         )}

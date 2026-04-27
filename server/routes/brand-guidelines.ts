@@ -1907,13 +1907,12 @@ router.post('/:id/extract-fig', apiRateLimiter, authenticate, upload.single('fil
 
     res.json({
       dryRun: true,
-      extracted: { colors, typography, components, images },
+      extracted: { colors, typography, components, imageCount: images.length },
       preview: {
         ...existing,
         colors: colors.length ? colors : (existing.colors as any),
         typography: typography.length ? typography : (existing.typography as any),
       },
-      // Pass images so client can show thumbnails in approval modal
       images,
     })
   } catch (err: any) {
