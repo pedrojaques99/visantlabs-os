@@ -16,7 +16,14 @@ interface BrandIngestButtonProps {
   onSuccess: () => void;
 }
 
-const isFigmaUrl = (url: string) => url.includes('figma.com/');
+const isFigmaUrl = (url: string) => {
+  try {
+    const { hostname } = new URL(url.startsWith('http') ? url : `https://${url}`);
+    return hostname === 'figma.com' || hostname === 'www.figma.com';
+  } catch {
+    return false;
+  }
+};
 
 export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline, onSuccess }) => {
   const [loading, setLoading] = useState(false);
@@ -57,17 +64,12 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline,
     setApplying(true);
     try {
       if (approval.payload === null) {
-        // .fig path: save structured tokens directly, then upload images via ingest
-        const { colors, typography } = approval.preview;
-        await brandGuidelineApi.update(guideline.id!, { colors, typography } as any);
-        // Upload any extracted images so they get classified (logos vs media)
-        if (approval.images?.length) {
-          await brandGuidelineApi.ingest(guideline.id!, {
-            source: 'images',
-            images: approval.images,
-            dryRun: false,
-          });
-        }
+        // .fig path: single endpoint handles merge + image classification atomically
+        const { colors, typography, gradients, shadows, borders, tokens } = approval.preview as any;
+        await brandGuidelineApi.applyFigTokens(guideline.id!, {
+          colors, typography, gradients, shadows, borders, tokens,
+          images: approval.images,
+        });
       } else {
         await brandGuidelineApi.ingest(guideline.id!, { ...approval.payload, dryRun: false });
       }

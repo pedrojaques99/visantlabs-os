@@ -1,8 +1,11 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { Liveblocks, WebhookHandler } from '@liveblocks/node';
 import { prisma } from '../db/prisma.js';
 
 const router = express.Router();
+
+const webhookLimiter = rateLimit({ windowMs: 60_000, max: 60, standardHeaders: true, legacyHeaders: false });
 
 const LIVEBLOCKS_SECRET_KEY = process.env.LIVEBLOCKS_SECRET_KEY;
 const LIVEBLOCKS_WEBHOOK_SECRET = process.env.LIVEBLOCKS_WEBHOOK_SECRET;
@@ -10,7 +13,7 @@ const LIVEBLOCKS_WEBHOOK_SECRET = process.env.LIVEBLOCKS_WEBHOOK_SECRET;
 // POST /api/liveblocks/webhook
 // Receives storageUpdated events from Liveblocks and persists guideline to MongoDB.
 // Body must be raw (express.raw middleware applied in app.ts before this route).
-router.post('/webhook', async (req, res) => {
+router.post('/webhook', webhookLimiter, async (req, res) => {
   if (!LIVEBLOCKS_SECRET_KEY || !LIVEBLOCKS_WEBHOOK_SECRET) {
     return res.status(503).json({ error: 'Liveblocks not configured' });
   }
