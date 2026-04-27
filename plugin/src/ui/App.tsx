@@ -22,7 +22,7 @@ export function App() {
       // Load persisted server URL before auth check
       try {
         const { value } = await client.request('storage.get', { key: 'serverUrl' });
-        if (value) setServerUrl(value);
+        if (value) setServerUrl(value as string);
       } catch { /* fall back to build-time default */ }
 
       // 1. Check auth status (includes loading saved token from sandbox)

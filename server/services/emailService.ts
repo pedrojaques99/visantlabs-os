@@ -90,7 +90,7 @@ const withTemplate = (
   htmlFallback: string,
 ): SendPayload => {
   if (templateId) {
-    return { ...base, template: { id: templateId, variables } } as SendPayload;
+    return { ...base, template: { id: templateId, variables } } as unknown as SendPayload;
   }
   return { ...base, html: htmlFallback };
 };
