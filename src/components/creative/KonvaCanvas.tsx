@@ -1,5 +1,8 @@
-import React, { forwardRef, useRef, useEffect, useMemo } from 'react';
+import React, { forwardRef, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Stage, Layer, Rect, Image as KonvaImage, Transformer } from 'react-konva';
+import { KonvaTextLayer } from './layers/KonvaTextLayer';
+import { KonvaLogoLayer } from './layers/KonvaLogoLayer';
+import { KonvaShapeLayer } from './layers/KonvaShapeLayer';
 import useImage from 'use-image';
 import Konva from 'konva';
 import { useCreativeStore } from './store/creativeStore';
@@ -57,6 +60,20 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
       trRef.current.nodes(nodes);
       trRef.current.getLayer()?.batchDraw();
     }, [selectedLayerIds, layers]);
+
+    // Stable registerNode callback — layers write themselves into shapeRefs via this
+    const registerNode = useCallback((id: string, node: Konva.Node | null) => {
+      if (node) shapeRefs.current.set(id, node);
+      else shapeRefs.current.delete(id);
+    }, []);
+
+    // Stable selection callback — defers to store
+    const handleSelect = useCallback(
+      (id: string, extend: boolean) => {
+        setSelectedLayerIds([id], extend);
+      },
+      [setSelectedLayerIds]
+    );
 
     // Drag-drop handler — ported verbatim from CreativeCanvas.tsx
     const handleDrop = (e: React.DragEvent) => {
@@ -195,30 +212,34 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
             {/* Overlay rect — above background, below layers */}
             {renderOverlay()}
 
-            {/* TODO(creative-konva-migration Wave 3): replace placeholder Rect with
-                KonvaTextLayer / KonvaLogoLayer / KonvaShapeLayer dispatch. */}
-            {layers
-              .filter((l) => l.visible)
-              .map((layer) => (
-                <Rect
-                  key={layer.id}
-                  x={layer.data.position.x * width}
-                  y={layer.data.position.y * height}
-                  width={(layer.data.size?.w ?? 0.1) * width}
-                  height={(layer.data.size?.h ?? 0.1) * height}
-                  fill="rgba(255,0,255,0.2)" // visible placeholder, easy to grep
-                  stroke="rgba(255,0,255,0.6)"
-                  strokeWidth={1}
-                  ref={(node) => {
-                    if (node) shapeRefs.current.set(layer.id, node);
-                    else shapeRefs.current.delete(layer.id);
-                  }}
-                  onClick={(e) => {
-                    const isShift = e.evt.shiftKey;
-                    setSelectedLayerIds([layer.id], isShift);
-                  }}
-                />
-              ))}
+            {/* Layer dispatch — type-routed to Konva*Layer components */}
+            {layers.filter((l) => l.visible).map((layer) => {
+              const common = {
+                canvasWidth: width,
+                canvasHeight: height,
+                isSelected: selectedLayerIds.includes(layer.id),
+                registerNode,
+                onSelect: handleSelect,
+              };
+              if (layer.data.type === 'text') {
+                return (
+                  <KonvaTextLayer
+                    key={layer.id}
+                    layer={layer as any}
+                    accentColor={accentColor}
+                    {...common}
+                  />
+                );
+              }
+              if (layer.data.type === 'logo') {
+                return <KonvaLogoLayer key={layer.id} layer={layer as any} {...common} />;
+              }
+              if (layer.data.type === 'shape') {
+                return <KonvaShapeLayer key={layer.id} layer={layer as any} {...common} />;
+              }
+              // 'group' — out of scope for this phase; skip render
+              return null;
+            })}
 
             {/* Transformer — LAST child of Layer (RESEARCH Pitfall 3) */}
             <Transformer
