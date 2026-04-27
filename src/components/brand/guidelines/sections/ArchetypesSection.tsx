@@ -8,29 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Diamond, Plus, Trash2 } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
-
-interface ArchetypePreset {
-  nome: string;
-  objetivo: string;
-  valores: string[];
-  exemplos: string[];
-  image: string;
-}
-
-const ARCHETYPE_PRESETS: ArchetypePreset[] = [
-  { nome: 'O Explorador',    objetivo: 'Descobrir novos caminhos e romper limites.',                                  valores: ['curiosidade', 'exploração', 'mente aberta', 'desafio'],       exemplos: ['Jeep', 'The North Face', 'SpaceX'],        image: '/archetypes/O Explorador-1.png'    },
-  { nome: 'O Governante',    objetivo: 'Transmitir ordem, estabilidade e prestígio.',                                 valores: ['autoridade', 'liderança', 'responsabilidade', 'controle'],    exemplos: ['Rolex', 'Mercedes-Benz', 'AmEx'],          image: '/archetypes/O Governante-1.png'    },
-  { nome: 'O Herói',         objetivo: 'Resolver grandes desafios e motivar o cliente.',                              valores: ['superação', 'vitória', 'conquista', 'eficiência'],            exemplos: ['Nike', 'BMW', 'RedBull'],                  image: '/archetypes/O Herói-1.png'         },
-  { nome: 'O Inocente',      objetivo: 'Vender segurança emocional com mensagens claras e limpas.',                   valores: ['positivismo', 'leveza', 'união', 'paz'],                       exemplos: ["Johnson's Baby", 'Coca-Cola', 'Natura'],   image: '/archetypes/O Inocente-1.png'      },
-  { nome: 'O Mago',          objetivo: 'Quebrar velhos paradigmas por meio da inteligência.',                         valores: ['inovação', 'insight visionário', 'mudança', 'disrupção'],     exemplos: ['Apple', 'Tesla', 'Disney'],                image: '/archetypes/O Mago-1.png'          },
-  { nome: 'O Rebelde',       objetivo: 'Romper padrões, quebrar tradições e destruir o que está ultrapassado.',       valores: ['mudança', 'liberdade', 'verdade crua'],                        exemplos: ['Harley-Davidson', 'Dr. Martens', 'MTV'],   image: '/archetypes/O Rebelde-1.png'       },
-  { nome: 'O Sábio',         objetivo: 'Explicar contextos, revelar verdades e ajudar a enxergar o quadro completo.',valores: ['conhecimento', 'clareza', 'autoridade', 'lucidez'],           exemplos: ['Google', 'TED', 'National Geographic'],   image: '/archetypes/O Sábio-1.png'         },
-  { nome: 'O Amante',        objetivo: 'Criar vínculos fortes e relacionamentos estratégicos.',                       valores: ['acolhimento', 'proximidade', 'pertencimento'],                 exemplos: ['LinkedIn', 'AirBnb', 'Meta'],              image: '/archetypes/O Amante-1.png'        },
-  { nome: 'O Bobo da Corte', objetivo: 'Criar conexão por riso e zombar do próprio mercado.',                         valores: ['irreverência', 'humor inteligente', 'diferenciação'],         exemplos: ['Duolingo', 'Skol', 'Burger King'],         image: '/archetypes/O Bobo da Corte-1.png' },
-  { nome: 'O Cara Comum',    objetivo: 'Abraçar a autenticidade da vida cotidiana sem elitismo.',                     valores: ['conexão', 'pertencimento', 'empatia', 'realismo'],            exemplos: ['Hering', 'Gap', 'IKEA'],                   image: '/archetypes/O Cara Comum-1.png'    },
-  { nome: 'O Criador',       objetivo: 'Dar forma a visões, construir coisas com significado e deixar um legado.',    valores: ['criatividade', 'expressão', 'inovação', 'originalidade'],     exemplos: ['Lego', 'Adobe', 'Canva'],                  image: '/archetypes/O Criador-1.png'       },
-  { nome: 'O Cuidador',      objetivo: 'Proteger, nutrir e colocar o bem-estar dos outros acima de tudo.',            valores: ['cuidado', 'proteção', 'generosidade', 'empatia'],             exemplos: ['Dove', 'Johnson & Johnson', 'Cruz Vermelha'], image: '/archetypes/O Cuidador-1.png'   },
-];
+import { ARCHETYPE_PRESETS, type ArchetypePreset } from '@/constants/archetypeImages';
 
 interface ArchetypesSectionProps {
   guideline: BrandGuideline;
