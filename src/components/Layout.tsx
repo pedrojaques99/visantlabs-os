@@ -75,7 +75,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [isCreditPackagesModalOpen, setIsCreditPackagesModalOpen] = useState(false);
-  const [creditPackagesModalTab, setCreditPackagesModalTab] = useState<'buy' | 'credits'>('buy');
+  const [creditPackagesModalTab, setCreditPackagesModalTab] = useState<'carteira' | 'creditos' | 'assinatura'>('creditos');
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(() => {
@@ -496,7 +496,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const onSubscriptionModalOpen = useCallback(() => setIsSubscriptionModalOpen(true), []);
   const onCreditPackagesModalOpen = useCallback(() => {
-    setCreditPackagesModalTab('buy');
+    setCreditPackagesModalTab('creditos');
     setIsCreditPackagesModalOpen(true);
   }, []);
 
@@ -586,7 +586,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             onPricingClick={() => navigate('/pricing')}
             onJoinClick={() => setIsSubscriptionModalOpen(true)}
             onCreditsClick={() => {
-              setCreditPackagesModalTab('credits');
+              setCreditPackagesModalTab('carteira');
               setIsCreditPackagesModalOpen(true);
             }}
             onLogoClick={() => {
@@ -614,7 +614,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           onClose={() => setIsSubscriptionModalOpen(false)}
           onBuyCredits={() => {
             setIsSubscriptionModalOpen(false);
-            setCreditPackagesModalTab('buy');
+            setCreditPackagesModalTab('creditos');
             setIsCreditPackagesModalOpen(true);
           }}
         />
