@@ -62,7 +62,9 @@ export function useBrandGuidelineDraft({
 
   useEffect(() => {
     dispatch({ type: 'RESET', guideline });
-  }, [guideline.id]);
+  // Reset when guideline changes from server (new ID or new updatedAt after external save)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [guideline.id, guideline.updatedAt]);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onSaveRef = useRef(onSave);

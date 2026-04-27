@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { generateVideo } from '../services/videoService.js';
+import { generateKlingVideo } from '../services/klingService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { uploadCanvasVideo, isR2Configured } from '../services/r2Service.js';
@@ -278,9 +279,12 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
 
     const {
       prompt,
+      negativePrompt,
       imageBase64,
       imageMimeType = 'image/png',
       model = 'veo-3.1-generate-preview',
+      aspectRatio,
+      duration,
       canvasId,
       nodeId,
       // New params
@@ -288,7 +292,12 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       inputVideo: inputVideoRaw,
       startFrame: startFrameRaw,
       endFrame: endFrameRaw,
-      seed: rawSeed, // Optional: seed for deterministic generation
+      seed: rawSeed,
+      // Kling-specific params
+      klingMode,
+      sound,
+      cfgScale,
+      mode: generationMode,
     } = req.body;
 
     // Validate and resolve seed: use provided seed or generate random
@@ -494,56 +503,76 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       });
     }
 
-    // Normalize model name
+    // Normalize legacy Veo model names
     let normalizedModel = model;
     if (model === 'veo-3' || model === 'veo-2') {
-      // Map old model names to current valid model
       normalizedModel = 'veo-3.1-generate-preview';
       console.log(`${logPrefix} [Model Normalization] ${model} -> ${normalizedModel}`);
     }
 
-    // Validate model is supported
-    const supportedModels = ['veo-3.1-generate-preview', 'veo-3.1-fast-generate-preview'];
-    if (!supportedModels.includes(normalizedModel)) {
+    // Validate model is supported (Veo or Kling)
+    const isKlingModel = normalizedModel.startsWith('kling-');
+    const isVeoModel = normalizedModel.startsWith('veo-');
+
+    if (!isKlingModel && !isVeoModel) {
       if (lockKey) {
         await db.collection('credit_locks').deleteOne({ lockKey, requestId });
       }
       return res.status(400).json({
         error: 'Unsupported model',
-        message: `Model "${model}" is not supported. Please use one of: ${supportedModels.join(', ')}`,
-        supportedModels
+        message: `Model "${model}" is not supported. Use a Veo or Kling model.`,
       });
     }
 
-    // Generate video using Google Veo
+    // Generate video — dispatch by provider
     let videoBase64: string;
     try {
       console.log(`${logPrefix} [GENERATION] Starting video generation`, {
         userId: req.userId,
         requestId,
         model: normalizedModel,
+        provider: isKlingModel ? 'kling' : 'veo',
         promptLength: prompt?.length || 0,
-        hasReferenceImages: referenceImages?.length || 0,
       });
 
-      videoBase64 = await generateVideo({
-        prompt,
-        imageBase64,
-        imageMimeType,
-        model: normalizedModel,
-        // Pass new params
-        referenceImages,
-        inputVideo,
-        startFrame,
-        endFrame,
-        seed: usedSeed,
-      });
+      if (isKlingModel) {
+        // Kling: returns a public URL directly (no base64 needed)
+        const videoUrl = await generateKlingVideo({
+          model: normalizedModel,
+          prompt,
+          negativePrompt,
+          mode: generationMode,
+          aspectRatio,
+          duration,
+          klingMode: klingMode as 'std' | 'pro' | '4k' | undefined,
+          sound: sound as 'on' | 'off' | undefined,
+          cfgScale: typeof cfgScale === 'number' ? cfgScale : undefined,
+          startFrame,
+          endFrame,
+          referenceImages,
+          inputVideo,
+        });
+        // Use URL path directly — skip base64 conversion
+        videoBase64 = videoUrl;
+      } else {
+        videoBase64 = await generateVideo({
+          prompt,
+          imageBase64,
+          imageMimeType,
+          model: normalizedModel,
+          referenceImages,
+          inputVideo,
+          startFrame,
+          endFrame,
+          seed: usedSeed,
+        });
+      }
 
       console.log(`${logPrefix} [GENERATION] ✅ Video generated successfully`, {
         userId: req.userId,
         requestId,
+        isUrl: isKlingModel,
         videoBase64Length: videoBase64?.length || 0,
-        videoSizeKB: videoBase64 ? Math.round((videoBase64.length * 3) / 4 / 1024) : 0,
       });
     } catch (error: any) {
       // Release lock on error

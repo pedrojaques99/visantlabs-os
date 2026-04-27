@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { Command } from 'cmdk';
-import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Diamond, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, MessageSquare, Clipboard, LayoutTemplate, Blocks } from 'lucide-react';
+import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Diamond, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, MessageSquare, Clipboard, LayoutTemplate, Blocks, Brush, Wand2, Cpu, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
@@ -280,7 +280,24 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing' as const,
       category: 'Effects',
     }] : []),
+    // Edit node — was missing
+    {
+      id: 'edit',
+      label: 'Edit Node',
+      icon: <FileText size={16} />,
+      onClick: () => { onAddEdit(); onClose(); },
+      section: 'processing',
+      category: 'Generate',
+    },
     // Branding
+    {
+      id: 'brandkit',
+      label: 'Brand Kit',
+      icon: <Palette size={16} />,
+      onClick: () => { onAddBrandKit(); onClose(); },
+      section: 'processing',
+      category: 'Branding',
+    },
     {
       id: 'brand',
       label: 'Brand Node',
@@ -289,6 +306,55 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing',
       category: 'Branding',
     },
+    ...(onAddColorExtractor ? [{
+      id: 'colorExtractor',
+      label: 'Color Extractor',
+      icon: <Wand2 size={16} />,
+      onClick: () => { onAddColorExtractor!(); onClose(); },
+      section: 'processing' as const,
+      category: 'Branding',
+    }] : []),
+    ...(onAddBrandCore ? [{
+      id: 'brandCore',
+      label: 'Brand Core',
+      icon: <Cpu size={16} />,
+      onClick: () => { onAddBrandCore!(); onClose(); },
+      section: 'processing' as const,
+      category: 'Branding',
+    }] : []),
+    ...(onAddStrategy ? [{
+      id: 'strategy',
+      label: 'Strategy Node',
+      icon: <Lightbulb size={16} />,
+      onClick: () => { onAddStrategy!(); onClose(); },
+      section: 'processing' as const,
+      category: 'Branding',
+    }] : []),
+    // Tools
+    ...(onAddShader ? [{
+      id: 'shader',
+      label: 'Shader Node',
+      icon: <Brush size={16} />,
+      onClick: () => { onAddShader!(); onClose(); },
+      section: 'processing' as const,
+      category: 'Effects',
+    }] : []),
+    ...(onAddChat ? [{
+      id: 'chat',
+      label: 'Chat Node',
+      icon: <MessageSquare size={16} />,
+      onClick: () => { onAddChat!(); onClose(); },
+      section: 'processing' as const,
+      category: 'Custom',
+    }] : []),
+    ...(onAddVideoInput ? [{
+      id: 'videoInput',
+      label: 'Video Input',
+      icon: <Video size={16} />,
+      onClick: () => { onAddVideoInput!(); onClose(); },
+      section: 'processing' as const,
+      category: 'Generate',
+    }] : []),
     // Node Builder
     ...(onAddNodeBuilder ? [{
       id: 'nodeBuilder',
@@ -309,7 +375,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     }] : []),
   ];
 
-  const categoryOrder = ['Generate', 'Composition', 'Effects', 'Branding'];
+  const categoryOrder = ['Generate', 'Composition', 'Effects', 'Branding', 'Custom'];
 
   const GroupLabel: React.FC<{ title: string }> = ({ title }) => (
     <div className="px-3 py-1.5">

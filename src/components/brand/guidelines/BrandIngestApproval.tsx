@@ -1,308 +1,283 @@
 import React from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
-import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Check, X } from 'lucide-react';
-import { hexToCmyk } from '@/utils/colorUtils';
 import type { BrandGuideline } from '@/lib/figma-types';
 
-interface BrandIngestApprovalProps {
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface BrandIngestApprovalProps {
   extracted: any;
   preview: BrandGuideline;
   existing: BrandGuideline;
-  /** Raw base64 images extracted from .fig file — shown as preview before AI classifies logos/media */
   images?: string[];
-  onApprove: () => void;
+  onApprove: (mode: 'merge' | 'replace') => void;
   onReject: () => void;
   isApplying?: boolean;
 }
 
+// ─── Diff helpers — only show what's actually new ────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function diffBy(incoming: any[], existing: any[], key: (t: any) => string): any[] {
+  const seen = new Set(existing.map(key));
+  return incoming.filter(t => !seen.has(key(t)));
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+const Section: React.FC<{
+  label: string;
+  count: number;
+  children: React.ReactNode;
+}> = ({ label, count, children }) => (
+  <div className="space-y-2">
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">{label}</span>
+      <span className="text-[10px] font-mono text-neutral-700">({count})</span>
+      <div className="flex-1 h-px bg-white/[0.04]" />
+    </div>
+    {children}
+  </div>
+);
+
+const ColorSwatch: React.FC<{ hex: string; name: string; isNew?: boolean }> = ({ hex, name, isNew = true }) => (
+  <div className={`flex items-center gap-2 ${isNew ? '' : 'opacity-40'}`}>
+    <div className="w-7 h-7 rounded-md border border-white/10 shrink-0" style={{ backgroundColor: hex }} />
+    <div className="min-w-0">
+      <div className="flex items-center gap-1.5">
+        <p className="text-xs text-neutral-300 font-medium leading-tight truncate">{name || hex}</p>
+        {!isNew && <span className="text-[9px] font-mono text-neutral-700 shrink-0">exists</span>}
+      </div>
+      <p className="text-[10px] font-mono text-neutral-600">{hex}</p>
+    </div>
+  </div>
+);
+
+const GradientBar: React.FC<{ name: string; css: string; stops: Array<{ hex: string; position: number }> }> = ({ name, css, stops }) => (
+  <div className="flex items-center gap-2.5">
+    <div className="w-20 h-5 rounded border border-white/[0.06] shrink-0" style={{ background: css }} />
+    <div className="min-w-0">
+      <p className="text-xs text-neutral-400 truncate">{name}</p>
+      <p className="text-[10px] font-mono text-neutral-700">{stops.map(s => `${s.hex}@${s.position}%`).join(' → ')}</p>
+    </div>
+  </div>
+);
+
+const ShadowPreview: React.FC<{ name: string; css: string }> = ({ name, css }) => (
+  <div className="flex items-center gap-2.5">
+    <div className="w-7 h-7 rounded-md bg-neutral-800 shrink-0" style={{ boxShadow: css }} />
+    <div className="min-w-0">
+      <p className="text-xs text-neutral-400 truncate">{name}</p>
+      <p className="text-[10px] font-mono text-neutral-700 truncate">{css}</p>
+    </div>
+  </div>
+);
+
+const BorderPreview: React.FC<{ name: string; width: number; color: string }> = ({ name, width, color }) => (
+  <div className="flex items-center gap-2.5">
+    <div className="w-14 h-5 rounded shrink-0 bg-neutral-900" style={{ border: `${width}px solid ${color}` }} />
+    <div className="min-w-0">
+      <p className="text-xs text-neutral-400 truncate">{name}</p>
+      <p className="text-[10px] font-mono text-neutral-700">{width}px · {color}</p>
+    </div>
+  </div>
+);
+
+const FontRow: React.FC<{
+  family: string; style: string; size: number;
+  lineHeight?: number; letterSpacing?: string;
+}> = ({ family, style, size, lineHeight, letterSpacing }) => (
+  <div className="flex items-baseline gap-3 py-1 border-b border-white/[0.03] last:border-0">
+    <span className="text-sm text-neutral-200 shrink-0" style={{ fontFamily: family, minWidth: '8rem' }}>
+      {family}
+    </span>
+    <span className="text-[10px] font-mono text-neutral-600 shrink-0">{style}</span>
+    <span className="text-[10px] font-mono text-neutral-700 shrink-0">{size}px</span>
+    {lineHeight && <span className="text-[10px] font-mono text-neutral-800">lh:{lineHeight}</span>}
+    {letterSpacing && <span className="text-[10px] font-mono text-neutral-800">ls:{letterSpacing}</span>}
+  </div>
+);
+
+const ImageThumb: React.FC<{ src: string; i: number }> = ({ src, i }) => (
+  <div className="aspect-square rounded border border-white/[0.05] bg-neutral-900/60 overflow-hidden">
+    <img src={src} alt={`asset-${i}`} className="w-full h-full object-contain p-0.5" />
+  </div>
+);
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export const BrandIngestApproval: React.FC<BrandIngestApprovalProps> = ({
-  extracted, preview, existing, images, onApprove, onReject, isApplying,
+  preview, existing, images, onApprove, onReject, isApplying,
 }) => {
-  const newColors = (preview.colors || []).filter(
-    c => !(existing.colors || []).some(e => e.hex?.toLowerCase() === c.hex?.toLowerCase())
-  );
-  const newFonts = (preview.typography || []).filter(
-    f => !(existing.typography || []).some(e => e.family === f.family)
-  );
-  const newLogos = (preview.logos || []).filter(
-    l => !(existing.logos || []).some(e => e.url === l.url)
-  );
-  const newMedia = (preview.media || []).filter(
-    m => !(existing.media || []).some(e => e.url === m.url)
-  );
+  const [mode, setMode] = React.useState<'merge' | 'replace'>('merge');
+  const p = preview as any;
+  const e = existing as any;
 
-  const hasIdentityChange =
-    preview.identity?.name !== existing.identity?.name ||
-    preview.identity?.tagline !== existing.identity?.tagline ||
-    preview.identity?.description !== existing.identity?.description;
+  // Always show ALL extracted tokens — merge/replace only affects how they're applied
+  const newColors  = p.colors || [];
+  const newFonts   = p.typography || [];
+  const newGrads   = p.gradients || [];
+  const newShadows = p.shadows || [];
+  const newBorders = p.borders || [];
+  const newRadii   = p.tokens?.radius ? Object.values(p.tokens.radius as Record<string, number>) : [];
+  const newLogos   = p.logos || [];
+  const newMedia   = p.media || [];
 
-  const hasManifestoChange = !!(preview.strategy?.manifesto && preview.strategy.manifesto !== existing.strategy?.manifesto);
-  const hasPositioningChange = !!(preview.strategy?.positioning?.length && JSON.stringify(preview.strategy.positioning) !== JSON.stringify(existing.strategy?.positioning));
-  const newArchetypes = (preview.strategy?.archetypes || []).filter(
-    a => !(existing.strategy?.archetypes || []).some(e => e.name === a.name)
-  );
-  const newPersonas = (preview.strategy?.personas || []).filter(
-    p => !(existing.strategy?.personas || []).some(e => e.name === p.name)
-  );
-  const newVoiceValues = (preview.strategy?.voiceValues || []).filter(
-    v => !(existing.strategy?.voiceValues || []).some(e => e.title === v.title)
-  );
-  const hasTagsChange = !!(preview.tags && Object.keys(preview.tags).length > 0 &&
-    JSON.stringify(preview.tags) !== JSON.stringify(existing.tags));
-  const hasGuidelinesChange = !!(preview.guidelines &&
-    (preview.guidelines.voice !== existing.guidelines?.voice ||
-    JSON.stringify(preview.guidelines.dos) !== JSON.stringify(existing.guidelines?.dos) ||
-    JSON.stringify(preview.guidelines.donts) !== JSON.stringify(existing.guidelines?.donts)));
+  // Mark which tokens already exist (shown with dimmed indicator, not hidden)
+  const existingColorHexes = new Set((e.colors || []).map((c: any) => c.hex?.toLowerCase()));
+  const existingFontKeys   = new Set((e.typography || []).map((f: any) => `${f.family}::${f.style}`));
 
-  const totalChanges = newColors.length + newFonts.length + newLogos.length + newMedia.length +
-    newArchetypes.length + newPersonas.length + newVoiceValues.length +
-    (hasIdentityChange ? 1 : 0) + (hasManifestoChange ? 1 : 0) +
-    (hasPositioningChange ? 1 : 0) + (hasTagsChange ? 1 : 0) + (hasGuidelinesChange ? 1 : 0);
+  const categories = [
+    newColors.length, newFonts.length, newGrads.length,
+    newShadows.length, newBorders.length, newRadii.length,
+    newLogos.length, newMedia.length, images?.length ?? 0,
+  ].filter(Boolean);
+  const totalCategories = categories.length;
+
+  const totalTokens = [
+    newColors.length, newFonts.length, newGrads.length,
+    newShadows.length, newBorders.length, newRadii.length,
+    newLogos.length, newMedia.length, images?.length ?? 0,
+  ].reduce((a, b) => a + b, 0);
 
   return (
     <Modal
       isOpen
       onClose={onReject}
       title="Review extracted data"
-      description={`${totalChanges} change${totalChanges !== 1 ? 's' : ''} found — approve to apply`}
+      description={`${totalCategories} categor${totalCategories !== 1 ? 'ies' : 'y'} · ${totalTokens} tokens`}
       size="lg"
       footer={
-        <>
-          <Button variant="ghost" onClick={onReject} className="gap-1.5 border border-white/10">
-            <X size={13} /> Discard
-          </Button>
-          <Button onClick={onApprove} disabled={isApplying} className="gap-1.5 bg-white/[0.08] border border-white/15 text-neutral-200 hover:bg-white/[0.12]">
-            <Check size={13} /> {isApplying ? 'Applying...' : 'Apply'}
-          </Button>
-        </>
+        <div className="flex items-center justify-between w-full gap-3">
+          {/* Mode toggle */}
+          <div className="flex items-center gap-1 rounded-md border border-white/[0.08] p-0.5">
+            {(['merge', 'replace'] as const).map(m => (
+              <button key={m} type="button" onClick={() => setMode(m)}
+                className={`px-2.5 h-6 rounded text-[10px] font-mono uppercase transition-all ${
+                  mode === m ? 'bg-white/[0.08] text-neutral-200' : 'text-neutral-600 hover:text-neutral-400'
+                }`}
+                title={m === 'merge' ? 'Add new tokens, keep existing' : 'Replace all tokens with extracted data'}
+              >{m}</button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={onReject} className="h-8 px-4 gap-1.5 border border-white/10 text-xs">
+              <X size={12} /> Discard
+            </Button>
+            <Button onClick={() => onApprove(mode)} disabled={isApplying || totalTokens === 0}
+              className="h-8 px-4 gap-1.5 bg-white/[0.08] border border-white/15 text-neutral-200 hover:bg-white/[0.12] text-xs">
+              <Check size={12} /> {isApplying ? 'Applying…' : mode === 'replace' ? 'Replace' : 'Merge'}
+            </Button>
+          </div>
+        </div>
       }
     >
-      <div className="space-y-5 max-h-[60vh] overflow-y-auto pr-1">
-        {totalChanges === 0 && (
-          <p className="text-sm text-neutral-500 py-4 text-center">No new data found — guideline is already up to date.</p>
-        )}
+      {totalTokens === 0 ? (
+        <p className="text-sm text-neutral-500 py-8 text-center">No new tokens found.</p>
+      ) : (
+        <div className="space-y-5 max-h-[60vh] overflow-y-auto pr-1">
 
-        {/* Identity */}
-        {hasIdentityChange && (
-          <Section title="Identity">
-            {preview.identity?.name && preview.identity.name !== existing.identity?.name && (
-              <Row label="Name" value={preview.identity.name} />
-            )}
-            {preview.identity?.tagline && preview.identity.tagline !== existing.identity?.tagline && (
-              <Row label="Tagline" value={preview.identity.tagline} />
-            )}
-            {preview.identity?.description && preview.identity.description !== existing.identity?.description && (
-              <Row label="Description" value={preview.identity.description} truncate />
-            )}
-          </Section>
-        )}
-
-        {/* Manifesto */}
-        {hasManifestoChange && (
-          <Section title="Manifesto">
-            <p className="text-xs text-neutral-400 leading-relaxed line-clamp-4">{preview.strategy?.manifesto}</p>
-          </Section>
-        )}
-
-        {/* Colors */}
-        {newColors.length > 0 && (
-          <Section title={`Colors (${newColors.length} new)`}>
-            <div className="flex flex-wrap gap-2">
-              {newColors.map((c, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded border border-white/10 shrink-0" style={{ backgroundColor: c.hex }} />
-                  <div>
-                    <p className="text-xs text-neutral-300">{c.name || 'Unnamed'}</p>
-                    <p className="text-[10px] font-mono text-neutral-600">{c.hex}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* Typography */}
-        {newFonts.length > 0 && (
-          <Section title={`Typography (${newFonts.length} new)`}>
-            <div className="space-y-1">
-              {newFonts.map((f, i) => (
-                <div key={i} className="flex items-baseline gap-3">
-                  <span className="text-sm text-neutral-200" style={{ fontFamily: f.family }}>{f.family}</span>
-                  <span className="text-[10px] font-mono text-neutral-600">{f.role} · {f.size}px</span>
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* Logos */}
-        {newLogos.length > 0 && (
-          <Section title={`Logos (${newLogos.length} new)`}>
-            <div className="flex flex-wrap gap-2">
-              {newLogos.map((l, i) => (
-                <div key={i} className="w-16 h-16 rounded border border-white/[0.08] bg-neutral-900/60 flex items-center justify-center overflow-hidden">
-                  <img src={l.url} alt={l.label || ''} className="max-w-full max-h-full object-contain" />
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* Media */}
-        {newMedia.length > 0 && (
-          <Section title={`Media (${newMedia.length} new)`}>
-            <div className="flex flex-wrap gap-2">
-              {newMedia.map((m, i) => (
-                <div key={i} className="w-16 h-16 rounded border border-white/[0.08] bg-neutral-900/60 overflow-hidden">
-                  <img src={m.url} alt={m.label || ''} className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* .fig extracted images — shown before AI classification */}
-        {images && images.length > 0 && (
-          <Section title={`Assets from .fig (${images.length} — will be classified as logos/media on apply)`}>
-            <div className="flex flex-wrap gap-1.5">
-              {images.slice(0, 16).map((src, i) => (
-                <div key={i} className="w-14 h-14 rounded border border-white/[0.06] bg-neutral-900/60 overflow-hidden shrink-0">
-                  <img src={src} alt={`asset-${i}`} className="w-full h-full object-contain p-0.5" />
-                </div>
-              ))}
-              {images.length > 16 && (
-                <div className="w-14 h-14 rounded border border-white/[0.06] bg-neutral-900/60 flex items-center justify-center shrink-0">
-                  <span className="text-[10px] text-neutral-600 font-mono">+{images.length - 16}</span>
-                </div>
-              )}
-            </div>
-          </Section>
-        )}
-
-        {/* Positioning */}
-        {hasPositioningChange && (
-          <Section title="Positioning">
-            <div className="space-y-1">
-              {preview.strategy?.positioning?.map((p, i) => (
-                <p key={i} className="text-xs text-neutral-400 leading-relaxed">· {p}</p>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* Archetypes */}
-        {newArchetypes.length > 0 && (
-          <Section title={`Archetypes (${newArchetypes.length} new)`}>
-            <div className="space-y-2">
-              {newArchetypes.map((a, i) => (
-                <div key={i} className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-neutral-200 font-medium">{a.name}</span>
-                    {a.role && <span className="text-[10px] font-mono text-neutral-600">{a.role}</span>}
-                  </div>
-                  {a.description && <p className="text-xs text-neutral-500 leading-relaxed">{a.description}</p>}
-                  {a.examples && a.examples.length > 0 && (
-                    <p className="text-[10px] font-mono text-neutral-600">e.g. {a.examples.join(', ')}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* Personas */}
-        {newPersonas.length > 0 && (
-          <Section title={`Personas (${newPersonas.length} new)`}>
-            <div className="space-y-3">
-              {newPersonas.map((p, i) => (
-                <div key={i} className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-neutral-200 font-medium">{p.name}</span>
-                    {p.age && <span className="text-[10px] font-mono text-neutral-600">{p.age}</span>}
-                    {p.occupation && <span className="text-[10px] text-neutral-600">· {p.occupation}</span>}
-                  </div>
-                  {p.bio && <p className="text-xs text-neutral-500 leading-relaxed line-clamp-2">{p.bio}</p>}
-                  {p.traits && p.traits.length > 0 && (
-                    <p className="text-[10px] font-mono text-neutral-600">{p.traits.join(' · ')}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* Voice Values */}
-        {newVoiceValues.length > 0 && (
-          <Section title={`Tone of Voice (${newVoiceValues.length} new)`}>
-            <div className="space-y-2">
-              {newVoiceValues.map((v, i) => (
-                <div key={i} className="space-y-0.5">
-                  <span className="text-xs text-neutral-200 font-medium">{v.title}</span>
-                  {v.description && <p className="text-xs text-neutral-500 leading-relaxed">{v.description}</p>}
-                  {v.example && <p className="text-[10px] text-neutral-600 italic">"{v.example}"</p>}
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* Tags */}
-        {hasTagsChange && preview.tags && (
-          <Section title="Tags">
-            <div className="space-y-1">
-              {Object.entries(preview.tags).map(([key, values]) => (
-                values.length > 0 && (
-                  <div key={key} className="flex gap-2">
-                    <span className="text-[10px] font-mono text-neutral-600 w-20 shrink-0 mt-0.5">{key}</span>
-                    <span className="text-xs text-neutral-400">{values.join(', ')}</span>
-                  </div>
-                )
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* Guidelines */}
-        {hasGuidelinesChange && preview.guidelines && (
-          <Section title="Guidelines">
-            {preview.guidelines.voice && preview.guidelines.voice !== existing.guidelines?.voice && (
-              <Row label="Voice" value={preview.guidelines.voice} truncate />
-            )}
-            {preview.guidelines.dos && preview.guidelines.dos.length > 0 && (
-              <div className="flex gap-3">
-                <span className="text-[10px] font-mono text-neutral-600 w-20 shrink-0 mt-0.5">Do's</span>
-                <div className="space-y-0.5">
-                  {preview.guidelines.dos.map((d, i) => <p key={i} className="text-xs text-neutral-400">· {d}</p>)}
-                </div>
+          {newColors.length > 0 && (
+            <Section label="Colors" count={newColors.length}>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+                {newColors.map((c: any, i: number) => (
+                  <ColorSwatch key={i} hex={c.hex} name={c.name || ''}
+                    isNew={!existingColorHexes.has(c.hex?.toLowerCase())} />
+                ))}
               </div>
-            )}
-            {preview.guidelines.donts && preview.guidelines.donts.length > 0 && (
-              <div className="flex gap-3">
-                <span className="text-[10px] font-mono text-neutral-600 w-20 shrink-0 mt-0.5">Don'ts</span>
-                <div className="space-y-0.5">
-                  {preview.guidelines.donts.map((d, i) => <p key={i} className="text-xs text-neutral-400">· {d}</p>)}
-                </div>
+            </Section>
+          )}
+
+          {newFonts.length > 0 && (
+            <Section label="Typography" count={newFonts.length}>
+              <div>
+                {newFonts.map((f: any, i: number) => (
+                  <div key={i} className={existingFontKeys.has(`${f.family}::${f.style}`) ? 'opacity-40' : ''}>
+                    <FontRow family={f.family} style={f.style || 'Regular'}
+                      size={f.size || 16} lineHeight={f.lineHeight} letterSpacing={f.letterSpacing} />
+                  </div>
+                ))}
               </div>
-            )}
-          </Section>
-        )}
-      </div>
+            </Section>
+          )}
+
+          {newGrads.length > 0 && (
+            <Section label="Gradients" count={newGrads.length}>
+              <div className="space-y-1.5">
+                {newGrads.map((g: any, i: number) => <GradientBar key={i} name={g.name} css={g.css} stops={g.stops} />)}
+              </div>
+            </Section>
+          )}
+
+          {newShadows.length > 0 && (
+            <Section label="Shadows" count={newShadows.length}>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                {newShadows.map((s: any, i: number) => <ShadowPreview key={i} name={s.name} css={s.css} />)}
+              </div>
+            </Section>
+          )}
+
+          {newBorders.length > 0 && (
+            <Section label="Borders" count={newBorders.length}>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                {newBorders.map((b: any, i: number) => <BorderPreview key={i} name={b.name} width={b.width} color={b.color} />)}
+              </div>
+            </Section>
+          )}
+
+          {newRadii.length > 0 && (
+            <Section label="Border Radius" count={newRadii.length}>
+              <div className="flex flex-wrap gap-2">
+                {(newRadii as number[]).map((r: any, i: number) => (
+                  <div key={i} className="flex items-center gap-1.5">
+                    <div className="w-6 h-6 bg-neutral-700/40 border border-white/[0.08]" style={{ borderRadius: `${r}px` }} />
+                    <span className="text-[10px] font-mono text-neutral-500">{r}px</span>
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
+
+          {newLogos.length > 0 && (
+            <Section label="Logos" count={newLogos.length}>
+              <div className="flex flex-wrap gap-2">
+                {newLogos.map((l: any, i: number) => (
+                  <div key={i} className="w-14 h-14 rounded border border-white/[0.06] bg-neutral-900/60 flex items-center justify-center overflow-hidden p-1">
+                    <img src={l.url} alt={l.label || ''} className="max-w-full max-h-full object-contain" />
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
+
+          {newMedia.length > 0 && (
+            <Section label="Media" count={newMedia.length}>
+              <div className="grid grid-cols-6 gap-1.5">
+                {newMedia.map((m: any, i: number) => (
+                  <div key={i} className="aspect-square rounded border border-white/[0.06] bg-neutral-900/60 overflow-hidden">
+                    <img src={m.url} alt={m.label || ''} className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
+
+          {images && images.length > 0 && (
+            <Section label="Assets (will be classified on apply)" count={images.length}>
+              <div className="grid grid-cols-6 gap-1.5">
+                {images.slice(0, 24).map((src, i) => <ImageThumb key={i} src={src} i={i} />)}
+                {images.length > 24 && (
+                  <div className="aspect-square rounded border border-white/[0.05] bg-neutral-900/60 flex items-center justify-center">
+                    <span className="text-[10px] text-neutral-600 font-mono">+{images.length - 24}</span>
+                  </div>
+                )}
+              </div>
+            </Section>
+          )}
+
+        </div>
+      )}
     </Modal>
   );
 };
-
-const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <div className="space-y-2">
-    <MicroTitle className="text-neutral-500">{title}</MicroTitle>
-    {children}
-  </div>
-);
-
-const Row: React.FC<{ label: string; value: string; truncate?: boolean }> = ({ label, value, truncate }) => (
-  <div className="flex gap-3">
-    <span className="text-[10px] font-mono text-neutral-600 w-20 shrink-0 mt-0.5">{label}</span>
-    <span className={`text-xs text-neutral-300 ${truncate ? 'line-clamp-2' : ''}`}>{value}</span>
-  </div>
-);

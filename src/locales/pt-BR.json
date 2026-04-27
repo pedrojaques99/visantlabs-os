@@ -1352,6 +1352,7 @@
     }
   },
   "canvasToolbar": {
+    "addAmbienceNode": "Adicionar Ambience Node",
     "addBrandCore": "Adicionar Brand Core",
     "addBrandKit": "Gerar Brand Kit",
     "addCameraAngleNode": "Adicionar Camera Angle Node",
@@ -1359,6 +1360,8 @@
     "addColorExtractorNode": "Adicionar Color Extractor",
     "addDirectorNode": "Adicionar Director Node",
     "addLogoNode": "Adicionar Logo Node",
+    "addLuminanceNode": "Adicionar Luminance Node",
+    "addMergeNode": "Adicionar Merge Node",
     "addMockupPresetNode": "Adicionar Mockup Preset Node",
     "addNode": "Adicionar Node",
     "addPdfNode": "Adicionar PDF Node",
@@ -1366,6 +1369,8 @@
     "addPromptNode": "Adicionar Prompt Node",
     "addShaderNode": "Adicionar Shader Node",
     "addStrategyNode": "Adicionar Strategy Node",
+    "addTextureNode": "Adicionar Texture Node",
+    "addUpscaleNode": "Adicionar Upscale Node",
     "categories": {
       "branding": "Branding",
       "composition": "Composition",
@@ -1374,6 +1379,7 @@
     "collapseToolbar": "Recolher barra de ferramentas",
     "expandToolbar": "Expandir barra de ferramentas",
     "labels": {
+      "ambience": "Ambiente",
       "angle": "Angle",
       "brandCore": "Brand Core",
       "brandKit": "Brand Kit",
@@ -1383,11 +1389,15 @@
       "drawing": "Desenhar",
       "edit": "Edit",
       "logo": "Logo",
+      "luminance": "Luminância",
+      "merge": "Mesclar",
       "mockup": "Mockup",
       "pdf": "PDF",
       "prompt": "Prompt",
       "shader": "Shader",
-      "strategy": "Strategy"
+      "strategy": "Estratégia",
+      "texture": "Textura",
+      "upscale": "Upscale"
     },
     "title": "Ferramentas",
     "toggleDrawingMode": "Alternar Modo de Desenho"
@@ -1452,8 +1462,12 @@
     "subtitle": "Gerencie sua conta e assinatura",
     "success": "Sucesso",
     "tabs": {
+      "all": "Todos",
+      "colors": "Cores",
       "configuration": "Configurações",
       "history": "Histórico",
+      "logos": "Logotipos",
+      "media": "Mídia",
       "overview": "Dashboard"
     },
     "today": "Hoje",

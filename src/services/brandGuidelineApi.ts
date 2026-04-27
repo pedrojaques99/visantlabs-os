@@ -103,6 +103,22 @@ export const brandGuidelineApi = {
     return result.guideline;
   },
 
+  async applyFigTokens(id: string, payload: {
+    colors?: any[]; typography?: any[]; gradients?: any[]; shadows?: any[];
+    borders?: any[]; tokens?: any; images?: string[]; replace?: boolean;
+  }): Promise<{ guideline: BrandGuideline }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/apply-fig-tokens`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to apply .fig tokens');
+    }
+    return response.json();
+  },
+
   async extractFig(id: string, file: File): Promise<{ extracted: any; preview: BrandGuideline; dryRun: true }> {
     const form = new FormData();
     form.append('file', file);

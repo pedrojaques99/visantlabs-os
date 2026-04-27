@@ -3873,8 +3873,8 @@ export const CanvasPage: React.FC = () => {
             {isCollaborative && projectId && isAuthenticated && authService.getToken() ? (
               <RoomProvider
                 id={`canvas-${projectId}`}
-                initialPresence={{ cursor: null, selectedNodeId: null, nodePosition: null, isMoving: false }}
-                initialStorage={{ nodes: new LiveList([]) as any, edges: new LiveList([]) as any }}
+                initialPresence={{ cursor: null, selectedNodeId: null, nodePosition: null, isMoving: false, activeSection: '' } as any}
+                initialStorage={{ nodes: new LiveList([]) as any, edges: new LiveList([]) as any, guideline: null as any }}
               >
                 <CollaborativeCanvas
                   nodes={nodes}

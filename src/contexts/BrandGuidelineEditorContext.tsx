@@ -45,11 +45,12 @@ export const LiveblocksEditorProvider: React.FC<LiveblocksEditorProviderProps> =
 
   const updateDraft = useMutation(({ storage }, patch: Partial<BrandGuideline>) => {
     const liveGuideline = storage.get('guideline') as import('@liveblocks/client').LiveObject<Record<string, any>> | undefined;
-    if (!liveGuideline) return;
-    Object.entries(patch).forEach(([key, value]) => {
-      liveGuideline.set(key, value as any);
-    });
-    // Debounce-persist to MongoDB as backup (webhook is primary)
+    if (liveGuideline) {
+      Object.entries(patch).forEach(([key, value]) => {
+        liveGuideline.set(key, value as any);
+      });
+    }
+    // Always persist to MongoDB — don't skip if Liveblocks storage isn't ready
     onSave(patch);
   }, [onSave]);
 

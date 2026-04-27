@@ -43,10 +43,18 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
   }, [guideline.id, isUploading, onLogosChange]);
 
   const handleDelete = useCallback(async (index: number) => {
-    if (!logos) return;
+    if (!logos || !guideline.id) return;
+    const logo = logos[index];
+    if (!logo) return;
     const updated = logos.filter((_, i) => i !== index);
     onLogosChange(updated);
-  }, [logos, onLogosChange]);
+    try {
+      if (logo.id) await brandGuidelineApi.deleteLogo(guideline.id, logo.id);
+    } catch {
+      onLogosChange(logos);
+      toast.error('Failed to delete logo');
+    }
+  }, [guideline.id, logos, onLogosChange]);
 
   return (
     <SectionBlock

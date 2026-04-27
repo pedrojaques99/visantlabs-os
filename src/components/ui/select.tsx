@@ -7,7 +7,7 @@ export interface SelectOption {
   value: string;
   label: string;
   icon?: React.ReactNode;
-  badge?: 'latest' | 'popular' | 'fast' | 'edit';
+  badge?: 'latest' | 'popular' | 'fast' | 'edit' | 'pro' | 'reasoning';
 }
 
 export interface SelectProps {
@@ -223,10 +223,12 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                   {option.badge && (
                     <span className={cn(
                       "flex-shrink-0 px-1 py-px rounded text-[9px] font-bold uppercase tracking-wider leading-none",
-                      option.badge === 'latest'  && "bg-brand-cyan/15 text-brand-cyan border border-neutral-800",
-                      option.badge === 'popular' && "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
-                      option.badge === 'fast'    && "bg-amber-500/15 text-amber-400 border border-amber-500/30",
-                      option.badge === 'edit'    && "bg-violet-500/15 text-violet-400 border border-violet-500/30",
+                      option.badge === 'latest'    && "bg-brand-cyan/15 text-brand-cyan border border-neutral-800",
+                      option.badge === 'popular'   && "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
+                      option.badge === 'fast'      && "bg-amber-500/15 text-amber-400 border border-amber-500/30",
+                      option.badge === 'edit'      && "bg-violet-500/15 text-violet-400 border border-violet-500/30",
+                      option.badge === 'pro'       && "bg-orange-500/15 text-orange-400 border border-orange-500/30",
+                      option.badge === 'reasoning' && "bg-purple-500/15 text-purple-400 border border-purple-500/30",
                     )}>
                       {option.badge === 'popular' ? 'top' : option.badge}
                     </span>
@@ -288,10 +290,12 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             {selectedOption?.badge && (
               <span className={cn(
                 "flex-shrink-0 px-1 py-px rounded text-[9px] font-bold uppercase tracking-wider leading-none",
-                selectedOption.badge === 'latest'  && "bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30",
-                selectedOption.badge === 'popular' && "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
-                selectedOption.badge === 'fast'    && "bg-amber-500/15 text-amber-400 border border-amber-500/30",
-                selectedOption.badge === 'edit'    && "bg-violet-500/15 text-violet-400 border border-violet-500/30",
+                selectedOption.badge === 'latest'    && "bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30",
+                selectedOption.badge === 'popular'   && "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
+                selectedOption.badge === 'fast'      && "bg-amber-500/15 text-amber-400 border border-amber-500/30",
+                selectedOption.badge === 'edit'      && "bg-violet-500/15 text-violet-400 border border-violet-500/30",
+                selectedOption.badge === 'pro'       && "bg-orange-500/15 text-orange-400 border border-orange-500/30",
+                selectedOption.badge === 'reasoning' && "bg-purple-500/15 text-purple-400 border border-purple-500/30",
               )}>
                 {selectedOption.badge === 'popular' ? 'top' : selectedOption.badge}
               </span>
