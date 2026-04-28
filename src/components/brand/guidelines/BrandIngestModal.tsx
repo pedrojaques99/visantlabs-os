@@ -219,10 +219,11 @@ interface BrandIngestModalProps {
   guideline: BrandGuideline;
   onSuccess: () => void;
   onClose: () => void;
+  title?: string;
 }
 
 export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
-  state, guideline, onSuccess, onClose,
+  state, guideline, onSuccess, onClose, title = 'Review extraction',
 }) => {
   const [itemSel, setItemSel] = useState<ItemSel>(new Map());
   const [applying, setApplying] = useState(false);
@@ -387,7 +388,7 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
     <Modal
       isOpen
       onClose={onClose}
-      title="Extract from .fig"
+      title={title}
       description={
         isStreaming ? `${state.statusMessage || 'Parsing…'} · ${totalLoaded} categories`
         : isDone    ? `${totalLoaded} categories · ${totalSelected} items selected`

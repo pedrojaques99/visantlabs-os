@@ -16,7 +16,6 @@ import { creativeProjectApi } from '@/services/creativeProjectApi';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { useDuplicateGuideline, useDeleteGuideline, useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
-
 interface GuidelinesSidebarProps {
   guidelines: BrandGuideline[];
   selectedId: string | null;
