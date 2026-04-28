@@ -60,6 +60,10 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     const imageInputRef = useRef<HTMLInputElement>(null);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
+    // .fig file state
+    const [figFile, setFigFile] = useState<File | null>(null);
+    const figFileInputRef = useRef<HTMLInputElement>(null);
+
     // Local media/logos state for the gallery (edit mode)
     const [media, setMedia] = useState<BrandGuideline['media']>([]);
     const [logos, setLogos] = useState<BrandGuideline['logos']>([]);
@@ -89,11 +93,13 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                     setUrl(draft.url || '');
                     setFigmaUrl(draft.figmaUrl || '');
                     setPdfFile(null);
+                    setFigFile(null);
                     setImageFiles([]);
                     setImagePreviews([]);
                     setMedia([]);
                     setLogos([]);
                     if (pdfInputRef.current) pdfInputRef.current.value = '';
+                    if (figFileInputRef.current) figFileInputRef.current.value = '';
                     if (imageInputRef.current) imageInputRef.current.value = '';
                     return;
                 }
@@ -104,9 +110,11 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             setMedia([]);
             setLogos([]);
             setPdfFile(null);
+            setFigFile(null);
             setImageFiles([]);
             setImagePreviews([]);
             if (pdfInputRef.current) pdfInputRef.current.value = '';
+            if (figFileInputRef.current) figFileInputRef.current.value = '';
             if (imageInputRef.current) imageInputRef.current.value = '';
         }
     }, [isOpen, editGuideline]);
@@ -273,6 +281,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         setName('');
         setUrl('');
         setPdfFile(null);
+        setFigFile(null);
         setImageFiles([]);
         imagePreviews.forEach(url => URL.revokeObjectURL(url));
         setImagePreviews([]);
@@ -341,6 +350,26 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 setIsIngesting(false);
             }
 
+            // Handle .fig file upload
+            if (figFile) {
+                setIsIngesting(true);
+                try {
+                    const form = new FormData();
+                    form.append('file', figFile);
+                    const token = localStorage.getItem('auth_token') || '';
+                    const headers: Record<string, string> = {};
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+                    await fetch(`/api/brand-guidelines/${workingId}/extract-fig`, {
+                        method: 'POST', headers, body: form,
+                    });
+                    toast.success('Arquivo Figma extraído com sucesso');
+                } catch {
+                    toast.warning('Erro ao extrair arquivo Figma');
+                } finally {
+                    setIsIngesting(false);
+                }
+            }
+
             // Handle Figma URL: link + auto-import all tokens
             const trimmedFigma = figmaUrl.trim();
             if (trimmedFigma && isFigmaUrl(trimmedFigma)) {
@@ -367,6 +396,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             setUrl('');
             setFigmaUrl('');
             setPdfFile(null);
+            setFigFile(null);
             setImageFiles([]);
             setImagePreviews([]);
             localStorage.removeItem(DRAFT_KEY);
@@ -569,18 +599,50 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                     </div>
                 )}
 
-                {/* Figma URL */}
+                {/* Figma URL + .fig file upload */}
                 <div className="flex flex-col gap-1.5">
-                    <MicroTitle as="label" htmlFor="brand-wizard-figma" className="flex items-center gap-1.5">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="shrink-0">
-                            <path d="M8 24C10.208 24 12 22.208 12 20V16H8C5.792 16 4 17.792 4 20C4 22.208 5.792 24 8 24Z" fill="#0ACF83"/>
-                            <path d="M4 12C4 9.792 5.792 8 8 8H12V16H8C5.792 16 4 14.208 4 12Z" fill="#A259FF"/>
-                            <path d="M4 4C4 1.792 5.792 0 8 0H12V8H8C5.792 8 4 6.208 4 4Z" fill="#F24E1E"/>
-                            <path d="M12 0H16C18.208 0 20 1.792 20 4C20 6.208 18.208 8 16 8H12V0Z" fill="#FF7262"/>
-                            <path d="M20 12C20 14.208 18.208 16 16 16C13.792 16 12 14.208 12 12C12 9.792 13.792 8 16 8C18.208 8 20 9.792 20 12Z" fill="#1ABCFE"/>
-                        </svg>
-                        Figma
-                    </MicroTitle>
+                    <div className="flex items-center justify-between">
+                        <MicroTitle as="label" htmlFor="brand-wizard-figma" className="flex items-center gap-1.5">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                                <path d="M8 24C10.208 24 12 22.208 12 20V16H8C5.792 16 4 17.792 4 20C4 22.208 5.792 24 8 24Z" fill="#0ACF83"/>
+                                <path d="M4 12C4 9.792 5.792 8 8 8H12V16H8C5.792 16 4 14.208 4 12Z" fill="#A259FF"/>
+                                <path d="M4 4C4 1.792 5.792 0 8 0H12V8H8C5.792 8 4 6.208 4 4Z" fill="#F24E1E"/>
+                                <path d="M12 0H16C18.208 0 20 1.792 20 4C20 6.208 18.208 8 16 8H12V0Z" fill="#FF7262"/>
+                                <path d="M20 12C20 14.208 18.208 16 16 16C13.792 16 12 14.208 12 12C12 9.792 13.792 8 16 8C18.208 8 20 9.792 20 12Z" fill="#1ABCFE"/>
+                            </svg>
+                            Figma
+                        </MicroTitle>
+                        {/* .fig file upload button */}
+                        <div>
+                            <input
+                                ref={figFileInputRef}
+                                type="file"
+                                accept=".fig"
+                                className="hidden"
+                                disabled={isSubmitting || isIngesting}
+                                onChange={e => { const f = e.target.files?.[0]; if (f) setFigFile(f); e.target.value = ''; }}
+                            />
+                            {figFile ? (
+                                <div className="flex items-center gap-1.5 bg-brand-cyan/5 border border-brand-cyan/20 rounded px-2 py-1">
+                                    <Upload size={10} className="text-brand-cyan" />
+                                    <span className="text-[10px] font-mono text-white truncate max-w-[100px]">{figFile.name}</span>
+                                    <button type="button" onClick={() => setFigFile(null)} className="text-neutral-600 hover:text-white transition-colors">
+                                        <X size={10} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => figFileInputRef.current?.click()}
+                                    disabled={isSubmitting || isIngesting}
+                                    className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono text-neutral-500 hover:text-neutral-200 border border-white/5 hover:border-white/15 rounded transition-all disabled:opacity-40"
+                                >
+                                    <Upload size={10} />
+                                    .fig file
+                                </button>
+                            )}
+                        </div>
+                    </div>
                     <Input
                         id="brand-wizard-figma"
                         type="url"

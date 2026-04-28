@@ -154,3 +154,6 @@ public/archetypes/O Rebelde.png
 public/archetypes/O Sábio-1.png
 public/archetypes/O Sábio.png
 /.data
+scripts/test-pdf-output.txt
+scripts/test-pdf-result*.json
+scripts/test-page-*.png

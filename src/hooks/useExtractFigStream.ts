@@ -4,6 +4,13 @@ export type FigCategory =
   | 'colors' | 'typography' | 'gradients' | 'shadows'
   | 'borders' | 'radii' | 'components' | 'images' | 'strategy';
 
+export interface AssetClassification {
+  index: number;
+  category: 'logo' | 'icon' | 'photo' | 'mockup' | 'pattern' | 'strategy' | 'other';
+  logoVariant?: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom' | 'stacked' | 'horizontal' | 'abbreviated';
+  label?: string;
+}
+
 export interface FigStreamState {
   status: 'idle' | 'streaming' | 'done' | 'error';
   statusMessage: string;
@@ -15,6 +22,8 @@ export interface FigStreamState {
   radii?: number[];
   components?: any[];
   images?: string[];
+  /** Pre-computed image classifications from PDF extractor — lets /apply-fig-tokens skip the duplicate Gemini classification call. */
+  assetClassifications?: AssetClassification[];
   strategy?: { manifesto?: string; tagline?: string; description?: string; claims?: string[] };
   error?: string;
 }
@@ -43,7 +52,11 @@ async function getBackendBase(): Promise<string> {
 
 const API_BASE = '/api';
 
-export function useExtractFigStream(guidelineId: string) {
+/**
+ * Generic streaming hook — reusable for any multipart file extraction endpoint
+ * that returns NDJSON events in the FigStreamState format.
+ */
+export function useExtractFileStream(guidelineId: string, endpointSuffix: string) {
   const [state, setState] = useState<FigStreamState>({ status: 'idle', statusMessage: '' });
   const abortRef = useRef<AbortController | null>(null);
 
@@ -60,11 +73,10 @@ export function useExtractFigStream(guidelineId: string) {
     const headers: Record<string, string> = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    // Detect backend port and bypass Vite proxy for streaming
     const base = await getBackendBase();
 
     try {
-      const response = await fetch(`${base}/brand-guidelines/${guidelineId}/extract-fig`, {
+      const response = await fetch(`${base}/brand-guidelines/${guidelineId}/${endpointSuffix}`, {
         method: 'POST',
         headers,
         body: form,
@@ -101,7 +113,7 @@ export function useExtractFigStream(guidelineId: string) {
       if (err?.name === 'AbortError') return;
       setState(s => ({ ...s, status: 'error', error: err?.message || 'Stream failed' }));
     }
-  }, [guidelineId]);
+  }, [guidelineId, endpointSuffix]);
 
   const reset = useCallback(() => {
     abortRef.current?.abort();
@@ -109,6 +121,11 @@ export function useExtractFigStream(guidelineId: string) {
   }, []);
 
   return { state, stream, reset };
+}
+
+/** Backwards-compatible alias for .fig extraction */
+export function useExtractFigStream(guidelineId: string) {
+  return useExtractFileStream(guidelineId, 'extract-fig');
 }
 
 function applyEvent(prev: FigStreamState, event: any): FigStreamState {
@@ -123,6 +140,7 @@ function applyEvent(prev: FigStreamState, event: any): FigStreamState {
     case 'components': return { ...prev, components: event.data };
     case 'images':     return { ...prev, images: event.data };
     case 'strategy':   return { ...prev, strategy: event.data };
+    case 'asset_classifications': return { ...prev, assetClassifications: event.data };
     case 'done':       return { ...prev, status: 'done', statusMessage: 'Complete' };
     case 'error':      return { ...prev, status: 'error', error: event.message };
     default:           return prev;
