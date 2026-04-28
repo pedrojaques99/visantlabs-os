@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-04-27T23:51:15.212Z"
+last_updated: "2026-04-27T00:00:00.000Z"
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 8
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # GSD State
@@ -77,4 +77,13 @@ progress:
 
 ---
 
-*Last updated: 2026-03-24*
+## creative-konva-migration Progress
+
+- [x] 01 - KonvaCanvas scaffold + Stage/Layer/Transformer wiring
+- [x] 02 - Background + overlay + drag-drop from sidebar
+- [x] 03 - KonvaTextLayer, KonvaLogoLayer, KonvaShapeLayer + layer dispatch
+- [x] 04 - exportPng/captureThumbnail rewrite + CreativeStudio wired + DOM-canvas removed
+
+---
+
+*Last updated: 2026-04-27*
