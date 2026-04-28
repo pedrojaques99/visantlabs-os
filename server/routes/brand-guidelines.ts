@@ -2004,6 +2004,36 @@ router.post('/:id/apply-fig-tokens', apiRateLimiter, authenticate, async (req: A
 
 // POST /api/brand-guidelines/:id/extract-fig — multipart upload, streams NDJSON events
 // Each line is a JSON event: {type, data} — client reads progressively
+router.post('/:id/extract-pdf', apiRateLimiter, authenticate, upload.single('file'), async (req: AuthRequest, res) => {
+  try {
+    const existing = await prisma.brandGuideline.findFirst({ where: { id: req.params.id, userId: req.userId } })
+    if (!existing) return res.status(404).json({ error: 'Brand guideline not found' })
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+
+    res.setHeader('Content-Type', 'application/x-ndjson')
+    res.setHeader('Transfer-Encoding', 'chunked')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.flushHeaders()
+
+    const writeEvent = (event: object) => {
+      try { if (!res.writableEnded) res.write(JSON.stringify(event) + '\n') } catch { /* ignore */ }
+    }
+
+    try {
+      const { extractPdfStreaming } = await import('../lib/pdf-extract.js')
+      await extractPdfStreaming(req.file.buffer, writeEvent, req.userId)
+    } catch (err: any) {
+      console.error('[extract-pdf]', err)
+      writeEvent({ type: 'error', message: err?.message || 'PDF extraction failed' })
+    } finally {
+      if (!res.writableEnded) res.end()
+    }
+  } catch (err: any) {
+    console.error('[extract-pdf pre-stream]', err)
+    if (!res.headersSent) res.status(500).json({ error: err.message || 'Failed to process PDF' })
+  }
+})
+
 router.post('/:id/extract-fig', apiRateLimiter, authenticate, upload.single('file'), async (req: AuthRequest, res) => {
   try {
     const existing = await prisma.brandGuideline.findFirst({ where: { id: req.params.id, userId: req.userId } })
