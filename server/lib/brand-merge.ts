@@ -68,6 +68,33 @@ export function mergeBrandGuidelines(existing: BrandGuideline, incoming: Partial
   }
 
 
+  // Gradients: dedup by CSS string
+  if ((incoming as any).gradients?.length) {
+    const seen = new Set((merged as any).gradients?.map((g: any) => g.css) || [])
+    ;(merged as any).gradients = [
+      ...((merged as any).gradients || []),
+      ...(incoming as any).gradients.filter((g: any) => !seen.has(g.css)),
+    ]
+  }
+
+  // Shadows (array form): dedup by CSS string
+  if ((incoming as any).shadows?.length) {
+    const seen = new Set((merged as any).shadows?.map((s: any) => s.css) || [])
+    ;(merged as any).shadows = [
+      ...((merged as any).shadows || []),
+      ...(incoming as any).shadows.filter((s: any) => !seen.has(s.css)),
+    ]
+  }
+
+  // Borders: dedup by css
+  if ((incoming as any).borders?.length) {
+    const seen = new Set((merged as any).borders?.map((b: any) => b.css || `${b.width}:${b.color}`) || [])
+    ;(merged as any).borders = [
+      ...((merged as any).borders || []),
+      ...(incoming as any).borders.filter((b: any) => !seen.has(b.css || `${b.width}:${b.color}`)),
+    ]
+  }
+
   merged.extraction = merged.extraction || { sources: [], completeness: 0 }
   merged.extraction.completeness = calculateCompleteness(merged)
 

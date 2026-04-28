@@ -1352,6 +1352,7 @@
     }
   },
   "canvasToolbar": {
+    "addAmbienceNode": "Add Ambience Node",
     "addBrandCore": "Add Brand Core",
     "addBrandKit": "Add Brand Kit",
     "addCameraAngleNode": "Add Camera Angle Node",
@@ -1359,6 +1360,8 @@
     "addColorExtractorNode": "Add Color Extractor",
     "addDirectorNode": "Add Director Node",
     "addLogoNode": "Add Logo Node",
+    "addLuminanceNode": "Add Luminance Node",
+    "addMergeNode": "Add Merge Node",
     "addMockupPresetNode": "Add Mockup Preset Node",
     "addNode": "Add Node",
     "addPdfNode": "Add PDF Node",
@@ -1366,6 +1369,8 @@
     "addPromptNode": "Add Prompt Node",
     "addShaderNode": "Add Shader Node",
     "addStrategyNode": "Add Strategy Node",
+    "addTextureNode": "Add Texture Node",
+    "addUpscaleNode": "Add Upscale Node",
     "categories": {
       "branding": "Branding",
       "composition": "Composition",
@@ -1374,6 +1379,7 @@
     "collapseToolbar": "Collapse toolbar",
     "expandToolbar": "Expand toolbar",
     "labels": {
+      "ambience": "Ambience",
       "angle": "Angle",
       "brandCore": "Brand Core",
       "brandKit": "Brand Kit",
@@ -1383,11 +1389,15 @@
       "drawing": "Draw",
       "edit": "Edit",
       "logo": "Logo",
+      "luminance": "Luminance",
+      "merge": "Merge",
       "mockup": "Mockup",
       "pdf": "PDF",
       "prompt": "Prompt",
       "shader": "Shader",
-      "strategy": "Strategy"
+      "strategy": "Strategy",
+      "texture": "Texture",
+      "upscale": "Upscale"
     },
     "title": "Tools",
     "toggleDrawingMode": "Toggle Drawing Mode"
@@ -1452,8 +1462,12 @@
     "subtitle": "Manage your account and subscription",
     "success": "Success",
     "tabs": {
+      "all": "All",
+      "colors": "Colors",
       "configuration": "Configuration",
       "history": "History",
+      "logos": "Logos",
+      "media": "Media",
       "overview": "Dashboard"
     },
     "today": "Today",

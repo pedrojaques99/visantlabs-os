@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, Mail } from 'lucide-react';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { PillButton } from './ui/pill-button';
@@ -19,6 +20,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   onClose,
   onBackToLogin,
 }) => {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);

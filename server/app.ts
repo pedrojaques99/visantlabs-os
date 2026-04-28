@@ -52,6 +52,7 @@ import apiKeysRoutes from './routes/apiKeys.js';
 import pipelineRoutes from './routes/pipeline.js';
 import campaignRoutes from './routes/campaign.js';
 import oauthRoutes from './routes/oauth.js';
+import liveblocksRoutes from './routes/liveblocks.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
@@ -227,6 +228,7 @@ export function createApp() {
     ['/api-keys', apiKeysRoutes],
     ['/pipeline', pipelineRoutes],
     ['/canvas/generate-campaign', campaignRoutes],
+    ['/liveblocks', liveblocksRoutes],
   ];
 
   for (const [path, router] of mounts) {

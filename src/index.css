@@ -1545,6 +1545,34 @@
     border-style: solid;
     border-width: var(--node-border-width, 1px);
   }
+
+  /**
+   * hover-reveal — single source of truth for collapsible detail panels.
+   * Usage: add class "hover-reveal" to the panel div.
+   * The parent needs a Tailwind group (e.g. group/item).
+   * Add group-hover and group-focus-within with max-h-[N] to reveal.
+   *
+   * Timing: 150ms delay prevents accidental hover flickers,
+   *         350ms duration feels deliberate, not snappy.
+   */
+  /** Auto-width input — hugs content/placeholder width */
+  .auto-input {
+    field-sizing: content;
+    min-width: 3rem;
+  }
+
+  /** Auto-resize textarea — hugs content height */
+  .auto-textarea {
+    field-sizing: content;
+    min-height: 2rem;
+    resize: none;
+  }
+
+  .hover-reveal {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 350ms cubic-bezier(0.25, 0.1, 0.25, 1) 150ms;
+  }
 }
 
 /* Node text color utilities - use CSS variables for automatic contrast */

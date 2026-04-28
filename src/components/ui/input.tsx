@@ -15,10 +15,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         ref={ref}
         {...props}
-        onPointerDownCapture={(e) => {
-          e.stopPropagation()
-          props.onPointerDownCapture?.(e)
-        }}
       />
     )
   }

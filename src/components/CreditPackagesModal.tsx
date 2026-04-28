@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { useNavigate } from 'react-router-dom';
-import { X, CreditCard, Plus, Minus, Pickaxe, QrCode, Info, FileText, CheckCircle2, ChevronLeft, ChevronRight, Key, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
-import type { CSSProperties } from 'react';
+import { X, CreditCard, Plus, Minus, Pickaxe, QrCode, Info, FileText, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 import { getUserLocale, formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
 import { CREDIT_PACKAGES, getCreditPackageLink, getCreditPackagePrice } from '@/utils/creditPackages';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -75,7 +75,7 @@ interface CreditPackagesModalProps {
   isOpen: boolean;
   onClose: () => void;
   subscriptionStatus?: SubscriptionStatus | null;
-  initialTab?: 'buy' | 'credits';
+  initialTab?: 'carteira' | 'creditos' | 'assinatura';
 }
 
 const formatDate = (dateString: string | null): string => {
@@ -92,26 +92,23 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
   isOpen,
   onClose,
   subscriptionStatus = null,
-  initialTab = 'buy'
+  initialTab = 'creditos'
 }) => {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [currencyInfo, setCurrencyInfo] = useState<CurrencyInfo | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  // Default to 'credits' if user has subscription, otherwise 'buy'
-  const defaultTab = subscriptionStatus ? 'credits' : 'buy';
-  const [activeTab, setActiveTab] = useState<'buy' | 'credits'>(initialTab || defaultTab);
-  const [buySection, setBuySection] = useState<'credits' | 'subscriptions'>('credits');
+  const defaultTab: 'carteira' | 'creditos' | 'assinatura' = subscriptionStatus ? 'carteira' : 'creditos';
+  const [activeTab, setActiveTab] = useState<'carteira' | 'creditos' | 'assinatura'>(initialTab || defaultTab);
   const [subscriptionPlans, setSubscriptionPlans] = useState<Product[]>([]);
-  const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [showPackageCosts, setShowPackageCosts] = useState(false);
   const [showStatusCosts, setShowStatusCosts] = useState(false);
 
-  // Reset tab when modal opens
   useEffect(() => {
     if (isOpen) {
-      setActiveTab(initialTab);
+      setActiveTab(initialTab || defaultTab);
     }
   }, [isOpen, initialTab]);
 
@@ -138,28 +135,6 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
     return billingCycle === 'yearly' ? isYearly : !isYearly;
   });
 
-  // Reset selected plan index when billing cycle changes
-  useEffect(() => {
-    if (filteredPlans.length > 0) {
-      setSelectedPlanIndex(0);
-    }
-  }, [billingCycle]);
-
-  const handlePreviousPlan = () => {
-    if (selectedPlanIndex > 0) {
-      playClickSound();
-      setSelectedPlanIndex((prev) => prev - 1);
-    }
-  };
-
-  const handleNextPlan = () => {
-    if (selectedPlanIndex < filteredPlans.length - 1) {
-      playClickSound();
-      setSelectedPlanIndex((prev) => prev + 1);
-    }
-  };
-
-  const currentPlan = filteredPlans[selectedPlanIndex];
 
   const currentPackage = CREDIT_PACKAGES[selectedIndex];
 
@@ -264,581 +239,436 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
           <div className="relative p-6 sm:p-8 md:p-10 z-10 w-full min-h-full">
 
             <div className="space-y-6 sm:space-y-8">
-              <div className="flex items-center justify-between pb-2">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <CreditCard size={16} className="sm:w-4 sm:h-4 text-neutral-500" />
-                  <MicroTitle className="text-neutral-500 uppercase">
-                    {activeTab === 'credits'
-                      ? (t('credits.title') || 'CRÉDITOS')
-                      : (t('creditsPackages.title') || 'COMPRAR')
-                    }
-                  </MicroTitle>
-                </div>
+              {/* Header */}
+              <div className="flex items-center gap-2 sm:gap-3 pb-2">
+                <CreditCard size={16} className="text-neutral-500" />
+                <MicroTitle className="text-neutral-500 uppercase">
+                  {activeTab === 'carteira' ? (t('credits.title') || 'CRÉDITOS') : (t('creditsPackages.title') || 'COMPRAR')}
+                </MicroTitle>
+              </div>
+
+              {/* 3-tab bar */}
+              <div className="grid grid-cols-3 bg-neutral-900/50 p-1 rounded-md border border-neutral-800/50">
+                {(['carteira', 'creditos', 'assinatura'] as const).map((tab) => {
+                  const labels: Record<string, string> = { carteira: 'Carteira', creditos: 'Créditos', assinatura: 'Assinatura' };
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => { playClickSound(); setActiveTab(tab); }}
+                      className={`px-2 py-1.5 text-[11px] font-mono uppercase tracking-wide rounded transition-all ${activeTab === tab ? 'bg-neutral-800 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-300'}`}
+                    >
+                      {labels[tab]}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Tab Content */}
               <div className="relative overflow-hidden">
-                {activeTab === 'buy' && (
-                  <div className="animate-slide-in-right transition-all duration-300 ease-in-out">
-                    {/* Unified Tabs: Créditos/Assinaturas */}
-                    <div className="flex justify-center">
-                      <div className="grid grid-cols-2 bg-neutral-900/50 p-1 rounded-md border border-neutral-800/50 w-full sm:w-auto sm:min-w-[200px]">
-                        <Button variant="ghost"
-                          onClick={() => {
-                            playClickSound();
-                            setBuySection('credits');
-                          }}
-                          className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-mono uppercase  transition-all rounded-md ${buySection === 'credits'
-                            ? 'bg-neutral-800 text-white shadow-sm'
-                            : 'text-neutral-500 hover:text-neutral-300'
-                            }`}
-                        >
-                          {t('creditsPackages.credits') || 'Créditos'}
-                        </Button>
-                        <Button variant="ghost"
-                          onClick={() => {
-                            playClickSound();
-                            setBuySection('subscriptions');
-                          }}
-                          className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-mono uppercase  transition-all rounded-md ${buySection === 'subscriptions'
-                            ? 'bg-neutral-800 text-white shadow-sm'
-                            : 'text-neutral-500 hover:text-neutral-300'
-                            }`}
-                        >
-                          {t('pricing.tabs.subscriptions') || 'Assinaturas'}
-                        </Button>
-                      </div>
-                    </div>
+                {/* ── Créditos tab ── */}
+                {activeTab === 'creditos' && (
+                  <div>
+                    {true && (
+                      <div className="animate-fade-in py-4 space-y-3">
+                        {/* Package card */}
+                        <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-5 sm:p-6 space-y-5">
+                          {/* Selector row */}
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-300 mb-1">
+                                {t('creditsPackages.credits') || 'Créditos'}
+                              </p>
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-4xl sm:text-5xl font-black font-mono text-white leading-none tabular-nums">
+                                  {animatedCredits}
+                                </span>
+                                <span className="text-xs font-mono text-brand-cyan/70 uppercase">
+                                  créditos
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                onClick={() => { playClickSound(); handlePrevious(); }}
+                                disabled={selectedIndex === 0}
+                                aria-label="Pacote anterior"
+                                className="h-8 w-8 p-0 border-neutral-700 bg-neutral-900/50 hover:bg-neutral-800 hover:border-neutral-600 disabled:opacity-30 disabled:cursor-not-allowed text-neutral-300"
+                              >
+                                <Minus size={14} />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() => { playClickSound(); handleNext(); }}
+                                disabled={selectedIndex === CREDIT_PACKAGES.length - 1}
+                                aria-label="Próximo pacote"
+                                className="h-8 w-8 p-0 border-neutral-700 bg-neutral-900/50 hover:bg-neutral-800 hover:border-neutral-600 disabled:opacity-30 disabled:cursor-not-allowed text-neutral-300"
+                              >
+                                <Plus size={14} />
+                              </Button>
+                            </div>
+                          </div>
 
-                    {/* Credits Section */}
-                    {buySection === 'credits' && (
-                      <div className="flex flex-col items-center justify-center py-4 sm:py-5 md:py-6 animate-fade-in transition-all duration-300 ease-in-out">
-                        {/* Package Selector */}
-                        <div className="flex items-center justify-center mb-4 sm:mb-5 md:mb-6 w-full">
-                          {/* Current Package Display */}
-                          <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] text-center shadow-sm relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                          {/* Package dots */}
+                          <div className="flex gap-1.5">
+                            {CREDIT_PACKAGES.map((_, index) => (
+                              <button
+                                key={index}
+                                onClick={() => { playClickSound(); setSelectedIndex(index); }}
+                                aria-label={`${CREDIT_PACKAGES[index].credits} créditos`}
+                                className={`h-1.5 rounded-full transition-all duration-300 ${index === selectedIndex ? 'bg-brand-cyan w-6' : 'bg-neutral-700 hover:bg-neutral-500 w-1.5'}`}
+                              />
+                            ))}
+                          </div>
 
-                            <div className="relative z-10 space-y-4 sm:space-y-6">
+                          {/* Price row */}
+                          {currencyInfo && price > 0 && (
+                            <div className="pt-4 border-t border-neutral-800/40 flex items-end justify-between">
                               <div>
-                                {/* Credits Display with Pickaxe and +/- buttons */}
-                                <div className="flex items-center justify-center gap-3 mb-3">
-                                  {/* Previous button */}
-                                  <Button variant="ghost"
-                                    onClick={() => {
-                                      playClickSound();
-                                      handlePrevious();
-                                    }}
-                                    disabled={selectedIndex === 0}
-                                    className={`p-1.5 sm:p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${selectedIndex === 0
-                                      ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                                      : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
-                                      }`}
-                                    aria-label="Previous package"
-                                  >
-                                    <Minus size={18} className="sm:w-5 sm:h-5 md:w-5 md:h-5" />
-                                  </Button>
-
-                                  {/* Credits number */}
-                                  <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-brand-cyan/80 font-mono">
-                                    {animatedCredits}
-                                  </div>
-
-                                  {/* Next button */}
-                                  <Button variant="ghost"
-                                    onClick={() => {
-                                      playClickSound();
-                                      handleNext();
-                                    }}
-                                    disabled={selectedIndex === CREDIT_PACKAGES.length - 1}
-                                    className={`p-1.5 sm:p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${selectedIndex === CREDIT_PACKAGES.length - 1
-                                      ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                                      : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
-                                      }`}
-                                    aria-label="Next package"
-                                  >
-                                    <Plus size={18} className="sm:w-5 sm:h-5 md:w-5 md:h-5" />
-                                  </Button>
-                                </div>
-
-                                <MicroTitle className="flex items-center justify-center gap-2 text-neutral-500 uppercase mt-2">
-                                  <Pickaxe
-                                    size={12}
-                                    className="text-brand-cyan/50 flex-shrink-0"
-                                  />
-                                  {t('creditsPackages.credits') || 'Credits'}
-                                </MicroTitle>
-                                <div className="flex flex-col items-center gap-2 mt-1">
-                                  <div className="flex items-center justify-center gap-1.5 ">
-                                    <div className="text-[10px] sm:text-[11px] font-mono text-brand-cyan/50 uppercase tracking-widest">
-                                      ≈ {animatedCredits} {t('pricing.imagesEstimate') || 'Imagens HD'}
-                                    </div>
-                                    <button
-                                      onClick={() => setShowPackageCosts(!showPackageCosts)}
-                                      className="flex items-center gap-1 text-[10px] text-neutral-600 hover:text-brand-cyan transition-colors cursor-pointer uppercase font-mono tracking-widest pl-2 border-l border-neutral-800 ml-2"
-                                    >
-                                      <span>{showPackageCosts ? 'Ver menos' : 'Ver modelos'}</span>
-                                      {showPackageCosts ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-                                    </button>
-                                  </div>
-
-                                  {/* Expandable Costs Section */}
-                                  {showPackageCosts && (
-                                    <div className="w-full max-w-[300px] mt-2 py-3 px-4 bg-neutral-950/40 rounded-lg border border-neutral-800/30 animate-in fade-in slide-in-from-top-2 duration-300">
-                                      <div className="space-y-2">
-                                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-tight text-neutral-400 border-b border-neutral-800/100 pb-1 mb-2">
-                                          <span>Modelo / Resolução</span>
-                                          <span>Imagens</span>
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                          {[
-                                            { label: '2.5 Flash / NB2 1K', cost: 1 },
-                                            { label: 'Gemini Pro 1K (HD)', cost: 2 },
-                                            { label: 'Gemini Pro 2K', cost: 3 },
-                                            { label: 'Gemini Pro 3K', cost: 4 },
-                                            { label: 'Gemini Pro 4K', cost: 5 },
-                                            { label: 'Nano Banana 2 2K', cost: 3 },
-                                            { label: 'Nano Banana 2 3K', cost: 4 },
-                                            { label: 'Nano Banana 2 4K', cost: 5 },
-                                          ].map((item, idx) => (
-                                            <div key={idx} className="flex justify-between text-[10px] items-center">
-                                              <span className="text-neutral-500">{item.label}</span>
-                                              <span className="text-brand-cyan font-bold">{Math.floor(currentPackage.credits / item.cost)}</span>
-                                            </div>
-                                          ))}
-
-                                          <div className="flex justify-between text-[10px] items-center pt-1 border-t border-neutral-800/50 mt-1">
-                                            <span className="text-neutral-500">Veo 3 (Vídeo)</span>
-                                            <span className="text-brand-cyan font-bold">{Math.floor(currentPackage.credits / 15)} Vídeos</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
+                                <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-300 mb-1">
+                                  {t('pricing.oneTimePayment') || 'Pagamento único'}
+                                </p>
+                                <div className="flex items-baseline gap-1.5">
+                                  <span className="text-3xl sm:text-4xl font-black font-mono text-white tabular-nums">
+                                    {formatPrice(animatedPrice, currencyInfo.currency, currencyInfo.locale)}
+                                  </span>
                                 </div>
                               </div>
-
-                              {currencyInfo && price > 0 && (
-                                <div className="pt-6 border-t border-neutral-800/40">
-                                  <div className="flex flex-col items-center justify-center gap-1">
-                                    <div className="text-3xl sm:text-4xl font-bold text-neutral-100 font-mono tracking-tight">
-                                      {formatPrice(animatedPrice, currencyInfo.currency, currencyInfo.locale)}
-                                    </div>
-                                    <div className="flex items-center gap-2 text-[10px] sm:text-[11px] font-mono text-neutral-500 uppercase tracking-widest">
-                                      <span>{t('pricing.oneTimePayment') || 'Pagamento único'}</span>
-                                      <span className="w-1 h-1 bg-neutral-800 rounded-full" />
-                                      <span className="text-brand-cyan/60">
-                                        $0.067 Google + $0.013 Infra
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-                              <div className="flex flex-col gap-2 mt-4 sm:mt-6">
-                                <Button variant="ghost"
-                                  onClick={() => {
-                                    playClickSound();
-                                    handleBuyCredits();
-                                  }}
-                                  className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[brand-cyan]/20"
-                                >
-                                  <CreditCard size={14} className="sm:w-4 sm:h-4" />
-                                  {t('creditsPackages.buy') || 'Comprar'}
-                                </Button>
-                                {currencyInfo?.currency === 'BRL' && ABACATEPAY_LINKS[currentPackage.credits] && (
-                                  <Button variant="ghost"
-                                    onClick={() => {
-                                      playClickSound();
-                                      handleBuyWithPix();
-                                    }}
-                                    className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-[#6fd591]/80 hover:bg-[#6fd591] text-white font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#6fd591]/20"
-                                  >
-                                    <QrCode size={14} className="sm:w-4 sm:h-4" />
-                                    {t('pix.payWithPix') || 'Pagar com PIX'}
-                                  </Button>
-                                )}
-
-                                <Button variant="ghost"
-                                  onClick={() => {
-                                    playClickSound();
-                                    setBuySection('subscriptions');
-                                  }}
-                                  className="w-full mt-2 px-4 sm:px-6 py-2 text-neutral-500 hover:text-brand-cyan text-xs font-mono transition-colors flex items-center justify-center gap-2 hover:bg-neutral-800/30 rounded-md"
-                                >
-                                  {t('pricing.tabs.subscriptions') || 'Ver Assinaturas'}
-                                </Button>
-                              </div>
+                              <span className="text-[10px] font-mono text-brand-cyan/50 uppercase tracking-widest text-right leading-relaxed">
+                                $0.067 Google<br />$0.013 Infra
+                              </span>
                             </div>
-                          </div>
+                          )}
                         </div>
 
-                        {/* Package Indicator */}
-                        <div className="flex gap-2 mb-4 sm:mb-5 md:mb-6 justify-center">
-                          {CREDIT_PACKAGES.map((_, index) => (
-                            <Button variant="ghost"
-                              key={index}
-                              onClick={() => {
-                                playClickSound();
-                                setSelectedIndex(index);
-                              }}
-                              className={`h-2 rounded-md transition-all duration-300 ease-out ${index === selectedIndex
-                                ? 'bg-brand-cyan w-8 shadow-[0_0_10px_rgba(82,221,235,0.4)]'
-                                : 'bg-neutral-600 hover:bg-neutral-500 w-2 hover:scale-125'
-                                }`}
-                              aria-label={`Select ${CREDIT_PACKAGES[index].credits} credits package`}
-                            />
-                          ))}
-                        </div>
+                        {/* Model cost reference — expandable */}
+                        <div className="border border-neutral-800/40 rounded-xl overflow-hidden">
+                          <button
+                            onClick={() => setShowPackageCosts(!showPackageCosts)}
+                            className="w-full flex items-center justify-between px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-neutral-300 hover:text-white hover:bg-neutral-900/40 transition-colors"
+                            aria-expanded={showPackageCosts}
+                          >
+                            <span className="flex items-center gap-2">
+                              <Pickaxe size={11} className="text-brand-cyan/70" />
+                              Quanto rende por modelo
+                            </span>
+                            {showPackageCosts ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                          </button>
 
-                        <div className="text-xs text-neutral-300 font-mono text-center max-w-md px-4">
-                          {t('creditsPackages.note') || 'Credits never expire and can be used at any time'}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Subscriptions Section */}
-                    {buySection === 'subscriptions' && (
-                      <div className="py-2 sm:py-4 animate-fade-in transition-all duration-300 ease-in-out">
-                        {filteredPlans.length > 0 && currentPlan ? (
-                          <div className="flex flex-col items-center justify-center">
-                            {/* Plan Display with Arrows */}
-                            <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 w-full">
-                              {/* Left Arrow */}
-                              <Button variant="ghost"
-                                onClick={handlePreviousPlan}
-                                disabled={selectedPlanIndex === 0}
-                                className={`p-2 sm:p-2.5 md:p-3 transition-all duration-200 rounded-md active:scale-[0.95] flex-shrink-0 ${selectedPlanIndex === 0
-                                  ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                                  : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
-                                  }`}
-                                aria-label="Previous plan"
-                              >
-                                <ChevronLeft size={20} className="sm:w-6 sm:h-6 md:w-7 md:h-7" />
-                              </Button>
-
-                              {/* Plan Card */}
-                              <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] text-center shadow-sm relative overflow-hidden group">
-                                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-                                {/* Popular Badge */}
-                                {currentPlan.displayOrder === 1 && (
-                                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-10">
-                                    <Badge className="bg-brand-cyan text-black font-bold text-[10px] sm:text-[10px] uppercase tracking-widest px-2 sm:px-3 py-0.5 rounded-full">
-                                      {t('pricing.popular') || 'Popular'}
-                                    </Badge>
-                                  </div>
-                                )}
-
-                                <div className="relative z-10 space-y-4 sm:space-y-6">
-                                  {/* Plan Name */}
-                                  <div>
-                                    <div className="flex items-center justify-center gap-2 mb-1">
-                                      <h3 className="text-xl sm:text-2xl font-bold text-neutral-100 tracking-tight">
-                                        {currentPlan.name}
-                                      </h3>
-                                      {currentPlan.metadata?.storageMB && parseInt(currentPlan.metadata.storageMB) >= 5120 && (
-                                        <Badge className="bg-brand-cyan/20 text-brand-cyan border-none text-[10px] px-1.5 py-0">
-                                          BYOK READY
-                                        </Badge>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* Billing Cycle Toggle - Inside card */}
-                                  <div className="flex justify-center">
-                                    <div className="bg-neutral-900/40 p-1 rounded-full border border-neutral-800/50 inline-flex relative w-full max-w-[200px]">
-                                      <div
-                                        className={`absolute inset-y-1 rounded-full bg-brand-cyan transition-all duration-300 ease-out ${billingCycle === 'monthly' ? "left-1 w-[calc(50%-3px)]" : "left-[50%] w-[calc(50%-3px)]"
-                                          }`}
-                                      />
-                                      <Button variant="ghost"
-                                        onClick={() => {
-                                          playClickSound();
-                                          setBillingCycle('monthly');
-                                        }}
-                                        className={`relative z-10 px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold rounded-full transition-colors duration-200 flex-1 ${billingCycle === 'monthly' ? "text-black" : "text-neutral-500 hover:text-neutral-300"
-                                          }`}
-                                      >
-                                        {t('pricing.monthly')}
-                                      </Button>
-                                      <Button variant="ghost"
-                                        onClick={() => {
-                                          playClickSound();
-                                          setBillingCycle('yearly');
-                                        }}
-                                        className={`relative z-10 px-2 sm:px-3 py-2 text-[10px] sm:text-sm font-bold rounded-full transition-colors duration-200 flex-1 flex items-center justify-center gap-1 sm:gap-2 ${billingCycle === 'yearly' ? "text-black" : "text-neutral-500 hover:text-neutral-300"
-                                          }`}
-                                      >
-                                        {t('pricing.yearly')}
-                                        <span className={`text-[10px] px-1 py-0.5 rounded-full font-bold  ${billingCycle === 'yearly' ? "bg-black/10" : "bg-brand-cyan/10 text-brand-cyan"
-                                          }`}>
-                                          -16%
-                                        </span>
-                                      </Button>
-                                    </div>
-                                  </div>
-
-                                  {/* Price */}
-                                  <div className="text-center pt-2">
-                                    <div className="flex items-baseline justify-center gap-1">
-                                      <span className="text-4xl sm:text-5xl font-black text-brand-cyan font-mono tracking-tighter">
-                                        {formatPrice(
-                                          currencyInfo?.currency === 'USD' && currentPlan.priceUSD ? currentPlan.priceUSD : currentPlan.priceBRL,
-                                          currencyInfo?.currency || 'BRL',
-                                          currencyInfo?.locale || 'pt-BR'
-                                        )}
-                                      </span>
-                                      <span className="text-neutral-500 text-xs font-mono uppercase">
-                                        {billingCycle === 'yearly' ? (t('pricing.perYear') || '/ano') : t('pricing.perMonth') || '/mês'}
-                                      </span>
-                                    </div>
-                                    <MicroTitle className="flex items-center justify-center gap-1.5 text-[10px] text-neutral-500 mt-2 uppercase tracking-widest ">
-                                      <Pickaxe size={10} className="text-brand-cyan/40" />
-                                      <span>{currentPlan.credits} {t('pricing.creditsLabel')}</span>
-                                    </MicroTitle>
-                                  </div>
-
-                                  {/* Plan Benefits */}
-                                  <div className="space-y-2 sm:space-y-3 text-left">
-                                    {currentPlan.metadata?.features && Array.isArray(currentPlan.metadata.features) ? (
-                                      currentPlan.metadata.features.slice(0, 4).map((benefit: string, idx: number) => (
-                                        <div key={idx} className="flex items-start gap-2 sm:gap-3 text-xs sm:text-sm text-neutral-400">
-                                          <CheckCircle2 size={14} className="sm:w-4 sm:h-4 text-brand-cyan mt-0.5 flex-shrink-0" />
-                                          <span>{benefit.trim()}</span>
-                                        </div>
-                                      ))
-                                    ) : currentPlan.description ? (
-                                      currentPlan.description.split(',').slice(0, 4).map((benefit: string, idx: number) => (
-                                        <div key={idx} className="flex items-start gap-2 sm:gap-3 text-xs sm:text-sm text-neutral-400">
-                                          <CheckCircle2 size={14} className="sm:w-4 sm:h-4 text-brand-cyan mt-0.5 flex-shrink-0" />
-                                          <span>{benefit.trim()}</span>
-                                        </div>
-                                      ))
-                                    ) : null}
-                                  </div>
-
-                                  {/* Subscribe Button */}
-                                  <div className="pt-2 sm:pt-4">
-                                    <Button variant="ghost"
-                                      onClick={() => {
-                                        playClickSound();
-                                        const link = currencyInfo?.currency === 'USD' ? currentPlan.paymentLinkUSD : currentPlan.paymentLinkBRL;
-                                        if (link) window.location.href = link;
-                                      }}
-                                      className="w-full bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold h-10 sm:h-11 rounded-md transition-transform hover:scale-[1.02] active:scale-[0.98] text-xs sm:text-sm"
-                                      size="lg"
-                                    >
-                                      <CreditCard className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                      {t('pricing.subscribe') || 'Assinar'}
-                                    </Button>
-                                  </div>
-                                </div>
+                          {showPackageCosts && (
+                            <div className="px-4 pb-4 pt-1 bg-neutral-950/30 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                              <div className="flex justify-between text-[10px] font-mono font-bold uppercase tracking-tight text-neutral-300 border-b border-neutral-800/60 pb-2 mb-2">
+                                <span>Modelo / Resolução</span>
+                                <span>Imagens</span>
                               </div>
-
-                              {/* Right Arrow */}
-                              <Button variant="ghost"
-                                onClick={handleNextPlan}
-                                disabled={selectedPlanIndex === filteredPlans.length - 1}
-                                className={`p-2 sm:p-2.5 md:p-3 transition-all duration-200 rounded-md active:scale-[0.95] flex-shrink-0 ${selectedPlanIndex === filteredPlans.length - 1
-                                  ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                                  : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
-                                  }`}
-                                aria-label="Next plan"
-                              >
-                                <ChevronRight size={20} className="sm:w-6 sm:h-6 md:w-7 md:h-7" />
-                              </Button>
-                            </div>
-
-                            {/* Plan Indicator */}
-                            <div className="flex gap-1.5 sm:gap-2 mb-2 sm:mb-3 md:mb-4">
-                              {filteredPlans.map((_, index) => (
-                                <Button variant="ghost"
-                                  key={index}
-                                  onClick={() => {
-                                    playClickSound();
-                                    setSelectedPlanIndex(index);
-                                  }}
-                                  className={`h-2 rounded-md transition-all duration-300 ease-out ${index === selectedPlanIndex
-                                    ? 'bg-brand-cyan w-8 shadow-[0_0_10px_rgba(82,221,235,0.4)]'
-                                    : 'bg-neutral-600 hover:bg-neutral-500 w-2 hover:scale-125'
-                                    }`}
-                                  aria-label={`Select plan ${index + 1}`}
-                                />
+                              {[
+                                { label: '2.5 Flash / NB2 1K', cost: 1 },
+                                { label: 'Gemini Pro 1K (HD)', cost: 2 },
+                                { label: 'Gemini Pro 2K', cost: 3 },
+                                { label: 'Gemini Pro 3K', cost: 4 },
+                                { label: 'Gemini Pro 4K', cost: 5 },
+                                { label: 'Nano Banana 2 2K', cost: 3 },
+                                { label: 'Nano Banana 2 3K', cost: 4 },
+                                { label: 'Nano Banana 2 4K', cost: 5 },
+                              ].map((item, idx) => (
+                                <div key={idx} className="flex justify-between text-[10px] font-mono items-center">
+                                  <span className="text-neutral-300">{item.label}</span>
+                                  <span className="text-brand-cyan font-bold tabular-nums">{Math.floor(currentPackage.credits / item.cost)}</span>
+                                </div>
                               ))}
+                              <div className="flex justify-between text-[10px] font-mono items-center pt-2 border-t border-neutral-800/50 mt-1">
+                                <span className="text-neutral-300">Veo 3 (Vídeo)</span>
+                                <span className="text-brand-cyan font-bold tabular-nums">{Math.floor(currentPackage.credits / 15)} vídeos</span>
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="text-center py-10 sm:py-14 md:py-16 text-neutral-600 font-mono  text-sm sm:text-base">
-                            {t('pricing.noPlansFound') || 'Nenhum plano disponível no momento.'}
-                          </div>
-                        )}
+                          )}
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex flex-col gap-2 pt-1">
+                          <Button
+                            onClick={() => { playClickSound(); handleBuyCredits(); }}
+                            className="w-full bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] shadow-lg"
+                          >
+                            <CreditCard size={14} />
+                            {t('creditsPackages.buy') || 'Comprar'}
+                          </Button>
+                          {currencyInfo?.currency === 'BRL' && ABACATEPAY_LINKS[currentPackage.credits] && (
+                            <Button
+                              onClick={() => { playClickSound(); handleBuyWithPix(); }}
+                              className="w-full bg-[#6fd591]/80 hover:bg-[#6fd591] text-white font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99]"
+                            >
+                              <QrCode size={14} />
+                              {t('pix.payWithPix') || 'Pagar com PIX'}
+                            </Button>
+                          )}
+                          <button
+                            onClick={() => { playClickSound(); setActiveTab('assinatura'); }}
+                            className="w-full text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-widest transition-colors hover:bg-neutral-800/30 rounded-md py-2"
+                          >
+                            {t('pricing.tabs.subscriptions') || 'Ver Assinatura'} →
+                          </button>
+                        </div>
+
+                        <p className="text-[10px] font-mono text-neutral-600 text-center pt-1">
+                          {t('creditsPackages.note') || 'Créditos não expiram e podem ser usados a qualquer momento'}
+                        </p>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* Credits Tab Content */}
-                {activeTab === 'credits' && subscriptionStatus && (() => {
+                {/* ── Assinatura tab ── */}
+                {activeTab === 'assinatura' && (
+                  <div className="py-4 space-y-3 animate-fade-in">
+                    {subscriptionPlans.length > 0 ? (
+                      <>
+                        {/* Billing toggle */}
+                        <div className="grid grid-cols-2 bg-neutral-900/50 p-1 rounded-md border border-neutral-800/50">
+                          {(['monthly', 'yearly'] as const).map((cycle) => (
+                            <button
+                              key={cycle}
+                              onClick={() => { playClickSound(); setBillingCycle(cycle); }}
+                              className={`py-1.5 text-[11px] font-mono uppercase tracking-wide rounded transition-all flex items-center justify-center gap-1.5 ${billingCycle === cycle ? 'bg-neutral-800 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-300'}`}
+                            >
+                              {cycle === 'monthly' ? (t('pricing.monthly') || 'Mensal') : (t('pricing.yearly') || 'Anual')}
+                              {cycle === 'yearly' && (
+                                <span className={`text-[9px] px-1 py-0.5 rounded font-bold ${billingCycle === 'yearly' ? 'bg-brand-cyan/20 text-brand-cyan' : 'bg-neutral-800 text-neutral-500'}`}>-16%</span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* 2-column plan cards */}
+                        <div className="grid grid-cols-2 gap-3">
+                          {filteredPlans.map((plan) => {
+                            const planPrice = currencyInfo?.currency === 'USD' && plan.priceUSD ? plan.priceUSD : plan.priceBRL;
+                            const benefits = (plan.metadata?.features && Array.isArray(plan.metadata.features) ? plan.metadata.features : plan.description?.split(',') ?? []).slice(0, 4);
+                            const isPopular = plan.displayOrder === 1;
+                            return (
+                              <div key={plan.id} className={`relative bg-neutral-900/40 border rounded-xl p-4 space-y-4 flex flex-col ${isPopular ? 'border-brand-cyan/40' : 'border-neutral-800/50'}`}>
+                                {isPopular && (
+                                  <div className="absolute -top-px left-1/2 -translate-x-1/2">
+                                    <Badge className="bg-brand-cyan text-black font-bold text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-b-md rounded-t-none whitespace-nowrap">
+                                      {t('pricing.popular') || 'Popular'}
+                                    </Badge>
+                                  </div>
+                                )}
+
+                                {/* Name */}
+                                <div className="pt-1">
+                                  <p className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 mb-0.5">Plano</p>
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-base font-black text-white leading-tight">{plan.name}</span>
+                                    {plan.metadata?.storageMB && parseInt(plan.metadata.storageMB) >= 5120 && (
+                                      <Badge className="bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20 text-[9px] px-1">BYOK</Badge>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Price */}
+                                <div className="border-t border-neutral-800/40 pt-3">
+                                  <p className="text-[9px] font-mono uppercase tracking-widest text-neutral-300 mb-1">
+                                    {billingCycle === 'yearly' ? (t('pricing.perYear') || '/ano') : (t('pricing.perMonth') || '/mês')}
+                                  </p>
+                                  <span className="text-2xl font-black font-mono text-white tabular-nums">
+                                    {formatPrice(planPrice, currencyInfo?.currency || 'BRL', currencyInfo?.locale || 'pt-BR')}
+                                  </span>
+                                  <div className="flex items-center gap-1 text-[9px] font-mono text-brand-cyan/60 uppercase mt-1">
+                                    <Pickaxe size={9} />
+                                    <span>{plan.credits} {t('pricing.creditsLabel') || 'créd/mês'}</span>
+                                  </div>
+                                </div>
+
+                                {/* Benefits */}
+                                <div className="space-y-1.5 flex-1">
+                                  {benefits.map((benefit: string, idx: number) => (
+                                    <div key={idx} className="flex items-start gap-1.5 text-[10px] font-mono text-neutral-300">
+                                      <CheckCircle2 size={11} className="text-brand-cyan flex-shrink-0 mt-0.5" />
+                                      <span>{benefit.trim()}</span>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {/* CTA */}
+                                <Button
+                                  onClick={() => {
+                                    playClickSound();
+                                    const link = currencyInfo?.currency === 'USD' ? plan.paymentLinkUSD : plan.paymentLinkBRL;
+                                    if (link) window.location.href = link;
+                                  }}
+                                  className={`w-full text-xs font-mono font-semibold rounded-md transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 ${isPopular ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black shadow-lg' : 'bg-neutral-800 hover:bg-neutral-700 text-white'}`}
+                                >
+                                  <CreditCard size={12} />
+                                  {t('pricing.subscribe') || 'Assinar'}
+                                </Button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-12 text-neutral-600 font-mono text-sm">
+                        {t('pricing.noPlansFound') || 'Nenhum plano disponível no momento.'}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Carteira tab ── */}
+                {activeTab === 'carteira' && subscriptionStatus && (() => {
                   const {
                     hasActiveSubscription,
                     subscriptionTier,
                     monthlyCredits,
                     creditsUsed,
-                    creditsRemaining,
                     creditsResetDate,
                     totalCreditsEarned,
                     totalCredits,
                   } = subscriptionStatus;
 
-                  // Calculate total credits available
                   const totalCreditsAvailable = typeof totalCredits === 'number'
                     ? totalCredits
-                    : ((totalCreditsEarned ?? 0) + (creditsRemaining ?? 0));
+                    : ((totalCreditsEarned ?? 0));
 
-                  const creditsPercentage = monthlyCredits > 0
-                    ? Math.round((creditsUsed / monthlyCredits) * 100)
-                    : 0;
-
-                  const monthlyUsageStyle = {
-                    '--progress': `${Math.min(creditsPercentage, 100)}%`,
-                  } as CSSProperties;
+                  const usedPercentage = monthlyCredits > 0 ? Math.min(Math.round((creditsUsed / monthlyCredits) * 100), 100) : 0;
 
                   return (
-                    <div className="flex flex-col items-center justify-center py-4 sm:py-6 md:py-8 animate-slide-in-left transition-all duration-300 ease-in-out">
-                      {/* Available Credits Box */}
-                      <div className="bg-neutral-950/20 backdrop-blur-sm border border-neutral-800/30 rounded-xl p-5 sm:p-6 md:p-8 w-full max-w-[280px] sm:max-w-[420px] text-center shadow-sm mb-6 sm:mb-8 md:mb-10">
-                        <div className="space-y-4">
+                    <div className="animate-slide-in-left py-4 sm:py-6 space-y-3">
+                      {/* Header: balance + tier */}
+                      <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-5 sm:p-6 space-y-5">
+                        {/* Balance row */}
+                        <div className="flex items-center justify-between">
                           <div>
-                            {/* Credits Display */}
-                            <div className="flex items-center justify-center mb-3">
-                              <div className="text-6xl sm:text-7xl md:text-8xl font-black text-brand-cyan drop-shadow-[0_0_15px_rgba(82,221,235,0.3)] font-mono leading-none tracking-tighter">
+                            <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-300 mb-1">
+                              {t('credits.available') || 'Disponíveis'}
+                            </p>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-4xl sm:text-5xl font-black font-mono text-white leading-none">
                                 {totalCreditsAvailable}
-                              </div>
-                            </div>
-
-                            <MicroTitle className="flex items-center justify-center gap-2 text-neutral-500 uppercase tracking-widest">
-                              <Pickaxe
-                                size={12}
-                                className="text-brand-cyan/50 flex-shrink-0"
-                              />
-                              {t('credits.available')}
-                            </MicroTitle>
-                            <div className="flex flex-col items-center gap-2 mt-1">
-                              <div className="flex items-center justify-center gap-1.5">
-                                <div className="text-[10px] sm:text-[11px] font-mono text-brand-cyan/50 uppercase tracking-widest">
-                                  ≈ {totalCreditsAvailable} {t('pricing.imagesEstimate') || 'Imagens HD'}
-                                </div>
-                                <button
-                                  onClick={() => setShowStatusCosts(!showStatusCosts)}
-                                  className="flex items-center gap-1 text-[10px] text-neutral-600 hover:text-brand-cyan transition-colors cursor-pointer uppercase font-mono tracking-widest pl-2 border-l border-neutral-800 ml-2"
-                                >
-                                  <span>{showStatusCosts ? 'Ver menos' : 'Ver modelos'}</span>
-                                  {showStatusCosts ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-                                </button>
-                              </div>
-
-                              {/* Expandable Costs Section */}
-                              {showStatusCosts && (
-                                <div className="w-full max-w-[300px] mt-2 py-3 px-4 bg-neutral-950/40 rounded-lg border border-neutral-800/30 animate-in fade-in slide-in-from-top-2 duration-300">
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between text-[11px] font-bold uppercase tracking-tight text-neutral-400 border-b border-neutral-800/100 pb-1 mb-2">
-                                      <span>Modelo / Resolução</span>
-                                      <span>Imagens</span>
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                      {[
-                                        { label: '2.5 Flash / NB2 1K', cost: 1 },
-                                        { label: 'Gemini Pro 1K (HD)', cost: 2 },
-                                        { label: 'Gemini Pro 2K', cost: 3 },
-                                        { label: 'Gemini Pro 3K', cost: 4 },
-                                        { label: 'Gemini Pro 4K', cost: 5 },
-                                        { label: 'Nano Banana 2 2K', cost: 3 },
-                                        { label: 'Nano Banana 2 3K', cost: 4 },
-                                        { label: 'Nano Banana 2 4K', cost: 5 },
-                                      ].map((item, idx) => (
-                                        <div key={idx} className="flex justify-between text-[10px] items-center">
-                                          <span className="text-neutral-500">{item.label}</span>
-                                          <span className="text-brand-cyan font-bold">{Math.floor(totalCreditsAvailable / item.cost)}</span>
-                                        </div>
-                                      ))}
-
-                                      <div className="flex justify-between text-[10px] items-center pt-1 border-t border-neutral-800/50 mt-1">
-                                        <span className="text-neutral-500">Veo 3 (Vídeo)</span>
-                                        <span className="text-brand-cyan font-bold">{Math.floor(totalCreditsAvailable / 15)} Vídeos</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
+                              </span>
+                              <span className="text-xs font-mono text-brand-cyan/70 uppercase">
+                                créditos
+                              </span>
                             </div>
                           </div>
-
-                          {/* Reset Date */}
-                          {creditsResetDate && (
-                            <div className="pt-6 border-t border-neutral-800/40">
-                              <div className="text-[10px] sm:text-[11px] font-mono text-neutral-500 uppercase tracking-widest text-center">
-                                {hasActiveSubscription
-                                  ? t('credits.renews', { date: formatDate(creditsResetDate) })
-                                  : t('credits.resets', { date: formatDate(creditsResetDate) })}
-                              </div>
-                            </div>
+                          {subscriptionTier && (
+                            <Badge className="bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1">
+                              {subscriptionTier}
+                            </Badge>
                           )}
-
-                          {/* Action Buttons */}
-                          <div className="flex flex-col gap-2 mt-4 sm:mt-6">
-                            <Button variant="ghost"
-                              onClick={() => {
-                                playClickSound();
-                                setActiveTab('buy');
-                              }}
-                              className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[brand-cyan]/20"
-                            >
-                              <CreditCard size={14} className="sm:w-4 sm:h-4" />
-                              {t('credits.buyCredits') || 'Comprar Créditos'}
-                            </Button>
-                            <Button variant="ghost"
-                              onClick={() => {
-                                playClickSound();
-                                onClose();
-                                navigate('/profile');
-                                // Scroll to usage history section after navigation
-                                setTimeout(() => {
-                                  const section = document.getElementById('usage-history-section');
-                                  if (section) {
-                                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                  }
-                                }, 300);
-                              }}
-                              className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-neutral-800/50 hover:bg-neutral-800/70 border border-neutral-700/50 hover:border-neutral-600/50 text-neutral-300 font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
-                            >
-                              <FileText size={14} className="sm:w-4 sm:h-4" />
-                              {t('usageHistory.title') || 'Histórico de Uso'}
-                            </Button>
-                          </div>
                         </div>
+
+                        {/* Monthly usage bar */}
+                        {monthlyCredits > 0 && (
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between text-[10px] font-mono uppercase tracking-widest text-neutral-300">
+                              <span>Uso mensal</span>
+                              <span>{creditsUsed} / {monthlyCredits}</span>
+                            </div>
+                            <div className="h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-brand-cyan/70 rounded-full transition-all duration-500"
+                                style={{ width: `${usedPercentage}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Reset date */}
+                        {creditsResetDate && (
+                          <p className="text-[10px] font-mono text-neutral-300 uppercase tracking-widest">
+                            {hasActiveSubscription
+                              ? t('credits.renews', { date: formatDate(creditsResetDate) })
+                              : t('credits.resets', { date: formatDate(creditsResetDate) })}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Model cost reference — expandable */}
+                      <div className="border border-neutral-800/40 rounded-xl overflow-hidden">
+                        <button
+                          onClick={() => setShowStatusCosts(!showStatusCosts)}
+                          className="w-full flex items-center justify-between px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-neutral-300 hover:text-white hover:bg-neutral-900/40 transition-colors"
+                          aria-expanded={showStatusCosts}
+                        >
+                          <span className="flex items-center gap-2">
+                            <Pickaxe size={11} className="text-brand-cyan/70" />
+                            Quanto rende por modelo
+                          </span>
+                          {showStatusCosts ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                        </button>
+
+                        {showStatusCosts && (
+                          <div className="px-4 pb-4 pt-1 bg-neutral-950/30 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                            <div className="flex justify-between text-[10px] font-mono font-bold uppercase tracking-tight text-neutral-300 border-b border-neutral-800/60 pb-2 mb-2">
+                              <span>Modelo / Resolução</span>
+                              <span>Imagens</span>
+                            </div>
+                            {[
+                              { label: '2.5 Flash / NB2 1K', cost: 1 },
+                              { label: 'Gemini Pro 1K (HD)', cost: 2 },
+                              { label: 'Gemini Pro 2K', cost: 3 },
+                              { label: 'Gemini Pro 3K', cost: 4 },
+                              { label: 'Gemini Pro 4K', cost: 5 },
+                              { label: 'Nano Banana 2 2K', cost: 3 },
+                              { label: 'Nano Banana 2 3K', cost: 4 },
+                              { label: 'Nano Banana 2 4K', cost: 5 },
+                            ].map((item, idx) => (
+                              <div key={idx} className="flex justify-between text-[10px] font-mono items-center">
+                                <span className="text-neutral-300">{item.label}</span>
+                                <span className="text-brand-cyan font-bold tabular-nums">{Math.floor(totalCreditsAvailable / item.cost)}</span>
+                              </div>
+                            ))}
+                            <div className="flex justify-between text-[10px] font-mono items-center pt-2 border-t border-neutral-800/50 mt-1">
+                              <span className="text-neutral-300">Veo 3 (Vídeo)</span>
+                              <span className="text-brand-cyan font-bold tabular-nums">{Math.floor(totalCreditsAvailable / 15)} vídeos</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex flex-col gap-2 pt-1">
+                        <Button
+                          onClick={() => { playClickSound(); setActiveTab('creditos'); }}
+                          className="w-full bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] shadow-lg"
+                        >
+                          <CreditCard size={14} />
+                          {t('credits.buyCredits') || 'Comprar Créditos'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            playClickSound();
+                            onClose();
+                            navigate('/profile');
+                            setTimeout(() => {
+                              document.getElementById('usage-history-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }, 300);
+                          }}
+                          className="w-full border-neutral-700/50 hover:border-neutral-600/50 bg-neutral-900/30 hover:bg-neutral-800/50 text-neutral-300 font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2"
+                        >
+                          <FileText size={14} />
+                          {t('usageHistory.title') || 'Histórico de Uso'}
+                        </Button>
                       </div>
                     </div>
                   );
                 })()}
 
-                {/* Show message if trying to view credits but no subscription status */}
-                {activeTab === 'credits' && !subscriptionStatus && (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <div className="text-neutral-400 font-mono text-sm mb-4">
+                {/* Carteira — no subscription */}
+                {activeTab === 'carteira' && !subscriptionStatus && (
+                  <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
+                    <p className="text-neutral-400 font-mono text-sm">
                       {t('credits.noSubscription') || 'Faça login para ver seus créditos disponíveis'}
-                    </div>
-                    <Button variant="ghost"
-                      onClick={() => {
-                        playClickSound();
-                        setActiveTab('buy');
-                      }}
-                      className="text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono uppercase  transition-colors px-3 py-2 hover:bg-neutral-800/30 rounded"
+                    </p>
+                    <button
+                      onClick={() => { playClickSound(); setActiveTab('creditos'); }}
+                      className="text-[11px] text-brand-cyan hover:text-brand-cyan/80 font-mono uppercase tracking-widest transition-colors px-3 py-2 hover:bg-neutral-800/30 rounded"
                     >
                       {t('creditsPackages.buy') || 'Comprar'} →
-                    </Button>
+                    </button>
                   </div>
                 )}
               </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, AlertTriangle, Heart } from 'lucide-react';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -29,6 +30,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   variant = 'warning',
   showSaveAll = false
 }) => {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
   useEffect(() => {

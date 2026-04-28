@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, Diamond, Globe, Lock } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { toast } from 'sonner';
@@ -27,6 +28,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
     prompt,
     initialData,
 }) => {
+    useScrollLock(isOpen);
     const { t } = useTranslation();
     const [name, setName] = useState(initialData?.name || '');
     const [description, setDescription] = useState(initialData?.description || '');

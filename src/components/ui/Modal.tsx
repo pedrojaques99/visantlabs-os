@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useScrollLock } from '@/hooks/useScrollLock';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -57,6 +58,8 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
+  useScrollLock(isOpen);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -66,13 +69,8 @@ export const Modal: React.FC<ModalProps> = ({
       }
     };
 
-    document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', handleEscape);
-
-    return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', handleEscape);
-    };
+    return () => window.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose, closeOnEscape]);
 
   useEffect(() => {

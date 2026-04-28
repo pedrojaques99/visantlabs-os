@@ -8,6 +8,7 @@ import { SWOTSection } from './SWOTSection';
 import { ColorPalettesSection } from './ColorPalettesSection';
 import { PersonaSection } from './PersonaSection';
 import { ArchetypesSection } from './ArchetypesSection';
+import { cleanMarketResearchText } from '@/utils/brandingHelpers';
 import { TextSection } from './TextSection';
 import { EmptySectionCard } from './EmptySectionCard';
 
@@ -59,21 +60,7 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
     );
   }
 
-  // Helper function to clean and normalize string content
-  const cleanString = (text: string): string => {
-    if (!text) return '';
-
-    // Convert literal \n to actual newlines
-    let cleaned = text.replace(/\\n/g, '\n');
-
-    // Remove leading/trailing whitespace but preserve internal formatting
-    cleaned = cleaned.trim();
-
-    // Normalize multiple consecutive newlines to double newlines (paragraph breaks)
-    cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
-
-    return cleaned;
-  };
+  const cleanString = cleanMarketResearchText;
 
   // Helper function to ensure content is a string for text sections
   const ensureString = (value: any): string => {

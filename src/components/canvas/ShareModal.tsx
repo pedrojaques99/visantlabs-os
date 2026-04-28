@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, Copy, Share2, Users, Edit, Eye, Trash2, Check } from 'lucide-react';
+import { Copy, Share2, Edit3, Eye, Trash2, Check, Link2, UserPlus, X } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { Modal } from '@/components/ui/Modal';
 import { canvasApi } from '@/services/canvasApi';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/input';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -16,6 +16,28 @@ interface ShareModalProps {
   canEdit?: string[];
   canView?: string[];
   onShareUpdate?: () => void;
+}
+
+function getInitials(value: string): string {
+  if (value.includes('@')) return value.split('@')[0].slice(0, 2).toUpperCase();
+  return value.slice(0, 2).toUpperCase();
+}
+
+function getAvatarColor(value: string): string {
+  const colors = [
+    'bg-violet-500/20 text-violet-300',
+    'bg-blue-500/20 text-blue-300',
+    'bg-emerald-500/20 text-emerald-300',
+    'bg-amber-500/20 text-amber-300',
+    'bg-rose-500/20 text-rose-300',
+    'bg-sky-500/20 text-sky-300',
+  ];
+  return colors[value.charCodeAt(0) % colors.length];
+}
+
+function displayLabel(value: string): string {
+  if (value.includes('@')) return value;
+  return `${value.slice(0, 8)}…${value.slice(-4)}`;
 }
 
 const ShareModalComponent: React.FC<ShareModalProps> = ({
@@ -43,33 +65,16 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
       setEditUsers(canEdit);
       setViewUsers(canView);
       if (shareId) {
-        const baseUrl = window.location.origin;
-        setShareUrl(`${baseUrl}/canvas/shared/${shareId}`);
+        setShareUrl(`${window.location.origin}/canvas/shared/${shareId}`);
       }
     }
   }, [isOpen, canEdit, canView, shareId]);
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => {
-        document.removeEventListener('keydown', handleEscape);
-      };
-    }
-  }, [isOpen, onClose]);
 
   const handleGenerateShare = async () => {
     setIsGenerating(true);
     try {
       const result = await canvasApi.shareProject(projectId, editUsers, viewUsers);
-      const baseUrl = window.location.origin;
-      setShareUrl(`${baseUrl}/canvas/shared/${result.shareId}`);
+      setShareUrl(`${window.location.origin}/canvas/shared/${result.shareId}`);
       toast.success('Link de compartilhamento gerado!');
       onShareUpdate?.();
     } catch (error: any) {
@@ -81,13 +86,12 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
 
   const handleCopyLink = async () => {
     if (!shareUrl) return;
-
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       toast.success(t('shareModal.linkCopied'));
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
+    } catch {
       toast.error(t('shareModal.errorCopyingLink'));
     }
   };
@@ -95,10 +99,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
   const handleUpdatePermissions = async () => {
     setIsLoading(true);
     try {
-      await canvasApi.updateShareSettings(projectId, {
-        canEdit: editUsers,
-        canView: viewUsers,
-      });
+      await canvasApi.updateShareSettings(projectId, { canEdit: editUsers, canView: viewUsers });
       toast.success(t('shareModal.permissionsUpdated'));
       onShareUpdate?.();
     } catch (error: any) {
@@ -109,10 +110,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
   };
 
   const handleRemoveShare = async () => {
-    if (!confirm(t('shareModal.confirmRemoveShare'))) {
-      return;
-    }
-
+    if (!confirm(t('shareModal.confirmRemoveShare'))) return;
     setIsLoading(true);
     try {
       await canvasApi.removeShare(projectId);
@@ -136,9 +134,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
     }
   };
 
-  const removeEditUser = (userId: string) => {
-    setEditUsers(editUsers.filter(id => id !== userId));
-  };
+  const removeEditUser = (userId: string) => setEditUsers(editUsers.filter(id => id !== userId));
 
   const addViewUser = () => {
     if (newViewUser.trim() && !viewUsers.includes(newViewUser.trim())) {
@@ -147,223 +143,214 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
     }
   };
 
-  const removeViewUser = (userId: string) => {
-    setViewUsers(viewUsers.filter(id => id !== userId));
-  };
-
-  if (!isOpen) {
-    return null;
-  }
+  const removeViewUser = (userId: string) => setViewUsers(viewUsers.filter(id => id !== userId));
 
   const hasChanges =
     JSON.stringify(editUsers) !== JSON.stringify(canEdit) ||
     JSON.stringify(viewUsers) !== JSON.stringify(canView);
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto"
-      onClick={onClose}
-    >
-      <div
-        className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 w-full max-w-2xl mx-4 shadow-xl max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Share2 className="text-brand-cyan" size={24} />
-            <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
-              {t('shareModal.shareProject')}
-            </h2>
-          </div>
-          <Button variant="ghost" onClick={onClose}
-            className="text-neutral-500 hover:text-neutral-300 transition-colors"
-            aria-label="Close"
-          >
-            <X size={20} />
-          </Button>
-        </div>
+  const totalUsers = editUsers.length + viewUsers.length;
 
-        {/* Share Link Section */}
-        <div className="mb-6">
-          <label className="block text-sm font-mono text-neutral-400 mb-2">
-            {t('shareModal.shareLink')}
-          </label>
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="sm"
+      showCloseButton={false}
+      mobileDrawer={false}
+      contentClassName="sm:max-w-md"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-neutral-800 border border-neutral-700/50 flex items-center justify-center shrink-0">
+            <Share2 size={15} className="text-neutral-400" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-neutral-100">Compartilhar projeto</h2>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              {totalUsers > 0
+                ? `${totalUsers} pessoa${totalUsers !== 1 ? 's' : ''} com acesso`
+                : 'Nenhum colaborador ainda'}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800 transition-colors"
+        >
+          <X size={15} />
+        </button>
+      </div>
+
+      <div className="space-y-5">
+        {/* Link Section */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <Link2 size={12} className="text-neutral-500" />
+            <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-[0.12em]">Link público</span>
+          </div>
           {shareUrl ? (
-            <div className="flex items-center gap-2">
-              <Input
-                type="text"
-                value={shareUrl}
-                readOnly
-                className="flex-1 px-3 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded text-sm text-neutral-300 font-mono"
-              />
-              <Button variant="brand" onClick={handleCopyLink}
-                className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded-md transition-all flex items-center gap-2"
+            <div className="flex items-center gap-2 p-1.5 pl-3 bg-neutral-800/60 border border-neutral-700/40 rounded-xl">
+              <span className="flex-1 text-xs text-neutral-400 truncate">{shareUrl}</span>
+              <button
+                onClick={handleCopyLink}
+                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  copied
+                    ? 'bg-green-500/15 text-green-400 border border-green-500/20'
+                    : 'bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan border border-brand-cyan/25'
+                }`}
               >
-                {copied ? (
-                  <>
-                    <Check size={16} />
-                    <span className="text-xs font-mono">{t('shareModal.copied')}</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy size={16} />
-                    <span className="text-xs font-mono">{t('shareModal.copy')}</span>
-                  </>
-                )}
-              </Button>
+                {copied ? <Check size={12} /> : <Copy size={12} />}
+                {copied ? 'Copiado!' : 'Copiar'}
+              </button>
             </div>
           ) : (
-            <Button variant="brand" onClick={handleGenerateShare}
+            <button
+              onClick={handleGenerateShare}
               disabled={isGenerating}
-              className="w-full px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-cyan/15 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/25 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
             >
               {isGenerating ? (
-                <>
-                  <GlitchLoader size={16} />
-                  <span className="text-xs font-mono">Gerando...</span>
-                </>
+                <><GlitchLoader size={14} /> Gerando link...</>
               ) : (
-                <>
-                  <Share2 size={16} />
-                  <span className="text-xs font-mono">{t('shareModal.generateShareLink')}</span>
-                </>
+                <><Share2 size={14} /> {t('shareModal.generateShareLink')}</>
               )}
-            </Button>
+            </button>
           )}
         </div>
 
-        {/* Permissions Section */}
+        {/* Permissions */}
         {isCollaborative && (
-          <div className="space-y-6 mb-6">
-            {/* Can Edit Section */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Edit className="text-brand-cyan" size={18} />
-                <label className="text-sm font-mono text-neutral-300">
-                  {t('shareModal.usersWhoCanEdit')}
-                </label>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="text"
-                    value={newEditUser}
-                    onChange={(e) => setNewEditUser(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addEditUser()}
-                    placeholder={t('shareModal.userEmailPlaceholder')}
-                    className="flex-1 px-3 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded text-sm text-neutral-300 font-mono placeholder-neutral-600"
-                  />
-                  <Button variant="ghost" onClick={addEditUser}
-                    className="px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border border-neutral-700/50 rounded text-xs font-mono transition-all"
-                  >
-                    Adicionar
-                  </Button>
-                </div>
-                {editUsers.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {editUsers.map((userId) => (
-                      <div
-                        key={userId}
-                        className="flex items-center gap-2 px-3 py-1 bg-neutral-800/50 border border-neutral-700/50 rounded text-xs font-mono text-neutral-300"
-                      >
-                        <span>{userId}</span>
-                        <Button variant="ghost" onClick={() => removeEditUser(userId)}
-                          className="text-neutral-500 hover:text-red-400 transition-colors"
-                        >
-                          <X size={14} />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Can View Section */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Eye className="text-brand-cyan" size={18} />
-                <label className="text-sm font-mono text-neutral-300">
-                  Usuários que podem Visualizar
-                </label>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="text"
-                    value={newViewUser}
-                    onChange={(e) => setNewViewUser(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addViewUser()}
-                    placeholder="E-mail do usuário"
-                    className="flex-1 px-3 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded text-sm text-neutral-300 font-mono placeholder-neutral-600"
-                  />
-                  <Button variant="ghost" onClick={addViewUser}
-                    className="px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border border-neutral-700/50 rounded text-xs font-mono transition-all"
-                  >
-                    Adicionar
-                  </Button>
-                </div>
-                {viewUsers.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {viewUsers.map((userId) => (
-                      <div
-                        key={userId}
-                        className="flex items-center gap-2 px-3 py-1 bg-neutral-800/50 border border-neutral-700/50 rounded text-xs font-mono text-neutral-300"
-                      >
-                        <span>{userId}</span>
-                        <Button variant="ghost" onClick={() => removeViewUser(userId)}
-                          className="text-neutral-500 hover:text-red-400 transition-colors"
-                        >
-                          <X size={14} />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <>
+            <div className="h-px bg-neutral-800" />
+            <UserSection
+              icon={<Edit3 size={13} />}
+              label="Pode editar"
+              roleColor="text-violet-400"
+              users={editUsers}
+              newUser={newEditUser}
+              onNewUserChange={setNewEditUser}
+              onAdd={addEditUser}
+              onRemove={removeEditUser}
+              placeholder="E-mail do colaborador"
+            />
+            <UserSection
+              icon={<Eye size={13} />}
+              label="Pode visualizar"
+              roleColor="text-sky-400"
+              users={viewUsers}
+              newUser={newViewUser}
+              onNewUserChange={setNewViewUser}
+              onAdd={addViewUser}
+              onRemove={removeViewUser}
+              placeholder="E-mail do visualizador"
+            />
+          </>
         )}
 
-        {/* Actions */}
-        <div className="flex items-center justify-between gap-3 pt-4 border-t border-neutral-800/50">
-          <Button variant="ghost" onClick={handleRemoveShare}
+        {/* Footer */}
+        <div className="h-px bg-neutral-800" />
+        <div className="flex items-center justify-between">
+          <button
+            onClick={handleRemoveShare}
             disabled={!isCollaborative || isLoading}
-            className="px-4 py-2 text-xs font-mono text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-500/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="flex items-center gap-1.5 text-xs text-neutral-600 hover:text-red-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <Trash2 size={14} />
-            <span>Remover Compartilhamento</span>
-          </Button>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={onClose}
-              className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
+            <Trash2 size={12} />
+            Remover acesso
+          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="px-3.5 py-1.5 text-xs text-neutral-400 hover:text-neutral-200 border border-neutral-700/60 hover:border-neutral-600 rounded-lg transition-colors"
             >
               Fechar
-            </Button>
+            </button>
             {isCollaborative && hasChanges && (
-              <Button variant="brand" onClick={handleUpdatePermissions}
+              <button
+                onClick={handleUpdatePermissions}
                 disabled={isLoading}
-                className="px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan border border-brand-cyan/25 rounded-lg transition-all disabled:opacity-50"
               >
-                {isLoading ? (
-                  <>
-                    <GlitchLoader size={14} />
-                    <span>Salvando...</span>
-                  </>
-                ) : (
-                  <>
-                    <Check size={14} />
-                    <span>Salvar Permissões</span>
-                  </>
-                )}
-              </Button>
+                {isLoading ? <><GlitchLoader size={12} /> Salvando...</> : <><Check size={12} /> Salvar</>}
+              </button>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 
-// Memoize the component to prevent unnecessary re-renders
+interface UserSectionProps {
+  icon: React.ReactNode;
+  label: string;
+  roleColor: string;
+  users: string[];
+  newUser: string;
+  onNewUserChange: (v: string) => void;
+  onAdd: () => void;
+  onRemove: (userId: string) => void;
+  placeholder: string;
+}
+
+const UserSection: React.FC<UserSectionProps> = ({
+  icon, label, roleColor, users, newUser, onNewUserChange, onAdd, onRemove, placeholder,
+}) => (
+  <div className="space-y-2.5">
+    <div className="flex items-center gap-1.5">
+      <span className={roleColor}>{icon}</span>
+      <span className="text-xs font-medium text-neutral-300">{label}</span>
+      {users.length > 0 && (
+        <span className="ml-auto text-xs text-neutral-600">
+          {users.length} {users.length === 1 ? 'pessoa' : 'pessoas'}
+        </span>
+      )}
+    </div>
+
+    {users.length > 0 && (
+      <div className="space-y-1.5">
+        {users.map(userId => (
+          <div
+            key={userId}
+            className="flex items-center gap-2.5 px-3 py-2 bg-neutral-800/50 border border-neutral-700/40 rounded-xl group"
+          >
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-semibold shrink-0 ${getAvatarColor(userId)}`}>
+              {getInitials(userId)}
+            </div>
+            <span className="flex-1 text-xs text-neutral-300 truncate" title={userId}>
+              {displayLabel(userId)}
+            </span>
+            <button
+              onClick={() => onRemove(userId)}
+              className="w-5 h-5 flex items-center justify-center text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all rounded"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
+
+    <div className="flex items-center gap-2">
+      <Input
+        type="text"
+        value={newUser}
+        onChange={e => onNewUserChange(e.target.value)}
+        onKeyPress={e => e.key === 'Enter' && onAdd()}
+        placeholder={placeholder}
+        className="flex-1 h-8 text-xs bg-neutral-800/40 border-neutral-700/40 placeholder:text-neutral-600 focus:border-neutral-600 rounded-lg"
+      />
+      <button
+        onClick={onAdd}
+        className="flex items-center gap-1 px-2.5 h-8 text-xs text-neutral-400 hover:text-neutral-200 bg-neutral-800/60 hover:bg-neutral-700/60 border border-neutral-700/40 rounded-lg transition-colors shrink-0 whitespace-nowrap"
+      >
+        <UserPlus size={11} />
+        Adicionar
+      </button>
+    </div>
+  </div>
+);
+
 export const ShareModal = React.memo(ShareModalComponent);

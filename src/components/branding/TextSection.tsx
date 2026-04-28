@@ -3,6 +3,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { RichTextEditor } from './RichTextEditor';
 import { MarkdownRenderer } from '@/utils/markdownRenderer';
 import { Card, CardContent } from '@/components/ui/card';
+import { cleanMarketResearchText } from '@/utils/brandingHelpers';
 
 interface TextSectionProps {
   content: string;
@@ -17,21 +18,7 @@ export const TextSection: React.FC<TextSectionProps> = ({
 }) => {
   const { theme } = useTheme();
 
-  // Helper to clean and normalize content
-  const cleanContent = (text: string): string => {
-    if (!text) return '';
-
-    // Convert literal \n to actual newlines
-    let cleaned = text.replace(/\\n/g, '\n');
-
-    // Remove leading/trailing whitespace but preserve internal formatting
-    cleaned = cleaned.trim();
-
-    // Normalize multiple consecutive newlines to double newlines (paragraph breaks)
-    cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
-
-    return cleaned;
-  };
+  const cleanContent = cleanMarketResearchText;
 
   // Ensure content is always a string and clean it
   const safeContent = typeof content === 'string'

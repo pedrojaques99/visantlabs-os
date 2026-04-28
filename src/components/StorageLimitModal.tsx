@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, AlertTriangle, CreditCard } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +18,7 @@ export const StorageLimitModal: React.FC<StorageLimitModalProps> = ({
   usedMB,
   limitMB,
 }) => {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const navigate = useNavigate();
 

@@ -9,15 +9,32 @@ export interface ParsedChunk {
   type: 'url' | 'pdf' | 'image' | 'json'
 }
 
+const PRIVATE_IP_RE = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|::1$|fc[0-9a-f]{2}:|fd[0-9a-f]{2}:)/i
+
+function assertSafeUrl(raw: string): URL {
+  const parsed = new URL(raw)
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error('Only http/https URLs are allowed')
+  }
+  const host = parsed.hostname
+  if (host === 'localhost' || PRIVATE_IP_RE.test(host)) {
+    throw new Error('Requests to internal/private addresses are not allowed')
+  }
+  return parsed
+}
+
 export async function parseUrl(url: string): Promise<ParsedChunk[]> {
   let targetUrl = url.trim()
   if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
     targetUrl = `https://${targetUrl}`
   }
 
+  assertSafeUrl(targetUrl)
+
   const response = await fetch(targetUrl, {
     headers: { 'User-Agent': 'VisantBot/1.0 (brand-extractor)' },
     signal: AbortSignal.timeout(15000),
+    redirect: 'manual',
   })
   if (!response.ok) throw new Error(`HTTP ${response.status} fetching ${targetUrl}`)
 

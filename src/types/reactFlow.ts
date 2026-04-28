@@ -540,19 +540,24 @@ export interface BrandCoreData extends BaseNodeData {
   onUploadPdfToR2?: (nodeId: string, pdfBase64: string) => Promise<string>; // Upload PDF direto para R2
 }
 
-// Video Node - generates videos from text prompts and/or images using Veo 3
+// Video Node - generates videos from text/image using any video model (Veo, Kling, etc.)
 export interface VideoNodeData extends BaseNodeData {
   type: 'video';
   prompt?: string;
   negativePrompt?: string;
-  model?: string; // Video model (e.g., 'veo-3.1-generate-preview')
+  model?: string;
   mode?: GenerationMode;
   aspectRatio?: AspectRatio;
   resolution?: Resolution;
-  duration?: string; // e.g., '5s', '10s'
-  seed?: number; // Seed for deterministic generation
-  seedLocked?: boolean; // If true, seed persists between generations
+  duration?: string;
+  seed?: number;
+  seedLocked?: boolean;
   isLoading?: boolean;
+
+  // Kling-specific params
+  klingMode?: 'std' | 'pro' | '4k';
+  sound?: 'on' | 'off';
+  cfgScale?: number;
 
   // Connected handles (synced from edges)
   connectedText?: string;
@@ -560,22 +565,22 @@ export interface VideoNodeData extends BaseNodeData {
   connectedImage2?: string;
   connectedImage3?: string;
   connectedImage4?: string;
-  connectedVideo?: string; // For extend mode
+  connectedVideo?: string;
 
   // Media inputs (Direct uploads)
-  startFrame?: string; // Base64 or URL
-  endFrame?: string; // Base64 or URL
-  referenceImages?: string[]; // Array of Base64 or URL strings
-  inputVideo?: string; // Base64 or URL for extension
-  inputVideoObject?: any; // To store the video object for file reference if needed
+  startFrame?: string;
+  endFrame?: string;
+  referenceImages?: string[];
+  inputVideo?: string;
+  inputVideoObject?: any;
 
   isLooping?: boolean;
   imageWidth?: number;
   imageHeight?: number;
 
   // Generated video support
-  resultVideoUrl?: string; // R2 URL for generated video
-  resultVideoBase64?: string; // Base64 fallback for generated video
+  resultVideoUrl?: string;
+  resultVideoBase64?: string;
 
   // Handlers
   onGenerate?: (params: GenerateVideoParams) => Promise<void>;
@@ -590,6 +595,10 @@ export interface GenerateVideoParams {
   resolution: string;
   duration?: string;
   mode: GenerationMode;
+  // Kling-specific
+  klingMode?: 'std' | 'pro' | '4k';
+  sound?: 'on' | 'off';
+  cfgScale?: number;
   startFrame?: { file?: File; base64?: string; url?: string } | null;
   endFrame?: { file?: File; base64?: string; url?: string } | null;
   referenceImages?: Array<{ file?: File; base64?: string; url?: string }>;

@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { getArchetypeImage } from '@/constants/archetypeImages';
 
 interface ArchetypesSectionProps {
   archetypes: {
@@ -41,49 +42,6 @@ interface ArchetypesSectionProps {
   }) => void;
 }
 
-// Mapear nomes dos arquétipos para nomes de arquivo
-const getArchetypeImagePath = (title: string, id?: number): string | null => {
-  const titleLower = title.toLowerCase().trim();
-
-  // Mapeamento por título (mais preciso)
-  if (titleLower === 'o explorador' || titleLower.includes('explorador')) {
-    return '/illustrations/arquetipos/explorador.png';
-  }
-  if (titleLower === 'o cara comum' || titleLower.includes('cara comum') || titleLower.includes('comum')) {
-    return '/illustrations/arquetipos/comum.png';
-  }
-  if (titleLower === 'o sábio' || titleLower.includes('sábio') || titleLower.includes('sabio')) {
-    return '/illustrations/arquetipos/sábio.png';
-  }
-  if (titleLower === 'o cuidador' || titleLower.includes('cuidador')) {
-    return '/illustrations/arquetipos/cuidador.png';
-  }
-  if (titleLower === 'o governante' || titleLower.includes('governante')) {
-    return '/illustrations/arquetipos/governante.png';
-  }
-  if (titleLower === 'o mago' || titleLower.includes('mago')) {
-    return '/illustrations/arquetipos/mago.png';
-  }
-
-  // Fallback: mapeamento por ID (se disponível)
-  if (id !== undefined) {
-    const idToImage: Record<number, string> = {
-      1: '/illustrations/arquetipos/explorador.png',
-      2: '/illustrations/arquetipos/comum.png',
-      4: '/illustrations/arquetipos/sábio.png',
-      5: '/illustrations/arquetipos/cuidador.png',
-      6: '/illustrations/arquetipos/governante.png',
-      7: '/illustrations/arquetipos/mago.png',
-    };
-
-    if (idToImage[id]) {
-      return idToImage[id];
-    }
-  }
-
-  // Arquétipos sem imagem: Herói (3), Rebelde (8), Criador (9), Prestativo (10), Amante (11), Bobo (12)
-  return null;
-};
 
 const ArchetypeCard: React.FC<{
   archetype: {
@@ -102,7 +60,7 @@ const ArchetypeCard: React.FC<{
   }) => void;
 }> = ({ archetype, isPrimary, isEditing = false, onContentChange }) => {
   const { theme } = useTheme();
-  const imagePath = getArchetypeImagePath(archetype.title, archetype.id);
+  const imagePath = getArchetypeImage(archetype.title);
   const [localArchetype, setLocalArchetype] = useState(archetype);
   const prevArchetypeRef = useRef<string>(JSON.stringify(archetype));
   const isUpdatingRef = useRef(false);

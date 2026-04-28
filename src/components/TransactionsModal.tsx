@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, CreditCard } from 'lucide-react';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { subscriptionService, type TransactionRecord } from '../services/subscriptionService';
@@ -50,6 +51,7 @@ const getStatusColor = (status: string) => {
 };
 
 export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, onClose }) => {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);

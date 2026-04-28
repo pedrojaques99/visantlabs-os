@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
-import { MessageSquare, Settings, X, Share, Brush } from 'lucide-react';
+import { MessageSquare, Settings, X, Share, Brush, Image as ImageIcon } from 'lucide-react';
 import { getTextColors, lightenColor } from '@/utils/colorUtils';
 
 // Import child components
@@ -11,6 +11,7 @@ import { ShaderControlsSidebar } from './ShaderControlsSidebar';
 import { ChatSidebar } from './ChatSidebar';
 import { ExportPanel } from '@/components/ui/ExportPanel';
 import { CommunityPresetsSidebar } from './CommunityPresetsSidebar';
+import { BrandMediaLibraryPanel } from './BrandMediaLibraryPanel';
 import { Button } from '@/components/ui/button'
 
 interface UniversalSidePanelProps {
@@ -204,6 +205,17 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             );
         }
 
+        if (activeSidePanel === 'brand-media') {
+            return (
+                <BrandMediaLibraryPanel
+                    onAddToBoard={(url, type) => {
+                        // Forward to canvas add-node handler if available
+                        if (onImportCommunityPreset) onImportCommunityPreset({ url, type }, 'brand-asset');
+                    }}
+                />
+            );
+        }
+
         if (validNodes.length === 0) {
             return (
                 <div className="h-full flex flex-col items-center justify-center p-8 text-center gap-4" style={{ color: textColors.subtle }}>
@@ -254,7 +266,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             )}
             style={{
                 width: `${panelWidth}px`,
-                height: 'calc(100vh - 910px)',
+                height: 'calc(100vh - 90px)',
                 backgroundColor: isLight ? `${sidebarBg}dd` : `${sidebarBg}cc`,
                 color: textColors.primary,
             }}
@@ -269,7 +281,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             />
 
             {/* Tabs / Header */}
-            {!overridePanel && activeSidePanel !== 'community-presets' && (
+            {!overridePanel && activeSidePanel !== 'community-presets' && activeSidePanel !== 'brand-media' && (
                 <div
                     className={cn(
                         "flex items-center justify-between border-b bg-transparent rounded-t-2xl overflow-hidden",
@@ -340,6 +352,31 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                         style={{ color: textColors.muted }}
                         onMouseEnter={(e) => e.currentTarget.style.color = textColors.primary}
                         onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
+                    >
+                        <X size={16} />
+                    </Button>
+                </div>
+            )}
+
+            {/* Global Panel Header for Brand Media */}
+            {activeSidePanel === 'brand-media' && (
+                <div
+                    className={cn(
+                        "flex items-center justify-between border-b bg-transparent rounded-t-2xl overflow-hidden h-[41px]",
+                        isLight ? "border-neutral-300/50" : "border-neutral-800/50"
+                    )}
+                >
+                    <div className="flex items-center px-4 gap-2 font-medium text-xs" style={{ color: textColors.primary }}>
+                        <ImageIcon size={13} style={{ color: 'var(--brand-cyan)' }} />
+                        Brand Media
+                    </div>
+                    <Button variant="ghost" onClick={onClose}
+                        className={cn("p-3 border-l transition-colors h-full rounded-tr-2xl",
+                            isLight ? "border-neutral-300/50 hover:bg-neutral-200/50" : "border-neutral-800/50 hover:bg-neutral-800/50"
+                        )}
+                        style={{ color: textColors.muted }}
+                        onMouseEnter={e => e.currentTarget.style.color = textColors.primary}
+                        onMouseLeave={e => e.currentTarget.style.color = textColors.muted}
                     >
                         <X size={16} />
                     </Button>

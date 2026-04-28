@@ -86,7 +86,7 @@ export async function generateCreative({
       throw new Error('No image generated for creative background');
     }
 
-    // 3. Upload to R2 (so dom-to-image-more can load via CORS)
+    // 3. Upload to R2 (so Konva useImage can load via CORS / crossOrigin='anonymous')
     backgroundUrl = result.imageUrl || await canvasApi.uploadImageToR2(`data:image/png;base64,${base64}`);
 
     if (!backgroundUrl) {

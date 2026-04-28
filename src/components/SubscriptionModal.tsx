@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, CreditCard } from 'lucide-react';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { getUserLocale, formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
@@ -11,6 +12,7 @@ interface SubscriptionModalProps {
 }
 
 export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, onClose, onBuyCredits }) => {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

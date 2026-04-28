@@ -10,7 +10,8 @@ import { useBrandKit } from '@/contexts/BrandKitContext';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 import { CreativeSetupSidebar } from './CreativeSetupSidebar';
 import { CreativeEditorSidebar } from './CreativeEditorSidebar';
-import { CreativeCanvas } from './CreativeCanvas';
+import { KonvaCanvas } from './KonvaCanvas';
+import type Konva from 'konva';
 import { CreativeToolbar, BackgroundToolbar } from './CreativeToolbar';
 import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import { exportCanvasAsPng } from './lib/exportPng';
@@ -42,7 +43,7 @@ export const CreativeStudio: React.FC = () => {
   const { undo, redo } = useCreativeStore.temporal.getState();
   const { colors, allGuidelines } = useBrandKit();
 
-  const canvasRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [previewSize, setPreviewSize] = React.useState({ width: 0, height: 0 });
 
@@ -293,7 +294,7 @@ export const CreativeStudio: React.FC = () => {
                     }`}>
                     {idx + 1}/{pages.length}
                   </div>
-                  <CreativeCanvas
+                  <KonvaCanvas
                     ref={isActive ? canvasRef : null}
                     width={dimensions.width}
                     height={dimensions.height}
@@ -312,7 +313,7 @@ export const CreativeStudio: React.FC = () => {
           </div>
         ) : status === 'editing' && previewSize.width > 0 ? (
           <div className="flex items-center gap-8 justify-center py-12">
-            <CreativeCanvas
+            <KonvaCanvas
               ref={canvasRef}
               width={previewSize.width}
               height={previewSize.height}

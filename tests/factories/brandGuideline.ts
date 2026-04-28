@@ -8,6 +8,8 @@ export interface BrandGuidelineSeed {
   logos?: any[];
   isPublic?: boolean;
   publicSlug?: string;
+  canEdit?: string[];
+  canView?: string[];
 }
 
 export async function createBrandGuideline(seed: BrandGuidelineSeed) {
@@ -25,6 +27,8 @@ export async function createBrandGuideline(seed: BrandGuidelineSeed) {
       logos: seed.logos ?? [] as any,
       isPublic: seed.isPublic ?? false,
       publicSlug: seed.publicSlug ?? null,
+      canEdit: seed.canEdit ?? [],
+      canView: seed.canView ?? [],
       extraction: { sources: [], completeness: 50 } as any,
     },
   });

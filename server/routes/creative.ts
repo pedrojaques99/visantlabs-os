@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { rateLimit } from 'express-rate-limit';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import {
   appendEvents,
@@ -11,6 +12,7 @@ import {
 import { renderCreativePlan } from '../lib/creative-renderer.js';
 import { uploadCanvasImage } from '../services/r2Service.js';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
+import { prisma } from '../db/prisma.js';
 
 const router = Router();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -234,6 +236,130 @@ router.post('/render', authenticate, async (req: AuthRequest, res) => {
   } catch (err: any) {
     console.error('[creative/render] error:', err);
     return res.status(500).json({ error: err?.message ?? 'render failed' });
+  }
+});
+
+// ─── Brand-driven generation ───────────────────────────────────────────────────
+// POST /api/creative/generate-from-brand
+// Load brand guideline → AI plan → render PNG → R2 → return imageUrl
+
+const generateFromBrandLimiter = rateLimit({ windowMs: 60_000, max: 10, standardHeaders: true, legacyHeaders: false });
+
+router.post('/generate-from-brand', generateFromBrandLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { brandId, format = '1:1', intent, feedback, previousPlan } = req.body as {
+      brandId: string;
+      format?: '1:1' | '16:9' | '9:16' | '4:5';
+      intent?: string;
+      feedback?: string;
+      previousPlan?: Record<string, any>;
+    };
+
+    if (!brandId) {
+      return res.status(400).json({ error: 'brandId is required' });
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+    }
+
+    // Load brand — enforce ownership
+    const brand = await prisma.brandGuideline.findFirst({
+      where: { id: brandId, userId: req.userId! },
+    });
+    if (!brand) {
+      return res.status(404).json({ error: 'Brand guideline not found' });
+    }
+
+    // Build brand context string for AI
+    const colors = (brand.colors as any[]) ?? [];
+    const typography = (brand.typography as any[]) ?? [];
+    const logos = (brand.logos as any[]) ?? [];
+    const gradients = (brand.gradients as any[]) ?? [];
+
+    const primaryColor = colors.find((c: any) => c.role === 'primary')?.hex ?? colors[0]?.hex ?? '#000000';
+    const bgColor = colors.find((c: any) => c.role === 'background' || c.role === 'bg')?.hex ?? '#ffffff';
+    const textColor = colors.find((c: any) => c.role === 'text')?.hex ?? '#ffffff';
+    const accentColor = colors.find((c: any) => c.role === 'accent' || c.role === 'secondary')?.hex ?? primaryColor;
+    const primaryFont = typography.find((t: any) => t.role === 'primary' || t.role === 'heading')?.family ?? typography[0]?.family ?? 'Inter';
+    const logoUrls = logos.slice(0, 2).map((l: any) => l.url).filter(Boolean);
+    const hasLogos = logoUrls.length > 0;
+    const gradientCss = gradients[0]?.css ?? null;
+
+    const brandContextStr = [
+      `Primary color: ${primaryColor}`,
+      `Background color: ${bgColor}`,
+      `Text color: ${textColor}`,
+      `Accent color: ${accentColor}`,
+      `Primary font: ${primaryFont}`,
+      hasLogos ? `Logo URLs: ${logoUrls.join(', ')}` : 'No logos available',
+      gradientCss ? `Brand gradient: ${gradientCss}` : '',
+    ].filter(Boolean).join('\n');
+
+    const userMessage = [
+      `Brand guidelines:\n${brandContextStr}`,
+      `Format: ${format}`,
+      `Layout strategy: ${FORMAT_RULES[format] ?? ''}`,
+      `Available Brand Logos: ${hasLogos ? 'YES' : 'NO'}`,
+      intent ? `Creative intent: ${intent}` : '',
+      feedback && previousPlan
+        ? `User feedback on previous plan: ${feedback}\nPrevious plan JSON:\n${JSON.stringify(previousPlan)}\nRefine the plan based on the feedback.`
+        : '',
+    ].filter(Boolean).join('\n');
+
+    // Generate plan via Gemini (reuse module-level model + SYSTEM_PROMPT)
+    const result = await model.generateContent([
+      { text: SYSTEM_PROMPT },
+      { text: userMessage },
+    ]);
+    const raw = result.response.text();
+    let plan: Record<string, any>;
+    try {
+      plan = JSON.parse(raw);
+    } catch {
+      return res.status(502).json({ error: 'AI returned invalid JSON', raw });
+    }
+
+    // Inject first logo URL into any logo layers
+    if (hasLogos && Array.isArray(plan.layers)) {
+      let logoIdx = 0;
+      plan.layers = plan.layers.map((layer: any) => {
+        if (layer.type === 'logo' && !layer.url && logoUrls[logoIdx]) {
+          return { ...layer, url: logoUrls[logoIdx++] };
+        }
+        return layer;
+      });
+    }
+
+    // Render to PNG
+    const pngBuffer = await renderCreativePlan(plan as any, {
+      format,
+      accentColor,
+    });
+
+    // Upload to R2
+    const base64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
+    const userId = req.userId ?? 'system';
+    let imageUrl: string;
+    try {
+      imageUrl = await uploadCanvasImage(base64, userId, 'creative-render', `brand-gen-${Date.now()}`);
+    } catch {
+      // R2 not configured — return base64 inline
+      return res.json({
+        imageBase64: base64,
+        plan,
+        brandUsed: { colors: colors.slice(0, 4), fonts: typography.slice(0, 2), logos: logoUrls },
+      });
+    }
+
+    return res.json({
+      imageUrl,
+      plan,
+      brandUsed: { colors: colors.slice(0, 4), fonts: typography.slice(0, 2), logos: logoUrls },
+    });
+  } catch (err: any) {
+    console.error('[creative/generate-from-brand] error:', err);
+    return res.status(500).json({ error: err?.message ?? 'generation failed' });
   }
 });
 

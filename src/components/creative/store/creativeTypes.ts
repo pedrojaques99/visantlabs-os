@@ -11,6 +11,17 @@ export interface TextLayerData {
   fontFamily: string;     // resolved family name
   color: string;          // hex
   bold: boolean;
+  // ── Konva-rendered visual effects (added 2026-04-27, all optional) ──
+  /** 0-1; defaults to 1 (fully opaque) when undefined */
+  opacity?: number;
+  /** Drop-shadow color, e.g. "rgba(0,0,0,0.5)" or "#000000". Required for shadow to render. */
+  shadowColor?: string;
+  /** Shadow blur radius in px (Konva pixel units). Default 0 = sharp. */
+  shadowBlur?: number;
+  /** Shadow X offset in px. Default 0. */
+  shadowOffsetX?: number;
+  /** Shadow Y offset in px. Default 0. */
+  shadowOffsetY?: number;
 }
 
 export interface LogoLayerData {
@@ -18,6 +29,17 @@ export interface LogoLayerData {
   url: string;
   position: { x: number; y: number };
   size: { w: number; h: number };
+  // ── Konva-rendered visual effects (added 2026-04-27, all optional) ──
+  /** 0-1; defaults to 1 (fully opaque) when undefined */
+  opacity?: number;
+  /** Drop-shadow color, e.g. "rgba(0,0,0,0.5)" or "#000000". Required for shadow to render. */
+  shadowColor?: string;
+  /** Shadow blur radius in px (Konva pixel units). Default 0 = sharp. */
+  shadowBlur?: number;
+  /** Shadow X offset in px. Default 0. */
+  shadowOffsetX?: number;
+  /** Shadow Y offset in px. Default 0. */
+  shadowOffsetY?: number;
 }
 
 export interface ShapeLayerData {
@@ -26,6 +48,17 @@ export interface ShapeLayerData {
   color: string;          // hex
   position: { x: number; y: number };
   size: { w: number; h: number };
+  // ── Konva-rendered visual effects (added 2026-04-27, all optional) ──
+  /** 0-1; defaults to 1 (fully opaque) when undefined */
+  opacity?: number;
+  /** Drop-shadow color, e.g. "rgba(0,0,0,0.5)" or "#000000". Required for shadow to render. */
+  shadowColor?: string;
+  /** Shadow blur radius in px (Konva pixel units). Default 0 = sharp. */
+  shadowBlur?: number;
+  /** Shadow X offset in px. Default 0. */
+  shadowOffsetX?: number;
+  /** Shadow Y offset in px. Default 0. */
+  shadowOffsetY?: number;
 }
 
 export interface GroupLayerData {

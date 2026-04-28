@@ -1,17 +1,13 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useStorage, useOthers, useMutation, useRoom, useUpdateMyPresence, useStatus } from '../../config/liveblocks';
+import { useStorage, useOthers, useMutation, useUpdateMyPresence, useStatus } from '../../config/liveblocks';
 import { LiveList, LiveObject } from '@liveblocks/client';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
-import type { TimerRef } from '@/types/types';
 import { toast } from 'sonner';
 
 export interface PresenceEnhancedHandlers {
-  /** Wraps onNodesChange with presence conflict detection */
   handleNodesChangeWithPresence: (changes: any[]) => void;
-  /** Wraps onNodeDragStart - call original after */
   handleNodeDragStart: () => void;
-  /** Wraps onNodeDragStop - clears presence */
   handleNodeDragStop: () => void;
 }
 
@@ -25,16 +21,15 @@ interface UseCanvasCollaborationProps {
   onSave?: () => Promise<void>;
 }
 
-// Debounce function
-function debounce<T extends (...args: any[]) => void>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: TimerRef | null = null;
-  return (...args: Parameters<T>) => {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
+const SLIDER_PROPERTIES = [
+  'dotSize', 'angle', 'contrast', 'spacing', 'halftoneThreshold',
+  'tapeWaveIntensity', 'tapeCreaseIntensity', 'switchingNoiseIntensity',
+  'bloomIntensity', 'acBeatIntensity', 'matrixSize', 'bias',
+  'asciiCharSize', 'asciiThreshold',
+];
+
+function toLSON<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
 }
 
 export const useCanvasCollaboration = ({
@@ -47,652 +42,267 @@ export const useCanvasCollaboration = ({
   onSave,
 }: UseCanvasCollaborationProps) => {
   const roomId = projectId ? `canvas-${projectId}` : null;
-  const isInitializedRef = useRef(false);
-  const lastSavedNodesRef = useRef<Node<FlowNodeData>[]>([]);
-  const lastSavedEdgesRef = useRef<Edge[]>([]);
-  const lastSyncedNodesRef = useRef<Node<FlowNodeData>[]>([]);
 
-  // Presence tracking for drag operations
-  const draggingNodeIdRef = useRef<string | null>(null);
+  // ── Refs ────────────────────────────────────────────────────────────────────
+  const isInitializedRef      = useRef(false);
+  const lastSavedNodesRef     = useRef<Node<FlowNodeData>[]>([]);
+  const lastSavedEdgesRef     = useRef<Edge[]>([]);
+  const lastSyncedNodesRef    = useRef<Node<FlowNodeData>[]>([]);
+  const draggingNodeIdRef     = useRef<string | null>(null);
   const lastPresenceUpdateRef = useRef<{ nodeId: string; x: number; y: number } | null>(null);
 
-  // Get room instance (must be used inside RoomProvider)
-  const room = useRoom();
+  // Stable debounce timers — not recreated on every render
+  const liveblocksSyncTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const databaseSyncTimer    = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Get connection status
-  const status = useStatus();
-
-  // Check if only positions changed (for instant sync)
-  const isOnlyPositionChange = useCallback((oldNodes: Node<FlowNodeData>[], newNodes: Node<FlowNodeData>[]): boolean => {
-    if (oldNodes.length !== newNodes.length) return false;
-
-    let hasPositionChange = false;
-
-    for (let i = 0; i < newNodes.length; i++) {
-      const oldNode = oldNodes.find(n => n.id === newNodes[i].id);
-      if (!oldNode) return false;
-
-      // Check if position changed
-      const positionChanged =
-        oldNode.position.x !== newNodes[i].position.x ||
-        oldNode.position.y !== newNodes[i].position.y;
-
-      if (positionChanged) {
-        hasPositionChange = true;
-      }
-
-      // Check if anything else changed (excluding position)
-      const { position: oldPos, ...oldNodeWithoutPos } = oldNode;
-      const { position: newPos, ...newNodeWithoutPos } = newNodes[i];
-
-      const oldStr = JSON.stringify(oldNodeWithoutPos);
-      const newStr = JSON.stringify(newNodeWithoutPos);
-
-      if (oldStr !== newStr) return false;
-    }
-
-    // Only return true if there was at least one position change and nothing else changed
-    return hasPositionChange;
-  }, []);
-
-  // Check if changes are only to shader slider properties
-  // This includes all shader types: halftone, vhs, ascii, matrixDither
-  const isShaderSliderOnlyChange = useCallback((oldNodes: Node<FlowNodeData>[], newNodes: Node<FlowNodeData>[]): boolean => {
-    if (oldNodes.length !== newNodes.length) return false;
-
-    // List of all shader slider properties that should be ignored
-    const SLIDER_PROPERTIES = [
-      'dotSize', 'angle', 'contrast', 'spacing', 'halftoneThreshold',
-      'tapeWaveIntensity', 'tapeCreaseIntensity', 'switchingNoiseIntensity',
-      'bloomIntensity', 'acBeatIntensity', 'matrixSize', 'bias',
-      'asciiCharSize', 'asciiThreshold',
-    ];
-
-    let hasShaderSliderChange = false;
-
-    for (let i = 0; i < newNodes.length; i++) {
-      const oldNode = oldNodes.find(n => n.id === newNodes[i].id);
-      if (!oldNode) return false;
-
-      // Only check shader nodes
-      if (oldNode.type === 'shader' && newNodes[i].type === 'shader') {
-        const oldData = oldNode.data as any;
-        const newData = newNodes[i].data as any;
-
-        // Check if any shader slider properties changed
-        let sliderPropsChanged = false;
-        for (const prop of SLIDER_PROPERTIES) {
-          const oldValue = oldData[prop];
-          const newValue = newData[prop];
-
-          // Compare values (handling undefined as equal to default)
-          if (oldValue !== newValue && (oldValue !== undefined || newValue !== undefined)) {
-            sliderPropsChanged = true;
-            break;
-          }
-        }
-
-        if (sliderPropsChanged) {
-          hasShaderSliderChange = true;
-
-          // Check if anything else changed (excluding slider properties and position)
-          const oldDataCopy = { ...oldData };
-          const newDataCopy = { ...newData };
-
-          // Remove all slider properties for comparison
-          for (const prop of SLIDER_PROPERTIES) {
-            delete oldDataCopy[prop];
-            delete newDataCopy[prop];
-          }
-
-          // Remove position from comparison
-          const { position: oldPos, ...oldNodeWithoutPos } = oldNode;
-          const { position: newPos, ...newNodeWithoutPos } = newNodes[i];
-
-          // Compare data without slider properties
-          const oldDataStr = JSON.stringify({ ...oldNodeWithoutPos, data: oldDataCopy });
-          const newDataStr = JSON.stringify({ ...newNodeWithoutPos, data: newDataCopy });
-
-          if (oldDataStr !== newDataStr) {
-            // Something else changed besides slider properties
-            return false;
-          }
-        }
-      } else {
-        // For non-shader nodes, check if anything changed (excluding position)
-        const { position: oldPos, ...oldNodeWithoutPos } = oldNode;
-        const { position: newPos, ...newNodeWithoutPos } = newNodes[i];
-
-        const oldStr = JSON.stringify(oldNodeWithoutPos);
-        const newStr = JSON.stringify(newNodeWithoutPos);
-
-        if (oldStr !== newStr) {
-          // Non-shader node changed
-          return false;
-        }
-      }
-    }
-
-    // Only return true if there was at least one shader slider change and nothing else changed
-    return hasShaderSliderChange;
-  }, []);
-
-  // Log connection state changes
-  useEffect(() => {
-    if (!isCollaborative || !roomId) return;
-
-    console.log('[Liveblocks] 🔌 Connection state:', status, 'for room:', roomId);
-
-    if (status === 'connected') {
-      console.log('[Liveblocks] ✅ Connected to room:', roomId);
-    } else if (status === 'connecting') {
-      console.log('[Liveblocks] 🔄 Connecting to room:', roomId);
-    } else if (status === 'reconnecting') {
-      console.log('[Liveblocks] 🔄 Reconnecting to room:', roomId);
-    } else if (status === 'initial') {
-      console.log('[Liveblocks] ⏳ Initializing connection to room:', roomId);
-    }
-  }, [status, roomId, isCollaborative]);
-
-  // Only proceed if collaborative mode is enabled
-  if (!isCollaborative || !roomId) {
-    console.log('[Liveblocks] ⏸️ Collaboration disabled or no roomId. isCollaborative:', isCollaborative, 'roomId:', roomId);
-    return {
-      others: [],
-      isConnected: false,
-      roomId: null,
-      updateNodePositionInPresence: () => {},
-      clearNodePositionInPresence: () => {},
-      isNodeBeingMovedByOthers: () => ({ isMoving: false }),
-      getNodesBeingMovedByOthers: () => [],
-      createPresenceEnhancedHandlers: (
-        _nodes: Node<FlowNodeData>[],
-        originalOnNodesChange: (changes: any[]) => void,
-        originalOnNodeDragStart: () => void,
-        originalOnNodeDragStop: () => void,
-      ) => ({
-        handleNodesChangeWithPresence: originalOnNodesChange,
-        handleNodeDragStart: originalOnNodeDragStart,
-        handleNodeDragStop: originalOnNodeDragStop,
-      }),
-    };
-  }
-
-  // Get storage for nodes and edges using selectors
-  const liveNodes = useStorage((root) => root.nodes);
-  const liveEdges = useStorage((root) => root.edges);
-
-  // Get other users
-  const others = useOthers();
-
-  // Get presence update function
+  // ── All Liveblocks hooks — called unconditionally (Rules of Hooks) ──────────
+  const status          = useStatus();
+  const liveNodes       = useStorage((root) => root.nodes);
+  const liveEdges       = useStorage((root) => root.edges);
+  const others          = useOthers();
   const updateMyPresence = useUpdateMyPresence();
 
-  // Refs to store latest values for debounced logging
-  const liveNodesRef = useRef(liveNodes);
-  const liveEdgesRef = useRef(liveEdges);
-  const othersRef = useRef(others);
+  const initializeStorage = useMutation(({ storage }, n: Node<FlowNodeData>[], e: Edge[]) => {
+    if (isInitializedRef.current) return;
+    storage.set('nodes', new LiveList(n.map(node => new LiveObject(toLSON(node) as any))));
+    storage.set('edges', new LiveList(e.map(edge => new LiveObject(toLSON(edge) as any))));
+    isInitializedRef.current = true;
+  }, []);
 
-  // Update refs when values change
+  // Atomic replace — one Liveblocks op instead of N deletes + M pushes
+  const updateNodes = useMutation(({ storage }, newNodes: Node<FlowNodeData>[]) => {
+    storage.set('nodes', new LiveList(newNodes.map(n => new LiveObject(toLSON(n) as any))));
+  }, []);
+
+  const updateEdges = useMutation(({ storage }, newEdges: Edge[]) => {
+    storage.set('edges', new LiveList(newEdges.map(e => new LiveObject(toLSON(e) as any))));
+  }, []);
+
+  // ── Initialize storage when connected and ready ────────────────────────────
   useEffect(() => {
-    liveNodesRef.current = liveNodes;
-    liveEdgesRef.current = liveEdges;
-    othersRef.current = others;
-  }, [liveNodes, liveEdges, others]);
+    if (!isCollaborative || !projectId || nodes.length === 0) return;
+    if (isInitializedRef.current) return;
+    if (status !== 'connected' || liveNodes === null || liveEdges === null) return;
+    initializeStorage(nodes, edges);
+  }, [isCollaborative, projectId, status, liveNodes, liveEdges, nodes, edges, initializeStorage]);
 
-  // Debounced logging function to reduce console spam during node dragging
-  const debouncedLogStorageState = useRef<ReturnType<typeof debounce> | null>(null);
-
-  // Initialize debounced logger once
-  useEffect(() => {
-    if (!debouncedLogStorageState.current) {
-      debouncedLogStorageState.current = debounce(() => {
-        if (!isCollaborative || !roomId) return;
-
-        const currentLiveNodes = liveNodesRef.current;
-        const currentLiveEdges = liveEdgesRef.current;
-        const currentOthers = othersRef.current;
-
-        console.log('[Liveblocks] 📦 Storage available:', !!(currentLiveNodes || currentLiveEdges));
-        try {
-          const nodesCount = currentLiveNodes && typeof currentLiveNodes === 'object' && 'toArray' in currentLiveNodes
-            ? (currentLiveNodes as any).toArray().length
-            : 0;
-          const edgesCount = currentLiveEdges && typeof currentLiveEdges === 'object' && 'toArray' in currentLiveEdges
-            ? (currentLiveEdges as any).toArray().length
-            : 0;
-          console.log('[Liveblocks] 📊 Live nodes count:', nodesCount);
-          console.log('[Liveblocks] 📊 Live edges count:', edgesCount);
-        } catch (error) {
-          console.log('[Liveblocks] 📊 Live nodes count: 0');
-          console.log('[Liveblocks] 📊 Live edges count: 0');
-        }
-        console.log('[Liveblocks] 👥 Other users count:', currentOthers?.length ?? 0);
-
-        if (currentOthers && currentOthers.length > 0) {
-          console.log('[Liveblocks] 👥 Other users:', currentOthers.map(u => ({ id: u.id, name: u.info?.name })));
-        }
-      }, 500); // Debounce by 500ms to reduce logs during dragging
-    }
-  }, [isCollaborative, roomId]);
-
-  // Log storage and others state (debounced to prevent spam during dragging)
-  useEffect(() => {
-    if (!isCollaborative || !roomId || !debouncedLogStorageState.current) return;
-
-    // Trigger debounced logging
-    debouncedLogStorageState.current();
-  }, [liveNodes, liveEdges, others, isCollaborative, roomId]);
-
-  // Initialize storage from database
-  const initializeStorage = useMutation(
-    ({ storage }) => {
-      if (!isInitializedRef.current && nodes.length > 0) {
-        // Convert to plain JSON objects to ensure LSON compatibility (removes functions, circular refs, etc.)
-        const nodesList = new LiveList(
-          nodes.map((node) => new LiveObject(JSON.parse(JSON.stringify(node))))
-        );
-        const edgesList = new LiveList(
-          edges.map((edge) => new LiveObject(JSON.parse(JSON.stringify(edge))))
-        );
-        storage.set('nodes', nodesList);
-        storage.set('edges', edgesList);
-        isInitializedRef.current = true;
-      }
-    },
-    [nodes, edges]
-  );
-
-  // Update nodes in Liveblocks
-  const updateNodes = useMutation(
-    ({ storage }, newNodes: Node<FlowNodeData>[]) => {
-      const nodesList = storage.get('nodes');
-      if (nodesList && nodesList instanceof LiveList) {
-        // Clear and update
-        while (nodesList.length > 0) {
-          nodesList.delete(0);
-        }
-        newNodes.forEach((node) => {
-          // Convert to plain JSON object to ensure LSON compatibility
-          nodesList.push(new LiveObject(JSON.parse(JSON.stringify(node))));
-        });
-      }
-    },
-    []
-  );
-
-  // Update edges in Liveblocks
-  const updateEdges = useMutation(
-    ({ storage }, newEdges: Edge[]) => {
-      const edgesList = storage.get('edges');
-      if (edgesList && edgesList instanceof LiveList) {
-        // Clear and update
-        while (edgesList.length > 0) {
-          edgesList.delete(0);
-        }
-        newEdges.forEach((edge) => {
-          // Convert to plain JSON object to ensure LSON compatibility
-          edgesList.push(new LiveObject(JSON.parse(JSON.stringify(edge))));
-        });
-      }
-    },
-    []
-  );
-
-  // Sync from Liveblocks to local state
+  // ── Sync FROM Liveblocks → local state (collaborative updates from others) ─
   useEffect(() => {
     if (!isCollaborative || !liveNodes || !liveEdges) return;
+    if (!(liveNodes instanceof LiveList) || !(liveEdges instanceof LiveList)) return;
 
-    // Type guard: ensure liveNodes and liveEdges are LiveList instances
-    if (!(liveNodes instanceof LiveList) || !(liveEdges instanceof LiveList)) {
-      return;
-    }
+    const nodesArray = liveNodes.toArray().map((n: any) => n.toObject());
+    const edgesArray = liveEdges.toArray().map((e: any) => e.toObject());
 
-    const nodesArray = liveNodes.toArray().map((node: any) => node.toObject());
-    const edgesArray = liveEdges.toArray().map((edge: any) => edge.toObject());
-
-    // Only update if different to avoid infinite loops
     const nodesChanged = JSON.stringify(nodesArray) !== JSON.stringify(nodes);
     const edgesChanged = JSON.stringify(edgesArray) !== JSON.stringify(edges);
 
     if (nodesChanged || edgesChanged) {
       setNodes(nodesArray);
       setEdges(edgesArray);
-      // Update lastSyncedNodesRef when receiving updates from Liveblocks
-      if (nodesChanged) {
-        lastSyncedNodesRef.current = nodesArray;
-      }
+      if (nodesChanged) lastSyncedNodesRef.current = nodesArray;
     }
   }, [liveNodes, liveEdges, isCollaborative, setNodes, setEdges, nodes, edges]);
 
-  // Initialize storage when collaborative mode is enabled
-  useEffect(() => {
-    // Wait for storage to be loaded before initializing
-    // Storage is ready when useStorage returns non-null values
-    // Skip if not in collaborative mode or missing requirements
-    if (!isCollaborative || !projectId || nodes.length === 0 || isInitializedRef.current) {
-      return;
+  // ── Sync TO Liveblocks + database on local changes ─────────────────────────
+  const isOnlyPositionChange = useCallback((oldNodes: Node<FlowNodeData>[], newNodes: Node<FlowNodeData>[]): boolean => {
+    if (oldNodes.length !== newNodes.length) return false;
+    let hasPositionChange = false;
+    for (const newNode of newNodes) {
+      const oldNode = oldNodes.find(n => n.id === newNode.id);
+      if (!oldNode) return false;
+      if (oldNode.position.x !== newNode.position.x || oldNode.position.y !== newNode.position.y) {
+        hasPositionChange = true;
+      }
+      const { position: _op, ...oldRest } = oldNode;
+      const { position: _np, ...newRest } = newNode;
+      if (JSON.stringify(oldRest) !== JSON.stringify(newRest)) return false;
     }
+    return hasPositionChange;
+  }, []);
 
-    // Wait for connection state to be connected AND storage to be available
-    // useStorage returns null until storage is loaded, so we check both conditions
-    const isStorageReady = liveNodes !== null && liveEdges !== null;
-
-    if (status === 'connected' && isStorageReady) {
-      console.log('[Liveblocks] 🚀 Initializing storage for room:', roomId, 'with', nodes.length, 'nodes and', edges.length, 'edges');
-      try {
-        initializeStorage();
-        console.log('[Liveblocks] ✅ Storage initialized successfully');
-      } catch (error) {
-        console.error('[Liveblocks] ❌ Error initializing storage:', error);
-      }
-    } else {
-      // Connection not yet connected or storage not ready
-      if (status !== 'connected') {
-        console.log('[Liveblocks] ⏳ Waiting for connection to open. Current state:', status);
-      } else if (!isStorageReady) {
-        console.log('[Liveblocks] ⏳ Waiting for storage to load...');
+  const isShaderSliderOnlyChange = useCallback((oldNodes: Node<FlowNodeData>[], newNodes: Node<FlowNodeData>[]): boolean => {
+    if (oldNodes.length !== newNodes.length) return false;
+    let hasSliderChange = false;
+    for (const newNode of newNodes) {
+      const oldNode = oldNodes.find(n => n.id === newNode.id);
+      if (!oldNode) return false;
+      if (oldNode.type === 'shader' && newNode.type === 'shader') {
+        const oldData = oldNode.data as any;
+        const newData = newNode.data as any;
+        const sliderChanged = SLIDER_PROPERTIES.some(p => oldData[p] !== newData[p]);
+        if (sliderChanged) {
+          hasSliderChange = true;
+          const strip = (data: any) => Object.fromEntries(Object.entries(data).filter(([k]) => !SLIDER_PROPERTIES.includes(k)));
+          const { position: _op, ...oldRest } = oldNode;
+          const { position: _np, ...newRest } = newNode;
+          if (JSON.stringify({ ...oldRest, data: strip(oldData) }) !== JSON.stringify({ ...newRest, data: strip(newData) })) return false;
+        }
+      } else {
+        const { position: _op, ...oldRest } = oldNode;
+        const { position: _np, ...newRest } = newNode;
+        if (JSON.stringify(oldRest) !== JSON.stringify(newRest)) return false;
       }
     }
-  }, [isCollaborative, projectId, nodes, edges, initializeStorage, status, roomId, liveNodes, liveEdges]);
+    return hasSliderChange;
+  }, []);
 
-  // Sync local changes to Liveblocks (instant for position changes, debounced for others)
-  const syncToLiveblocksInstant = useCallback(
-    (newNodes: Node<FlowNodeData>[], newEdges: Edge[]) => {
-      if (!isCollaborative || !isInitializedRef.current) return;
-      try {
-        updateNodes(newNodes);
-        updateEdges(newEdges);
-        lastSyncedNodesRef.current = newNodes;
-      } catch (error) {
-        console.error('Error syncing to Liveblocks (instant):', error);
-      }
-    },
-    [isCollaborative, updateNodes, updateEdges]
-  );
-
-  // Sync local changes to Liveblocks (debounced for non-position changes)
-  const syncToLiveblocksDebounced = useCallback(
-    debounce((newNodes: Node<FlowNodeData>[], newEdges: Edge[]) => {
-      if (!isCollaborative || !isInitializedRef.current) return;
-      try {
-        updateNodes(newNodes);
-        updateEdges(newEdges);
-        lastSyncedNodesRef.current = newNodes;
-      } catch (error) {
-        console.error('Error syncing to Liveblocks (debounced):', error);
-      }
-    }, 100),
-    [isCollaborative, updateNodes, updateEdges]
-  );
-
-  // Sync local changes to database (debounced, less frequent)
-  const syncToDatabase = useCallback(
-    debounce(async (newNodes: Node<FlowNodeData>[], newEdges: Edge[]) => {
-      if (!isCollaborative || !projectId || !onSave) return;
-
-      // Only save if there are actual changes
-      const nodesChanged = JSON.stringify(newNodes) !== JSON.stringify(lastSavedNodesRef.current);
-      const edgesChanged = JSON.stringify(newEdges) !== JSON.stringify(lastSavedEdgesRef.current);
-
-      if (nodesChanged || edgesChanged) {
-        // Skip save if changes are only to shader slider properties
-        // This prevents authentication requests on every slider change
-        // while still allowing visual updates and Liveblocks sync
-        if (lastSavedNodesRef.current.length > 0 && isShaderSliderOnlyChange(lastSavedNodesRef.current, newNodes)) {
-          // Update lastSavedNodesRef to prevent repeated checks, but don't save
-          lastSavedNodesRef.current = newNodes;
-          lastSavedEdgesRef.current = newEdges;
-          return;
-        }
-
-        try {
-          lastSavedNodesRef.current = newNodes;
-          lastSavedEdgesRef.current = newEdges;
-          await onSave();
-        } catch (error) {
-          console.error('Error syncing to database:', error);
-        }
-      }
-    }, 2000), // Save to database every 2 seconds
-    [isCollaborative, projectId, onSave, isShaderSliderOnlyChange]
-  );
-
-  // Watch for local changes and sync
   useEffect(() => {
     if (!isCollaborative || !isInitializedRef.current) return;
 
-    // Check if this is only a position change for instant sync
-    const isPositionOnly = lastSyncedNodesRef.current.length > 0 &&
-      isOnlyPositionChange(lastSyncedNodesRef.current, nodes);
-
+    // Liveblocks sync: instant for position-only, debounced (100ms) otherwise
+    if (liveblocksSyncTimer.current) clearTimeout(liveblocksSyncTimer.current);
+    const isPositionOnly = lastSyncedNodesRef.current.length > 0 && isOnlyPositionChange(lastSyncedNodesRef.current, nodes);
     if (isPositionOnly) {
-      // Instant sync for position changes
-      syncToLiveblocksInstant(nodes, edges);
+      updateNodes(nodes);
+      updateEdges(edges);
+      lastSyncedNodesRef.current = nodes;
     } else {
-      // Debounced sync for other changes
-      syncToLiveblocksDebounced(nodes, edges);
+      liveblocksSyncTimer.current = setTimeout(() => {
+        updateNodes(nodes);
+        updateEdges(edges);
+        lastSyncedNodesRef.current = nodes;
+      }, 100);
     }
 
-    syncToDatabase(nodes, edges);
-  }, [nodes, edges, isCollaborative, syncToLiveblocksInstant, syncToLiveblocksDebounced, syncToDatabase, isOnlyPositionChange]);
+    // Database sync: debounced 2s, skip shader-slider-only changes
+    if (databaseSyncTimer.current) clearTimeout(databaseSyncTimer.current);
+    databaseSyncTimer.current = setTimeout(async () => {
+      if (!onSave || !projectId) return;
+      const nodesChanged = JSON.stringify(nodes) !== JSON.stringify(lastSavedNodesRef.current);
+      const edgesChanged = JSON.stringify(edges) !== JSON.stringify(lastSavedEdgesRef.current);
+      if (!nodesChanged && !edgesChanged) return;
+      if (lastSavedNodesRef.current.length > 0 && isShaderSliderOnlyChange(lastSavedNodesRef.current, nodes)) {
+        lastSavedNodesRef.current = nodes;
+        lastSavedEdgesRef.current = edges;
+        return;
+      }
+      lastSavedNodesRef.current = nodes;
+      lastSavedEdgesRef.current = edges;
+      try { await onSave(); } catch (err) { console.error('[canvas] DB save failed:', err); }
+    }, 2000);
+  }, [nodes, edges, isCollaborative, updateNodes, updateEdges, onSave, projectId, isOnlyPositionChange, isShaderSliderOnlyChange]);
 
-  // Reset initialization when project changes
+  // Reset on project change
   useEffect(() => {
-    if (projectId) {
-      isInitializedRef.current = false;
-      lastSavedNodesRef.current = [];
-      lastSavedEdgesRef.current = [];
-      lastSyncedNodesRef.current = [];
-    }
+    if (!projectId) return;
+    isInitializedRef.current = false;
+    lastSavedNodesRef.current = [];
+    lastSavedEdgesRef.current = [];
+    lastSyncedNodesRef.current = [];
   }, [projectId]);
 
-  // Initialize lastSyncedNodesRef when storage is initialized
-  useEffect(() => {
-    if (isInitializedRef.current && nodes.length > 0 && lastSyncedNodesRef.current.length === 0) {
-      lastSyncedNodesRef.current = nodes;
+  // Cleanup timers on unmount
+  useEffect(() => () => {
+    if (liveblocksSyncTimer.current) clearTimeout(liveblocksSyncTimer.current);
+    if (databaseSyncTimer.current) clearTimeout(databaseSyncTimer.current);
+    if (draggingNodeIdRef.current) {
+      updateMyPresence({ nodePosition: null, isMoving: false });
+      draggingNodeIdRef.current = null;
     }
-  }, [isInitializedRef.current, nodes]);
+  }, [updateMyPresence]);
 
-  // Update node position in presence during drag
-  const updateNodePositionInPresence = useCallback(
-    (nodeId: string, x: number, y: number) => {
-      if (!isCollaborative) return;
-      updateMyPresence({
-        nodePosition: { nodeId, x, y },
-        isMoving: true,
-      });
-    },
-    [isCollaborative, updateMyPresence]
-  );
-
-  // Clear node position from presence when drag ends
-  const clearNodePositionInPresence = useCallback(() => {
+  // ── Presence helpers ───────────────────────────────────────────────────────
+  const updateNodePositionInPresence = useCallback((nodeId: string, x: number, y: number) => {
     if (!isCollaborative) return;
-    updateMyPresence({
-      nodePosition: null,
-      isMoving: false,
-    });
+    updateMyPresence({ nodePosition: { nodeId, x, y }, isMoving: true });
   }, [isCollaborative, updateMyPresence]);
 
-  // Check if another user is currently moving a specific node
-  const isNodeBeingMovedByOthers = useCallback(
-    (nodeId: string): { isMoving: boolean; userId?: string; userName?: string } => {
-      if (!isCollaborative || !others || others.length === 0) {
-        return { isMoving: false };
-      }
+  const clearNodePositionInPresence = useCallback(() => {
+    if (!isCollaborative) return;
+    updateMyPresence({ nodePosition: null, isMoving: false });
+  }, [isCollaborative, updateMyPresence]);
 
-      for (const other of others) {
-        const presence = other.presence as any;
-        const nodePosition = presence?.nodePosition as { nodeId: string; x: number; y: number } | null | undefined;
-        if (
-          nodePosition?.nodeId === nodeId &&
-          presence?.isMoving === true
-        ) {
-          return {
-            isMoving: true,
-            userId: other.id,
-            userName: other.info?.name || other.id,
-          };
-        }
-      }
-
-      return { isMoving: false };
-    },
-    [isCollaborative, others]
-  );
-
-  // Get all nodes currently being moved by others
-  const getNodesBeingMovedByOthers = useCallback((): Array<{
-    nodeId: string;
-    userId: string;
-    userName: string;
-    position: { x: number; y: number };
-  }> => {
-    if (!isCollaborative || !others || others.length === 0) {
-      return [];
-    }
-
-    const movingNodes: Array<{
-      nodeId: string;
-      userId: string;
-      userName: string;
-      position: { x: number; y: number };
-    }> = [];
-
+  const isNodeBeingMovedByOthers = useCallback((nodeId: string): { isMoving: boolean; userId?: string; userName?: string } => {
+    if (!isCollaborative || !others.length) return { isMoving: false };
     for (const other of others) {
-      const presence = other.presence as any;
-      const nodePosition = presence?.nodePosition as { nodeId: string; x: number; y: number } | null | undefined;
-      if (
-        nodePosition &&
-        presence?.isMoving === true
-      ) {
-        movingNodes.push({
-          nodeId: nodePosition.nodeId,
-          userId: other.id,
-          userName: other.info?.name || other.id,
-          position: {
-            x: nodePosition.x,
-            y: nodePosition.y,
-          },
-        });
+      const np = (other.presence as any)?.nodePosition as { nodeId: string; x: number; y: number } | null;
+      if (np?.nodeId === nodeId && (other.presence as any)?.isMoving) {
+        return { isMoving: true, userId: other.id, userName: other.info?.name || other.id };
       }
     }
-
-    return movingNodes;
+    return { isMoving: false };
   }, [isCollaborative, others]);
 
-  // Create presence-enhanced handlers for drag operations
-  const createPresenceEnhancedHandlers = useCallback(
-    (
-      nodes: Node<FlowNodeData>[],
-      originalOnNodesChange: (changes: any[]) => void,
-      originalOnNodeDragStart: () => void,
-      originalOnNodeDragStop: () => void,
-      t: (key: string, params?: any) => string
-    ): PresenceEnhancedHandlers => {
-      const handleNodesChangeWithPresence = (changes: any[]) => {
-        // Detect drag start: if we see a position change and no node is currently being dragged
-        if (!draggingNodeIdRef.current) {
-          const positionChange = changes.find((change: any) => change.type === 'position' && change.position);
-          if (positionChange) {
-            const nodeId = positionChange.id;
-            const node = nodes.find((n) => n.id === nodeId);
+  const getNodesBeingMovedByOthers = useCallback(() => {
+    if (!isCollaborative || !others.length) return [];
+    return others.flatMap(other => {
+      const np = (other.presence as any)?.nodePosition as { nodeId: string; x: number; y: number } | null;
+      if (!np || !(other.presence as any)?.isMoving) return [];
+      return [{ nodeId: np.nodeId, userId: other.id, userName: other.info?.name || other.id, position: { x: np.x, y: np.y } }];
+    });
+  }, [isCollaborative, others]);
 
-            if (node) {
-              // Check if another user is already moving this node
-              const conflict = isNodeBeingMovedByOthers(nodeId);
-              if (conflict.isMoving) {
-                // Prevent drag by reverting the position change
-                const moveMessage = conflict.userName
-                  ? t('canvas.nodeBeingMovedBy', { userName: conflict.userName })
-                  : t('canvas.nodeBeingMovedByAnother');
-                toast.error(moveMessage, { duration: 2000 });
-                // Revert the position change
-                const revertChange = {
-                  ...positionChange,
-                  position: node.position,
-                };
-                const revertedChanges = changes.map((c: any) =>
-                  (c.id === nodeId && c.type === 'position' ? revertChange : c)
-                );
-                originalOnNodesChange(revertedChanges);
-                return;
-              }
-
-              // Mark that we're dragging this node
-              draggingNodeIdRef.current = nodeId;
-              updateNodePositionInPresence(nodeId, node.position.x, node.position.y);
-              lastPresenceUpdateRef.current = { nodeId, x: node.position.x, y: node.position.y };
+  const createPresenceEnhancedHandlers = useCallback((
+    currentNodes: Node<FlowNodeData>[],
+    originalOnNodesChange: (changes: any[]) => void,
+    originalOnNodeDragStart: () => void,
+    originalOnNodeDragStop: () => void,
+    t: (key: string, params?: any) => string,
+  ): PresenceEnhancedHandlers => ({
+    handleNodesChangeWithPresence: (changes: any[]) => {
+      if (!draggingNodeIdRef.current) {
+        const posChange = changes.find((c: any) => c.type === 'position' && c.position);
+        if (posChange) {
+          const node = currentNodes.find(n => n.id === posChange.id);
+          if (node) {
+            const conflict = isNodeBeingMovedByOthers(posChange.id);
+            if (conflict.isMoving) {
+              toast.error(conflict.userName ? t('canvas.nodeBeingMovedBy', { userName: conflict.userName }) : t('canvas.nodeBeingMovedByAnother'), { duration: 2000 });
+              originalOnNodesChange(changes.map((c: any) => c.id === posChange.id && c.type === 'position' ? { ...c, position: node.position } : c));
+              return;
             }
+            draggingNodeIdRef.current = posChange.id;
+            updateNodePositionInPresence(posChange.id, node.position.x, node.position.y);
+            lastPresenceUpdateRef.current = { nodeId: posChange.id, x: node.position.x, y: node.position.y };
           }
         }
-
-        // Apply changes
-        originalOnNodesChange(changes);
-
-        // Throttled presence updates during drag
-        if (draggingNodeIdRef.current) {
-          const positionChange = changes.find(
-            (change: any) =>
-              change.type === 'position' &&
-              change.id === draggingNodeIdRef.current &&
-              change.position
-          );
-
-          if (positionChange?.position) {
-            const { x, y } = positionChange.position;
-            const lastUpdate = lastPresenceUpdateRef.current;
-
-            // Only update if position changed significantly (more than 5px)
-            if (
-              !lastUpdate ||
-              lastUpdate.nodeId !== draggingNodeIdRef.current ||
-              Math.abs(lastUpdate.x - x) > 5 ||
-              Math.abs(lastUpdate.y - y) > 5
-            ) {
-              updateNodePositionInPresence(draggingNodeIdRef.current, x, y);
-              lastPresenceUpdateRef.current = { nodeId: draggingNodeIdRef.current, x, y };
-            }
+      }
+      originalOnNodesChange(changes);
+      if (draggingNodeIdRef.current) {
+        const posChange = changes.find((c: any) => c.type === 'position' && c.id === draggingNodeIdRef.current && c.position);
+        if (posChange?.position) {
+          const { x, y } = posChange.position;
+          const last = lastPresenceUpdateRef.current;
+          if (!last || last.nodeId !== draggingNodeIdRef.current || Math.abs(last.x - x) > 5 || Math.abs(last.y - y) > 5) {
+            updateNodePositionInPresence(draggingNodeIdRef.current, x, y);
+            lastPresenceUpdateRef.current = { nodeId: draggingNodeIdRef.current, x, y };
           }
         }
-      };
-
-      const handleNodeDragStart = () => {
-        originalOnNodeDragStart();
-      };
-
-      const handleNodeDragStop = () => {
-        if (draggingNodeIdRef.current) {
-          clearNodePositionInPresence();
-          draggingNodeIdRef.current = null;
-          lastPresenceUpdateRef.current = null;
-        }
-        originalOnNodeDragStop();
-      };
-
-      return {
-        handleNodesChangeWithPresence,
-        handleNodeDragStart,
-        handleNodeDragStop,
-      };
+      }
     },
-    [isNodeBeingMovedByOthers, updateNodePositionInPresence, clearNodePositionInPresence]
-  );
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
+    handleNodeDragStart: originalOnNodeDragStart,
+    handleNodeDragStop: () => {
       if (draggingNodeIdRef.current) {
         clearNodePositionInPresence();
         draggingNodeIdRef.current = null;
         lastPresenceUpdateRef.current = null;
       }
+      originalOnNodeDragStop();
+    },
+  }), [isNodeBeingMovedByOthers, updateNodePositionInPresence, clearNodePositionInPresence]);
+
+  // ── Non-collaborative early return (after all hooks) ───────────────────────
+  if (!isCollaborative || !roomId) {
+    return {
+      others: [] as typeof others,
+      isConnected: false,
+      roomId: null,
+      updateNodePositionInPresence: () => {},
+      clearNodePositionInPresence: () => {},
+      isNodeBeingMovedByOthers: () => ({ isMoving: false as const }),
+      getNodesBeingMovedByOthers: () => [],
+      createPresenceEnhancedHandlers: (
+        _n: Node<FlowNodeData>[],
+        onNodesChange: (c: any[]) => void,
+        onDragStart: () => void,
+        onDragStop: () => void,
+      ) => ({ handleNodesChangeWithPresence: onNodesChange, handleNodeDragStart: onDragStart, handleNodeDragStop: onDragStop }),
     };
-  }, [clearNodePositionInPresence]);
+  }
 
   return {
-    others: others || [],
+    others,
     isConnected: status === 'connected',
     roomId,
     updateNodePositionInPresence,

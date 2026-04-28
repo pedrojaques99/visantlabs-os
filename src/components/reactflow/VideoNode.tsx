@@ -1,15 +1,16 @@
-import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, memo, useRef, useCallback, useMemo } from 'react';
 import { Position, type NodeProps, useReactFlow, NodeResizer, useNodes } from '@xyflow/react';
-import { 
-  Clapperboard, 
-  Video as VideoIcon, 
-  Settings, 
-  ChevronRight, 
-  Diamond 
+import {
+  Clapperboard,
+  Video as VideoIcon,
+  Settings,
+  ChevronRight,
+  Diamond,
+  Volume2,
 } from 'lucide-react';
 import { SeedControl } from './shared/SeedControl';
 import type { VideoNodeData, GenerateVideoParams } from '@/types/reactFlow';
-import { VeoModel, GenerationMode, type Resolution, type AspectRatio } from '@/types/types';
+import { GenerationMode, type Resolution, type AspectRatio } from '@/types/types';
 import { cn } from '@/lib/utils';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
@@ -27,37 +28,41 @@ import { useNodeDataUpdater } from '@/hooks/canvas/useNodeDataUpdater';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { NodeButton } from './shared/node-button';
 import { Input } from '@/components/ui/input';
-
 import { useBrandKit } from '@/contexts/BrandKitContext';
 import { toast } from 'sonner';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
+import {
+  VIDEO_MODEL_LIST,
+  VIDEO_MODEL_CONFIG,
+  getVideoModelConfig,
+  getDurationOptions,
+  getModeOptions,
+  isKlingModel,
+  isVeoModel,
+} from '@/constants/videoModels';
 
 // Constants
-const DEFAULT_MODEL = VeoModel.VEO_3_1;
+const DEFAULT_MODEL = 'veo-3.1-generate-preview';
 const DEFAULT_ASPECT_RATIO: AspectRatio = '16:9';
 const DEFAULT_RESOLUTION: Resolution = '1080p';
 const DEFAULT_DURATION = '5s';
 const CREDITS_REQUIRED = 20;
 
-// Mode options for Select
-const MODE_OPTIONS = [
+// Static model options for the model selector
+const MODEL_OPTIONS = VIDEO_MODEL_LIST.map(id => ({
+  value: id,
+  label: VIDEO_MODEL_CONFIG[id].label,
+  badge: VIDEO_MODEL_CONFIG[id].badge,
+}));
+
+// Generation mode options (shared, filtered per model capabilities)
+const ALL_MODE_OPTIONS = [
   { value: GenerationMode.TEXT_TO_VIDEO, label: 'Text to Video' },
+  { value: GenerationMode.IMAGE_TO_VIDEO, label: 'Image to Video' },
   { value: GenerationMode.FRAMES_TO_VIDEO, label: 'Frames to Video' },
   { value: GenerationMode.EXTEND_VIDEO, label: 'Extend Video' },
   { value: GenerationMode.REFERENCES, label: 'References' },
-];
-
-// Model options for Select
-const MODEL_OPTIONS = [
-  { value: VeoModel.VEO_3_1, label: 'Veo 3.1' },
-  { value: VeoModel.VEO_3_1_FAST, label: 'Veo 3.1 Fast' },
-];
-
-// Duration options
-const DURATION_OPTIONS = [
-  { value: '5s', label: '5 Seconds' },
-  { value: '10s', label: '10 Seconds' },
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,17 +87,40 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const [duration, setDuration] = useState<string>(nodeData.duration || DEFAULT_DURATION);
   const [isLooping, setIsLooping] = useState<boolean>(nodeData.isLooping || false);
   const [isBrandActive, setIsBrandActive] = useState<boolean>(nodeData.isBrandActive ?? true);
+  const [klingMode, setKlingMode] = useState<'std' | 'pro' | '4k'>(nodeData.klingMode || 'pro');
+  const [sound, setSound] = useState<'on' | 'off'>(nodeData.sound || 'off');
+  const [cfgScale, setCfgScale] = useState<number>(nodeData.cfgScale ?? 0.5);
 
   // UI state
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const { openLibrary } = useBrandKit();
 
-  // Derived state
+  // Derived: model capabilities (reactive to model changes)
+  const modelCaps = useMemo(() => getVideoModelConfig(model), [model]);
+  const isKling = isKlingModel(model);
+  const isVeo = isVeoModel(model);
+
+  // Derived: dynamic Select options
+  const durationOptions = useMemo(() => getDurationOptions(model), [model]);
+  const klingModeOptions = useMemo(() => getModeOptions(model), [model]);
+
+  // Derived: filter generation modes to what the model supports
+  const modeOptions = useMemo(() => {
+    if (!modelCaps) return ALL_MODE_OPTIONS;
+    return ALL_MODE_OPTIONS.filter(opt => {
+      if (opt.value === GenerationMode.TEXT_TO_VIDEO) return modelCaps.supportsTextToVideo;
+      if (opt.value === GenerationMode.IMAGE_TO_VIDEO) return modelCaps.supportsImageToVideo;
+      if (opt.value === GenerationMode.FRAMES_TO_VIDEO) return modelCaps.supportsStartEndFrame;
+      if (opt.value === GenerationMode.EXTEND_VIDEO) return modelCaps.supportsVideoExtension;
+      if (opt.value === GenerationMode.REFERENCES) return modelCaps.supportsImageToVideo;
+      return true;
+    });
+  }, [modelCaps]);
+
   const isLoading = nodeData.isLoading || false;
   const connectedText = nodeData.connectedText;
   const hasTextConnection = connectedText !== undefined;
 
-  // Connected images for display
   const connectedImages = [
     nodeData.connectedImage1,
     nodeData.connectedImage2,
@@ -125,10 +153,14 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     if (nodeData.duration && nodeData.duration !== duration) setDuration(nodeData.duration);
     if (nodeData.isLooping !== undefined && nodeData.isLooping !== isLooping) setIsLooping(nodeData.isLooping);
     if (nodeData.isBrandActive !== undefined && nodeData.isBrandActive !== isBrandActive) setIsBrandActive(nodeData.isBrandActive);
+    if (nodeData.klingMode && nodeData.klingMode !== klingMode) setKlingMode(nodeData.klingMode);
+    if (nodeData.sound && nodeData.sound !== sound) setSound(nodeData.sound);
+    if (nodeData.cfgScale !== undefined && nodeData.cfgScale !== cfgScale) setCfgScale(nodeData.cfgScale);
   }, [
     nodeData.prompt, nodeData.negativePrompt, nodeData.model, nodeData.mode,
     nodeData.aspectRatio, nodeData.resolution, nodeData.duration,
-    nodeData.isLooping, nodeData.isBrandActive, connectedText, hasTextConnection
+    nodeData.isLooping, nodeData.isBrandActive, nodeData.klingMode, nodeData.sound,
+    nodeData.cfgScale, connectedText, hasTextConnection
   ]);
 
   const { debouncedUpdate: debouncedUpdateData, immediateUpdate: updateData } = useNodeDataUpdater<VideoNodeData>(nodeData.onUpdateData, id);
@@ -156,14 +188,18 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     const params: GenerateVideoParams = {
       nodeId: id,
       prompt,
-      negativePrompt,
+      negativePrompt: modelCaps?.supportsNegativePrompt ? negativePrompt : undefined,
       model,
       mode,
       aspectRatio,
       resolution,
       duration,
-      isLooping,
-      seed: nodeData.seedLocked ? nodeData.seed : undefined, // Only pass seed when locked
+      isLooping: modelCaps?.supportsLoop ? isLooping : undefined,
+      seed: modelCaps?.supportsSeed && nodeData.seedLocked ? nodeData.seed : undefined,
+      // Kling-specific params
+      klingMode: isKling ? klingMode : undefined,
+      sound: isKling && modelCaps?.supportsSound ? sound : undefined,
+      cfgScale: isKling && modelCaps?.supportsCfgScale ? cfgScale : undefined,
       // Mode-specific inputs
       startFrame: mode === GenerationMode.FRAMES_TO_VIDEO ? toInput(nodeData.connectedImage1) : undefined,
       endFrame: mode === GenerationMode.FRAMES_TO_VIDEO ? toInput(nodeData.connectedImage2) : undefined,
@@ -177,8 +213,8 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
     await nodeData.onGenerate(params);
   }, [
-    nodeData, id, prompt, negativePrompt, model, mode,
-    aspectRatio, resolution, duration, isLooping, t
+    nodeData, id, prompt, negativePrompt, model, mode, modelCaps, isKling,
+    aspectRatio, resolution, duration, isLooping, klingMode, sound, cfgScale, t
   ]);
 
   // Handle prompt change
@@ -360,7 +396,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       {/* Header */}
       <NodeHeader
         icon={Clapperboard}
-        title={t('canvasNodes.videoNode.title') || 'Veo Video'}
+        title={modelCaps?.label ?? 'Video'}
         selected={selected}
         isBrandActive={isBrandActive}
         onToggleBrand={(active) => {
@@ -380,7 +416,7 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             setMode(newMode);
             updateData({ mode: newMode });
           }}
-          options={MODE_OPTIONS.map(opt => ({
+          options={modeOptions.map(opt => ({
             value: opt.value,
             label: t(`canvasNodes.videoNode.mode.${opt.value}`) || opt.label
           }))}
@@ -454,8 +490,21 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             <Select
               value={model}
               onChange={(v) => {
+                const caps = getVideoModelConfig(v);
                 setModel(v);
-                updateData({ model: v });
+                // Reset duration to model default if current is invalid
+                if (caps && !caps.durations.includes(duration)) {
+                  setDuration(caps.defaultDuration);
+                  updateData({ model: v, duration: caps.defaultDuration });
+                } else {
+                  updateData({ model: v });
+                }
+                // Reset klingMode to model default
+                if (caps && isKlingModel(v)) {
+                  const newKlingMode = caps.defaultMode as 'std' | 'pro' | '4k';
+                  setKlingMode(newKlingMode);
+                  updateData({ klingMode: newKlingMode });
+                }
               }}
               options={MODEL_OPTIONS}
               variant="node"
@@ -463,7 +512,30 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             />
           </div>
 
-          {/* Aspect Ratio & Resolution Grid */}
+          {/* Kling Quality Mode (std / pro / 4k) */}
+          {isKling && klingModeOptions.length > 0 && (
+            <div>
+              <NodeLabel>Quality Mode</NodeLabel>
+              <Select
+                value={klingMode}
+                onChange={(v) => {
+                  const m = v as 'std' | 'pro' | '4k';
+                  setKlingMode(m);
+                  updateData({ klingMode: m });
+                }}
+                options={klingModeOptions}
+                variant="node"
+                disabled={isLoading}
+              />
+              {modelCaps?.resolutionByMode[klingMode] && (
+                <span className="text-[10px] text-neutral-500 font-mono mt-0.5 block">
+                  Output: {modelCaps.resolutionByMode[klingMode]}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Aspect Ratio & Duration Grid */}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <NodeLabel>{t('canvasNodes.videoNode.aspectRatio') || 'Aspect Ratio'}</NodeLabel>
@@ -478,6 +550,23 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               />
             </div>
             <div>
+              <NodeLabel>{t('canvasNodes.videoNode.duration') || 'Duration'}</NodeLabel>
+              <Select
+                value={duration}
+                onChange={(v) => {
+                  setDuration(v);
+                  updateData({ duration: v });
+                }}
+                options={durationOptions}
+                variant="node"
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
+          {/* Resolution — only for Veo (Kling resolution is derived from klingMode) */}
+          {isVeo && (
+            <div>
               <NodeLabel>{t('canvasNodes.videoNode.resolution') || 'Resolution'}</NodeLabel>
               <ResolutionSelector
                 value={resolution}
@@ -491,59 +580,97 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 allowVideo={true}
               />
             </div>
-          </div>
+          )}
 
-          {/* Duration */}
-          <div>
-            <NodeLabel>{t('canvasNodes.videoNode.duration') || 'Duration'}</NodeLabel>
-            <Select
-              value={duration}
-              onChange={(v) => {
-                setDuration(v);
-                updateData({ duration: v });
-              }}
-              options={DURATION_OPTIONS}
-              variant="node"
+          {/* Loop Toggle — only Veo supports looping */}
+          {modelCaps?.supportsLoop && (
+            <div className="flex items-center justify-between py-1">
+              <NodeLabel className="mb-0">{t('canvasNodes.videoNode.loopVideo') || 'Loop Video'}</NodeLabel>
+              <Switch
+                checked={isLooping}
+                onCheckedChange={(c) => {
+                  setIsLooping(c);
+                  updateData({ isLooping: c });
+                }}
+                disabled={isLoading}
+              />
+            </div>
+          )}
+
+          {/* Sound toggle — Kling v2.6+ and Veo 3.1 */}
+          {modelCaps?.supportsSound && (
+            <div className="flex items-center justify-between py-1">
+              <NodeLabel className="mb-0 flex items-center gap-1">
+                <Volume2 size={11} className="opacity-60" />
+                Generate Audio
+              </NodeLabel>
+              <Switch
+                checked={sound === 'on'}
+                onCheckedChange={(c) => {
+                  const v = c ? 'on' : 'off';
+                  setSound(v);
+                  updateData({ sound: v });
+                }}
+                disabled={isLoading}
+              />
+            </div>
+          )}
+
+          {/* CFG Scale — Kling v1.x only */}
+          {isKling && modelCaps?.supportsCfgScale && (
+            <div>
+              <NodeLabel className="flex justify-between">
+                <span>CFG Scale</span>
+                <span className="text-neutral-500">{cfgScale.toFixed(2)}</span>
+              </NodeLabel>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={cfgScale}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  setCfgScale(v);
+                  updateData({ cfgScale: v });
+                }}
+                disabled={isLoading}
+                className="w-full accent-brand-cyan"
+              />
+              <div className="flex justify-between text-[10px] text-neutral-600 font-mono">
+                <span>Free</span>
+                <span>Strict</span>
+              </div>
+            </div>
+          )}
+
+          {/* Negative Prompt — models that support it */}
+          {modelCaps?.supportsNegativePrompt && (
+            <div>
+              <NodeLabel>{t('canvasNodes.videoNode.negativePrompt') || 'Negative Prompt'}</NodeLabel>
+              <Input
+                className="w-full bg-neutral-900 border-node border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-neutral-600 outline-none placeholder:text-neutral-600"
+                placeholder={t('canvasNodes.videoNode.whatToAvoid') || 'What to avoid...'}
+                value={negativePrompt}
+                onChange={(e) => {
+                  setNegativePrompt(e.target.value);
+                  debouncedUpdateData({ negativePrompt: e.target.value });
+                }}
+                disabled={isLoading}
+              />
+            </div>
+          )}
+
+          {/* Seed Control — only models with seed support */}
+          {modelCaps?.supportsSeed && (
+            <SeedControl
+              seed={nodeData.seed}
+              seedLocked={nodeData.seedLocked}
+              onSeedChange={(seed) => updateData({ seed })}
+              onSeedLockedChange={(locked) => updateData({ seedLocked: locked })}
               disabled={isLoading}
             />
-          </div>
-
-          {/* Loop Toggle */}
-          <div className="flex items-center justify-between py-1">
-            <NodeLabel className="mb-0">{t('canvasNodes.videoNode.loopVideo') || 'Loop Video'}</NodeLabel>
-            <Switch
-              checked={isLooping}
-              onCheckedChange={(c) => {
-                setIsLooping(c);
-                updateData({ isLooping: c });
-              }}
-              disabled={isLoading}
-            />
-          </div>
-
-          {/* Negative Prompt */}
-          <div>
-            <NodeLabel>{t('canvasNodes.videoNode.negativePrompt') || 'Negative Prompt'}</NodeLabel>
-            <Input
-              className="w-full bg-neutral-900 border-node border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-neutral-600 outline-none placeholder:text-neutral-600"
-              placeholder={t('canvasNodes.videoNode.whatToAvoid') || 'What to avoid...'}
-              value={negativePrompt}
-              onChange={(e) => {
-                setNegativePrompt(e.target.value);
-                debouncedUpdateData({ negativePrompt: e.target.value });
-              }}
-              disabled={isLoading}
-            />
-          </div>
-
-          {/* Seed Control */}
-          <SeedControl
-            seed={nodeData.seed}
-            seedLocked={nodeData.seedLocked}
-            onSeedChange={(seed) => updateData({ seed })}
-            onSeedLockedChange={(locked) => updateData({ seedLocked: locked })}
-            disabled={isLoading}
-          />
+          )}
         </div>
       )}
 
@@ -636,6 +763,9 @@ export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     prevData.connectedVideo === nextData.connectedVideo &&
     prevData.seed === nextData.seed &&
     prevData.seedLocked === nextData.seedLocked &&
+    prevData.klingMode === nextData.klingMode &&
+    prevData.sound === nextData.sound &&
+    prevData.cfgScale === nextData.cfgScale &&
     prevData.resultVideoUrl === nextData.resultVideoUrl &&
     prevData.resultVideoBase64 === nextData.resultVideoBase64
   );

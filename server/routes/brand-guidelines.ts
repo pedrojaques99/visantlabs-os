@@ -4,7 +4,7 @@ import crypto from 'crypto'
 import { nanoid } from 'nanoid'
 import { authenticate, AuthRequest } from '../middleware/auth.js'
 import { prisma } from '../db/prisma.js'
-import { rateLimit, ipKeyGenerator } from 'express-rate-limit'
+import { rateLimit } from 'express-rate-limit'
 import { Liveblocks } from '@liveblocks/node'
 import { BrandGuideline, BrandGuidelineMedia, BrandGuidelineLogo, calculateCompleteness } from '../types/brandGuideline.js'
 import { parseUrl, parsePdf, parseImage, parseJson } from '../lib/brand-parse.js'
@@ -20,7 +20,10 @@ import { calculateChangedFields, createSnapshot, generateChangeNote, generateDif
 import { extractFigmaFileKey, isValidFigmaUrl } from '../lib/figmaUtils.js'
 import { BrandGuidelineSchema, BrandGuidelinePatchSchema } from '../../src/lib/brandGuidelineSchema.js'
 
+import multer from 'multer'
+
 const router = express.Router()
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 600 * 1024 * 1024 } })
 
 const apiRateLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
@@ -37,7 +40,6 @@ const publicRateLimiter = rateLimit({
   message: { error: 'Too many requests to public endpoint. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => ipKeyGenerator(req),
 })
 
 // GET /api/brand-guidelines — list all user's brand guidelines
@@ -256,7 +258,7 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
     })
     if (!existing) return res.status(404).json({ error: 'Brand guideline not found' })
 
-    const { source, url, data, filename, images: imagesPayload } = req.body
+    const { source, url, data, filename, images: imagesPayload, dryRun } = req.body
     let chunks: any[] = []
     let imagesToExtract: string[] | undefined = imagesPayload
 
@@ -287,12 +289,53 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
         chunks = parseJson(jsonStr, filename)
         break
       }
+      case 'fig_file': {
+        if (!data) return res.status(400).json({ error: 'Fig file data required' })
+        // .fig is a ZIP — extract images without any Figma token
+        const JSZip = (await import('jszip')).default
+        const zip = await JSZip.loadAsync(
+          Buffer.from(data.replace(/^data:[^;]+;base64,/, ''), 'base64')
+        )
+        const figImages: string[] = []
+
+        // 1. Thumbnail (best single preview of the whole file)
+        const thumb = zip.file('thumbnail.png')
+        if (thumb) {
+          const b64 = await thumb.async('base64')
+          figImages.push(`data:image/png;base64,${b64}`)
+        }
+
+        // 2. Embedded assets in /images/ (logos, icons, rasters)
+        const assetEntries = Object.keys(zip.files).filter(n =>
+          !zip.files[n].dir &&
+          (n.startsWith('images/') || /\.(png|jpg|jpeg|svg)$/i.test(n))
+        )
+        for (const entry of assetEntries.slice(0, 12)) {
+          const file = zip.file(entry)
+          if (!file) continue
+          const b64 = await file.async('base64')
+          const ext = /\.jpe?g$/i.test(entry) ? 'jpeg' : 'png'
+          figImages.push(`data:image/${ext};base64,${b64}`)
+        }
+
+        if (figImages.length === 0) {
+          return res.status(422).json({ error: 'No images found inside .fig file — try exporting frames as PNG from Figma first' })
+        }
+        chunks = parseImage(filename || 'design.fig')
+        imagesToExtract = figImages
+        break
+      }
       default:
         return res.status(400).json({ error: `Invalid source: ${source}` })
     }
 
     const extracted = await extractBrandData(chunks, imagesToExtract, req.userId)
     const merged = mergeBrandGuidelines(existing as any, extracted)
+
+    // DRY RUN — return preview without saving anything
+    if (dryRun) {
+      return res.json({ dryRun: true, extracted, preview: merged })
+    }
 
     // Classify and store uploaded images into logos/media
     if (imagesToExtract && imagesToExtract.length > 0 && extracted.assetClassifications?.length) {
@@ -365,6 +408,11 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
         media: merged.media as any,
         tokens: merged.tokens as any,
         guidelines: merged.guidelines as any,
+        strategy: (merged as any).strategy as any,
+        gradients: (merged as any).gradients as any,
+        shadows: (merged as any).shadows as any,
+        motion: (merged as any).motion as any,
+        borders: (merged as any).borders as any,
         extraction: merged.extraction as any,
       },
     })
@@ -1233,7 +1281,7 @@ router.post('/:id/versions/:versionNumber/restore', apiRateLimiter, authenticate
     }
 
     // Copy snapshot fields
-    const restoreFields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'folder', 'activeSections']
+    const restoreFields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'strategy', 'gradients', 'shadows', 'motion', 'borders', 'validation', 'folder', 'activeSections', 'orderedBlocks']
     for (const field of restoreFields) {
       if (snapshot[field] !== undefined) {
         restoreData[field] = snapshot[field]
@@ -1847,6 +1895,145 @@ router.delete('/:id/collaborators/:userId', apiRateLimiter, authenticate, async 
     res.json({ success: true })
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to remove collaborator', message: error.message })
+  }
+})
+
+// POST /api/brand-guidelines/:id/apply-fig-tokens — apply pre-extracted .fig tokens + upload images
+// Called after user approves the dry-run preview from extract-fig.
+router.post('/:id/apply-fig-tokens', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    console.log('[apply-fig-tokens] userId:', req.userId, 'id:', req.params.id, 'keys:', Object.keys(req.body || {}))
+
+    const existing = await prisma.brandGuideline.findFirst({ where: { id: req.params.id, userId: req.userId } })
+    if (!existing) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const { colors, typography, gradients, shadows, borders, tokens, images, replace } = req.body
+
+    console.log('[apply-fig-tokens] data sizes:', {
+      colors: colors?.length, typography: typography?.length,
+      gradients: gradients?.length, shadows: shadows?.length,
+      borders: borders?.length, images: images?.length, replace,
+    })
+
+    let merged: any
+    if (replace) {
+      // Replace mode: overwrite fields directly, keep unrelated fields intact
+      merged = {
+        ...existing,
+        ...(colors?.length && { colors }),
+        ...(typography?.length && { typography }),
+        ...(gradients?.length && { gradients }),
+        ...(shadows?.length && { shadows }),
+        ...(borders?.length && { borders }),
+        ...(tokens && { tokens }),
+      }
+    } else {
+      // Merge mode: use source-of-truth merge (dedup, append-only)
+      const incoming: Partial<BrandGuideline> = {}
+      if (colors?.length) incoming.colors = colors
+      if (typography?.length) incoming.typography = typography
+      if (gradients?.length) (incoming as any).gradients = gradients
+      if (shadows?.length) (incoming as any).shadows = shadows
+      if (borders?.length) (incoming as any).borders = borders
+      if (tokens) incoming.tokens = tokens
+      merged = mergeBrandGuidelines(existing as any, incoming)
+    }
+
+    // Upload and classify extracted images via existing AI pipeline
+    if (images?.length) {
+      const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { subscriptionTier: true, isAdmin: true } })
+      const existingLogos = ((merged as any).logos || [])
+      const existingMedia = ((merged as any).media || [])
+
+      const { extractBrandData } = await import('../lib/brand-extract.js')
+      const extracted = await extractBrandData([], images, req.userId)
+
+      if (extracted.assetClassifications?.length) {
+        await Promise.allSettled(
+          extracted.assetClassifications.map(async (cls: any) => {
+            const imgData = images[cls.index]
+            if (!imgData) return
+            const assetId = crypto.randomUUID()
+            const ct = imgData.match(/^data:([^;]+);/)?.[1] || 'image/png'
+            const storedUrl = await uploadBrandMedia(imgData, req.userId!, existing.id, assetId, ct, user?.subscriptionTier || undefined, user?.isAdmin || undefined)
+            if (cls.category === 'logo' || cls.category === 'icon') {
+              existingLogos.push({ id: assetId, url: storedUrl, variant: cls.category === 'icon' ? 'icon' : (cls.logoVariant || 'custom'), label: cls.label, source: 'upload' })
+            } else {
+              existingMedia.push({ id: assetId, url: storedUrl, type: 'image', label: cls.label })
+            }
+          })
+        )
+        ;(merged as any).logos = existingLogos
+        ;(merged as any).media = existingMedia
+      }
+    }
+
+    // Track source
+    const extraction = (merged.extraction as any) || { sources: [], completeness: 0 }
+    if (!Array.isArray(extraction.sources)) extraction.sources = []
+    extraction.sources.push({ type: 'fig_file', date: new Date().toISOString() })
+
+    const guideline = await prisma.brandGuideline.update({
+      where: { id: existing.id },
+      data: {
+        identity: merged.identity as any,
+        logos: (merged as any).logos as any,
+        colors: merged.colors as any,
+        typography: merged.typography as any,
+        tags: merged.tags as any,
+        media: (merged as any).media as any,
+        tokens: merged.tokens as any,
+        guidelines: merged.guidelines as any,
+        strategy: (merged as any).strategy as any,
+        gradients: (merged as any).gradients as any,
+        shadows: (merged as any).shadows as any,
+        motion: (merged as any).motion as any,
+        borders: (merged as any).borders as any,
+        extraction: extraction as any,
+      },
+    })
+
+    res.json({ guideline: { ...guideline, _id: guideline.id } })
+  } catch (err: any) {
+    console.error('[apply-fig-tokens]', err)
+    res.status(500).json({ error: err.message || 'Failed to apply .fig tokens' })
+  }
+})
+
+// POST /api/brand-guidelines/:id/extract-fig — multipart upload, streams NDJSON events
+// Each line is a JSON event: {type, data} — client reads progressively
+router.post('/:id/extract-fig', apiRateLimiter, authenticate, upload.single('file'), async (req: AuthRequest, res) => {
+  try {
+    const existing = await prisma.brandGuideline.findFirst({ where: { id: req.params.id, userId: req.userId } })
+    if (!existing) return res.status(404).json({ error: 'Brand guideline not found' })
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+
+    // Stream NDJSON — each line is a JSON event {type, data}
+    // Must handle errors AFTER flushHeaders by writing error event (not res.status)
+    res.setHeader('Content-Type', 'application/x-ndjson')
+    res.setHeader('Transfer-Encoding', 'chunked')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.flushHeaders()
+
+    const writeEvent = (event: object) => {
+      try { if (!res.writableEnded) res.write(JSON.stringify(event) + '\n') } catch { /* ignore */ }
+    }
+
+    try {
+      const { extractFigTokensStreaming } = await import('../lib/fig-extract.js')
+      await extractFigTokensStreaming(req.file.buffer, writeEvent)
+    } catch (err: any) {
+      console.error('[extract-fig]', err)
+      writeEvent({ type: 'error', message: err?.message || 'Extraction failed' })
+    } finally {
+      if (!res.writableEnded) res.end()
+    }
+  } catch (err: any) {
+    // Only reached if error occurs BEFORE flushHeaders (e.g. DB lookup failed)
+    console.error('[extract-fig pre-stream]', err)
+    if (!res.headersSent) res.status(500).json({ error: err.message || 'Failed to parse .fig file' })
   }
 })
 

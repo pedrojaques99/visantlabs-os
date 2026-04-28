@@ -25,6 +25,7 @@ declare global {
     Storage: {
       nodes: LiveList<LiveObject<Record<string, any>>>;
       edges: LiveList<LiveObject<Record<string, any>>>;
+      guideline: LiveObject<Record<string, any>>;
     };
 
     // Custom user info set when authenticating with a secret key

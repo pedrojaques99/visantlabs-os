@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { createPortal } from 'react-dom';
 import { X, Save, Loader2, Globe, Lock } from 'lucide-react';
 import { Button } from './ui/button';
@@ -32,6 +33,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
     const [category, setCategory] = useState<WorkflowCategory>(workflow.category as WorkflowCategory);
     const [tags, setTags] = useState(workflow.tags.join(', '));
     const [isPublic, setIsPublic] = useState(workflow.isPublic);
+    useScrollLock(isOpen);
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {

@@ -364,18 +364,11 @@ export const CommunityPage: React.FC = () => {
       ]}
       hideHeader // We're using a custom hero section instead of the default header
     >
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-gradient-to-b from-brand-cyan/5 via-transparent to-transparent opacity-50" />
-        <div className="absolute top-[10%] left-[10%] w-[400px] h-[400px] bg-brand-cyan/[0.02] blur-[150px] rounded-full" />
-        <div className="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-indigo-500/[0.01] blur-[150px] rounded-full" />
-      </div>
 
       <div className="relative z-10">
 
         {/* Hero Section */}
         <div className="relative mb-16 min-h-[550px] flex items-center overflow-hidden rounded-3xl border border-white/[0.03] bg-neutral-900/10">
-          <BackgroundGlow />
-
           {/* 3D Object - Repositioned for better balance */}
           <div className="absolute right-0 top-0 w-full md:w-1/2 h-full pointer-events-none z-0">
             <Suspense fallback={null}>
@@ -396,9 +389,9 @@ export const CommunityPage: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-6"
               >
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 backdrop-blur-md">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
-                  <span className="text-[10px] font-bold font-mono text-brand-cyan uppercase tracking-widest">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
+                  <span className="text-[10px] font-bold font-mono text-neutral-400 uppercase tracking-widest">
                     Comunidade Ativa
                   </span>
                 </div>
@@ -445,7 +438,7 @@ export const CommunityPage: React.FC = () => {
                     onClick={() => navigate('/community/presets')}
                     className="h-12 px-5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 backdrop-blur-md transition-all flex items-center gap-2"
                   >
-                    <Globe size={18} className="text-brand-cyan" />
+                    <Globe size={18} className="text-neutral-400" />
                     <span className="font-manrope font-semibold">Explorar Galeria</span>
                   </Button>
 
@@ -466,30 +459,30 @@ export const CommunityPage: React.FC = () => {
                 transition={{ delay: 0.4 }}
                 className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-16 max-w-xl"
               >
-                <GlassPanel padding="sm" className="bg-white/[0.02] border-white/[0.05] hover:border-brand-cyan/30 transition-colors group">
+                <GlassPanel padding="sm" className="bg-white/[0.02] border-white/[0.05] hover:border-white/10 transition-colors group">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">Membros</span>
-                    <TrendingUp size={14} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
+                    <TrendingUp size={14} className="text-neutral-700 group-hover:text-neutral-400 transition-colors" />
                   </div>
                   <p className="text-3xl font-bold text-white font-mono tracking-tighter">
                     {isLoading ? '...' : (globalCommunityStats.totalUsers === 0 ? '1' : <CountUp value={globalCommunityStats.totalUsers} />)}
                   </p>
                 </GlassPanel>
 
-                <GlassPanel padding="sm" className="bg-white/[0.02] border-white/[0.05] hover:border-brand-cyan/30 transition-colors group">
+                <GlassPanel padding="sm" className="bg-white/[0.02] border-white/[0.05] hover:border-white/10 transition-colors group">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">Criações</span>
-                    <Diamond size={14} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
+                    <Diamond size={14} className="text-neutral-700 group-hover:text-neutral-400 transition-colors" />
                   </div>
                   <p className="text-3xl font-bold text-white font-mono tracking-tighter">
                     {isLoading ? '...' : (globalCommunityStats.totalPresets === 0 ? '!' : <CountUp value={globalCommunityStats.totalPresets} />)}
                   </p>
                 </GlassPanel>
 
-                <GlassPanel padding="sm" className="hidden sm:flex bg-white/[0.02] border-white/[0.05] hover:border-brand-cyan/30 transition-colors group">
+                <GlassPanel padding="sm" className="hidden sm:flex bg-white/[0.02] border-white/[0.05] hover:border-white/10 transition-colors group">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">Publicado</span>
-                    <ImageIcon size={14} className="text-brand-cyan/40 group-hover:text-brand-cyan transition-colors" />
+                    <ImageIcon size={14} className="text-neutral-700 group-hover:text-neutral-400 transition-colors" />
                   </div>
                   <p className="text-3xl font-bold text-white font-mono tracking-tighter">
                     {isLoading ? '...' : (globalCommunityStats.totalBlankMockups === 0 ? '+' : <CountUp value={globalCommunityStats.totalBlankMockups} />)}
@@ -512,12 +505,12 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-10">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-1">
-                  <MicroTitle className="text-brand-cyan/60 tracking-[0.1em]">Curadoria</MicroTitle>
+                  <MicroTitle className="text-neutral-500 tracking-[0.1em]">Curadoria</MicroTitle>
                   <h2 className="text-3xl font-bold text-white font-manrope tracking-tight">Explorar por Categoria</h2>
                 </div>
                 <Link
                   to="/community/presets"
-                  className="inline-flex items-center gap-2 text-brand-cyan hover:text-brand-cyan/80 font-mono text-sm transition-all hover:translate-x-1"
+                  className="inline-flex items-center gap-2 text-neutral-400 hover:text-neutral-300 font-mono text-sm transition-all hover:translate-x-1"
                 >
                   Todas as categorias
                   <ArrowRight size={16} />
@@ -528,19 +521,19 @@ export const CommunityPage: React.FC = () => {
                 {presetTypes.map((category) => (
                   <GlassPanel
                     key={category.type}
-                    className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-brand-cyan/40 transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden cursor-pointer bg-white/[0.01]"
+                    className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-white/10 transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden cursor-pointer bg-white/[0.01]"
                     onClick={() => navigate(`/community/presets?type=${category.type}`)}
                   >
                     <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity [mask-image:linear-gradient(to_bottom_left,black,transparent)] scale-150">
-                      <category.icon size={120} className="text-brand-cyan" />
+                      <category.icon size={120} className="text-neutral-400" />
                     </div>
 
                     <div className="flex items-center justify-between mb-6">
-                      <div className="p-3 bg-white/5 rounded-xl group-hover:bg-brand-cyan/10 group-hover:scale-110 transition-all duration-300">
-                        <category.icon size={24} className="text-neutral-400 group-hover:text-brand-cyan transition-colors" />
+                      <div className="p-3 bg-white/5 rounded-xl group-hover:bg-white/5 group-hover:scale-110 transition-all duration-300">
+                        <category.icon size={24} className="text-neutral-400 group-hover:text-neutral-200 transition-colors" />
                       </div>
                       <div className="flex flex-col items-end">
-                        <span className="text-2xl font-bold font-mono text-white whitespace-nowrap group-hover:text-brand-cyan transition-colors">
+                        <span className="text-2xl font-bold font-mono text-white whitespace-nowrap group-hover:text-neutral-200 transition-colors">
                           <CountUp value={category.count} />
                         </span>
                         <span className="text-[10px] font-bold text-neutral-600 uppercase tracking-widest font-manrope">Presets</span>
@@ -548,7 +541,7 @@ export const CommunityPage: React.FC = () => {
                     </div>
 
                     <div className="mb-6 flex-1">
-                      <h3 className="text-lg font-semibold text-white font-manrope mb-1 capitalize group-hover:text-brand-cyan transition-colors text-left">
+                      <h3 className="text-lg font-semibold text-white font-manrope mb-1 capitalize group-hover:text-neutral-200 transition-colors text-left">
                         {category.label}
                       </h3>
                       <p className="text-xs text-neutral-500 font-mono line-clamp-2 leading-relaxed text-left">
@@ -570,7 +563,7 @@ export const CommunityPage: React.FC = () => {
                           </div>
                         ))
                       ) : (
-                        <MicroTitle as="p" className=" text-neutral-700 text-left">Ainda sem presets</MicroTitle>
+                        <p className="text-[10px] font-mono text-neutral-800 uppercase tracking-widest text-left">vazio</p>
                       )}
                     </div>
                   </GlassPanel>
@@ -589,7 +582,7 @@ export const CommunityPage: React.FC = () => {
                 </div>
                 <Link
                   to="/canvas"
-                  className="inline-flex items-center gap-2 text-brand-cyan hover:text-brand-cyan/80 font-mono text-sm transition-all hover:translate-x-1"
+                  className="inline-flex items-center gap-2 text-neutral-400 hover:text-neutral-300 font-mono text-sm transition-all hover:translate-x-1"
                 >
                   Abrir Canvas
                   <ArrowRight size={16} />
@@ -599,7 +592,7 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {workflowsLoading ? (
                   Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="bg-[#141414] border border-neutral-800/50 rounded-md p-6">
+                    <div key={i} className="bg-neutral-900/20 border border-neutral-800/50 rounded-md p-6">
                       <div className="aspect-video bg-neutral-900 rounded-md mb-4" />
                       <div className="h-4 bg-neutral-900 rounded mb-2" />
                       <div className="h-3 bg-neutral-900 rounded w-2/3" />
@@ -613,7 +606,7 @@ export const CommunityPage: React.FC = () => {
                     return (
                       <GlassPanel
                         key={workflow._id}
-                        className="group relative rounded-md p-6 flex flex-col h-full hover:border-brand-cyan/40 transition-all hover:-translate-y-1 active:translate-y-0 text-left cursor-pointer"
+                        className="group relative rounded-md p-6 flex flex-col h-full hover:border-white/10 transition-all hover:-translate-y-1 active:translate-y-0 text-left cursor-pointer"
                         onClick={() => navigate('/canvas')}
                       >
                         {workflow.thumbnailUrl ? (
@@ -631,7 +624,7 @@ export const CommunityPage: React.FC = () => {
                         )}
 
                         <div className="flex-1">
-                          <h3 className="text-base font-semibold text-white font-mono mb-1 line-clamp-1 group-hover:text-brand-cyan transition-colors">
+                          <h3 className="text-base font-semibold text-white font-mono mb-1 line-clamp-1 group-hover:text-neutral-200 transition-colors">
                             {workflow.name}
                           </h3>
                           <p className="text-xs text-neutral-500 font-mono line-clamp-2 mb-3">
@@ -663,21 +656,25 @@ export const CommunityPage: React.FC = () => {
                     );
                   })
                 ) : (
-                  <div className="col-span-full py-20 text-center bg-[#141414] rounded-md border border-neutral-800/50 border-dashed">
-                    <div className="flex flex-col items-center gap-4">
-                      <Workflow size={48} className="text-neutral-800" />
-                      <p className="text-neutral-500 font-mono text-sm">
-                        Nenhum workflow público disponível ainda
-                      </p>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-white/[0.03] rounded-3xl bg-neutral-950/20 backdrop-blur-sm"
+                  >
+                    <div className="p-6 rounded-full bg-white/[0.02] border border-white/5">
+                      <Workflow size={32} strokeWidth={1} className="text-neutral-700" />
                     </div>
-                  </div>
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">
+                      Nenhum workflow público ainda
+                    </p>
+                  </motion.div>
                 )}
               </div>
 
               {workflows.length > 8 && (
                 <div className="flex justify-center mt-8">
                   <Button variant="ghost" onClick={() => setShowWorkflowLibrary(true)}
-                    className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-brand-cyan/10 text-neutral-500 hover:text-brand-cyan border border-neutral-800/50 rounded-full transition-all text-sm font-mono group"
+                    className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-white/5 text-neutral-500 hover:text-neutral-300 border border-neutral-800/50 rounded-full transition-all text-sm font-mono group"
                   >
                     Ver todos os workflows
                     <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
@@ -697,7 +694,7 @@ export const CommunityPage: React.FC = () => {
                 </div>
                 <Link
                   to="/mockups"
-                  className="inline-flex items-center gap-2 text-brand-cyan hover:text-brand-cyan/80 font-mono text-sm transition-all hover:translate-x-1"
+                  className="inline-flex items-center gap-2 text-neutral-400 hover:text-neutral-300 font-mono text-sm transition-all hover:translate-x-1"
                 >
                   Ver galeria completa
                   <ArrowRight size={16} />
@@ -713,7 +710,7 @@ export const CommunityPage: React.FC = () => {
                   (isGalleryExpanded ? allPublicMockups : communityMockups).map((mockup) => (
                     <GlassPanel
                       key={mockup._id}
-                      className="group relative aspect-square rounded-md overflow-hidden hover:border-brand-cyan/50 transition-all hover:shadow-2xl hover:shadow-brand-cyan/5 cursor-pointer"
+                      className="group relative aspect-square rounded-md overflow-hidden hover:border-white/10 transition-all hover:shadow-2xl cursor-pointer"
                     >
                       <Link to="/mockups" className="block w-full h-full">
                         {mockup.imageUrl || mockup.imageBase64 ? (
@@ -728,12 +725,12 @@ export const CommunityPage: React.FC = () => {
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 p-4 flex flex-col justify-end">
-                          <MicroTitle as="p" className="text-brand-cyan mb-1">Prompt</MicroTitle>
+                          <MicroTitle as="p" className="text-neutral-500 mb-1">Prompt</MicroTitle>
                           <p className="text-xs text-white font-mono line-clamp-2 mb-2">
                             {mockup.prompt}
                           </p>
                           <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-                            <Plus size={10} className="text-brand-cyan" />
+                            <Plus size={10} className="text-neutral-500" />
                             <span className="text-[10px] text-neutral-400 font-mono uppercase">Usar como referência</span>
                           </div>
                         </div>
@@ -741,21 +738,25 @@ export const CommunityPage: React.FC = () => {
                     </GlassPanel>
                   ))
                 ) : (
-                  <div className="col-span-full py-20 text-center bg-[#141414] rounded-md border border-neutral-800/50 border-dashed">
-                    <div className="flex flex-col items-center gap-4">
-                      <ImageIcon size={48} className="text-neutral-800" />
-                      <p className="text-neutral-500 font-mono text-sm">
-                        Nenhum mockup encontrado na galeria pública
-                      </p>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-white/[0.03] rounded-3xl bg-neutral-950/20 backdrop-blur-sm"
+                  >
+                    <div className="p-6 rounded-full bg-white/[0.02] border border-white/5">
+                      <ImageIcon size={32} strokeWidth={1} className="text-neutral-700" />
                     </div>
-                  </div>
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">
+                      Galeria pública vazia
+                    </p>
+                  </motion.div>
                 )}
               </div>
 
               {allPublicMockups.length > 10 && (
                 <div className="flex justify-center mt-8">
                   <Button variant="ghost" onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
-                    className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-brand-cyan/10 text-neutral-500 hover:text-brand-cyan border border-neutral-800/50 rounded-full transition-all text-sm font-mono group"
+                    className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-white/5 text-neutral-500 hover:text-neutral-300 border border-neutral-800/50 rounded-full transition-all text-sm font-mono group"
                   >
                     {isGalleryExpanded ? (
                       <>
@@ -773,13 +774,13 @@ export const CommunityPage: React.FC = () => {
 
             {/* GitHub Ecosystem CTA */}
             <section className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-brand-cyan/5 to-transparent rounded-md" />
+              <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent rounded-md" />
               <GlassPanel padding="none" className="relative z-10 overflow-hidden">
                 <div className="p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
                   <div className="max-w-xl space-y-4 text-center md:text-left">
-                    <div className="flex items-center justify-center md:justify-start gap-3 text-brand-cyan">
+                    <div className="flex items-center justify-center md:justify-start gap-3 text-neutral-400">
                       <Github size={24} />
-                      <MicroTitle as="span" className="font-semibold">Open Source</MicroTitle>
+                      <MicroTitle as="span" className="font-semibold text-neutral-400">Open Source</MicroTitle>
                     </div>
                     <h2 className="text-3xl md:text-4xl font-bold text-white font-manrope leading-tight">
                       Vamos crescer junto

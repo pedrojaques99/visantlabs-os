@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { useGlitchCopy } from '@/hooks/useGlitchCopy';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, Heart, Maximize2, ExternalLink, Copy, Globe, User, LayoutGrid, Box, Settings, Palette, Diamond, Download, Clipboard } from 'lucide-react';
-import { SearchBar } from '../components/ui/SearchBar';
-
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Plus, Search, SlidersHorizontal, X, Heart, Layers } from 'lucide-react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import FuseLib from 'fuse.js';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Fuse: any = FuseLib;
 import { PageShell } from '../components/ui/PageShell';
-import { PremiumButton } from '../components/ui/PremiumButton';
 import { useLayout } from '@/hooks/useLayout';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
-import type { AspectRatio, GeminiModel, UploadedImage } from '../types/types';
+import type { AspectRatio, GeminiModel } from '../types/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '../lib/utils';
 import { AuthModal } from '../components/AuthModal';
@@ -22,17 +22,36 @@ import { PresetCard, CATEGORY_CONFIG } from '../components/PresetCard';
 import type { PromptCategory, LegacyPresetType, CommunityPrompt } from '../types/communityPrompts';
 import { migrateLegacyPreset } from '../types/communityPrompts';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence } from 'framer-motion';
 
-
-// Constants
+// ─── Constants ────────────────────────────────────────────────────────────────
 const COMMUNITY_API = '/api/community/presets';
 const PRESET_TYPES = ['all', 'mockup', 'angle', 'texture', 'ambience', 'luminance'] as const;
 const PROMPT_CATEGORIES = Object.keys(CATEGORY_CONFIG) as PromptCategory[];
 
-// Types - manter compatibilidade
-type PresetType = 'all' | 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
+type SortKey = 'newest' | 'likes' | 'used';
 
+const SORT_OPTIONS = [
+  { value: 'newest', label: 'Newest' },
+  { value: 'likes',  label: 'Most liked' },
+  { value: 'used',   label: 'Most used' },
+];
+
+// ─── Fuse config ──────────────────────────────────────────────────────────────
+const FUSE_OPTIONS = {
+  keys: [
+    { name: 'name',        weight: 0.45 },
+    { name: 'description', weight: 0.30 },
+    { name: 'tags',        weight: 0.15 },
+    { name: 'prompt',      weight: 0.10 },
+  ],
+  threshold: 0.35,
+  includeScore: true,
+  minMatchCharLength: 2,
+};
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 interface PresetFormData {
   category: PromptCategory;
   presetType?: LegacyPresetType;
@@ -50,695 +69,478 @@ interface PresetFormData {
   examples?: string[];
 }
 
-// Usar CommunityPrompt do tipo importado
 type CommunityPreset = CommunityPrompt;
 
+const generateSlug = (name: string) =>
+  name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
+  + '-' + Math.random().toString(36).substring(2, 7);
 
-
-
-const getPresetIcon = (type: PresetType | PromptCategory) => {
-  // Usa CATEGORY_CONFIG para todas as categorias
-  const Icon = CATEGORY_CONFIG[type as PromptCategory]?.icon || LayoutGrid;
-  return <Icon size={20} />;
-};
-
-const getInitialFormData = (category: PromptCategory = 'presets', presetType?: LegacyPresetType): PresetFormData => ({
-  category,
-  presetType: category === 'presets' ? (presetType || 'mockup') : undefined,
-  id: '',
-  name: '',
-  description: '',
-  prompt: '',
-  referenceImageUrl: '',
-  aspectRatio: '16:9',
-  model: GEMINI_MODELS.FLASH,
-  tags: [],
-  difficulty: 'intermediate',
-  context: 'general',
+const getInitialForm = (category: PromptCategory = 'presets', presetType?: LegacyPresetType): PresetFormData => ({
+  category, presetType: category === 'presets' ? (presetType || 'mockup') : undefined,
+  id: '', name: '', description: '', prompt: '', referenceImageUrl: '',
+  aspectRatio: '16:9', model: GEMINI_MODELS.FLASH, tags: [],
+  difficulty: 'intermediate', context: 'general',
 });
 
-const generateSlug = (name: string) => {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '') + '-' + Math.random().toString(36).substring(2, 7);
+// ─── Detail Modal ─────────────────────────────────────────────────────────────
+const PresetDetailModal: React.FC<{
+  preset: CommunityPreset;
+  currentUserId: string | null;
+  isAuthenticated: boolean;
+  isLiked: boolean;
+  likesCount: number;
+  onClose: () => void;
+  onOpenInCanvas: () => void;
+  onToggleLike?: () => void;
+  onEdit?: () => void;
+  t: (key: string) => string;
+}> = ({ preset, currentUserId, isAuthenticated, isLiked, likesCount, onClose, onOpenInCanvas, onToggleLike, onEdit, t }) => {
+  const migrated = migrateLegacyPreset(preset);
+  const hasImage = !!migrated.referenceImageUrl;
+  const config = CATEGORY_CONFIG[migrated.category] ?? CATEGORY_CONFIG['all'];
+  const isOwner = currentUserId && migrated.userId && currentUserId === migrated.userId;
+  const [copied, setCopied] = useState(false);
+
+  const copyPrompt = () => {
+    navigator.clipboard.writeText(migrated.prompt).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.97 }}
+        transition={{ duration: 0.15 }}
+        className="bg-neutral-950 border border-white/[0.08] rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="sticky top-0 bg-neutral-950/95 backdrop-blur-sm border-b border-white/[0.06] px-6 py-4 flex items-center gap-4 z-10">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-sm font-semibold text-neutral-100 font-mono truncate">{migrated.name}</h2>
+            <p className="text-[11px] text-neutral-500 font-mono mt-0.5 truncate">{migrated.description}</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {isAuthenticated && onToggleLike && (
+              <button onClick={onToggleLike}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.06] text-neutral-500 hover:text-neutral-300 transition-colors text-[11px] font-mono">
+                <Heart size={12} className={isLiked ? 'fill-current text-neutral-300' : ''} />
+                {likesCount > 0 && likesCount}
+              </button>
+            )}
+            {(isOwner || isAuthenticated) && onEdit && (
+              <button onClick={onEdit}
+                className="px-3 py-1.5 rounded-lg border border-white/[0.06] text-neutral-500 hover:text-neutral-300 transition-colors text-[11px] font-mono">
+                Edit
+              </button>
+            )}
+            <button onClick={onClose}
+              className="p-1.5 rounded-lg border border-white/[0.06] text-neutral-500 hover:text-neutral-300 transition-colors">
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 flex flex-col md:flex-row gap-6">
+          {/* Image */}
+          <div className="md:w-2/5 shrink-0">
+            {hasImage ? (
+              <img src={migrated.referenceImageUrl} alt={migrated.name} loading="lazy"
+                className="w-full aspect-square object-cover rounded-xl border border-white/[0.06]"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            ) : (
+              <div className="w-full aspect-square rounded-xl border border-white/[0.06] bg-neutral-900/30 flex items-center justify-center">
+                <config.icon size={32} className={cn('opacity-20', config.color)} />
+              </div>
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 space-y-4 min-w-0">
+            {/* Meta chips */}
+            <div className="flex flex-wrap gap-1.5">
+              <span className={cn('text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-white/[0.06]', config.color)}>
+                {config.label}
+              </span>
+              {migrated.aspectRatio && (
+                <span className="text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-white/[0.06] text-neutral-600">
+                  {migrated.aspectRatio}
+                </span>
+              )}
+              {migrated.difficulty && (
+                <span className="text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-white/[0.06] text-neutral-600">
+                  {migrated.difficulty}
+                </span>
+              )}
+            </div>
+
+            {/* Prompt */}
+            <div className="bg-neutral-900/40 border border-white/[0.06] rounded-xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">Prompt</span>
+                <button onClick={copyPrompt}
+                  className="flex items-center gap-1.5 text-[10px] font-mono text-neutral-600 hover:text-neutral-300 transition-colors">
+                  {copied ? <><span className="text-green-500">Copied</span></> : 'Copy'}
+                </button>
+              </div>
+              <p className="text-xs text-neutral-400 font-mono leading-relaxed max-h-36 overflow-y-auto whitespace-pre-wrap">
+                {migrated.prompt}
+              </p>
+            </div>
+
+            {/* Tags */}
+            {migrated.tags && migrated.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {migrated.tags.map((tag) => (
+                  <span key={tag} className="text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.02] border-white/[0.05] text-neutral-700">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="sticky bottom-0 bg-neutral-950/95 backdrop-blur-sm border-t border-white/[0.06] px-6 py-4 flex gap-3">
+          <Button variant="surface" className="flex-1" onClick={onOpenInCanvas}>
+            Open in Canvas
+          </Button>
+          <Button variant="ghost" onClick={onClose}>Close</Button>
+        </div>
+      </motion.div>
+    </div>
+  );
 };
 
+// ─── CommunityPresetsPage ─────────────────────────────────────────────────────
 export const CommunityPresetsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isAuthenticated: isUserAuthenticated, isCheckingAuth } = useLayout();
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [presets, setPresets] = useState<CommunityPreset[]>([]);
-  const [activeTab, setActiveTab] = useState<PromptCategory>(() => {
-    const typeParam = searchParams.get('type');
-    if (typeParam && PROMPT_CATEGORIES.includes(typeParam as PromptCategory)) {
-      return typeParam as PromptCategory;
-    }
-    // Compatibilidade: se for presetType antigo, mapear para 'presets'
-    if (typeParam && PRESET_TYPES.includes(typeParam as any)) {
-      return 'presets';
-    }
-    return 'all';
-  });
-  const [editingPreset, setEditingPreset] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [formData, setFormData] = useState<PresetFormData>({
-    category: 'presets',
-    presetType: 'mockup',
-    id: '',
-    name: '',
-    description: '',
-    prompt: '',
-    referenceImageUrl: '',
-    aspectRatio: '16:9',
-    model: GEMINI_MODELS.FLASH,
-    tags: [],
-    difficulty: 'intermediate',
-    context: 'general',
-  });
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [filterTag, setFilterTag] = useState<string | null>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [viewMode, setViewMode] = useState<'all' | 'my'>(() => {
-    const modeParam = searchParams.get('view');
-    return modeParam === 'my' ? 'my' : 'all';
-  });
-  const [allPresets, setAllPresets] = useState<CommunityPreset[]>([]);
-  const [selectedPreset, setSelectedPreset] = useState<CommunityPreset | null>(null);
-  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [presetToDelete, setPresetToDelete] = useState<string | null>(null);
-  const [presetToDuplicate, setPresetToDuplicate] = useState<CommunityPreset | null>(null);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const isFetchingMyRef = useRef(false);
-  const isFetchingAllRef = useRef(false);
-
-  // Computed values
   const isAuthenticated = isUserAuthenticated === true;
 
+  // ── State ──────────────────────────────────────────────────────────────────
+  const [isLoading, setIsLoading]               = useState(false);
+  const [error, setError]                       = useState<string | null>(null);
+  const [allPresets, setAllPresets]             = useState<CommunityPreset[]>([]);
+  const [myPresets, setMyPresets]               = useState<CommunityPreset[]>([]);
+  const [searchQuery, setSearchQuery]           = useState('');
+  const [activeTab, setActiveTab]               = useState<PromptCategory>(() => {
+    const p = searchParams.get('type');
+    if (p && PROMPT_CATEGORIES.includes(p as PromptCategory)) return p as PromptCategory;
+    if (p && PRESET_TYPES.includes(p as any)) return 'presets';
+    return 'all';
+  });
+  const [filterTag, setFilterTag]               = useState<string | null>(null);
+  const [sortKey, setSortKey]                   = useState<SortKey>('newest');
+  const [viewMode, setViewMode]                 = useState<'all' | 'my'>(() =>
+    searchParams.get('view') === 'my' ? 'my' : 'all'
+  );
+  const [currentUserId, setCurrentUserId]       = useState<string | null>(null);
+  const [selectedPreset, setSelectedPreset]     = useState<CommunityPreset | null>(null);
+  const [editingPreset, setEditingPreset]       = useState<string | null>(null);
+  const [isCreating, setIsCreating]             = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen]   = useState(false);
+  const [formData, setFormData]                 = useState<PresetFormData>(getInitialForm());
+  const [showAuthModal, setShowAuthModal]       = useState(false);
+  const [duplicateOpen, setDuplicateOpen]       = useState(false);
+  const [deleteOpen, setDeleteOpen]             = useState(false);
+  const [presetToDelete, setPresetToDelete]     = useState<string | null>(null);
+  const [presetToDuplicate, setPresetToDuplicate] = useState<CommunityPreset | null>(null);
 
+  const isFetchingAllRef = useRef(false);
+  const isFetchingMyRef  = useRef(false);
+  const gridRef          = useRef<HTMLDivElement>(null);
+  const searchRef        = useRef<HTMLInputElement>(null);
 
-  // Handlers - Data operations
-  const handleFetchMyPresets = useCallback(async () => {
-    const token = authService.getToken();
-    if (!token) {
-      setError(t('communityPresets.errors.mustBeAuthenticated'));
-      return;
-    }
+  // ── Auth user ID (once) ────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isAuthenticated) { setCurrentUserId(null); return; }
+    authService.verifyToken().then(u => setCurrentUserId(u?.id ?? null));
+  }, [isAuthenticated]);
 
-    if (isFetchingMyRef.current) return;
-    isFetchingMyRef.current = true;
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(COMMUNITY_API + '/my', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          throw new Error(t('communityPresets.errors.mustBeAuthenticated'));
-        }
-        throw new Error(t('communityPresets.errors.failedToLoad'));
-      }
-
-      const result = (await response.json()) as CommunityPreset[];
-      // Migrar presets legados
-      setPresets(result.map(migrateLegacyPreset));
-    } catch (fetchError: any) {
-      console.error('Error loading my presets:', fetchError);
-      setPresets([]);
-      setError(fetchError.message || t('communityPresets.errors.failedToLoad'));
-    } finally {
-      isFetchingMyRef.current = false;
-      setIsLoading(false);
-    }
-  }, [t]);
-
-  const handleFetchAllPresets = useCallback(async () => {
+  // ── Fetch ──────────────────────────────────────────────────────────────────
+  const fetchAll = useCallback(async () => {
     if (isFetchingAllRef.current) return;
     isFetchingAllRef.current = true;
-
-    setIsLoading(true);
-    setError(null);
+    setIsLoading(true); setError(null);
     try {
-      // Use cached service method instead of direct fetch
       const grouped = await getAllCommunityPresets();
-
-      const uniquePresetsMap = new Map<string, CommunityPreset>();
-
-      Object.values(grouped).forEach(presetArray => {
-        if (Array.isArray(presetArray)) {
-          presetArray.forEach(p => {
-            const migrated = migrateLegacyPreset(p);
-            // Use ID as key to deduplicate. Last one wins (or first, doesn't matter much if they are identical)
-            // If we want to prioritize certain categories, we should process them in order.
-            if (!uniquePresetsMap.has(migrated.id)) {
-              uniquePresetsMap.set(migrated.id, migrated);
-            }
-          });
-        }
-      });
-
-      setAllPresets(Array.from(uniquePresetsMap.values()));
-    } catch (fetchError: any) {
-      console.error('Error loading all presets:', fetchError);
-      setAllPresets([]);
-      setError(fetchError.message || t('communityPresets.errors.failedToLoad'));
-    } finally {
-      isFetchingAllRef.current = false;
-      setIsLoading(false);
-    }
+      const map = new Map<string, CommunityPreset>();
+      Object.values(grouped).forEach(arr => arr?.forEach(p => {
+        const m = migrateLegacyPreset(p);
+        if (!map.has(m.id)) map.set(m.id, m);
+      }));
+      setAllPresets(Array.from(map.values()));
+    } catch (e: any) {
+      setError(e.message ?? t('communityPresets.errors.failedToLoad'));
+    } finally { isFetchingAllRef.current = false; setIsLoading(false); }
   }, [t]);
 
-  const handleFetch = useCallback(() => {
-    if (viewMode === 'my') {
-      handleFetchMyPresets();
-    } else {
-      handleFetchAllPresets();
+  const fetchMy = useCallback(async () => {
+    const token = authService.getToken();
+    if (!token || isFetchingMyRef.current) return;
+    isFetchingMyRef.current = true;
+    setIsLoading(true); setError(null);
+    try {
+      const res = await fetch(`${COMMUNITY_API}/my`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(t('communityPresets.errors.failedToLoad'));
+      const data: CommunityPreset[] = await res.json();
+      setMyPresets(data.map(migrateLegacyPreset));
+    } catch (e: any) {
+      setError(e.message ?? t('communityPresets.errors.failedToLoad'));
+    } finally { isFetchingMyRef.current = false; setIsLoading(false); }
+  }, [t]);
+
+  useEffect(() => {
+    if (isCheckingAuth) return;
+    if (viewMode === 'my' && isAuthenticated) fetchMy();
+    else if (viewMode === 'all') fetchAll();
+  }, [isCheckingAuth, isAuthenticated, viewMode, fetchAll, fetchMy]);
+
+  // ── URL sync ───────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const p = searchParams.get('type');
+    if (p && PROMPT_CATEGORIES.includes(p as PromptCategory)) setActiveTab(p as PromptCategory);
+  }, [searchParams]);
+
+  useEffect(() => { setFilterTag(null); }, [activeTab]);
+
+  // ── Fuse instance ──────────────────────────────────────────────────────────
+  const source = viewMode === 'my' ? myPresets : allPresets;
+
+  const fuse = useMemo(() => new Fuse(source, FUSE_OPTIONS), [source]);
+
+  // ── Filtering + search + sort ──────────────────────────────────────────────
+  const filtered = useMemo(() => {
+    let items = source;
+
+    // Category
+    if (activeTab !== 'all') items = items.filter(p => p.category === activeTab);
+
+    // Tag
+    if (filterTag) items = items.filter(p => p.tags?.includes(filterTag));
+
+    // Search (Fuse)
+    if (searchQuery.trim().length >= 2) {
+      const fuseOnFiltered = new Fuse(items, FUSE_OPTIONS);
+      items = fuseOnFiltered.search(searchQuery.trim()).map(r => r.item);
     }
-  }, [viewMode, handleFetchMyPresets, handleFetchAllPresets]);
 
+    return items;
+  }, [source, activeTab, filterTag, searchQuery]);
 
-  // Handlers - Form management
-  const handleEdit = useCallback((preset: CommunityPreset) => {
-    // Migrar preset se necessário
-    const migrated = migrateLegacyPreset(preset);
-    setEditingPreset(migrated.id);
-    setIsCreating(false);
-    setFormData({
-      category: migrated.category,
-      presetType: migrated.presetType,
-      id: migrated.id,
-      name: migrated.name,
-      description: migrated.description,
-      prompt: migrated.prompt,
-      referenceImageUrl: migrated.referenceImageUrl || '',
-      aspectRatio: migrated.aspectRatio,
-      model: migrated.model,
-      tags: migrated.tags || [],
-      difficulty: migrated.difficulty,
-      context: migrated.context,
-      useCase: migrated.useCase,
-      examples: migrated.examples,
-    });
-    setIsEditModalOpen(true);
-  }, []);
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    switch (sortKey) {
+      case 'newest': return arr.sort((a, b) =>
+        new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime());
+      case 'likes': return arr.sort((a, b) => (b.likesCount ?? 0) - (a.likesCount ?? 0));
+      case 'used':  return arr.sort((a, b) => (b.usageCount  ?? 0) - (a.usageCount  ?? 0));
+    }
+  }, [filtered, sortKey]);
+
+  // ── Tags ───────────────────────────────────────────────────────────────────
+  const allTags = useMemo(() => {
+    const base = activeTab === 'all' ? source : source.filter(p => p.category === activeTab);
+    const counts = new Map<string, number>();
+    base.forEach(p => p.tags?.forEach(tag => {
+      if (tag?.trim()) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }));
+    return Array.from(counts.entries()).map(([tag, count]) => ({ tag, count })).sort((a, b) => b.count - a.count);
+  }, [source, activeTab]);
+
+  // ── Category counts ────────────────────────────────────────────────────────
+  const sortedCategories = useMemo(() => {
+    const counts = PROMPT_CATEGORIES.reduce((acc, cat) => {
+      acc[cat] = cat === 'all' ? source.length : source.filter(p => p.category === cat).length;
+      return acc;
+    }, {} as Record<PromptCategory, number>);
+    return ['all' as PromptCategory, ...PROMPT_CATEGORIES.filter(c => c !== 'all').sort((a, b) => counts[b] - counts[a])];
+  }, [source]);
+
+  // ── Virtual grid ──────────────────────────────────────────────────────────
+  const COLS = 3; // TODO: make responsive with useMediaQuery
+  const rowCount = Math.ceil(sorted.length / COLS);
+
+  const virtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => document.documentElement,
+    estimateSize: () => 280,
+    overscan: 4,
+  });
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  const handleTabChange = useCallback((cat: PromptCategory) => {
+    setActiveTab(cat);
+    navigate(`/community/presets?type=${cat}&view=${viewMode}`, { replace: true });
+  }, [navigate, viewMode]);
+
+  const handleViewMode = useCallback((mode: 'all' | 'my') => {
+    setViewMode(mode);
+    navigate(`/community/presets?type=${activeTab}&view=${mode}`, { replace: true });
+  }, [navigate, activeTab]);
 
   const handleCreate = useCallback(() => {
     setIsCreating(true);
     setEditingPreset(null);
-    // Se activeTab for 'presets', usar 'mockup' como padrão, senão usar a categoria
-    const presetType = activeTab === 'presets' ? 'mockup' : undefined;
-    setFormData(getInitialFormData(activeTab === 'all' ? 'presets' : activeTab, presetType));
+    setFormData(getInitialForm(activeTab === 'all' ? 'presets' : activeTab));
     setIsEditModalOpen(true);
   }, [activeTab]);
 
-  const handleCancel = useCallback(() => {
-    setIsCreating(false);
-    setEditingPreset(null);
-    setFormData(getInitialFormData('presets', 'mockup'));
-    setIsEditModalOpen(false);
+  const handleEdit = useCallback((preset: CommunityPreset) => {
+    const m = migrateLegacyPreset(preset);
+    setEditingPreset(m.id); setIsCreating(false);
+    setFormData({ category: m.category, presetType: m.presetType, id: m.id, name: m.name,
+      description: m.description, prompt: m.prompt, referenceImageUrl: m.referenceImageUrl ?? '',
+      aspectRatio: m.aspectRatio, model: m.model, tags: m.tags ?? [],
+      difficulty: m.difficulty, context: m.context, useCase: m.useCase, examples: m.examples });
+    setIsEditModalOpen(true);
   }, []);
 
-  // Effects
-  useEffect(() => {
-    const typeParam = searchParams.get('type');
-    if (typeParam && PROMPT_CATEGORIES.includes(typeParam as PromptCategory)) {
-      setActiveTab(typeParam as PromptCategory);
-    } else if (typeParam && PRESET_TYPES.includes(typeParam as any)) {
-      // Compatibilidade: mapear presetType antigo para 'presets'
-      setActiveTab('presets');
-    }
-  }, [searchParams]);
+  const handleCancel = useCallback(() => {
+    setIsCreating(false); setEditingPreset(null);
+    setFormData(getInitialForm()); setIsEditModalOpen(false);
+  }, []);
 
-  useEffect(() => {
-    setFilterTag(null);
-  }, [activeTab]);
-
-  useEffect(() => {
-    if (!isCheckingAuth) {
-      if (viewMode === 'my' && isUserAuthenticated === true) {
-        handleFetchMyPresets();
-      } else if (viewMode === 'all') {
-        handleFetchAllPresets();
-      }
-    }
-  }, [isUserAuthenticated, isCheckingAuth, viewMode, handleFetchMyPresets, handleFetchAllPresets]);
-
-  useEffect(() => {
-    const viewParam = searchParams.get('view');
-    if (viewParam === 'my' || viewParam === 'all') {
-      setViewMode(viewParam);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (!isEditModalOpen) return;
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleCancel();
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
-    };
-  }, [isEditModalOpen, handleCancel]);
-
-  // Auto-open create modal if create=true in URL
-  useEffect(() => {
-    const createParam = searchParams.get('create');
-    if (createParam === 'true' && !isEditModalOpen && !isCreating && isAuthenticated) {
-      handleCreate();
-      // Remove the create parameter from URL after opening modal
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.delete('create');
-      navigate(`/community/presets?${newSearchParams.toString()}`, { replace: true });
-    }
-  }, [searchParams, isEditModalOpen, isCreating, isAuthenticated, handleCreate, navigate]);
-
-  // Handlers - Image upload
-
-
-  // Handlers - Save/Delete
   const handleSave = useCallback(async (data: PresetFormData) => {
     const token = authService.getToken();
-    if (!token) {
-      throw new Error(t('communityPresets.errors.mustBeAuthenticatedToCreate'));
-    }
-
-    const presetId = data.id;
-
-    setIsLoading(true);
-    setError(null);
-
+    if (!token) throw new Error(t('communityPresets.errors.mustBeAuthenticatedToCreate'));
+    setIsLoading(true); setError(null);
     try {
-      const url = isCreating
-        ? COMMUNITY_API
-        : `${COMMUNITY_API}/${editingPreset}`;
-      const method = isCreating ? 'POST' : 'PUT';
-
-      const body: any = {
-        category: data.category,
-        id: presetId,
-        name: data.name,
-        description: data.description,
-        prompt: data.prompt,
-        aspectRatio: data.aspectRatio,
-        tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
-      };
-
-      // Adicionar presetType apenas se category for 'presets'
-      if (data.category === 'presets' && data.presetType) {
-        body.presetType = data.presetType;
-      }
-
-      // Adicionar referenceImageUrl se necessário
-      const needsReferenceImage = (data.category === 'presets' && data.presetType === 'mockup')
-        || (data.category !== 'presets' && data.referenceImageUrl);
-      if (needsReferenceImage && data.referenceImageUrl !== undefined) {
-        body.referenceImageUrl = data.referenceImageUrl;
-      }
-
-      // Adicionar novos campos opcionais
+      const url  = isCreating ? COMMUNITY_API : `${COMMUNITY_API}/${editingPreset}`;
+      const body: any = { category: data.category, id: data.id, name: data.name,
+        description: data.description, prompt: data.prompt, aspectRatio: data.aspectRatio,
+        tags: data.tags?.length ? data.tags : undefined };
+      if (data.category === 'presets' && data.presetType) body.presetType = data.presetType;
+      if (data.referenceImageUrl) body.referenceImageUrl = data.referenceImageUrl;
       if (data.difficulty) body.difficulty = data.difficulty;
-      if (data.context) body.context = data.context;
-      if (data.useCase) body.useCase = data.useCase;
-      if (data.examples && data.examples.length > 0) body.examples = data.examples;
-      if (data.model) body.model = data.model;
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || (isCreating ? t('communityPresets.errors.failedToCreate') : t('communityPresets.errors.failedToUpdate')));
-      }
-
-      if (viewMode === 'my') {
-        await handleFetchMyPresets();
-      } else {
-        await handleFetchAllPresets();
-      }
-      clearCommunityPresetsCache(); // Clear cache when presets are updated
+      if (data.context)    body.context    = data.context;
+      if (data.model)      body.model      = data.model;
+      if (data.useCase)    body.useCase    = data.useCase;
+      if (data.examples?.length) body.examples = data.examples;
+      const res = await fetch(url, { method: isCreating ? 'POST' : 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body) });
+      if (!res.ok) { const err = await res.json(); throw new Error(err.error); }
+      clearCommunityPresetsCache();
+      viewMode === 'my' ? await fetchMy() : await fetchAll();
       handleCancel();
-      setIsEditModalOpen(false);
       toast.success(isCreating ? t('communityPresets.messages.presetCreated') : t('communityPresets.messages.presetUpdated'));
-    } catch (saveError: any) {
-      console.error('Save error:', saveError);
-      throw saveError; // Re-throw to be handled by the modal
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isCreating, editingPreset, viewMode, t, handleFetchMyPresets, handleFetchAllPresets, handleCancel]);
+    } catch (e: any) { throw e; } finally { setIsLoading(false); }
+  }, [isCreating, editingPreset, viewMode, t, fetchMy, fetchAll, handleCancel]);
 
-  const handleDelete = useCallback(async (id: string) => {
-    const token = authService.getToken();
-    if (!token) {
-      setError(t('communityPresets.errors.mustBeAuthenticated'));
-      return;
-    }
-
-    setPresetToDelete(id);
-    setDeleteConfirmOpen(true);
-  }, [t]);
+  const handleDelete = useCallback((id: string) => {
+    setPresetToDelete(id); setDeleteOpen(true);
+  }, []);
 
   const handleConfirmDelete = useCallback(async () => {
-    const id = presetToDelete;
-    if (!id) return;
+    if (!presetToDelete) return;
     const token = authService.getToken();
     if (!token) return;
-    setDeleteConfirmOpen(false);
-    setPresetToDelete(null);
-    setIsLoading(true);
-    setError(null);
-
+    setDeleteOpen(false); setPresetToDelete(null); setIsLoading(true);
     try {
-      const response = await fetch(`${COMMUNITY_API}/${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || t('communityPresets.errors.failedToDelete'));
-      }
-
-      if (viewMode === 'my') {
-        await handleFetchMyPresets();
-      } else {
-        await handleFetchAllPresets();
-      }
-      clearCommunityPresetsCache(); // Clear cache when presets are deleted
+      const res = await fetch(`${COMMUNITY_API}/${presetToDelete}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error((await res.json()).error);
+      clearCommunityPresetsCache();
+      viewMode === 'my' ? await fetchMy() : await fetchAll();
       toast.success(t('communityPresets.messages.presetDeleted'));
-    } catch (deleteError: any) {
-      setError(deleteError.message || t('communityPresets.errors.failedToDelete'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [presetToDelete, t, viewMode, handleFetchMyPresets, handleFetchAllPresets]);
-
-  const handleDuplicateClick = useCallback((preset: CommunityPreset) => {
-    setPresetToDuplicate(preset);
-    setDuplicateModalOpen(true);
-  }, []);
+    } catch (e: any) { setError(e.message); } finally { setIsLoading(false); }
+  }, [presetToDelete, viewMode, t, fetchMy, fetchAll]);
 
   const handleConfirmDuplicate = useCallback(async () => {
     if (!presetToDuplicate) return;
-
     const token = authService.getToken();
-    if (!token) {
-      toast.error(t('communityPresets.errors.mustBeAuthenticated'));
-      return;
-    }
-
+    if (!token) { toast.error(t('communityPresets.errors.mustBeAuthenticated')); return; }
     setIsLoading(true);
-
     try {
-      // Migrar preset se necessário
-      const migrated = migrateLegacyPreset(presetToDuplicate);
-      // Generate a new unique ID based on the name + random suffix
-      const newId = generateSlug(migrated.name + '-copy');
+      const m = migrateLegacyPreset(presetToDuplicate);
+      const body: any = { category: m.category, id: generateSlug(m.name + '-copy'),
+        name: `${m.name} (Copy)`, description: m.description, prompt: m.prompt,
+        aspectRatio: m.aspectRatio, tags: m.tags, model: m.model };
+      if (m.category === 'presets' && m.presetType) body.presetType = m.presetType;
+      if (m.referenceImageUrl) body.referenceImageUrl = m.referenceImageUrl;
+      if (m.difficulty) body.difficulty = m.difficulty;
+      const res = await fetch(COMMUNITY_API, { method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body) });
+      if (!res.ok) throw new Error((await res.json()).error);
+      if (viewMode === 'my') await fetchMy();
+      toast.success(t('communityPresets.messages.presetDuplicated') || 'Duplicated');
+      setDuplicateOpen(false); setPresetToDuplicate(null);
+    } catch (e: any) { toast.error(e.message); } finally { setIsLoading(false); }
+  }, [presetToDuplicate, viewMode, t, fetchMy]);
 
-      const body: any = {
-        category: migrated.category,
-        id: newId,
-        name: `${migrated.name} (Copy)`,
-        description: migrated.description,
-        prompt: migrated.prompt,
-        aspectRatio: migrated.aspectRatio,
-        tags: migrated.tags,
-        model: migrated.model,
-      };
-
-      // Adicionar presetType se category for 'presets'
-      if (migrated.category === 'presets' && migrated.presetType) {
-        body.presetType = migrated.presetType;
-      }
-
-      // Adicionar referenceImageUrl se necessário
-      const needsReferenceImage = (migrated.category === 'presets' && migrated.presetType === 'mockup')
-        || (migrated.category !== 'presets' && migrated.referenceImageUrl);
-      if (needsReferenceImage && migrated.referenceImageUrl) {
-        body.referenceImageUrl = migrated.referenceImageUrl;
-      }
-
-      // Adicionar novos campos opcionais
-      if (migrated.difficulty) body.difficulty = migrated.difficulty;
-      if (migrated.context) body.context = migrated.context;
-      if (migrated.useCase) body.useCase = migrated.useCase;
-      if (migrated.examples && migrated.examples.length > 0) body.examples = migrated.examples;
-
-      const response = await fetch(COMMUNITY_API, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || t('communityPresets.errors.failedToCreate'));
-      }
-
-      // If viewing my presets, refresh list
-      if (viewMode === 'my') {
-        await handleFetchMyPresets();
-      }
-
-      toast.success(t('communityPresets.messages.presetDuplicated') || "Preset duplicated successfully");
-      setDuplicateModalOpen(false);
-      setPresetToDuplicate(null);
-    } catch (error: any) {
-      console.error('Duplicate error:', error);
-      toast.error(error.message || "Failed to duplicate preset");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [presetToDuplicate, t, viewMode, handleFetchMyPresets]);
-
-  const updatePresetInState = useCallback((id: string, patch: Partial<CommunityPreset>) => {
-    const mapper = (prev: CommunityPreset[]) =>
-      prev.map(p => (p.id === id ? { ...p, ...patch } : p));
-    if (viewMode === 'my') setPresets(mapper); else setAllPresets(mapper);
+  const updatePreset = useCallback((id: string, patch: Partial<CommunityPreset>) => {
+    const mapper = (prev: CommunityPreset[]) => prev.map(p => p.id === id ? { ...p, ...patch } : p);
+    viewMode === 'my' ? setMyPresets(mapper) : setAllPresets(mapper);
   }, [viewMode]);
 
-  const handleToggleLike = useCallback(async (presetId: string) => {
+  const handleToggleLike = useCallback(async (id: string) => {
     const token = authService.getToken();
-    if (!token) {
-      toast.error(t('communityPresets.errors.mustBeAuthenticated'));
-      return;
-    }
-
-    // Find current preset to get initial state
-    const sourcePresets = viewMode === 'my' ? presets : allPresets;
-    const preset = sourcePresets.find(p => p.id === presetId);
+    if (!token) { toast.error(t('communityPresets.errors.mustBeAuthenticated')); return; }
+    const preset = source.find(p => p.id === id);
     if (!preset) return;
-
-    const currentIsLiked = preset.isLikedByUser || false;
-    const currentLikesCount = preset.likesCount || 0;
-
-    // Optimistic update
-    updatePresetInState(presetId, {
-      isLikedByUser: !currentIsLiked,
-      likesCount: currentIsLiked ? Math.max(0, currentLikesCount - 1) : currentLikesCount + 1,
-    });
-
+    const wasLiked = preset.isLikedByUser ?? false;
+    const wasCount = preset.likesCount ?? 0;
+    updatePreset(id, { isLikedByUser: !wasLiked, likesCount: wasLiked ? Math.max(0, wasCount - 1) : wasCount + 1 });
     try {
-      const response = await fetch(`${COMMUNITY_API}/${presetId}/like`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(`${COMMUNITY_API}/${id}/like`, { method: 'POST',
+        headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      updatePreset(id, { isLikedByUser: data.isLikedByUser, likesCount: data.likesCount });
+    } catch { updatePreset(id, { isLikedByUser: wasLiked, likesCount: wasCount }); }
+  }, [source, updatePreset, t]);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || t('communityPresets.errors.failedToToggleLike'));
+  // ── Keyboard shortcut (/) to focus search ─────────────────────────────────
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey && document.activeElement?.tagName !== 'INPUT') {
+        e.preventDefault();
+        searchRef.current?.focus();
       }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
-      const result = await response.json();
-      updatePresetInState(presetId, { isLikedByUser: result.isLikedByUser, likesCount: result.likesCount });
-    } catch (error: any) {
-      updatePresetInState(presetId, { isLikedByUser: currentIsLiked, likesCount: currentLikesCount });
-      toast.error(error.message || t('communityPresets.errors.failedToToggleLike'));
-      console.error('Error toggling like:', error);
-    }
-  }, [updatePresetInState, presets, allPresets, t]);
-
-  // Handlers - Tab navigation
-  const handleTabChange = useCallback((category: PromptCategory) => {
-    setActiveTab(category);
-    navigate(`/community/presets?type=${category}&view=${viewMode}`, { replace: true });
-    if (isEditModalOpen) handleCancel();
-  }, [navigate, isEditModalOpen, handleCancel, viewMode]);
-
-  const handleViewModeChange = useCallback((mode: 'all' | 'my') => {
-    setViewMode(mode);
-    navigate(`/community/presets?type=${activeTab}&view=${mode}`, { replace: true });
-    if (isEditModalOpen) handleCancel();
-  }, [navigate, activeTab, isEditModalOpen, handleCancel]);
-
-  // Computed - Tags and filtering
-  const allTags = useMemo(() => {
-    const sourcePresets = viewMode === 'my' ? presets : allPresets;
-    let currentCategoryPresets = sourcePresets;
-
-    // Filtrar por categoria
-    if (activeTab !== 'all') {
-      if (activeTab === 'presets') {
-        // Para presets, manter compatibilidade com filtro de presetType se houver
-        currentCategoryPresets = sourcePresets.filter(p => p.category === 'presets');
-      } else {
-        currentCategoryPresets = sourcePresets.filter(p => p.category === activeTab);
-      }
-    }
-
-    const tagCounts = new Map<string, number>();
-    currentCategoryPresets.forEach(preset => {
-      if (preset.tags && Array.isArray(preset.tags)) {
-        preset.tags.forEach(tag => {
-          if (tag && typeof tag === 'string' && tag.trim().length > 0) {
-            const trimmedTag = tag.trim();
-            tagCounts.set(trimmedTag, (tagCounts.get(trimmedTag) || 0) + 1);
-          }
-        });
-      }
-    });
-
-    return Array.from(tagCounts.entries())
-      .map(([tag, count]) => ({ tag, count }))
-      .sort((a, b) => b.count - a.count);
-  }, [presets, allPresets, activeTab, viewMode]);
-
-  const currentPresets = useMemo(() => {
-    const sourcePresets = viewMode === 'my' ? presets : allPresets;
-    let filtered = sourcePresets;
-
-    // Filtrar por categoria
-    if (activeTab !== 'all') {
-      if (activeTab === 'presets') {
-        filtered = sourcePresets.filter(p => p.category === 'presets');
-      } else {
-        filtered = sourcePresets.filter(p => p.category === activeTab);
-      }
-    }
-
-    // Filtrar por tag
-    if (filterTag) {
-      filtered = filtered.filter(p =>
-        p.tags && Array.isArray(p.tags) && p.tags.includes(filterTag)
-      );
-    }
-
-    // Filtrar por busca
-    if (searchQuery && searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(p => {
-        const migrated = migrateLegacyPreset(p);
-        const name = migrated.name?.toLowerCase() || '';
-        const description = migrated.description?.toLowerCase() || '';
-        const prompt = migrated.prompt?.toLowerCase() || '';
-        const tags = migrated.tags || [];
-
-        return (
-          name.includes(query) ||
-          description.includes(query) ||
-          prompt.includes(query) ||
-          tags.some(tag => tag && typeof tag === 'string' && tag.toLowerCase().includes(query))
-        );
-      });
-    }
-
-    return filtered;
-  }, [presets, allPresets, activeTab, filterTag, searchQuery, viewMode]);
-
-  // Ordenar categorias por quantidade de presets
-  const sortedCategories = useMemo(() => {
-    const sourcePresets = viewMode === 'my' ? presets : allPresets;
-
-    // Calcular quantidade por categoria
-    const categoryCounts = PROMPT_CATEGORIES.reduce((acc, category) => {
-      if (category === 'all') {
-        acc[category] = sourcePresets.length;
-      } else {
-        acc[category] = sourcePresets.filter(p => {
-          if (category === 'presets') {
-            return p.category === 'presets';
-          }
-          return p.category === category;
-        }).length;
-      }
-      return acc;
-    }, {} as Record<PromptCategory, number>);
-
-    // Separar 'all' e ordenar o resto por quantidade (decrescente)
-    const allCategory: PromptCategory[] = ['all'];
-    const otherCategories = PROMPT_CATEGORIES
-      .filter(cat => cat !== 'all')
-      .sort((a, b) => categoryCounts[b] - categoryCounts[a]);
-
-    return [...allCategory, ...otherCategories];
-  }, [presets, allPresets, viewMode]);
-
-  const isEditing = editingPreset !== null || isCreating;
-
-
-
+  // ── Render ─────────────────────────────────────────────────────────────────
   const headerActions = (
-    <div className="flex items-center gap-3">
-      <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 backdrop-blur-md">
-        <button
-          onClick={() => handleViewModeChange('all')}
-          className={cn(
-            "px-4 py-1.5 rounded-lg text-xs font-bold font-mono transition-all",
-            viewMode === 'all'
-              ? "bg-brand-cyan/20 text-brand-cyan shadow-sm border border-brand-cyan/20"
-              : "text-neutral-500 hover:text-neutral-300"
-          )}
-        >
-          {t('communityPresets.tabs.all')}
-        </button>
-        <button
-          onClick={() => handleViewModeChange('my')}
-          className={cn(
-            "px-4 py-1.5 rounded-lg text-xs font-bold font-mono transition-all",
-            viewMode === 'my'
-              ? "bg-indigo-500/20 text-indigo-400 shadow-sm border border-indigo-500/20"
-              : "text-neutral-500 hover:text-neutral-300"
-          )}
-        >
-          {t('communityPresets.tabs.my')}
-        </button>
+    <div className="flex items-center gap-2">
+      {/* View toggle */}
+      <div className="flex bg-white/[0.03] p-0.5 rounded-lg border border-white/[0.06]">
+        {(['all', 'my'] as const).map(mode => (
+          <button key={mode}
+            onClick={() => handleViewMode(mode)}
+            className={cn('px-3 py-1.5 rounded-md text-xs font-mono transition-all',
+              viewMode === mode ? 'bg-white/[0.08] text-neutral-200' : 'text-neutral-600 hover:text-neutral-400'
+            )}>
+            {mode === 'all' ? t('communityPresets.tabs.all') || 'All' : t('communityPresets.tabs.my') || 'My'}
+          </button>
+        ))}
       </div>
-      
+
       {isAuthenticated && (
-        <PremiumButton
-          onClick={handleCreate}
-          className="h-10 px-6 text-xs gap-2"
-        >
-          <Plus size={16} />
-          {t('communityPresets.buttons.create')}
-        </PremiumButton>
+        <Button variant="brand" size="sm" onClick={handleCreate} className="gap-1.5">
+          <Plus size={13} />
+          {t('communityPresets.buttons.create') || 'Create'}
+        </Button>
       )}
     </div>
   );
@@ -746,94 +548,151 @@ export const CommunityPresetsPage: React.FC = () => {
   return (
     <PageShell
       pageId="community-presets"
-      seoTitle={viewMode === 'my' ? t('communityPresets.tabs.my') : t('communityPresets.title')}
-      title={viewMode === 'my' ? t('communityPresets.tabs.my') : t('communityPresets.title')}
+      seoTitle={viewMode === 'my' ? 'My Presets' : t('communityPresets.title')}
+      title={viewMode === 'my' ? 'My Presets' : t('communityPresets.title')}
       microTitle="Community // Library"
       description={t('communityPresets.subtitle')}
       breadcrumb={[
-        { label: t('common.home'), to: '/' },
-        { label: t('common.community'), to: '/community' },
-        { label: t('common.presets') }
+        { label: t('common.home') || 'Home', to: '/' },
+        { label: t('common.community') || 'Community', to: '/community' },
+        { label: t('common.presets') || 'Presets' },
       ]}
       actions={headerActions}
     >
-      <div className="relative z-10">
-
-        {isCheckingAuth && (
-          <div className="max-w-md mx-auto">
-            <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 text-center">
-              <p className="text-neutral-400 font-mono">{t('common.loading')}</p>
-            </div>
-          </div>
-        )}
-
-        {!isCheckingAuth && viewMode === 'my' && !isAuthenticated && (
-          <div className="max-w-md mx-auto">
-            <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 space-y-4 text-center">
-              <p className="text-neutral-400 font-mono mb-4">
-                {t('communityPresets.errors.mustBeAuthenticated')}
-              </p>
-              <Button variant="ghost" onClick={() => setShowAuthModal(true)}
-                className="inline-block px-4 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700/50 text-neutral-300 font-medium rounded-md text-sm font-mono transition-colors"
-              >
-                {t('header.register')}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {!isCheckingAuth && (viewMode === 'all' || isAuthenticated) && (
-          <div className="space-y-4">
-
-            {/* Sidebar */}
-            <CommunityPresetsSidebar
-              isCollapsed={isSidebarCollapsed}
-              onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              activeCategory={activeTab}
-              onCategoryChange={handleTabChange}
-              allTags={allTags}
-              filterTag={filterTag}
-              onFilterTagChange={setFilterTag}
-              currentPresetsCount={currentPresets.length}
-              categories={sortedCategories}
-              t={t}
+      <div className="space-y-4">
+        {/* ── Toolbar ──────────────────────────────────────────────────────── */}
+        <div className="flex items-center gap-3">
+          {/* Search */}
+          <div className="relative w-auto">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none" />
+            <input
+              ref={searchRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search presets… ( / )"
+              className="w-48 focus:w-64 pl-8 pr-8 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-xs font-mono text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-all duration-200"
+              aria-label="Search presets"
             />
-            <div>
-              {error && (
-                <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono">
-                  {error}
-                </div>
-              )}
-              {/* Gallery Container */}
-              <div className="space-y-4">
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400 transition-colors">
+                <X size={12} />
+              </button>
+            )}
+          </div>
 
-                {/* Bento Box Grid */}
-                {currentPresets.length === 0 ? (
-                  <div key="empty" className="bg-neutral-900 border border-neutral-800/50 rounded-xl p-12 text-center tab-content-active">
-                    <p className="text-neutral-500 font-mono">
-                      {searchQuery.trim()
-                        ? (t('communityPresets.search.noResults') || `No presets found for "${searchQuery}"`)
-                        : t('communityPresets.table.noPresets')
-                      }
-                    </p>
-                    {searchQuery.trim() && (
-                      <Button variant="ghost" onClick={() => setSearchQuery('')}
-                        className="mt-4 px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-300 border border-neutral-700/50 rounded-md hover:border-neutral-600/50 transition-colors"
-                      >
-                        {t('communityPresets.search.clear') || 'Clear search'}
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <div key={`${activeTab}-${viewMode}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 tab-content-active">
-                    {currentPresets.map((preset) => (
+          {/* Sort */}
+          <Select
+            value={sortKey}
+            onChange={(v) => setSortKey(v as SortKey)}
+            options={SORT_OPTIONS}
+            className="w-36 text-xs"
+          />
+
+          {/* Count */}
+          <span className="text-[11px] font-mono text-neutral-700 shrink-0">
+            {sorted.length} preset{sorted.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+
+        {/* ── Filters ──────────────────────────────────────────────────────── */}
+        <CommunityPresetsSidebar
+          activeCategory={activeTab}
+          onCategoryChange={handleTabChange}
+          allTags={allTags}
+          filterTag={filterTag}
+          onFilterTagChange={setFilterTag}
+          currentPresetsCount={sorted.length}
+          categories={sortedCategories}
+          t={t}
+        />
+
+        {/* ── Auth gate ─────────────────────────────────────────────────────── */}
+        {viewMode === 'my' && !isAuthenticated && !isCheckingAuth && (
+          <div className="py-20 flex flex-col items-center gap-4">
+            <p className="text-sm font-mono text-neutral-600">{t('communityPresets.errors.mustBeAuthenticated')}</p>
+            <Button variant="surface" size="sm" onClick={() => setShowAuthModal(true)}>
+              {t('header.register') || 'Sign in'}
+            </Button>
+          </div>
+        )}
+
+        {/* ── Error ────────────────────────────────────────────────────────── */}
+        {error && (
+          <div className="text-xs font-mono text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
+            {error}
+          </div>
+        )}
+
+        {/* ── Loading skeleton ─────────────────────────────────────────────── */}
+        {isLoading && sorted.length === 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-white/[0.04] bg-neutral-900/20 overflow-hidden animate-pulse">
+                <div className="aspect-[4/3] bg-neutral-900/50" />
+                <div className="p-3 space-y-2">
+                  <div className="h-3 bg-neutral-800/50 rounded w-3/4" />
+                  <div className="h-2.5 bg-neutral-800/30 rounded w-full" />
+                  <div className="h-2.5 bg-neutral-800/30 rounded w-2/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Empty state ───────────────────────────────────────────────────── */}
+        {!isLoading && sorted.length === 0 && (viewMode === 'all' || isAuthenticated) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="min-h-[280px] flex flex-col items-center justify-center gap-6 border border-white/[0.03] rounded-3xl bg-neutral-950/20"
+          >
+            <div className="p-6 rounded-full bg-white/[0.02] border border-white/[0.04]">
+              <Layers size={28} strokeWidth={1} className="text-neutral-700" />
+            </div>
+            <div className="text-center space-y-2">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">
+                {searchQuery ? `No results for "${searchQuery}"` : 'No presets yet'}
+              </p>
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')}
+                  className="font-mono text-[10px] text-neutral-600 hover:text-neutral-400 transition-colors underline underline-offset-2">
+                  Clear search
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Virtual Grid ─────────────────────────────────────────────────── */}
+        {!isLoading && sorted.length > 0 && (
+          <div ref={gridRef}>
+            <div
+              style={{ height: virtualizer.getTotalSize(), position: 'relative' }}
+            >
+              {virtualizer.getVirtualItems().map((vRow) => {
+                const startIdx = vRow.index * COLS;
+                const rowItems = sorted.slice(startIdx, startIdx + COLS);
+
+                return (
+                  <div
+                    key={vRow.key}
+                    data-index={vRow.index}
+                    ref={virtualizer.measureElement}
+                    style={{ position: 'absolute', top: 0, left: 0, width: '100%',
+                      transform: `translateY(${vRow.start}px)` }}
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-4"
+                  >
+                    {rowItems.map((preset) => (
                       <PresetCard
                         key={preset.id}
                         preset={preset}
+                        currentUserId={currentUserId}
                         onClick={() => setSelectedPreset(preset)}
                         onEdit={isAuthenticated ? () => handleEdit(preset) : undefined}
                         onDelete={viewMode === 'my' ? () => handleDelete(preset.id) : undefined}
-                        onDuplicate={isAuthenticated ? () => handleDuplicateClick(preset) : undefined}
+                        onDuplicate={isAuthenticated ? () => { setPresetToDuplicate(preset); setDuplicateOpen(true); } : undefined}
                         onToggleLike={isAuthenticated ? () => handleToggleLike(preset.id) : undefined}
                         isAuthenticated={isAuthenticated}
                         canEdit={viewMode === 'my'}
@@ -841,376 +700,75 @@ export const CommunityPresetsPage: React.FC = () => {
                       />
                     ))}
                   </div>
-                )}
-              </div>
+                );
+              })}
             </div>
           </div>
         )}
+      </div>
 
-        {/* Edit/Create Preset Modal */}
-        <CommunityPresetModal
-          isOpen={isEditModalOpen}
-          onClose={handleCancel}
-          onSave={handleSave}
-          initialData={formData}
-          isCreating={isCreating}
-        />
+      {/* ── Modals ─────────────────────────────────────────────────────────── */}
+      <CommunityPresetModal
+        isOpen={isEditModalOpen}
+        onClose={handleCancel}
+        onSave={handleSave}
+        initialData={formData}
+        isCreating={isCreating}
+      />
 
-        {/* Auth Modal */}
-        {showAuthModal && (
-          <AuthModal
-            isOpen={showAuthModal}
-            onClose={() => setShowAuthModal(false)}
-            onSuccess={() => {
-              setShowAuthModal(false);
-              handleFetch();
-            }}
-            defaultIsSignUp={true}
-          />
-        )}
+      {showAuthModal && (
+        <AuthModal isOpen onClose={() => setShowAuthModal(false)}
+          onSuccess={() => { setShowAuthModal(false); fetchMy(); }}
+          defaultIsSignUp={true} />
+      )}
 
-        <ConfirmationModal
-          isOpen={duplicateModalOpen}
-          onClose={() => {
-            setDuplicateModalOpen(false);
-            setPresetToDuplicate(null);
-          }}
-          onConfirm={handleConfirmDuplicate}
-          title={t('communityPresets.actions.duplicateConfirm') || "Duplicate Preset"}
-          message={t('communityPresets.actions.duplicateMessage') || "Are you sure you want to duplicate this preset? It will be added to your personal collection."}
-          confirmText={t('communityPresets.actions.duplicateButton') || "Duplicate"}
-          cancelText={t('common.cancel') || "Cancel"}
-          variant="info"
-        />
+      <ConfirmationModal
+        isOpen={duplicateOpen}
+        onClose={() => { setDuplicateOpen(false); setPresetToDuplicate(null); }}
+        onConfirm={handleConfirmDuplicate}
+        title="Duplicate Preset"
+        message="Duplicate this preset into your collection?"
+        confirmText="Duplicate"
+        cancelText={t('common.cancel')}
+        variant="info"
+      />
 
-        <ConfirmationModal
-          isOpen={deleteConfirmOpen}
-          onClose={() => { setDeleteConfirmOpen(false); setPresetToDelete(null); }}
-          onConfirm={handleConfirmDelete}
-          title={t('communityPresets.actions.deleteConfirm') || "Delete Preset"}
-          message={t('communityPresets.messages.presetDeleteConfirm') || "Are you sure you want to delete this preset? This action cannot be undone."}
-          confirmText={t('common.delete') || "Delete"}
-          cancelText={t('common.cancel') || "Cancel"}
-          variant="danger"
-        />
+      <ConfirmationModal
+        isOpen={deleteOpen}
+        onClose={() => { setDeleteOpen(false); setPresetToDelete(null); }}
+        onConfirm={handleConfirmDelete}
+        title={t('communityPresets.actions.deleteConfirm') || 'Delete Preset'}
+        message={t('communityPresets.messages.presetDeleteConfirm') || 'This action cannot be undone.'}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        variant="danger"
+      />
 
-        {/* Preset Detail Modal */}
+      <AnimatePresence>
         {selectedPreset && (
           <PresetDetailModal
             preset={selectedPreset}
+            currentUserId={currentUserId}
+            isAuthenticated={isAuthenticated}
+            isLiked={selectedPreset.isLikedByUser ?? false}
+            likesCount={selectedPreset.likesCount ?? 0}
             onClose={() => setSelectedPreset(null)}
             onOpenInCanvas={() => {
-              // Store preset in localStorage for canvas to pick up
               try {
-                const migrated = migrateLegacyPreset(selectedPreset);
-                localStorage.setItem('import-community-preset', JSON.stringify({
-                  category: migrated.category,
-                  presetType: migrated.presetType,
-                  id: migrated.id,
-                  name: migrated.name,
-                  description: migrated.description,
-                  prompt: migrated.prompt,
-                  referenceImageUrl: migrated.referenceImageUrl,
-                  aspectRatio: migrated.aspectRatio,
-                  model: migrated.model,
-                  tags: migrated.tags,
-                }));
+                const m = migrateLegacyPreset(selectedPreset);
+                localStorage.setItem('import-community-preset', JSON.stringify(m));
                 navigate('/canvas');
                 setSelectedPreset(null);
-              } catch (error) {
-                console.error('Failed to store preset for import:', error);
-                toast.error(t('communityPresets.errors.failedToLoad'));
-              }
+              } catch { toast.error(t('communityPresets.errors.failedToLoad')); }
             }}
-            onToggleLike={isAuthenticated ? () => {
-              if (selectedPreset) {
-                handleToggleLike(selectedPreset.id);
-              }
-            } : undefined}
-            onEdit={() => {
-              if (selectedPreset) {
-                handleEdit(selectedPreset);
-                setSelectedPreset(null);
-                setIsEditModalOpen(true);
-              }
-            }}
-            isLiked={selectedPreset.isLikedByUser || false}
-            likesCount={selectedPreset.likesCount || 0}
-            isAuthenticated={isAuthenticated}
+            onToggleLike={() => handleToggleLike(selectedPreset.id)}
+            onEdit={() => { handleEdit(selectedPreset); setSelectedPreset(null); }}
             t={t}
           />
         )}
-      </div>
+      </AnimatePresence>
     </PageShell>
   );
 };
 
-
-// PresetDetailModal Component
-const PresetDetailModal: React.FC<{
-  preset: CommunityPreset;
-  onClose: () => void;
-  onOpenInCanvas: () => void;
-  onToggleLike?: () => void;
-  onEdit?: () => void;
-  isLiked: boolean;
-  likesCount: number;
-  isAuthenticated: boolean;
-  t: (key: string) => string;
-}> = ({ preset, onClose, onOpenInCanvas, onToggleLike, onEdit, isLiked, likesCount, isAuthenticated, t }) => {
-  const migrated = migrateLegacyPreset(preset);
-  const hasImage = (migrated.category === 'presets' && migrated.presetType === 'mockup' && migrated.referenceImageUrl)
-    || (migrated.category !== 'presets' && migrated.referenceImageUrl);
-  const presetIcon = getPresetIcon(migrated.category);
-  const [isImageFullscreen, setIsImageFullscreen] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const { isCopying, glitchText, handleCopy } = useGlitchCopy(migrated.prompt);
-  const isOwner = currentUserId && migrated.userId && currentUserId === migrated.userId;
-
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      if (isAuthenticated) {
-        const user = await authService.verifyToken();
-        if (user) setCurrentUserId(user.id);
-      }
-    };
-    getCurrentUser();
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (isImageFullscreen) {
-          setIsImageFullscreen(false);
-        } else {
-          onClose();
-        }
-      }
-    };
-    document.addEventListener('keydown', handleEscape);
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
-    };
-  }, [onClose, isImageFullscreen]);
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/90 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-neutral-950 border border-neutral-800/60 rounded-md max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="sticky top-0 bg-neutral-950 border-b border-neutral-800/50 p-6 flex items-center justify-between z-10">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-semibold text-neutral-100 font-mono mb-1 truncate">
-              {migrated.name}
-            </h2>
-            <p className="text-sm text-neutral-400 font-mono">
-              {migrated.description}
-            </p>
-          </div>
-          <div className="flex items-center gap-3 ml-4">
-            {isOwner && onEdit && (
-              <Button variant="ghost" onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-                className="flex items-center gap-2 px-3 py-2 rounded-md transition-all text-sm font-mono bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50"
-                title={t('common.edit')}
-              >
-                <Edit2 size={16} />
-                <span>{t('common.edit')}</span>
-              </Button>
-            )}
-            {isAuthenticated && onToggleLike && (
-              <Button variant="ghost" onClick={(e) => {
-                e.stopPropagation();
-                onToggleLike();
-              }}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all text-sm font-mono ${isLiked
-                  ? 'bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50'
-                  : 'bg-neutral-900/40 text-neutral-500 hover:bg-neutral-800/50 hover:text-neutral-400'
-                  }`}
-                title={isLiked ? t('communityPresets.actions.unlike') : t('communityPresets.actions.like')}
-              >
-                <Heart size={16} className={isLiked ? 'fill-current' : ''} />
-                <span>{likesCount}</span>
-              </Button>
-            )}
-            <Button variant="ghost" onClick={onClose}
-              className="p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 rounded-md transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-6">
-          <div className="flex gap-6">
-            {/* Image or Icon - Left Side */}
-            <div className="flex-shrink-0 w-1/2">
-              {hasImage ? (
-                <div className="relative rounded-md overflow-hidden border border-neutral-700/30 bg-neutral-900/30 aspect-square group">
-                  <img
-                    src={migrated.referenceImageUrl}
-                    alt={migrated.name}
-                    className="w-full h-full object-cover bg-neutral-900/50"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                  <Button variant="ghost" onClick={(e) => {
-                    e.stopPropagation();
-                    setIsImageFullscreen(true);
-                  }}
-                    className="absolute top-2 right-2 p-1.5 bg-neutral-950/60 hover:bg-neutral-950/80 backdrop-blur-sm border border-neutral-700/50 rounded-md text-neutral-300 hover:text-white transition-all opacity-0 group-hover:opacity-100"
-                    title="View fullscreen"
-                  >
-                    <Maximize2 size={14} />
-                  </Button>
-                </div>
-              ) : (
-                <div className="w-full aspect-square rounded-md border border-neutral-700/30 bg-neutral-900/30 flex items-center justify-center">
-                  <div className="text-neutral-500">{presetIcon}</div>
-                </div>
-              )}
-            </div>
-
-            {/* Info - Right Side */}
-            <div className="flex-1 space-y-4 min-w-0">
-              {/* Details */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-xl p-4">
-                  <label className="block text-xs font-semibold text-neutral-400 font-mono mb-2 uppercase">
-                    Category
-                  </label>
-                  <p className="text-sm text-neutral-200 font-mono">{t(`communityPresets.categories.${migrated.category}`)}</p>
-                </div>
-                {migrated.category === 'presets' && migrated.presetType && (
-                  <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-xl p-4">
-                    <label className="block text-xs font-semibold text-neutral-400 font-mono mb-2 uppercase">
-                      Preset Type
-                    </label>
-                    <p className="text-sm text-neutral-200 font-mono uppercase">{migrated.presetType}</p>
-                  </div>
-                )}
-                <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-xl p-3">
-                  <label className="block text-xs font-semibold text-neutral-400 font-mono mb-1.5 uppercase">
-                    Aspect Ratio
-                  </label>
-                  <p className="text-sm text-neutral-200 font-mono">{migrated.aspectRatio}</p>
-                </div>
-              </div>
-
-              {/* Prompt */}
-              <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-semibold text-neutral-400 font-mono uppercase">
-                    Prompt
-                  </label>
-                  <Button variant="ghost" onClick={(e) => {
-                    e.stopPropagation();
-                    handleCopy('Prompt copied to clipboard', 'Failed to copy prompt');
-                  }}
-                    className="p-1.5 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-all relative size-3.5 flex items-center justify-center"
-                    title="Copy prompt"
-                  >
-                    {isCopying ? (
-                      <span className="text-[10px] font-mono text-neutral-400">{glitchText}</span>
-                    ) : (
-                      <Clipboard size={14} />
-                    )}
-                  </Button>
-                </div>
-                <p className="text-sm text-neutral-300 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto">{migrated.prompt}</p>
-              </div>
-
-              {/* Examples */}
-              {migrated.examples && migrated.examples.length > 0 && (
-                <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-xl p-4">
-                  <label className="block text-xs font-semibold text-neutral-400 font-mono mb-2 uppercase">
-                    {t('communityPresets.examples')}
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {migrated.examples.map((example, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-neutral-800/40 rounded border border-neutral-700/20 text-neutral-400 font-mono text-xs"
-                      >
-                        {example}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Tags */}
-              {migrated.tags && migrated.tags.length > 0 && (
-                <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-xl p-4">
-                  <label className="block text-xs font-semibold text-neutral-400 font-mono mb-2 uppercase">
-                    Tags
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {migrated.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-neutral-800/40 rounded border border-neutral-700/20 text-neutral-400 font-mono text-xs"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-neutral-950 border-t border-neutral-800/50 p-6 flex gap-3">
-          <Button variant="ghost" onClick={onOpenInCanvas}
-            className="flex items-center gap-2 flex-1 px-6 py-3 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700/50 text-neutral-300 font-medium rounded-xl text-sm font-mono transition-all"
-          >
-            <ExternalLink className="h-4 w-4" />
-            {t('communityPresets.openInCanvas')}
-          </Button>
-          <Button variant="ghost" onClick={onClose}
-            className="px-6 py-3 bg-neutral-900/50 border border-neutral-700/50 text-neutral-300 hover:bg-neutral-800/50 hover:border-neutral-600/50 font-medium rounded-xl text-sm font-mono transition-all"
-          >
-            {t('common.close')}
-          </Button>
-        </div>
-      </div>
-
-      {/* Fullscreen Image Modal */}
-      {isImageFullscreen && hasImage && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/95 backdrop-blur-sm p-4"
-          onClick={() => setIsImageFullscreen(false)}
-        >
-          <Button variant="ghost" onClick={() => setIsImageFullscreen(false)}
-            className="absolute top-4 right-4 p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 rounded-md transition-colors z-10"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-          <img
-            src={migrated.referenceImageUrl}
-            alt={migrated.name}
-            className="max-w-full max-h-full object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
-    </div>
-  );
-};
-
 export default CommunityPresetsPage;
-

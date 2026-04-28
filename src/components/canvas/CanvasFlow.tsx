@@ -812,7 +812,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       {isDraggingOver && (
         <div className="absolute inset-0 z-[9999] pointer-events-none flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm">
           <div className="text-center">
-            <div className="w-32 h-32 mx-auto mb-6 rounded-full flex items-center justify-center bg-gradient-to-br from-brand-cyan to-blue-500 shadow-[0_0_40px_color-mix(in_srgb,var(--brand-cyan)_60%,transparent)]">
+            <div className="w-32 h-32 mx-auto mb-6 rounded-full flex items-center justify-center bg-gradient-to-br from-neutral-600 to-neutral-700 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
               <svg
                 className="w-16 h-16 text-white"
                 fill="none"
@@ -827,7 +827,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
                 />
               </svg>
             </div>
-            <h3 className="text-2xl font-bold mb-2 text-brand-cyan">
+            <h3 className="text-2xl font-bold mb-2 text-neutral-200">
               {t('canvas.dropHere')}
             </h3>
             <p className="text-white/80">
@@ -835,7 +835,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
             </p>
           </div>
           {/* Animated border */}
-          <div className="absolute inset-4 rounded-md pointer-events-none border-[3px] border-dashed border-brand-cyan animate-[dash_20s_linear_infinite]" />
+          <div className="absolute inset-4 rounded-md pointer-events-none border-[3px] border-dashed border-neutral-600 animate-[dash_20s_linear_infinite]" />
         </div>
       )}
 
@@ -843,8 +843,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       {isProcessingFiles && (
         <div className="absolute inset-0 z-[9999] pointer-events-none flex items-center justify-center bg-neutral-950/80 backdrop-blur-md">
           <div className="text-center">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full border-4 border-t-brand-cyan border-r-brand-cyan border-b-transparent border-l-transparent animate-spin" />
-            <h3 className="text-xl font-bold mb-2 text-brand-cyan">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full border-4 border-t-neutral-400 border-r-neutral-400 border-b-transparent border-l-transparent animate-spin" />
+            <h3 className="text-xl font-bold mb-2 text-neutral-200">
               {t('canvas.processingFiles')}
             </h3>
             <p className="text-white/80">
@@ -1045,7 +1045,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         {showControls && <Controls />}
         {showMinimap && (
           <MiniMap
-            nodeColor="var(--brand-cyan)"
+            nodeColor="#525252"
             maskColor="rgba(0, 0, 0, 0.8)"
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
             className={cn(
@@ -1088,8 +1088,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
             top: `${createIndicatorPos.y}px`,
           }}
         >
-          <div className="w-5 h-5 rounded-full flex items-center justify-center bg-brand-cyan/20 border-[1.5px] border-brand-cyan/60">
-            <span className="text-xs font-bold text-brand-cyan leading-none">
+          <div className="w-5 h-5 rounded-full flex items-center justify-center bg-neutral-700/50 border-[1.5px] border-neutral-500/60">
+            <span className="text-xs font-bold text-neutral-300 leading-none">
               +
             </span>
           </div>

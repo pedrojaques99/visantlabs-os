@@ -1,318 +1,245 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { ExternalLink, Github, Users, Building2, Lightbulb, Code, Info, Layers, Mail, Globe, Diamond, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useTheme } from '@/hooks/useTheme';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SEO } from '../components/SEO';
 import { OrganizationSchema } from '../components/StructuredData';
-import { BreadcrumbWithBack } from '../components/ui/BreadcrumbWithBack';
-import {
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '../components/ui/BreadcrumbWithBack';
+import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
 import { branding, getGithubUrl } from '../config/branding';
 import { RepellantText } from '../components/RepellantText';
-import { cn } from '../lib/utils';
-import { Card } from '../components/ui/card';
+import { motion } from 'framer-motion';
+import { ExternalLink, Github } from 'lucide-react';
+
+const TEAM = [
+  { name: 'PEDRO JAQUES',  role: 'CREATIVE DIRECTOR', profile: '/jaques-profile', status: true, avatar: '/avatars/jacao.webp' },
+  { name: 'PEDRO XAVIER',  role: 'CREATIVE DIRECTOR', profile: '/pedro-xavier',   status: true, avatar: '/avatars/pedro.webp' },
+];
+
+const LINKS = [
+  { label: 'Portfolio',    href: branding.links?.website,             external: true  },
+  { label: 'Instagram',    href: 'https://instagram.com/visant.co',   external: true  },
+  { label: 'Alpha Labs',   href: 'https://vsn-labs.vercel.app',       external: true  },
+  { label: 'GitHub',       href: getGithubUrl(),                      external: true  },
+  { label: 'contato@visant.co', href: 'mailto:contato@visant.co',    external: false },
+];
+
+const DOT_COLS = 32;
+const fillDots = (a: string, b: string) =>
+  '·'.repeat(Math.max(3, DOT_COLS - a.length - b.length));
+
+const fade = (i: number) => ({
+  initial: { opacity: 0, x: -6 },
+  animate: { opacity: 1, x: 0 },
+  transition: { delay: i * 0.05, duration: 0.16 },
+});
 
 export const AboutPage: React.FC = () => {
   const { t } = useTranslation();
-  const { theme } = useTheme();
-  const [currentTime, setCurrentTime] = useState('');
+  const [time, setTime] = useState('');
 
   useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setCurrentTime(now.toLocaleTimeString('en-US', {
-        hour12: false,
-        timeZone: 'America/Sao_Paulo'
-      }));
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
+    const tick = () =>
+      setTime(new Date().toLocaleTimeString('en-US', { hour12: false, timeZone: 'America/Sao_Paulo' }));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
   }, []);
-
-  const teamMembers = useMemo(() => [
-    {
-      name: 'PEDRO JAQUES',
-      role: 'CREATIVE DIRECTOR',
-      profile: '/jaques-profile',
-      status: 'ONLINE',
-      avatar: '/avatars/jacao.webp'
-    },
-    {
-      name: 'PEDRO XAVIER',
-      role: 'CREATIVE DIRECTOR',
-      profile: '/pedro-xavier',
-      status: 'ONLINE',
-      avatar: '/avatars/pedro.webp'
-    }
-  ], []);
-
-  const visantWorks = useMemo(() => [
-    { title: 'TRINITY PROJECT', year: '2025', medium: 'BRAND IDENTITY' },
-    { title: 'CALHA NORTE', year: '2025', medium: 'DIGITAL DESIGN' },
-    { title: 'CARDS TYPPER', year: '2025', medium: 'UI/UX DESIGN' },
-    { title: 'PORTFOLIO TRINITY', year: '2025', medium: 'VISUAL DESIGN' },
-    { title: 'EXPERIMENTAL 35', year: '2025', medium: 'DIGITAL ART' },
-    { title: 'MINIMAL 53', year: '2025', medium: 'GRAPHIC DESIGN' },
-  ], []);
 
   return (
     <>
       <SEO
-        title={t('about.seo.title') || t('about.title') || 'About Visant Labs®'}
-        description={t('about.seo.description') || t('about.description.text') || 'Independent Brazilian agency. Experimentation laboratory creating personalized solutions for graphic designers and entrepreneurs.'}
-        keywords={t('about.seo.keywords') || 'visant labs, about, agency, design, Brazil, creative tools'}
+        title={t('about.seo.title') || 'About — Visant Labs'}
+        description={t('about.seo.description') || 'Independent creative lab based in Brazil.'}
+        keywords={t('about.seo.keywords') || 'visant labs, about, design, Brazil'}
       />
       <OrganizationSchema />
-      <div className="min-h-screen bg-background text-neutral-300 pt-12 pb-100 md:pt-14 relative overflow-hidden">
-        <div className="fixed inset-0 z-0">
-        </div>
 
-        {/* Scanlines Effect */}
-        <div className="fixed inset-0 pointer-events-none z-10 opacity-5"
-          style={{
-            backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.05) 2px, rgba(255, 255, 255, 0.05) 4px)`
-          }}
-        />
+      <div
+        className="min-h-screen bg-black text-neutral-300 relative overflow-hidden"
+        data-vsn-page="about"
+        data-vsn-component="AboutPage"
+      >
+        <GridDotsBackground opacity={0.04} spacing={30} color="#ffffff" />
 
-        <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-32 relative z-20">
-          {/* Breadcrumb with Back Button */}
-          <div className="mb-4">
-            <BreadcrumbWithBack to="/">
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/">{t('common.home')}</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{t('about.title')}</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </BreadcrumbWithBack>
-          </div>
+        <div className="relative z-10 max-w-2xl mx-auto px-6 pt-20 pb-32">
+
+          {/* Breadcrumb */}
+          <BreadcrumbWithBack to="/">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/" className="text-neutral-600 hover:text-neutral-400 font-mono text-[10px] uppercase tracking-widest transition-colors">
+                    {t('common.home') || 'Home'}
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="text-neutral-800" />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-neutral-500 font-mono text-[10px] uppercase tracking-widest">
+                  Info
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </BreadcrumbWithBack>
 
           {/* Header */}
-          <div className="flex items-center justify-between gap-4 mb-8">
-            <div className="flex items-center gap-4 grid cols-2">
-              <div className="col-span-2">
-                <p className="text-neutral-500 font-mono text-sm md:text-base mt-1">
-                  BRASIL [{currentTime}]
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Bento Box Grid */}
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-
-            {/* Banner Card - Explore Apps */}
-            <Link
-              to="/apps"
-              className="md:col-span-2 lg:col-span-3 h-[240px] md:h-[320px] relative overflow-hidden rounded-md border border-neutral-800/50 group hover:border-brand-cyan/30 transition-all cursor-pointer"
+          <div className="mt-10 mb-12">
+            <motion.p
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 mb-2"
             >
-              <img
-                src="/og-image.png"
-                alt="Visant Labs Banner"
-                className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-90 group-hover:scale-105 transition-all duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-              <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                <div className="flex items-end justify-between gap-4">
-                  <div className="max-w-xl">
-                    <h2 className="text-3xl md:text-5xl font-bold font-manrope text-white mb-2 tracking-tighter">
-                      VISANT // <span className="text-brand-cyan">LABS</span>
-                    </h2>
-                    <p className="text-neutral-400 font-mono text-sm md:text-base leading-relaxed">
-                      Experimentation laboratory creator of personalized solutions for graphic designers and entrepreneurs.
-                    </p>
-                  </div>
-                  <div className="hidden md:flex px-6 py-3 bg-brand-cyan text-black font-bold font-mono text-sm rounded-md items-center gap-2 group-hover:bg-white transition-colors shrink-0">
-                    EXPLORE APPS <ArrowRight size={16} />
-                  </div>
-                </div>
-              </div>
-            </Link>
-
-            {/* Description - Large Card */}
-            <div className="md:col-span-2 lg:col-span-2 bg-card/50 border border-neutral-800/50 rounded-md p-6 md:p-8 hover:border-brand-cyan/30 transition-all group">
-              <div className="flex items-start gap-4">
-                <Lightbulb className="w-6 h-6 mt-1 flex-shrink-0 text-brand-cyan group-hover:text-brand-cyan/80 transition-colors" />
-                <div className="flex-1">
-                  <div className="font-mono text-sm text-brand-cyan mb-2">about.txt</div>
-                  <div className="space-y-4 font-mono text-neutral-400 leading-relaxed text-sm md:text-base">
-                    <div>
-                      <span className="text-neutral-200 font-semibold">{t('about.visantStudio') || 'VISANT STUDIO'}</span>
-                      <div className="text-neutral-700 my-1">─────────────</div>
-                      <p>Independent creative lab based in Brazil.</p>
-                      <p>We love to experiment with design and technology.</p>
-                    </div>
-
-                    <div>
-                      <div className="text-neutral-700 my-1">─</div>
-                      <p className="text-neutral-300 font-medium mb-1">What we do:</p>
-                      <ul className="list-none space-y-1 pl-2 border-l-2 border-neutral-800">
-                        <li>• Brand identity & visual systems</li>
-                        <li>• Interactive web experiences</li>
-                        <li>• Design experiments & tools</li>
-                        <li>• Creative technology</li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <div className="text-neutral-700 my-1">─</div>
-                      <p className="text-neutral-300 font-medium mb-1">Our approach:</p>
-                      <ul className="list-none space-y-1 pl-2 border-l-2 border-neutral-800">
-                        <li>• Bridge art and code</li>
-                        <li>• Focus on interactiveness & innovation</li>
-                        <li>• Open source mindset</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Links & Socials */}
-            <div className="bg-card/50 border border-neutral-800/50 rounded-md p-6 md:p-8 hover:border-brand-cyan/30 transition-all flex flex-col gap-6">
-              <div className="flex items-center gap-3">
-                <Globe className="w-6 h-6 flex-shrink-0 text-brand-cyan" />
-                <h2 className="text-xl font-semibold font-mono text-neutral-200">
-                  Connect
-                </h2>
-              </div>
-              <div className="space-y-3 flex-1">
-                {branding.links.website && (
-                  <a
-                    href={branding.links.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-3 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-neutral-800/30 hover:bg-neutral-800/50 text-neutral-300 border border-neutral-800 hover:border-brand-cyan/40 group"
-                  >
-                    <span className="flex-1">Portfolio</span>
-                    <ExternalLink className="w-3 h-3 text-neutral-500 group-hover:text-brand-cyan transition-colors" />
-                  </a>
-                )}
-                <a
-                  href="https://www.vsn-labs.vercel.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-3 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-neutral-800/30 hover:bg-neutral-800/50 text-neutral-300 border border-neutral-800 hover:border-brand-cyan/40 group"
-                >
-                  <span className="flex-1">Alpha Labs</span>
-                  <ExternalLink className="w-3 h-3 text-neutral-500 group-hover:text-brand-cyan transition-colors" />
-                </a>
-
-                <a
-                  href="https://instagram.com/visant.co"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-3 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-neutral-800/30 hover:bg-neutral-800/50 text-neutral-300 border border-neutral-800 hover:border-brand-cyan/40 group"
-                >
-                  <span className="flex-1">Instagram</span>
-                  <ExternalLink className="w-3 h-3 text-neutral-500 group-hover:text-brand-cyan transition-colors" />
-                </a>
-
-                <a
-                  href="mailto:contato@visant.co"
-                  className="flex items-center gap-2 px-4 py-3 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-neutral-800/30 hover:bg-neutral-800/50 text-neutral-300 border border-neutral-800 hover:border-brand-cyan/40 group"
-                >
-                  <span className="flex-1">Email Us</span>
-                  <Mail className="w-3 h-3 text-neutral-500 group-hover:text-brand-cyan transition-colors" />
-                </a>
-
-                <Link
-                  to="/apps"
-                  className="flex items-center gap-2 px-4 py-3 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/20 group mt-4 h-14 shrink-0"
-                >
-                  <span className="flex-1 font-bold  tracking-tighter">LABS APPS //</span>
-                  <ArrowRight className="w-4 h-4 text-brand-cyan group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-300">
-                {t('about.title')}
-              </h1>
-            </div>
-
-            {/* Team Section */}
-            <div className="md:col-span-2 lg:col-span-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {teamMembers.map((member, index) => (
-                  <div
-                    key={index}
-                    className="group flex items-center gap-4 p-4 border border-neutral-800/50 rounded-md bg-card/50 hover:bg-card hover:border-brand-cyan/30 transition-all duration-300"
-                  >
-                    <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-neutral-800 group-hover:border-brand-cyan/40 transition-colors">
-                      <img
-                        src={member.avatar}
-                        alt={member.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = `https://ui-avatars.com/api/?name=${member.name}&background=random`;
-                        }}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-mono text-neutral-500">0{index + 1}</span>
-                        <h3 className="font-bold text-neutral-200 group-hover:text-brand-cyan transition-colors truncate">
-                          {member.name}
-                        </h3>
-                      </div>
-                      <p className="text-xs font-mono text-neutral-400 mb-1">{member.role}</p>
-                      <div className="flex items-center gap-1.5">
-                        <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", member.status === 'ONLINE' ? "bg-green-500" : "bg-neutral-500")} />
-                        <span className="text-[10px] font-mono text-neutral-500">{member.status}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+              BRASIL · {time}
+            </motion.p>
+            <motion.h1
+              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+              className="sr-only"
+            >
+              About Visant Labs
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
+              className="font-mono text-[11px] text-neutral-500 leading-relaxed max-w-sm"
+            >
+              Independent creative lab. We experiment with design and technology —
+              building tools for graphic designers and entrepreneurs.
+            </motion.p>
           </div>
 
-          {/* Open Source */}
-          <div className="md:col-span-1 lg:col-span-3 bg-card/50 border border-neutral-800/50 rounded-md p-4 mt-6 hover:border-brand-cyan/30 transition-all flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Code className="w-5 h-5 flex-shrink-0 text-brand-cyan" />
-              <span className="font-mono text-neutral-400 text-sm">
-                {t('about.openSource.description')}
-              </span>
-            </div>
+          {/* ── Team ─────────────────────────────────────────────────────────── */}
+          <Section label="team" delay={0.12}>
+            {TEAM.map((m, i) => (
+              <motion.div key={m.name} {...fade(i)} className="group">
+                <Link
+                  to={m.profile}
+                  className="flex items-center gap-3 py-[5px] hover:opacity-100 transition-opacity"
+                  aria-label={m.name}
+                >
+                  <img
+                    src={m.avatar}
+                    alt={m.name}
+                    className="w-6 h-6 rounded-full object-cover grayscale opacity-60 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-300 shrink-0"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                  <span className="font-mono text-[11px] text-neutral-500 group-hover:text-neutral-200 transition-colors tracking-wider flex-1">
+                    {m.name}
+                  </span>
+                  <span className="font-mono text-[9px] text-neutral-800 tracking-widest">
+                    {m.role}
+                  </span>
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${m.status ? 'bg-green-600' : 'bg-neutral-700'}`} aria-label={m.status ? 'online' : 'offline'} />
+                </Link>
+              </motion.div>
+            ))}
+          </Section>
+
+          {/* ── What we do ───────────────────────────────────────────────────── */}
+          <Section label="stack" delay={0.24}>
+            {[
+              ['Brand identity & visual systems',   '01'],
+              ['Interactive web experiences',        '02'],
+              ['Design experiments & tools',         '03'],
+              ['Creative technology',                '04'],
+            ].map(([item, num], i) => (
+              <motion.div key={num} {...fade(i)} className="flex items-center font-mono text-[11px] py-[4px]">
+                <span className="text-neutral-800 w-6 text-[9px]">{num}</span>
+                <span className="text-neutral-600">{item}</span>
+              </motion.div>
+            ))}
+          </Section>
+
+          {/* ── Links ────────────────────────────────────────────────────────── */}
+          <Section label="links" delay={0.38}>
+            {LINKS.filter(l => l.href).map((l, i) => (
+              <motion.div key={l.label} {...fade(i)}>
+                <a
+                  href={l.href!}
+                  target={l.external ? '_blank' : undefined}
+                  rel={l.external ? 'noopener noreferrer' : undefined}
+                  className="flex items-center font-mono text-[11px] py-[4px] group"
+                  aria-label={l.label}
+                >
+                  <span className="text-neutral-800 group-hover:text-brand-cyan transition-colors w-4 shrink-0">›</span>
+                  <span className="text-neutral-500 group-hover:text-neutral-200 transition-colors tracking-wider flex-1">
+                    {l.label}
+                  </span>
+                  <span className="text-neutral-900 group-hover:text-neutral-700 transition-colors">
+                    {fillDots(l.label, '')}
+                  </span>
+                  {l.external
+                    ? <ExternalLink size={9} className="text-neutral-800 group-hover:text-neutral-500 transition-colors ml-1 shrink-0" />
+                    : null
+                  }
+                </a>
+              </motion.div>
+            ))}
+          </Section>
+
+          {/* ── Open source ──────────────────────────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
+            className="mt-10 pt-6 border-t border-neutral-900 flex items-center justify-between"
+          >
+            <span className="font-mono text-[10px] text-neutral-700 uppercase tracking-widest">
+              {t('about.openSource.description') || 'Open source'}
+            </span>
             <a
               href={getGithubUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md transition-all duration-300 font-mono text-xs hover:scale-[1.02] bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/20"
+              className="flex items-center gap-2 font-mono text-[10px] text-neutral-600 hover:text-neutral-300 transition-colors uppercase tracking-widest"
             >
-              <Github className="w-3.5 h-3.5" />
-              <span>GitHub</span>
+              <Github size={11} />
+              GitHub
             </a>
-          </div>
-        </div>
-      </div>
+          </motion.div>
 
-      {/* Huge VISANT Text - Bottom Layer */}
-      <div className="left-0 right-0 overflow-hidden pointer-events-none z-0 flex justify-center items-end opacity-30 select-none">
-        <RepellantText
-          className="text-[20vw] md:text-[30vw] font-manrope font-semibold leading-none tracking-tighter text-neutral-600"
-          style={{
-            whiteSpace: 'nowrap'
-          }}
-        >
-          VISANT
-        </RepellantText>
+          {/* ── Apps CTA ─────────────────────────────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.62 }}
+            className="mt-6"
+          >
+            <Link
+              to="/apps"
+              className="font-mono text-[10px] text-neutral-700 hover:text-neutral-400 transition-colors uppercase tracking-widest"
+            >
+              /apps →
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* Background VISANT text */}
+        <div className="fixed bottom-0 left-0 right-0 overflow-hidden select-none flex justify-center group/visant" style={{ pointerEvents: 'none' }}>
+          <RepellantText
+            className="text-[22vw] font-bold leading-none tracking-tighter text-white whitespace-nowrap opacity-[0.06] transition-[filter] duration-700 ease-out"
+            style={{
+              filter: 'blur(12px)',
+              pointerEvents: 'auto',
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLElement>) => {
+              (e.currentTarget as HTMLElement).style.filter = 'blur(2px)';
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLElement>) => {
+              (e.currentTarget as HTMLElement).style.filter = 'blur(12px)';
+            }}
+          >
+            VISANT
+          </RepellantText>
+        </div>
       </div>
     </>
   );
 };
+
+// ─── Section wrapper ──────────────────────────────────────────────────────────
+const Section: React.FC<{ label: string; delay: number; children: React.ReactNode }> = ({ label, delay, children }) => (
+  <motion.section
+    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay }}
+    className="mb-10"
+    aria-label={label}
+  >
+    <p className="font-mono text-[9px] uppercase tracking-widest text-neutral-800 mb-3">{label}</p>
+    <div className="border-l border-neutral-900 pl-4 flex flex-col">
+      {children}
+    </div>
+  </motion.section>
+);

@@ -12,9 +12,16 @@ export const CreatePage: React.FC = () => {
   const [params, setParams] = useSearchParams();
   const { t } = useTranslation();
   const projectId = params.get('project');
+  const brandIdParam = params.get('brandId');
   const loadedRef = useRef<string | null>(null);
   const currentCreativeId = useCreativeStore((s) => s.creativeId);
   const projectName = useCreativeStore((s) => s.projectName);
+  const setBrandId = useCreativeStore((s) => s.setBrandId);
+
+  // Pre-select brand when navigating from BrandGuidelinesPage
+  useEffect(() => {
+    if (brandIdParam) setBrandId(brandIdParam);
+  }, [brandIdParam, setBrandId]);
 
   useEffect(() => {
     // 1. Sync Store -> URL: Only when no projectId in URL (don't override intentional navigation)
