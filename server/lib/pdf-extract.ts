@@ -1,178 +1,238 @@
 // server/lib/pdf-extract.ts
-// Extracts brand tokens from a PDF by:
-//   1. Sending the PDF natively to Gemini (it sees every page visually)
-//   2. Rendering pages to PNG with pdfjs-dist + @napi-rs/canvas for the images stream
+//
+// Two-phase brand extraction from PDFs:
+//   PHASE A — algorithmic (zero LLM, deterministic, ~10s)
+//     • tokenizePdf walks every operator and harvests exact hex colours,
+//       embedded images, font sizes, and full text.
+//     • Streamed to client immediately as colors/typography/images events.
+//   PHASE B — LLM (semantic only, ~15s with small payload)
+//     • Compact prompt with the algorithmically-extracted text + first images.
+//     • Asks ONLY for the things algorithms can't do: brand strategy,
+//       manifesto, personas, voice values, dos/donts, image classification,
+//       optional font-family identification when text was outlined.
+//
+// LLM gets ~6KB of structured text instead of 22MB of base64 PDF.
+
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js'
+import { tokenizePdf, type PdfTokens } from './pdf-tokenize.js'
+import { createCanvas, loadImage } from '@napi-rs/canvas'
 
-const MAX_RENDER_PAGES = 12
+const SEMANTIC_PROMPT = `You are a brand strategy expert. Brand tokens (colors, fonts, images) have ALREADY been extracted algorithmically from the PDF. Your job is the SEMANTIC content only.
 
-const PDF_EXTRACTION_PROMPT = `You are a brand identity extraction expert analyzing a brand manual PDF.
+Inputs you will receive:
+- TEXT: full extracted text from the brand manual
+- IMAGE_COUNT: how many images were extracted (in size order, largest first)
+- IS_OUTLINED: true if text was converted to vector outlines (cannot read font names from PDF)
 
-EXTRACTION RULES — follow each carefully:
-
-1. COLORS: Find every color palette page. Extract EVERY defined color with exact HEX. If the manual shows "#1A1A1A" or a labeled swatch, use that exact value. Never approximate from visual inspection alone when a code is shown.
-
-2. TYPOGRAPHY: Find the tipografia/typography pages. Extract EVERY font family AND every defined weight/style variant (Light, Regular, Medium, SemiBold, Bold, ExtraBold, Black, Italic). One entry per weight variant.
-
-3. TOM DE VOZ / VOICE VALUES: Find sections labeled "Tom de Voz", "Voz da Marca", "Linguagem", "Como Falamos" or similar. For EACH voice quality listed (e.g. "Direto", "Humano", "Rebelde", "Poético"), create a voiceValues entry with its title, full description, and an example phrase if shown.
-
-4. GUIDELINES — dos/donts: Extract every "faça / não faça", "correto / incorreto", proibições de uso, zonas de exclusão, e regras de aplicação visual. Also describe the imagery/fotografia style.
-
-5. STRATEGY: Extract manifesto verbatim, all positioning statements, archetypes with full descriptions, personas with age/occupation/traits/desires/painPoints/bio.
-
-6. LOGOS: For each distinct logo variation (wordmark, ícone, horizontal, empilhado, fundo escuro, fundo claro, colorido, monocromático, abreviado, etc.), add one assetClassifications entry with a descriptive label.
-
-7. GRADIENTS / SHADOWS / BORDERS / TOKENS: Only extract if explicitly shown with specifications. Skip if absent.
-
-Return ONLY a JSON object — no markdown, no explanation.
+Return ONLY a JSON object. Omit any field you can't populate from the text/images.
 
 Schema:
 {
-  "identity": { "name": "...", "website": "...", "tagline": "...", "description": "..." },
-  "colors": [{ "hex": "#RRGGBB", "name": "Name as shown in manual", "role": "primary|secondary|accent|background|text|cta" }],
-  "typography": [{ "family": "Exact Family Name", "style": "Light|Regular|Medium|Bold|Black|Italic", "role": "heading|body|accent|mono", "size": 16 }],
-  "gradients": [{ "name": "...", "css": "linear-gradient(135deg, #HEX 0%, #HEX 100%)", "stops": [{ "hex": "#RRGGBB", "position": 0 }] }],
-  "shadows": [{ "name": "...", "css": "0px 4px 12px rgba(0,0,0,0.15)" }],
-  "borders": [{ "name": "...", "width": 1, "color": "#RRGGBB", "style": "solid" }],
-  "tokens": { "spacing": { "xs": 4, "sm": 8, "md": 16 }, "radius": { "sm": 4, "md": 8, "lg": 16 } },
+  "identity": { "name": "...", "tagline": "...", "description": "..." },
+  "fontFamilies": ["Helvetica Neue LT", "..."],   // ONLY when IS_OUTLINED=true; identify families mentioned in the typography page text
+  "colorNames": [{ "hex": "#RRGGBB", "name": "Light Days" }],   // names found in palette page text, mapped to hex when possible
   "tags": { "brand_values": [], "tone": [], "aesthetic": [] },
-  "guidelines": { "voice": "one paragraph summary of tone", "dos": [], "donts": [], "imagery": "visual style description" },
+  "guidelines": { "voice": "one paragraph", "dos": [], "donts": [], "imagery": "..." },
   "strategy": {
     "manifesto": "verbatim manifesto text",
     "positioning": [],
-    "archetypes": [{ "name": "...", "role": "primary|secondary", "description": "full description", "examples": [] }],
+    "archetypes": [{ "name": "...", "role": "primary|secondary", "description": "...", "examples": [] }],
     "personas": [{ "name": "...", "age": 25, "occupation": "...", "traits": [], "bio": "...", "desires": [], "painPoints": [] }],
-    "voiceValues": [{ "title": "Voice Quality", "description": "what this quality means in practice", "example": "Example phrase in this voice" }]
+    "voiceValues": [{ "title": "...", "description": "...", "example": "..." }]
   },
   "assetClassifications": [
-    { "index": 0, "category": "logo|icon|photo|mockup|pattern|strategy|other", "logoVariant": "primary|dark|light|icon|accent|custom|stacked|horizontal|abbreviated", "label": "descriptive name" }
+    { "index": 0, "category": "logo|icon|photo|mockup|pattern|strategy|other", "logoVariant": "primary|dark|light|icon|accent|custom|stacked|horizontal|abbreviated", "label": "..." }
   ]
-}`
+}
+
+Rules:
+- For TOM DE VOZ / VOICE VALUES: find sections labelled "Tom de Voz", "Voz da Marca", "Linguagem", "Como Falamos". For EACH listed quality (e.g. "Direto", "Humano", "Rebelde"), emit one voiceValues entry.
+- For DOS/DONTS: find "faça/não faça", "correto/incorreto", proibições, regras de uso.
+- For ARCHETYPES: extract every named archetype with its full description from the manual.
+- For PERSONAS: include age, occupation, traits, desires, pain points, bio.
+- For COLORNAMES: if the palette page mentions named colors with their hex values, map name→hex.
+- For ASSETCLASSIFICATIONS: classify each provided image by index (in size order) — logo/icon/photo/mockup/etc.
+- IS_OUTLINED=false → DO NOT populate fontFamilies (algorithmic extraction already has it).
+Return JSON only.`
 
 export async function extractPdfStreaming(
   buffer: Buffer,
   writeEvent: (event: object) => void,
   userId?: string
 ): Promise<void> {
-  const apiKey = await getGeminiApiKey(userId)
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
+  // ── PHASE A — Algorithmic tokenization ─────────────────────────────────────
 
-  // ── Phase 1: Gemini visual extraction ──────────────────────────────────────
+  writeEvent({ type: 'status', message: 'Parsing PDF structure…' })
 
-  writeEvent({ type: 'status', message: 'Sending PDF to Gemini…' })
-
-  const genAI = new GoogleGenerativeAI(apiKey)
-  // gemini-2.5-flash has proven native PDF support and strong visual understanding
-  const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.FLASH_2_5 })
-
-  let extracted: any = {}
+  let tokens: PdfTokens
   try {
-    const result = await model.generateContent([
-      { text: PDF_EXTRACTION_PROMPT },
-      { inlineData: { mimeType: 'application/pdf', data: buffer.toString('base64') } },
-    ])
-    const text = result.response.text()
-    const jsonStr = extractJson(text)
-    extracted = JSON.parse(jsonStr)
+    tokens = await tokenizePdf(buffer)
   } catch (err: any) {
-    console.error('[pdf-extract] Gemini extraction failed:', err.message)
-    writeEvent({ type: 'error', message: err.message || 'Gemini extraction failed' })
+    writeEvent({ type: 'error', message: `PDF parse failed: ${err.message}` })
     return
   }
 
-  // Stream each category — progressive UI updates
-  writeEvent({ type: 'status', message: 'Processing results…' })
+  // Stream algorithmic results immediately — user sees data within seconds
+  if (tokens.colors.length) {
+    writeEvent({
+      type: 'colors',
+      data: tokens.colors.map(c => ({ hex: c.hex, name: c.hex, role: c.role })),
+    })
+  }
 
-  if (extracted.colors?.length)     writeEvent({ type: 'colors',     data: normalizeColors(extracted.colors) })
-  if (extracted.typography?.length) writeEvent({ type: 'typography', data: extracted.typography })
-  if (extracted.gradients?.length)  writeEvent({ type: 'gradients',  data: extracted.gradients })
-  if (extracted.shadows?.length)    writeEvent({ type: 'shadows',    data: extracted.shadows })
-  if (extracted.borders?.length)    writeEvent({ type: 'borders',    data: extracted.borders })
-  if (extracted.tokens?.radius)     writeEvent({ type: 'radii',      data: Object.values(extracted.tokens.radius) })
+  // Typography: prefer real font dict; fall back to type scale when outlined
+  const typography = buildTypography(tokens)
+  if (typography.length) writeEvent({ type: 'typography', data: typography })
 
-  const strategy = buildStrategy(extracted)
-  if (Object.keys(strategy).length) writeEvent({ type: 'strategy', data: strategy })
+  if (tokens.images.length) {
+    writeEvent({ type: 'images', data: tokens.images.map(i => i.pngBase64) })
+  }
 
-  // ── Phase 2: Render pages to PNG thumbnails ─────────────────────────────────
+  writeEvent({
+    type: 'status',
+    message: `${tokens.colors.length} colors · ${tokens.images.length} images · running semantic pass…`,
+  })
 
-  writeEvent({ type: 'status', message: 'Rendering pages…' })
+  // ── PHASE B — LLM semantic pass ────────────────────────────────────────────
+
   try {
-    const pageImages = await renderPdfPages(buffer)
-    if (pageImages.length) writeEvent({ type: 'images', data: pageImages })
+    const apiKey = await getGeminiApiKey(userId)
+    if (!apiKey) {
+      writeEvent({ type: 'done' })
+      return
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey)
+    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.FLASH_2_5 })
+
+    // Cap text to keep payload small; brand manuals fit in ~10K chars
+    const textForLlm = tokens.fullText.slice(0, 12000)
+    const palette = tokens.colors.slice(0, 20).map(c => c.hex).join(', ')
+    const sampleImages = tokens.images.slice(0, 8) // most-relevant by size
+
+    const parts: any[] = [{
+      text:
+        SEMANTIC_PROMPT +
+        `\n\nIS_OUTLINED: ${tokens.isMostlyOutlined}` +
+        `\nIMAGE_COUNT: ${sampleImages.length}` +
+        `\nPAGE_COUNT: ${tokens.pageCount}` +
+        `\nDETECTED_HEX_PALETTE: ${palette}` +
+        `\n\nTEXT:\n${textForLlm}`,
+    }]
+    // Resize each image to max 1024px before sending — Gemini classifies just
+    // as well at 1K and we avoid 30MB+ payloads from 5K source assets.
+    for (const img of sampleImages) {
+      const small = await downscalePngBase64(img.pngBase64, 1024)
+      parts.push({ inlineData: { mimeType: 'image/png', data: small } })
+    }
+
+    const result = await model.generateContent(parts)
+    const text = result.response.text()
+    const jsonStr = extractJson(text)
+    const semantic: any = JSON.parse(jsonStr)
+
+    // Map outlined-text font identification back to typography stream
+    if (tokens.isMostlyOutlined && Array.isArray(semantic.fontFamilies) && semantic.fontFamilies.length) {
+      const remapped = remapTypographyWithFamilies(typography, semantic.fontFamilies)
+      writeEvent({ type: 'typography', data: remapped })
+    }
+
+    // Apply LLM-discovered colour names back to palette
+    if (Array.isArray(semantic.colorNames) && semantic.colorNames.length) {
+      const named = applyColorNames(tokens.colors, semantic.colorNames)
+      writeEvent({ type: 'colors', data: named })
+    }
+
+    const strategy = buildStrategy(semantic)
+    if (Object.keys(strategy).length) writeEvent({ type: 'strategy', data: strategy })
+
+    if (Array.isArray(semantic.assetClassifications) && semantic.assetClassifications.length) {
+      writeEvent({ type: 'asset_classifications', data: semantic.assetClassifications })
+    }
   } catch (err: any) {
-    console.warn('[pdf-extract] Page rendering failed (non-fatal):', err.message)
+    console.warn('[pdf-extract] semantic pass failed (algorithmic data still delivered):', err.message)
   }
 
   writeEvent({ type: 'done' })
 }
 
-// ── PDF page renderer ─────────────────────────────────────────────────────────
-
-async function renderPdfPages(buffer: Buffer): Promise<string[]> {
-  const [pdfjsLib, { createCanvas }] = await Promise.all([
-    import('pdfjs-dist/legacy/build/pdf.mjs'),
-    import('@napi-rs/canvas'),
-  ])
-
-  const pdf = await (pdfjsLib as any).getDocument({ data: new Uint8Array(buffer) }).promise
-  const numPages = Math.min(pdf.numPages, MAX_RENDER_PAGES)
-  const images: string[] = []
-
-  for (let i = 1; i <= numPages; i++) {
-    try {
-      const page = await pdf.getPage(i)
-      const viewport = page.getViewport({ scale: 0.75 }) // balance quality vs size
-      const w = Math.round(viewport.width)
-      const h = Math.round(viewport.height)
-      const canvas = createCanvas(w, h)
-      const ctx = canvas.getContext('2d')
-
-      await page.render({
-        canvasContext: ctx as any,
-        viewport,
-        canvasFactory: {
-          create: (cw: number, ch: number) => {
-            const c = createCanvas(cw, ch)
-            return { canvas: c, context: c.getContext('2d') }
-          },
-          reset: (obj: any, cw: number, ch: number) => {
-            obj.canvas.width = cw; obj.canvas.height = ch
-          },
-          destroy: () => {},
-        },
-      }).promise
-
-      const png = canvas.toBuffer('image/png')
-      images.push(`data:image/png;base64,${png.toString('base64')}`)
-    } catch (err: any) {
-      console.warn(`[pdf-extract] Page ${i} render failed:`, err.message)
-    }
-  }
-
-  return images
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function normalizeColors(colors: any[]): any[] {
-  return colors
-    .filter((c: any) => c.hex && /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(c.hex))
-    .map((c: any) => ({ hex: c.hex.toUpperCase(), name: c.name || c.hex, role: c.role }))
+function buildTypography(tokens: PdfTokens) {
+  // Real fonts: emit each family with its top size
+  if (!tokens.isMostlyOutlined && tokens.fonts.length) {
+    return tokens.fonts.slice(0, 12).map(f => ({
+      family: f.family,
+      style: 'Regular',
+      role: inferRoleFromSize(f.sizes[0]),
+      size: f.sizes[0],
+    }))
+  }
+  // Outlined: derive from rendered type scale (LLM will fill family names later)
+  return tokens.typeScale.slice(0, 8).map(t => ({
+    family: 'Unknown (outlined)',
+    style: 'Regular',
+    role: inferRoleFromSize(t.size),
+    size: Math.round(t.size),
+  }))
+}
+
+function inferRoleFromSize(size: number): 'heading' | 'body' | 'accent' | 'mono' {
+  if (size >= 32) return 'heading'
+  if (size >= 18) return 'accent'
+  return 'body'
+}
+
+function remapTypographyWithFamilies(
+  current: ReturnType<typeof buildTypography>,
+  families: string[]
+): ReturnType<typeof buildTypography> {
+  // Distribute families across heading/body/accent slots; keep sizes
+  const heading = current.filter(t => t.role === 'heading')
+  const body    = current.filter(t => t.role === 'body')
+  const accent  = current.filter(t => t.role === 'accent')
+
+  return current.map(t => {
+    // Headings get family[0]; body gets family[1] if present, else family[0]
+    const family =
+      t.role === 'heading' ? families[0] :
+      t.role === 'body'    ? (families[1] || families[0]) :
+                              (families[families.length - 1] || families[0])
+    return { ...t, family }
+  })
+}
+
+function applyColorNames(
+  colors: PdfTokens['colors'],
+  named: Array<{ hex: string; name: string }>
+) {
+  const map = new Map<string, string>()
+  for (const n of named) {
+    if (typeof n.hex === 'string' && typeof n.name === 'string') {
+      map.set(n.hex.toUpperCase(), n.name)
+    }
+  }
+  return colors.map(c => ({
+    hex: c.hex,
+    name: map.get(c.hex) || c.hex,
+    role: c.role,
+  }))
 }
 
 function buildStrategy(data: any): any {
   const s: any = {}
-  if (data.strategy?.manifesto)         s.manifesto    = data.strategy.manifesto
-  if (data.identity?.tagline)           s.tagline      = data.identity.tagline
-  if (data.identity?.description)       s.description  = data.identity.description
-  if (data.strategy?.positioning?.length) s.claims     = data.strategy.positioning
-  if (data.strategy?.archetypes?.length)  s.archetypes = data.strategy.archetypes
-  if (data.strategy?.personas?.length)    s.personas   = data.strategy.personas
-  if (data.strategy?.voiceValues?.length) s.voiceValues = data.strategy.voiceValues
-  if (data.guidelines?.dos?.length)       s.dos        = data.guidelines.dos
-  if (data.guidelines?.donts?.length)     s.donts      = data.guidelines.donts
+  if (data.strategy?.manifesto)           s.manifesto    = data.strategy.manifesto
+  if (data.identity?.tagline)             s.tagline      = data.identity.tagline
+  if (data.identity?.description)         s.description  = data.identity.description
+  if (data.strategy?.positioning?.length) s.claims       = data.strategy.positioning
+  if (data.strategy?.archetypes?.length)  s.archetypes   = data.strategy.archetypes
+  if (data.strategy?.personas?.length)    s.personas     = data.strategy.personas
+  if (data.strategy?.voiceValues?.length) s.voiceValues  = data.strategy.voiceValues
+  if (data.guidelines?.dos?.length)       s.dos          = data.guidelines.dos
+  if (data.guidelines?.donts?.length)     s.donts        = data.guidelines.donts
+  if (data.tags?.brand_values?.length)    s.brandValues  = data.tags.brand_values
   return s
 }
 
@@ -182,4 +242,23 @@ function extractJson(text: string): string {
   const raw = text.match(/\{[\s\S]*\}/)
   if (raw) return raw[0]
   throw new Error('No JSON in Gemini response')
+}
+
+async function downscalePngBase64(dataUrl: string, maxDim: number): Promise<string> {
+  try {
+    const b64 = dataUrl.split(',')[1] ?? dataUrl
+    const buf = Buffer.from(b64, 'base64')
+    const img = await loadImage(buf)
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
+    if (scale === 1) return b64 // already small enough
+    const w = Math.round(img.width * scale)
+    const h = Math.round(img.height * scale)
+    const canvas = createCanvas(w, h)
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(img as any, 0, 0, w, h)
+    return canvas.toBuffer('image/png').toString('base64')
+  } catch {
+    // Fallback: return original (LLM payload may be large but won't crash)
+    return dataUrl.split(',')[1] ?? dataUrl
+  }
 }
