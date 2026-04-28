@@ -1,29 +1,24 @@
-import domtoimage from 'dom-to-image-more';
+import type Konva from 'konva';
 
 /**
- * Captures the current creative canvas as a small PNG data URL suitable for
- * project thumbnails. Separate from exportCanvasAsPng (which saves at native
- * resolution) — this keeps thumbnails light and avoids re-rendering at 4K.
+ * Captures the current creative Stage as a small PNG data URL suitable for
+ * project thumbnails. Uses pixelRatio = min(1, maxWidth / stage.width()) so
+ * the thumbnail is at most `maxWidth` pixels wide while still being a
+ * fresh Konva render (not a downscaled preview).
  */
 export async function captureCanvasThumbnail(
-  node: HTMLElement,
+  stage: Konva.Stage | null,
   maxWidth = 480
 ): Promise<string | null> {
   try {
-    const scale = Math.min(1, maxWidth / node.offsetWidth);
-    const dataUrl = await domtoimage.toPng(node, {
-      width: node.offsetWidth * scale,
-      height: node.offsetHeight * scale,
-      style: {
-        transform: `scale(${scale})`,
-        transformOrigin: 'top left',
-        width: `${node.offsetWidth}px`,
-        height: `${node.offsetHeight}px`,
-      },
-      cacheBust: true,
-      quality: 0.85,
+    if (!stage) return null;
+    const previewWidth = stage.width();
+    if (!previewWidth) return null;
+    const pixelRatio = Math.min(1, maxWidth / previewWidth);
+    return stage.toDataURL({
+      pixelRatio,
+      mimeType: 'image/png',
     });
-    return dataUrl;
   } catch (err) {
     console.warn('[captureCanvasThumbnail] failed:', err);
     return null;
