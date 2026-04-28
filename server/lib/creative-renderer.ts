@@ -41,6 +41,11 @@ interface TextLayerPlan {
   color?: string;
   bold?: boolean;
   fontFamily?: string;
+  opacity?: number;
+  shadowColor?: string;
+  shadowBlur?: number;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
 }
 
 interface ShapeLayerPlan {
@@ -49,6 +54,11 @@ interface ShapeLayerPlan {
   color: string;
   position: { x: number; y: number };
   size: { w: number; h: number };
+  opacity?: number;
+  shadowColor?: string;
+  shadowBlur?: number;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
 }
 
 interface LogoLayerPlan {
@@ -56,6 +66,11 @@ interface LogoLayerPlan {
   url: string;
   position: { x: number; y: number };
   size: { w: number; h: number };
+  opacity?: number;
+  shadowColor?: string;
+  shadowBlur?: number;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
 }
 
 type LayerPlan = TextLayerPlan | ShapeLayerPlan | LogoLayerPlan;
@@ -215,11 +230,32 @@ export async function renderCreativePlan(
   }
 
   // ── 3. Layers ──────────────────────────────────────────────────────────────
+
+  function applyShadowAndOpacity(ctx: ReturnType<typeof canvas.getContext>, layer: LayerPlan) {
+    ctx.globalAlpha = (layer as any).opacity ?? 1;
+    if ((layer as any).shadowColor) {
+      ctx.shadowColor = (layer as any).shadowColor;
+      ctx.shadowBlur = (layer as any).shadowBlur ?? 0;
+      ctx.shadowOffsetX = (layer as any).shadowOffsetX ?? 0;
+      ctx.shadowOffsetY = (layer as any).shadowOffsetY ?? 0;
+    }
+  }
+
+  function resetShadowAndOpacity(ctx: ReturnType<typeof canvas.getContext>) {
+    ctx.globalAlpha = 1;
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+  }
+
   for (const layer of plan.layers) {
     const px = layer.position.x * w;
     const py = layer.position.y * h;
     const pw = layer.size.w * w;
     const ph = layer.size.h * h;
+
+    applyShadowAndOpacity(ctx, layer);
 
     if (layer.type === 'shape') {
       ctx.fillStyle = layer.color;
@@ -272,6 +308,8 @@ export async function renderCreativePlan(
         cursorX += ctx.measureText(seg.text).width;
       }
     }
+
+    resetShadowAndOpacity(ctx);
   }
 
   // @napi-rs/canvas toBuffer signature: (mime, quality?) — no options object
