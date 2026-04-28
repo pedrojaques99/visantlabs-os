@@ -1,8 +1,8 @@
 import React, { useRef } from 'react';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
-import { AlignLeft, AlignCenter, AlignRight, Bold, Trash2, Layers, Copy, AlignStartVertical, AlignCenterHorizontal, AlignEndVertical, AlignStartHorizontal, AlignCenterVertical, AlignEndHorizontal, AlignHorizontalSpaceBetween, AlignVerticalSpaceBetween, ArrowUp, ArrowDown, ArrowUpToLine, ArrowDownToLine, Group, Ungroup, Image as ImageIcon, RefreshCcw, Upload, Diamond, X } from 'lucide-react';
-import type { TextLayerData } from './store/creativeTypes';
+import { AlignLeft, AlignCenter, AlignRight, Bold, Underline, Strikethrough, Trash2, Layers, Copy, AlignStartVertical, AlignCenterHorizontal, AlignEndVertical, AlignStartHorizontal, AlignCenterVertical, AlignEndHorizontal, AlignHorizontalSpaceBetween, AlignVerticalSpaceBetween, ArrowUp, ArrowDown, ArrowUpToLine, ArrowDownToLine, Group, Ungroup, Image as ImageIcon, RefreshCcw, Upload, Diamond, X, RotateCw, Square as SquareIcon } from 'lucide-react';
+import type { TextLayerData, ShapeLayerData } from './store/creativeTypes';
 import type { LucideIcon } from 'lucide-react';
 
 // ── Tiny reusable pieces ──────────────────────────────────────────────
@@ -44,7 +44,9 @@ interface BackgroundToolbarProps {
 }
 
 export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }) => {
-  const { backgroundUrl, setBackgroundUrl, setBackgroundSelected } = useCreativeStore();
+  const backgroundUrl = useCreativeStore((s) => s.backgroundUrl);
+  const setBackgroundUrl = useCreativeStore((s) => s.setBackgroundUrl);
+  const setBackgroundSelected = useCreativeStore((s) => s.setBackgroundSelected);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,11 +82,16 @@ export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }
 // ── Main toolbar ──────────────────────────────────────────────────────
 
 export const CreativeToolbar: React.FC = () => {
-  const {
-    layers, selectedLayerIds, updateLayer, removeLayer,
-    duplicateLayer, reorderLayer, alignLayers, distributeLayers,
-    groupSelected, ungroupSelected
-  } = useCreativeStore();
+  const layers = useCreativeStore((s) => s.layers);
+  const selectedLayerIds = useCreativeStore((s) => s.selectedLayerIds);
+  const updateLayer = useCreativeStore((s) => s.updateLayer);
+  const removeLayer = useCreativeStore((s) => s.removeLayer);
+  const duplicateLayer = useCreativeStore((s) => s.duplicateLayer);
+  const reorderLayer = useCreativeStore((s) => s.reorderLayer);
+  const alignLayers = useCreativeStore((s) => s.alignLayers);
+  const distributeLayers = useCreativeStore((s) => s.distributeLayers);
+  const groupSelected = useCreativeStore((s) => s.groupSelected);
+  const ungroupSelected = useCreativeStore((s) => s.ungroupSelected);
   const { colors, activeGuideline } = useBrandKit();
 
   const selectedCount = selectedLayerIds.length;
@@ -98,6 +105,8 @@ export const CreativeToolbar: React.FC = () => {
   const textData = isText ? (selected!.data as TextLayerData) : null;
   const isLogo = selected?.data.type === 'logo';
   const logoUrl = isLogo ? (selected!.data as any).url : null;
+  const isShape = selected?.data.type === 'shape';
+  const shapeData = isShape ? (selected!.data as ShapeLayerData) : null;
 
   const fonts = (activeGuideline?.typography ?? []).map((t) => t.family).filter(Boolean);
   const logos = activeGuideline?.logos ?? [];
@@ -106,6 +115,7 @@ export const CreativeToolbar: React.FC = () => {
 
   const updateText = (patch: Partial<TextLayerData>) => updateLayer(selectedLayerIds[0], patch);
   const updateLogo = (url: string) => updateLayer(selectedLayerIds[0], { url } as any);
+  const updateShape = (patch: Partial<ShapeLayerData>) => updateLayer(selectedLayerIds[0], patch as any);
 
   return (
     <div
@@ -180,7 +190,9 @@ export const CreativeToolbar: React.FC = () => {
             className="w-14 bg-neutral-800 text-white text-xs font-mono px-2 py-1 rounded border border-white/10 outline-none focus:border-brand-cyan/40 tabular-nums"
           />
 
-          <Btn icon={Bold} onClick={() => updateText({ bold: !textData.bold })} active={textData.bold} title="Bold" />
+          <Btn icon={Bold} onClick={() => updateText({ bold: !textData.bold })} active={textData.bold} title="Negrito" />
+          <Btn icon={Underline} onClick={() => updateText({ underline: !textData.underline })} active={!!textData.underline} title="Sublinhado" />
+          <Btn icon={Strikethrough} onClick={() => updateText({ strikethrough: !textData.strikethrough })} active={!!textData.strikethrough} title="Tachado" />
 
           <div className="flex items-center gap-0.5">
             {(['left', 'center', 'right'] as const).map((a) => {
@@ -219,6 +231,103 @@ export const CreativeToolbar: React.FC = () => {
             </div>
           )}
 
+          <Divider />
+        </>
+      )}
+
+      {/* ── Shape-specific controls ── */}
+      {isShape && shapeData && (
+        <>
+          {/* Fill color */}
+          <div className="flex items-center gap-1 pl-0.5">
+            {colors.slice(0, 5).map((c) => (
+              <button
+                key={c.hex}
+                onClick={() => updateShape({ color: c.hex })}
+                title={c.name || c.hex}
+                className="rounded-full border border-white/20 hover:scale-110 transition-transform"
+                style={{ backgroundColor: c.hex, width: 18, height: 18 }}
+              />
+            ))}
+            <div className="relative w-[18px] h-[18px]">
+              <div
+                className="w-[18px] h-[18px] rounded-full border border-white/20 cursor-pointer hover:scale-110 transition-transform"
+                style={{ backgroundColor: shapeData.color }}
+                title="Cor personalizada"
+              />
+              <input
+                type="color"
+                value={shapeData.color}
+                onChange={(e) => updateShape({ color: e.target.value })}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              />
+            </div>
+          </div>
+
+          {/* Corner radius */}
+          <div className="flex items-center gap-1 pl-1" title="Arredondar cantos">
+            <SquareIcon size={11} className="text-neutral-500" />
+            <input
+              type="number"
+              value={Math.round(shapeData.cornerRadius ?? 0)}
+              onChange={(e) => updateShape({ cornerRadius: Math.max(0, Number(e.target.value)) })}
+              min={0}
+              max={400}
+              className="w-12 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-white/10 outline-none focus:border-brand-cyan/40 tabular-nums"
+            />
+          </div>
+
+          {/* Stroke width + color */}
+          <div className="flex items-center gap-1 pl-1" title="Borda">
+            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">B</span>
+            <input
+              type="number"
+              value={Math.round(shapeData.strokeWidth ?? 0)}
+              onChange={(e) => {
+                const w = Math.max(0, Number(e.target.value));
+                updateShape({ strokeWidth: w, strokeColor: shapeData.strokeColor ?? '#ffffff' });
+              }}
+              min={0}
+              max={64}
+              className="w-12 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-white/10 outline-none focus:border-brand-cyan/40 tabular-nums"
+            />
+            <div className="relative w-[18px] h-[18px]">
+              <div
+                className="w-[18px] h-[18px] rounded-full border border-white/20 cursor-pointer hover:scale-110 transition-transform"
+                style={{ backgroundColor: shapeData.strokeColor ?? '#ffffff' }}
+                title="Cor da borda"
+              />
+              <input
+                type="color"
+                value={shapeData.strokeColor ?? '#ffffff'}
+                onChange={(e) => updateShape({ strokeColor: e.target.value })}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              />
+            </div>
+          </div>
+
+          <Divider />
+        </>
+      )}
+
+      {/* ── Rotation (single selection, any layer with rotation support) ── */}
+      {selectedCount === 1 && selected && selected.data.type !== 'group' && (
+        <>
+          <div className="flex items-center gap-1" title="Rotação (graus)">
+            <RotateCw size={11} className="text-neutral-500" />
+            <input
+              type="number"
+              value={Math.round((selected.data as any).rotation ?? 0)}
+              onChange={(e) => {
+                let deg = Number(e.target.value) % 360;
+                if (deg < 0) deg += 360;
+                updateLayer(selectedLayerIds[0], { rotation: deg } as any);
+              }}
+              min={-360}
+              max={360}
+              className="w-14 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-white/10 outline-none focus:border-brand-cyan/40 tabular-nums"
+            />
+          </div>
           <Divider />
         </>
       )}

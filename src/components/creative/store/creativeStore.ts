@@ -76,7 +76,7 @@ interface CreativeStore {
   setLassoRegion: (r: { x: number; y: number; w: number; h: number } | null) => void;
   setSelectedLayerIds: (ids: string[], extend?: boolean) => void;
   updateLayer: (id: string, updates: Partial<CreativeLayerData>) => void;
-  updateLayerMeta: (id: string, updates: Partial<Pick<CreativeLayer, 'visible' | 'zIndex'>>) => void;
+  updateLayerMeta: (id: string, updates: Partial<Pick<CreativeLayer, 'visible' | 'zIndex' | 'locked'>>) => void;
   addLayer: (data: CreativeLayerData) => void;
   removeLayer: (id: string) => void;
   duplicateLayer: (id: string) => void;
@@ -334,8 +334,6 @@ export const useCreativeStore = create<CreativeStore>()(
           if (selectedIds.length < 2) return state;
 
           const selectedLayers = state.layers.filter(l => selectedIds.includes(l.id));
-          
-          // Basic bounding box calculation
           const bbox = calculateBoundingBox(selectedLayers.map(l => ({
             x: l.data.position.x,
             y: l.data.position.y,
@@ -347,7 +345,9 @@ export const useCreativeStore = create<CreativeStore>()(
           const newGroup: CreativeLayer = {
             id: groupId,
             visible: true,
-            zIndex: Math.max(...selectedLayers.map(l => l.zIndex)),
+            // Sit above children so the wrapper is the topmost — preserves
+            // children zIndex on ungroup (they remain in state.layers untouched).
+            zIndex: Math.max(...selectedLayers.map(l => l.zIndex)) + 1,
             data: {
               type: 'group',
               children: selectedIds,
@@ -357,7 +357,7 @@ export const useCreativeStore = create<CreativeStore>()(
           };
 
           return {
-            layers: [...state.layers.filter(l => !selectedIds.includes(l.id)), newGroup],
+            layers: [...state.layers, newGroup],
             selectedLayerIds: [groupId],
           };
         }),
@@ -367,11 +367,9 @@ export const useCreativeStore = create<CreativeStore>()(
           const group = state.layers.find(l => l.id === selectedId);
           if (!group || group.data.type !== 'group') return state;
 
-          // Remove the group wrapper and restore children as top-level layers
-          const childIds = group.data.children;
           return {
             layers: state.layers.filter(l => l.id !== selectedId),
-            selectedLayerIds: childIds,
+            selectedLayerIds: group.data.children,
           };
         }),
 
@@ -507,7 +505,14 @@ export const useCreativeStore = create<CreativeStore>()(
     ),
     {
       name: 'vsn-creative-setup-cache',
+      version: 1,
       storage: createJSONStorage(() => localStorage),
+      // Older snapshots that predate the schema bump get dropped quietly —
+      // safer than restoring a partial shape that mismatches the runtime store.
+      migrate: (persisted, version) => {
+        if (version === 1) return persisted as Partial<CreativeStore>;
+        return undefined;
+      },
       partialize: (state) => {
         // Blob URLs (blob:... from URL.createObjectURL) die with the page — persisting
         // them causes ERR_FILE_NOT_FOUND on reload. Drop them; the user re-uploads.

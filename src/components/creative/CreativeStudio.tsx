@@ -26,19 +26,32 @@ import {
 import { toast } from 'sonner';
 
 export const CreativeStudio: React.FC = () => {
-  const {
-    status, format, brandId, removeLayer, selectedLayerIds, setSelectedLayerIds,
-    pages, activePageIndex, setActivePageIndex, addPage, removePage, setStatus,
-    groupSelected, ungroupSelected, backgroundSelected,
-    activeTool, setActiveTool
-  } = useCreativeStore();
-
+  // State — atomic selectors so each field re-renders only when it changes.
+  const status = useCreativeStore((s) => s.status);
+  const format = useCreativeStore((s) => s.format);
+  const brandId = useCreativeStore((s) => s.brandId);
+  const selectedLayerIds = useCreativeStore((s) => s.selectedLayerIds);
+  const pages = useCreativeStore((s) => s.pages);
+  const activePageIndex = useCreativeStore((s) => s.activePageIndex);
+  const backgroundSelected = useCreativeStore((s) => s.backgroundSelected);
+  const activeTool = useCreativeStore((s) => s.activeTool);
   const creativeId = useCreativeStore((s) => s.creativeId);
   const projectName = useCreativeStore((s) => s.projectName);
   const prompt = useCreativeStore((s) => s.prompt);
   const layers = useCreativeStore((s) => s.layers);
   const overlay = useCreativeStore((s) => s.overlay);
   const backgroundUrl = useCreativeStore((s) => s.backgroundUrl);
+
+  // Actions — stable identity in zustand, picking individually never re-renders.
+  const removeLayer = useCreativeStore((s) => s.removeLayer);
+  const setSelectedLayerIds = useCreativeStore((s) => s.setSelectedLayerIds);
+  const setActivePageIndex = useCreativeStore((s) => s.setActivePageIndex);
+  const addPage = useCreativeStore((s) => s.addPage);
+  const removePage = useCreativeStore((s) => s.removePage);
+  const setStatus = useCreativeStore((s) => s.setStatus);
+  const groupSelected = useCreativeStore((s) => s.groupSelected);
+  const ungroupSelected = useCreativeStore((s) => s.ungroupSelected);
+  const setActiveTool = useCreativeStore((s) => s.setActiveTool);
 
   const { undo, redo } = useCreativeStore.temporal.getState();
   const { colors, allGuidelines } = useBrandKit();
@@ -101,6 +114,51 @@ export const CreativeStudio: React.FC = () => {
           ungroupSelected();
           toast.info('Grupo desfeito');
         }
+        if (e.key === 'c' && selectedLayerIds.length > 0) {
+          e.preventDefault();
+          const { layers: cur } = useCreativeStore.getState();
+          const picked = cur.filter((l) => selectedLayerIds.includes(l.id));
+          if (picked.length > 0) {
+            const payload = JSON.stringify({ __vsn: 'creative-layers', layers: picked });
+            navigator.clipboard.writeText(payload).then(
+              () => toast.info(`${picked.length} ${picked.length === 1 ? 'camada copiada' : 'camadas copiadas'}`),
+              () => toast.error('Falha ao copiar')
+            );
+          }
+        }
+        if (e.key === 'v') {
+          e.preventDefault();
+          navigator.clipboard.readText().then((text) => {
+            try {
+              const parsed = JSON.parse(text);
+              if (parsed?.__vsn !== 'creative-layers' || !Array.isArray(parsed.layers)) return;
+              const { addLayer, setSelectedLayerIds: setSel } = useCreativeStore.getState();
+              const newIds: string[] = [];
+              parsed.layers.forEach((l: any) => {
+                const data = {
+                  ...l.data,
+                  position: {
+                    x: Math.min(0.95, (l.data.position?.x ?? 0) + 0.02),
+                    y: Math.min(0.95, (l.data.position?.y ?? 0) + 0.02),
+                  },
+                };
+                addLayer(data);
+                // capture the id of the layer just added
+                const after = useCreativeStore.getState().layers;
+                newIds.push(after[after.length - 1].id);
+              });
+              if (newIds.length) setSel(newIds);
+              toast.info(`${parsed.layers.length} ${parsed.layers.length === 1 ? 'camada colada' : 'camadas coladas'}`);
+            } catch {
+              /* not our payload — silently ignore */
+            }
+          });
+        }
+        if (e.key === 'a') {
+          e.preventDefault();
+          const all = useCreativeStore.getState().layers.filter((l) => !l.locked).map((l) => l.id);
+          setSelectedLayerIds(all);
+        }
       }
 
       if (e.key === 'Escape' && selectedLayerIds.length > 0) {
@@ -111,11 +169,34 @@ export const CreativeStudio: React.FC = () => {
         e.preventDefault();
         selectedLayerIds.forEach(id => removeLayer(id));
       }
+
+      // Arrow nudge — 1px (default) / 10px (shift). Skips locked layers.
+      if (
+        (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') &&
+        selectedLayerIds.length > 0
+      ) {
+        e.preventDefault();
+        const step = (e.shiftKey ? 10 : 1);
+        const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
+        const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+        const { layers: cur, updateLayer } = useCreativeStore.getState();
+        const w = previewSize.width || 1;
+        const h = previewSize.height || 1;
+        cur.forEach((l) => {
+          if (!selectedLayerIds.includes(l.id) || l.locked) return;
+          updateLayer(l.id, {
+            position: {
+              x: Math.max(0, Math.min(1, l.data.position.x + dx / w)),
+              y: Math.max(0, Math.min(1, l.data.position.y + dy / h)),
+            },
+          } as any);
+        });
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, selectedLayerIds, setSelectedLayerIds, removeLayer, groupSelected, ungroupSelected]);
+  }, [undo, redo, selectedLayerIds, setSelectedLayerIds, removeLayer, groupSelected, ungroupSelected, previewSize.width, previewSize.height]);
 
   const handleExport = async () => {
     if (!canvasRef.current) return;
@@ -140,28 +221,49 @@ export const CreativeStudio: React.FC = () => {
   );
 
   const queryClient = useQueryClient();
+  // Cancel any in-flight save when a newer one starts — last-write wins, no
+  // wasted requests when the user is mid-edit.
+  const saveAbortRef = useRef<AbortController | null>(null);
   const { status: autoSaveStatus, lastSavedAt } = useAutoSave({
     data: autoSaveData,
     enabled: isEditing,
     debounceMs: 2000,
     onSave: async () => {
-      const thumbnailUrl = await handleCaptureThumbnail();
-      const { setCreativeId } = useCreativeStore.getState();
-      const currentId = useCreativeStore.getState().creativeId;
-      const persisted = isPersistedId(currentId);
+      saveAbortRef.current?.abort();
+      const controller = new AbortController();
+      saveAbortRef.current = controller;
+      const { signal } = controller;
 
-      if (persisted) {
-        await creativeProjectApi.update(currentId as string, {
-          ...snapshotCreativeFromStore(),
-          thumbnailUrl,
-        });
-      } else {
-        const project = await saveCurrentCreativeAsNew(undefined, thumbnailUrl);
-        setCreativeId(project.id);
+      try {
+        const thumbnailUrl = await handleCaptureThumbnail();
+        if (signal.aborted) return;
+
+        const { setCreativeId } = useCreativeStore.getState();
+        const currentId = useCreativeStore.getState().creativeId;
+        const persisted = isPersistedId(currentId);
+
+        if (persisted) {
+          await creativeProjectApi.update(
+            currentId as string,
+            { ...snapshotCreativeFromStore(), thumbnailUrl },
+            { signal }
+          );
+        } else {
+          const project = await saveCurrentCreativeAsNew(undefined, thumbnailUrl, { signal });
+          if (!signal.aborted) setCreativeId(project.id);
+        }
+        if (!signal.aborted) {
+          queryClient.invalidateQueries({ queryKey: CREATIVE_PROJECT_KEYS.lists });
+        }
+      } catch (err: any) {
+        // Aborts are expected when newer save supersedes — don't surface as error.
+        if (err?.name === 'AbortError' || signal.aborted) return;
+        throw err;
       }
-      queryClient.invalidateQueries({ queryKey: CREATIVE_PROJECT_KEYS.lists });
     },
   });
+
+  useEffect(() => () => saveAbortRef.current?.abort(), []);
 
   return (
     <div className="flex h-[calc(100vh-1px)] bg-black overflow-hidden select-none">

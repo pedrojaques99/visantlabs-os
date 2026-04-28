@@ -11,6 +11,11 @@ export interface TextLayerData {
   fontFamily: string;     // resolved family name
   color: string;          // hex
   bold: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
+  /** Rotation in degrees, default 0 */
+  rotation?: number;
   // ── Konva-rendered visual effects (added 2026-04-27, all optional) ──
   /** 0-1; defaults to 1 (fully opaque) when undefined */
   opacity?: number;
@@ -29,6 +34,8 @@ export interface LogoLayerData {
   url: string;
   position: { x: number; y: number };
   size: { w: number; h: number };
+  /** Rotation in degrees, default 0 */
+  rotation?: number;
   // ── Konva-rendered visual effects (added 2026-04-27, all optional) ──
   /** 0-1; defaults to 1 (fully opaque) when undefined */
   opacity?: number;
@@ -48,6 +55,14 @@ export interface ShapeLayerData {
   color: string;          // hex
   position: { x: number; y: number };
   size: { w: number; h: number };
+  /** Rotation in degrees, default 0 */
+  rotation?: number;
+  /** Corner radius in px (Konva pixel units). Default 0 = sharp. */
+  cornerRadius?: number;
+  /** Stroke color (hex). Required with strokeWidth > 0 to render border. */
+  strokeColor?: string;
+  /** Stroke width in px. Default 0 = no border. */
+  strokeWidth?: number;
   // ── Konva-rendered visual effects (added 2026-04-27, all optional) ──
   /** 0-1; defaults to 1 (fully opaque) when undefined */
   opacity?: number;
@@ -73,6 +88,8 @@ export type CreativeLayerData = TextLayerData | LogoLayerData | ShapeLayerData |
 export interface CreativeLayer {
   id: string;
   visible: boolean;
+  /** When true: drag/select disabled on canvas, kept editable from sidebar. Default false. */
+  locked?: boolean;
   zIndex: number;
   data: CreativeLayerData;
 }
