@@ -220,10 +220,12 @@ interface BrandIngestModalProps {
   onSuccess: () => void;
   onClose: () => void;
   title?: string;
+  /** Source identifier for audit trail — defaults to 'manual' if omitted */
+  source?: 'pdf' | 'fig_file' | 'images' | 'image' | 'url' | 'json' | 'manual';
 }
 
 export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
-  state, guideline, onSuccess, onClose, title = 'Review extraction',
+  state, guideline, onSuccess, onClose, title = 'Review extraction', source = 'manual',
 }) => {
   const [itemSel, setItemSel] = useState<ItemSel>(new Map());
   const [applying, setApplying] = useState(false);
@@ -272,7 +274,7 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
     setApplying(true);
     try {
       if (!guideline.id) { toast.error('Guideline ID missing'); return; }
-      const payload: any = { replace: mode === 'replace' };
+      const payload: any = { replace: mode === 'replace', source };
 
       const pick = <T,>(key: FigCategory, arr: T[] | undefined) =>
         arr?.filter((_, i) => itemSel.get(key)?.has(i)) ?? [];
@@ -288,17 +290,32 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
       const radiiPicked = (state.radii || []).filter((_, i) => itemSel.get('radii')?.has(i));
       const images = pick('images', state.images);
 
-      if (colors.length) payload.colors = colors;
-      if (typography.length) payload.typography = typography;
-
-      if (gradients.length) payload.gradients = gradients.map((g: any) => ({ id: Math.random().toString(36).slice(2,9), name: g.name, type: 'linear', angle: 135, stops: g.stops, usage: 'decorative', css: g.css }));
-      if (shadows.length) payload.shadows = shadows.map((s: any, i: number) => {
-        const m = s.css.match(/^(-?\d+)px (-?\d+)px (\d+)px (-?\d+)px rgba\((\d+),(\d+),(\d+),([\d.]+)\)/);
-        return { id: i.toString(), name: s.name, x: m?+m[1]:0, y: m?+m[2]:4, blur: m?+m[3]:12, spread: m?+m[4]:0, color: m?`#${(+m[5]).toString(16).padStart(2,'0')}${(+m[6]).toString(16).padStart(2,'0')}${(+m[7]).toString(16).padStart(2,'0')}`:'#000', opacity: m?+m[8]:0.15, type:'outer', css: s.css };
-      });
-      if (borders.length) payload.borders = borders.map((b: any, i: number) => ({ id: i.toString(), name: b.name, width: b.width, style: b.style, color: b.color, opacity: 1, role: 'default', css: `${b.width}px ${b.style} ${b.color}` }));
-      if (radiiPicked.length) { const r: Record<string,number> = {}; radiiPicked.forEach((v,i) => { r[`r${i+1}`] = v }); payload.tokens = { radius: r }; }
-      if (images.length) payload.images = images;
+      // Send raw extractor shapes — server-side normalizer (brand-normalize.ts)
+      // is the single source of truth for converting these into BrandGuideline
+      // schema. No client-side defaults, no hardcoded values.
+      if (colors.length)       payload.colors = colors;
+      if (typography.length)   payload.typography = typography;
+      if (gradients.length)    payload.gradients = gradients;
+      if (shadows.length)      payload.shadows = shadows;
+      if (borders.length)      payload.borders = borders;
+      if (radiiPicked.length)  payload.radii = radiiPicked;
+      if (images.length) {
+        payload.images = images;
+        // Pre-computed classifications skip the duplicate Gemini call server-side.
+        // Remap indices to the SELECTED subset so they line up with payload.images.
+        if (state.assetClassifications?.length) {
+          const selectedIdx = (state.images || [])
+            .map((_, i) => i)
+            .filter(i => itemSel.get('images')?.has(i));
+          const remapped = state.assetClassifications
+            .map(c => {
+              const newIdx = selectedIdx.indexOf(c.index);
+              return newIdx >= 0 ? { ...c, index: newIdx } : null;
+            })
+            .filter(Boolean);
+          if (remapped.length) payload.assetClassifications = remapped;
+        }
+      }
 
       console.log('[apply-fig] sending payload', {
         id: guideline.id,

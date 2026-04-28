@@ -4,6 +4,13 @@ export type FigCategory =
   | 'colors' | 'typography' | 'gradients' | 'shadows'
   | 'borders' | 'radii' | 'components' | 'images' | 'strategy';
 
+export interface AssetClassification {
+  index: number;
+  category: 'logo' | 'icon' | 'photo' | 'mockup' | 'pattern' | 'strategy' | 'other';
+  logoVariant?: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom' | 'stacked' | 'horizontal' | 'abbreviated';
+  label?: string;
+}
+
 export interface FigStreamState {
   status: 'idle' | 'streaming' | 'done' | 'error';
   statusMessage: string;
@@ -15,6 +22,8 @@ export interface FigStreamState {
   radii?: number[];
   components?: any[];
   images?: string[];
+  /** Pre-computed image classifications from PDF extractor — lets /apply-fig-tokens skip the duplicate Gemini classification call. */
+  assetClassifications?: AssetClassification[];
   strategy?: { manifesto?: string; tagline?: string; description?: string; claims?: string[] };
   error?: string;
 }
@@ -131,6 +140,7 @@ function applyEvent(prev: FigStreamState, event: any): FigStreamState {
     case 'components': return { ...prev, components: event.data };
     case 'images':     return { ...prev, images: event.data };
     case 'strategy':   return { ...prev, strategy: event.data };
+    case 'asset_classifications': return { ...prev, assetClassifications: event.data };
     case 'done':       return { ...prev, status: 'done', statusMessage: 'Complete' };
     case 'error':      return { ...prev, status: 'error', error: event.message };
     default:           return prev;

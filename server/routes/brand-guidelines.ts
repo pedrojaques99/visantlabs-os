@@ -1909,50 +1909,84 @@ router.post('/:id/apply-fig-tokens', apiRateLimiter, authenticate, async (req: A
     const existing = await prisma.brandGuideline.findFirst({ where: { id: req.params.id, userId: req.userId } })
     if (!existing) return res.status(404).json({ error: 'Brand guideline not found' })
 
-    const { colors, typography, gradients, shadows, borders, tokens, images, replace } = req.body
+    const {
+      colors: rawColors, typography: rawFonts,
+      gradients: rawGradients, shadows: rawShadows, borders: rawBorders,
+      radii: rawRadii, tokens: rawTokens,
+      images, replace, assetClassifications, source: rawSource,
+    } = req.body
 
-    console.log('[apply-fig-tokens] data sizes:', {
-      colors: colors?.length, typography: typography?.length,
-      gradients: gradients?.length, shadows: shadows?.length,
-      borders: borders?.length, images: images?.length, replace,
+    // Single source of truth: brand-normalize transforms raw extractor shapes
+    // into canonical BrandGuideline schema. Zero hardcoded defaults outside it.
+    const {
+      normalizeColors, normalizeTypography, normalizeGradients,
+      normalizeShadows, normalizeBorders, normalizeRadii,
+      normalizeAssetClassifications, normalizeSourceType,
+    } = await import('../lib/brand-normalize.js')
+
+    const colors      = normalizeColors(rawColors)
+    const typography  = normalizeTypography(rawFonts)
+    const gradients   = normalizeGradients(rawGradients)
+    const shadows     = normalizeShadows(rawShadows)
+    const borders     = normalizeBorders(rawBorders)
+    const radiusMap   = normalizeRadii(rawRadii)
+    const sourceType  = normalizeSourceType(rawSource)
+
+    // tokens.radius from older clients still supported; normalized radii take precedence
+    const tokens = (Object.keys(radiusMap).length > 0)
+      ? { ...(rawTokens || {}), radius: { ...(rawTokens?.radius || {}), ...radiusMap } }
+      : rawTokens
+
+    console.log('[apply-fig-tokens] normalized:', {
+      colors: colors.length, typography: typography.length,
+      gradients: gradients.length, shadows: shadows.length,
+      borders: borders.length, images: images?.length,
+      preClassified: assetClassifications?.length, replace, source: sourceType,
     })
 
     let merged: any
     if (replace) {
-      // Replace mode: overwrite fields directly, keep unrelated fields intact
       merged = {
         ...existing,
-        ...(colors?.length && { colors }),
-        ...(typography?.length && { typography }),
-        ...(gradients?.length && { gradients }),
-        ...(shadows?.length && { shadows }),
-        ...(borders?.length && { borders }),
-        ...(tokens && { tokens }),
+        ...(colors.length        && { colors }),
+        ...(typography.length    && { typography }),
+        ...(gradients.length     && { gradients }),
+        ...(shadows.length       && { shadows }),
+        ...(borders.length       && { borders }),
+        ...(tokens               && { tokens }),
       }
     } else {
-      // Merge mode: use source-of-truth merge (dedup, append-only)
       const incoming: Partial<BrandGuideline> = {}
-      if (colors?.length) incoming.colors = colors
-      if (typography?.length) incoming.typography = typography
-      if (gradients?.length) (incoming as any).gradients = gradients
-      if (shadows?.length) (incoming as any).shadows = shadows
-      if (borders?.length) (incoming as any).borders = borders
-      if (tokens) incoming.tokens = tokens
+      if (colors.length)     incoming.colors = colors
+      if (typography.length) incoming.typography = typography
+      if (gradients.length)  (incoming as any).gradients = gradients
+      if (shadows.length)    (incoming as any).shadows = shadows
+      if (borders.length)    (incoming as any).borders = borders
+      if (tokens)            incoming.tokens = tokens
       merged = mergeBrandGuidelines(existing as any, incoming)
     }
 
-    // Upload and classify extracted images via existing AI pipeline
+    // Upload + organize extracted images.
+    // If client supplied pre-computed assetClassifications (from PDF or fig
+    // extraction), trust them and skip the duplicate Gemini classification call.
+    // Otherwise fall back to the legacy server-side classification path.
     if (images?.length) {
       const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { subscriptionTier: true, isAdmin: true } })
       const existingLogos = ((merged as any).logos || [])
       const existingMedia = ((merged as any).media || [])
 
-      const { extractBrandData } = await import('../lib/brand-extract.js')
-      const extracted = await extractBrandData([], images, req.userId)
+      let classifications = normalizeAssetClassifications(assetClassifications)
+      if (classifications.length) {
+        console.log('[apply-fig-tokens] using pre-computed classifications (skipped Gemini reclassify)')
+      } else {
+        const { extractBrandData } = await import('../lib/brand-extract.js')
+        const extracted = await extractBrandData([], images, req.userId)
+        classifications = normalizeAssetClassifications(extracted.assetClassifications)
+      }
 
-      if (extracted.assetClassifications?.length) {
+      if (classifications.length) {
         await Promise.allSettled(
-          extracted.assetClassifications.map(async (cls: any) => {
+          classifications.map(async (cls: any) => {
             const imgData = images[cls.index]
             if (!imgData) return
             const assetId = crypto.randomUUID()
@@ -1970,10 +2004,10 @@ router.post('/:id/apply-fig-tokens', apiRateLimiter, authenticate, async (req: A
       }
     }
 
-    // Track source
+    // Track source — uses the normalized source from the request, not a hardcoded value
     const extraction = (merged.extraction as any) || { sources: [], completeness: 0 }
     if (!Array.isArray(extraction.sources)) extraction.sources = []
-    extraction.sources.push({ type: 'fig_file', date: new Date().toISOString() })
+    extraction.sources.push({ type: sourceType, date: new Date().toISOString() })
 
     const guideline = await prisma.brandGuideline.update({
       where: { id: existing.id },

@@ -12,7 +12,8 @@ interface BrandIngestButtonProps {
   onSuccess: () => void;
 }
 
-type ActiveSource = { state: FigStreamState; reset: () => void; title: string } | null;
+type SourceTag = 'fig_file' | 'pdf' | 'images';
+type ActiveSource = { state: FigStreamState; reset: () => void; title: string; source: SourceTag } | null;
 
 /**
  * Single entry-point for all brand extraction types.
@@ -29,9 +30,9 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline,
 
   // Whichever hook is not idle drives the modal
   const active: ActiveSource =
-    fig.state.status    !== 'idle' ? { state: fig.state,    reset: fig.reset,    title: 'Extract from .fig' } :
-    pdf.state.status    !== 'idle' ? { state: pdf.state,    reset: pdf.reset,    title: 'Extract from PDF'  } :
-    images.state.status !== 'idle' ? { state: images.state, reset: images.reset, title: 'Review extraction'  } :
+    fig.state.status    !== 'idle' ? { state: fig.state,    reset: fig.reset,    title: 'Extract from .fig', source: 'fig_file' } :
+    pdf.state.status    !== 'idle' ? { state: pdf.state,    reset: pdf.reset,    title: 'Extract from PDF',  source: 'pdf'      } :
+    images.state.status !== 'idle' ? { state: images.state, reset: images.reset, title: 'Review extraction', source: 'images'   } :
     null;
 
   const isBusy    = !!active && active.state.status === 'streaming';
@@ -74,6 +75,7 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline,
       {showModal && active && (
         <BrandIngestModal
           title={active.title}
+          source={active.source}
           state={active.state}
           guideline={guideline}
           onSuccess={() => { onSuccess(); active.reset(); }}
