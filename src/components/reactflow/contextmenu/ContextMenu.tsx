@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { Command } from 'cmdk';
-import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Diamond, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, MessageSquare, Clipboard, LayoutTemplate, Blocks, Brush, Wand2, Cpu, Lightbulb } from 'lucide-react';
+import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Diamond, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, MessageSquare, Clipboard, LayoutTemplate, Blocks, Brush, Pipette, Cpu, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
@@ -309,7 +309,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     ...(onAddColorExtractor ? [{
       id: 'colorExtractor',
       label: 'Color Extractor',
-      icon: <Wand2 size={16} />,
+      icon: <Pipette size={16} />,
       onClick: () => { onAddColorExtractor!(); onClose(); },
       section: 'processing' as const,
       category: 'Branding',
