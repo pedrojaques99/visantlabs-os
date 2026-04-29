@@ -36,6 +36,8 @@ interface CreativeStore {
   backgroundSelected: boolean;
   activeTool: CreativeTool;
   lassoRegion: { x: number; y: number; w: number; h: number } | null;
+  gridEnabled: boolean;
+  gridSize: number;
 
   // Setup actions
   setBrandId: (id: string | null) => void;
@@ -74,6 +76,8 @@ interface CreativeStore {
   setBackgroundUrl: (url: string | null) => void;
   setActiveTool: (t: CreativeTool) => void;
   setLassoRegion: (r: { x: number; y: number; w: number; h: number } | null) => void;
+  setGridEnabled: (v: boolean) => void;
+  setGridSize: (n: number) => void;
   setSelectedLayerIds: (ids: string[], extend?: boolean) => void;
   updateLayer: (id: string, updates: Partial<CreativeLayerData>) => void;
   updateLayerMeta: (id: string, updates: Partial<Pick<CreativeLayer, 'visible' | 'zIndex' | 'locked'>>) => void;
@@ -116,6 +120,8 @@ export const useCreativeStore = create<CreativeStore>()(
         backgroundSelected: false,
         activeTool: 'select',
         lassoRegion: null,
+        gridEnabled: false,
+        gridSize: 16,
         pages: [],
         activePageIndex: 0,
 
@@ -134,6 +140,8 @@ export const useCreativeStore = create<CreativeStore>()(
         setBackgroundUrl: (backgroundUrl) => set({ backgroundUrl }),
         setActiveTool: (activeTool) => set({ activeTool, lassoRegion: null }),
         setLassoRegion: (lassoRegion) => set({ lassoRegion }),
+        setGridEnabled: (gridEnabled) => set({ gridEnabled }),
+        setGridSize: (gridSize) => set({ gridSize: Math.max(2, Math.round(gridSize)) }),
 
         setActivePageIndex: (index) => set({ activePageIndex: index }),
         
@@ -490,6 +498,8 @@ export const useCreativeStore = create<CreativeStore>()(
             backgroundSelected: false,
             activeTool: 'select',
             lassoRegion: null,
+            gridEnabled: false,
+            gridSize: 16,
             pages: [],
             activePageIndex: 0,
           }),

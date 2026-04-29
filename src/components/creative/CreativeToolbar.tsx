@@ -2,7 +2,8 @@ import React, { useRef } from 'react';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
 import { AlignLeft, AlignCenter, AlignRight, Bold, Underline, Strikethrough, Trash2, Layers, Copy, AlignStartVertical, AlignCenterHorizontal, AlignEndVertical, AlignStartHorizontal, AlignCenterVertical, AlignEndHorizontal, AlignHorizontalSpaceBetween, AlignVerticalSpaceBetween, ArrowUp, ArrowDown, ArrowUpToLine, ArrowDownToLine, Group, Ungroup, Image as ImageIcon, RefreshCcw, Upload, Diamond, X, RotateCw, Square as SquareIcon } from 'lucide-react';
-import type { TextLayerData, ShapeLayerData } from './store/creativeTypes';
+import type { TextLayerData, ShapeLayerData, LogoLayerData } from './store/creativeTypes';
+import { LogoFiltersPopover } from './LogoFiltersPopover';
 import type { LucideIcon } from 'lucide-react';
 
 // ── Tiny reusable pieces ──────────────────────────────────────────────
@@ -161,6 +162,14 @@ export const CreativeToolbar: React.FC = () => {
               <RefreshCcw size={10} />
             </div>
           </div>
+          <Divider />
+        </>
+      )}
+
+      {/* ── Image filters + crop popover (logos only) ── */}
+      {isLogo && selected && (
+        <>
+          <LogoFiltersPopover layerId={selectedLayerIds[0]} data={selected.data as LogoLayerData} />
           <Divider />
         </>
       )}

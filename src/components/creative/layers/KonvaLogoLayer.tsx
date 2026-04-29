@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useMemo } from 'react';
 import { Image as KonvaImage } from 'react-konva';
 import useImage from 'use-image';
-import type Konva from 'konva';
+import Konva from 'konva';
 import { useCreativeStore } from '../store/creativeStore';
 import { normalizePoint, normalizeSize } from '@/lib/pixel';
 import { getProxiedUrl } from '@/utils/proxyUtils';
@@ -48,6 +48,49 @@ const KonvaLogoLayerImpl: React.FC<Props> = ({
     return () => registerNode(layer.id, null);
   }, [layer.id, registerNode]);
 
+  // Filters require node.cache(). Re-apply when filter values OR image change.
+  // Active filter set drives Konva.Filters[] and matching property names.
+  const filters = data.filters;
+  const filterKey = useMemo(
+    () => JSON.stringify(filters ?? {}) + (image ? '_img' : '_no'),
+    [filters, image]
+  );
+  useEffect(() => {
+    const node = shapeRef.current;
+    if (!node || !image) return;
+    if (!filters || (
+      !filters.brightness && !filters.contrast && !filters.blur && !filters.grayscale
+    )) {
+      node.clearCache();
+      node.filters([]);
+      node.getLayer()?.batchDraw();
+      return;
+    }
+    // Konva.Filters.* runtime values are Filter functions; TS types use the
+    // exported Filter alias. Casting through unknown[] keeps the assignment
+    // honest without dragging the alias into our store types.
+    const list: unknown[] = [];
+    if (filters.brightness) list.push(Konva.Filters.Brighten);
+    if (filters.contrast) list.push(Konva.Filters.Contrast);
+    if (filters.blur) list.push(Konva.Filters.Blur);
+    if (filters.grayscale) list.push(Konva.Filters.Grayscale);
+    node.cache();
+    node.filters(list as Parameters<typeof node.filters>[0]);
+    node.getLayer()?.batchDraw();
+  }, [filterKey, filters, image]);
+
+  // Crop is normalized 0-1 of source image; convert to pixels expected by Konva.
+  const cropPx = useMemo(() => {
+    const c = data.crop;
+    if (!c || !image) return undefined;
+    return {
+      x: c.x * image.width,
+      y: c.y * image.height,
+      width: c.w * image.width,
+      height: c.h * image.height,
+    };
+  }, [data.crop, image]);
+
   return (
     <KonvaImage
       ref={shapeRef}
@@ -58,6 +101,10 @@ const KonvaLogoLayerImpl: React.FC<Props> = ({
       height={data.size.h * canvasHeight}
       rotation={data.rotation ?? 0}
       opacity={data.opacity ?? 1}
+      crop={cropPx}
+      brightness={data.filters?.brightness ?? 0}
+      contrast={data.filters?.contrast ?? 0}
+      blurRadius={data.filters?.blur ?? 0}
       shadowColor={data.shadowColor}
       shadowBlur={data.shadowBlur ?? 0}
       shadowOffsetX={data.shadowOffsetX ?? 0}

@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef, useEffect, useMemo, useCallback } from 'react';
+import React, { forwardRef, useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import { Stage, Layer, Rect, Image as KonvaImage, Transformer, Line } from 'react-konva';
 import { KonvaTextLayer } from './layers/KonvaTextLayer';
 import { KonvaLogoLayer } from './layers/KonvaLogoLayer';
@@ -9,17 +9,22 @@ import { useCreativeStore } from './store/creativeStore';
 import { LassoTool } from './LassoTool';
 import { getProxiedUrl } from '@/utils/proxyUtils';
 import { useSmartGuides } from './lib/useSmartGuides';
+import { useCanvasViewport } from './lib/useCanvasViewport';
+import { intersectingLayerIds } from './lib/marqueeIntersect';
 import { CreativeContextMenu } from './CreativeContextMenu';
+import { CameraControls } from './CameraControls';
+import { SelectionHud } from './SelectionHud';
 
 interface Props {
   width: number;
   height: number;
   accentColor: string;
   defaultFont: string;
+  onOpenCheatsheet?: () => void;
 }
 
 export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
-  ({ width, height, accentColor, defaultFont }, ref) => {
+  ({ width, height, accentColor, defaultFont, onOpenCheatsheet }, ref) => {
     const backgroundUrl = useCreativeStore((s) => s.backgroundUrl);
     const overlay = useCreativeStore((s) => s.overlay);
     const layers = useCreativeStore((s) => s.layers);
@@ -27,6 +32,9 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
     const addLayer = useCreativeStore((s) => s.addLayer);
     const setSelectedLayerIds = useCreativeStore((s) => s.setSelectedLayerIds);
     const setBackgroundSelected = useCreativeStore((s) => s.setBackgroundSelected);
+    const activeTool = useCreativeStore((s) => s.activeTool);
+    const gridEnabled = useCreativeStore((s) => s.gridEnabled);
+    const gridSize = useCreativeStore((s) => s.gridSize);
 
     // Shared Transformer ref
     const trRef = useRef<Konva.Transformer>(null);
@@ -75,9 +83,32 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
       [setSelectedLayerIds]
     );
 
-    // Smart guides — drag/transform snap to layer + canvas edges/centers
+    // Smart guides — drag/transform snap to layer + canvas edges/centers,
+    // plus optional grid snap (single source of truth: useCreativeStore.gridEnabled/gridSize)
     const { guides, onDragMove, onTransform, clear: clearGuides, setDraggingIds } =
-      useSmartGuides({ stageWidth: width, stageHeight: height, shapeRefs });
+      useSmartGuides({
+        stageWidth: width,
+        stageHeight: height,
+        shapeRefs,
+        gridSize: gridEnabled ? gridSize : 0,
+      });
+
+    // Resize is proportional by default; Ctrl/Cmd held = free distortion (side
+    // anchors enabled, ratio unlocked). Mirrors Figma's Shift-to-toggle but
+    // inverted per UX request — distortion should be the deliberate choice.
+    const [allowDistort, setAllowDistort] = useState(false);
+    useEffect(() => {
+      const sync = (e: KeyboardEvent) => setAllowDistort(e.ctrlKey || e.metaKey);
+      const reset = () => setAllowDistort(false);
+      window.addEventListener('keydown', sync);
+      window.addEventListener('keyup', sync);
+      window.addEventListener('blur', reset);
+      return () => {
+        window.removeEventListener('keydown', sync);
+        window.removeEventListener('keyup', sync);
+        window.removeEventListener('blur', reset);
+      };
+    }, []);
 
     const handleDragStart = useCallback(
       (id: string) => {
@@ -88,6 +119,31 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
       },
       [setDraggingIds]
     );
+
+    // Viewport: zoom + pan via wheel and Space-drag (Konva official pattern).
+    const viewport = useCanvasViewport(stageRef);
+
+    // Marquee selection — Figma-style drag in empty area to multi-select.
+    const [marquee, setMarquee] = useState<{ x: number; y: number; w: number; h: number } | null>(
+      null
+    );
+    const marqueeStartRef = useRef<{ x: number; y: number; movedFar: boolean } | null>(null);
+    const blockNextClickRef = useRef(false);
+
+    const lockedLookup = useCallback(
+      (id: string) => layers.find((l) => l.id === id)?.locked ?? false,
+      [layers]
+    );
+
+    /** Convert screen-stage pointer to creative-coords (undo viewport transform). */
+    const stagePointer = useCallback(() => {
+      const stage = stageRef.current;
+      if (!stage) return null;
+      const p = stage.getPointerPosition();
+      if (!p) return null;
+      const sx = stage.scaleX() || 1;
+      return { x: (p.x - stage.x()) / sx, y: (p.y - stage.y()) / sx };
+    }, []);
 
     // Drag-drop handler — ported verbatim from CreativeCanvas.tsx
     const handleDrop = (e: React.DragEvent) => {
@@ -134,10 +190,75 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
       }
     };
 
-    // Background-click -> setBackgroundSelected (preserves CreativeCanvas.tsx lines 94-98 behavior)
+    // Background-click -> setBackgroundSelected. Skipped when a marquee just
+    // committed a selection (otherwise the trailing click would deselect again).
     const handleStageClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
+      if (blockNextClickRef.current) {
+        blockNextClickRef.current = false;
+        return;
+      }
       if (e.target === e.target.getStage()) {
         setBackgroundSelected(true);
+      }
+    };
+
+    const handleStageMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+      if (e.evt.button !== 0) return;
+      if (viewport.onPanStart(e)) return;
+      if (activeTool !== 'select') return;
+      if (e.target !== e.target.getStage()) return;
+      const p = stagePointer();
+      if (!p) return;
+      marqueeStartRef.current = { x: p.x, y: p.y, movedFar: false };
+      setMarquee({ x: p.x, y: p.y, w: 0, h: 0 });
+    };
+
+    const handleStageMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+      if (viewport.isPanning) {
+        viewport.onPanMove();
+        return;
+      }
+      const start = marqueeStartRef.current;
+      if (!start) return;
+      const p = stagePointer();
+      if (!p) return;
+      const dx = p.x - start.x;
+      const dy = p.y - start.y;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) start.movedFar = true;
+      setMarquee({
+        x: Math.min(start.x, p.x),
+        y: Math.min(start.y, p.y),
+        w: Math.abs(dx),
+        h: Math.abs(dy),
+      });
+      // Smart-guide hover refresh when nothing is being dragged: not needed.
+      void e;
+    };
+
+    const handleStageMouseUp = () => {
+      if (viewport.isPanning) {
+        viewport.onPanEnd();
+        return;
+      }
+      const start = marqueeStartRef.current;
+      marqueeStartRef.current = null;
+      const rect = marquee;
+      setMarquee(null);
+      if (!start) return;
+      if (!start.movedFar || !rect || rect.w < 3 || rect.h < 3) return;
+      // Marquee is already in stage-inner (logical) coords; intersection helper
+      // queries node bounds in the same space, so no conversion needed.
+      const ids = intersectingLayerIds(
+        { x: rect.x, y: rect.y, width: rect.w, height: rect.h },
+        shapeRefs.current,
+        lockedLookup
+      );
+      if (ids.length) {
+        setSelectedLayerIds(ids);
+        blockNextClickRef.current = true;
+      } else {
+        setSelectedLayerIds([]);
+        blockNextClickRef.current = true;
       }
     };
 
@@ -239,6 +360,10 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
           height={height}
           onClick={handleStageClick}
           onContextMenu={handleContextMenu}
+          onMouseDown={handleStageMouseDown}
+          onMouseMove={handleStageMouseMove}
+          onMouseUp={handleStageMouseUp}
+          onWheel={viewport.onWheel}
         >
           <Layer>
             {/* Background image — bottom of stack, listening disabled */}
@@ -292,7 +417,16 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
             {/* Transformer — LAST child of Layer (RESEARCH Pitfall 3) */}
             <Transformer
               ref={trRef}
-              keepRatio={false}
+              keepRatio={!allowDistort}
+              enabledAnchors={
+                allowDistort
+                  ? [
+                      'top-left', 'top-center', 'top-right',
+                      'middle-left', 'middle-right',
+                      'bottom-left', 'bottom-center', 'bottom-right',
+                    ]
+                  : ['top-left', 'top-right', 'bottom-left', 'bottom-right']
+              }
               rotateEnabled
               rotationSnaps={[0, 45, 90, 135, 180, 225, 270, 315]}
               rotationSnapTolerance={5}
@@ -301,6 +435,30 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
               anchorStroke="rgba(0,229,255,0.8)"
               anchorFill="#0a0a0a"
             />
+
+            {/* Optional grid overlay — drawn above content, below transformer */}
+            {gridEnabled && gridSize > 0 && (
+              <>
+                {Array.from({ length: Math.floor(width / gridSize) + 1 }, (_, i) => (
+                  <Line
+                    key={`gx${i}`}
+                    points={[i * gridSize, 0, i * gridSize, height]}
+                    stroke="rgba(255,255,255,0.06)"
+                    strokeWidth={1}
+                    listening={false}
+                  />
+                ))}
+                {Array.from({ length: Math.floor(height / gridSize) + 1 }, (_, i) => (
+                  <Line
+                    key={`gy${i}`}
+                    points={[0, i * gridSize, width, i * gridSize]}
+                    stroke="rgba(255,255,255,0.06)"
+                    strokeWidth={1}
+                    listening={false}
+                  />
+                ))}
+              </>
+            )}
 
             {/* Smart guide overlay — magenta lines, drawn last so they sit above content */}
             {guides.map((g, i) => (
@@ -313,6 +471,20 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
                 listening={false}
               />
             ))}
+
+            {/* Marquee rectangle — visible while dragging in empty area */}
+            {marquee && (
+              <Rect
+                x={marquee.x}
+                y={marquee.y}
+                width={marquee.w}
+                height={marquee.h}
+                fill="rgba(0,229,255,0.08)"
+                stroke="rgba(0,229,255,0.8)"
+                strokeWidth={1}
+                listening={false}
+              />
+            )}
           </Layer>
         </Stage>
 
@@ -320,6 +492,31 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
         <LassoTool canvasWidth={width} canvasHeight={height} />
 
         {ctx && <CreativeContextMenu state={ctx} onClose={() => setCtx(null)} />}
+
+        {/* Selection HUD — floating bar over selection with X/Y/W/H/° */}
+        <SelectionHud
+          canvasWidth={width}
+          canvasHeight={height}
+          viewportScale={viewport.viewport.scale}
+          viewportX={viewport.viewport.x}
+          viewportY={viewport.viewport.y}
+          shapeRefs={shapeRefs}
+        />
+
+        {/* Distortion hint — only while Ctrl is held with a selection active */}
+        {allowDistort && selectedLayerIds.length > 0 && (
+          <div className="pointer-events-none absolute bottom-2 left-2 px-2 py-1 rounded bg-black/70 backdrop-blur text-[10px] font-mono uppercase tracking-wider text-cyan-300 border border-cyan-400/30">
+            Distort
+          </div>
+        )}
+
+        <CameraControls
+          scale={viewport.viewport.scale}
+          onZoomIn={viewport.zoomIn}
+          onZoomOut={viewport.zoomOut}
+          onZoomReset={viewport.zoomTo100}
+          onCheatsheet={() => onOpenCheatsheet?.()}
+        />
       </div>
     );
   }

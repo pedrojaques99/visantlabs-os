@@ -13,6 +13,7 @@ import { CreativeEditorSidebar } from './CreativeEditorSidebar';
 import { KonvaCanvas } from './KonvaCanvas';
 import type Konva from 'konva';
 import { CreativeToolbar, BackgroundToolbar } from './CreativeToolbar';
+import { KeyboardCheatsheet } from './KeyboardCheatsheet';
 import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import { exportCanvasAsPng } from './lib/exportPng';
 import { captureCanvasThumbnail } from './lib/captureThumbnail';
@@ -59,6 +60,7 @@ export const CreativeStudio: React.FC = () => {
   const canvasRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [previewSize, setPreviewSize] = React.useState({ width: 0, height: 0 });
+  const [cheatsheetOpen, setCheatsheetOpen] = React.useState(false);
 
   const currentGuideline = allGuidelines.find(g => g.id === brandId);
   const accentColor = currentGuideline?.colors?.[0]?.hex ?? colors[0]?.hex ?? '#00e5ff';
@@ -163,6 +165,12 @@ export const CreativeStudio: React.FC = () => {
 
       if (e.key === 'Escape' && selectedLayerIds.length > 0) {
         setSelectedLayerIds([]);
+      }
+
+      // Cheatsheet — '?' (= shift+/ on most layouts)
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+        e.preventDefault();
+        setCheatsheetOpen((v) => !v);
       }
 
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedLayerIds.length > 0) {
@@ -402,6 +410,7 @@ export const CreativeStudio: React.FC = () => {
                     height={dimensions.height}
                     accentColor={accentColor}
                     defaultFont={defaultFont}
+                    onOpenCheatsheet={() => setCheatsheetOpen(true)}
                   />
                 </div>
               );
@@ -421,6 +430,7 @@ export const CreativeStudio: React.FC = () => {
               height={previewSize.height}
               accentColor={accentColor}
               defaultFont={defaultFont}
+              onOpenCheatsheet={() => setCheatsheetOpen(true)}
             />
             <button
               onClick={() => addPage()}
@@ -435,6 +445,8 @@ export const CreativeStudio: React.FC = () => {
           {status === 'editing' && <CreativeToolbar />}
         </div>
       </main>
+
+      <KeyboardCheatsheet open={cheatsheetOpen} onOpenChange={setCheatsheetOpen} />
     </div>
   );
 };

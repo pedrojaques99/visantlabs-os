@@ -47,6 +47,18 @@ export interface LogoLayerData {
   shadowOffsetX?: number;
   /** Shadow Y offset in px. Default 0. */
   shadowOffsetY?: number;
+  /**
+   * Konva filter values. All optional; presence (non-zero / true) triggers
+   * cache() + filter on the node. Renderer maps these to Konva.Filters.*.
+   */
+  filters?: {
+    brightness?: number;  // -1 .. 1
+    contrast?: number;    // -100 .. 100
+    blur?: number;        // 0 .. 40 (px)
+    grayscale?: boolean;
+  };
+  /** Optional crop window in 0-1 of source image dimensions. */
+  crop?: { x: number; y: number; w: number; h: number };
 }
 
 export interface ShapeLayerData {
