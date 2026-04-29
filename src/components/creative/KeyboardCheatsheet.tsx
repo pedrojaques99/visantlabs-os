@@ -34,7 +34,7 @@ interface Props {
 }
 
 export const KeyboardCheatsheet: React.FC<Props> = ({ open, onOpenChange }) => {
-  const groups = ['Seleção', 'Edição', 'Camadas', 'Camera', 'Outros'] as const;
+  const groups = ['Seleção', 'Edição', 'Camadas', 'Páginas', 'Camera', 'Outros'] as const;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

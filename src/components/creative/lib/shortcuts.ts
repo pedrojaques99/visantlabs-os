@@ -6,7 +6,7 @@
 export interface Shortcut {
   keys: string[];
   label: string;
-  group: 'Seleção' | 'Edição' | 'Camera' | 'Camadas' | 'Outros';
+  group: 'Seleção' | 'Edição' | 'Camera' | 'Camadas' | 'Páginas' | 'Outros';
 }
 
 const isMac =
@@ -40,6 +40,13 @@ export const SHORTCUTS: Shortcut[] = [
   { group: 'Camera', keys: ['Scroll'], label: 'Zoom relativo ao ponteiro' },
   { group: 'Camera', keys: ['Espaço', 'Drag'], label: 'Pan' },
   { group: 'Camera', keys: [`${Mod}`, '0'], label: 'Reset 100%' },
+
+  // Páginas (multi-page navigation)
+  { group: 'Páginas', keys: [`${Mod}`, ']'], label: 'Próxima página' },
+  { group: 'Páginas', keys: [`${Mod}`, '['], label: 'Página anterior' },
+  { group: 'Páginas', keys: [`${Mod}`, '⇧', 'D'], label: 'Duplicar página' },
+  { group: 'Páginas', keys: ['Duplo-clique no nome'], label: 'Renomear página' },
+  { group: 'Páginas', keys: ['Drag thumb'], label: 'Reordenar páginas' },
 
   // Outros
   { group: 'Outros', keys: ['?'], label: 'Atalhos (este painel)' },

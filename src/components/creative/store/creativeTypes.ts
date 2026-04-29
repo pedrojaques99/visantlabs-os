@@ -113,6 +113,21 @@ export interface CreativeOverlay {
   color?: string;
 }
 
+/**
+ * A single page (artboard) within a creative project. Pages own their own
+ * layers/background/overlay/format — root state mirrors the active page for
+ * compatibility with existing Konva renderers and selectors.
+ */
+export interface CreativePage {
+  id: string;
+  /** User-editable label. Defaults to "Página N" when undefined. */
+  name?: string;
+  format: CreativeFormat;
+  layers: CreativeLayer[];
+  backgroundUrl: string | null;
+  overlay: CreativeOverlay | null;
+}
+
 export interface CreativeAIResponse {
   background?: { prompt: string };
   overlay?: CreativeOverlay;

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-import { Diamond, Paintbrush, Type as TypeIcon, Image as ImageIcon, Plus, Layers, X, Scan } from 'lucide-react';
+import { Diamond, Paintbrush, Type as TypeIcon, Image as ImageIcon, Scan } from 'lucide-react';
 import { useCreativeStore } from './store/creativeStore';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useQueryClient } from '@tanstack/react-query';
@@ -14,6 +14,7 @@ import { KonvaCanvas } from './KonvaCanvas';
 import type Konva from 'konva';
 import { CreativeToolbar, BackgroundToolbar } from './CreativeToolbar';
 import { KeyboardCheatsheet } from './KeyboardCheatsheet';
+import { PagesPanel } from './PagesPanel';
 import { copyLayersToClipboard, pasteLayersFromClipboard } from './lib/clipboard';
 import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import { exportCanvasAsPng } from './lib/exportPng';
@@ -47,9 +48,6 @@ export const CreativeStudio: React.FC = () => {
   // Actions — stable identity in zustand, picking individually never re-renders.
   const removeLayer = useCreativeStore((s) => s.removeLayer);
   const setSelectedLayerIds = useCreativeStore((s) => s.setSelectedLayerIds);
-  const setActivePageIndex = useCreativeStore((s) => s.setActivePageIndex);
-  const addPage = useCreativeStore((s) => s.addPage);
-  const removePage = useCreativeStore((s) => s.removePage);
   const setStatus = useCreativeStore((s) => s.setStatus);
   const groupSelected = useCreativeStore((s) => s.groupSelected);
   const ungroupSelected = useCreativeStore((s) => s.ungroupSelected);
@@ -131,6 +129,24 @@ export const CreativeStudio: React.FC = () => {
           e.preventDefault();
           const all = useCreativeStore.getState().layers.filter((l) => !l.locked).map((l) => l.id);
           setSelectedLayerIds(all);
+        }
+        // Page navigation: Ctrl+] / Ctrl+[ — next / prev page
+        if (e.key === ']' && !e.shiftKey) {
+          e.preventDefault();
+          const { activePageIndex: idx, pages: pgs, setActivePageIndex: setIdx } = useCreativeStore.getState();
+          if (idx + 1 < pgs.length) setIdx(idx + 1);
+        }
+        if (e.key === '[' && !e.shiftKey) {
+          e.preventDefault();
+          const { activePageIndex: idx, setActivePageIndex: setIdx } = useCreativeStore.getState();
+          if (idx > 0) setIdx(idx - 1);
+        }
+        // Ctrl+Shift+D — duplicate current page (different from Ctrl+D = duplicate layer)
+        if (e.key === 'D' && e.shiftKey) {
+          e.preventDefault();
+          const { activePageIndex: idx, duplicatePage: dup } = useCreativeStore.getState();
+          dup(idx);
+          toast.info('Página duplicada');
         }
       }
 
@@ -334,87 +350,25 @@ export const CreativeStudio: React.FC = () => {
           />
         )}
 
-        {/* ── Multi-Card Gallery ── */}
-        {status === 'editing' && pages.length > 1 ? (
-          <div className="flex items-center gap-8 px-12 overflow-x-auto overflow-y-hidden custom-scrollbar-h max-w-full scroll-smooth py-12"
-            style={{ justifyContent: pages.length <= 3 ? 'center' : 'flex-start' }}
-          >
-            {pages.map((page, idx) => {
-              const isActive = idx === activePageIndex;
-              // Active frame gets full size, inactive frames get a smaller preview
-              const scale = isActive ? 1 : 0.6;
-              const dimensions = getPreviewDimensions(
-                page.format,
-                previewSize.width * scale,
-                previewSize.height * scale
-              );
-              return (
-                <div
-                  key={page.id}
-                  className={`relative shrink-0 transition-all duration-500 ease-out group/frame ${isActive
-                      ? 'z-10'
-                      : 'opacity-40 hover:opacity-70 cursor-pointer'
-                    }`}
-                  onClick={() => !isActive && setActivePageIndex(idx)}
-                >
-                  {/* Remove frame button */}
-                  {pages.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removePage(idx);
-                      }}
-                      className="absolute -top-3 -right-3 z-20 w-6 h-6 rounded-full bg-neutral-800 border border-white/10 hover:bg-red-500/80 hover:border-red-400 flex items-center justify-center text-neutral-500 hover:text-white transition-all opacity-0 group-hover/frame:opacity-100"
-                      title="Remover frame"
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                  {/* Frame label */}
-                  <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-medium tracking-wider uppercase ${isActive ? 'text-brand-cyan' : 'text-neutral-600'
-                    }`}>
-                    {idx + 1}/{pages.length}
-                  </div>
-                  <KonvaCanvas
-                    ref={isActive ? canvasRef : null}
-                    width={dimensions.width}
-                    height={dimensions.height}
-                    accentColor={accentColor}
-                    defaultFont={defaultFont}
-                    onOpenCheatsheet={() => setCheatsheetOpen(true)}
-                  />
-                </div>
-              );
-            })}
-            <button
-              onClick={() => addPage()}
-              className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/10 hover:border-brand-cyan/40 hover:bg-brand-cyan/5 flex items-center justify-center text-neutral-600 hover:text-brand-cyan transition-all group shrink-0"
-            >
-              <Plus size={28} className="group-hover:rotate-90 transition-transform" />
-            </button>
-          </div>
-        ) : status === 'editing' && previewSize.width > 0 ? (
-          <div className="flex items-center gap-8 justify-center py-12">
-            <KonvaCanvas
-              ref={canvasRef}
-              width={previewSize.width}
-              height={previewSize.height}
-              accentColor={accentColor}
-              defaultFont={defaultFont}
-              onOpenCheatsheet={() => setCheatsheetOpen(true)}
-            />
-            <button
-              onClick={() => addPage()}
-              className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/10 hover:border-brand-cyan/40 hover:bg-brand-cyan/5 flex items-center justify-center text-neutral-600 hover:text-brand-cyan transition-all group shrink-0"
-            >
-              <Plus size={28} className="group-hover:rotate-90 transition-transform" />
-            </button>
-          </div>
-        ) : null}
+          {/* ── Single canvas — viewport drives multi-page via active page ── */}
+          {status === 'editing' && previewSize.width > 0 && (
+            <div className="flex items-center justify-center py-12">
+              <KonvaCanvas
+                ref={canvasRef}
+                width={previewSize.width}
+                height={previewSize.height}
+                accentColor={accentColor}
+                defaultFont={defaultFont}
+                onOpenCheatsheet={() => setCheatsheetOpen(true)}
+              />
+            </div>
+          )}
 
           {status === 'editing' && backgroundSelected && <BackgroundToolbar />}
           {status === 'editing' && <CreativeToolbar />}
         </div>
+
+        {status === 'editing' && <PagesPanel />}
       </main>
 
       <KeyboardCheatsheet open={cheatsheetOpen} onOpenChange={setCheatsheetOpen} />

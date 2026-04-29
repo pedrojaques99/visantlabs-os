@@ -42,17 +42,24 @@ export function snapshotCreativeFromStore(name?: string) {
 }
 
 /** Create a new record from the current store state. */
-export async function saveCurrentCreativeAsNew(name?: string, thumbnailUrl?: string | null) {
+export async function saveCurrentCreativeAsNew(
+  name?: string,
+  thumbnailUrl?: string | null,
+  opts?: { signal?: AbortSignal }
+) {
   const snapshot = snapshotCreativeFromStore(name);
   const backgroundUrl = await ensurePersistedUrl(snapshot.backgroundUrl);
   if (backgroundUrl && backgroundUrl !== snapshot.backgroundUrl) {
     useCreativeStore.setState({ backgroundUrl, uploadedBackgroundUrl: backgroundUrl });
     snapshot.backgroundUrl = backgroundUrl;
   }
-  return creativeProjectApi.create({
-    ...snapshot,
-    thumbnailUrl: thumbnailUrl ?? null,
-  });
+  return creativeProjectApi.create(
+    {
+      ...snapshot,
+      thumbnailUrl: thumbnailUrl ?? null,
+    },
+    { signal: opts?.signal }
+  );
 }
 
 /** Update an existing record with the current store state. */
@@ -97,17 +104,23 @@ export function loadCreativeIntoStore(project: CreativeProject) {
     },
   ];
 
+  // Mirror the active page into root state so KonvaCanvas (which reads root)
+  // shows the right page on load. Without this, projects whose persisted root
+  // drifted from pages would render the stale snapshot.
+  const activeIdx = Math.min(project.activePageIndex || 0, pages.length - 1);
+  const activePage = pages[activeIdx];
+
   useCreativeStore.setState({
     brandId: project.brandId,
     prompt: project.prompt,
     format: project.format as any,
     creativeId: project.id,
     projectName: project.name,
-    backgroundUrl: project.backgroundUrl,
-    overlay: project.overlay,
-    layers,
+    backgroundUrl: activePage?.backgroundUrl ?? project.backgroundUrl,
+    overlay: activePage?.overlay ?? project.overlay,
+    layers: activePage?.layers ?? layers,
     pages: pages as any,
-    activePageIndex: project.activePageIndex || 0,
+    activePageIndex: activeIdx,
     selectedLayerIds: [],
     status: 'editing',
     // Sync setup-sidebar fields so background is visible if user hits "Gerar Novo"
