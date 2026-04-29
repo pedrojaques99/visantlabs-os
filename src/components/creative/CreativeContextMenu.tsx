@@ -5,6 +5,7 @@ import {
   ArrowUp, ArrowDown, ChevronsUp, ChevronsDown, Trash2,
 } from 'lucide-react';
 import { useCreativeStore } from './store/creativeStore';
+import { copyLayersToClipboard, pasteLayersFromClipboard } from './lib/clipboard';
 import { toast } from 'sonner';
 
 interface ContextMenuState {
@@ -55,7 +56,6 @@ export const CreativeContextMenu: React.FC<Props> = ({ state, onClose }) => {
   const updateLayerMeta = useCreativeStore((s) => s.updateLayerMeta);
   const reorderLayer = useCreativeStore((s) => s.reorderLayer);
   const setSelectedLayerIds = useCreativeStore((s) => s.setSelectedLayerIds);
-  const addLayer = useCreativeStore((s) => s.addLayer);
 
   // Dismiss on outside click / Escape
   useEffect(() => {
@@ -84,38 +84,12 @@ export const CreativeContextMenu: React.FC<Props> = ({ state, onClose }) => {
   const wrap = (fn: () => void) => () => { fn(); onClose(); };
 
   const onCopy = wrap(() => {
-    const picked = layers.filter((l) => targetIds.includes(l.id));
-    if (!picked.length) return;
-    const payload = JSON.stringify({ __vsn: 'creative-layers', layers: picked });
-    navigator.clipboard.writeText(payload).then(
-      () => toast.info(`${picked.length} ${picked.length === 1 ? 'camada copiada' : 'camadas copiadas'}`),
-      () => toast.error('Falha ao copiar')
-    );
+    void copyLayersToClipboard(targetIds);
   });
 
   const onPaste = wrap(() => {
-    navigator.clipboard.readText().then((text) => {
-      try {
-        const parsed = JSON.parse(text);
-        if (parsed?.__vsn !== 'creative-layers' || !Array.isArray(parsed.layers)) return;
-        const newIds: string[] = [];
-        parsed.layers.forEach((l: any) => {
-          const data = {
-            ...l.data,
-            position: {
-              x: Math.min(0.95, (l.data.position?.x ?? 0) + 0.02),
-              y: Math.min(0.95, (l.data.position?.y ?? 0) + 0.02),
-            },
-          };
-          addLayer(data);
-          const after = useCreativeStore.getState().layers;
-          newIds.push(after[after.length - 1].id);
-        });
-        if (newIds.length) setSelectedLayerIds(newIds);
-        toast.info(`${parsed.layers.length} ${parsed.layers.length === 1 ? 'camada colada' : 'camadas coladas'}`);
-      } catch {
-        /* not our payload — silently ignore */
-      }
+    pasteLayersFromClipboard().then((newIds) => {
+      if (newIds.length) setSelectedLayerIds(newIds);
     });
   });
 

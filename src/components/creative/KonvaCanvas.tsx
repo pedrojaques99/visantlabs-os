@@ -14,6 +14,20 @@ import { intersectingLayerIds } from './lib/marqueeIntersect';
 import { CreativeContextMenu } from './CreativeContextMenu';
 import { CameraControls } from './CameraControls';
 import { SelectionHud } from './SelectionHud';
+import {
+  buildLogoLayerData,
+  buildShapeLayerData,
+  buildTextLayerData,
+} from './lib/layerDefaults';
+import {
+  GRID_LINE_COLOR,
+  GUIDE_COLOR,
+  MARQUEE_FILL,
+  MARQUEE_MIN_DRAG,
+  MARQUEE_STROKE,
+  TRANSFORMER_ANCHOR_FILL,
+  TRANSFORMER_STROKE,
+} from './lib/editorTokens';
 
 interface Props {
   width: number;
@@ -128,6 +142,7 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
       null
     );
     const marqueeStartRef = useRef<{ x: number; y: number; movedFar: boolean } | null>(null);
+    const marqueeRafRef = useRef<number | null>(null);
     const blockNextClickRef = useRef(false);
 
     const lockedLookup = useCallback(
@@ -145,7 +160,12 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
       return { x: (p.x - stage.x()) / sx, y: (p.y - stage.y()) / sx };
     }, []);
 
-    // Drag-drop handler — ported verbatim from CreativeCanvas.tsx
+    // Cancel any in-flight rAF on unmount to avoid setState after unmount.
+    useEffect(() => () => {
+      if (marqueeRafRef.current !== null) cancelAnimationFrame(marqueeRafRef.current);
+    }, []);
+
+    // Drag-drop handler — defaults centralized in lib/layerDefaults.ts
     const handleDrop = (e: React.DragEvent) => {
       e.preventDefault();
       const url = e.dataTransfer.getData('application/vsn-asset-url');
@@ -156,38 +176,11 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
         | 'shape';
 
       const rect = e.currentTarget.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / width;
-      const y = (e.clientY - rect.top) / height;
+      const pos = { x: (e.clientX - rect.left) / width, y: (e.clientY - rect.top) / height };
 
-      if (type === 'text') {
-        addLayer({
-          type: 'text',
-          content: 'Novo texto',
-          role: 'body',
-          position: { x: x - 0.2, y: y - 0.04 },
-          size: { w: 0.4, h: 0.08 },
-          align: 'left',
-          fontSize: 48,
-          fontFamily: defaultFont,
-          color: '#ffffff',
-          bold: false,
-        });
-      } else if (type === 'shape') {
-        addLayer({
-          type: 'shape',
-          shape: 'rect',
-          color: accentColor,
-          position: { x: x - 0.075, y: y - 0.075 },
-          size: { w: 0.15, h: 0.15 },
-        });
-      } else if (url) {
-        addLayer({
-          type: 'logo',
-          url,
-          position: { x: x - 0.1, y: y - 0.05 },
-          size: type === 'logo' ? { w: 0.2, h: 0.1 } : { w: 0.4, h: 0.3 },
-        });
-      }
+      if (type === 'text') addLayer(buildTextLayerData(pos, defaultFont));
+      else if (type === 'shape') addLayer(buildShapeLayerData(pos, accentColor));
+      else if (url) addLayer(buildLogoLayerData(pos, url, type === 'image' ? 'image' : 'logo'));
     };
 
     // Background-click -> setBackgroundSelected. Skipped when a marquee just
@@ -213,7 +206,7 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
       setMarquee({ x: p.x, y: p.y, w: 0, h: 0 });
     };
 
-    const handleStageMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    const handleStageMouseMove = (_e: Konva.KonvaEventObject<MouseEvent>) => {
       if (viewport.isPanning) {
         viewport.onPanMove();
         return;
@@ -224,15 +217,24 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
       if (!p) return;
       const dx = p.x - start.x;
       const dy = p.y - start.y;
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) start.movedFar = true;
-      setMarquee({
-        x: Math.min(start.x, p.x),
-        y: Math.min(start.y, p.y),
-        w: Math.abs(dx),
-        h: Math.abs(dy),
+      if (Math.abs(dx) > MARQUEE_MIN_DRAG || Math.abs(dy) > MARQUEE_MIN_DRAG) {
+        start.movedFar = true;
+      }
+      // Throttle setMarquee to one update per frame — mousemove fires far more
+      // often than the screen refreshes, so coalescing keeps re-renders sane.
+      if (marqueeRafRef.current !== null) return;
+      marqueeRafRef.current = requestAnimationFrame(() => {
+        marqueeRafRef.current = null;
+        const cur = stagePointer();
+        const s = marqueeStartRef.current;
+        if (!cur || !s) return;
+        setMarquee({
+          x: Math.min(s.x, cur.x),
+          y: Math.min(s.y, cur.y),
+          w: Math.abs(cur.x - s.x),
+          h: Math.abs(cur.y - s.y),
+        });
       });
-      // Smart-guide hover refresh when nothing is being dragged: not needed.
-      void e;
     };
 
     const handleStageMouseUp = () => {
@@ -242,24 +244,29 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
       }
       const start = marqueeStartRef.current;
       marqueeStartRef.current = null;
-      const rect = marquee;
-      setMarquee(null);
-      if (!start) return;
-      if (!start.movedFar || !rect || rect.w < 3 || rect.h < 3) return;
-      // Marquee is already in stage-inner (logical) coords; intersection helper
-      // queries node bounds in the same space, so no conversion needed.
-      const ids = intersectingLayerIds(
-        { x: rect.x, y: rect.y, width: rect.w, height: rect.h },
-        shapeRefs.current,
-        lockedLookup
-      );
-      if (ids.length) {
-        setSelectedLayerIds(ids);
-        blockNextClickRef.current = true;
-      } else {
-        setSelectedLayerIds([]);
-        blockNextClickRef.current = true;
+      if (marqueeRafRef.current !== null) {
+        cancelAnimationFrame(marqueeRafRef.current);
+        marqueeRafRef.current = null;
       }
+      setMarquee(null);
+      if (!start || !start.movedFar) return;
+      // Recompute rect from the live pointer at mouseUp instead of trusting
+      // the (potentially 1-frame stale) React state — guarantees the
+      // selection rectangle matches where the user actually released.
+      const end = stagePointer();
+      if (!end) return;
+      const rect = {
+        x: Math.min(start.x, end.x),
+        y: Math.min(start.y, end.y),
+        width: Math.abs(end.x - start.x),
+        height: Math.abs(end.y - start.y),
+      };
+      if (rect.width < MARQUEE_MIN_DRAG || rect.height < MARQUEE_MIN_DRAG) return;
+      const ids = intersectingLayerIds(rect, shapeRefs.current, lockedLookup);
+      // Empty marquee = clear selection. Either way, suppress the trailing
+      // click so it doesn't immediately set backgroundSelected.
+      setSelectedLayerIds(ids);
+      blockNextClickRef.current = true;
     };
 
     // Right-click context menu — resolve clicked layer by walking up to a node we registered.
@@ -431,9 +438,9 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
               rotationSnaps={[0, 45, 90, 135, 180, 225, 270, 315]}
               rotationSnapTolerance={5}
               anchorSize={8}
-              borderStroke="rgba(0,229,255,0.8)"
-              anchorStroke="rgba(0,229,255,0.8)"
-              anchorFill="#0a0a0a"
+              borderStroke={TRANSFORMER_STROKE}
+              anchorStroke={TRANSFORMER_STROKE}
+              anchorFill={TRANSFORMER_ANCHOR_FILL}
             />
 
             {/* Optional grid overlay — drawn above content, below transformer */}
@@ -443,7 +450,7 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
                   <Line
                     key={`gx${i}`}
                     points={[i * gridSize, 0, i * gridSize, height]}
-                    stroke="rgba(255,255,255,0.06)"
+                    stroke={GRID_LINE_COLOR}
                     strokeWidth={1}
                     listening={false}
                   />
@@ -452,7 +459,7 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
                   <Line
                     key={`gy${i}`}
                     points={[0, i * gridSize, width, i * gridSize]}
-                    stroke="rgba(255,255,255,0.06)"
+                    stroke={GRID_LINE_COLOR}
                     strokeWidth={1}
                     listening={false}
                   />
@@ -465,7 +472,7 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
               <Line
                 key={i}
                 points={[g.start.x, g.start.y, g.end.x, g.end.y]}
-                stroke="#ff00ff"
+                stroke={GUIDE_COLOR}
                 strokeWidth={1}
                 dash={[4, 4]}
                 listening={false}
@@ -479,8 +486,8 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
                 y={marquee.y}
                 width={marquee.w}
                 height={marquee.h}
-                fill="rgba(0,229,255,0.08)"
-                stroke="rgba(0,229,255,0.8)"
+                fill={MARQUEE_FILL}
+                stroke={MARQUEE_STROKE}
                 strokeWidth={1}
                 listening={false}
               />

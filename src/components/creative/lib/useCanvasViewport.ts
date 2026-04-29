@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type Konva from 'konva';
+import { VIEWPORT } from './editorTokens';
 
 export interface ViewportState {
   scale: number;
@@ -7,9 +8,7 @@ export interface ViewportState {
   y: number;
 }
 
-const MIN_SCALE = 0.1;
-const MAX_SCALE = 8;
-const SCALE_STEP = 1.1;
+const { minScale: MIN_SCALE, maxScale: MAX_SCALE, scaleStep: SCALE_STEP } = VIEWPORT;
 
 interface PanStart {
   pointerX: number;
@@ -151,6 +150,15 @@ export function useCanvasViewport(
     const stage = stageRef.current;
     if (stage) stage.container().style.cursor = spaceHeld ? 'grab' : '';
   }, [isPanning, spaceHeld, stageRef]);
+
+  // Global mouseup safety net — if the user releases outside the stage
+  // (or anywhere in the window), pan still ends and the cursor resets.
+  useEffect(() => {
+    if (!isPanning) return;
+    const onUp = () => onPanEnd();
+    window.addEventListener('mouseup', onUp);
+    return () => window.removeEventListener('mouseup', onUp);
+  }, [isPanning, onPanEnd]);
 
   // Center-anchored zoom for buttons
   const zoomBy = useCallback(

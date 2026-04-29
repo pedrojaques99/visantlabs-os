@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type Konva from 'konva';
 import { useCreativeStore } from './store/creativeStore';
+import { HUD_GAP_PX, MIN_LAYER_SIZE_NORMALIZED } from './lib/editorTokens';
+import type { CreativeLayer } from './store/creativeTypes';
 
 interface Props {
   canvasWidth: number;
@@ -8,15 +10,8 @@ interface Props {
   viewportScale: number;
   viewportX: number;
   viewportY: number;
+  /** Kept in the contract for future getClientRect-based features; unused for now. */
   shapeRefs: React.MutableRefObject<Map<string, Konva.Node>>;
-}
-
-interface Bounds {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  rotation: number;
 }
 
 const Field: React.FC<{
@@ -63,6 +58,14 @@ const Field: React.FC<{
  * Editable — typing commits to the store, which re-renders the layer.
  *
  * Single-selection only (matches Figma's Properties bar default).
+ *
+ * Position math comes purely from layer data + viewport state — no
+ * `node.getClientRect()` reads, which avoids 1-frame staleness when zoom
+ * effects haven't applied to the Konva stage yet (child effects run before
+ * parent effects in React).
+ *
+ * Edits read live position/size from the store at commit time so successive
+ * edits to different axes don't overwrite each other.
  */
 export const SelectionHud: React.FC<Props> = ({
   canvasWidth,
@@ -70,73 +73,95 @@ export const SelectionHud: React.FC<Props> = ({
   viewportScale,
   viewportX,
   viewportY,
-  shapeRefs,
 }) => {
   const selectedLayerIds = useCreativeStore((s) => s.selectedLayerIds);
-  const layers = useCreativeStore((s) => s.layers);
+  const layer = useCreativeStore((s) =>
+    s.selectedLayerIds.length === 1
+      ? s.layers.find((l) => l.id === s.selectedLayerIds[0]) ?? null
+      : null
+  );
   const updateLayer = useCreativeStore((s) => s.updateLayer);
 
-  const [bounds, setBounds] = useState<Bounds | null>(null);
-  const [screen, setScreen] = useState<{ left: number; top: number } | null>(null);
+  if (!layer || selectedLayerIds.length !== 1) return null;
 
-  // Recompute on selection or layer change. Polling at 60fps would be needed
-  // to track live drag; instead the bar shows committed state and re-positions
-  // on store updates, which is enough for fine-tuning.
-  useEffect(() => {
-    if (selectedLayerIds.length !== 1) {
-      setBounds(null);
-      setScreen(null);
-      return;
-    }
-    const id = selectedLayerIds[0];
-    const layer = layers.find((l) => l.id === id);
-    if (!layer) return;
-    const node = shapeRefs.current.get(id);
-    if (!node) return;
-    const r = node.getClientRect({ skipShadow: true, skipStroke: true });
-    setBounds({
-      x: layer.data.position.x * canvasWidth,
-      y: layer.data.position.y * canvasHeight,
-      w: (layer.data.size?.w ?? 0) * canvasWidth,
-      h: (layer.data.size?.h ?? 0) * canvasHeight,
-      rotation: (layer.data as { rotation?: number }).rotation ?? 0,
-    });
-    // Position above the bounding rect (in canvas-container coords)
-    setScreen({ left: r.x, top: Math.max(0, r.y - 36) });
-  }, [selectedLayerIds, layers, shapeRefs, canvasWidth, canvasHeight, viewportScale, viewportX, viewportY]);
+  const data = layer.data;
+  const sizeW = data.size?.w ?? 0;
+  const sizeH = data.size?.h ?? 0;
+  const rotation = (data as { rotation?: number }).rotation ?? 0;
 
-  if (!bounds || !screen || selectedLayerIds.length !== 1) return null;
-  const id = selectedLayerIds[0];
+  // Derive screen position from props directly: (logical * scale) + viewport offset.
+  const screenLeft = data.position.x * canvasWidth * viewportScale + viewportX;
+  const screenTop = data.position.y * canvasHeight * viewportScale + viewportY - HUD_GAP_PX;
 
-  const setX = (px: number) =>
-    updateLayer(id, {
-      position: { x: Math.max(0, Math.min(1, px / canvasWidth)), y: bounds.y / canvasHeight },
+  // Hide HUD when it would render off the top of the canvas — better than overlap.
+  if (screenTop < 0) return null;
+
+  // Display values in canvas pixels (logical) so users edit creative-space coords.
+  const px = {
+    x: data.position.x * canvasWidth,
+    y: data.position.y * canvasHeight,
+    w: sizeW * canvasWidth,
+    h: sizeH * canvasHeight,
+  };
+
+  /** Always read live position/size from the store at commit so successive
+   *  edits compose instead of overwriting each other from stale closure. */
+  const live = (): CreativeLayer | undefined =>
+    useCreativeStore.getState().layers.find((l) => l.id === layer.id);
+
+  const setX = (pxX: number) => {
+    const cur = live();
+    if (!cur) return;
+    updateLayer(layer.id, {
+      position: {
+        x: Math.max(0, Math.min(1, pxX / canvasWidth)),
+        y: cur.data.position.y,
+      },
     } as never);
-  const setY = (px: number) =>
-    updateLayer(id, {
-      position: { x: bounds.x / canvasWidth, y: Math.max(0, Math.min(1, px / canvasHeight)) },
+  };
+  const setY = (pxY: number) => {
+    const cur = live();
+    if (!cur) return;
+    updateLayer(layer.id, {
+      position: {
+        x: cur.data.position.x,
+        y: Math.max(0, Math.min(1, pxY / canvasHeight)),
+      },
     } as never);
-  const setW = (px: number) =>
-    updateLayer(id, {
-      size: { w: Math.max(0.005, px / canvasWidth), h: bounds.h / canvasHeight },
+  };
+  const setW = (pxW: number) => {
+    const cur = live();
+    if (!cur || !cur.data.size) return;
+    updateLayer(layer.id, {
+      size: {
+        w: Math.max(MIN_LAYER_SIZE_NORMALIZED, pxW / canvasWidth),
+        h: cur.data.size.h,
+      },
     } as never);
-  const setH = (px: number) =>
-    updateLayer(id, {
-      size: { w: bounds.w / canvasWidth, h: Math.max(0.005, px / canvasHeight) },
+  };
+  const setH = (pxH: number) => {
+    const cur = live();
+    if (!cur || !cur.data.size) return;
+    updateLayer(layer.id, {
+      size: {
+        w: cur.data.size.w,
+        h: Math.max(MIN_LAYER_SIZE_NORMALIZED, pxH / canvasHeight),
+      },
     } as never);
-  const setRot = (deg: number) => updateLayer(id, { rotation: ((deg % 360) + 360) % 360 } as never);
+  };
+  const setRot = (deg: number) => updateLayer(layer.id, { rotation: ((deg % 360) + 360) % 360 } as never);
 
   return (
     <div
       className="absolute z-20 flex items-center gap-2 px-2 py-1 rounded-md bg-neutral-950/95 backdrop-blur-xl border border-white/10 shadow-xl pointer-events-auto"
-      style={{ left: screen.left, top: screen.top }}
+      style={{ left: screenLeft, top: screenTop }}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <Field label="X" value={bounds.x} onCommit={setX} />
-      <Field label="Y" value={bounds.y} onCommit={setY} />
-      <Field label="W" value={bounds.w} onCommit={setW} />
-      <Field label="H" value={bounds.h} onCommit={setH} />
-      <Field label="∠" value={bounds.rotation} onCommit={setRot} suffix="°" width={48} />
+      <Field label="X" value={px.x} onCommit={setX} />
+      <Field label="Y" value={px.y} onCommit={setY} />
+      <Field label="W" value={px.w} onCommit={setW} />
+      <Field label="H" value={px.h} onCommit={setH} />
+      <Field label="∠" value={rotation} onCommit={setRot} suffix="°" width={48} />
     </div>
   );
 };

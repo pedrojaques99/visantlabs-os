@@ -48,8 +48,9 @@ const KonvaLogoLayerImpl: React.FC<Props> = ({
     return () => registerNode(layer.id, null);
   }, [layer.id, registerNode]);
 
-  // Filters require node.cache(). Re-apply when filter values OR image change.
-  // Active filter set drives Konva.Filters[] and matching property names.
+  // Filters require node.cache(). Re-apply when filter values, image, or
+  // node dimensions change — without size deps, resizing a filtered logo
+  // would render a stretched copy of the stale cache.
   const filters = data.filters;
   const filterKey = useMemo(
     () => JSON.stringify(filters ?? {}) + (image ? '_img' : '_no'),
@@ -77,7 +78,7 @@ const KonvaLogoLayerImpl: React.FC<Props> = ({
     node.cache();
     node.filters(list as Parameters<typeof node.filters>[0]);
     node.getLayer()?.batchDraw();
-  }, [filterKey, filters, image]);
+  }, [filterKey, filters, image, data.size.w, data.size.h]);
 
   // Crop is normalized 0-1 of source image; convert to pixels expected by Konva.
   const cropPx = useMemo(() => {

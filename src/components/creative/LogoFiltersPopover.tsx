@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Sliders, RotateCcw } from 'lucide-react';
 import { useCreativeStore } from './store/creativeStore';
+import { FILTER_RANGES } from './lib/editorTokens';
 import type { LogoLayerData } from './store/creativeTypes';
 
 const Slider: React.FC<{
@@ -161,25 +162,25 @@ export const LogoFiltersPopover: React.FC<Props> = ({ layerId, data }) => {
           <Slider
             label="Brilho"
             value={filters.brightness ?? 0}
-            min={-1}
-            max={1}
-            step={0.05}
+            min={FILTER_RANGES.brightness.min}
+            max={FILTER_RANGES.brightness.max}
+            step={FILTER_RANGES.brightness.step}
             onChange={(n) => setFilter({ brightness: n === 0 ? undefined : n })}
           />
           <Slider
             label="Contraste"
             value={filters.contrast ?? 0}
-            min={-100}
-            max={100}
-            step={1}
+            min={FILTER_RANGES.contrast.min}
+            max={FILTER_RANGES.contrast.max}
+            step={FILTER_RANGES.contrast.step}
             onChange={(n) => setFilter({ contrast: n === 0 ? undefined : n })}
           />
           <Slider
             label="Desfoque"
             value={filters.blur ?? 0}
-            min={0}
-            max={40}
-            step={1}
+            min={FILTER_RANGES.blur.min}
+            max={FILTER_RANGES.blur.max}
+            step={FILTER_RANGES.blur.step}
             onChange={(n) => setFilter({ blur: n === 0 ? undefined : n })}
             suffix="px"
           />

@@ -14,6 +14,7 @@ import { KonvaCanvas } from './KonvaCanvas';
 import type Konva from 'konva';
 import { CreativeToolbar, BackgroundToolbar } from './CreativeToolbar';
 import { KeyboardCheatsheet } from './KeyboardCheatsheet';
+import { copyLayersToClipboard, pasteLayersFromClipboard } from './lib/clipboard';
 import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import { exportCanvasAsPng } from './lib/exportPng';
 import { captureCanvasThumbnail } from './lib/captureThumbnail';
@@ -118,42 +119,12 @@ export const CreativeStudio: React.FC = () => {
         }
         if (e.key === 'c' && selectedLayerIds.length > 0) {
           e.preventDefault();
-          const { layers: cur } = useCreativeStore.getState();
-          const picked = cur.filter((l) => selectedLayerIds.includes(l.id));
-          if (picked.length > 0) {
-            const payload = JSON.stringify({ __vsn: 'creative-layers', layers: picked });
-            navigator.clipboard.writeText(payload).then(
-              () => toast.info(`${picked.length} ${picked.length === 1 ? 'camada copiada' : 'camadas copiadas'}`),
-              () => toast.error('Falha ao copiar')
-            );
-          }
+          void copyLayersToClipboard(selectedLayerIds);
         }
         if (e.key === 'v') {
           e.preventDefault();
-          navigator.clipboard.readText().then((text) => {
-            try {
-              const parsed = JSON.parse(text);
-              if (parsed?.__vsn !== 'creative-layers' || !Array.isArray(parsed.layers)) return;
-              const { addLayer, setSelectedLayerIds: setSel } = useCreativeStore.getState();
-              const newIds: string[] = [];
-              parsed.layers.forEach((l: any) => {
-                const data = {
-                  ...l.data,
-                  position: {
-                    x: Math.min(0.95, (l.data.position?.x ?? 0) + 0.02),
-                    y: Math.min(0.95, (l.data.position?.y ?? 0) + 0.02),
-                  },
-                };
-                addLayer(data);
-                // capture the id of the layer just added
-                const after = useCreativeStore.getState().layers;
-                newIds.push(after[after.length - 1].id);
-              });
-              if (newIds.length) setSel(newIds);
-              toast.info(`${parsed.layers.length} ${parsed.layers.length === 1 ? 'camada colada' : 'camadas coladas'}`);
-            } catch {
-              /* not our payload — silently ignore */
-            }
+          pasteLayersFromClipboard().then((newIds) => {
+            if (newIds.length) setSelectedLayerIds(newIds);
           });
         }
         if (e.key === 'a') {
