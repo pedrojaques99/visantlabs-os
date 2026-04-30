@@ -52,7 +52,7 @@ const SHADOW_PARTS_RE = /(-?\d+(?:\.\d+)?)\s*px\s+(-?\d+(?:\.\d+)?)\s*px\s+(\d+(
 const RGBA_RE = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/
 
 function parseShadowCss(css: string | undefined) {
-  if (!css) return undefined
+  if (!css || css.length > 512) return undefined
   const m = SHADOW_PARTS_RE.exec(css)
   if (!m) return undefined
   const [, xs, ys, blurs, spreads, colorStr] = m
@@ -85,7 +85,7 @@ function parseGradientType(css: string | undefined): 'linear' | 'radial' | 'coni
 }
 
 function parseGradientAngle(css: string | undefined): number | undefined {
-  if (!css) return undefined
+  if (!css || css.length > 512) return undefined
   const m = css.match(/(-?\d+)\s*deg/)
   return m ? parseInt(m[1], 10) : undefined
 }
