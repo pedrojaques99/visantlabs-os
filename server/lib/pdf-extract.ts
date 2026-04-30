@@ -16,7 +16,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js'
-import { tokenizePdf, type PdfTokens } from './pdf-tokenize.js'
+import { tokenizePdf, type PdfTokens, type TextBlock } from './pdf-tokenize.js'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
 
 const SEMANTIC_PROMPT = `You are a brand strategy expert. Brand tokens (colors, fonts, images) have ALREADY been extracted algorithmically from the PDF. Your job is the SEMANTIC content only.
@@ -73,6 +73,9 @@ export async function extractPdfStreaming(
     writeEvent({ type: 'error', message: `PDF parse failed: ${err.message}` })
     return
   }
+
+  // Stream text as structured markdown (headings inferred from font size)
+  writeEvent({ type: 'text', data: blocksToMarkdown(tokens.blocks, tokens.fullText) })
 
   // Stream algorithmic results immediately — user sees data within seconds
   if (tokens.colors.length) {
@@ -242,6 +245,41 @@ function extractJson(text: string): string {
   const raw = text.match(/\{[\s\S]*\}/)
   if (raw) return raw[0]
   throw new Error('No JSON in Gemini response')
+}
+
+function blocksToMarkdown(blocks: TextBlock[], fullText: string): string {
+  if (!blocks.length) return fullText
+
+  // Find the font-size thresholds for heading levels
+  const sizes = [...new Set(blocks.map(b => b.fontSize))].sort((a, b) => b - a)
+  const h1Min = sizes[0] ?? 32
+  const h2Min = sizes[1] ?? 24
+  const h3Min = sizes[2] ?? 18
+
+  const lines: string[] = []
+  let lastPage = -1
+
+  for (const block of blocks) {
+    const text = block.text.trim()
+    if (!text) continue
+
+    if (block.pageNum !== lastPage) {
+      if (lastPage !== -1) lines.push('\n---\n')
+      lastPage = block.pageNum
+    }
+
+    if (block.fontSize >= h1Min) {
+      lines.push(`# ${text}`)
+    } else if (block.fontSize >= h2Min) {
+      lines.push(`## ${text}`)
+    } else if (block.fontSize >= h3Min) {
+      lines.push(`### ${text}`)
+    } else {
+      lines.push(text)
+    }
+  }
+
+  return lines.join('\n')
 }
 
 async function downscalePngBase64(dataUrl: string, maxDim: number): Promise<string> {

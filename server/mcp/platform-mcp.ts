@@ -2230,6 +2230,76 @@ export function createPlatformMcpServer(): McpServer {
     }
   );
 
+  server.tool(
+    'document-extract',
+    'Extract content from a local PDF file using a 2-phase pipeline: algorithmic (exact colors, fonts, embedded images) ' +
+    'then Gemini semantic analysis (strategy, personas, voice, dos/donts, asset classification). ' +
+    'Returns markdownText (structured, page-separated — ideal for RAG chunking) plus brand tokens. ' +
+    'IMPORTANT: before calling, ask the user whether they want the result saved to disk as a .md file or returned inline.',
+    {
+      pdf_path: z.string().describe('Absolute path to the local PDF file to extract.'),
+      output: z.enum(['disk', 'inline']).describe(
+        '"disk" — saves a .md file alongside the PDF and returns { saved_to, characters, preview }. ' +
+        '"inline" — returns the full markdownText in the response (no file written).'
+      ),
+      include_brand_tokens: z.boolean().default(true).describe(
+        'Include colors, typography, strategy, and asset classifications. Default: true.'
+      ),
+    },
+    async ({ pdf_path, output, include_brand_tokens }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+
+      let buffer: Buffer;
+      try {
+        const { readFileSync } = await import('fs');
+        buffer = readFileSync(pdf_path);
+      } catch (err: any) {
+        return ERR.validation(`Cannot read PDF at ${pdf_path}: ${err.message}`);
+      }
+
+      const { extractPdfStreaming } = await import('../lib/pdf-extract.js');
+      const result: Record<string, any> = {};
+      const writeEvent = (event: any) => {
+        switch (event.type) {
+          case 'text':                result.markdownText = event.data; break;
+          case 'colors':              result.colors = event.data; break;
+          case 'typography':          result.typography = event.data; break;
+          case 'images':              result.imageCount = (event.data as any[]).length; break;
+          case 'strategy':            result.strategy = event.data; break;
+          case 'asset_classifications': result.assetClassifications = event.data; break;
+          case 'error':               result._error = event.message; break;
+        }
+      };
+
+      try {
+        await extractPdfStreaming(buffer, writeEvent, currentUserId);
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+
+      const md: string = result.markdownText ?? '';
+      const tokens = include_brand_tokens ? {
+        colors: result.colors,
+        typography: result.typography,
+        strategy: result.strategy,
+        assetClassifications: result.assetClassifications,
+        imageCount: result.imageCount,
+      } : {};
+
+      if (output === 'disk') {
+        const { readFileSync: _r, writeFileSync } = await import('fs');
+        const { basename, dirname, join } = await import('path');
+        const stem = basename(pdf_path).replace(/\.pdf$/i, '');
+        const outPath = join(dirname(pdf_path), `${stem}.md`);
+        writeFileSync(outPath, md, 'utf-8');
+        return jsonResponse({ saved_to: outPath, characters: md.length, preview: md.slice(0, 600), ...tokens });
+      }
+
+      return jsonResponse({ markdownText: md, ...tokens });
+    }
+  );
+
   // Restore original tool method and persist collected names
   (server as any).tool = originalTool;
   _registeredToolNames = collectedNames;
