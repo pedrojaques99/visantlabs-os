@@ -8,6 +8,8 @@ import { Badge } from '../components/ui/badge';
 import { useLayout } from '@/hooks/useLayout';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
+
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
 import { SEO } from '../components/SEO';
 import {
   BreadcrumbWithBack,
@@ -85,7 +87,7 @@ export const ApiKeysPage: React.FC = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const res = await fetch('/api/api-keys', { headers: getAuthHeaders() });
+      const res = await fetch(`${API_BASE}/api-keys`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error('Failed to fetch API keys');
       const data = await res.json();
       const rawKeys: ApiKeyRaw[] = data.keys || data || [];
@@ -119,7 +121,7 @@ export const ApiKeysPage: React.FC = () => {
       const body: any = { name: newKeyName.trim(), scopes: newKeyScopes };
       if (newKeyExpiry) body.expiresAt = newKeyExpiry;
 
-      const res = await fetch('/api/api-keys/create', {
+      const res = await fetch(`${API_BASE}/api-keys/create`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(body),
@@ -159,7 +161,7 @@ export const ApiKeysPage: React.FC = () => {
     if (!revokeTarget) return;
     setIsRevoking(true);
     try {
-      const res = await fetch(`/api/api-keys/${revokeTarget.id}`, {
+      const res = await fetch(`${API_BASE}/api-keys/${revokeTarget.id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });

@@ -1,5 +1,7 @@
 import { authService } from './authService';
 
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+
 export interface SearchImage {
   url: string;
   title: string;
@@ -42,7 +44,7 @@ export interface DesignerParams {
 export const imageApi = {
   searchImages: async (query: string, mode: 'google' | 'instagram' = 'google', limit: number = 40, designerParams?: DesignerParams): Promise<ImageSearchResult> => {
     const token = authService.getToken();
-    const response = await fetch('/api/images/search', {
+    const response = await fetch(`${API_BASE}/images/search`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,7 +63,7 @@ export const imageApi = {
 
   extractFromUrl: async (url: string, limit: number = 50): Promise<ImageSearchResult> => {
     const token = authService.getToken();
-    const response = await fetch('/api/images/extract-url', {
+    const response = await fetch(`${API_BASE}/images/extract-url`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -80,7 +82,7 @@ export const imageApi = {
 
   analyzeDocPage: async (imageBase64: string, pageNumber: number): Promise<DocExtractionResult> => {
     const token = authService.getToken();
-    const response = await fetch('/api/images/extract-doc', {
+    const response = await fetch(`${API_BASE}/images/extract-doc`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

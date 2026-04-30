@@ -57,6 +57,8 @@ import {
 } from '@/utils/mockupConstants';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import {
+
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
   getBackgroundsForBranding,
   filterPresetsByBranding,
   selectRandomBackground
@@ -1101,7 +1103,7 @@ const MockupMachinePageContent: React.FC = () => {
         const outputTokens = typeof smartPromptResult === 'object' ? (smartPromptResult.outputTokens ?? 0) : 0;
 
         const token = authService.getToken();
-        await fetch('/api/mockups/track-prompt-generation', {
+        await fetch(`${API_BASE}/mockups/track-prompt-generation`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

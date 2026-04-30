@@ -5,6 +5,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+
 export interface OpenAPISpec {
   openapi: string;
   info: {
@@ -95,10 +97,10 @@ export function useDocsData() {
     const fetchDocs = async () => {
       try {
         const [apiRes, mcpRes, platformRes, pricingRes] = await Promise.all([
-          fetch('/api/docs/api/spec'),
-          fetch('/api/docs/plugin/mcp.json'),
-          fetch('/api/docs/platform/mcp.json'),
-          fetch('/api/docs/pricing'),
+          fetch(`${API_BASE}/docs/api/spec`),
+          fetch(`${API_BASE}/docs/plugin/mcp.json`),
+          fetch(`${API_BASE}/docs/platform/mcp.json`),
+          fetch(`${API_BASE}/docs/pricing`),
         ]);
 
         if (apiRes.ok) setOpenApiSpec(await apiRes.json());

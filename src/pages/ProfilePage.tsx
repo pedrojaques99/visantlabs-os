@@ -19,6 +19,8 @@ import { ApiSettings } from '../components/profile/ApiSettings';
 import { ProfileOverview } from '../components/profile/ProfileOverview';
 import { UsageHistory } from '../components/profile/UsageHistory';
 
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+
 export const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
   const { isAuthenticated, isCheckingAuth } = useLayout();
@@ -172,7 +174,7 @@ export const ProfilePage: React.FC = () => {
           const token = localStorage.getItem('auth_token');
           if (!token) throw new Error(t('common.authenticationRequired'));
 
-          const response = await fetch('/api/auth/profile/picture', {
+          const response = await fetch(`${API_BASE}/auth/profile/picture`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
