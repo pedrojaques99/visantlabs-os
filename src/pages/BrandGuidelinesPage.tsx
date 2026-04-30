@@ -17,6 +17,7 @@ import { BrandRoomProvider } from '@/components/brand/guidelines/BrandCollaborat
 import { DesignSystemValidation } from '@/components/brand/guidelines/DesignSystemValidation';
 import { ShareGuidelineDialog } from '@/components/brand/guidelines/ShareGuidelineDialog';
 import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButton';
+import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandCompletenessPill';
 import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -97,6 +98,14 @@ export const BrandGuidelinesPage: React.FC = () => {
     const updateMutation = useUpdateGuideline();
     const queryClient = useQueryClient();
 
+    // Server state via react-query
+    const { data: guidelines = [], isLoading } = useBrandGuidelines(isAuthenticated === true);
+
+    const selected = useMemo(
+        () => guidelines.find((g) => g.id === selectedId),
+        [guidelines, selectedId]
+    );
+
     const tabSections = useMemo(
         () => SECTION_TABS.find(t => t.id === activeTabId)?.sections ?? [],
         [activeTabId]
@@ -105,57 +114,37 @@ export const BrandGuidelinesPage: React.FC = () => {
     // All visible sections across every tab for the selected guideline.
     // Defaults to every known section ID (all on). Persisted in guideline.activeSections.
     const ALL_SECTION_IDS = useMemo(() => SECTION_TABS.flatMap(t => t.sections), []);
-    const [allVisibleSections, setAllVisibleSections] = useState<string[]>(ALL_SECTION_IDS);
 
     // Derived: only sections that are in the current tab AND toggled on
-    const visibleSections = useMemo(
-        () => tabSections.filter(id => allVisibleSections.includes(id)),
-        [tabSections, allVisibleSections]
-    );
+    const visibleSections = useMemo(() => {
+        const activeSections = (selected?.activeSections as string[])?.length
+            ? (selected?.activeSections as string[])
+            : ALL_SECTION_IDS;
+        return tabSections.filter(id => activeSections.includes(id));
+    }, [tabSections, selected, ALL_SECTION_IDS]);
 
     const toggleSection = useCallback((sectionId: string) => {
-        setAllVisibleSections(prev => {
-            const next = prev.includes(sectionId)
-                ? prev.filter(s => s !== sectionId)
-                : [...prev, sectionId];
-            if (selectedId) updateMutation.mutate({ id: selectedId, data: { activeSections: next } });
-            return next;
-        });
-    }, [selectedId, updateMutation]);
+        if (!selectedId || !selected) return;
+
+        const currentActive = (selected.activeSections as string[])?.length
+            ? (selected.activeSections as string[])
+            : ALL_SECTION_IDS;
+
+        const next = currentActive.includes(sectionId)
+            ? currentActive.filter(s => s !== sectionId)
+            : [...currentActive, sectionId];
+
+        updateMutation.mutate({ id: selectedId, data: { activeSections: next } });
+    }, [selectedId, selected, ALL_SECTION_IDS, updateMutation]);
 
     // Auth guard
     React.useEffect(() => {
         if (isAuthenticated === false) setShowAuthModal(true);
     }, [isAuthenticated]);
 
-    // Server state via react-query
-    const { data: guidelines = [], isLoading } = useBrandGuidelines(isAuthenticated === true);
-
     const handleSelect = useCallback((g: BrandGuideline) => {
         setSelectedId(g.id!);
-        // Restore persisted visibility from DB, or default to all sections visible
-        setAllVisibleSections(g.activeSections?.length ? g.activeSections : ALL_SECTION_IDS);
-    }, [ALL_SECTION_IDS]);
-
-    // Auto-select from URL param or first guideline
-    React.useEffect(() => {
-        if (guidelines.length === 0) return;
-
-        // Priority: URL param > current selection > first guideline
-        if (urlGuidelineId) {
-            const fromUrl = guidelines.find(g => g.id === urlGuidelineId);
-            if (fromUrl && selectedId !== urlGuidelineId) {
-                handleSelect(fromUrl);
-            }
-        } else if (!selectedId) {
-            handleSelect(guidelines[0]);
-        }
-    }, [guidelines, selectedId, urlGuidelineId, handleSelect]);
-
-    const selected = useMemo(
-        () => guidelines.find((g) => g.id === selectedId),
-        [guidelines, selectedId]
-    );
+    }, []);
 
     const [reviewGuidelineId, setReviewGuidelineId] = useState<string | null>(null);
 
@@ -256,6 +245,9 @@ export const BrandGuidelinesPage: React.FC = () => {
                             </div>
 
                             <div className="flex items-center gap-1.5 shrink-0">
+                                {selected && (
+                                    <BrandCompletenessPill guideline={selected} />
+                                )}
                                 {selected && (
                                     <Link to={`/create?brandId=${selected.id}`}>
                                         <Button className="h-8 px-3 gap-1.5 text-xs bg-white/[0.06] border border-white/15 text-neutral-200 hover:bg-white/[0.10]">

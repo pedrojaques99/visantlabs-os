@@ -1,8 +1,9 @@
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
-import { FileText, FileJson, FileCode, Braces } from 'lucide-react';
+import { FileText, FileJson, FileCode, Braces, Brain } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface GuidelineExportBarProps {
@@ -348,51 +349,50 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
     toast.success('Exported as DESIGN.md — LLM-ready spec');
   };
 
+  const groupBtn =
+    'h-8 px-3 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan hover:bg-brand-cyan/5 gap-2';
+  const groupLabel =
+    'text-[9px] font-mono text-neutral-700 uppercase tracking-widest mr-1 shrink-0';
+  const divider = 'h-4 w-px bg-white/[0.06] mx-1';
+
   return (
-    <div className="flex items-center gap-3 pt-6 border-t border-white/[0.03]">
-      <span className="text-[10px] font-mono text-neutral-700 uppercase tracking-widest mr-2">Export</span>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={exportJSON}
-        className="h-8 px-3 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan hover:bg-brand-cyan/5 gap-2"
-      >
-        <FileJson size={12} />
-        JSON
+    <div className="flex flex-wrap items-center gap-1.5 pt-6 border-t border-white/[0.03]">
+      <span className="text-[10px] font-mono text-neutral-700 uppercase tracking-widest mr-2">
+        Export
+      </span>
+
+      {/* Devs */}
+      <span className={groupLabel}>Devs</span>
+      <Button variant="ghost" size="sm" onClick={exportJSON} className={groupBtn}>
+        <FileJson size={12} /> JSON
       </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={exportMarkdown}
-        className="h-8 px-3 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan hover:bg-brand-cyan/5 gap-2"
-      >
-        <FileText size={12} />
-        Markdown
+      <Button variant="ghost" size="sm" onClick={exportCSS} className={groupBtn}>
+        <FileCode size={12} /> CSS
       </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={exportCSS}
-        className="h-8 px-3 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan hover:bg-brand-cyan/5 gap-2"
-      >
-        <FileCode size={12} />
-        CSS
+      <Button variant="ghost" size="sm" onClick={exportTailwind} className={groupBtn}>
+        <Braces size={12} /> Tailwind
       </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={exportTailwind}
-        className="h-8 px-3 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan hover:bg-brand-cyan/5 gap-2"
-      >
-        <Braces size={12} />
-        Tailwind
+
+      <span className={divider} aria-hidden />
+
+      {/* Docs */}
+      <span className={groupLabel}>Docs</span>
+      <Button variant="ghost" size="sm" onClick={exportMarkdown} className={groupBtn}>
+        <FileText size={12} /> Markdown
       </Button>
+
+      <span className={divider} aria-hidden />
+
+      {/* Para IA */}
+      <span className={cn(groupLabel, 'text-brand-cyan/60')}>Para IA</span>
       <Button
         variant="ghost"
         size="sm"
         onClick={exportDesignMd}
-        className="h-8 px-3 text-[10px] font-mono text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5 gap-2 border border-brand-cyan/10 hover:border-brand-cyan/30 transition-all"
+        className="h-8 px-3 text-[10px] font-mono gap-2 text-brand-cyan/90 hover:text-brand-cyan bg-brand-cyan/[0.04] hover:bg-brand-cyan/[0.08] border border-brand-cyan/20 hover:border-brand-cyan/40 transition-all"
+        title="LLM-ready spec — copia direto pra prompts ou IDE assistants"
       >
+        <Brain size={12} />
         DESIGN.md
       </Button>
     </div>

@@ -13,6 +13,7 @@ import { mergeBrandGuidelines } from '../lib/brand-merge.js'
 import { uploadBrandMedia, deleteImage } from '../services/r2Service.js'
 import { brandSharedService } from '../services/brandSharedService.js'
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js'
+import { runBrandHealth } from '../lib/brandHealth.js'
 import { vectorService } from '../services/vectorService.js'
 import { checkBrandCompliance, type ComplianceCheckInput } from '../services/complianceService.js'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
@@ -918,6 +919,29 @@ router.get('/public/:slug', publicRateLimiter, async (req, res) => {
   } catch (error: any) {
     console.error('[Brand Public] Error:', error)
     res.status(500).json({ error: 'Failed to fetch public guideline' })
+  }
+})
+
+// POST /api/brand-guidelines/:id/health-check — opt-in LLM coherence audit
+router.post('/:id/health-check', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const apiKey = await getGeminiApiKey(req.userId).catch(() => undefined)
+    const report = await runBrandHealth(guideline as any, { apiKey })
+
+    res.json({ report })
+  } catch (error: any) {
+    console.error('[Brand Health Check] Error:', error)
+    res.status(500).json({
+      error: 'Failed to run brand health check',
+      message: error?.message || 'Unknown error',
+    })
   }
 })
 

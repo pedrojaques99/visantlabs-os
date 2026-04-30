@@ -228,6 +228,20 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
+  async runHealthCheck(guidelineId: string): Promise<BrandHealthReport> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/health-check`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || err.error || 'Failed to run brand health check');
+    }
+    const data = await response.json();
+    return data.report as BrandHealthReport;
+  },
+
   // ── Public Sharing ──
 
   async share(guidelineId: string): Promise<{ publicSlug: string; shareUrl: string; isPublic: boolean }> {
@@ -434,4 +448,26 @@ export interface BrandKnowledgeFile {
   vectorIds: string[];
   addedByUserId: string;
   addedAt: string;
+}
+
+export interface BrandHealthInsight {
+  level: 'pass' | 'warn' | 'fail';
+  category: 'identity' | 'visual' | 'strategy' | 'voice' | 'tokens' | 'coherence';
+  title: string;
+  detail: string;
+}
+
+export interface BrandHealthRecommendation {
+  action: string;
+  reason: string;
+}
+
+export interface BrandHealthReport {
+  score: number;
+  summary: string;
+  insights: BrandHealthInsight[];
+  recommendations: BrandHealthRecommendation[];
+  model: string;
+  tokens: { input?: number; output?: number };
+  generatedAt: string;
 }

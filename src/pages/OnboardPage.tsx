@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
-  Layers, Sparkles, Zap, Globe, GitBranch, Package,
+  Layers, Brain, Zap, Globe, GitBranch, Package,
   ArrowRight, ChevronRight, Image, Palette, Type,
-  FileCode, Share2, Bot, Wand2, Users, ShieldCheck,
+  FileCode, Share2, Bot, Activity, Users, ShieldCheck,
   Video, LayoutGrid, Workflow, MonitorSmartphone,
 } from 'lucide-react';
 import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
@@ -63,10 +63,10 @@ const BRAND_CAPABILITIES = [
 const CANVAS_NODES = [
   { icon: Palette,         label: 'BrandCore',       desc: 'Hub da identidade — logo, cores, voz' },
   { icon: Image,           label: 'PromptNode',       desc: 'Geração com histórico e presets' },
-  { icon: Sparkles,        label: 'MergeNode',        desc: 'Combina branches visuais com IA' },
+  { icon: Brain,           label: 'MergeNode',        desc: 'Combina branches visuais com IA' },
   { icon: Layers,          label: 'ColorExtractor',   desc: 'Extrai paleta de qualquer imagem' },
   { icon: Type,            label: 'StrategyNode',     desc: 'Posicionamento, personas, arquétipos' },
-  { icon: Wand2,           label: 'DirectorNode',     desc: 'Brief criativo para campanhas' },
+  { icon: Activity,        label: 'DirectorNode',     desc: 'Brief criativo para campanhas' },
   { icon: LayoutGrid,      label: 'MockupNode',       desc: '36K+ templates de dispositivos' },
   { icon: Workflow,        label: 'BatchRunner',      desc: 'N gerações em paralelo (4 workers)' },
   { icon: Video,           label: 'VideoNode',        desc: 'Vídeo via Seedream API' },
@@ -318,7 +318,7 @@ const CampaignSection: React.FC = () => {
               {[
                 { method: 'API REST', detail: 'POST /api/canvas/generate-campaign', icon: FileCode },
                 { method: 'MCP Tool', detail: 'create_ad_campaign { brandGuidelineId, productImageUrl }', icon: Bot },
-                { method: 'ChatNode', detail: '"gera 20 ads para atletas" — linguagem natural', icon: Wand2 },
+                { method: 'ChatNode', detail: '"gera 20 ads para atletas" — linguagem natural', icon: Activity },
               ].map(({ method, detail, icon: Icon }) => (
                 <div key={method} className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03]">
                   <Icon size={14} className="text-brand-cyan shrink-0 mt-0.5" />

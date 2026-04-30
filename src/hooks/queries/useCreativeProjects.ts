@@ -43,11 +43,24 @@ export function useUpdateCreativeProject() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: Partial<SaveCreativeProjectInput> }) =>
       creativeProjectApi.update(id, input),
+    // Optimistic UI: paint the change locally before the server confirms; if
+    // the request fails the previous snapshot is restored.
+    onMutate: async ({ id, input }) => {
+      await qc.cancelQueries({ queryKey: KEYS.detail(id) });
+      const previous = qc.getQueryData(KEYS.detail(id));
+      qc.setQueryData(KEYS.detail(id), (old: any) =>
+        old ? { ...old, ...input } : old
+      );
+      return { previous };
+    },
+    onError: (err: Error, { id }, context) => {
+      if (context?.previous) qc.setQueryData(KEYS.detail(id), context.previous);
+      toast.error(err.message || 'Failed to update creative');
+    },
     onSuccess: (project) => {
       qc.invalidateQueries({ queryKey: KEYS.all });
       qc.setQueryData(KEYS.detail(project.id), project);
     },
-    onError: (err: Error) => toast.error(err.message || 'Failed to update creative'),
   });
 }
 

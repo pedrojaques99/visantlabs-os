@@ -2,10 +2,16 @@ import { mockupApi } from '@/services/mockupApi';
 import { canvasApi } from '@/services/canvasApi';
 import { authService } from '@/services/authService';
 import type { BrandGuideline } from '@/lib/figma-types';
+import {
+  getContrastColor,
+  getContrastRatioPublic,
+} from '@/utils/colorUtils';
 import type {
   CreativeAIResponse,
   CreativeFormat,
   CreativeLayerData,
+  CreativeOverlay,
+  TextLayerData,
 } from '../store/creativeTypes';
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
@@ -37,18 +43,10 @@ export async function generateCreative({
   resolution,
   existingBackgroundUrl,
 }: GenerateInput): Promise<GenerateOutput> {
-  // 1. Ask backend for structured creative plan
-  const brandContext = guideline
-    ? {
-        name: guideline.identity?.name,
-        colors: (guideline.colors ?? []).map((c) => c.hex).filter(Boolean),
-        fonts: (guideline.typography ?? []).map((t) => t.family).filter(Boolean),
-        voice: guideline.guidelines?.voice,
-        keywords: Object.values(guideline.tags ?? {}).flat(),
-        hasLogos: (guideline.logos ?? []).length > 0,
-      }
-    : undefined;
-
+  // 1. Ask backend for structured creative plan. Send the full guideline so the
+  // server's `buildBrandContextJSON` produces a rich structured context (role,
+  // weight, variant, gradients, strategy/personas) — all of which the LLM uses
+  // to align cores/fontes/logo placement with the brand.
   const token = authService.getToken();
   const planResp = await fetch(`${API_BASE}/creative/plan`, {
     method: 'POST',
@@ -56,7 +54,12 @@ export async function generateCreative({
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
     },
-    body: JSON.stringify({ prompt, format, brandContext, brandId: brandId ?? undefined }),
+    body: JSON.stringify({
+      prompt,
+      format,
+      brandGuideline: guideline ?? undefined,
+      brandId: brandId ?? undefined,
+    }),
   });
 
   if (!planResp.ok) {
@@ -64,13 +67,17 @@ export async function generateCreative({
     throw new Error(`Creative plan failed: ${planResp.status} - ${errText}`);
   }
 
-  const plan = (await planResp.json()) as CreativeAIResponse;
+  const plan = (await planResp.json()) as CreativeAIResponse & {
+    pickedMedia?: { url: string } | null;
+  };
 
-  // 2. Resolve background image
-  let backgroundUrl = existingBackgroundUrl || '';
+  // 2. Background source priority — assembly editor, not image gen:
+  //    (a) caller-supplied existingBackgroundUrl wins
+  //    (b) brand media picked by the engine for this format
+  //    (c) AI image gen as last resort (other routes own primary AI gen)
+  let backgroundUrl = existingBackgroundUrl || plan.pickedMedia?.url || '';
 
   if (!backgroundUrl) {
-    // Generate background image via mockupApi (centralized backend generation)
     const bgPrompt = plan.background?.prompt ?? prompt;
     const result = await mockupApi.generate({
       promptText: bgPrompt,
@@ -86,21 +93,28 @@ export async function generateCreative({
       throw new Error('No image generated for creative background');
     }
 
-    // 3. Upload to R2 (so Konva useImage can load via CORS / crossOrigin='anonymous')
-    backgroundUrl = result.imageUrl || await canvasApi.uploadImageToR2(`data:image/png;base64,${base64}`);
+    backgroundUrl =
+      result.imageUrl ||
+      (await canvasApi.uploadImageToR2(`data:image/png;base64,${base64}`));
 
     if (!backgroundUrl) {
       throw new Error('Failed to upload background image to R2');
     }
   }
 
-  // 4. Resolve logo layers — replace any logo placeholder with actual brand logo URL
-  const primaryLogo = guideline?.logos?.find((l) => l.variant === 'primary') ?? guideline?.logos?.[0];
+  // 4. Resolve logo + WCAG text colors. We don't know the actual image
+  // luminance, so use the overlay color as a proxy. Falls back to primary
+  // variant if no overlay or if a matching variant doesn't exist.
+  const overlay = plan.overlay ?? null;
+  const logoForOverlay = pickLogoForOverlay(guideline?.logos ?? [], overlay);
   const layers = plan.layers
     .map((l) => {
       if (l.type === 'logo') {
-        if (!primaryLogo?.url) return null;
-        return { ...l, url: primaryLogo.url };
+        if (!logoForOverlay?.url) return null;
+        return { ...l, url: logoForOverlay.url };
+      }
+      if (l.type === 'text') {
+        return ensureTextContrast(l, overlay);
       }
       return l;
     })
@@ -108,7 +122,44 @@ export async function generateCreative({
 
   return {
     backgroundUrl,
-    overlay: plan.overlay ?? null,
+    overlay,
     layers,
   };
+}
+
+/**
+ * Pick a logo variant adapted to the overlay luminance:
+ *   dark overlay  → 'light' or 'primary' (light is preferred)
+ *   light overlay → 'dark' or 'primary'
+ * No overlay → 'primary' first, otherwise the first available.
+ */
+function pickLogoForOverlay(
+  logos: BrandGuideline['logos'] = [],
+  overlay: CreativeOverlay | null
+) {
+  if (!logos.length) return null;
+  const find = (variant: string) => logos.find((l) => l.variant === variant);
+
+  if (overlay?.color) {
+    const overlayIsDark = getContrastColor(overlay.color) === 'white';
+    const preferred = overlayIsDark ? find('light') : find('dark');
+    if (preferred?.url) return preferred;
+  }
+  return find('primary') ?? logos[0];
+}
+
+/**
+ * If a text layer's color has < 4.5:1 contrast against the overlay (WCAG AA),
+ * snap it to black or white — whichever wins. Pure-image backgrounds with no
+ * overlay are left alone (we can't measure them client-side).
+ */
+function ensureTextContrast(
+  layer: TextLayerData,
+  overlay: CreativeOverlay | null
+): TextLayerData {
+  if (!overlay?.color) return layer;
+  const ratio = getContrastRatioPublic(layer.color, overlay.color);
+  if (ratio >= 4.5) return layer;
+  const safeColor = getContrastColor(overlay.color) === 'white' ? '#ffffff' : '#000000';
+  return { ...layer, color: safeColor };
 }
