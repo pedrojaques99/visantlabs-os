@@ -48,8 +48,7 @@ import { mockupApi } from '@/services/mockupApi';
 import { GEMINI_MODELS } from '../constants/geminiModels';
 import type { AspectRatio } from '../types/types';
 import { MockupCard } from '@/components/mockupmachine/MockupCard';
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+import { API_BASE } from '@/config/api';
 
 const GOOGLE_FONTS = [
   { value: '', label: 'Auto Detect' },

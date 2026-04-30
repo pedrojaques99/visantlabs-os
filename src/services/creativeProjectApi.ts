@@ -1,7 +1,6 @@
 import { authService } from './authService';
 import type { CreativeLayer, CreativeOverlay } from '@/components/creative/store/creativeTypes';
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+import { API_BASE } from '@/config/api';
 
 function headers() {
   const token = authService.getToken();

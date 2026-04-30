@@ -8,8 +8,6 @@ import { Badge } from '../components/ui/badge';
 import { useLayout } from '@/hooks/useLayout';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
 import { SEO } from '../components/SEO';
 import {
   BreadcrumbWithBack,
@@ -22,6 +20,7 @@ import {
 import { BackButton } from "../components/ui/BackButton";
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { API_BASE } from '@/config/api';
 
 interface ApiKeyRaw {
   id: string;

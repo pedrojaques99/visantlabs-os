@@ -5,8 +5,7 @@ import { LUMINANCE_PRESETS, type LuminancePreset } from '../types/luminancePrese
 import { MOCKUP_PRESETS, type MockupPreset } from '../types/mockupPresets';
 import { BRANDING_PRESETS, type BrandingPreset } from '../types/brandingPresets';
 import { EFFECT_PRESETS, type EffectPreset } from '../types/effectPresets';
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+import { API_BASE } from '@/config/api';
 
 export type PresetType = 'angle' | 'texture' | 'ambience' | 'luminance' | 'mockup' | 'branding' | 'effect';
 

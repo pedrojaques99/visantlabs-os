@@ -19,8 +19,7 @@ import type { ImageProvider } from '../types/types';
 import { GEMINI_MODELS } from '../constants/geminiModels';
 import { getCreditsRequired } from '../utils/creditCalculator';
 import { ModelSelector } from '../components/shared/ModelSelector';
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+import { API_BASE } from '@/config/api';
 
 async function callVideoApi(body: object): Promise<string> {
   const token = authService.getToken();
