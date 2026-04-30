@@ -5,8 +5,8 @@
 const MAX_PDF_SIZE_MB = 50; // Gemini supports up to 50MB
 export const MAX_PDF_SIZE_BYTES = MAX_PDF_SIZE_MB * 1024 * 1024;
 
-// Maximum PDF size for upload to server (accounts for base64 encoding + JSON overhead)
-// Base64 increases size by ~33%, and JSON adds overhead, so 3MB original ≈ 4MB+ in request
+// Wizard /ingest base64 path: keep at 3MB (JSON body limit)
+// For larger PDFs use the Extract button → /extract-pdf (multipart, no size constraint)
 const MAX_PDF_UPLOAD_SIZE_MB = 3;
 export const MAX_PDF_UPLOAD_SIZE_BYTES = MAX_PDF_UPLOAD_SIZE_MB * 1024 * 1024;
 

@@ -1,3 +1,4 @@
+
 /**
  * Visant Labs — MCP Shared Tool Definitions
  *
@@ -625,6 +626,33 @@ export const TOOLS = [
       required: ['brandId'],
     },
   },
+  {
+    name: 'document_extract',
+    description:
+      'Extract content from a local PDF file using a 2-phase pipeline: algorithmic (exact colors, fonts, embedded images) ' +
+      'then Gemini semantic analysis (strategy, personas, voice, dos/donts, asset classification). ' +
+      'Returns markdownText (structured, page-separated — ideal for RAG chunking) plus brand tokens. ' +
+      'IMPORTANT: before calling, ask the user: "Quer salvar o .md em disco ou receber o texto inline?"',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        pdf_path: {
+          type: 'string',
+          description: 'Absolute path to the local PDF file to extract.',
+        },
+        output: {
+          type: 'string',
+          enum: ['disk', 'inline'],
+          description: '"disk" saves .md alongside the PDF. "inline" returns markdownText in the response.',
+        },
+        include_brand_tokens: {
+          type: 'boolean',
+          description: 'Include colors, typography, strategy, assetClassifications. Default: true.',
+        },
+      },
+      required: ['pdf_path', 'output'],
+    },
+  },
 ];
 
 // ---------- Tool handlers ----------
@@ -713,6 +741,49 @@ export async function handleTool(name: string, args: ToolArgs) {
         validation: g.validation,
       };
       return toolResult(ds);
+    }
+    case 'document_extract': {
+      const pdfPath = String(args.pdf_path)
+      const includeBrandTokens = args.include_brand_tokens !== false
+      // Read file locally — MCP server runs on the same machine as the PDF
+      const { readFileSync, writeFileSync } = await import('fs')
+      const { basename, dirname, join } = await import('path')
+      let pdfBase64: string
+      try {
+        pdfBase64 = readFileSync(pdfPath).toString('base64')
+      } catch (err: any) {
+        throw new Error(`Cannot read PDF at ${pdfPath}: ${err.message}`)
+      }
+      const qs = includeBrandTokens ? '' : '?brandTokens=false'
+      const data: any = await visantFetch(`/pdf-extract${qs}`, {
+        method: 'POST',
+        body: JSON.stringify({ pdfBase64, filename: basename(pdfPath) }),
+      })
+      const md: string = data.markdownText ?? ''
+      if (args.output === 'disk') {
+        const stem = basename(pdfPath).replace(/\.pdf$/i, '')
+        const outPath = join(dirname(pdfPath), `${stem}.md`)
+        writeFileSync(outPath, md, 'utf-8')
+        const result: Record<string, any> = { saved_to: outPath, characters: md.length, preview: md.slice(0, 600) }
+        if (includeBrandTokens) {
+          result.colors = data.colors
+          result.typography = data.typography
+          result.strategy = data.strategy
+          result.assetClassifications = data.assetClassifications
+          result.imageCount = data.imageCount
+        }
+        return toolResult(result)
+      }
+      // inline
+      const result: Record<string, any> = { markdownText: md }
+      if (includeBrandTokens) {
+        result.colors = data.colors
+        result.typography = data.typography
+        result.strategy = data.strategy
+        result.assetClassifications = data.assetClassifications
+        result.imageCount = data.imageCount
+      }
+      return toolResult(result)
     }
     // ---- Prompt handlers ----
     case 'improve_prompt': {

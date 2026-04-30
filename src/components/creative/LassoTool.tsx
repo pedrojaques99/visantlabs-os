@@ -12,8 +12,11 @@ interface Props {
 }
 
 export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
-  const { activeTool, lassoRegion, setLassoRegion, setActiveTool, addLayer, backgroundUrl } =
-    useCreativeStore();
+  const activeTool = useCreativeStore((s) => s.activeTool);
+  const lassoRegion = useCreativeStore((s) => s.lassoRegion);
+  const setLassoRegion = useCreativeStore((s) => s.setLassoRegion);
+  const setActiveTool = useCreativeStore((s) => s.setActiveTool);
+  const addLayer = useCreativeStore((s) => s.addLayer);
 
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);

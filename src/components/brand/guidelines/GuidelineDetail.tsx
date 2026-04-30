@@ -16,6 +16,7 @@ import {
   VoiceSection, PersonasSection,
   ManifestoSection, ArchetypesSection, MensagemCentralSection,
 } from './sections';
+import { PreviewSection } from './preview/PreviewSection';
 import { GuidelineExportBar } from './GuidelineExportBar';
 import { SectionHideContext } from './SectionBlock';
 
@@ -115,6 +116,8 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
         return <VoiceSection key="voice" guideline={g} onUpdate={handleUpdate} span="1" />;
       case 'personas':
         return <PersonasSection key="personas" guideline={g} onUpdate={handleUpdate} span="full" />;
+      case 'preview':
+        return <PreviewSection key="preview" guideline={g} span="full" />;
       default:
         return null;
     }

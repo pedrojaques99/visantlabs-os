@@ -11,6 +11,11 @@ export interface TextLayerData {
   fontFamily: string;     // resolved family name
   color: string;          // hex
   bold: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
+  /** Rotation in degrees, default 0 */
+  rotation?: number;
   // ── Konva-rendered visual effects (added 2026-04-27, all optional) ──
   /** 0-1; defaults to 1 (fully opaque) when undefined */
   opacity?: number;
@@ -29,6 +34,8 @@ export interface LogoLayerData {
   url: string;
   position: { x: number; y: number };
   size: { w: number; h: number };
+  /** Rotation in degrees, default 0 */
+  rotation?: number;
   // ── Konva-rendered visual effects (added 2026-04-27, all optional) ──
   /** 0-1; defaults to 1 (fully opaque) when undefined */
   opacity?: number;
@@ -40,6 +47,18 @@ export interface LogoLayerData {
   shadowOffsetX?: number;
   /** Shadow Y offset in px. Default 0. */
   shadowOffsetY?: number;
+  /**
+   * Konva filter values. All optional; presence (non-zero / true) triggers
+   * cache() + filter on the node. Renderer maps these to Konva.Filters.*.
+   */
+  filters?: {
+    brightness?: number;  // -1 .. 1
+    contrast?: number;    // -100 .. 100
+    blur?: number;        // 0 .. 40 (px)
+    grayscale?: boolean;
+  };
+  /** Optional crop window in 0-1 of source image dimensions. */
+  crop?: { x: number; y: number; w: number; h: number };
 }
 
 export interface ShapeLayerData {
@@ -48,6 +67,14 @@ export interface ShapeLayerData {
   color: string;          // hex
   position: { x: number; y: number };
   size: { w: number; h: number };
+  /** Rotation in degrees, default 0 */
+  rotation?: number;
+  /** Corner radius in px (Konva pixel units). Default 0 = sharp. */
+  cornerRadius?: number;
+  /** Stroke color (hex). Required with strokeWidth > 0 to render border. */
+  strokeColor?: string;
+  /** Stroke width in px. Default 0 = no border. */
+  strokeWidth?: number;
   // ── Konva-rendered visual effects (added 2026-04-27, all optional) ──
   /** 0-1; defaults to 1 (fully opaque) when undefined */
   opacity?: number;
@@ -73,6 +100,8 @@ export type CreativeLayerData = TextLayerData | LogoLayerData | ShapeLayerData |
 export interface CreativeLayer {
   id: string;
   visible: boolean;
+  /** When true: drag/select disabled on canvas, kept editable from sidebar. Default false. */
+  locked?: boolean;
   zIndex: number;
   data: CreativeLayerData;
 }
@@ -82,6 +111,21 @@ export interface CreativeOverlay {
   direction?: 'top' | 'bottom' | 'left' | 'right';
   opacity: number;
   color?: string;
+}
+
+/**
+ * A single page (artboard) within a creative project. Pages own their own
+ * layers/background/overlay/format — root state mirrors the active page for
+ * compatibility with existing Konva renderers and selectors.
+ */
+export interface CreativePage {
+  id: string;
+  /** User-editable label. Defaults to "Página N" when undefined. */
+  name?: string;
+  format: CreativeFormat;
+  layers: CreativeLayer[];
+  backgroundUrl: string | null;
+  overlay: CreativeOverlay | null;
 }
 
 export interface CreativeAIResponse {

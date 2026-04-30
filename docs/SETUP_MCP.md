@@ -1,10 +1,12 @@
 # Using Visant via MCP
 
-Connect any MCP-compatible AI client to Visant's full tool suite — brand guidelines, mockup generation, ad campaigns, canvas projects, and more.
+Connect any MCP-compatible AI client to Visant's full tool suite — brand guidelines, mockup generation, creatives, canvas, and budgets.
 
-**Endpoint:** `https://api.visantlabs.com/api/mcp`  
-**Transport:** Streamable HTTP (MCP spec 2026, stateless)  
-**Auth:** OAuth 2.1 (browser flow) or Bearer API key  
+**Endpoint:** `https://visantlabs.com/api/mcp`  
+**Transport:** Streamable HTTP (MCP spec 2025-03-26, stateless)  
+**Auth:** Bearer API key  
+
+> **Full tool reference + agent workflows:** `.agent/memory/MCP-GETTING-STARTED.md`
 
 ---
 
@@ -20,25 +22,22 @@ Connect any MCP-compatible AI client to Visant's full tool suite — brand guide
 
 Claude Code only supports stdio MCP servers, so you need `mcp-remote` as a bridge.
 
-**Option A — OAuth (recommended, zero token config):**
-
 Add to `.mcp.json` in your project root, or `~/.claude/mcp.json` globally:
 
+**Option A — OAuth (recommended, zero token config):**
 ```json
 {
   "mcpServers": {
     "visant": {
       "command": "npx",
-      "args": ["mcp-remote@0.1.16", "https://api.visantlabs.com/api/mcp"]
+      "args": ["mcp-remote@0.1.16", "https://visantlabs.com/api/mcp"]
     }
   }
 }
 ```
-
-On first use, a browser window opens → log in to Visant → click Approve → done. Token is stored in your OS keychain. No manual token management.
+On first use, a browser window opens → log in → click Approve → done. Token stored in OS keychain.
 
 **Option B — API key:**
-
 ```json
 {
   "mcpServers": {
@@ -46,7 +45,7 @@ On first use, a browser window opens → log in to Visant → click Approve → 
       "command": "npx",
       "args": [
         "mcp-remote@0.1.16",
-        "https://api.visantlabs.com/api/mcp",
+        "https://visantlabs.com/api/mcp",
         "--header",
         "Authorization:Bearer ${VISANT_API_TOKEN}"
       ],
@@ -57,11 +56,9 @@ On first use, a browser window opens → log in to Visant → click Approve → 
   }
 }
 ```
+Note: `Authorization:Bearer` has no space after the colon — avoids a Windows argument-splitting bug.
 
-Note: `Authorization:Bearer` has no space after the colon — this is intentional to avoid a Windows argument-splitting bug.
-
-Verify the server is registered:
-
+Verify:
 ```bash
 claude mcp list
 ```
@@ -73,12 +70,11 @@ claude mcp list
 Cursor supports Streamable HTTP natively — no `mcp-remote` needed.
 
 Edit `~/.cursor/mcp.json`:
-
 ```json
 {
   "mcpServers": {
     "visant": {
-      "url": "https://api.visantlabs.com/api/mcp",
+      "url": "https://visantlabs.com/api/mcp",
       "headers": {
         "Authorization": "Bearer visant_sk_your_key_here"
       }
@@ -87,14 +83,11 @@ Edit `~/.cursor/mcp.json`:
 }
 ```
 
-Or via UI: **Settings → MCP → Add Server → URL** → paste `https://api.visantlabs.com/api/mcp`.
-
 ---
 
 ## Claude Desktop
 
 Edit the config file:
-
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
@@ -103,25 +96,28 @@ Edit the config file:
   "mcpServers": {
     "visant": {
       "command": "npx",
-      "args": [
-        "mcp-remote@0.1.16",
-        "https://api.visantlabs.com/api/mcp"
-      ]
+      "args": ["mcp-remote@0.1.16", "https://visantlabs.com/api/mcp"]
     }
   }
 }
 ```
+Restart Claude Desktop. OAuth browser flow opens on first use.
 
-Restart Claude Desktop. On first use, the OAuth browser flow opens automatically.
+---
+
+## Claude.ai Web
+
+1. **Settings → Integrations → Add custom MCP**
+2. URL: `https://visantlabs.com/api/mcp`
+3. Header: `Authorization: Bearer visant_sk_xxx`
 
 ---
 
 ## Other clients (VS Code, OpenAI, etc.)
 
-Any client that supports Streamable HTTP MCP can connect directly:
-
+Any client that supports Streamable HTTP MCP:
 ```
-URL:    https://api.visantlabs.com/api/mcp
+URL:    https://visantlabs.com/api/mcp
 Header: Authorization: Bearer visant_sk_your_key_here
 ```
 
@@ -131,10 +127,10 @@ Header: Authorization: Bearer visant_sk_your_key_here
 
 ```bash
 # Server info — no auth required
-curl https://api.visantlabs.com/api/mcp
+curl https://visantlabs.com/api/mcp
 
-# List tools — requires auth
-curl -X POST https://api.visantlabs.com/api/mcp \
+# List tools
+curl -X POST https://visantlabs.com/api/mcp \
   -H "Authorization: Bearer visant_sk_your_key_here" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
@@ -142,75 +138,153 @@ curl -X POST https://api.visantlabs.com/api/mcp \
 
 ---
 
-## Available tools
+## Available tools (67)
 
-| Tool | What it does |
+### Account
+| Tool | Description |
 |------|-------------|
-| `list_brand_guidelines` | List all brands with IDs and names |
-| `get_brand_guideline` | Full brand data: colors, fonts, voice, tokens, gradients |
-| `update_brand_guideline` | Patch any brand fields |
-| `validate_brand_section` | Mark a section approved / needs_work |
-| `get_brand_design_system` | LLM-ready design tokens for a brand |
-| `get_brand_insights` | Learned brand preferences from edit history |
-| `create_creative_plan` | Generate a layout plan for a marketing asset |
-| `generate_mockup` | Text-to-image or img2img mockup (OpenAI / Gemini / Seedream) |
-| `batch_generate_mockups` | Up to 20 mockups in parallel |
-| `create_ad_campaign` | Full campaign from product image + brief |
-| `get_campaign_results` | Poll campaign generation progress |
-| `improve_prompt` | Refine an image generation prompt |
-| `generate_smart_prompt` | Build an optimized prompt from structured inputs |
-| `suggest_prompt_variations` | Generate prompt variations |
-| `extract_prompt_from_image` | Reverse-engineer a prompt from an image |
-| `extract_colors` | Extract color palette from an image |
-| `generate_naming` | Brand/product name suggestions |
-| `generate_persona` | Audience persona from a brief |
-| `generate_archetype` | Brand archetype analysis |
-| `generate_color_palettes` | AI color palette recommendations |
-| `generate_moodboard` | Moodboard direction from a brief |
-| `generate_market_research` | Market benchmarking paragraph |
-| `generate_swot` | SWOT analysis |
-| `generate_concept_ideas` | Mockup/usage scenario ideas |
-| `list_mockups` | List user mockups |
-| `get_mockup` | Get mockup by ID |
-| `delete_mockup` | Delete a mockup |
-| `get_mockup_usage_stats` | Billing period usage stats |
-| `list_canvas_projects` | List canvas projects |
-| `get_canvas_project` | Get canvas project by ID |
-| `create_canvas_project` | Create a new canvas project |
-| `update_canvas_project` | Update a canvas project |
-| `delete_canvas_project` | Delete a canvas project |
-| `list_creative_events` | Raw creative edit event stream |
-| `get_creative_metrics` | Aggregate creative metrics |
-| `list_public_mockups` | Public blank mockup templates |
+| `account-usage` | Credits, plan, reset date, `can_generate` flag |
+| `account-profile` | Name, email, avatar, subscription |
+
+### Auth *(no API key needed)*
+| Tool | Description |
+|------|-------------|
+| `auth-register` | Create account → returns JWT for `api-key-create` |
+| `auth-login` | Sign in → returns JWT for `api-key-create` |
+| `api-key-create` | Create a `visant_sk_xxx` key (pass JWT or existing key) |
+| `api-key-list` | List all keys (no raw values shown) |
+
+### Mockups
+| Tool | Description |
+|------|-------------|
+| `mockup-generate` | Generate image. Key params: `prompt`, `brandGuidelineId`, `model`, `aspectRatio`, `resolution` |
+| `mockup-list` | List user mockups |
+| `mockup-get` | Get mockup by ID |
+| `mockup-update` | Update metadata (no regeneration) |
+| `mockup-delete` | Delete mockup |
+| `mockup-presets` | Browse presets by type |
+| `mockup-list-public` | Public blank templates (no auth) |
+
+### Branding
+| Tool | Description |
+|------|-------------|
+| `branding-generate` | Brand identity from prompt. `step`: full / market-research / swot / persona / archetype / concept-ideas / color-palettes / moodboard |
+| `branding-list` | List branding projects |
+| `branding-get` | Get branding project |
+| `branding-save` | Create or update branding project |
+| `branding-delete` | Delete branding project |
+
+### Brand Guidelines — Read
+| Tool | Description |
+|------|-------------|
+| `brand-guidelines-list` | List all brand vaults |
+| `brand-guidelines-get` | Get by ID. `format`: structured (JSON) or prompt (LLM-ready text) |
+| `brand-guidelines-public` | Public guideline by slug (no auth) |
+
+### Brand Guidelines — Write
+| Tool | Description |
+|------|-------------|
+| `brand-guidelines-create` | Create vault. Requires `identity.name`. All other sections optional. |
+| `brand-guidelines-update` | Patch specific sections (only provided fields change) |
+| `brand-guidelines-delete` | Delete (requires `confirm: true`) |
+| `brand-guidelines-duplicate` | Clone a guideline |
+
+### Brand Guidelines — Assets & Intelligence
+| Tool | Description |
+|------|-------------|
+| `brand-guidelines-upload-logo` | Upload logo (base64 or URL). Variants: primary / dark / light / icon / accent / custom |
+| `brand-guidelines-delete-logo` | Remove logo by ID |
+| `brand-guidelines-upload-media` | Upload to media kit (image or PDF) |
+| `brand-guidelines-delete-media` | Remove media asset |
+| `brand-guidelines-ingest` | Extract brand data from URL or text and merge |
+| `brand-guidelines-compliance-check` | AI audit: contrast, typography, voice, completeness |
+| `brand-guidelines-share` | Generate public read-only link |
+| `brand-guidelines-versions` | Version history |
+| `brand-guidelines-restore-version` | Restore to previous version |
+
+### AI Utilities *(free — no credit cost)*
+| Tool | Description |
+|------|-------------|
+| `ai-improve-prompt` | Enhance prompt via Gemini |
+| `ai-describe-image` | Analyze image (URL or base64) |
+
+### Creative Studio
+| Tool | Description |
+|------|-------------|
+| `creative-full` | **Full pipeline**: plan → background → render PNG → save. Prefer this over chaining. |
+| `creative-generate` | Generate layout plan only |
+| `creative-render` | Render plan + background → PNG |
+| `creative-projects-list` | List creative projects |
+| `creative-projects-get` | Get project with all layers |
+| `creative-projects-create` | Save creative project manually |
+| `creative-projects-update` | Partial update |
+| `creative-projects-delete` | Delete project |
+
+### Moodboard
+| Tool | Description |
+|------|-------------|
+| `moodboard-detect-grid` | Detect cell bounding boxes in a moodboard image |
+| `moodboard-upscale` | Upscale image to 1K / 2K / 4K |
+| `moodboard-suggest` | Analyze cells → Remotion/Veo animation suggestions |
+
+### Canvas
+| Tool | Description |
+|------|-------------|
+| `canvas-list` | List canvas projects |
+| `canvas-list-projects` | List with node type breakdown |
+| `canvas-get` | Get canvas with nodes and edges |
+| `canvas-create` | Create empty canvas |
+| `canvas-update` | Update name, nodes, edges, linkedGuidelineId |
+| `canvas-delete` | Delete canvas |
+| `canvas-share` | Share with users (canEdit / canView) |
+| `canvas-resolve-variables` | Preview `{{placeholder}}` resolution |
+| `canvas-parse-csv` | Parse CSV → rows preview |
+
+### Budget
+| Tool | Description |
+|------|-------------|
+| `budget-create` | Create budget document |
+| `budget-list` | List budget documents |
+| `budget-get` | Get budget with line items |
+| `budget-update` | Partial update |
+| `budget-duplicate` | Clone budget |
+| `budget-delete` | Delete budget |
+
+### Community *(no auth needed)*
+| Tool | Description |
+|------|-------------|
+| `community-presets` | Browse public presets |
+| `community-profiles` | Browse creator profiles |
 
 ---
 
-## For AI agents
-
-When an AI needs to work with Visant, the recommended flow is:
+## Recommended agent flow
 
 ```
-1. list_brand_guidelines          → find the brand by name, get its ID
-2. get_brand_guideline(brandId)   → load full brand context
-3. Use brand colors/fonts/voice to inform generation
-4. generate_mockup or batch_generate_mockups with brandGuidelineId
+1. account-usage                              → confirm credits available
+2. brand-guidelines-list                      → get brand vault IDs
+3. brand-guidelines-get (id, format=prompt)   → load LLM-ready brand context
+4. creative-full (prompt, brandGuidelineId)   → generate creative with brand injected
 ```
 
-Passing `brandGuidelineId` to generation tools automatically injects brand context into the prompt — no manual prompt engineering needed.
+**No brand yet?**
+```
+1. branding-generate (prompt, step=full)      → full brand intelligence
+2. brand-guidelines-create                    → create vault from results
+3. brand-guidelines-upload-logo               → attach logo
+4. brand-guidelines-compliance-check          → validate
+```
 
-**Example prompt for an AI:**
-> "List my brand guidelines, find Movitera, then generate 3 background concepts using its gradient palette."
-
-The AI will call `list_brand_guidelines` → `get_brand_guideline` → `batch_generate_mockups` in sequence.
+Passing `brandGuidelineId` to generation tools automatically injects logo, colors, typography, and voice — no manual prompt engineering needed.
 
 ---
 
 ## Troubleshooting
 
-**401 Unauthorized** — Token missing or invalid. Check Settings → API Keys or re-run the OAuth flow.
+**401 Unauthorized** — Token missing or invalid. Check Settings → API Keys.
 
-**`mcp-remote` hangs on Windows** — The `Authorization:Bearer` arg must have no space after the colon.
+**`mcp-remote` hangs on Windows** — `Authorization:Bearer` must have no space after the colon.
 
-**OAuth browser doesn't open** — Make sure you're on `mcp-remote@0.1.16` or later: `npx mcp-remote@0.1.16 --version`.
+**OAuth browser doesn't open** — Use `mcp-remote@0.1.16` or later.
 
-**Tools return "Visant API 401"** — Your API key may lack permissions. Check the key's scope in Settings.
+**`can_generate: false`** — Insufficient credits. Check `account-usage` for reset date.

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-import { Diamond, Paintbrush, Type as TypeIcon, Image as ImageIcon, Plus, Layers, X, Scan } from 'lucide-react';
+import { Diamond, Paintbrush, Type as TypeIcon, Image as ImageIcon, Scan } from 'lucide-react';
 import { useCreativeStore } from './store/creativeStore';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useQueryClient } from '@tanstack/react-query';
@@ -13,6 +13,9 @@ import { CreativeEditorSidebar } from './CreativeEditorSidebar';
 import { KonvaCanvas } from './KonvaCanvas';
 import type Konva from 'konva';
 import { CreativeToolbar, BackgroundToolbar } from './CreativeToolbar';
+import { KeyboardCheatsheet } from './KeyboardCheatsheet';
+import { PagesPanel } from './PagesPanel';
+import { copyLayersToClipboard, pasteLayersFromClipboard } from './lib/clipboard';
 import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import { exportCanvasAsPng } from './lib/exportPng';
 import { captureCanvasThumbnail } from './lib/captureThumbnail';
@@ -26,13 +29,15 @@ import {
 import { toast } from 'sonner';
 
 export const CreativeStudio: React.FC = () => {
-  const {
-    status, format, brandId, removeLayer, selectedLayerIds, setSelectedLayerIds,
-    pages, activePageIndex, setActivePageIndex, addPage, removePage, setStatus,
-    groupSelected, ungroupSelected, backgroundSelected,
-    activeTool, setActiveTool
-  } = useCreativeStore();
-
+  // State — atomic selectors so each field re-renders only when it changes.
+  const status = useCreativeStore((s) => s.status);
+  const format = useCreativeStore((s) => s.format);
+  const brandId = useCreativeStore((s) => s.brandId);
+  const selectedLayerIds = useCreativeStore((s) => s.selectedLayerIds);
+  const pages = useCreativeStore((s) => s.pages);
+  const activePageIndex = useCreativeStore((s) => s.activePageIndex);
+  const backgroundSelected = useCreativeStore((s) => s.backgroundSelected);
+  const activeTool = useCreativeStore((s) => s.activeTool);
   const creativeId = useCreativeStore((s) => s.creativeId);
   const projectName = useCreativeStore((s) => s.projectName);
   const prompt = useCreativeStore((s) => s.prompt);
@@ -40,12 +45,21 @@ export const CreativeStudio: React.FC = () => {
   const overlay = useCreativeStore((s) => s.overlay);
   const backgroundUrl = useCreativeStore((s) => s.backgroundUrl);
 
+  // Actions — stable identity in zustand, picking individually never re-renders.
+  const removeLayer = useCreativeStore((s) => s.removeLayer);
+  const setSelectedLayerIds = useCreativeStore((s) => s.setSelectedLayerIds);
+  const setStatus = useCreativeStore((s) => s.setStatus);
+  const groupSelected = useCreativeStore((s) => s.groupSelected);
+  const ungroupSelected = useCreativeStore((s) => s.ungroupSelected);
+  const setActiveTool = useCreativeStore((s) => s.setActiveTool);
+
   const { undo, redo } = useCreativeStore.temporal.getState();
   const { colors, allGuidelines } = useBrandKit();
 
   const canvasRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [previewSize, setPreviewSize] = React.useState({ width: 0, height: 0 });
+  const [cheatsheetOpen, setCheatsheetOpen] = React.useState(false);
 
   const currentGuideline = allGuidelines.find(g => g.id === brandId);
   const accentColor = currentGuideline?.colors?.[0]?.hex ?? colors[0]?.hex ?? '#00e5ff';
@@ -101,21 +115,83 @@ export const CreativeStudio: React.FC = () => {
           ungroupSelected();
           toast.info('Grupo desfeito');
         }
+        if (e.key === 'c' && selectedLayerIds.length > 0) {
+          e.preventDefault();
+          void copyLayersToClipboard(selectedLayerIds);
+        }
+        if (e.key === 'v') {
+          e.preventDefault();
+          pasteLayersFromClipboard().then((newIds) => {
+            if (newIds.length) setSelectedLayerIds(newIds);
+          });
+        }
+        if (e.key === 'a') {
+          e.preventDefault();
+          const all = useCreativeStore.getState().layers.filter((l) => !l.locked).map((l) => l.id);
+          setSelectedLayerIds(all);
+        }
+        // Page navigation: Ctrl+] / Ctrl+[ — next / prev page
+        if (e.key === ']' && !e.shiftKey) {
+          e.preventDefault();
+          const { activePageIndex: idx, pages: pgs, setActivePageIndex: setIdx } = useCreativeStore.getState();
+          if (idx + 1 < pgs.length) setIdx(idx + 1);
+        }
+        if (e.key === '[' && !e.shiftKey) {
+          e.preventDefault();
+          const { activePageIndex: idx, setActivePageIndex: setIdx } = useCreativeStore.getState();
+          if (idx > 0) setIdx(idx - 1);
+        }
+        // Ctrl+Shift+D — duplicate current page (different from Ctrl+D = duplicate layer)
+        if (e.key === 'D' && e.shiftKey) {
+          e.preventDefault();
+          const { activePageIndex: idx, duplicatePage: dup } = useCreativeStore.getState();
+          dup(idx);
+          toast.info('Página duplicada');
+        }
       }
 
       if (e.key === 'Escape' && selectedLayerIds.length > 0) {
         setSelectedLayerIds([]);
       }
 
+      // Cheatsheet — '?' (= shift+/ on most layouts)
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+        e.preventDefault();
+        setCheatsheetOpen((v) => !v);
+      }
+
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedLayerIds.length > 0) {
         e.preventDefault();
         selectedLayerIds.forEach(id => removeLayer(id));
+      }
+
+      // Arrow nudge — 1px (default) / 10px (shift). Skips locked layers.
+      if (
+        (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') &&
+        selectedLayerIds.length > 0
+      ) {
+        e.preventDefault();
+        const step = (e.shiftKey ? 10 : 1);
+        const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
+        const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+        const { layers: cur, updateLayer } = useCreativeStore.getState();
+        const w = previewSize.width || 1;
+        const h = previewSize.height || 1;
+        cur.forEach((l) => {
+          if (!selectedLayerIds.includes(l.id) || l.locked) return;
+          updateLayer(l.id, {
+            position: {
+              x: Math.max(0, Math.min(1, l.data.position.x + dx / w)),
+              y: Math.max(0, Math.min(1, l.data.position.y + dy / h)),
+            },
+          } as any);
+        });
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, selectedLayerIds, setSelectedLayerIds, removeLayer, groupSelected, ungroupSelected]);
+  }, [undo, redo, selectedLayerIds, setSelectedLayerIds, removeLayer, groupSelected, ungroupSelected, previewSize.width, previewSize.height]);
 
   const handleExport = async () => {
     if (!canvasRef.current) return;
@@ -140,28 +216,49 @@ export const CreativeStudio: React.FC = () => {
   );
 
   const queryClient = useQueryClient();
+  // Cancel any in-flight save when a newer one starts — last-write wins, no
+  // wasted requests when the user is mid-edit.
+  const saveAbortRef = useRef<AbortController | null>(null);
   const { status: autoSaveStatus, lastSavedAt } = useAutoSave({
     data: autoSaveData,
     enabled: isEditing,
     debounceMs: 2000,
     onSave: async () => {
-      const thumbnailUrl = await handleCaptureThumbnail();
-      const { setCreativeId } = useCreativeStore.getState();
-      const currentId = useCreativeStore.getState().creativeId;
-      const persisted = isPersistedId(currentId);
+      saveAbortRef.current?.abort();
+      const controller = new AbortController();
+      saveAbortRef.current = controller;
+      const { signal } = controller;
 
-      if (persisted) {
-        await creativeProjectApi.update(currentId as string, {
-          ...snapshotCreativeFromStore(),
-          thumbnailUrl,
-        });
-      } else {
-        const project = await saveCurrentCreativeAsNew(undefined, thumbnailUrl);
-        setCreativeId(project.id);
+      try {
+        const thumbnailUrl = await handleCaptureThumbnail();
+        if (signal.aborted) return;
+
+        const { setCreativeId } = useCreativeStore.getState();
+        const currentId = useCreativeStore.getState().creativeId;
+        const persisted = isPersistedId(currentId);
+
+        if (persisted) {
+          await creativeProjectApi.update(
+            currentId as string,
+            { ...snapshotCreativeFromStore(), thumbnailUrl },
+            { signal }
+          );
+        } else {
+          const project = await saveCurrentCreativeAsNew(undefined, thumbnailUrl, { signal });
+          if (!signal.aborted) setCreativeId(project.id);
+        }
+        if (!signal.aborted) {
+          queryClient.invalidateQueries({ queryKey: CREATIVE_PROJECT_KEYS.lists });
+        }
+      } catch (err: any) {
+        // Aborts are expected when newer save supersedes — don't surface as error.
+        if (err?.name === 'AbortError' || signal.aborted) return;
+        throw err;
       }
-      queryClient.invalidateQueries({ queryKey: CREATIVE_PROJECT_KEYS.lists });
     },
   });
+
+  useEffect(() => () => saveAbortRef.current?.abort(), []);
 
   return (
     <div className="flex h-[calc(100vh-1px)] bg-black overflow-hidden select-none">
@@ -253,86 +350,28 @@ export const CreativeStudio: React.FC = () => {
           />
         )}
 
-        {/* ── Multi-Card Gallery ── */}
-        {status === 'editing' && pages.length > 1 ? (
-          <div className="flex items-center gap-8 px-12 overflow-x-auto overflow-y-hidden custom-scrollbar-h max-w-full scroll-smooth py-12"
-            style={{ justifyContent: pages.length <= 3 ? 'center' : 'flex-start' }}
-          >
-            {pages.map((page, idx) => {
-              const isActive = idx === activePageIndex;
-              // Active frame gets full size, inactive frames get a smaller preview
-              const scale = isActive ? 1 : 0.6;
-              const dimensions = getPreviewDimensions(
-                page.format,
-                previewSize.width * scale,
-                previewSize.height * scale
-              );
-              return (
-                <div
-                  key={page.id}
-                  className={`relative shrink-0 transition-all duration-500 ease-out group/frame ${isActive
-                      ? 'z-10'
-                      : 'opacity-40 hover:opacity-70 cursor-pointer'
-                    }`}
-                  onClick={() => !isActive && setActivePageIndex(idx)}
-                >
-                  {/* Remove frame button */}
-                  {pages.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removePage(idx);
-                      }}
-                      className="absolute -top-3 -right-3 z-20 w-6 h-6 rounded-full bg-neutral-800 border border-white/10 hover:bg-red-500/80 hover:border-red-400 flex items-center justify-center text-neutral-500 hover:text-white transition-all opacity-0 group-hover/frame:opacity-100"
-                      title="Remover frame"
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                  {/* Frame label */}
-                  <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-medium tracking-wider uppercase ${isActive ? 'text-brand-cyan' : 'text-neutral-600'
-                    }`}>
-                    {idx + 1}/{pages.length}
-                  </div>
-                  <KonvaCanvas
-                    ref={isActive ? canvasRef : null}
-                    width={dimensions.width}
-                    height={dimensions.height}
-                    accentColor={accentColor}
-                    defaultFont={defaultFont}
-                  />
-                </div>
-              );
-            })}
-            <button
-              onClick={() => addPage()}
-              className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/10 hover:border-brand-cyan/40 hover:bg-brand-cyan/5 flex items-center justify-center text-neutral-600 hover:text-brand-cyan transition-all group shrink-0"
-            >
-              <Plus size={28} className="group-hover:rotate-90 transition-transform" />
-            </button>
-          </div>
-        ) : status === 'editing' && previewSize.width > 0 ? (
-          <div className="flex items-center gap-8 justify-center py-12">
-            <KonvaCanvas
-              ref={canvasRef}
-              width={previewSize.width}
-              height={previewSize.height}
-              accentColor={accentColor}
-              defaultFont={defaultFont}
-            />
-            <button
-              onClick={() => addPage()}
-              className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/10 hover:border-brand-cyan/40 hover:bg-brand-cyan/5 flex items-center justify-center text-neutral-600 hover:text-brand-cyan transition-all group shrink-0"
-            >
-              <Plus size={28} className="group-hover:rotate-90 transition-transform" />
-            </button>
-          </div>
-        ) : null}
+          {/* ── Single canvas — viewport drives multi-page via active page ── */}
+          {status === 'editing' && previewSize.width > 0 && (
+            <div className="flex items-center justify-center py-12">
+              <KonvaCanvas
+                ref={canvasRef}
+                width={previewSize.width}
+                height={previewSize.height}
+                accentColor={accentColor}
+                defaultFont={defaultFont}
+                onOpenCheatsheet={() => setCheatsheetOpen(true)}
+              />
+            </div>
+          )}
 
           {status === 'editing' && backgroundSelected && <BackgroundToolbar />}
           {status === 'editing' && <CreativeToolbar />}
         </div>
+
+        {status === 'editing' && <PagesPanel />}
       </main>
+
+      <KeyboardCheatsheet open={cheatsheetOpen} onOpenChange={setCheatsheetOpen} />
     </div>
   );
 };

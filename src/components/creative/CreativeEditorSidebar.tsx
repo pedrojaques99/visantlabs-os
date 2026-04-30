@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Type, Square, Download, ArrowLeft, Trash2, Undo2, Redo2, Briefcase, Save, FolderOpen, Loader2, Check, AlertTriangle, Circle, Image, Palette } from 'lucide-react';
+import { Eye, EyeOff, Type, Square, Download, ArrowLeft, Trash2, Undo2, Redo2, Briefcase, Save, FolderOpen, Loader2, Check, AlertTriangle, Circle, Image, Palette, Lock, Unlock } from 'lucide-react';
 import type { AutoSaveStatus } from '@/hooks/useAutoSave';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
@@ -49,26 +49,25 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
   lastSavedAt = null,
 }) => {
   const navigate = useNavigate();
-  const {
-    brandId,
-    layers,
-    selectedLayerIds,
-    format,
-    creativeId,
-    projectName,
-    setFormat,
-    setSelectedLayerIds,
-    updateLayerMeta,
-    removeLayer,
-    addLayer,
-    setProjectName,
-    setCreativeId,
-    reset,
-    backgroundUrl,
-    overlay,
-    backgroundSelected,
-    setBackgroundSelected,
-  } = useCreativeStore();
+  const brandId = useCreativeStore((s) => s.brandId);
+  const layers = useCreativeStore((s) => s.layers);
+  const selectedLayerIds = useCreativeStore((s) => s.selectedLayerIds);
+  const format = useCreativeStore((s) => s.format);
+  const creativeId = useCreativeStore((s) => s.creativeId);
+  const projectName = useCreativeStore((s) => s.projectName);
+  const backgroundUrl = useCreativeStore((s) => s.backgroundUrl);
+  const overlay = useCreativeStore((s) => s.overlay);
+  const backgroundSelected = useCreativeStore((s) => s.backgroundSelected);
+
+  const setFormat = useCreativeStore((s) => s.setFormat);
+  const setSelectedLayerIds = useCreativeStore((s) => s.setSelectedLayerIds);
+  const updateLayerMeta = useCreativeStore((s) => s.updateLayerMeta);
+  const removeLayer = useCreativeStore((s) => s.removeLayer);
+  const addLayer = useCreativeStore((s) => s.addLayer);
+  const setProjectName = useCreativeStore((s) => s.setProjectName);
+  const setCreativeId = useCreativeStore((s) => s.setCreativeId);
+  const reset = useCreativeStore((s) => s.reset);
+  const setBackgroundSelected = useCreativeStore((s) => s.setBackgroundSelected);
   const { undo, redo, pastStates, futureStates } = useCreativeStore.temporal.getState();
   const { colors, activeGuideline, allGuidelines } = useBrandKit();
 
@@ -318,8 +317,19 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                     updateLayerMeta(layer.id, { visible: !layer.visible });
                   }}
                   className="text-neutral-600 hover:text-white"
+                  title={layer.visible ? 'Ocultar' : 'Mostrar'}
                 >
                   {layer.visible ? <Eye size={12} /> : <EyeOff size={12} />}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateLayerMeta(layer.id, { locked: !layer.locked });
+                  }}
+                  className={`hover:text-white ${layer.locked ? 'text-brand-cyan' : 'text-neutral-600'}`}
+                  title={layer.locked ? 'Destravar' : 'Travar'}
+                >
+                  {layer.locked ? <Lock size={11} /> : <Unlock size={11} />}
                 </button>
                 <span className="flex-1 truncate">{label}</span>
                 <button

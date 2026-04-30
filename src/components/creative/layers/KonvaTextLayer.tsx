@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Text } from 'react-konva';
-import Konva from 'konva';
+import type Konva from 'konva';
 import { useCreativeStore } from '../store/creativeStore';
 import { stripAccent } from '../lib/parseAccent';
 import { normalizePoint, normalizeSize } from '@/lib/pixel';
@@ -14,9 +14,13 @@ interface Props {
   accentColor: string; // accepted for future use — accent rendering deferred
   registerNode: (id: string, node: Konva.Node | null) => void;
   onSelect: (id: string, extend: boolean) => void;
+  onDragStart?: (id: string) => void;
+  onSmartDragMove?: (e: Konva.KonvaEventObject<DragEvent>) => void;
+  onSmartTransform?: (e: Konva.KonvaEventObject<Event>) => void;
+  onSmartClear?: () => void;
 }
 
-export const KonvaTextLayer: React.FC<Props> = ({
+const KonvaTextLayerImpl: React.FC<Props> = ({
   layer,
   canvasWidth,
   canvasHeight,
@@ -24,6 +28,10 @@ export const KonvaTextLayer: React.FC<Props> = ({
   accentColor,
   registerNode,
   onSelect,
+  onDragStart,
+  onSmartDragMove,
+  onSmartTransform,
+  onSmartClear,
 }) => {
   void isSelected; // kept in contract — unused for Text rendering at this stage
   void accentColor; // accent rendering deferred per RESEARCH.md scope decision
@@ -53,6 +61,35 @@ export const KonvaTextLayer: React.FC<Props> = ({
       }
     };
   }, []);
+
+  // Hug-content: keep stored size in sync with Konva's measured natural size
+  // whenever text/font/canvas changes. Skipped while editing so the textarea's
+  // dimensions stay stable. 0.001 epsilon avoids feedback loops from float drift.
+  useEffect(() => {
+    if (isEditing) return;
+    const node = shapeRef.current;
+    if (!node) return;
+    const measuredW = node.width() / canvasWidth;
+    const measuredH = node.height() / canvasHeight;
+    if (
+      Math.abs(measuredW - data.size.w) > 0.001 ||
+      Math.abs(measuredH - data.size.h) > 0.001
+    ) {
+      updateLayer(layer.id, { size: { w: measuredW, h: measuredH } });
+    }
+  }, [
+    displayText,
+    data.fontSize,
+    data.fontFamily,
+    data.bold,
+    data.size.w,
+    data.size.h,
+    canvasWidth,
+    canvasHeight,
+    isEditing,
+    layer.id,
+    updateLayer,
+  ]);
 
   const handleDblClick = () => {
     const textNode = shapeRef.current;
@@ -129,11 +166,15 @@ export const KonvaTextLayer: React.FC<Props> = ({
       text={displayText}
       x={data.position.x * canvasWidth}
       y={data.position.y * canvasHeight}
-      width={data.size.w * canvasWidth}
-      height={data.size.h * canvasHeight}
+      rotation={data.rotation ?? 0}
       fontSize={scaledFontSize}
       fontFamily={data.fontFamily}
       fontStyle={data.bold ? 'bold' : 'normal'}
+      textDecoration={
+        [data.underline ? 'underline' : '', data.strikethrough ? 'line-through' : '']
+          .filter(Boolean)
+          .join(' ') || undefined
+      }
       fill={data.color}
       align={data.align}
       lineHeight={1.05}
@@ -142,12 +183,25 @@ export const KonvaTextLayer: React.FC<Props> = ({
       shadowBlur={data.shadowBlur ?? 0}
       shadowOffsetX={data.shadowOffsetX ?? 0}
       shadowOffsetY={data.shadowOffsetY ?? 0}
-      draggable
+      draggable={!layer.locked}
+      listening={!layer.locked}
+      onMouseEnter={(e) => {
+        const stage = e.target.getStage();
+        if (stage) stage.container().style.cursor = layer.locked ? 'not-allowed' : 'move';
+      }}
+      onMouseLeave={(e) => {
+        const stage = e.target.getStage();
+        if (stage) stage.container().style.cursor = '';
+      }}
       onClick={(e) => onSelect(layer.id, e.evt.shiftKey)}
       onTap={(e) => onSelect(layer.id, e.evt.shiftKey)}
       onDblClick={handleDblClick}
       onDblTap={handleDblClick}
+      onDragStart={() => onDragStart?.(layer.id)}
+      onDragMove={(e) => onSmartDragMove?.(e)}
+      onTransform={(e) => onSmartTransform?.(e)}
       onDragEnd={(e) => {
+        onSmartClear?.();
         updateLayer(layer.id, {
           position: normalizePoint(
             { x: e.target.x(), y: e.target.y() },
@@ -159,23 +213,44 @@ export const KonvaTextLayer: React.FC<Props> = ({
         const node = shapeRef.current!;
         const scaleX = node.scaleX();
         const scaleY = node.scaleY();
-        // CRITICAL: reset scale to 1 and fold into width/height (Pitfall 1)
+        // Text scales font, never the box — averaged so distort-mode (ctrl)
+        // still produces uniform glyphs instead of stretched ones.
+        const fontScale = (scaleX + scaleY) / 2;
         node.scaleX(1);
         node.scaleY(1);
+        onSmartClear?.();
+        const newFontSize = Math.max(8, data.fontSize * fontScale);
+        const measuredW = node.width() * fontScale;
+        const measuredH = node.height() * fontScale;
         updateLayer(layer.id, {
           position: normalizePoint(
             { x: node.x(), y: node.y() },
             { w: canvasWidth, h: canvasHeight }
           ),
           size: normalizeSize(
-            {
-              w: Math.max(20, node.width() * scaleX),
-              h: Math.max(20, node.height() * scaleY),
-            },
+            { w: measuredW, h: measuredH },
             { w: canvasWidth, h: canvasHeight }
           ),
+          fontSize: newFontSize,
+          rotation: node.rotation(),
         });
       }}
     />
   );
 };
+
+// Layer ref equality is enough — store updates via .map preserve identity for
+// untouched layers, so memoization skips re-render when sibling layers change.
+export const KonvaTextLayer = React.memo(KonvaTextLayerImpl, (prev, next) =>
+  prev.layer === next.layer &&
+  prev.isSelected === next.isSelected &&
+  prev.canvasWidth === next.canvasWidth &&
+  prev.canvasHeight === next.canvasHeight &&
+  prev.accentColor === next.accentColor &&
+  prev.registerNode === next.registerNode &&
+  prev.onSelect === next.onSelect &&
+  prev.onDragStart === next.onDragStart &&
+  prev.onSmartDragMove === next.onSmartDragMove &&
+  prev.onSmartTransform === next.onSmartTransform &&
+  prev.onSmartClear === next.onSmartClear
+);

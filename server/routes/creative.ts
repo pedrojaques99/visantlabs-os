@@ -1,7 +1,5 @@
 import { Router } from 'express';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { rateLimit } from 'express-rate-limit';
-import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import {
   appendEvents,
   readEvents,
@@ -13,120 +11,70 @@ import { renderCreativePlan } from '../lib/creative-renderer.js';
 import { uploadCanvasImage } from '../services/r2Service.js';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
+import {
+  planFromBrand,
+  PlanValidationError,
+  sanitizeForPrompt,
+  type CreativeFormat,
+} from '../lib/creative-plan-engine.js';
+import type { BrandGuideline } from '../../src/lib/figma-types.js';
 
 const router = Router();
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-const model = genAI.getGenerativeModel({
-  model: GEMINI_MODELS.TEXT,
-  generationConfig: {
-    responseMimeType: 'application/json',
-  },
-});
-
-const SYSTEM_PROMPT = `You are a creative director generating layered marketing creatives.
-Given a user prompt and brand context, return STRICT JSON matching this schema:
-
-{
-  "background": { "prompt": "<detailed photo prompt for the AI image generator>" },
-  "overlay": { "type": "gradient", "direction": "bottom", "opacity": 0.5, "color": "#000000" } | null,
-  "layers": [
-    { "type": "text", "content": "HEADLINE WITH <accent>WORD</accent>", "role": "headline", "position": {"x":0.08,"y":0.6}, "size": {"w":0.84,"h":0.18}, "align": "left", "fontSize": 96, "color": "#ffffff", "bold": true },
-    { "type": "text", "content": "Subheadline copy", "role": "subheadline", "position": {"x":0.08,"y":0.8}, "size": {"w":0.6,"h":0.06}, "align": "left", "fontSize": 36, "color": "#ffffff", "bold": false },
-    { "type": "shape", "shape": "rect", "color": "<ACCENT_HEX>", "position": {"x":0.0,"y":0.85}, "size": {"w":0.12,"h":0.15} },
-    { "type": "logo", "position": {"x":0.8,"y":0.05}, "size": {"w":0.15,"h":0.08} }
-  ]
-}
-
-RULES:
-- Coordinates are 0-1 normalized (top-left origin).
-- Use <accent>WORD</accent> on 1-2 important words in the headline.
-- fontSize is in px assuming a 1080px tall canvas — scale proportionally for other formats.
-- Replace <ACCENT_HEX> with the brand accent color when provided.
-- Use brand colors for text. Default to white on dark overlay.
-- Only include a "logo" layer if the brand has logos available (hasLogos: true).
-- If hasLogos is false, do NOT return any layer of type "logo".
-- LOGO PLACEMENT: treat the logo as a small brand seal — place it in a corner, never centered. Preferred corners (in order): top-right (x≈0.82, y≈0.04), bottom-right (x≈0.82, y≈0.88), bottom-left (x≈0.04, y≈0.88). Size: {"w":0.12,"h":0.07} maximum — keep it discreet. Never overlap the headline.
-- HEADLINE: write it as a real creative director would — punchy, specific to the prompt, max 6 words. Use <accent> on the most impactful word.
-- SUBHEADLINE: 1 short phrase that supports the headline, max 12 words.
-- Output ONLY the JSON object, no markdown, no commentary.`;
 
 interface CreativePlanRequest {
   prompt: string;
-  format: '1:1' | '9:16' | '16:9' | '4:5';
+  format: CreativeFormat;
   brandId?: string;
-  brandContext?: {
-    name?: string;
-    colors?: string[];
-    fonts?: string[];
-    voice?: string;
-    keywords?: string[];
-    hasLogos?: boolean;
-  };
+  // Full BrandGuideline — server builds rich structured context, picks brand
+  // media as background candidate, and snaps invented colors/fonts back to
+  // the brand. The legacy minimal `brandContext` shape is no longer accepted.
+  brandGuideline?: BrandGuideline;
 }
 
-const FORMAT_RULES: Record<string, string> = {
-  '1:1': 'Square layout. Balance elements centrally.',
-  '9:16':
-    'Vertical/portrait layout. Stack elements top-to-bottom. Keep headline above 0.5y. CTA near bottom (y > 0.75). Avoid overcrowding the sides.',
-  '16:9':
-    'Horizontal/landscape layout. Use left half for text (x < 0.5), right half for visual breathing room and background focus.',
-  '4:5':
-    'Slightly vertical. Headline in upper third, subheadline mid, CTA/logo in lower third.',
-};
+async function getLearnedBiasLine(brandId?: string): Promise<string> {
+  if (!brandId) return '';
+  try {
+    const insights = await computeBrandInsights(brandId);
+    if (insights.sampleSize >= 3 && insights.commonPatches.length > 0) {
+      return `Brand-learned preferences (from ${insights.sampleSize} past edits across ${insights.creatives} creatives): ${insights.commonPatches.join('; ')}. Apply these proactively.`;
+    }
+  } catch (e) {
+    console.warn('[creative/plan] insights unavailable:', (e as Error).message);
+  }
+  return '';
+}
 
 router.post('/plan', async (req, res) => {
   try {
-    const { prompt, format, brandContext, brandId } = req.body as CreativePlanRequest;
+    const { prompt, format, brandGuideline, brandId } =
+      req.body as CreativePlanRequest;
 
     if (!prompt || !format) {
       return res.status(400).json({ error: 'prompt and format are required' });
     }
-
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
     }
 
-    const formatRule = FORMAT_RULES[format] || '';
+    const learnedBiasLine = await getLearnedBiasLine(brandId);
 
-    // Brand Learning (#5): inject past-correction insights as a bias hint.
-    // The model adapts to this brand's historical edits without any fine-tune.
-    let learnedBiasLine = '';
-    if (brandId) {
-      try {
-        const insights = await computeBrandInsights(brandId);
-        if (insights.sampleSize >= 3 && insights.commonPatches.length > 0) {
-          learnedBiasLine = `Brand-learned preferences (from ${insights.sampleSize} past edits across ${insights.creatives} creatives): ${insights.commonPatches.join('; ')}. Apply these proactively.`;
-        }
-      } catch (e) {
-        console.warn('[creative/plan] insights unavailable:', (e as Error).message);
-      }
-    }
-
-    const userMessage = [
-      `User prompt: ${prompt}`,
-      `Format: ${format}`,
-      `Layout Strategy: ${formatRule}`,
-      brandContext ? `Brand: ${JSON.stringify(brandContext)}` : '',
-      `Available Brand Logos: ${brandContext?.hasLogos ? 'YES' : 'NO'}`,
-      learnedBiasLine,
-    ]
-      .filter(Boolean)
-      .join('\n');
-
-    const result = await model.generateContent([
-      { text: SYSTEM_PROMPT },
-      { text: userMessage },
-    ]);
-
-    const raw = result.response.text();
-    let parsed;
     try {
-      parsed = JSON.parse(raw);
-    } catch {
-      return res.status(502).json({ error: 'Gemini returned invalid JSON', raw });
+      const { plan, pickedMedia } = await planFromBrand({
+        prompt,
+        format,
+        brandGuideline: brandGuideline ?? null,
+        learnedBiasLine,
+      });
+      // pickedMedia carries the brand-media URL the engine selected for this
+      // format; the client uses it as the background and only falls back to
+      // AI image gen when it's null.
+      return res.json({ ...plan, pickedMedia });
+    } catch (err) {
+      if (err instanceof PlanValidationError) {
+        return res.status(502).json({ error: err.reason, raw: err.raw });
+      }
+      throw err;
     }
-
-    return res.json(parsed);
   } catch (err: any) {
     console.error('[creative/plan] error:', err);
     return res.status(500).json({ error: err?.message ?? 'unknown error' });
@@ -135,18 +83,15 @@ router.post('/plan', async (req, res) => {
 
 // ---------- Creative Events (Brand Learning #5 + Observability #6) ----------
 
-// Ingest a batch of edit events from the client
 router.post('/events', async (req, res) => {
   try {
     const body = req.body as { events?: CreativeEvent[] };
     if (!body?.events || !Array.isArray(body.events)) {
       return res.status(400).json({ error: 'events array required' });
     }
-    // Basic sanity cap to prevent abuse (client debounces to <=20)
     if (body.events.length > 200) {
       return res.status(413).json({ error: 'too many events in one batch' });
     }
-    // Trust-but-verify: stamp server time if client omits
     const now = Date.now();
     const events = body.events.map((e) => ({
       ...e,
@@ -161,7 +106,6 @@ router.post('/events', async (req, res) => {
   }
 });
 
-// Query events (observability timeline)
 router.get('/events', async (req, res) => {
   try {
     const brandId = (req.query.brandId as string) || undefined;
@@ -175,7 +119,6 @@ router.get('/events', async (req, res) => {
   }
 });
 
-// Global / per-brand metrics (observability header card)
 router.get('/events/metrics', async (req, res) => {
   try {
     const brandId = (req.query.brandId as string) || undefined;
@@ -187,7 +130,6 @@ router.get('/events/metrics', async (req, res) => {
   }
 });
 
-// Brand learning insights (feeds /plan and future MCP tool)
 router.get('/brand/:brandId/insights', async (req, res) => {
   try {
     const insights = await computeBrandInsights(req.params.brandId);
@@ -199,9 +141,7 @@ router.get('/brand/:brandId/insights', async (req, res) => {
 });
 
 // ─── Server-side render ───────────────────────────────────────────────────────
-// POST /api/creative/render
-// Accepts a creative plan + backgroundImageUrl, renders to PNG, uploads to R2.
-// Used by agents to close the generate → image loop without a browser.
+// POST /api/creative/render: plan + bg URL → PNG → R2.
 
 router.post('/render', authenticate, async (req: AuthRequest, res) => {
   try {
@@ -223,14 +163,12 @@ router.post('/render', authenticate, async (req: AuthRequest, res) => {
       accentColor: accentColor ?? '#ffffff',
     });
 
-    // Upload to R2 if configured, otherwise return base64
     try {
       const base64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
       const userId = req.userId ?? 'system';
       const imageUrl = await uploadCanvasImage(base64, userId, 'creative-render', `render-${Date.now()}`);
       return res.json({ imageUrl });
     } catch {
-      // R2 not configured — return base64 directly
       return res.json({ imageBase64: pngBuffer.toString('base64') });
     }
   } catch (err: any) {
@@ -239,128 +177,135 @@ router.post('/render', authenticate, async (req: AuthRequest, res) => {
   }
 });
 
-// ─── Brand-driven generation ───────────────────────────────────────────────────
-// POST /api/creative/generate-from-brand
-// Load brand guideline → AI plan → render PNG → R2 → return imageUrl
+// ─── Brand-driven generation ──────────────────────────────────────────────────
+// POST /api/creative/generate-from-brand: load brand → plan → render → R2.
 
-const generateFromBrandLimiter = rateLimit({ windowMs: 60_000, max: 10, standardHeaders: true, legacyHeaders: false });
-
-router.post('/generate-from-brand', generateFromBrandLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const { brandId, format = '1:1', intent, feedback, previousPlan } = req.body as {
-      brandId: string;
-      format?: '1:1' | '16:9' | '9:16' | '4:5';
-      intent?: string;
-      feedback?: string;
-      previousPlan?: Record<string, any>;
-    };
-
-    if (!brandId) {
-      return res.status(400).json({ error: 'brandId is required' });
-    }
-
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
-    }
-
-    // Load brand — enforce ownership
-    const brand = await prisma.brandGuideline.findFirst({
-      where: { id: brandId, userId: req.userId! },
-    });
-    if (!brand) {
-      return res.status(404).json({ error: 'Brand guideline not found' });
-    }
-
-    // Build brand context string for AI
-    const colors = (brand.colors as any[]) ?? [];
-    const typography = (brand.typography as any[]) ?? [];
-    const logos = (brand.logos as any[]) ?? [];
-    const gradients = (brand.gradients as any[]) ?? [];
-
-    const primaryColor = colors.find((c: any) => c.role === 'primary')?.hex ?? colors[0]?.hex ?? '#000000';
-    const bgColor = colors.find((c: any) => c.role === 'background' || c.role === 'bg')?.hex ?? '#ffffff';
-    const textColor = colors.find((c: any) => c.role === 'text')?.hex ?? '#ffffff';
-    const accentColor = colors.find((c: any) => c.role === 'accent' || c.role === 'secondary')?.hex ?? primaryColor;
-    const primaryFont = typography.find((t: any) => t.role === 'primary' || t.role === 'heading')?.family ?? typography[0]?.family ?? 'Inter';
-    const logoUrls = logos.slice(0, 2).map((l: any) => l.url).filter(Boolean);
-    const hasLogos = logoUrls.length > 0;
-    const gradientCss = gradients[0]?.css ?? null;
-
-    const brandContextStr = [
-      `Primary color: ${primaryColor}`,
-      `Background color: ${bgColor}`,
-      `Text color: ${textColor}`,
-      `Accent color: ${accentColor}`,
-      `Primary font: ${primaryFont}`,
-      hasLogos ? `Logo URLs: ${logoUrls.join(', ')}` : 'No logos available',
-      gradientCss ? `Brand gradient: ${gradientCss}` : '',
-    ].filter(Boolean).join('\n');
-
-    const userMessage = [
-      `Brand guidelines:\n${brandContextStr}`,
-      `Format: ${format}`,
-      `Layout strategy: ${FORMAT_RULES[format] ?? ''}`,
-      `Available Brand Logos: ${hasLogos ? 'YES' : 'NO'}`,
-      intent ? `Creative intent: ${intent}` : '',
-      feedback && previousPlan
-        ? `User feedback on previous plan: ${feedback}\nPrevious plan JSON:\n${JSON.stringify(previousPlan)}\nRefine the plan based on the feedback.`
-        : '',
-    ].filter(Boolean).join('\n');
-
-    // Generate plan via Gemini (reuse module-level model + SYSTEM_PROMPT)
-    const result = await model.generateContent([
-      { text: SYSTEM_PROMPT },
-      { text: userMessage },
-    ]);
-    const raw = result.response.text();
-    let plan: Record<string, any>;
-    try {
-      plan = JSON.parse(raw);
-    } catch {
-      return res.status(502).json({ error: 'AI returned invalid JSON', raw });
-    }
-
-    // Inject first logo URL into any logo layers
-    if (hasLogos && Array.isArray(plan.layers)) {
-      let logoIdx = 0;
-      plan.layers = plan.layers.map((layer: any) => {
-        if (layer.type === 'logo' && !layer.url && logoUrls[logoIdx]) {
-          return { ...layer, url: logoUrls[logoIdx++] };
-        }
-        return layer;
-      });
-    }
-
-    // Render to PNG
-    const pngBuffer = await renderCreativePlan(plan as any, {
-      format,
-      accentColor,
-    });
-
-    // Upload to R2
-    const base64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
-    const userId = req.userId ?? 'system';
-    let imageUrl: string;
-    try {
-      imageUrl = await uploadCanvasImage(base64, userId, 'creative-render', `brand-gen-${Date.now()}`);
-    } catch {
-      // R2 not configured — return base64 inline
-      return res.json({
-        imageBase64: base64,
-        plan,
-        brandUsed: { colors: colors.slice(0, 4), fonts: typography.slice(0, 2), logos: logoUrls },
-      });
-    }
-
-    return res.json({
-      imageUrl,
-      plan,
-      brandUsed: { colors: colors.slice(0, 4), fonts: typography.slice(0, 2), logos: logoUrls },
-    });
-  } catch (err: any) {
-    console.error('[creative/generate-from-brand] error:', err);
-    return res.status(500).json({ error: err?.message ?? 'generation failed' });
-  }
+const generateFromBrandLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
 });
+
+router.post(
+  '/generate-from-brand',
+  generateFromBrandLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const { brandId, format = '1:1', intent, feedback, previousPlan } = req.body as {
+        brandId: string;
+        format?: CreativeFormat;
+        intent?: string;
+        feedback?: string;
+        previousPlan?: Record<string, any>;
+      };
+
+      if (!brandId) {
+        return res.status(400).json({ error: 'brandId is required' });
+      }
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+      }
+
+      const brand = await prisma.brandGuideline.findFirst({
+        where: { id: brandId, userId: req.userId! },
+      });
+      if (!brand) {
+        return res.status(404).json({ error: 'Brand guideline not found' });
+      }
+
+      // Stitch intent + feedback into the prompt; engine handles brand context.
+      const promptParts = [
+        intent ? `Creative intent: ${sanitizeForPrompt(intent)}` : '',
+        feedback && previousPlan
+          ? `User feedback on previous plan: ${sanitizeForPrompt(feedback)}\nPrevious plan JSON:\n${JSON.stringify(
+              previousPlan
+            )}\nRefine the plan based on the feedback.`
+          : '',
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      let plan: Record<string, any>;
+      let pickedMedia: { url: string } | null = null;
+      try {
+        const result = await planFromBrand({
+          prompt: promptParts || (intent ?? 'Create a brand-aligned creative.'),
+          format,
+          brandGuideline: brand as unknown as BrandGuideline,
+        });
+        plan = result.plan;
+        pickedMedia = result.pickedMedia;
+      } catch (err) {
+        if (err instanceof PlanValidationError) {
+          return res.status(502).json({ error: err.reason, raw: err.raw });
+        }
+        throw err;
+      }
+
+      // Logo URL injection happens in the engine via applyBrandFidelityPasses
+      // (forces a logo layer if missing). Attach the URL here from prisma data
+      // since the engine doesn't fill URLs (kept format-agnostic).
+      const logos = (brand.logos as any[]) ?? [];
+      const logoUrls = logos.slice(0, 2).map((l: any) => l.url).filter(Boolean);
+      if (logoUrls.length && Array.isArray(plan.layers)) {
+        let i = 0;
+        plan.layers = plan.layers.map((layer: any) =>
+          layer.type === 'logo' && !layer.url && logoUrls[i]
+            ? { ...layer, url: logoUrls[i++] }
+            : layer
+        );
+      }
+
+      const colors = (brand.colors as any[]) ?? [];
+      const accentColor =
+        colors.find((c: any) => c.role === 'accent' || c.role === 'secondary')?.hex ??
+        colors.find((c: any) => c.role === 'primary')?.hex ??
+        colors[0]?.hex ??
+        '#000000';
+
+      const pngBuffer = await renderCreativePlan(
+        { ...plan, backgroundImageUrl: pickedMedia?.url } as any,
+        { format, accentColor }
+      );
+
+      const base64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
+      const userId = req.userId ?? 'system';
+      try {
+        const imageUrl = await uploadCanvasImage(
+          base64,
+          userId,
+          'creative-render',
+          `brand-gen-${Date.now()}`
+        );
+        return res.json({
+          imageUrl,
+          plan,
+          pickedMedia,
+          brandUsed: {
+            colors: colors.slice(0, 4),
+            fonts: ((brand.typography as any[]) ?? []).slice(0, 2),
+            logos: logoUrls,
+          },
+        });
+      } catch {
+        return res.json({
+          imageBase64: base64,
+          plan,
+          pickedMedia,
+          brandUsed: {
+            colors: colors.slice(0, 4),
+            fonts: ((brand.typography as any[]) ?? []).slice(0, 2),
+            logos: logoUrls,
+          },
+        });
+      }
+    } catch (err: any) {
+      console.error('[creative/generate-from-brand] error:', err);
+      return res.status(500).json({ error: err?.message ?? 'generation failed' });
+    }
+  }
+);
 
 export default router;

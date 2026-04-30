@@ -1,6 +1,8 @@
 import { saveAs } from 'file-saver';
 import type Konva from 'konva';
 import { FORMAT_DIMENSIONS } from './formatDimensions';
+import { waitForStageImages } from './waitForImages';
+import { withIdentityViewport } from './stageCapture';
 import type { CreativeFormat } from '../store/creativeTypes';
 
 /**
@@ -10,6 +12,9 @@ import type { CreativeFormat } from '../store/creativeTypes';
  * Konva re-rasterizes all vector nodes at the higher resolution via
  * `pixelRatio = targetWidth / previewWidth` — no quality loss vs. the old
  * dom-to-image scale-transform approach.
+ *
+ * Viewport zoom/pan is temporarily reset to identity so the captured image
+ * always reflects the full creative, regardless of how the user zoomed.
  */
 export async function exportCanvasAsPng(
   stage: Konva.Stage | null,
@@ -23,7 +28,10 @@ export async function exportCanvasAsPng(
   if (!previewWidth) throw new Error('Stage has zero width');
 
   const pixelRatio = target.width / previewWidth;
-  const dataUrl = stage.toDataURL({ pixelRatio, mimeType: 'image/png' });
+  await waitForStageImages(stage);
+  const dataUrl = await withIdentityViewport(stage, () =>
+    stage.toDataURL({ pixelRatio, mimeType: 'image/png' })
+  );
 
   // Convert dataURL -> Blob for file-saver (RESEARCH.md Pattern 5)
   const blob = await (await fetch(dataUrl)).blob();

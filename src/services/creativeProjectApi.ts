@@ -76,17 +76,26 @@ export const creativeProjectApi = {
     return request<{ project: CreativeProject }>(`/creative-projects/${id}`).then((r) => r.project);
   },
 
-  create(input: SaveCreativeProjectInput): Promise<CreativeProject> {
+  create(
+    input: SaveCreativeProjectInput,
+    opts?: { signal?: AbortSignal }
+  ): Promise<CreativeProject> {
     return request<{ project: CreativeProject }>(`/creative-projects`, {
       method: 'POST',
       body: JSON.stringify(input),
+      signal: opts?.signal,
     }).then((r) => r.project);
   },
 
-  update(id: string, input: Partial<SaveCreativeProjectInput>): Promise<CreativeProject> {
+  update(
+    id: string,
+    input: Partial<SaveCreativeProjectInput>,
+    opts?: { signal?: AbortSignal }
+  ): Promise<CreativeProject> {
     return request<{ project: CreativeProject }>(`/creative-projects/${id}`, {
       method: 'PUT',
       body: JSON.stringify(input),
+      signal: opts?.signal,
     }).then((r) => r.project);
   },
 

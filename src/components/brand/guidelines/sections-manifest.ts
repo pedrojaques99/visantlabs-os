@@ -14,7 +14,7 @@ import {
   FileText, Compass, Image as ImageIcon, Palette, Type, Tag,
   Layers, FileText as EditorialIcon, ShieldCheck, ImageIcon as MediaIcon,
   Link, BookOpen, Blend, Layers2, Zap, Frame, MessageCircle, User,
-  Diamond, MessageSquare,
+  Diamond, MessageSquare, LayoutTemplate,
 } from 'lucide-react';
 
 export interface SectionMeta {
@@ -46,6 +46,7 @@ export const SECTIONS_MANIFEST: SectionMeta[] = [
   { id: 'mensagem_central',  label: 'Mensagem Central',  icon: MessageSquare,  defaultSpan: '1'    },
   { id: 'voice',             label: 'Tone of Voice',     icon: MessageCircle,  defaultSpan: '1'    },
   { id: 'personas',          label: 'Personas',          icon: User,           defaultSpan: 'full' },
+  { id: 'preview',           label: 'Preview',            icon: LayoutTemplate, defaultSpan: 'full' },
 ];
 
 /**
@@ -105,7 +106,7 @@ export const SECTION_TABS: SectionTab[] = [
   {
     id: 'estrategia',
     label: 'Estratégia',
-    sections: ['manifesto', 'archetypes', 'mensagem_central', 'voice', 'personas', 'editorial', 'tags'],
+    sections: ['manifesto', 'archetypes', 'mensagem_central', 'voice', 'personas'],
   },
   {
     id: 'logotipo',
@@ -118,8 +119,13 @@ export const SECTION_TABS: SectionTab[] = [
     sections: ['colors', 'typography', 'tokens', 'gradients', 'shadows', 'borders', 'motion'],
   },
   {
-    id: 'patterns',
-    label: 'Patterns',
-    sections: ['accessibility'],
+    id: 'diretrizes',
+    label: 'Diretrizes',
+    sections: ['editorial', 'tags', 'accessibility'],
+  },
+  {
+    id: 'preview',
+    label: 'Preview',
+    sections: ['preview'],
   },
 ];
