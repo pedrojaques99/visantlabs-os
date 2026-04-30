@@ -7,6 +7,21 @@ on:
     branches: [main, dev]
 
 jobs:
+  lint-api-urls:
+    name: No hardcoded /api/ fetch calls
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for hardcoded fetch('/api/
+        run: |
+          count=$(grep -rn "fetch('/api/" src/pages/ src/services/ --include="*.ts" --include="*.tsx" | wc -l)
+          if [ "$count" -gt 0 ]; then
+            echo "❌ Found $count hardcoded fetch('/api/...) calls — use VITE_API_URL instead:"
+            grep -rn "fetch('/api/" src/pages/ src/services/ --include="*.ts" --include="*.tsx"
+            exit 1
+          fi
+          echo "✅ No hardcoded /api/ fetch calls found"
+
   unit:
     name: Unit tests
     runs-on: ubuntu-latest

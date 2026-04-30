@@ -1,5 +1,7 @@
 import { CREDIT_PACKAGES } from '../utils/creditPackages';
 
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+
 export interface Product {
     id: string;
     productId: string;
@@ -31,7 +33,7 @@ class ProductService {
         }
 
         try {
-            const response = await fetch('/api/payments/products');
+            const response = await fetch(`${API_BASE}/payments/products`);
             if (!response.ok) throw new Error('Failed to fetch products');
             const data = await response.json();
 

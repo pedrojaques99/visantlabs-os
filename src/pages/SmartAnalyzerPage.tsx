@@ -49,6 +49,8 @@ import { GEMINI_MODELS } from '../constants/geminiModels';
 import type { AspectRatio } from '../types/types';
 import { MockupCard } from '@/components/mockupmachine/MockupCard';
 
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+
 const GOOGLE_FONTS = [
   { value: '', label: 'Auto Detect' },
   { value: 'Inter', label: 'Inter' },
@@ -368,7 +370,7 @@ export const SmartAnalyzerPage: React.FC = () => {
 
     try {
       const token = authService.getToken();
-      const response = await fetch('/api/mockups/generate', {
+      const response = await fetch(`${API_BASE}/mockups/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -422,7 +424,7 @@ export const SmartAnalyzerPage: React.FC = () => {
     try {
       const token = authService.getToken();
       const generateOne = async () => {
-        const response = await fetch('/api/mockups/generate', {
+        const response = await fetch(`${API_BASE}/mockups/generate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -541,7 +543,7 @@ export const SmartAnalyzerPage: React.FC = () => {
 
     try {
       const token = authService.getToken();
-      const response = await fetch('/api/plugin/smart-analyze', {
+      const response = await fetch(`${API_BASE}/plugin/smart-analyze`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -630,7 +632,7 @@ export const SmartAnalyzerPage: React.FC = () => {
         ? JSON.stringify(result.operations, null, 2)
         : result.prompt || '';
 
-      const response = await fetch('/api/plugin/smart-analyze/publish', {
+      const response = await fetch(`${API_BASE}/plugin/smart-analyze/publish`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

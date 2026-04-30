@@ -20,9 +20,11 @@ import { GEMINI_MODELS } from '../constants/geminiModels';
 import { getCreditsRequired } from '../utils/creditCalculator';
 import { ModelSelector } from '../components/shared/ModelSelector';
 
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+
 async function callVideoApi(body: object): Promise<string> {
   const token = authService.getToken();
-  const res = await fetch('/api/video/generate', {
+  const res = await fetch(`${API_BASE}/video/generate`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -285,7 +287,7 @@ function MoodboardStudio() {
       const base64 = crop.upscaledUrl || crop.url;
       const pureBase64 = base64.startsWith('data:') ? base64.split(',')[1] : base64;
       const mimeType = base64.startsWith('data:') ? base64.split(';')[0].slice(5) : 'image/jpeg';
-      const res = await fetch('/api/mockups/generate', {
+      const res = await fetch(`${API_BASE}/mockups/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ promptText: `Reimagine em 4k — enhance quality, lighting and detail while preserving the original composition and style [${Date.now()}]`, baseImage: { base64: pureBase64, mimeType }, model, provider }),

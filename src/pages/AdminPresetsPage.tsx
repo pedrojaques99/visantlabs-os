@@ -56,6 +56,8 @@ import { migrateLegacyPreset } from '@/types/communityPrompts';
 import type { CommunityPrompt } from '@/types/communityPrompts';
 import { MicroTitle } from '../components/ui/MicroTitle';
 
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+
 const ADMIN_API = '/api/admin/presets';
 
 const ASPECT_RATIOS: AspectRatio[] = ['9:16', '21:9', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '16:9', '1:1'];
@@ -448,7 +450,7 @@ export const AdminPresetsPage: React.FC = () => {
       setData(result);
 
       // Fetch categories
-      const categoriesResponse = await fetch('/api/mockup-tags/categories', {
+      const categoriesResponse = await fetch(`${API_BASE}/mockup-tags/categories`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

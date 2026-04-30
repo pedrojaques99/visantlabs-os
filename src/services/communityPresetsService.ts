@@ -1,6 +1,8 @@
 import { migrateLegacyPreset } from '../types/communityPrompts.js';
 import type { PromptCategory } from '../types/communityPrompts.js';
 
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+
 // Cache for community presets
 let presetsPromise: Promise<Record<string, any[]>> | null = null;
 let lastToken: string | null = null;
@@ -28,7 +30,7 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch('/api/community/presets/public', {
+      const response = await fetch(`${API_BASE}/community/presets/public`, {
         headers
       });
 
@@ -135,7 +137,7 @@ export async function initializeCommunityPresets(): Promise<void> {
  */
 export async function getCommunityStats(): Promise<{ totalUsers: number; totalPresets: number; totalBlankMockups: number }> {
   try {
-    const response = await fetch('/api/community/stats');
+    const response = await fetch(`${API_BASE}/community/stats`);
     if (response.ok) {
       return await response.json();
     }

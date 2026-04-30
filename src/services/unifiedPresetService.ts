@@ -6,6 +6,8 @@ import { MOCKUP_PRESETS, type MockupPreset } from '../types/mockupPresets';
 import { BRANDING_PRESETS, type BrandingPreset } from '../types/brandingPresets';
 import { EFFECT_PRESETS, type EffectPreset } from '../types/effectPresets';
 
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+
 export type PresetType = 'angle' | 'texture' | 'ambience' | 'luminance' | 'mockup' | 'branding' | 'effect';
 
 export interface UnifiedPresets {
@@ -46,7 +48,7 @@ export async function fetchAllOfficialPresets(): Promise<UnifiedPresets> {
     isLoadingPromise = (async () => {
         try {
             console.log('[UnifiedPresetService] Fetching official presets...');
-            const response = await fetch('/api/admin/presets/public');
+            const response = await fetch(`${API_BASE}/admin/presets/public`);
             if (response.ok) {
                 const data = await response.json();
 
