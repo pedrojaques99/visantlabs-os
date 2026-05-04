@@ -110,7 +110,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
 
   // ── WebSocket initialization ──
   if (msg.type === 'INIT_WS') {
-    console.log('[Plugin] WebSocket initialization message received');
+    // WebSocket init acknowledged
     return;
   }
 
@@ -494,10 +494,20 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     postToUI({ type: 'FONT_VARIABLES_LOADED', fonts });
     postToUI({ type: 'COLOR_VARIABLES_LOADED', colors });
 
-    exportComponentThumbnails(components).catch(() => {});
+    // Thumbnails are exported on-demand via GET_COMPONENT_THUMBNAILS
     getAvailableFontFamilies().then((families: any) => {
       postToUI({ type: 'AVAILABLE_FONTS_LOADED', families });
     }).catch(() => {});
+    return;
+  }
+
+  // ── Lazy thumbnail export ──
+  if (msg.type === 'GET_COMPONENT_THUMBNAILS') {
+    const store = await import('./state');
+    const comps = (msg as any).componentIds as string[] | undefined;
+    const all = (await getComponentsInCurrentFile()) || [];
+    const subset = comps ? all.filter(c => comps.includes(c.id)) : all;
+    exportComponentThumbnails(subset).catch(() => {});
     return;
   }
 

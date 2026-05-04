@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePluginStore } from '../../store';
+import { useFigmaMessages } from '../../hooks/useFigmaMessages';
 import { Button } from '@/components/ui/button';
 import { Layers, Download, Search } from 'lucide-react';
 import { ComponentLibraryModal } from './BrandModals';
@@ -7,6 +8,13 @@ import { ComponentLibraryModal } from './BrandModals';
 export function ComponentLibrarySection() {
   const { allComponents, componentThumbs } = usePluginStore();
   const [modalOpen, setModalOpen] = useState(false);
+  const { send } = useFigmaMessages();
+
+  useEffect(() => {
+    if (allComponents.length > 0 && Object.keys(componentThumbs).length === 0) {
+      send({ type: 'GET_COMPONENT_THUMBNAILS' } as any);
+    }
+  }, [allComponents.length]);
 
   return (
     <div className="space-y-3">

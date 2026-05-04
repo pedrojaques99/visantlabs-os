@@ -50,7 +50,7 @@ export async function extractForSync(): Promise<FigmaSyncData> {
       }
     }
   } catch (e) {
-    console.log('[FigmaSync] Error extracting color variables:', e);
+    console.warn('[FigmaSync] Error extracting color variables:', e);
   }
 
   // 2. Extract number variables (spacing, radius)
@@ -70,7 +70,7 @@ export async function extractForSync(): Promise<FigmaSyncData> {
       }
     }
   } catch (e) {
-    console.log('[FigmaSync] Error extracting number variables:', e);
+    console.warn('[FigmaSync] Error extracting number variables:', e);
   }
 
   // 3. Extract paint styles (colors)
@@ -87,7 +87,7 @@ export async function extractForSync(): Promise<FigmaSyncData> {
       }
     }
   } catch (e) {
-    console.log('[FigmaSync] Error extracting paint styles:', e);
+    console.warn('[FigmaSync] Error extracting paint styles:', e);
   }
 
   // 4. Extract text styles
@@ -103,7 +103,7 @@ export async function extractForSync(): Promise<FigmaSyncData> {
       });
     }
   } catch (e) {
-    console.log('[FigmaSync] Error extracting text styles:', e);
+    console.warn('[FigmaSync] Error extracting text styles:', e);
   }
 
   // 5. Extract effect styles (shadows)
@@ -134,7 +134,7 @@ export async function extractForSync(): Promise<FigmaSyncData> {
       }
     }
   } catch (e) {
-    console.log('[FigmaSync] Error extracting effect styles:', e);
+    console.warn('[FigmaSync] Error extracting effect styles:', e);
   }
 
   // 6. Extract @agent:* components
@@ -147,7 +147,7 @@ export async function extractForSync(): Promise<FigmaSyncData> {
       metadata: c.metadata,
     }));
   } catch (e) {
-    console.log('[FigmaSync] Error extracting agent components:', e);
+    console.warn('[FigmaSync] Error extracting agent components:', e);
   }
 
   return data;
@@ -171,7 +171,7 @@ export async function pushToFigma(guideline: any): Promise<{ created: number; up
       created++;
     }
   } catch (e) {
-    console.log('[FigmaSync] Error getting/creating collection:', e);
+    console.warn('[FigmaSync] Error getting/creating collection:', e);
     throw new Error('Failed to create Brand Tokens collection');
   }
 

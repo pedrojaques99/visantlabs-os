@@ -264,7 +264,7 @@ export async function applyOperations(ops: FigmaOperation[]) {
   for (let i = 0; i < ops.length; i++) {
     const op = ops[i];
     const opName = (op as any).props?.name || (op as any).name || op.type;
-    console.log('[OPERATION]', op.type, JSON.stringify(op).slice(0, 200));
+    // debug only: console.debug('[OPERATION]', op.type);
 
     // Notify UI of progress before applying
     postToUI({

@@ -6,7 +6,7 @@ export function useWebSocket(url: string) {
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const MAX_RECONNECT_ATTEMPTS = 5;
-  const RECONNECT_DELAY = 2000;
+  const BASE_RECONNECT_DELAY = 2000;
 
   const connect = useCallback(() => {
     if (wsRef.current) return;
@@ -15,35 +15,25 @@ export function useWebSocket(url: string) {
       wsRef.current = new WebSocket(url);
 
       wsRef.current.onopen = () => {
-        console.log('WebSocket connected');
         reconnectAttemptsRef.current = 0;
       };
 
       wsRef.current.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data);
-          // Handle incoming WebSocket messages
-          console.log('WebSocket message:', data);
+          JSON.parse(event.data);
         } catch (err) {
           console.error('Failed to parse WebSocket message:', err);
         }
       };
 
-      wsRef.current.onerror = (event) => {
-        console.error('WebSocket error:', event);
-      };
+      wsRef.current.onerror = () => {};
 
       wsRef.current.onclose = () => {
-        console.log('WebSocket disconnected');
         wsRef.current = null;
-
-        // Attempt to reconnect
         if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
+          const delay = BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttemptsRef.current);
           reconnectAttemptsRef.current += 1;
-          reconnectTimeoutRef.current = setTimeout(() => {
-            console.log(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS})`);
-            connect();
-          }, RECONNECT_DELAY);
+          reconnectTimeoutRef.current = setTimeout(connect, delay);
         }
       };
     } catch (err) {

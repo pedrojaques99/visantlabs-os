@@ -16,19 +16,15 @@ export function App() {
 
   useEffect(() => {
     const init = async () => {
-      // wait 100ms para deixar useFigmaMessages setup
-      await new Promise((r) => setTimeout(r, 100));
+      const [serverUrlResult] = await Promise.allSettled([
+        client.request('storage.get', { key: 'serverUrl' }),
+        checkStatus(),
+      ]);
 
-      // Load persisted server URL before auth check
-      try {
-        const { value } = await client.request('storage.get', { key: 'serverUrl' });
-        if (value) setServerUrl(value as string);
-      } catch { /* fall back to build-time default */ }
+      if (serverUrlResult.status === 'fulfilled' && serverUrlResult.value?.value) {
+        setServerUrl(serverUrlResult.value.value as string);
+      }
 
-      // 1. Check auth status (includes loading saved token from sandbox)
-      await checkStatus();
-
-      // 2. Request initial context from sandbox
       send({ type: 'GET_CONTEXT' } as any);
     };
 
