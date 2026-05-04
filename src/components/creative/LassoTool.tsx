@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useCreativeStore } from './store/creativeStore';
-import { Diamond, Plus, X, Loader2 } from 'lucide-react';
+import { Diamond, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { mockupApi } from '@/services/mockupApi';
 import { canvasApi } from '@/services/canvasApi';
 import { toast } from 'sonner';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface Props {
   canvasWidth: number;
   canvasHeight: number;
@@ -302,7 +303,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                   className="w-full py-2.5 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2"
                 >
                   {isGenerating ? (
-                    <Loader2 size={14} className="animate-spin" />
+                    <GlitchLoader size={14} />
                   ) : (
                     <>
                       <Diamond size={12} />

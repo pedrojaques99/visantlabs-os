@@ -444,7 +444,6 @@ export const mockupApi = {
       try {
         const headers = {
           ...getAuthHeaders(),
-          'x-request-id': requestId, // Add request ID to headers for backend tracking
         };
 
         const response = await fetch(`${API_BASE_URL}/mockups/generate`, {

@@ -7,7 +7,7 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { expertApi, ExpertChatMessage } from '@/services/expertApi';
 import { chatApi, ChatSession } from '@/services/chatApi';
-import { X, Bot, Loader2, Diamond, FileText, Image as ImageIcon, Video, Paperclip, Plus, Trash2, ChevronLeft, Menu } from 'lucide-react';
+import { X, Bot, Diamond, FileText, Image as ImageIcon, Video, Paperclip, Plus, Trash2, ChevronLeft, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { authService } from '@/services/authService';
@@ -19,6 +19,7 @@ import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { Select } from '@/components/ui/select';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface BrandingExpertChatProps {
     projectId?: string;
     isOpen?: boolean;
@@ -430,7 +431,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                                             <Bot size={16} className="text-brand-cyan animate-pulse" />
                                         </div>
                                         <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center gap-2">
-                                            <Loader2 size={16} className="animate-spin text-neutral-500" />
+                                            <GlitchLoader size={16} />
                                             <span className="text-xs text-neutral-500">
                                                 {toolsBeingUsed.length > 0
                                                     ? toolsBeingUsed.includes('web_search')

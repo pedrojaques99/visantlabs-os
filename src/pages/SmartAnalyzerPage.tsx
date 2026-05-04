@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import {
   Upload,
-  Loader2,
   Copy,
   Check,
   Save,
@@ -48,8 +48,7 @@ import { mockupApi } from '@/services/mockupApi';
 import { GEMINI_MODELS } from '../constants/geminiModels';
 import type { AspectRatio } from '../types/types';
 import { MockupCard } from '@/components/mockupmachine/MockupCard';
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+import { API_BASE } from '@/config/api';
 
 const GOOGLE_FONTS = [
   { value: '', label: 'Auto Detect' },
@@ -1120,7 +1119,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                                 )}
                               >
                                 {isGeneratingVariations ? (
-                                  <Loader2 size={12} className="mr-2 animate-spin" />
+                                  <GlitchLoader size={12} className="mr-2" />
                                 ) : (
                                   <Diamond size={12} className="mr-2 group-hover:scale-110 transition-transform opacity-50" />
                                 )}
@@ -1136,7 +1135,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                                 )}
                               >
                                 {isGenerating ? (
-                                  <Loader2 size={12} className="mr-2 animate-spin" />
+                                  <GlitchLoader size={12} className="mr-2" />
                                 ) : (
                                   <Diamond size={12} className="mr-2 group-hover:rotate-12 transition-transform text-black/40" />
                                 )}
@@ -1373,7 +1372,7 @@ export const SmartAnalyzerPage: React.FC = () => {
               disabled={isPublishing || !publishName.trim()}
               className="bg-white text-black hover:bg-neutral-200 h-12 px-8 rounded-xl font-semibold min-w-[160px]"
             >
-              {isPublishing ? <Loader2 size={18} className="animate-spin" /> : "Publish Now"}
+              {isPublishing ? <GlitchLoader size={18} /> : "Publish Now"}
             </Button>
           </DialogFooter>
         </DialogContent>

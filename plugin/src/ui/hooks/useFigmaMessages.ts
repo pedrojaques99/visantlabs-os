@@ -211,12 +211,14 @@ export function useFigmaMessages() {
 
         case 'COMPONENT_THUMBNAIL': {
           if (msg.componentId && msg.thumbnail) {
-            usePluginStore.setState(state => ({
-              componentThumbs: {
-                ...state.componentThumbs,
-                [msg.componentId]: msg.thumbnail
+            usePluginStore.setState(state => {
+              const thumbs = { ...state.componentThumbs, [msg.componentId]: msg.thumbnail };
+              const keys = Object.keys(thumbs);
+              if (keys.length > 50) {
+                for (const k of keys.slice(0, keys.length - 50)) delete thumbs[k];
               }
-            }));
+              return { componentThumbs: thumbs };
+            });
           }
           break;
         }
@@ -336,7 +338,7 @@ export function useFigmaMessages() {
 
         case 'BRAND_APPLY_DEBUG': {
           if (msg.debug) {
-            console.log('Brand Apply Debug:', msg.debug);
+            console.debug('Brand Apply Debug:', msg.debug);
             storeState.showToast('Brand applied', 'success');
           }
           break;

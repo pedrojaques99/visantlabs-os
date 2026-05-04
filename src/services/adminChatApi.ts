@@ -1,4 +1,5 @@
 import { chatApiRequest } from '@/lib/chat/client';
+import { API_BASE } from '@/config/api';
 
 export interface CreativeProjectRef {
     creativeProjectId: string;
@@ -146,7 +147,6 @@ export const adminChatApi = {
             onToolStart?: (name: string) => void;
         }
     ): Promise<AdminChatSendMessageResult> {
-        const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
         const token = (await import('@/services/authService')).authService.getToken();
 
         const response = await fetch(`${API_BASE}/admin-chat/sessions/${sessionId}/message/stream`, {

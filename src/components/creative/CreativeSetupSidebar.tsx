@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Upload, Smartphone, Monitor, Square, LayoutTemplate, ChevronDown, Briefcase, ArrowLeft, Image as ImageIcon, Loader2, FolderOpen, Diamond } from 'lucide-react';
+import { Plus, Upload, Smartphone, Monitor, Square, LayoutTemplate, ChevronDown, Briefcase, ArrowLeft, Image as ImageIcon, FolderOpen, Diamond } from 'lucide-react';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { getProxiedUrl } from '@/utils/proxyUtils';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
 import { Button } from '@/components/ui/button';
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import { generateCreative } from './lib/generateCreative';
 import { ModelSelector } from '@/components/shared/ModelSelector';
@@ -144,7 +145,7 @@ export const CreativeSetupSidebar: React.FC = () => {
             <input type="file" className="hidden" accept="image/*" onChange={handleVaultUpload} disabled={isUploading} />
             <div className="w-full h-32 rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-3 bg-neutral-900/20 group-hover:bg-neutral-900/40 group-hover:border-brand-cyan/30 transition-all">
               {isUploading ? (
-                <Loader2 size={24} className="text-brand-cyan animate-spin" />
+                <GlitchLoader size={24} />
               ) : (
                 <>
                   <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center text-neutral-500 group-hover:text-brand-cyan transition-colors">

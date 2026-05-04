@@ -88,6 +88,9 @@ export const usePluginStore = create<PluginStore>()(
     addChatMessage: (message) =>
       set((state) => {
         state.chatHistory.push(message);
+        if (state.chatHistory.length > 100) {
+          state.chatHistory = state.chatHistory.slice(-80);
+        }
       }),
 
     clearChatHistory: () =>

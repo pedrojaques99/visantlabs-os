@@ -131,55 +131,80 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
         {/* Brand list */}
         <div className="flex flex-col gap-0.5">
-          {filtered.map((g) => (
-            <button
-              key={g.id}
-              onClick={() => onSelect(g)}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all font-mono text-xs border group/item",
-                selectedId === g.id
-                  ? "text-neutral-200 bg-white/[0.04] border-white/10"
-                  : "text-neutral-400 hover:text-neutral-200 border-transparent hover:bg-white/[0.03]"
-              )}
-            >
-              <FileText size={13} className={cn(selectedId === g.id ? "text-neutral-400" : "text-neutral-600")} />
-              <div className="flex-1 min-w-0 text-left">
-                <span className="truncate block font-medium">
-                  {g.identity?.name || g.name || 'Untitled'}
-                </span>
-                {g.folder && (
-                  <span className="text-[10px] text-neutral-600 flex items-center gap-1 mt-0.5">
-                    <Folder size={8} />{g.folder}
-                  </span>
+          {filtered.map((g) => {
+            const brandName = g.identity?.name || g.name || 'Untitled';
+            
+            // Improved avatar selection algorithm
+            const brandLogo = g.logos?.find(l => {
+              const v = (l.variant || '').toLowerCase();
+              return v === 'icon' || v === 'symbol' || v === 'mark' || v === 'avatar' || v === 'favicon';
+            }) || g.logos?.find(l => (l.variant || '').toLowerCase() === 'primary') || g.logos?.[0];
+
+            const initials = brandName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+            return (
+              <button
+                key={g.id}
+                onClick={() => onSelect(g)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all font-mono text-xs border group/item",
+                  selectedId === g.id
+                    ? "text-neutral-200 bg-white/[0.04] border-white/10"
+                    : "text-neutral-400 hover:text-neutral-200 border-transparent hover:bg-white/[0.03]"
                 )}
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {selectedId === g.id && <div className="w-1 h-1 rounded-full bg-neutral-400" />}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <div
-                      role="button"
-                      className="p-1 rounded hover:bg-white/10 transition-colors opacity-0 group-hover/item:opacity-100"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <MoreVertical size={12} className="text-neutral-600" />
-                    </div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="min-w-[120px]">
-                    <DropdownMenuItem onClick={(e) => handleSetFolder(g.id!, g.folder, e as any)} className="text-xs gap-2">
-                      <Folder size={12} />{g.folder ? 'Change Folder' : 'Set Folder'}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={(e) => handleDuplicate(g.id!, e as any)} className="text-xs gap-2" disabled={duplicateMutation.isPending}>
-                      <Copy size={12} />Duplicate
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={(e) => handleDelete(g.id!, e as any)} className="text-xs gap-2 text-red-400 focus:text-red-400" disabled={deleteMutation.isPending}>
-                      <Trash2 size={12} />Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </button>
-          ))}
+              >
+                <div className={cn(
+                  "w-5 h-5 rounded-md overflow-hidden border flex items-center justify-center shrink-0 transition-all",
+                  selectedId === g.id ? "border-white/20 bg-white/5" : "border-white/5 bg-neutral-950/50"
+                )}>
+                  {brandLogo?.url ? (
+                    <img 
+                      src={brandLogo.url} 
+                      alt="" 
+                      className="w-full h-full object-cover opacity-60 group-hover/item:opacity-100 transition-opacity" 
+                    />
+                  ) : (
+                    <span className="text-[8px] font-bold opacity-30">{initials}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <span className="truncate block font-medium">
+                    {brandName}
+                  </span>
+                  {g.folder && (
+                    <span className="text-[10px] text-neutral-600 flex items-center gap-1 mt-0.5">
+                      <Folder size={8} />{g.folder}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  {selectedId === g.id && <div className="w-1 h-1 rounded-full bg-neutral-400" />}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <div
+                        role="button"
+                        className="p-1 rounded hover:bg-white/10 transition-colors opacity-0 group-hover/item:opacity-100"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreVertical size={12} className="text-neutral-600" />
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-[120px]">
+                      <DropdownMenuItem onClick={(e) => handleSetFolder(g.id!, g.folder, e as any)} className="text-xs gap-2">
+                        <Folder size={12} />{g.folder ? 'Change Folder' : 'Set Folder'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => handleDuplicate(g.id!, e as any)} className="text-xs gap-2" disabled={duplicateMutation.isPending}>
+                        <Copy size={12} />Duplicate
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => handleDelete(g.id!, e as any)} className="text-xs gap-2 text-red-400 focus:text-red-400" disabled={deleteMutation.isPending}>
+                        <Trash2 size={12} />Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </button>
+            );
+          })}
 
           {filtered.length === 0 && searchQuery && (
             <div className="px-3 py-6 text-center">

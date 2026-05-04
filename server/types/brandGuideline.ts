@@ -84,6 +84,7 @@ export interface BrandGuidelineMedia {
   url: string
   type: 'image' | 'pdf'
   label?: string
+  category?: 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other'
 }
 
 export interface BrandGuidelineTokens {
@@ -134,12 +135,48 @@ export interface BrandToneOfVoiceValue {
   example: string
 }
 
+export interface BrandPillar {
+  value: string
+  description: string
+}
+
+export interface BrandCoreMessage {
+  product: string
+  differential: string
+  emotionalBond: string
+}
+
+export interface BrandManifesto {
+  provocation?: string
+  tension?: string
+  promise?: string
+  full?: string
+}
+
+export interface BrandMarketResearch {
+  competitors?: string[]
+  gaps?: string[]
+  opportunities?: string[]
+  notes?: string
+}
+
+export interface BrandGraphicSystem {
+  patterns?: string[]
+  grafisms?: string[]
+  imageRules?: string[]
+  editorialGrid?: string
+}
+
 export interface BrandGuidelineStrategy {
-  manifesto?: string
+  manifesto?: string | BrandManifesto
+  positioning?: string[]
+  coreMessage?: BrandCoreMessage
+  pillars?: BrandPillar[]
   archetypes?: BrandArchetype[]
   personas?: BrandPersona[]
   voiceValues?: BrandToneOfVoiceValue[]
-  positioning?: string[]
+  marketResearch?: BrandMarketResearch
+  graphicSystem?: BrandGraphicSystem
 }
 
 
@@ -162,6 +199,7 @@ export interface BrandGuideline {
   shadows?: BrandGuidelineShadow[]
   motion?: BrandGuidelineMotion
   borders?: BrandGuidelineBorder[]
+  colorThemes?: Array<{ id: string; name: string; bg: string; text: string; primary: string; accent: string }>
   // Validation state
   validation?: Record<string, 'pending' | 'approved' | 'needs_work'>
   updatedAt?: string
@@ -190,6 +228,9 @@ export function calculateCompleteness(bg: BrandGuideline): number {
     bg.tags && Object.keys(bg.tags).length > 0 ? 1 : 0,
     bg.guidelines?.voice ? 1 : 0,
     bg.strategy?.manifesto ? 1 : 0,
+    bg.strategy?.coreMessage?.product ? 1 : 0,
+    (bg.strategy?.pillars?.length ?? 0) > 0 ? 1 : 0,
+    (bg.strategy?.archetypes?.length ?? 0) > 0 ? 1 : 0,
     (bg.gradients?.length ?? 0) > 0 ? 1 : 0,
     (bg.shadows?.length ?? 0) > 0 ? 1 : 0,
     bg.motion?.easing ? 1 : 0,

@@ -59,6 +59,7 @@ function mergeStrategy(existing: any, patch: any): any {
  * Kept for backward compatibility during migration.
  */
 let _legacyUserId: string | null = null;
+let _mcpScopes: string[] = ['read', 'write', 'generate'];
 
 /**
  * Set MCP user ID for the current request scope.
@@ -66,6 +67,17 @@ let _legacyUserId: string | null = null;
  */
 export function setMcpUserId(userId: string | null) {
   _legacyUserId = userId;
+}
+
+/** Set OAuth scopes for the current MCP request. */
+export function setMcpScopes(scopes: string[]) {
+  _mcpScopes = scopes;
+}
+
+/** Check if the current request has the required scope. */
+function requireScope(scope: 'read' | 'write' | 'generate'): string | null {
+  if (_mcpScopes.includes(scope)) return null;
+  return `Insufficient scope: requires "${scope}" but token has [${_mcpScopes.join(', ')}]`;
 }
 
 /**
@@ -160,11 +172,31 @@ export function createPlatformMcpServer(): McpServer {
     }
   );
 
-  // Wrap server.tool to auto-collect names into _registeredToolNames
+  // Wrap server.tool to auto-collect names + enforce OAuth scopes
   const collectedNames: string[] = [];
   const originalTool = server.tool.bind(server);
+
+  const WRITE_TOOLS = /^(update-|delete-|create-|remove-|validate-|api-key-|auth-)/;
+  const GENERATE_TOOLS = /^(generate-|improve-|suggest-|extract-|batch-|campaign-|describe-)/;
+
+  function scopeForTool(name: string): 'read' | 'write' | 'generate' {
+    if (WRITE_TOOLS.test(name)) return 'write';
+    if (GENERATE_TOOLS.test(name)) return 'generate';
+    return 'read';
+  }
+
   (server as any).tool = (name: string, ...rest: any[]) => {
     collectedNames.push(name);
+    // Intercept the handler (last arg) to add scope checking
+    const handlerIdx = rest.length - 1;
+    const originalHandler = rest[handlerIdx];
+    if (typeof originalHandler === 'function') {
+      rest[handlerIdx] = async (...args: any[]) => {
+        const scopeErr = requireScope(scopeForTool(name));
+        if (scopeErr) return mcpError('FORBIDDEN', scopeErr);
+        return originalHandler(...args);
+      };
+    }
     return (originalTool as any)(name, ...rest);
   };
 
@@ -2232,30 +2264,48 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'document-extract',
-    'Extract content from a local PDF file using a 2-phase pipeline: algorithmic (exact colors, fonts, embedded images) ' +
+    'Extract content from a PDF using a 2-phase pipeline: algorithmic (exact colors, fonts, embedded images) ' +
     'then Gemini semantic analysis (strategy, personas, voice, dos/donts, asset classification). ' +
     'Returns markdownText (structured, page-separated — ideal for RAG chunking) plus brand tokens. ' +
+    'Accepts either pdf_base64 (base64-encoded PDF content, preferred for remote MCP usage) or pdf_path (server-side path). ' +
     'IMPORTANT: before calling, ask the user whether they want the result saved to disk as a .md file or returned inline.',
     {
-      pdf_path: z.string().describe('Absolute path to the local PDF file to extract.'),
+      pdf_base64: z.string().optional().describe(
+        'Base64-encoded PDF content. Preferred when calling from a remote agent — read the file locally and encode it. ' +
+        'Mutually exclusive with pdf_path.'
+      ),
+      pdf_filename: z.string().optional().describe(
+        'Original filename (e.g. "brand.pdf"). Required when using pdf_base64 with output="disk" so the .md file can be named correctly.'
+      ),
+      pdf_path: z.string().optional().describe('Absolute server-side path to a PDF. Only use when the file is on the same machine as the MCP server.'),
       output: z.enum(['disk', 'inline']).describe(
-        '"disk" — saves a .md file alongside the PDF and returns { saved_to, characters, preview }. ' +
+        '"disk" — saves a .md file alongside the PDF (pdf_path) or in the current directory (pdf_base64) and returns { saved_to, characters, preview }. ' +
         '"inline" — returns the full markdownText in the response (no file written).'
       ),
       include_brand_tokens: z.boolean().default(true).describe(
         'Include colors, typography, strategy, and asset classifications. Default: true.'
       ),
     },
-    async ({ pdf_path, output, include_brand_tokens }) => {
+    async ({ pdf_base64, pdf_filename, pdf_path, output, include_brand_tokens }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
 
+      if (!pdf_base64 && !pdf_path) return ERR.validation('Provide either pdf_base64 or pdf_path.');
+
       let buffer: Buffer;
-      try {
-        const { readFileSync } = await import('fs');
-        buffer = readFileSync(pdf_path);
-      } catch (err: any) {
-        return ERR.validation(`Cannot read PDF at ${pdf_path}: ${err.message}`);
+      if (pdf_base64) {
+        try {
+          buffer = Buffer.from(pdf_base64, 'base64');
+        } catch (err: any) {
+          return ERR.validation(`Invalid base64 content: ${err.message}`);
+        }
+      } else {
+        try {
+          const { readFileSync } = await import('fs');
+          buffer = readFileSync(pdf_path!);
+        } catch (err: any) {
+          return ERR.validation(`Cannot read PDF at ${pdf_path}: ${err.message}`);
+        }
       }
 
       const { extractPdfStreaming } = await import('../lib/pdf-extract.js');
@@ -2288,10 +2338,16 @@ export function createPlatformMcpServer(): McpServer {
       } : {};
 
       if (output === 'disk') {
-        const { readFileSync: _r, writeFileSync } = await import('fs');
+        const { writeFileSync } = await import('fs');
         const { basename, dirname, join } = await import('path');
-        const stem = basename(pdf_path).replace(/\.pdf$/i, '');
-        const outPath = join(dirname(pdf_path), `${stem}.md`);
+        let outPath: string;
+        if (pdf_path) {
+          const stem = basename(pdf_path).replace(/\.pdf$/i, '');
+          outPath = join(dirname(pdf_path), `${stem}.md`);
+        } else {
+          const stem = (pdf_filename ?? 'document').replace(/\.pdf$/i, '');
+          outPath = join(process.cwd(), `${stem}.md`);
+        }
         writeFileSync(outPath, md, 'utf-8');
         return jsonResponse({ saved_to: outPath, characters: md.length, preview: md.slice(0, 600), ...tokens });
       }

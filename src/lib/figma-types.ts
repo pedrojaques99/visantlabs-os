@@ -754,6 +754,38 @@ export interface BrandToneOfVoiceValue {
   example: string
 }
 
+export interface BrandPillar {
+  value: string
+  description: string
+}
+
+export interface BrandCoreMessage {
+  product: string
+  differential: string
+  emotionalBond: string
+}
+
+export interface BrandManifesto {
+  provocation?: string
+  tension?: string
+  promise?: string
+  full?: string
+}
+
+export interface BrandMarketResearch {
+  competitors?: string[]
+  gaps?: string[]
+  opportunities?: string[]
+  notes?: string
+}
+
+export interface BrandGraphicSystem {
+  patterns?: string[]
+  grafisms?: string[]
+  imageRules?: string[]
+  editorialGrid?: string
+}
+
 export interface BrandGuideline {
   id?: string
   userId?: string
@@ -784,6 +816,7 @@ export interface BrandGuideline {
     url: string
     type: 'image' | 'pdf'
     label?: string
+    category?: 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other'
   }>
   tokens?: {
     spacing?: Record<string, number>
@@ -807,11 +840,15 @@ export interface BrandGuideline {
   borders?: BrandGuidelineBorder[]
   validation?: Record<string, 'pending' | 'approved' | 'needs_work'>
   strategy?: {
-    manifesto?: string
+    manifesto?: string | BrandManifesto
     positioning?: string[]
+    coreMessage?: BrandCoreMessage
+    pillars?: BrandPillar[]
     archetypes?: BrandArchetype[]
     personas?: BrandPersona[]
     voiceValues?: BrandToneOfVoiceValue[]
+    marketResearch?: BrandMarketResearch
+    graphicSystem?: BrandGraphicSystem
   }
   _extraction?: {
     sources: Array<{ type: 'url' | 'pdf' | 'image' | 'images' | 'json' | 'manual' | 'branding_machine'; ref?: string; date: string }>
@@ -843,6 +880,17 @@ export interface BrandGuideline {
   figmaFileUrl?: string
   figmaFileKey?: string
   figmaSyncedAt?: string
+  /** User-defined color schemes — explicit bg/text/primary/accent combos for AI generation */
+  colorThemes?: BrandColorTheme[]
+}
+
+export interface BrandColorTheme {
+  id: string
+  name: string
+  bg: string
+  text: string
+  primary: string
+  accent: string
 }
 
 // ── Agent Component System ──

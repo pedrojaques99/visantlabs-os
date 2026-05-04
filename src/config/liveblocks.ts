@@ -1,6 +1,7 @@
 import { createClient } from '@liveblocks/client';
 import { createRoomContext } from '@liveblocks/react';
 import { authService } from '../services/authService';
+import { API_BASE } from './api';
 
 const client = createClient({
   async resolveUsers({ userIds }) {
@@ -22,10 +23,10 @@ const client = createClient({
       let authPath: string;
       if (room.startsWith('brand-')) {
         const guidelineId = room.replace('brand-', '');
-        authPath = `/api/brand-guidelines/${guidelineId}/liveblocks-auth`;
+        authPath = `${API_BASE}/brand-guidelines/${guidelineId}/liveblocks-auth`;
       } else if (room.startsWith('canvas-')) {
         const projectId = room.replace('canvas-', '');
-        authPath = `/api/canvas/${projectId}/liveblocks-auth`;
+        authPath = `${API_BASE}/canvas/${projectId}/liveblocks-auth`;
       } else {
         throw new Error(`Unknown room prefix for room "${room}". Expected "brand-" or "canvas-".`);
       }

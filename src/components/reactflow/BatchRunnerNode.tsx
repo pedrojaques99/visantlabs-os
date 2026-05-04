@@ -1,13 +1,14 @@
 import React, { memo, useCallback } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { Play, Square, RotateCcw, CheckCircle2, XCircle, Loader2, Clock } from 'lucide-react';
+import { Play, Square, RotateCcw, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import type { BatchRunnerNodeData, BatchResult } from '@/types/reactFlow';
 import { NodeContainer } from './shared/NodeContainer';
 import { cn } from '@/lib/utils';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 const STATUS_ICON: Record<BatchResult['status'], React.ReactNode> = {
   pending: <Clock size={9} className="text-white/30" />,
-  running: <Loader2 size={9} className="text-brand-cyan animate-spin" />,
+  running: <GlitchLoader size={9} />,
   done: <CheckCircle2 size={9} className="text-green-400" />,
   error: <XCircle size={9} className="text-red-400" />,
 };

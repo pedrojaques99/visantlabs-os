@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, Link2, ExternalLink, Unlink, RefreshCw } from 'lucide-react';
+import { Link2, ExternalLink, Unlink, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -10,6 +10,7 @@ import { FigmaImportModal } from '../FigmaImportModal';
 import { Figma } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 // Figma logo SVG
 const FigmaIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -181,7 +182,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
                 disabled={isPreviewing}
                 className="h-8 px-4 text-[10px] gap-1.5 bg-brand-cyan/20 hover:bg-brand-cyan text-brand-cyan hover:text-black border border-brand-cyan/30 transition-all font-bold shadow-[0_0_15px_rgba(0,186,242,0.1)] hover:shadow-[0_0_20px_rgba(0,186,242,0.2)]"
               >
-                {isPreviewing ? <Loader2 size={12} className="animate-spin" /> : <Figma size={12} />}
+                {isPreviewing ? <GlitchLoader size={12} /> : <Figma size={12} />}
                 Importar do Figma
               </Button>
             </div>
@@ -217,7 +218,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
             disabled={isUnlinking}
             className="h-7 px-2 text-[10px] text-neutral-500 hover:text-red-400 hover:bg-red-500/10"
           >
-            {isUnlinking ? <Loader2 size={10} className="animate-spin mr-1" /> : <Unlink size={10} className="mr-1" />}
+            {isUnlinking ? <GlitchLoader size={10} className="mr-1" /> : <Unlink size={10} className="mr-1" />}
             Desvincular
           </Button>
         </div>
@@ -242,7 +243,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
               size="sm"
               className="h-8 px-3 shrink-0 bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 border border-brand-cyan/20"
             >
-              {isLinking ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />}
+              {isLinking ? <GlitchLoader size={12} /> : <Link2 size={12} />}
             </Button>
           </div>
 

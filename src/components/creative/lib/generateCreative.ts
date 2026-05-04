@@ -13,8 +13,7 @@ import type {
   CreativeOverlay,
   TextLayerData,
 } from '../store/creativeTypes';
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+import { API_BASE } from '@/config/api';
 
 interface GenerateInput {
   prompt: string;

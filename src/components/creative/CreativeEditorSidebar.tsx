@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Type, Square, Download, ArrowLeft, Trash2, Undo2, Redo2, Briefcase, Save, FolderOpen, Loader2, Check, AlertTriangle, Circle, Image, Palette, Lock, Unlock } from 'lucide-react';
+import { Eye, EyeOff, Type, Square, Download, ArrowLeft, Trash2, Undo2, Redo2, Briefcase, Save, FolderOpen, Check, AlertTriangle, Circle, Image, Palette, Lock, Unlock } from 'lucide-react';
 import type { AutoSaveStatus } from '@/hooks/useAutoSave';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
@@ -14,6 +14,7 @@ import {
 import { snapshotCreativeFromStore } from './lib/persistCreative';
 import { isPersistedId } from './lib/layerUtils';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 const FORMATS: CreativeFormat[] = ['1:1', '9:16', '16:9', '4:5'];
 
 interface Props {
@@ -407,7 +408,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
         {/* Auto-save indicator */}
         {isPersistedId(creativeId) && (
           <div className="flex items-center gap-1.5 text-[10px] font-mono text-neutral-500">
-            {autoSaveStatus === 'saving' && <Loader2 size={10} className="animate-spin text-brand-cyan" />}
+            {autoSaveStatus === 'saving' && <GlitchLoader size={10} />}
             {autoSaveStatus === 'saved' && <Check size={10} className="text-emerald-400" />}
             {autoSaveStatus === 'error' && <AlertTriangle size={10} className="text-red-400" />}
             {autoSaveStatus === 'idle' && <Circle size={10} className="text-neutral-600" />}
@@ -425,7 +426,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
             disabled={isSaving}
             className="flex-1 py-3 font-mono text-xs font-bold flex items-center justify-center gap-2 bg-neutral-900/60 border border-white/10 hover:border-brand-cyan/40 text-neutral-200 hover:text-brand-cyan disabled:opacity-50"
           >
-            {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {isSaving ? <GlitchLoader size={14} /> : <Save size={14} />}
             {isPersistedId(creativeId) ? 'Atualizar' : 'Salvar'}
           </Button>
           <Button

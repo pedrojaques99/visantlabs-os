@@ -57,12 +57,11 @@ import {
 } from '@/utils/mockupConstants';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import {
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
   getBackgroundsForBranding,
   filterPresetsByBranding,
   selectRandomBackground
 } from '@/utils/promptHelpers';
+import { API_BASE } from '@/config/api';
 
 
 

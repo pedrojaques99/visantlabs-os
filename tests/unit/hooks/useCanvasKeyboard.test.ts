@@ -27,7 +27,7 @@ const makeNode = (id: string, selected = false, type = 'image'): Node<FlowNodeDa
 
 const makeEdge = (id: string): Edge => ({ id, source: 'a', target: 'b' } as Edge);
 
-function makeDefaults(overrides: Partial<Parameters<typeof useCanvasKeyboard>[0]> = {}) {
+function makeDefaults(overrides: Record<string, any> = {}) {
   return {
     nodes: [] as Node<FlowNodeData>[],
     edges: [] as Edge[],

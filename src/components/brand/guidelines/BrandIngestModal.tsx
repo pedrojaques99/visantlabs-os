@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
-import { Check, X, Loader2 } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import type { FigStreamState, FigCategory } from '@/hooks/useExtractFigStream';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 // ─── Section order ────────────────────────────────────────────────────────────
 const SECTION_ORDER: Array<{ key: FigCategory; label: string }> = [
   { key: 'colors',     label: 'Colors' },
@@ -84,12 +85,12 @@ const SectionShell: React.FC<{
   children?: React.ReactNode;
 }> = ({ label, loading, allChecked, someChecked, onToggleAll, children }) => (
   <div className={`rounded-md border transition-colors ${someChecked ? 'border-white/[0.10] bg-white/[0.02]' : 'border-white/[0.04]'}`}>
-    <div className="flex items-center gap-2.5 px-3 py-2 cursor-pointer select-none" onClick={onToggleAll}>
+    <div className="flex items-center gap-2.5 px-3 py-2 cursor-pointer select-none" role="button" tabIndex={0} onClick={onToggleAll} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggleAll(); } }}>
       <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${allChecked ? 'bg-white/[0.12] border-white/20' : someChecked ? 'bg-white/[0.06] border-white/15' : 'border-white/10'}`}>
         {allChecked ? <Check size={10} className="text-neutral-300" /> : someChecked ? <div className="w-2 h-0.5 bg-neutral-400 rounded" /> : null}
       </div>
       <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 flex-1">{label}</span>
-      {loading && <Loader2 size={11} className="text-neutral-600 animate-spin flex-shrink-0" />}
+      {loading && <GlitchLoader size={11} className="flex-shrink-0" />}
     </div>
     {children && <div className="px-2 pb-2.5">{children}</div>}
   </div>
@@ -428,7 +429,7 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
             </Button>
             <Button onClick={apply} disabled={applying || totalSelected === 0}
               className="h-8 px-4 gap-1.5 bg-white/[0.08] border border-white/15 text-neutral-200 hover:bg-white/[0.12] text-xs">
-              {applying ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+              {applying ? <GlitchLoader size={12} /> : <Check size={12} />}
               {applying ? 'Applying…' : `Apply (${totalSelected})`}
             </Button>
           </div>

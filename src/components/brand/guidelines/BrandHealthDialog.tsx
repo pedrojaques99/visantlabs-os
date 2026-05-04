@@ -8,10 +8,11 @@ import {
   DialogBody,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Brain, CheckCircle2, AlertTriangle, XOctagon, Loader2 } from 'lucide-react';
+import { Brain, CheckCircle2, AlertTriangle, XOctagon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BrandHealthReport, BrandHealthInsight } from '@/services/brandGuidelineApi';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface BrandHealthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -53,7 +54,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
         <DialogBody>
           {isLoading && (
             <div className="flex flex-col items-center justify-center gap-3 py-16">
-              <Loader2 size={20} className="text-brand-cyan animate-spin" />
+              <GlitchLoader size={20} />
               <p className="text-[11px] text-neutral-500 font-mono uppercase tracking-widest">
                 Auditando marca…
               </p>

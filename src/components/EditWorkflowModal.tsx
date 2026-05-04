@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { createPortal } from 'react-dom';
-import { X, Save, Loader2, Globe, Lock } from 'lucide-react';
+import { X, Save, Globe, Lock } from 'lucide-react';
 import { Button } from './ui/button';
 import { Select } from './ui/select';
 import { Textarea } from './ui/textarea';
@@ -13,6 +13,7 @@ import { cn } from '../lib/utils';
 import { Input } from './ui/input';
 import { MicroTitle } from './ui/MicroTitle';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface EditWorkflowModalProps {
     isOpen: boolean;
     workflow: CanvasWorkflow;
@@ -139,7 +140,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
                         disabled={isSaving}
                         className="min-w-[120px]"
                     >
-                        {isSaving ? <Loader2 size={14} className="animate-spin mr-2" /> : <Save size={14} className="mr-2" />}
+                        {isSaving ? <GlitchLoader size={14} className="mr-2" /> : <Save size={14} className="mr-2" />}
                         {t('common.save') || 'Save Changes'}
                     </Button>
                 </div>

@@ -18,8 +18,7 @@ import { BackButton } from "../components/ui/BackButton";
 import { ApiSettings } from '../components/profile/ApiSettings';
 import { ProfileOverview } from '../components/profile/ProfileOverview';
 import { UsageHistory } from '../components/profile/UsageHistory';
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+import { API_BASE } from '@/config/api';
 
 export const ProfilePage: React.FC = () => {
   const { t } = useTranslation();

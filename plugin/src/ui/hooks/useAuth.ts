@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { usePluginStore } from '../store';
 import { useFigmaMessages } from './useFigmaMessages';
 import { apiUrl } from '../config';
@@ -6,6 +6,7 @@ import { apiUrl } from '../config';
 export function useAuth() {
   const { authToken, authEmail, setAuthToken, setAuthEmail, updateCredits, showToast } = usePluginStore();
   const { send } = useFigmaMessages();
+  const checkInFlightRef = useRef<Promise<boolean> | null>(null);
 
   // Load auth token from sandbox on init
   useEffect(() => {
@@ -15,7 +16,6 @@ export function useAuth() {
   const login = useCallback(
     async (email: string, password: string, rememberMe = true) => {
       try {
-        // Call API endpoint para login
         const response = await fetch(apiUrl('/auth/signin'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -23,47 +23,45 @@ export function useAuth() {
         });
 
         if (!response.ok) {
-          showToast('Login failed', 'error');
+          let msg = 'Falha ao entrar';
+          try {
+            const ct = response.headers.get('content-type');
+            if (ct?.includes('application/json')) {
+              const err = await response.json();
+              msg = err.error || err.message || msg;
+            }
+          } catch { /* use default */ }
+          showToast(msg, 'error');
           return false;
         }
 
         const data = await response.json();
-        if (data?.token) {
-          setAuthToken(data.token);
-          setAuthEmail(email);
+        if (!data?.token) return false;
 
-          // Save token to sandbox (SAVE_AUTH_TOKEN message)
-          send({
-            type: 'SAVE_AUTH_TOKEN',
-            token: data.token,
-            rememberMe
-          } as any);
+        setAuthToken(data.token);
+        setAuthEmail(data.user?.email || email);
 
-          // Fetch credits
-          try {
-            const creditsResponse = await fetch(apiUrl('/plugin/auth/status'), {
-              headers: {
-                Authorization: `Bearer ${data.token}`,
-                'Content-Type': 'application/json'
-              }
-            });
-            if (creditsResponse.ok) {
-              const status = await creditsResponse.json();
-              if (typeof status?.creditsUsed === 'number' && typeof status?.monthlyCredits === 'number') {
-                updateCredits({ used: status.creditsUsed, limit: status.monthlyCredits });
-              }
+        send({ type: 'SAVE_AUTH_TOKEN', token: data.token, rememberMe } as any);
+
+        // Fetch credits in background — don't block login success
+        fetch(apiUrl('/plugin/auth/status'), {
+          headers: { Authorization: `Bearer ${data.token}`, 'Content-Type': 'application/json' }
+        })
+          .then(r => r.ok ? r.json() : null)
+          .then(status => {
+            if (typeof status?.creditsUsed === 'number' && typeof status?.monthlyCredits === 'number') {
+              updateCredits({ used: status.creditsUsed, limit: status.monthlyCredits });
             }
-          } catch (err) {
-            console.error('Failed to fetch credits:', err);
-          }
+          })
+          .catch(() => {});
 
-          showToast('Login successful', 'success');
-          return true;
-        }
-        return false;
+        showToast('Login realizado', 'success');
+        return true;
       } catch (err) {
-        console.error('Login error:', err);
-        showToast('Login error: ' + (err as Error).message, 'error');
+        const msg = (err as Error).message?.includes('Failed to fetch')
+          ? 'Erro de conexão. Verifique sua internet.'
+          : `Erro: ${(err as Error).message}`;
+        showToast(msg, 'error');
         return false;
       }
     },
@@ -73,16 +71,17 @@ export function useAuth() {
   const loginWithGoogle = useCallback(async () => {
     try {
       const response = await fetch(apiUrl('/auth/google'));
-      if (response.ok) {
-        const { authUrl } = await response.json();
-        if (authUrl) {
-          window.parent.postMessage({ pluginMessage: { type: 'OPEN_EXTERNAL_URL', url: authUrl } }, 'https://www.figma.com');
-          showToast('Login window opened in browser', 'info');
-        }
+      if (!response.ok) {
+        showToast('Erro ao iniciar Google OAuth', 'error');
+        return;
       }
-    } catch (err) {
-      console.error('Failed to get Google auth URL:', err);
-      showToast('OAuth error', 'error');
+      const { authUrl } = await response.json();
+      if (authUrl) {
+        window.parent.postMessage({ pluginMessage: { type: 'OPEN_EXTERNAL_URL', url: authUrl } }, 'https://www.figma.com');
+        showToast('Janela de login aberta no navegador', 'info');
+      }
+    } catch {
+      showToast('Erro de conexão com OAuth', 'error');
     }
   }, [showToast]);
 
@@ -102,31 +101,39 @@ export function useAuth() {
 
   const checkStatus = useCallback(async () => {
     if (!authToken) return false;
+    if (checkInFlightRef.current) return checkInFlightRef.current;
 
-    try {
-      const response = await fetch(apiUrl('/plugin/auth/status'), {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
+    const promise = (async () => {
+      try {
+        const response = await fetch(apiUrl('/plugin/auth/status'), {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (typeof data?.creditsUsed === 'number' && typeof data?.monthlyCredits === 'number') {
-          updateCredits({ used: data.creditsUsed, limit: data.monthlyCredits });
+        if (response.ok) {
+          const data = await response.json();
+          if (typeof data?.creditsUsed === 'number' && typeof data?.monthlyCredits === 'number') {
+            updateCredits({ used: data.creditsUsed, limit: data.monthlyCredits });
+          }
+          return !!data?.authenticated;
         }
-        return !!data?.authenticated;
-      }
-      if (response.status === 401) {
-        logout();
+        if (response.status === 401) {
+          logout();
+          return false;
+        }
         return false;
+      } catch (err) {
+        console.error('Status check failed:', err);
+        return false;
+      } finally {
+        checkInFlightRef.current = null;
       }
-      return false;
-    } catch (err) {
-      console.error('Status check failed:', err);
-      return false;
-    }
+    })();
+
+    checkInFlightRef.current = promise;
+    return promise;
   }, [authToken, updateCredits, logout]);
 
   return {

@@ -1,11 +1,12 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
-import { Image as ImageIcon, Plus, Loader2, Trash2 } from 'lucide-react';
+import { Image as ImageIcon, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface LogosSectionProps {
   guideline: BrandGuideline;
   logos: BrandGuideline['logos'];
@@ -64,7 +65,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
       span={span as any}
       actions={(
         <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" disabled={isUploading} onClick={() => fileInputRef.current?.click()} aria-label="Upload logo">
-          {isUploading ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+          {isUploading ? <GlitchLoader size={12} /> : <Plus size={12} />}
         </Button>
       )}
     >

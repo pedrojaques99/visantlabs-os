@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Download, MousePointerClick, Diamond, User } from 'lucide-react';
 import { toast } from 'sonner';
@@ -7,9 +7,12 @@ import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { FullScreenViewer } from '@/components/FullScreenViewer';
 
 export type BrandViewSection =
   | 'identity'
+  | 'coreMessage'
+  | 'pillars'
   | 'manifesto'
   | 'archetypes'
   | 'personas'
@@ -101,8 +104,9 @@ export function extractBrandTheme(
       keywords.some((k) => c.name?.toLowerCase().includes(k) || c.role?.toLowerCase().includes(k))
     );
 
+  const colors = guideline?.colors || [];
   const accentToken =
-    findByRole('PRIMARY') || findByRole('ACCENT') || findByMatch(['brand', 'primary', 'accent', 'main']) || { hex: '#00E5FF' };
+    findByRole('PRIMARY') || findByRole('ACCENT') || findByMatch(['brand', 'primary', 'accent', 'main']) || colors[0] || { hex: '#888888' };
   const bgToken = findByRole('BACKGROUND') || findByRole('BG') || findByMatch(['background', 'canvas', 'bg']) || { hex: '#0a0a0a' };
   const surfaceToken =
     findByRole('SURFACE') || findByRole('CARD') || findByMatch(['surface', 'card', 'neutral', 'off']) || { hex: '#141414' };
@@ -159,38 +163,7 @@ export function extractBrandTheme(
   };
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Default asset download
-// ──────────────────────────────────────────────────────────────────────────────
-
-async function defaultTriggerDownload(url: string, filename: string) {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(blobUrl);
-  } catch {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.target = '_blank';
-    a.click();
-  }
-}
-
-function extOf(url: string): string {
-  return url.split('.').pop()?.split('?')[0] || 'png';
-}
-
-function safeNameOf(label?: string, fallback?: string): string {
-  return (label || fallback || 'asset').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-}
+import { triggerAssetDownload, safeFileName, extFromUrl } from './brand-shared-config';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Section sub-components (exported for custom composition)
@@ -262,22 +235,137 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({ guideline, com
   );
 };
 
+export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
+  const cm = guideline.strategy?.coreMessage;
+  if (!cm?.product && !cm?.differential && !cm?.emotionalBond) return null;
+
+  if (compact) {
+    return (
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
+        <CompactSectionHeader label="Mensagem Central" />
+        <p className="text-xs text-neutral-400 leading-relaxed">
+          {cm.product}{cm.differential && ` + ${cm.differential}`}{cm.emotionalBond && ` → ${cm.emotionalBond}`}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <FullSectionHeader label="Mensagem Central" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {cm.product && (
+          <GlassPanel padding="md" className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10">
+            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">Produto</MicroTitle>
+            <p className="text-lg font-medium opacity-80">{cm.product}</p>
+          </GlassPanel>
+        )}
+        {cm.differential && (
+          <GlassPanel padding="md" className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10">
+            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">Diferencial</MicroTitle>
+            <p className="text-lg font-medium opacity-80">{cm.differential}</p>
+          </GlassPanel>
+        )}
+        {cm.emotionalBond && (
+          <GlassPanel padding="md" className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10">
+            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">Elo Emocional</MicroTitle>
+            <p className="text-lg font-medium opacity-80">{cm.emotionalBond}</p>
+          </GlassPanel>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export const BrandPillarsView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
+  const pillars = guideline.strategy?.pillars;
+  if (!pillars?.length) return null;
+
+  if (compact) {
+    return (
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
+        <CompactSectionHeader label="Pilares" />
+        <div className="flex flex-wrap gap-2">
+          {pillars.map((p, i) => (
+            <span key={i} className="text-xs font-semibold text-neutral-300 bg-white/5 px-2 py-0.5 rounded">{p.value}</span>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <FullSectionHeader label="Pilares" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {pillars.map((p, i) => (
+          <GlassPanel key={i} padding="md" className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-3xl font-bold opacity-20">{String(i + 1).padStart(2, '0')}</span>
+              <h4 className="text-xl font-bold opacity-90">{p.value}</h4>
+            </div>
+            <p className="text-sm font-light opacity-60 leading-relaxed">{p.description}</p>
+          </GlassPanel>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export const BrandManifestoView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
-  const manifesto = guideline.strategy?.manifesto;
-  if (!manifesto) return null;
+  const raw = guideline.strategy?.manifesto;
+  if (!raw) return null;
+
+  const isStructured = typeof raw === 'object';
+  const fullText = isStructured ? (raw.full || [raw.provocation, raw.tension, raw.promise].filter(Boolean).join('\n\n')) : raw;
+  if (!fullText) return null;
 
   if (compact) {
     return (
       <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
         <CompactSectionHeader label="Manifesto" />
         <p className="text-xs text-neutral-400 italic leading-relaxed whitespace-pre-line line-clamp-6">
-          "{manifesto}"
+          &ldquo;{fullText}&rdquo;
         </p>
       </div>
     );
   }
 
-  const [firstLine, ...rest] = manifesto.split('\n');
+  if (isStructured && (raw.provocation || raw.tension || raw.promise)) {
+    return (
+      <div className="space-y-12">
+        <div className="flex items-center gap-4">
+          <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
+          <MicroTitle className="text-[var(--accent)]/60 tracking-wider">[Manifesto]</MicroTitle>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          {raw.provocation && (
+            <div className="space-y-3">
+              <MicroTitle className="text-[var(--accent)]/40 tracking-wider">Provocação</MicroTitle>
+              <p className="text-lg leading-relaxed font-light opacity-70">{raw.provocation}</p>
+            </div>
+          )}
+          {raw.tension && (
+            <div className="space-y-3">
+              <MicroTitle className="text-[var(--accent)]/40 tracking-wider">Tensão</MicroTitle>
+              <p className="text-lg leading-relaxed font-light opacity-70">{raw.tension}</p>
+            </div>
+          )}
+          {raw.promise && (
+            <div className="space-y-3">
+              <MicroTitle className="text-[var(--accent)]/40 tracking-wider">Promessa</MicroTitle>
+              <p className="text-lg leading-relaxed font-light opacity-70">{raw.promise}</p>
+            </div>
+          )}
+        </div>
+        {raw.full && (
+          <p className="text-xl leading-relaxed font-light opacity-60 mt-8 italic">&ldquo;{raw.full}&rdquo;</p>
+        )}
+      </div>
+    );
+  }
+
+  const [firstLine, ...rest] = fullText.split('\n');
   return (
     <div className="space-y-12">
       <div className="flex items-center gap-4">
@@ -704,7 +792,7 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
   const handleClick = useCallback(
     (logo: any) => {
       if (onAssetClick) return onAssetClick(logo.url, 'logo', logo);
-      defaultTriggerDownload(logo.url, `${safeNameOf(logo.label, logo.variant)}.${extOf(logo.url)}`);
+      triggerAssetDownload(logo.url, `${safeFileName(logo.label || logo.variant)}.${extFromUrl(logo.url)}`);
     },
     [onAssetClick]
   );
@@ -819,10 +907,19 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
     [media, searchTerm]
   );
 
-  const handleClick = useCallback(
+  const [fullScreenIdx, setFullScreenIdx] = useState<number | null>(null);
+
+  const handleDownload = useCallback(
     (item: any) => {
+      triggerAssetDownload(item.url, `${safeFileName(item.label || 'media')}.${extFromUrl(item.url)}`);
+    },
+    []
+  );
+
+  const handleClick = useCallback(
+    (item: any, idx: number) => {
       if (onAssetClick) return onAssetClick(item.url, 'media', item);
-      defaultTriggerDownload(item.url, `${safeNameOf(item.label, 'media')}.${extOf(item.url)}`);
+      setFullScreenIdx(idx);
     },
     [onAssetClick]
   );
@@ -834,11 +931,11 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
       <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
         <CompactSectionHeader label="Media" />
         <div className="grid grid-cols-3 gap-2">
-          {filtered.slice(0, 9).map((item) => (
+          {filtered.slice(0, 9).map((item, i) => (
             <button
               key={item.id}
               type="button"
-              onClick={() => handleClick(item)}
+              onClick={() => handleClick(item, i)}
               draggable={!!onAssetDragStart}
               onDragStart={(e) => onAssetDragStart?.(e as unknown as React.DragEvent, item.url, 'media')}
               className="aspect-square rounded-md overflow-hidden border border-white/5 bg-neutral-900/40 hover:border-brand-cyan/30 transition-colors"
@@ -876,7 +973,10 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
               draggable={!!onAssetDragStart}
               onDragStart={(e) => onAssetDragStart?.(e as unknown as React.DragEvent, item.url, 'media')}
             >
-              <div className="relative aspect-[16/10] rounded-3xl overflow-hidden border border-white/[0.04] shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-white/10">
+              <div
+                className="relative aspect-[16/10] rounded-3xl overflow-hidden border border-white/[0.04] shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-white/10 cursor-pointer"
+                onClick={() => handleClick(item, i)}
+              >
                 <img
                   src={item.url}
                   alt={item.label || 'Media'}
@@ -884,15 +984,13 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
 
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                  <Button
-                    size="icon"
-                    className="w-14 h-14 rounded-full bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_0_30px_rgba(var(--accent-rgb),0.5)] active:scale-90 transition-all"
-                    onClick={() => handleClick(item)}
-                  >
-                    {onAssetClick ? <MousePointerClick size={24} /> : <Download size={24} />}
-                  </Button>
-                </div>
+                <Button
+                  size="icon"
+                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 text-white/70 hover:text-white hover:bg-black/80 backdrop-blur-sm border border-white/10 opacity-0 group-hover:opacity-100 transition-all z-10"
+                  onClick={(e) => { e.stopPropagation(); handleDownload(item); }}
+                >
+                  <Download size={16} />
+                </Button>
 
                 <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
                   <div className="space-y-1">
@@ -904,6 +1002,18 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
             </motion.div>
           ))}
         </div>
+
+        {fullScreenIdx !== null && (
+          <FullScreenViewer
+            imageUrl={filtered[fullScreenIdx]?.url}
+            isLoading={false}
+            onClose={() => setFullScreenIdx(null)}
+            onNavigatePrevious={fullScreenIdx > 0 ? () => setFullScreenIdx(fullScreenIdx - 1) : undefined}
+            onNavigateNext={fullScreenIdx < filtered.length - 1 ? () => setFullScreenIdx(fullScreenIdx + 1) : undefined}
+            hasPrevious={fullScreenIdx > 0}
+            hasNext={fullScreenIdx < filtered.length - 1}
+          />
+        )}
       </div>
     </motion.section>
   );
@@ -998,6 +1108,8 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
 
 const DEFAULT_SECTIONS: BrandViewSection[] = [
   'identity',
+  'coreMessage',
+  'pillars',
   'manifesto',
   'archetypes',
   'personas',
@@ -1027,6 +1139,8 @@ export const BrandReadOnlyView: React.FC<BrandReadOnlyViewProps> = ({
   return (
     <div className={cn(wrapperCls, className)}>
       {enabled.has('identity') && <BrandIdentityView guideline={guideline} compact={compact} />}
+      {enabled.has('coreMessage') && <BrandCoreMessageView guideline={guideline} compact={compact} />}
+      {enabled.has('pillars') && <BrandPillarsView guideline={guideline} compact={compact} />}
       {enabled.has('manifesto') && <BrandManifestoView guideline={guideline} compact={compact} />}
       {enabled.has('archetypes') && <BrandArchetypesView guideline={guideline} compact={compact} />}
       {enabled.has('personas') && <BrandPersonasView guideline={guideline} compact={compact} />}

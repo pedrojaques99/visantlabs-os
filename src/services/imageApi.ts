@@ -1,6 +1,5 @@
 import { authService } from './authService';
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+import { API_BASE } from '@/config/api';
 
 export interface SearchImage {
   url: string;

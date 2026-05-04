@@ -14,7 +14,7 @@ export const GlassPanel = React.forwardRef<HTMLDivElement, GlassPanelProps>(
       <Comp
         ref={ref}
         className={cn(
-          "bg-neutral-900/40 border border-white/5 rounded-xl flex flex-col relative z-20 backdrop-blur-sm",
+          "bg-white/[0.01] border border-white/[0.05] rounded-lg flex flex-col relative z-20 transition-colors duration-300",
           {
             'p-0': padding === 'none',
             'p-4': padding === 'sm',

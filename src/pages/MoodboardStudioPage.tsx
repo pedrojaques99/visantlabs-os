@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scissors, Video, Upload, X, Play, Plus, Loader2, Zap, Download } from 'lucide-react';
+import { Scissors, Video, Upload, X, Play, Plus, Zap, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageShell } from '../components/ui/PageShell';
 import { Button } from '../components/ui/button';
@@ -19,9 +19,9 @@ import type { ImageProvider } from '../types/types';
 import { GEMINI_MODELS } from '../constants/geminiModels';
 import { getCreditsRequired } from '../utils/creditCalculator';
 import { ModelSelector } from '../components/shared/ModelSelector';
+import { API_BASE } from '@/config/api';
 
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
-
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 async function callVideoApi(body: object): Promise<string> {
   const token = authService.getToken();
   const res = await fetch(`${API_BASE}/video/generate`, {
@@ -459,7 +459,7 @@ function MoodboardStudio() {
 
             <div className="flex gap-3">
               <Button variant="default" onClick={splitImage} disabled={isAnalyzing}>
-                {isAnalyzing ? <Loader2 size={15} className="mr-2 animate-spin" /> : <Scissors size={15} className="mr-2" />}
+                {isAnalyzing ? <GlitchLoader size={15} className="mr-2" /> : <Scissors size={15} className="mr-2" />}
                 {isAnalyzing ? 'Detecting Grid...' : 'Detect & Extract'}
               </Button>
               <Button variant="secondary" onClick={() => setShowFrameModal(true)} disabled={isCreatingFullVideo}>
@@ -477,7 +477,7 @@ function MoodboardStudio() {
                 <span className="text-sm font-bold text-white">{croppedImages.length} images</span>
                 {croppedImages.length > 0 && (
                   <Button variant="secondary" size="sm" onClick={handleCreateFullVideo} disabled={isCreatingFullVideo}>
-                    {isCreatingFullVideo ? <Loader2 size={13} className="mr-1.5 animate-spin" /> : <Video size={13} className="mr-1.5" />}
+                    {isCreatingFullVideo ? <GlitchLoader size={13} className="mr-1.5" /> : <Video size={13} className="mr-1.5" />}
                     {isCreatingFullVideo ? 'Generating...' : 'Full Video (Veo 3)'}
                   </Button>
                 )}
@@ -600,7 +600,7 @@ function MoodboardStudio() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-24 right-6 z-40 bg-neutral-950/90 backdrop-blur-xl border border-border px-4 py-3 rounded-2xl flex items-center gap-3 shadow-2xl"
           >
-            <Loader2 size={14} className="text-neutral-400 animate-spin" />
+            <GlitchLoader size={14} />
             <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">AI Analyzing</span>
           </motion.div>
         )}

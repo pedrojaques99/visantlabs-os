@@ -93,7 +93,6 @@ export function IntelligenceSection() {
         onClose={() => setScanModalOpen(false)}
         onApply={(items) => {
           // Logic to apply categorized items (syncing to store etc)
-          console.log('Applied scan items:', items);
           setScanModalOpen(false);
         }}
       />

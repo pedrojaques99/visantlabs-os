@@ -486,6 +486,7 @@ model BrandGuideline {
   tokens    Json?    // { spacing?, radius?, shadows?, components? }
 
   // Design tokens
+  colorThemes Json?  // BrandColorTheme[] — user-defined color schemes
   gradients Json?    // BrandGuidelineGradient[]
   shadows   Json?    // BrandGuidelineShadow[]
   motion    Json?    // BrandGuidelineMotion
@@ -585,6 +586,20 @@ model OAuthAuthCode {
   createdAt     DateTime @default(now())
 
   @@map("oauth_auth_codes")
+}
+
+model OAuthRefreshToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  token     String   @unique
+  userId    String   @db.ObjectId
+  clientId  String
+  scopes    String[]
+  resource  String   @default("https://api.visantlabs.com/api/mcp")
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("oauth_refresh_tokens")
 }
 
 model AppConfig {

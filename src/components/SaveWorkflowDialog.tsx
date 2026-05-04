@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Save, Share2, Tags, Folder, FileType, Info, Globe, Loader2 } from 'lucide-react';
+import { X, Save, Share2, Tags, Folder, FileType, Info, Globe } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -12,6 +12,7 @@ import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
 import { cn } from '../lib/utils';
 import { MicroTitle } from './ui/MicroTitle';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface SaveWorkflowDialogProps {
     isOpen: boolean;
     onClose: () => void;
@@ -246,7 +247,7 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
                     >
                         {isSaving ? (
                             <span className="flex items-center gap-2">
-                                <Loader2 size={16} className="animate-spin" />
+                                <GlitchLoader size={16} />
                                 {t('workflows.saveDialog.saving') || 'Saving...'}
                             </span>
                         ) : (

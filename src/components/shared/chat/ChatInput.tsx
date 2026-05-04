@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Loader2, Paperclip } from 'lucide-react';
+import { Send, Paperclip } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ModelSelector } from '../ModelSelector';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface ChatInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -124,7 +125,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               aria-label="Enviar"
             >
               {isLoading || isIngesting ? (
-                <Loader2 size={16} className="animate-spin" />
+                <GlitchLoader size={16} />
               ) : (
                 <Send size={16} />
               )}

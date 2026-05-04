@@ -55,8 +55,7 @@ import { PresetCard } from '@/components/PresetCard';
 import { migrateLegacyPreset } from '@/types/communityPrompts';
 import type { CommunityPrompt } from '@/types/communityPrompts';
 import { MicroTitle } from '../components/ui/MicroTitle';
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+import { API_BASE } from '@/config/api';
 
 const ADMIN_API = '/api/admin/presets';
 

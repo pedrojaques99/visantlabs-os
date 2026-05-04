@@ -31,8 +31,8 @@ describe('useCanvasContextMenu — handleAddNode', () => {
   let pane: HTMLElement;
   let reactFlowWrapper: React.RefObject<HTMLDivElement>;
   let reactFlowInstance: ReturnType<typeof makeReactFlowInstance>;
-  let setContextMenu: ReturnType<typeof vi.fn>;
-  let onConnect: ReturnType<typeof vi.fn>;
+  let setContextMenu: (menu: null) => void;
+  let onConnect: (params: any) => void;
 
   beforeEach(() => {
     pane = makePane(100, 50);

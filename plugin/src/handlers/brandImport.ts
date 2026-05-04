@@ -45,7 +45,7 @@ export async function importLogoCandidates(maxWidth = 512): Promise<void> {
       }
     }
   } catch (e) {
-    console.log('[Plugin] importLogoCandidates failed:', e);
+    console.warn('[Plugin] importLogoCandidates failed:', e);
   }
 
   postToUI({ type: 'LOGO_CANDIDATES_LOADED', candidates: results });

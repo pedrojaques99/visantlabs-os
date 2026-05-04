@@ -14,7 +14,10 @@ import { uploadBrandMedia, deleteImage } from '../services/r2Service.js'
 import { brandSharedService } from '../services/brandSharedService.js'
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js'
 import { runBrandHealth } from '../lib/brandHealth.js'
+import { compileBrandTokens, type CompileFormat } from '../lib/brand-token-compiler.js'
+import { v4 as uuidv4 } from 'uuid'
 import { vectorService } from '../services/vectorService.js'
+import { knowledgeService } from '../services/knowledgeService.js'
 import { checkBrandCompliance, type ComplianceCheckInput } from '../services/complianceService.js'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
 import { calculateChangedFields, createSnapshot, generateChangeNote, generateDiff, formatVersionListItem } from '../lib/versionUtils.js'
@@ -134,7 +137,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     const update: Partial<BrandGuideline> = parsed.data as any
     const { changeNote } = req.body // Optional user-provided change note
     const merged: Partial<BrandGuideline> = {}
-    const fields = ['identity', 'logos', 'colors', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections', 'folder', 'strategy', 'orderedBlocks', 'gradients', 'shadows', 'motion', 'borders', 'validation', 'isPublic', 'publicSlug'] as const
+    const fields = ['identity', 'logos', 'colors', 'colorThemes', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections', 'folder', 'strategy', 'orderedBlocks', 'gradients', 'shadows', 'motion', 'borders', 'validation', 'isPublic', 'publicSlug', 'knowledgeFiles', 'figmaFileUrl', 'figmaFileKey', 'canEdit', 'canView'] as const
 
     for (const field of fields) {
       if (update[field] !== undefined) {
@@ -535,6 +538,74 @@ router.get('/:id/export', apiRateLimiter, authenticate, async (req: AuthRequest,
   } catch (error: any) {
     console.error('Error exporting brand guideline:', error)
     res.status(500).json({ error: 'Failed to export' })
+  }
+})
+
+// GET /api/brand-guidelines/:id/compile — compile tokens to CSS/Tailwind/React/SCSS
+router.get('/:id/compile', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const format = (req.query.format as CompileFormat) || 'css'
+    const validFormats: CompileFormat[] = ['css', 'tailwind', 'react', 'scss', 'all']
+    if (!validFormats.includes(format)) {
+      return res.status(400).json({ error: `Invalid format. Use: ${validFormats.join(', ')}` })
+    }
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Not found' })
+
+    const outputs = compileBrandTokens(guideline as unknown as BrandGuideline, format)
+
+    if (format !== 'all' && outputs.length === 1) {
+      const output = outputs[0]
+      const mimeTypes: Record<string, string> = {
+        css: 'text/css',
+        tailwind: 'application/typescript',
+        react: 'application/typescript',
+        scss: 'text/x-scss',
+      }
+      res.setHeader('Content-Type', mimeTypes[output.format] || 'text/plain')
+      res.setHeader('Content-Disposition', `inline; filename="${output.filename}"`)
+      return res.send(output.content)
+    }
+
+    res.json({ outputs: outputs.map(o => ({ format: o.format, filename: o.filename, content: o.content })) })
+  } catch (error: any) {
+    console.error('Error compiling brand tokens:', error)
+    res.status(500).json({ error: 'Failed to compile tokens' })
+  }
+})
+
+// GET /api/brand-guidelines/public/:slug/compile — public compile endpoint
+router.get('/public/:slug/compile', apiRateLimiter, async (req, res) => {
+  try {
+    const format = (req.query.format as CompileFormat) || 'css'
+    const validFormats: CompileFormat[] = ['css', 'tailwind', 'react', 'scss', 'all']
+    if (!validFormats.includes(format)) {
+      return res.status(400).json({ error: `Invalid format. Use: ${validFormats.join(', ')}` })
+    }
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { publicSlug: req.params.slug, isPublic: true },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Not found' })
+
+    const outputs = compileBrandTokens(guideline as unknown as BrandGuideline, format)
+
+    if (format !== 'all' && outputs.length === 1) {
+      const output = outputs[0]
+      res.setHeader('Content-Type', 'text/plain')
+      res.setHeader('Content-Disposition', `inline; filename="${output.filename}"`)
+      return res.send(output.content)
+    }
+
+    res.json({ outputs: outputs.map(o => ({ format: o.format, filename: o.filename, content: o.content })) })
+  } catch (error: any) {
+    console.error('Error compiling public brand tokens:', error)
+    res.status(500).json({ error: 'Failed to compile tokens' })
   }
 })
 
@@ -1747,6 +1818,82 @@ router.delete('/:id/knowledge/:fileId', apiRateLimiter, authenticate, async (req
   } catch (error: any) {
     console.error('Error deleting knowledge file:', error)
     res.status(500).json({ error: 'Failed to delete knowledge file' })
+  }
+})
+
+router.post('/:id/knowledge/upload', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true, knowledgeFiles: true },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Not found' })
+
+    const { source, url, data, filename } = req.body
+
+    let parts: any[]
+    switch (source) {
+      case 'pdf': {
+        if (!data) return res.status(400).json({ error: 'PDF data required' })
+        parts = [{ inlineData: { mimeType: 'application/pdf', data: data.replace(/^data:application\/pdf;base64,/, '') } }]
+        break
+      }
+      case 'image': {
+        if (!data) return res.status(400).json({ error: 'Image data required' })
+        const mimeType = data.match(/^data:([^;]+)/)?.[1] || 'image/png'
+        parts = [{ inlineData: { mimeType, data: data.replace(/^data:[^;]+;base64,/, '') } }]
+        break
+      }
+      case 'url': {
+        if (!url) return res.status(400).json({ error: 'URL required' })
+        const chunks = await parseUrl(url)
+        parts = [{ text: chunks.map((c: any) => c.text).join('\n\n') }]
+        break
+      }
+      case 'text': {
+        if (!data) return res.status(400).json({ error: 'Text data required' })
+        parts = [{ text: typeof data === 'string' ? data : JSON.stringify(data) }]
+        break
+      }
+      default:
+        return res.status(400).json({ error: `Invalid source: ${source}` })
+    }
+
+    const displayName = filename || url || source
+    const ingestResult: any = await knowledgeService.ingestContent({
+      userId: req.userId,
+      projectId: guideline.id,
+      parts,
+      metadata: {
+        fileName: displayName,
+        source: source as any,
+        brandGuidelineId: guideline.id,
+        ingestedByUserId: req.userId,
+      },
+    })
+
+    const vectorIds: string[] = ingestResult?.ids ?? (ingestResult?.id ? [ingestResult.id] : [])
+
+    const existing: KnowledgeFile[] = (guideline.knowledgeFiles as unknown as KnowledgeFile[] | null) || []
+    const entry = {
+      id: uuidv4(),
+      fileName: displayName,
+      source,
+      vectorIds,
+      addedByUserId: req.userId,
+      addedAt: new Date().toISOString(),
+    }
+    await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { knowledgeFiles: [...existing, entry] as any },
+    })
+
+    res.json({ success: true, file: entry })
+  } catch (error: any) {
+    console.error('Error uploading knowledge file:', error)
+    res.status(500).json({ error: 'Failed to upload knowledge file' })
   }
 })
 

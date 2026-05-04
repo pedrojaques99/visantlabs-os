@@ -5,19 +5,10 @@ import { FileText, FileJson, FileCode, Braces, Brain } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { downloadBlob } from '@/components/brand/brand-shared-config';
 
 interface GuidelineExportBarProps {
   guideline: BrandGuideline;
-}
-
-function downloadBlob(content: string, filename: string, type: string) {
-  const blob = new Blob([content], { type });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 function guidelineToMarkdown(g: BrandGuideline): string {
@@ -229,6 +220,18 @@ function guidelineToDesignMd(g: BrandGuideline): string {
     }
   }
 
+  if (g.colorThemes?.length) {
+    lines.push('colorThemes:');
+    g.colorThemes.forEach(t => {
+      const key = t.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      lines.push(`  ${key}:`);
+      lines.push(`    bg: "${t.bg}"`);
+      lines.push(`    text: "${t.text}"`);
+      lines.push(`    primary: "${t.primary}"`);
+      lines.push(`    accent: "${t.accent}"`);
+    });
+  }
+
   lines.push('---');
   lines.push('');
   lines.push(`# ${g.name || 'Untitled'}`);
@@ -248,6 +251,18 @@ function guidelineToDesignMd(g: BrandGuideline): string {
     g.colors.forEach(c => {
       const key = (c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
       lines.push(`\`${key}\` (\`${c.hex}\`) — ${c.role || 'Brand color'}.`);
+    });
+    lines.push('');
+  }
+
+  // Color Themes
+  if (g.colorThemes && g.colorThemes.length > 0) {
+    lines.push('## Color Themes');
+    lines.push('');
+    lines.push('Pre-defined color schemes for consistent application across surfaces:');
+    lines.push('');
+    g.colorThemes.forEach(t => {
+      lines.push(`**${t.name}:** bg \`${t.bg}\`, text \`${t.text}\`, primary \`${t.primary}\`, accent \`${t.accent}\`.`);
     });
     lines.push('');
   }
@@ -322,7 +337,7 @@ function guidelineToDesignMd(g: BrandGuideline): string {
 
 export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guideline }) => {
   const { t } = useTranslation();
-  const safeName = (guideline.name || 'brand').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+  const safeName = (guideline.identity?.name || guideline.name || 'brand').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
 
   const exportJSON = () => {
     downloadBlob(JSON.stringify(guideline, null, 2), `${safeName}-guidelines.json`, 'application/json');

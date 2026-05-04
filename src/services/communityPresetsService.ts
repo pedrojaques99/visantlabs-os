@@ -1,7 +1,6 @@
 import { migrateLegacyPreset } from '../types/communityPrompts.js';
 import type { PromptCategory } from '../types/communityPrompts.js';
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+import { API_BASE } from '@/config/api';
 
 // Cache for community presets
 let presetsPromise: Promise<Record<string, any[]>> | null = null;

@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { RoomProvider } from '@/config/liveblocks';
 import { useBrandCollaboration } from '@/hooks/brand/useBrandCollaboration';
 import { getPresenceColor } from '@/lib/liveblocks-presence';
@@ -124,11 +124,9 @@ export const BrandRoomProvider: React.FC<BrandRoomProviderProps> = ({
         guideline: new LiveObject(guideline as unknown as Record<string, any>),
       }}
     >
-      <Suspense fallback={null}>
-        <LiveblocksEditorProvider guideline={guideline} onSave={onSave}>
-          {children}
-        </LiveblocksEditorProvider>
-      </Suspense>
+      <LiveblocksEditorProvider guideline={guideline} onSave={onSave}>
+        {children}
+      </LiveblocksEditorProvider>
     </RoomProvider>
   );
 };

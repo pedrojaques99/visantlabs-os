@@ -122,7 +122,8 @@ export const BrandMediaSchema = z.object({
   id: z.string().optional(),
   url: z.string(),
   type: z.string().optional(),
-  label: z.string().optional()
+  label: z.string().optional(),
+  category: z.enum(['background', 'graphic', 'stock', 'product', 'texture', 'other']).optional(),
 }).passthrough();
 
 export const BrandTokensSchema = z.object({
@@ -151,6 +152,14 @@ export const BrandGuidelineSchema = z.object({
   guidelines: z.any().optional().nullable(),
   strategy: z.any().optional().nullable(),
   extraction: z.any().optional().nullable(),
+  colorThemes: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    bg: z.string(),
+    text: z.string(),
+    primary: z.string(),
+    accent: z.string(),
+  }).passthrough()).optional().nullable(),
   gradients: z.array(BrandGradientSchema).optional().nullable(),
   shadows: z.array(BrandShadowSchema).optional().nullable(),
   motion: BrandMotionSchema.optional().nullable(),

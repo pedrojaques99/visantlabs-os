@@ -6,11 +6,9 @@ import { JWT_SECRET } from '../utils/jwtSecret.js';
 
 const router = express.Router();
 
-// In-memory refresh token store (MVP — acceptable for Phase 2)
-const refreshTokenStore = new Map<string, { userId: string; clientId: string; scopes: string[] }>();
-
 const BASE_URL = process.env.API_BASE_URL || 'https://api.visantlabs.com';
 const MCP_RESOURCE = `${BASE_URL}/api/mcp`;
+const REFRESH_TOKEN_TTL_DAYS = 30;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -371,12 +369,17 @@ async function handleAuthCodeExchange(req: express.Request, res: express.Respons
     const scopes = authCode.scopes.join(' ');
     const accessToken = issueAccessToken(authCode.userId, client_id, scopes, authCode.resource);
 
-    // Issue refresh token
+    // Issue persistent refresh token
     const refreshToken = crypto.randomBytes(32).toString('hex');
-    refreshTokenStore.set(refreshToken, {
-      userId: authCode.userId,
-      clientId: client_id,
-      scopes: authCode.scopes,
+    await prisma.oAuthRefreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: authCode.userId,
+        clientId: client_id,
+        scopes: authCode.scopes,
+        resource: authCode.resource,
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000),
+      },
     });
 
     return res.json({
@@ -399,31 +402,87 @@ async function handleRefreshToken(req: express.Request, res: express.Response) {
     return res.status(400).json({ error: 'invalid_request', error_description: 'refresh_token is required' });
   }
 
-  const stored = refreshTokenStore.get(refresh_token);
-  if (!stored) {
-    return res.status(400).json({ error: 'invalid_grant', error_description: 'Unknown or expired refresh token' });
+  try {
+    const stored = await prisma.oAuthRefreshToken.findUnique({ where: { token: refresh_token } });
+    if (!stored || stored.expiresAt < new Date()) {
+      return res.status(400).json({ error: 'invalid_grant', error_description: 'Unknown or expired refresh token' });
+    }
+
+    if (client_id && stored.clientId !== client_id) {
+      return res.status(400).json({ error: 'invalid_grant', error_description: 'client_id mismatch' });
+    }
+
+    // Rotate: delete old, create new
+    await prisma.oAuthRefreshToken.delete({ where: { id: stored.id } });
+    const newRefreshToken = crypto.randomBytes(32).toString('hex');
+    await prisma.oAuthRefreshToken.create({
+      data: {
+        token: newRefreshToken,
+        userId: stored.userId,
+        clientId: stored.clientId,
+        scopes: stored.scopes,
+        resource: stored.resource,
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    const scopes = stored.scopes.join(' ');
+    const accessToken = issueAccessToken(stored.userId, stored.clientId, scopes, stored.resource);
+
+    return res.json({
+      access_token: accessToken,
+      token_type: 'Bearer',
+      expires_in: 3600,
+      refresh_token: newRefreshToken,
+      scope: scopes,
+    });
+  } catch (err) {
+    console.error('[OAuth] refresh token error', err);
+    return res.status(500).json({ error: 'server_error' });
   }
-
-  if (client_id && stored.clientId !== client_id) {
-    return res.status(400).json({ error: 'invalid_grant', error_description: 'client_id mismatch' });
-  }
-
-  // Rotate refresh token
-  refreshTokenStore.delete(refresh_token);
-  const newRefreshToken = crypto.randomBytes(32).toString('hex');
-  refreshTokenStore.set(newRefreshToken, stored);
-
-  const scopes = stored.scopes.join(' ');
-  const accessToken = issueAccessToken(stored.userId, stored.clientId, scopes, MCP_RESOURCE);
-
-  return res.json({
-    access_token: accessToken,
-    token_type: 'Bearer',
-    expires_in: 3600,
-    refresh_token: newRefreshToken,
-    scope: scopes,
-  });
 }
+
+// ── Token Revocation (RFC 7009) ───────────────────────────────────────────
+
+router.post('/oauth/revoke', async (req, res) => {
+  const { token, token_type_hint } = req.body as Record<string, string>;
+
+  if (!token) {
+    return res.status(400).json({ error: 'invalid_request', error_description: 'token is required' });
+  }
+
+  try {
+    // Try refresh token first (most common revocation target)
+    if (!token_type_hint || token_type_hint === 'refresh_token') {
+      const deleted = await prisma.oAuthRefreshToken.deleteMany({ where: { token } });
+      if (deleted.count > 0) return res.sendStatus(200);
+    }
+
+    // Access tokens are stateless JWTs — cannot revoke directly.
+    // Per RFC 7009: server MUST respond 200 even if token is unknown/already invalid.
+    return res.sendStatus(200);
+  } catch (err) {
+    console.error('[OAuth] /oauth/revoke error', err);
+    return res.status(500).json({ error: 'server_error' });
+  }
+});
+
+// ── Cleanup expired tokens (called periodically or on-demand) ─────────────
+
+async function cleanupExpiredOAuthData() {
+  const now = new Date();
+  const [codes, tokens] = await Promise.all([
+    prisma.oAuthAuthCode.deleteMany({ where: { OR: [{ expiresAt: { lt: now } }, { used: true, createdAt: { lt: new Date(Date.now() - 60 * 60 * 1000) } }] } }),
+    prisma.oAuthRefreshToken.deleteMany({ where: { expiresAt: { lt: now } } }),
+  ]);
+  if (codes.count || tokens.count) {
+    console.log(`[OAuth] Cleanup: ${codes.count} auth codes, ${tokens.count} refresh tokens removed`);
+  }
+}
+
+// Run cleanup every 6 hours
+setInterval(cleanupExpiredOAuthData, 6 * 60 * 60 * 1000);
+cleanupExpiredOAuthData().catch(() => {});
 
 // ── Consent HTML page ─────────────────────────────────────────────────────────
 
@@ -507,7 +566,7 @@ function buildConsentPage(p: ConsentPageParams): string {
 <body>
   <div class="card">
     <div class="logo">
-      <div class="logo-dot"></div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#0ea5e9"/><path d="M8 12l3 3 5-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="logo-text">Visant Labs</span>
     </div>
     <h1><span class="app-name">${esc(p.clientName)}</span> wants access</h1>

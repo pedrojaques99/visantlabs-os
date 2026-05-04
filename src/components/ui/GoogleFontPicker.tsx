@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, ChevronDown, Check, Loader2 } from 'lucide-react';
+import { Search, ChevronDown, Check } from 'lucide-react';
 import { Input } from './input';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 // A small subset of popular fonts to load initially
 const COMMON_GOOGLE_FONTS = [
     'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat',
@@ -117,7 +118,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
                                 autoFocus
                             />
                             {isLoadingFonts && (
-                                <Loader2 size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-cyan animate-spin" />
+                                <GlitchLoader size={12} className="absolute right-3 top-1/2 -translate-y-1/2" />
                             )}
                         </div>
                     </div>

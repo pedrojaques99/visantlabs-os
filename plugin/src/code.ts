@@ -1,4 +1,7 @@
 /// <reference types="@figma/plugin-typings" />
+if (typeof performance === 'undefined') {
+  (globalThis as any).performance = { now: () => Date.now() };
+}
 /**
  * Visant Copilot - Figma Plugin
  * Main entry point - routes messages to handlers
@@ -51,7 +54,8 @@ import {
   multiplyResponsive,
   generateBrandGrid,
   generateSocialFrames,
-  importLogoCandidates
+  importLogoCandidates,
+  exportWithBleed
 } from './handlers/index';
 import { dispatch } from './handlers/registry';
 import { isEnvelope } from '@shared/protocol';
@@ -106,7 +110,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
 
   // ── WebSocket initialization ──
   if (msg.type === 'INIT_WS') {
-    console.log('[Plugin] WebSocket initialization message received');
+    // WebSocket init acknowledged
     return;
   }
 
@@ -490,10 +494,19 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     postToUI({ type: 'FONT_VARIABLES_LOADED', fonts });
     postToUI({ type: 'COLOR_VARIABLES_LOADED', colors });
 
-    exportComponentThumbnails(components).catch(() => {});
+    // Thumbnails are exported on-demand via GET_COMPONENT_THUMBNAILS
     getAvailableFontFamilies().then((families: any) => {
       postToUI({ type: 'AVAILABLE_FONTS_LOADED', families });
     }).catch(() => {});
+    return;
+  }
+
+  // ── Lazy thumbnail export ──
+  if (msg.type === 'GET_COMPONENT_THUMBNAILS') {
+    const comps = (msg as any).componentIds as string[] | undefined;
+    const all = (await getComponentsInCurrentFile()) || [];
+    const subset = comps ? all.filter(c => comps.includes(c.id)) : all;
+    exportComponentThumbnails(subset).catch(() => {});
     return;
   }
 
@@ -876,6 +889,16 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     };
     script += process(node);
     postToUI({ type: 'ILLUSTRATOR_CODE_READY', code: script });
+    return;
+  }
+
+  // ── Export with Bleed (Arte Final) ──
+  if ((msg as any).type === 'EXPORT_WITH_BLEED') {
+    try {
+      await exportWithBleed();
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
     return;
   }
 
