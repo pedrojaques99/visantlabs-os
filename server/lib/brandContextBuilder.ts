@@ -79,6 +79,7 @@ export interface BrandContextJSON {
   };
   tags?: Record<string, string[]>;
   knowledge?: Array<{ fileName: string; source: string }>;
+  colorThemes?: Array<{ name: string; bg: string; text: string; primary: string; accent: string }>;
 }
 
 /**

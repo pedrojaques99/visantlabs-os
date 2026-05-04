@@ -450,6 +450,18 @@ function compileSCSS(bg: BrandGuideline): string {
       lines.push(`  '${slugify(s.name)}': ${buildShadowCSS(s)},`)
     }
     lines.push(');')
+    lines.push('')
+  }
+
+  if (bg.colorThemes?.length) {
+    for (const t of bg.colorThemes) {
+      const slug = slugify(t.name)
+      lines.push(`$theme-${slug}-bg: ${t.bg};`)
+      lines.push(`$theme-${slug}-text: ${t.text};`)
+      lines.push(`$theme-${slug}-primary: ${t.primary};`)
+      lines.push(`$theme-${slug}-accent: ${t.accent};`)
+    }
+    lines.push('')
   }
 
   return lines.join('\n')
