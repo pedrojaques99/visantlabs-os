@@ -17,6 +17,7 @@ import {
   ManifestoSection, ArchetypesSection, MensagemCentralSection,
 } from './sections';
 import { PreviewSection } from './preview/PreviewSection';
+import { DesignSystemOutputSection } from './sections/DesignSystemOutputSection';
 import { GuidelineExportBar } from './GuidelineExportBar';
 import { SectionHideContext } from './SectionBlock';
 
@@ -118,6 +119,8 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
         return <PersonasSection key="personas" guideline={g} onUpdate={handleUpdate} span="full" />;
       case 'preview':
         return <PreviewSection key="preview" guideline={g} span="full" />;
+      case 'design-system-output':
+        return <DesignSystemOutputSection key="design-system-output" guideline={g} span="full" />;
       default:
         return null;
     }

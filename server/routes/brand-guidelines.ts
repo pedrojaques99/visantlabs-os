@@ -14,6 +14,7 @@ import { uploadBrandMedia, deleteImage } from '../services/r2Service.js'
 import { brandSharedService } from '../services/brandSharedService.js'
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js'
 import { runBrandHealth } from '../lib/brandHealth.js'
+import { compileBrandTokens, type CompileFormat } from '../lib/brand-token-compiler.js'
 import { vectorService } from '../services/vectorService.js'
 import { checkBrandCompliance, type ComplianceCheckInput } from '../services/complianceService.js'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
@@ -535,6 +536,74 @@ router.get('/:id/export', apiRateLimiter, authenticate, async (req: AuthRequest,
   } catch (error: any) {
     console.error('Error exporting brand guideline:', error)
     res.status(500).json({ error: 'Failed to export' })
+  }
+})
+
+// GET /api/brand-guidelines/:id/compile — compile tokens to CSS/Tailwind/React/SCSS
+router.get('/:id/compile', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const format = (req.query.format as CompileFormat) || 'css'
+    const validFormats: CompileFormat[] = ['css', 'tailwind', 'react', 'scss', 'all']
+    if (!validFormats.includes(format)) {
+      return res.status(400).json({ error: `Invalid format. Use: ${validFormats.join(', ')}` })
+    }
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Not found' })
+
+    const outputs = compileBrandTokens(guideline as unknown as BrandGuideline, format)
+
+    if (format !== 'all' && outputs.length === 1) {
+      const output = outputs[0]
+      const mimeTypes: Record<string, string> = {
+        css: 'text/css',
+        tailwind: 'application/typescript',
+        react: 'application/typescript',
+        scss: 'text/x-scss',
+      }
+      res.setHeader('Content-Type', mimeTypes[output.format] || 'text/plain')
+      res.setHeader('Content-Disposition', `inline; filename="${output.filename}"`)
+      return res.send(output.content)
+    }
+
+    res.json({ outputs: outputs.map(o => ({ format: o.format, filename: o.filename, content: o.content })) })
+  } catch (error: any) {
+    console.error('Error compiling brand tokens:', error)
+    res.status(500).json({ error: 'Failed to compile tokens' })
+  }
+})
+
+// GET /api/brand-guidelines/public/:slug/compile — public compile endpoint
+router.get('/public/:slug/compile', apiRateLimiter, async (req, res) => {
+  try {
+    const format = (req.query.format as CompileFormat) || 'css'
+    const validFormats: CompileFormat[] = ['css', 'tailwind', 'react', 'scss', 'all']
+    if (!validFormats.includes(format)) {
+      return res.status(400).json({ error: `Invalid format. Use: ${validFormats.join(', ')}` })
+    }
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { publicSlug: req.params.slug, isPublic: true },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Not found' })
+
+    const outputs = compileBrandTokens(guideline as unknown as BrandGuideline, format)
+
+    if (format !== 'all' && outputs.length === 1) {
+      const output = outputs[0]
+      res.setHeader('Content-Type', 'text/plain')
+      res.setHeader('Content-Disposition', `inline; filename="${output.filename}"`)
+      return res.send(output.content)
+    }
+
+    res.json({ outputs: outputs.map(o => ({ format: o.format, filename: o.filename, content: o.content })) })
+  } catch (error: any) {
+    console.error('Error compiling public brand tokens:', error)
+    res.status(500).json({ error: 'Failed to compile tokens' })
   }
 })
 

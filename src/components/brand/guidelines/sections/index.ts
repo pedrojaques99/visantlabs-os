@@ -19,3 +19,4 @@ export { GradientSection } from './GradientSection';
 export { ShadowSection } from './ShadowSection';
 export { MotionSection } from './MotionSection';
 export { BorderSection } from './BorderSection';
+export { DesignSystemOutputSection } from './DesignSystemOutputSection';

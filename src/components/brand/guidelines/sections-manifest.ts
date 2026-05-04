@@ -47,6 +47,7 @@ export const SECTIONS_MANIFEST: SectionMeta[] = [
   { id: 'voice',             label: 'Tone of Voice',     icon: MessageCircle,  defaultSpan: '1'    },
   { id: 'personas',          label: 'Personas',          icon: User,           defaultSpan: 'full' },
   { id: 'preview',           label: 'Preview',            icon: LayoutTemplate, defaultSpan: 'full' },
+  { id: 'design-system-output', label: 'Design System Output', icon: Layers,     defaultSpan: 'full' },
 ];
 
 /**
@@ -78,6 +79,7 @@ export function sectionHasData(id: string, g: import('@/lib/figma-types').BrandG
     case 'accessibility':return !!(g.guidelines?.accessibility);
     case 'knowledge':    return (g.knowledgeFiles?.length ?? 0) > 0;
     case 'figma':        return !!(g.figmaFileUrl);
+    case 'design-system-output': return (g.colors?.length ?? 0) > 0 || (g.typography?.length ?? 0) > 0 || !!(g.tokens?.spacing);
     default:             return true;
   }
 }
@@ -127,5 +129,10 @@ export const SECTION_TABS: SectionTab[] = [
     id: 'preview',
     label: 'Preview',
     sections: ['preview'],
+  },
+  {
+    id: 'output',
+    label: 'Output',
+    sections: ['design-system-output'],
   },
 ];

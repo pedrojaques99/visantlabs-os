@@ -388,6 +388,23 @@ export const brandGuidelineApi = {
     return Array.isArray(data.files) ? data.files : [];
   },
 
+  async compile(guidelineId: string, format: 'css' | 'tailwind' | 'react' | 'scss' | 'all' = 'all'): Promise<{ outputs: Array<{ format: string; filename: string; content: string }> }> {
+    if (format === 'all') {
+      const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/compile?format=all`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) throw new Error('Failed to compile tokens');
+      return response.json();
+    }
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/compile?format=${format}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to compile tokens');
+    const content = await response.text();
+    const filename = response.headers.get('content-disposition')?.match(/filename="(.+)"/)?.[1] || `tokens.${format}`;
+    return { outputs: [{ format, filename, content }] };
+  },
+
   async deleteKnowledge(guidelineId: string, fileId: string): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/knowledge/${fileId}`, {
       method: 'DELETE',
