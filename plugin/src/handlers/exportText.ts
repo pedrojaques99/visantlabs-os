@@ -28,35 +28,30 @@ function collectTexts(node: BaseNode, path: string, entries: TextEntry[], page: 
 export async function exportTextToMarkdown(opts: { includeHidden?: boolean }): Promise<{ markdown: string; filename: string }> {
   const includeHidden = opts.includeHidden ?? false;
   const entries: TextEntry[] = [];
+  const page = figma.currentPage;
+  const pageName = page.name || 'Untitled';
   const docName = figma.root.name || 'Untitled';
 
-  for (const page of figma.root.children) {
-    for (const topLevel of page.children) {
-      collectTexts(topLevel, topLevel.name, entries, page.name, topLevel.name, includeHidden);
-    }
+  for (const topLevel of page.children) {
+    collectTexts(topLevel, topLevel.name, entries, pageName, topLevel.name, includeHidden);
   }
 
-  let md = `# ${docName} — Text Export\n\n`;
-  let currentPage = '';
+  let md = `# ${docName} — ${pageName}\n\n`;
   let currentFrame = '';
 
   for (const entry of entries) {
-    if (entry.page !== currentPage) {
-      currentPage = entry.page;
-      currentFrame = '';
-      md += `## ${currentPage}\n\n`;
-    }
     if (entry.frame !== currentFrame) {
       currentFrame = entry.frame;
-      md += `### ${currentFrame}\n\n`;
+      md += `## ${currentFrame}\n\n`;
     }
     md += `${entry.characters}\n\n`;
   }
 
   if (entries.length === 0) {
-    md += '_No text layers found._\n';
+    md += '_No text layers found on this page._\n';
   }
 
-  const filename = `${docName.replace(/[^a-zA-Z0-9_-]/g, '_')}_texts.md`;
+  const sanitize = (s: string) => s.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const filename = `${sanitize(docName)}_${sanitize(pageName)}_texts.md`;
   return { markdown: md, filename };
 }

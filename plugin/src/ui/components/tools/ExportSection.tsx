@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { useClient } from '../../lib/ClientProvider';
@@ -19,18 +19,10 @@ export function ExportSection() {
   const isGenerating = usePluginStore((s) => s.isGenerating);
   const runner = useOpRunner({ globalBusy: isGenerating });
   const client = useClient();
-  const [extracting, setExtracting] = useState(false);
 
   async function handleExportTexts() {
-    setExtracting(true);
-    try {
-      const result = await client.request('export.textToMarkdown', { includeHidden: false });
-      downloadFile(result.markdown, result.filename);
-    } catch (e: any) {
-      console.error('Export texts failed:', e);
-    } finally {
-      setExtracting(false);
-    }
+    const result = await client.request('export.textToMarkdown', { includeHidden: false });
+    downloadFile(result.markdown, result.filename);
   }
 
   return (
@@ -94,14 +86,18 @@ export function ExportSection() {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <button
-          onClick={handleExportTexts}
-          disabled={extracting || isGenerating}
-          className="h-8 text-[10px] inline-flex items-center justify-center rounded border border-neutral-200 px-2 hover:bg-neutral-50 disabled:opacity-50"
+        <OpButton
+          opId="exportTexts"
+          runner={runner}
+          task={handleExportTexts}
+          busyLabel="Extraindo…"
+          variant="outline"
+          size="sm"
+          className="h-8 text-[10px]"
         >
           <FileText size={12} className="mr-2 text-neutral-500" />
-          {extracting ? 'Extraindo…' : 'Export Texts .md'}
-        </button>
+          Export Texts .md
+        </OpButton>
       </div>
 
       <p className="text-[9px] text-neutral-500 italic px-1">
