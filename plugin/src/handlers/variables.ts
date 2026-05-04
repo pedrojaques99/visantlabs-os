@@ -25,7 +25,7 @@ export async function getColorVariablesFromFile(): Promise<ColorVariable[]> {
       }
     }
   } catch (e) {
-    console.log('[Plugin] Error getting color variables:', e);
+    console.warn('[Plugin] Error getting color variables:', e);
   }
 
   // 2. Local paint styles
@@ -42,7 +42,7 @@ export async function getColorVariablesFromFile(): Promise<ColorVariable[]> {
       }
     }
   } catch (e) {
-    console.log('[Plugin] Error getting paint styles:', e);
+    console.warn('[Plugin] Error getting paint styles:', e);
   }
 
   // 3. Library color variables
@@ -74,7 +74,7 @@ export async function getColorVariablesFromFile(): Promise<ColorVariable[]> {
       }
     }
   } catch (e) {
-    console.log('[Plugin] Error getting library color variables:', e);
+    console.warn('[Plugin] Error getting library color variables:', e);
   }
 
   // 4. Colors from current selection
@@ -107,7 +107,7 @@ export async function getColorVariablesFromFile(): Promise<ColorVariable[]> {
       }
     }
   } catch (e) {
-    console.log('[Plugin] Error extracting selection colors:', e);
+    console.warn('[Plugin] Error extracting selection colors:', e);
   }
 
   return colors;
@@ -134,7 +134,7 @@ export async function getFontVariablesFromFile(): Promise<FontVariable[]> {
       }
     }
   } catch (e) {
-    console.log('[Plugin] Error getting text styles:', e);
+    console.warn('[Plugin] Error getting text styles:', e);
   }
 
   // 2. Local STRING variables (for design tokens)
@@ -155,7 +155,7 @@ export async function getFontVariablesFromFile(): Promise<FontVariable[]> {
       }
     }
   } catch (e) {
-    console.log('[Plugin] Error getting font variables:', e);
+    console.warn('[Plugin] Error getting font variables:', e);
   }
 
   return fonts;

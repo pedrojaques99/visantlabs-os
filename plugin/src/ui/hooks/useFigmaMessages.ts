@@ -338,7 +338,7 @@ export function useFigmaMessages() {
 
         case 'BRAND_APPLY_DEBUG': {
           if (msg.debug) {
-            console.log('Brand Apply Debug:', msg.debug);
+            console.debug('Brand Apply Debug:', msg.debug);
             storeState.showToast('Brand applied', 'success');
           }
           break;

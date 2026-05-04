@@ -198,7 +198,7 @@ export async function pushToFigma(guideline: any): Promise<{ created: number; up
         created++;
       }
     } catch (e) {
-      console.log(`[FigmaSync] Error upserting variable ${name}:`, e);
+      console.warn(`[FigmaSync] Error upserting variable ${name}:`, e);
     }
   };
 

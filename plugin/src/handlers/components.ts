@@ -58,7 +58,7 @@ export async function getComponentsInCurrentFile(): Promise<ComponentInfo[]> {
       }
     }
   } catch (e) {
-    console.log('[Plugin] Error finding components:', e);
+    console.warn('[Plugin] Error finding components:', e);
   }
 
   return components;

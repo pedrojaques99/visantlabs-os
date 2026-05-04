@@ -503,7 +503,6 @@ figma.ui.onmessage = async (msg: UIMessage) => {
 
   // ── Lazy thumbnail export ──
   if (msg.type === 'GET_COMPONENT_THUMBNAILS') {
-    const store = await import('./state');
     const comps = (msg as any).componentIds as string[] | undefined;
     const all = (await getComponentsInCurrentFile()) || [];
     const subset = comps ? all.filter(c => comps.includes(c.id)) : all;
