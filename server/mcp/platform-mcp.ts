@@ -876,6 +876,41 @@ export function createPlatformMcpServer(): McpServer {
   );
 
   // ═══════════════════════════════════════════
+  // Image Extraction
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'document-extract',
+    'Extract high-resolution images from any public URL (Behance, Pinterest, Dribbble, portfolios, blogs). Returns a list of image URLs with metadata. Supports lazy-loaded images, srcset, and background images.',
+    {
+      url: z.string().url().describe('The public URL to extract images from (e.g. Behance gallery, portfolio page).'),
+      limit: z.number().min(1).max(200).default(80).describe('Maximum number of images to return (default 80).'),
+    },
+    async ({ url, limit }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      const scopeErr = requireScope('read');
+      if (scopeErr) return mcpError('FORBIDDEN', scopeErr);
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/images/extract-url`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-mcp-user-id': currentUserId,
+          },
+          body: JSON.stringify({ url, limit }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || 'Extraction failed');
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ ...result, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
   // Brand Guidelines
   // ═══════════════════════════════════════════
 

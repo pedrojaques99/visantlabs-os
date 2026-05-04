@@ -330,28 +330,84 @@ router.post('/extract-url', authenticate, apiRateLimiter, async (req: Request, r
     const content = await response.json();
     const html = content.data?.rawHtml || '';
 
-    // Security: Parse HTML securely (regex for src only)
-    const imgRegex = /<img[^>]+src="([^">]+)"/g;
+    // Extract image URLs from multiple attributes (src, srcset, data-src, etc.)
     const foundUrls = new Set<string>();
-    let match;
-    while ((match = imgRegex.exec(html)) !== null) {
-      let src = match[1];
+    const resolveUrl = (raw: string): string | null => {
+      let src = raw.trim();
+      if (!src || src.startsWith('data:')) return null;
       if (src.startsWith('//')) src = 'https:' + src;
       else if (src.startsWith('/')) {
         const urlObj = new URL(targetUrl);
         src = `${urlObj.protocol}//${urlObj.host}${src}`;
       }
+      if (src.startsWith('http') && !src.endsWith('.svg')) return src;
+      return null;
+    };
 
-      // Filter out tiny UI elements, icons, base64 data strings (to avoid bloat)
-      if (src.startsWith('http') && !src.includes('base64') && !src.endsWith('.svg')) {
-        foundUrls.add(src);
+    // 1. Standard src attribute
+    const srcRegex = /<img[^>]+src="([^">]+)"/g;
+    let match;
+    while ((match = srcRegex.exec(html)) !== null) {
+      const resolved = resolveUrl(match[1]);
+      if (resolved) foundUrls.add(resolved);
+    }
+
+    // 2. Lazy-load attributes (data-src, data-original, data-hi-res)
+    const lazyRegex = /(?:data-src|data-original|data-hi-res|data-large-src)="([^">]+)"/g;
+    while ((match = lazyRegex.exec(html)) !== null) {
+      const resolved = resolveUrl(match[1]);
+      if (resolved) foundUrls.add(resolved);
+    }
+
+    // 3. srcset — pick the highest resolution candidate from each set
+    const srcsetRegex = /srcset="([^">]+)"/g;
+    while ((match = srcsetRegex.exec(html)) !== null) {
+      const candidates = match[1].split(',').map(c => c.trim());
+      let best = '';
+      let bestW = 0;
+      for (const candidate of candidates) {
+        const parts = candidate.split(/\s+/);
+        const url = parts[0];
+        const descriptor = parts[1] || '';
+        const w = parseInt(descriptor) || 0;
+        if (w > bestW || !best) { best = url; bestW = w; }
+      }
+      if (best) {
+        const resolved = resolveUrl(best);
+        if (resolved) foundUrls.add(resolved);
       }
     }
 
-    const results = Array.from(foundUrls).slice(0, limit).map(src => ({
+    // 4. Background images in style attributes (common in Behance modules)
+    const bgRegex = /background(?:-image)?:\s*url\(['"]?([^'")]+)['"]?\)/g;
+    while ((match = bgRegex.exec(html)) !== null) {
+      const resolved = resolveUrl(match[1]);
+      if (resolved) foundUrls.add(resolved);
+    }
+
+    // Filter out thumbnails/icons (URLs with common small-size indicators)
+    const filtered = Array.from(foundUrls).filter(url => {
+      const lower = url.toLowerCase();
+      if (lower.includes('/50x50') || lower.includes('/100x100') || lower.includes('_thumb')) return false;
+      if (lower.includes('avatar') || lower.includes('favicon') || lower.includes('icon')) return false;
+      return true;
+    });
+
+    // Prioritize likely high-res URLs (larger size indicators in URL)
+    const sorted = filtered.sort((a, b) => {
+      const scoreUrl = (u: string) => {
+        if (u.includes('original') || u.includes('max_')) return 3;
+        if (u.includes('1400') || u.includes('1920') || u.includes('project_modules/max')) return 2;
+        if (u.includes('disp') || u.includes('fs') || u.includes('source')) return 1;
+        return 0;
+      };
+      return scoreUrl(b) - scoreUrl(a);
+    });
+
+    const results = sorted.slice(0, limit).map(src => ({
       url: src,
       title: 'Extracted Content',
-      width: 0, // Firecrawl doesn't return dimensions easily
+      width: 0,
       height: 0
     }));
 
