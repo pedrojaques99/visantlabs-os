@@ -591,6 +591,92 @@ export const generateBrandingPDF = (
         addFormattedContent(archetypes.reasoning, 10);
       }
     }
+    // ═══ Visant v2 Steps (101-110) ═══
+    else if (step.id === 101 && typeof content === 'object' && content !== null) {
+      const cm = content as any;
+      if (cm.centralMessage) {
+        addText('Mensagem Central', 12, true);
+        addFormattedContent(cm.centralMessage.statement || '', 10);
+        if (cm.centralMessage.product) addText(`Produto: ${cm.centralMessage.product}`, 10);
+        if (cm.centralMessage.differential) addText(`Diferencial: ${cm.centralMessage.differential}`, 10);
+        if (cm.centralMessage.emotionalBond) addText(`Elo Emocional: ${cm.centralMessage.emotionalBond}`, 10);
+        yPosition += 5;
+      }
+      if (cm.pillars && Array.isArray(cm.pillars)) {
+        addText('Pilares', 12, true);
+        cm.pillars.forEach((p: any) => {
+          addText(`• ${p.name}: ${p.description || ''}`, 10);
+        });
+      }
+    }
+    else if (step.id === 102 && typeof content === 'object' && content !== null) {
+      const mr = content as any;
+      if (mr.whatCompetitorsDoWell) { addText('O que concorrentes fazem bem', 12, true); mr.whatCompetitorsDoWell.forEach((i: string) => addText(`• ${i}`, 10)); yPosition += 5; }
+      if (mr.whatNobodyDoes) { addText('O que ninguém faz', 12, true); mr.whatNobodyDoes.forEach((i: string) => addText(`• ${i}`, 10)); yPosition += 5; }
+      if (mr.howWeCanOwn) { addText('Como podemos dominar', 12, true); mr.howWeCanOwn.forEach((i: string) => addText(`• ${i}`, 10)); }
+    }
+    else if (step.id === 103 && typeof content === 'object' && content !== null) {
+      const p = content as any;
+      if (p.painPoints) { addText('Dores', 12, true); p.painPoints.forEach((i: any) => addText(`• ${i.title}: ${i.description || ''}`, 10)); yPosition += 5; }
+      if (p.desires) { addText('Desejos', 12, true); p.desires.forEach((i: any) => addText(`• ${i.title}: ${i.description || ''}`, 10)); }
+    }
+    else if (step.id === 104 && typeof content === 'object' && content !== null) {
+      const a = content as any;
+      if (a.archetypes) {
+        a.archetypes.forEach((arch: any) => {
+          addText(`${arch.role === 'primary' ? 'Primário' : 'Secundário'}: ${arch.name}`, 12, true);
+          if (arch.justification) addFormattedContent(arch.justification, 10);
+          yPosition += 5;
+        });
+      }
+      if (a.toneOfVoice) {
+        addText('Tom de Voz', 12, true);
+        a.toneOfVoice.forEach((t: any) => addText(`• ${t.pillar}: ${t.description || ''}`, 10));
+      }
+    }
+    else if (step.id === 105 && typeof content === 'object' && content !== null) {
+      const m = content as any;
+      if (m.provocation) { addText('Provocação', 12, true); addFormattedContent(m.provocation, 10); yPosition += 5; }
+      if (m.tension) { addText('Tensão', 12, true); addFormattedContent(m.tension, 10); yPosition += 5; }
+      if (m.promise) { addText('Promessa', 12, true); addFormattedContent(m.promise, 10); yPosition += 5; }
+      if (m.sloganSuggestion) { addText('Slogan', 12, true); addText(m.sloganSuggestion, 11, true); }
+    }
+    else if (step.id === 106 && typeof content === 'object' && content !== null) {
+      // Reuse SWOT rendering (same structure as step 7)
+      const swot = content as any;
+      if (swot.strengths?.length) { addText('Forças', 12, true, [34, 197, 94]); swot.strengths.forEach((i: string) => addText(`• ${i}`, 10)); yPosition += 5; }
+      if (swot.weaknesses?.length) { addText('Fraquezas', 12, true, [239, 68, 68]); swot.weaknesses.forEach((i: string) => addText(`• ${i}`, 10)); yPosition += 5; }
+      if (swot.opportunities?.length) { addText('Oportunidades', 12, true, [59, 130, 246]); swot.opportunities.forEach((i: string) => addText(`• ${i}`, 10)); yPosition += 5; }
+      if (swot.threats?.length) { addText('Ameaças', 12, true, [249, 115, 22]); swot.threats.forEach((i: string) => addText(`• ${i}`, 10)); }
+    }
+    else if (step.id === 107 && Array.isArray(content)) {
+      content.forEach((c: any) => {
+        checkNewPage(30);
+        const colorBlock = c.name ? `${c.name} (${c.hex})` : c.hex;
+        addText(colorBlock, 11, true);
+        if (c.role) addText(`Papel: ${c.role}`, 10);
+        if (c.psychology) addText(`Psicologia: ${c.psychology}`, 10);
+        yPosition += 5;
+      });
+    }
+    else if (step.id === 108 && typeof content === 'object' && content !== null) {
+      const ty = content as any;
+      if (ty.headline) { addText(`Headline: ${ty.headline.family}`, 12, true); if (ty.headline.rationale) addFormattedContent(ty.headline.rationale, 10); yPosition += 5; }
+      if (ty.body) { addText(`Body: ${ty.body.family}`, 12, true); if (ty.body.rationale) addFormattedContent(ty.body.rationale, 10); }
+    }
+    else if (step.id === 109 && typeof content === 'object' && content !== null) {
+      const gs = content as any;
+      if (gs.patterns) { addText('Padrões', 12, true); gs.patterns.forEach((p: string) => addText(`• ${p}`, 10)); yPosition += 5; }
+      if (gs.graphicElements) { addText('Elementos Gráficos', 12, true); gs.graphicElements.forEach((e: string) => addText(`• ${e}`, 10)); yPosition += 5; }
+      if (gs.imageRules) { addText('Regras de Imagem', 12, true); gs.imageRules.forEach((r: string) => addText(`• ${r}`, 10)); yPosition += 5; }
+      if (gs.editorialGrid) { addText('Grid Editorial', 12, true); addFormattedContent(gs.editorialGrid, 10); }
+    }
+    else if (step.id === 110 && typeof content === 'object' && content !== null) {
+      const lc = content as any;
+      if (lc.whatItMustCommunicate) { addText('O que deve comunicar', 12, true); addFormattedContent(lc.whatItMustCommunicate, 10); yPosition += 5; }
+      if (lc.conceptIdeas) { addText('Ideias de Conceito', 12, true); lc.conceptIdeas.forEach((d: any) => { addText(`• ${d.concept}: ${(d.meanings || []).join(', ')}`, 10); }); yPosition += 5; }
+      if (lc.geometryNotes) { addText('Notas de Geometria', 12, true); addFormattedContent(lc.geometryNotes, 10); }
+    }
     // Fallback for other string content
     else if (typeof content === 'string') {
       addFormattedContent(content, 10);

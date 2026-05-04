@@ -11,6 +11,11 @@ import { ArchetypesSection } from './ArchetypesSection';
 import { cleanMarketResearchText } from '@/utils/brandingHelpers';
 import { TextSection } from './TextSection';
 import { EmptySectionCard } from './EmptySectionCard';
+import {
+  CentralMessageSection, MarketResearchV2Section, PersonaV2Section,
+  ArchetypesV2Section, ManifestoSection, ColorPaletteV2Section,
+  TypographySection, GraphicSystemSection, LogoConceptSection,
+} from './VisantSections';
 
 interface SectionContentRendererProps {
   stepNumber: number;
@@ -34,6 +39,7 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
   onContentChange,
 }) => {
   const { t } = useTranslation();
+  const { theme } = useTheme();
 
   if (isGenerating) {
     return (
@@ -75,6 +81,40 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
     }
     return cleanString(String(value));
   };
+
+  // ═══ Metodologia Visant v2 Steps (101-110) ═══
+  if (stepNumber === 101 && content?.centralMessage && content?.pillars) {
+    return <CentralMessageSection data={content.centralMessage} pillars={content.pillars} />;
+  }
+  if (stepNumber === 102 && content?.whatCompetitorsDoWell) {
+    return <MarketResearchV2Section data={content} />;
+  }
+  if (stepNumber === 103 && content?.painPoints) {
+    return <PersonaV2Section data={content} />;
+  }
+  if (stepNumber === 104 && content?.archetypes && content?.toneOfVoice) {
+    return <ArchetypesV2Section archetypes={content.archetypes} toneOfVoice={content.toneOfVoice} />;
+  }
+  if (stepNumber === 105 && content?.provocation) {
+    return <ManifestoSection data={content} />;
+  }
+  if (stepNumber === 106 && content?.strengths) {
+    return <SWOTSection swot={content} isEditing={isEditing} onContentChange={onContentChange} />;
+  }
+  if (stepNumber === 107 && Array.isArray(content) && content[0]?.hex) {
+    return <ColorPaletteV2Section colors={content} />;
+  }
+  if (stepNumber === 108 && content?.headline) {
+    return <TypographySection data={content} />;
+  }
+  if (stepNumber === 109 && content?.patterns) {
+    return <GraphicSystemSection data={content} />;
+  }
+  if (stepNumber === 110 && content?.whatItMustCommunicate) {
+    return <LogoConceptSection data={content} />;
+  }
+
+  // ═══ Legacy v1 Steps (1-13) ═══
 
   // Step 5 is Competitors (array of strings or objects with name and url)
   if (stepNumber === 5 && Array.isArray(content)) {
@@ -182,7 +222,6 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
     );
   }
 
-  const { theme } = useTheme();
   return (
     <div className={`text-sm font-manrope ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
       }`}>

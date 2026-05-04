@@ -176,6 +176,39 @@ export const useBrandingMoodboard = ({ data, steps }: UseBrandingMoodboardProps)
         case 12:
           updated.moodboard = value;
           break;
+        // Visant v2
+        case 101:
+          if (value?.centralMessage) updated.centralMessage = value.centralMessage;
+          if (value?.pillars) updated.pillars = value.pillars;
+          break;
+        case 102:
+          updated.marketResearchV2 = value;
+          break;
+        case 103:
+          updated.personaV2 = value;
+          break;
+        case 104:
+          if (value?.archetypes) updated.archetypesV2 = value.archetypes;
+          if (value?.toneOfVoice) updated.toneOfVoice = value.toneOfVoice;
+          break;
+        case 105:
+          updated.manifesto = value;
+          break;
+        case 106:
+          updated.swot = value;
+          break;
+        case 107:
+          updated.colorPaletteV2 = value;
+          break;
+        case 108:
+          updated.typography = value;
+          break;
+        case 109:
+          updated.graphicSystem = value;
+          break;
+        case 110:
+          updated.logoConcept = value;
+          break;
       }
       return updated;
     });
