@@ -6,7 +6,7 @@
  * For HTTP transport see api/index.ts POST /mcp.
  *
  * Run: npm run mcp
- * Config: VISANT_API_URL (default http://localhost:3000/api)
+ * Config: VISANT_API_URL (default http://localhost:3001/api)
  *         VISANT_API_TOKEN (optional Bearer token)
  */
 
@@ -16,9 +16,8 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { TOOLS, handleTool } from './shared.js';
+import { TOOLS, handleTool, API_BASE } from './shared.js';
 
-const API_BASE = process.env.VISANT_API_URL || 'http://localhost:3000/api';
 
 type ToolArgs = Record<string, unknown>;
 

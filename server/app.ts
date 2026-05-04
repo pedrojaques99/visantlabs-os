@@ -59,7 +59,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
 import { requestContext } from './middleware/requestContext.js';
 
-import { createPlatformMcpServer, setMcpUserId, getMcpToolNames, getMcpToolCount } from './mcp/platform-mcp.js';
+import { createPlatformMcpServer, setMcpUserId, setMcpScopes, getMcpToolNames, getMcpToolCount } from './mcp/platform-mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { authenticateApiKey } from './middleware/apiKeyAuth.js';
@@ -241,19 +241,23 @@ export function createApp() {
 
   // ── MCP Discovery ────────────────────────────────────────────────────────
   app.get('/.well-known/mcp.json', (_req, res) => {
-    const base = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+    const apiBase = process.env.API_BASE_URL || 'https://api.visantlabs.com';
+    const frontendBase = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
     res.json({
       mcpVersion: '2025-03-26',
       name: 'Visant Labs',
       description: 'AI-powered design platform for mockups, branding, budgets, and canvas.',
-      endpoint: `${base}/api/mcp`,
+      endpoint: `${apiBase}/api/mcp`,
       transport: ['streamable-http'],
       authentication: {
-        type: 'bearer',
-        description: 'API key from Settings → API Keys (visant_sk_xxx)',
+        type: 'oauth2',
+        authorization_url: `${apiBase}/.well-known/oauth-authorization-server`,
+        token_url: `${apiBase}/oauth/token`,
+        registration_url: `${apiBase}/oauth/register`,
+        scopes: ['read', 'write', 'generate'],
       },
-      toolCount: 22,
-      docsUrl: `${base}/llms-full.txt`,
+      toolCount: getMcpToolCount(),
+      docsUrl: `${frontendBase}/llms-full.txt`,
     });
   });
 
@@ -291,26 +295,30 @@ export function createApp() {
     const authReq = req as any;
     authReq.userId = undefined;
     authReq.userEmail = undefined;
+    authReq.mcpScopes = ['read', 'write', 'generate']; // default: full access
 
-    // 1. Try API key auth (visant_sk_ Bearer tokens)
+    // 1. Try API key auth (visant_sk_ Bearer tokens) — API keys get full scope
     const isApiKey = await authenticateApiKey(authReq);
     if (isApiKey) {
       setMcpUserId(authReq.userId);
+      setMcpScopes(authReq.mcpScopes);
       return true;
     }
 
-    // 2. Try OAuth 2.1 JWT Bearer token
+    // 2. Try OAuth 2.1 JWT Bearer token — scopes from JWT claim
     const authHeader = req.headers.authorization;
     if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.slice(7);
       try {
         const mcpResource = `${process.env.API_BASE_URL || 'https://api.visantlabs.com'}/api/mcp`;
-        const decoded = jwt.verify(token, JWT_SECRET) as { sub?: string; aud?: string | string[] };
+        const decoded = jwt.verify(token, JWT_SECRET) as { sub?: string; aud?: string | string[]; scope?: string };
         const aud = decoded.aud;
         const audValid = aud === mcpResource || (Array.isArray(aud) && aud.includes(mcpResource));
         if (decoded.sub && audValid) {
           authReq.userId = decoded.sub;
+          authReq.mcpScopes = decoded.scope ? decoded.scope.split(' ') : ['read', 'write', 'generate'];
           setMcpUserId(decoded.sub);
+          setMcpScopes(authReq.mcpScopes);
           return true;
         }
       } catch {
@@ -319,6 +327,7 @@ export function createApp() {
     }
 
     setMcpUserId(null);
+    setMcpScopes([]);
     return false;
   };
 

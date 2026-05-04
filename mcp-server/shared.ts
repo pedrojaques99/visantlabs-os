@@ -6,8 +6,25 @@
  * Contains: visantFetch, toolResult, TOOLS array, handleTool dispatcher.
  */
 
-const API_BASE = process.env.VISANT_API_URL || 'http://localhost:3000/api';
-const API_TOKEN = process.env.VISANT_API_TOKEN;
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { homedir } from 'os';
+
+function loadCliCredentials(): { apiKey?: string } {
+  try {
+    const raw = readFileSync(join(homedir(), '.visant', 'credentials.json'), 'utf-8');
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
+const cliCreds = loadCliCredentials();
+const DEFAULT_API_URL = process.env.NODE_ENV === 'production'
+  ? 'https://api.visantlabs.com/api'
+  : 'http://localhost:3001/api';
+export const API_BASE = process.env.VISANT_API_URL || DEFAULT_API_URL;
+export const API_TOKEN = process.env.VISANT_API_TOKEN || cliCreds.apiKey;
 
 export async function visantFetch(path: string, init: RequestInit = {}) {
   const headers: Record<string, string> = {

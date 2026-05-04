@@ -59,6 +59,7 @@ function mergeStrategy(existing: any, patch: any): any {
  * Kept for backward compatibility during migration.
  */
 let _legacyUserId: string | null = null;
+let _mcpScopes: string[] = ['read', 'write', 'generate'];
 
 /**
  * Set MCP user ID for the current request scope.
@@ -66,6 +67,17 @@ let _legacyUserId: string | null = null;
  */
 export function setMcpUserId(userId: string | null) {
   _legacyUserId = userId;
+}
+
+/** Set OAuth scopes for the current MCP request. */
+export function setMcpScopes(scopes: string[]) {
+  _mcpScopes = scopes;
+}
+
+/** Check if the current request has the required scope. */
+function requireScope(scope: 'read' | 'write' | 'generate'): string | null {
+  if (_mcpScopes.includes(scope)) return null;
+  return `Insufficient scope: requires "${scope}" but token has [${_mcpScopes.join(', ')}]`;
 }
 
 /**
@@ -160,11 +172,31 @@ export function createPlatformMcpServer(): McpServer {
     }
   );
 
-  // Wrap server.tool to auto-collect names into _registeredToolNames
+  // Wrap server.tool to auto-collect names + enforce OAuth scopes
   const collectedNames: string[] = [];
   const originalTool = server.tool.bind(server);
+
+  const WRITE_TOOLS = /^(update-|delete-|create-|remove-|validate-|api-key-|auth-)/;
+  const GENERATE_TOOLS = /^(generate-|improve-|suggest-|extract-|batch-|campaign-|describe-)/;
+
+  function scopeForTool(name: string): 'read' | 'write' | 'generate' {
+    if (WRITE_TOOLS.test(name)) return 'write';
+    if (GENERATE_TOOLS.test(name)) return 'generate';
+    return 'read';
+  }
+
   (server as any).tool = (name: string, ...rest: any[]) => {
     collectedNames.push(name);
+    // Intercept the handler (last arg) to add scope checking
+    const handlerIdx = rest.length - 1;
+    const originalHandler = rest[handlerIdx];
+    if (typeof originalHandler === 'function') {
+      rest[handlerIdx] = async (...args: any[]) => {
+        const scopeErr = requireScope(scopeForTool(name));
+        if (scopeErr) return mcpError('FORBIDDEN', scopeErr);
+        return originalHandler(...args);
+      };
+    }
     return (originalTool as any)(name, ...rest);
   };
 

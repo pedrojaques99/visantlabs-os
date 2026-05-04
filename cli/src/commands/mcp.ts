@@ -7,18 +7,12 @@ import { apiFetch } from '../lib/api.js'
 
 const MCP_ENDPOINT = 'https://api.visantlabs.com/api/mcp'
 
-function buildSettings(apiKey: string) {
+function buildSettings(_apiKey: string) {
   return {
-    enabledMcpjsonServers: ['visant'],
     mcpServers: {
       visant: {
-        command: 'npx',
-        args: [
-          'mcp-remote',
-          MCP_ENDPOINT,
-          '--header',
-          `Authorization:Bearer ${apiKey}`,
-        ],
+        type: 'http',
+        url: MCP_ENDPOINT,
       },
     },
   }
@@ -79,9 +73,9 @@ export async function mcpSetupCommand(opts: { project?: boolean; global?: boolea
 
   p.outro(
     `${chalk.green('✓')} ${targetPath}\n\n` +
-    `  ${chalk.bold('Próximo passo:')} reinicie o Claude Code para ativar 35+ ferramentas Visant.\n\n` +
-    `  ${chalk.dim('Ferramentas disponíveis: document_extract, generate_mockup, get_brand_guideline,')}\n` +
-    `  ${chalk.dim('create_creative_plan, generate_persona, batch_generate_mockups e mais.')}`
+    `  ${chalk.bold('Próximo passo:')} reinicie o Claude Code — o browser vai abrir para autorizar.\n` +
+    `  OAuth 2.1 com PKCE — zero token hardcoded, refresh automático.\n\n` +
+    `  ${chalk.dim('Alternativa: claude mcp add --transport http visant')} ${chalk.dim(MCP_ENDPOINT)}`
   )
 }
 
