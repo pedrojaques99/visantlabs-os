@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Bot, User, Copy, Check, FileText, ThumbsUp, ThumbsDown, Wrench, Loader2, AlertCircle, ChevronDown, Pencil } from 'lucide-react';
+import { Bot, User, Copy, Check, FileText, ThumbsUp, ThumbsDown, Wrench, AlertCircle, ChevronDown, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '@/utils/markdownRenderer';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { useGenerationFeedback, type UseGenerationFeedbackParams } from '@/hooks
 import { FullScreenViewer } from '../../FullScreenViewer';
 
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 export interface ChatMessageProps {
   id?: string;
   role: 'user' | 'assistant' | 'model'; // 'model' is used in BrandingExpertChat
@@ -234,7 +235,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                     )}
                   >
                     {isRunning ? (
-                      <Loader2 size={12} className="animate-spin shrink-0" />
+                      <GlitchLoader size={12} className="shrink-0" />
                     ) : isError ? (
                       <AlertCircle size={12} className="shrink-0" />
                     ) : (

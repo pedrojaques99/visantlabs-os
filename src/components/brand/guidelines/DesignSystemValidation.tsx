@@ -110,7 +110,7 @@ const CardsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =>
       {/* Dark card */}
       <div style={{ borderRadius: radius, background: bg, border: '1px solid rgba(255,255,255,0.08)', padding: 12, fontFamily, boxShadow: shadow, minHeight: 80 }}>
         <p style={{ fontSize: 9, color: accent, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 6 }}>DARK</p>
-        <p style={{ fontSize: 12, color: fg, fontWeight: 600 }}>{guideline.name || 'Brand'}</p>
+        <p style={{ fontSize: 12, color: fg, fontWeight: 600 }}>{guideline.identity?.name || guideline.name || 'Brand'}</p>
       </div>
       {/* Light card */}
       <div style={{ borderRadius: radius, background: fg, border: `1px solid ${bg}20`, padding: 12, fontFamily, minHeight: 80 }}>
@@ -239,7 +239,7 @@ const StrategyPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline })
     <div className="space-y-3">
       {s?.manifesto && (
         <p style={{ fontFamily, fontSize: 13, lineHeight: 1.6, color: 'rgba(243,233,233,0.8)' }}>
-          {s.manifesto.slice(0, 160)}{s.manifesto.length > 160 ? '...' : ''}
+          {(() => { const t = typeof s.manifesto === 'string' ? s.manifesto : (s.manifesto as any)?.full || ''; return t.slice(0, 160) + (t.length > 160 ? '...' : ''); })()}
         </p>
       )}
       {s?.archetypes && s.archetypes.length > 0 && (
@@ -430,7 +430,7 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
               className="text-2xl font-bold text-white"
               style={{ fontFamily: primaryFont }}
             >
-              {guideline.name || 'Brand'}
+              {guideline.identity?.name || guideline.name || 'Brand'}
             </h2>
           </div>
           <div className="text-right">

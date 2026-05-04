@@ -7,7 +7,7 @@ import { BrandGuidelineWizardModal } from './BrandGuidelineWizardModal';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
-import { ChevronRight, Plus, Check, Loader2, Pencil, Gem, Search } from 'lucide-react';
+import { ChevronRight, Plus, Check, Pencil, Gem, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { MicroTitle } from '../ui/MicroTitle';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { Modal } from '../ui/Modal';
 import { SearchBar } from '../ui/SearchBar';
 import { useMemo } from 'react';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface BrandGuidelineSelectorProps {
     variant?: 'default' | 'minimal';
     asButton?: boolean;
@@ -129,7 +130,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
 
                     <div className="flex items-center gap-2">
                         {isLoading ? (
-                            <Loader2 size={14} className="animate-spin text-neutral-500" />
+                            <GlitchLoader size={14} />
                         ) : (
                             <ChevronRight size={14} className="text-neutral-600 group-hover:text-white transition-all transform group-hover:translate-x-0.5" />
                         )}
@@ -176,7 +177,13 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
                         {filteredGuidelines.length > 0 ? (
                             filteredGuidelines.map((g) => {
                                 const brandName = g.identity?.name || 'Unnamed Project';
-                                const brandLogo = g.logos?.find(l => l.variant === 'icon') || g.logos?.[0];
+                                
+                                // Improved avatar selection algorithm
+                                const brandLogo = g.logos?.find(l => {
+                                    const v = (l.variant || '').toLowerCase();
+                                    return v === 'icon' || v === 'symbol' || v === 'mark' || v === 'avatar' || v === 'favicon';
+                                }) || g.logos?.find(l => (l.variant || '').toLowerCase() === 'primary') || g.logos?.[0];
+
                                 const initials = brandName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
                                 return (
@@ -276,9 +283,9 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
 
             {selectedBrandGuideline && selectedGuidelineObj && (
                 <div className="mt-2 px-1 flex items-center justify-between opacity-40">
-                    {selectedGuidelineObj._extraction && (
+                    {selectedGuidelineObj.extraction && (
                         <span className="text-[10px] font-mono text-brand-cyan uppercase tracking-tighter">
-                            DNA {selectedGuidelineObj._extraction.completeness}%
+                            DNA {selectedGuidelineObj.extraction.completeness}%
                         </span>
                     )}
                 </div>

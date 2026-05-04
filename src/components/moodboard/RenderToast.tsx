@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, X, Loader2, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { Download, X, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 import { useRenderQueue } from '../../hooks/moodboard/useRenderQueue';
 import { RenderJob } from '../../types/moodboard';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () => void }> = ({ job, onCancel, onDismiss }) => {
   const elapsed = job.startedAt ? ((job.completedAt || Date.now()) - job.startedAt) / 1000 : 0;
   const slideCount = job.composition.slides.length;
@@ -23,7 +24,7 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
       className="bg-neutral-900/90 backdrop-blur-xl rounded-2xl border border-border p-3 w-80 shadow-2xl flex gap-4 overflow-hidden"
     >
       <div className="w-16 h-16 rounded-xl overflow-hidden bg-neutral-800 flex-shrink-0 relative">
-        {thumb ? <img src={thumb} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Loader2 size={16} className="text-neutral-500 animate-spin" /></div>}
+        {thumb ? <img src={thumb} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><GlitchLoader size={16} /></div>}
         {job.status === 'downloaded' && <div className="absolute inset-0 bg-emerald-500/20 flex items-center justify-center"><CheckCircle2 size={16} className="text-emerald-400" /></div>}
       </div>
 
@@ -68,7 +69,7 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
         )}
 
         {job.status === 'queued' && (
-          <div className="flex items-center gap-1.5"><Loader2 size={12} className="text-neutral-500 animate-spin" /><span className="text-[10px] text-neutral-500 font-medium">Waiting...</span></div>
+          <div className="flex items-center gap-1.5"><GlitchLoader size={12} /><span className="text-[10px] text-neutral-500 font-medium">Waiting...</span></div>
         )}
 
         {job.status === 'cancelled' && (

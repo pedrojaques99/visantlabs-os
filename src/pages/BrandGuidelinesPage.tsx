@@ -6,6 +6,7 @@ import { useBrandGuidelines, useUpdateGuideline } from '@/hooks/queries/useBrand
 import { useQueryClient } from '@tanstack/react-query';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { SEO } from '@/components/SEO';
 import { AuthModal } from '@/components/AuthModal';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -281,7 +282,7 @@ export const BrandGuidelinesPage: React.FC = () => {
 
                         {/* Tab bar */}
                         {selected && (
-                            <div className="flex items-center border-b border-white/[0.06] mb-6 overflow-x-auto">
+                            <div className="flex items-center border-b border-white/[0.06] mb-6 overflow-x-auto scrollbar-none">
                                 {SECTION_TABS.map((tab) => (
                                     <button
                                         key={tab.id}
@@ -352,7 +353,15 @@ export const BrandGuidelinesPage: React.FC = () => {
                                     className="flex flex-col gap-8 md:gap-16 items-start w-full"
                                 >
                                     {selected ? (
-                                        <div className="w-full">
+                                        <AnimatePresence mode="wait">
+                                        <motion.div
+                                            key={selected.id}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.15 }}
+                                            className="w-full"
+                                        >
                                             {reviewGuidelineId === selected.id ? (
                                                 <DesignSystemValidation
                                                     guideline={selected}
@@ -365,7 +374,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                     }}
                                                 />
                                             ) : (
-                                                <>
+                                                <ErrorBoundary>
                                                     {/* Review trigger button */}
                                                     {selected.validation && Object.values(selected.validation).some(v => v !== 'approved') && (
                                                         <button
@@ -395,9 +404,10 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                             onStartReview={() => setReviewGuidelineId(selected.id!)}
                                                         />
                                                     </BrandRoomProvider>
-                                                </>
+                                                </ErrorBoundary>
                                             )}
-                                        </div>
+                                        </motion.div>
+                                        </AnimatePresence>
                                     ) : (
                                         <NoSelectionState />
                                     )}

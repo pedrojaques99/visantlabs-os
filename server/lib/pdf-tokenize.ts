@@ -8,7 +8,6 @@
 //   - blocks  : text grouped by page with font size + position (heading detection ready)
 //
 // LLM only enters later for semantic work (manifesto, persona, image classification).
-import { createCanvas } from '@napi-rs/canvas'
 
 export interface ExtractedColor {
   hex: string
@@ -131,8 +130,9 @@ function grayToHex(g: number): string {
 // ── Image conversion ──────────────────────────────────────────────────────────
 
 /** pdfjs `objs.get(id)` returns { data, width, height, kind }; convert to PNG buffer. */
-function imageObjToPng(img: any): Buffer | null {
+async function imageObjToPng(img: any): Promise<Buffer | null> {
   if (!img?.data || !img?.width || !img?.height) return null
+  const { createCanvas } = await import('@napi-rs/canvas')
   const { width, height, data, kind } = img
 
   const canvas = createCanvas(width, height)
@@ -260,7 +260,7 @@ export async function tokenizePdf(buffer: Buffer, opts?: { maxImages?: number; m
           if (!img?.width || !img?.height) continue
           const area = img.width * img.height
           if (area < minImageArea) continue
-          const png = imageObjToPng(img)
+          const png = await imageObjToPng(img)
           if (!png) continue
           imageOut.set(imgId, {
             id: imgId,

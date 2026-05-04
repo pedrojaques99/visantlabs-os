@@ -37,9 +37,9 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
 
   return (
     <motion.div
-      layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
       className={cn(
         'rounded-2xl border overflow-hidden transition-all duration-300',
         state === 'approved' ? 'border-brand-cyan/20 bg-brand-cyan/[0.02]' : 'border-white/[0.06] bg-white/[0.01]',

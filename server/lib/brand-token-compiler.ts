@@ -41,7 +41,8 @@ export type CompileFormat = 'css' | 'tailwind' | 'react' | 'scss' | 'all'
 
 // ─── Helpers ─────────────────────────────────────────────────
 
-function slugify(str: string): string {
+function slugify(str: string | undefined | null): string {
+  if (!str) return 'unnamed'
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
@@ -162,6 +163,19 @@ function compileCSS(bg: BrandGuideline): string {
     lines.push('')
   }
 
+  // Color Themes
+  if (bg.colorThemes?.length) {
+    lines.push('  /* Color Themes */')
+    for (const t of bg.colorThemes) {
+      const key = slugify(t.name)
+      lines.push(`  --theme-${key}-bg: ${t.bg};`)
+      lines.push(`  --theme-${key}-text: ${t.text};`)
+      lines.push(`  --theme-${key}-primary: ${t.primary};`)
+      lines.push(`  --theme-${key}-accent: ${t.accent};`)
+    }
+    lines.push('')
+  }
+
   lines.push('}')
 
   // Utility classes
@@ -246,6 +260,14 @@ function compileTailwind(bg: BrandGuideline): string {
 
   if (bg.motion?.easing) {
     config.transitionTimingFunction.brand = bg.motion.easing
+  }
+
+  // Color Themes as nested color groups
+  if (bg.colorThemes?.length) {
+    for (const t of bg.colorThemes) {
+      const key = slugify(t.name)
+      config.colors[`theme-${key}`] = { bg: t.bg, text: t.text, primary: t.primary, accent: t.accent }
+    }
   }
 
   // Remove empty objects
@@ -344,6 +366,17 @@ function compileReactTokens(bg: BrandGuideline): string {
     lines.push('')
   }
 
+  // Color Themes
+  if (bg.colorThemes?.length) {
+    lines.push('export const colorThemes = {')
+    for (const t of bg.colorThemes) {
+      const key = slugify(t.name).replace(/-([a-z])/g, (_: string, l: string) => l.toUpperCase())
+      lines.push(`  ${key}: { bg: '${t.bg}', text: '${t.text}', primary: '${t.primary}', accent: '${t.accent}' },`)
+    }
+    lines.push('} as const')
+    lines.push('')
+  }
+
   // Unified token object
   lines.push('export const tokens = {')
   if (bg.colors?.length) lines.push('  colors,')
@@ -353,6 +386,7 @@ function compileReactTokens(bg: BrandGuideline): string {
   if (bg.shadows?.length) lines.push('  shadows,')
   if (bg.gradients?.length) lines.push('  gradients,')
   if (bg.motion) lines.push('  motion,')
+  if (bg.colorThemes?.length) lines.push('  colorThemes,')
   lines.push('} as const')
   lines.push('')
   lines.push('export type BrandTokens = typeof tokens')

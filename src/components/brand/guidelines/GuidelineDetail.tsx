@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDeleteGuideline, useIngestGuideline } from '@/hooks/queries/useBrandGuidelines';
 import { motion } from 'framer-motion';
@@ -15,6 +15,7 @@ import {
   GradientSection, ShadowSection, MotionSection, BorderSection,
   VoiceSection, PersonasSection,
   ManifestoSection, ArchetypesSection, MensagemCentralSection,
+  ThemeSection, PillarsSection, MarketResearchSection, GraphicSystemSection,
 } from './sections';
 import { PreviewSection } from './preview/PreviewSection';
 import { DesignSystemOutputSection } from './sections/DesignSystemOutputSection';
@@ -31,7 +32,7 @@ interface GuidelineDetailProps {
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.06 } },
+  show: { opacity: 1, transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] as const } },
 };
 
 export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
@@ -48,12 +49,27 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
   const [localMedia, setLocalMedia] = useState(guideline.media || []);
   const [localLogos, setLocalLogos] = useState(guideline.logos || []);
 
+  const { draft, updateDraft, undo, redo, isDirty, isSaving } = useBrandGuidelineEditor();
+
+  const mediaInitRef = useRef(true);
+  const logosInitRef = useRef(true);
+
   React.useEffect(() => {
     setLocalMedia(guideline.media || []);
     setLocalLogos(guideline.logos || []);
+    mediaInitRef.current = true;
+    logosInitRef.current = true;
   }, [guideline.id]);
 
-  const { draft, updateDraft, undo, redo, isDirty, isSaving } = useBrandGuidelineEditor();
+  useEffect(() => {
+    if (mediaInitRef.current) { mediaInitRef.current = false; return; }
+    updateDraft({ media: localMedia });
+  }, [localMedia]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (logosInitRef.current) { logosInitRef.current = false; return; }
+    updateDraft({ logos: localLogos });
+  }, [localLogos]);
 
   const handleUpdate = updateDraft;
 
@@ -74,53 +90,93 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
 
   const renderSection = (id: string) => {
     const g = draft;
+    
+    const halfWidthSections = new Set(['tags', 'figma', 'voice', 'archetypes', 'mensagem_central', 'pillars']);
+
+    const getBaseSpan = (id: string): '6' | '12' | '8' | '4' => {
+      if (id === 'identity') return '12';
+      if (id === 'tags') return '4';
+      if (halfWidthSections.has(id)) return '6';
+      return '12';
+    };
+
+    // Auto-expand half-width sections to full when they'd be alone on a row
+    const getSpan = (id: string): '6' | '12' | '8' | '4' => {
+      const base = getBaseSpan(id);
+      if (base !== '6' && base !== '4') return base;
+
+      const idx = visibleSections.indexOf(id);
+      if (idx === -1) return base;
+
+      // Find neighbor: previous or next section that is also half-width
+      const hasHalfNeighbor = (offset: number) => {
+        const nId = visibleSections[idx + offset];
+        return nId && (halfWidthSections.has(nId) || getBaseSpan(nId) === '4');
+      };
+
+      // Check if this section can pair with an adjacent half-width section
+      const canPair = hasHalfNeighbor(-1) || hasHalfNeighbor(1);
+      if (!canPair) return '12';
+      return base;
+    };
+
+    const span = getSpan(id);
+
     switch (id) {
       case 'identity':
-        return <IdentitySection key="identity" guideline={g} onUpdate={handleUpdate} onReIngest={guideline.identity?.website ? handleReIngest : undefined} onOpenWizard={onOpenWizard} onDelete={handleDelete} isDeleting={deleteMutation.isPending} span="full" />;
+        return <IdentitySection key="identity" guideline={g} onUpdate={handleUpdate} onReIngest={guideline.identity?.website ? handleReIngest : undefined} onOpenWizard={onOpenWizard} onDelete={handleDelete} isDeleting={deleteMutation.isPending} span={span} />;
       case 'strategy':
-        return <StrategySection key="strategy" guideline={g} onUpdate={handleUpdate} span="full" />;
+        return <StrategySection key="strategy" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'logos':
-        return <LogosSection key="logos" guideline={g} logos={localLogos} onLogosChange={setLocalLogos} span="1" />;
+        return <LogosSection key="logos" guideline={g} logos={localLogos} onLogosChange={setLocalLogos} span={span} />;
       case 'colors':
-        return <ColorsSection key="colors" guideline={g} onUpdate={handleUpdate} span="1" />;
+        return <ColorsSection key="colors" guideline={g} onUpdate={handleUpdate} span={span} />;
+      case 'colorThemes':
+        return <ThemeSection key="colorThemes" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'typography':
-        return <TypographySection key="typography" guideline={g} onUpdate={handleUpdate} span="full" />;
+        return <TypographySection key="typography" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'tags':
-        return <TagsSection key="tags" guideline={g} onUpdate={handleUpdate} span="1" />;
+        return <TagsSection key="tags" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'editorial':
-        return <EditorialSection key="editorial" guideline={g} onUpdate={handleUpdate} span="full" />;
+        return <EditorialSection key="editorial" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'tokens':
-        return <TokensSection key="tokens" guideline={g} onUpdate={handleUpdate} span="1" />;
+        return <TokensSection key="tokens" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'accessibility':
-        return <AccessibilitySection key="accessibility" guideline={g} onUpdate={handleUpdate} span="full" />;
+        return <AccessibilitySection key="accessibility" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'media':
-        return <MediaSection key="media" guidelineId={guideline.id!} media={localMedia} logos={localLogos} onMediaChange={setLocalMedia} onLogosChange={setLocalLogos} span="full" />;
+        return <MediaSection key="media" guidelineId={guideline.id!} media={localMedia} logos={localLogos} onMediaChange={setLocalMedia} onLogosChange={setLocalLogos} span={span} />;
       case 'figma':
-        return <FigmaLinkSection key="figma" guideline={g} onUpdate={handleUpdate} span="1" />;
+        return <FigmaLinkSection key="figma" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'knowledge':
-        return <KnowledgeSection key="knowledge" guideline={g} span="full" />;
+        return <KnowledgeSection key="knowledge" guideline={g} span={span} />;
       case 'gradients':
-        return <GradientSection key="gradients" guideline={g} onUpdate={handleUpdate} span="1" />;
+        return <GradientSection key="gradients" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'shadows':
-        return <ShadowSection key="shadows" guideline={g} onUpdate={handleUpdate} span="1" />;
+        return <ShadowSection key="shadows" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'motion':
-        return <MotionSection key="motion" guideline={g} onUpdate={handleUpdate} span="1" />;
+        return <MotionSection key="motion" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'borders':
-        return <BorderSection key="borders" guideline={g} onUpdate={handleUpdate} span="1" />;
+        return <BorderSection key="borders" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'manifesto':
-        return <ManifestoSection key="manifesto" guideline={g} onUpdate={handleUpdate} span="full" />;
+        return <ManifestoSection key="manifesto" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'archetypes':
-        return <ArchetypesSection key="archetypes" guideline={g} onUpdate={handleUpdate} span="1" />;
+        return <ArchetypesSection key="archetypes" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'mensagem_central':
-        return <MensagemCentralSection key="mensagem_central" guideline={g} onUpdate={handleUpdate} span="1" />;
+        return <MensagemCentralSection key="mensagem_central" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'voice':
-        return <VoiceSection key="voice" guideline={g} onUpdate={handleUpdate} span="1" />;
+        return <VoiceSection key="voice" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'personas':
-        return <PersonasSection key="personas" guideline={g} onUpdate={handleUpdate} span="full" />;
+        return <PersonasSection key="personas" guideline={g} onUpdate={handleUpdate} span={span} />;
+      case 'pillars':
+        return <PillarsSection key="pillars" guideline={g} onUpdate={handleUpdate} span={span} />;
+      case 'market_research':
+        return <MarketResearchSection key="market_research" guideline={g} onUpdate={handleUpdate} span={span} />;
+      case 'graphic_system':
+        return <GraphicSystemSection key="graphic_system" guideline={g} onUpdate={handleUpdate} span={span} />;
       case 'preview':
-        return <PreviewSection key="preview" guideline={g} span="full" />;
+        return <PreviewSection key="preview" guideline={g} span={span} />;
       case 'design-system-output':
-        return <DesignSystemOutputSection key="design-system-output" guideline={g} span="full" />;
+        return <DesignSystemOutputSection key="design-system-output" guideline={g} span={span} />;
       default:
         return null;
     }
@@ -133,8 +189,7 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="grid gap-6"
-          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 420px), 1fr))' }}
+          className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6"
         >
           {visibleSections.map(id => (
             <React.Fragment key={id}>

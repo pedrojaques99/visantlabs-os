@@ -56,7 +56,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
         <div className="space-y-1.5">
           <MicroTitle className="text-neutral-500">Manifesto</MicroTitle>
           <Textarea
-            value={local.manifesto || ''}
+            value={typeof local.manifesto === 'string' ? local.manifesto : (local.manifesto as any)?.full || ''}
             onChange={(e) => update({ manifesto: e.target.value })}
             className="border-white/5 min-h-[80px] text-xs resize-none"
             placeholder="Brand manifesto..."

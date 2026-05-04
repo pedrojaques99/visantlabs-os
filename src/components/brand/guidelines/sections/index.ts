@@ -20,3 +20,7 @@ export { ShadowSection } from './ShadowSection';
 export { MotionSection } from './MotionSection';
 export { BorderSection } from './BorderSection';
 export { DesignSystemOutputSection } from './DesignSystemOutputSection';
+export { ThemeSection } from './ThemeSection';
+export { PillarsSection } from './PillarsSection';
+export { MarketResearchSection } from './MarketResearchSection';
+export { GraphicSystemSection } from './GraphicSystemSection';

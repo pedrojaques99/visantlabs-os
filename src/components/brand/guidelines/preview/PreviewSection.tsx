@@ -1,10 +1,11 @@
-import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SectionBlock } from '../SectionBlock';
-import { LayoutTemplate, Instagram, Linkedin, FileImage, Smartphone, Download, Loader2, ChevronDown } from 'lucide-react';
+import { LayoutTemplate, Instagram, Linkedin, FileImage, Smartphone, Download, ChevronDown, Twitter, Bell, AppWindow, FileText, Presentation, LayoutGrid, List } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
-import { buildMockTokens } from './mockTokens';
+import { buildMockTokens, type MockTokens } from './mockTokens';
 import {
   InstagramFeedMock,
   LinkedInPostMock,
@@ -13,68 +14,236 @@ import {
   WebsiteHeroMock,
   BusinessCardMock,
   EmailHeaderMock,
+  XProfileMock,
+  SocialCardMock,
+  NotificationMock,
+  AppStoreMock,
+  LetterheadMock,
+  PresentationSlideMock,
 } from './BrandMocks';
 import { exportMockElement, EXPORT_FORMATS, type ExportFormat } from './exportMock';
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 
 interface PreviewSectionProps {
   guideline: BrandGuideline;
   span?: string;
 }
 
-type FormatId = 'instagram' | 'linkedin' | 'poster' | 'stories' | 'website' | 'card' | 'email';
+type ViewMode = 'bento' | 'stacked';
+type FormatId = 'instagram' | 'linkedin' | 'poster' | 'stories' | 'website' | 'card' | 'email' | 'xprofile' | 'socialcard' | 'notification' | 'appstore' | 'letterhead' | 'slide';
 
-const FORMATS: Array<{ id: FormatId; label: string; icon: React.ComponentType<{ size?: number }> }> = [
-  { id: 'instagram', label: 'Instagram', icon: Instagram },
-  { id: 'linkedin',  label: 'LinkedIn',  icon: Linkedin },
-  { id: 'poster',    label: 'Poster',    icon: FileImage },
-  { id: 'stories',   label: 'Stories',   icon: Smartphone },
-  { id: 'website',   label: 'Website',   icon: LayoutTemplate },
-  { id: 'card',      label: 'Card',      icon: FileImage },
-  { id: 'email',     label: 'Email',     icon: FileImage },
+const FORMATS: Array<{ id: FormatId; label: string; icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }> }> = [
+  { id: 'website',      label: 'Website',       icon: LayoutTemplate },
+  { id: 'instagram',    label: 'Instagram',    icon: Instagram },
+  { id: 'linkedin',     label: 'LinkedIn',     icon: Linkedin },
+  { id: 'stories',      label: 'Stories',       icon: Smartphone },
+  { id: 'poster',       label: 'Poster',       icon: FileImage },
+  { id: 'card',         label: 'Card',          icon: FileImage },
+  { id: 'slide',        label: 'Slide',         icon: Presentation },
+  { id: 'email',        label: 'Email',         icon: FileImage },
+  { id: 'xprofile',     label: 'X / Twitter',   icon: Twitter },
+  { id: 'notification', label: 'Notification',  icon: Bell },
+  { id: 'socialcard',   label: 'Social Card',   icon: AppWindow },
+  { id: 'appstore',     label: 'App Store',     icon: AppWindow },
+  { id: 'letterhead',   label: 'Letterhead',    icon: FileText },
 ];
 
+const SPANS: Record<FormatId, string> = {
+  website: 'lg:col-span-8 lg:row-span-2',
+  instagram: 'lg:col-span-4 lg:row-span-1',
+  linkedin: 'lg:col-span-4 lg:row-span-1',
+  stories: 'lg:col-span-4 lg:row-span-2',
+  poster: 'lg:col-span-4 lg:row-span-1',
+  card: 'lg:col-span-4 lg:row-span-1',
+  slide: 'lg:col-span-8 lg:row-span-1',
+  email: 'lg:col-span-4 lg:row-span-1',
+  xprofile: 'lg:col-span-8 lg:row-span-1',
+  notification: 'lg:col-span-4 lg:row-span-1',
+  socialcard: 'lg:col-span-4 lg:row-span-1',
+  appstore: 'lg:col-span-4 lg:row-span-1',
+  letterhead: 'lg:col-span-4 lg:row-span-1',
+};
+
+const BentoCard = ({ 
+  format, 
+  tokens, 
+  viewMode,
+  onExport 
+}: { 
+  format: typeof FORMATS[0]; 
+  tokens: MockTokens;
+  viewMode: ViewMode;
+  onExport: (el: HTMLElement, format: ExportFormat, id: string) => Promise<void>;
+}) => {
+  const [showExport, setShowExport] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const Icon = format.icon;
+
+  useEffect(() => {
+    if (!showExport) return;
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowExport(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showExport]);
+
+  const handleExport = async (f: ExportFormat) => {
+    if (!ref.current) return;
+    setIsExporting(true);
+    setShowExport(false);
+    await onExport(ref.current, f, format.id);
+    setIsExporting(false);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+      className={cn(
+        "group relative flex flex-col gap-4 p-4 rounded-lg bg-white/[0.01] border border-white/[0.05] hover:border-white/[0.1] transition-all overflow-hidden",
+        viewMode === 'bento' ? SPANS[format.id] : 'col-span-full'
+      )}
+    >
+      <div className="flex items-center justify-between z-10">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-md bg-white/[0.01] text-neutral-700 group-hover:text-neutral-500 transition-colors">
+            <Icon size={12} strokeWidth={1.5} />
+          </div>
+          <span className="text-[8px] font-mono uppercase tracking-[0.2em] text-neutral-700 group-hover:text-neutral-600 transition-colors">
+            {format.label}
+          </span>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <span className="text-[8px] font-mono text-neutral-800 transition-colors">
+            {dimsLabel(format.id)}
+          </span>
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setShowExport(!showExport)}
+              className="p-1.5 rounded-md hover:bg-white/[0.04] text-neutral-800 hover:text-neutral-400 transition-all"
+            >
+              {isExporting ? <GlitchLoader size={11} /> : <Download size={11} strokeWidth={1.5} />}
+            </button>
+            {showExport && (
+              <div className="absolute right-0 top-full mt-1 z-50 bg-neutral-900 border border-white/10 rounded-lg shadow-2xl overflow-hidden min-w-[80px]">
+                {EXPORT_FORMATS.map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => handleExport(f.id)}
+                    className="w-full text-left px-3 py-1.5 text-[9px] font-mono uppercase tracking-widest text-neutral-500 hover:text-white hover:bg-white/[0.06] transition-colors"
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div 
+        ref={ref} 
+        className={cn(
+          "flex-1 flex items-center justify-center min-h-0 w-full",
+          viewMode === 'stacked' && "py-8"
+        )}
+        style={{ containerType: 'inline-size' }}
+      >
+        <div className={cn(
+          "w-full transition-transform duration-700 ease-out group-hover:scale-[1.012]",
+          viewMode === 'bento' && (format.id === 'stories' || format.id === 'poster' || format.id === 'appstore') && 'max-w-[280px]',
+          viewMode === 'bento' && (format.id === 'card' || format.id === 'socialcard') && 'max-w-[380px]',
+          viewMode === 'bento' && format.id === 'letterhead' && 'max-w-[320px]',
+          viewMode === 'stacked' && "max-w-4xl"
+        )}>
+          {format.id === 'instagram' && <InstagramFeedMock tokens={tokens} />}
+          {format.id === 'linkedin' && <LinkedInPostMock tokens={tokens} />}
+          {format.id === 'poster' && <PosterMock tokens={tokens} />}
+          {format.id === 'stories' && <StoriesMock tokens={tokens} />}
+          {format.id === 'website' && <WebsiteHeroMock tokens={tokens} />}
+          {format.id === 'card' && <BusinessCardMock tokens={tokens} />}
+          {format.id === 'email' && <EmailHeaderMock tokens={tokens} />}
+          {format.id === 'xprofile' && <XProfileMock tokens={tokens} />}
+          {format.id === 'socialcard' && <SocialCardMock tokens={tokens} />}
+          {format.id === 'notification' && <NotificationMock tokens={tokens} />}
+          {format.id === 'appstore' && <AppStoreMock tokens={tokens} />}
+          {format.id === 'letterhead' && <LetterheadMock tokens={tokens} />}
+          {format.id === 'slide' && <PresentationSlideMock tokens={tokens} />}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span }) => {
-  const [active, setActive] = useState<FormatId>('instagram');
-  const [exporting, setExporting] = useState(false);
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const mockRef = useRef<HTMLDivElement>(null);
-  const exportMenuRef = useRef<HTMLDivElement>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('bento');
   const tokens = useMemo(() => buildMockTokens(guideline), [guideline]);
 
   useEffect(() => {
-    if (!showExportMenu) return;
-    const handleClick = (e: MouseEvent) => {
-      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
-        setShowExportMenu(false);
-      }
-    };
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShowExportMenu(false);
-    };
-    document.addEventListener('mousedown', handleClick);
-    document.addEventListener('keydown', handleKey);
-    return () => {
-      document.removeEventListener('mousedown', handleClick);
-      document.removeEventListener('keydown', handleKey);
-    };
-  }, [showExportMenu]);
+    const families = [tokens.headingFamily, tokens.bodyFamily]
+      .map(stack => stack.match(/^'([^']+)'/)?.[1])
+      .filter((f): f is string => !!f && f !== 'Inter');
+    const unique = [...new Set(families)];
+    if (!unique.length) return;
+
+    const id = 'brand-preview-fonts';
+    let link = document.getElementById(id) as HTMLLinkElement | null;
+    const href = `https://fonts.googleapis.com/css2?${unique.map(f => `family=${f.replace(/ /g, '+')}:wght@300;400;500;600;700`).join('&')}&display=swap`;
+
+    if (link) {
+      if (link.href === href) return;
+      link.href = href;
+    } else {
+      link = document.createElement('link');
+      link.id = id;
+      link.rel = 'stylesheet';
+      link.href = href;
+      document.head.appendChild(link);
+    }
+  }, [tokens.headingFamily, tokens.bodyFamily]);
 
   const hasMinimum =
     (tokens.palette.length > 0) || !!tokens.primaryLogo || !!guideline.identity?.name;
 
-  const handleExport = useCallback(async (format: ExportFormat) => {
-    if (!mockRef.current) return;
-    setExporting(true);
-    setShowExportMenu(false);
+  const handleExport = async (el: HTMLElement, format: ExportFormat, id: string) => {
     try {
-      await exportMockElement(mockRef.current, tokens.name, active, format);
-      toast.success(`Exported ${active} as ${format.toUpperCase()}`);
+      await exportMockElement(el, tokens.name, id, format);
+      toast.success(`Exported ${id} as ${format.toUpperCase()}`);
     } catch {
       toast.error(`Failed to export as ${format.toUpperCase()}`);
-    } finally {
-      setExporting(false);
     }
-  }, [active, tokens.name]);
+  };
+
+  const actions = (
+    <div className="flex items-center bg-white/[0.02] border border-white/[0.05] rounded-md p-0.5">
+      <button
+        onClick={() => setViewMode('bento')}
+        className={cn(
+          "p-1 rounded transition-all",
+          viewMode === 'bento' ? "bg-white/10 text-neutral-200" : "text-neutral-600 hover:text-neutral-400"
+        )}
+        title="Bento View"
+      >
+        <LayoutGrid size={11} strokeWidth={1.5} />
+      </button>
+      <button
+        onClick={() => setViewMode('stacked')}
+        className={cn(
+          "p-1 rounded transition-all",
+          viewMode === 'stacked' ? "bg-white/10 text-neutral-200" : "text-neutral-600 hover:text-neutral-400"
+        )}
+        title="Stacked View"
+      >
+        <List size={11} strokeWidth={1.5} />
+      </button>
+    </div>
+  );
 
   return (
     <SectionBlock
@@ -82,6 +251,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
       span={span as any}
       icon={<LayoutTemplate size={14} />}
       title="Brand Preview"
+      actions={actions}
     >
       {!hasMinimum ? (
         <div className="flex flex-col items-center justify-center gap-3 py-12 px-6 text-center">
@@ -91,129 +261,21 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-1 border-b border-white/[0.05] pb-2 overflow-x-auto scrollbar-none [-webkit-mask-image:linear-gradient(to_right,transparent_0,black_16px,black_calc(100%-40px),transparent)]">
-            {FORMATS.map(f => {
-              const Icon = f.icon;
-              const isActive = active === f.id;
-              return (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setActive(f.id)}
-                  className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase tracking-widest transition-all whitespace-nowrap',
-                    isActive
-                      ? 'bg-white/[0.06] text-neutral-200'
-                      : 'text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]'
-                  )}
-                >
-                  <Icon size={11} />
-                  {f.label}
-                </button>
-              );
-            })}
-
-            {/* Export dropdown */}
-            <div ref={exportMenuRef} className="ml-auto relative">
-              <button
-                type="button"
-                onClick={() => setShowExportMenu(v => !v)}
-                disabled={exporting}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-200 hover:bg-white/[0.04] transition-all disabled:opacity-40"
-              >
-                {exporting ? <Loader2 size={11} className="animate-spin" /> : <Download size={11} />}
-                Export
-                <ChevronDown size={9} />
-              </button>
-              {showExportMenu && (
-                <div className="absolute right-0 top-full mt-1 z-50 bg-neutral-900 border border-white/10 rounded-lg shadow-xl overflow-hidden min-w-[100px]">
-                  {EXPORT_FORMATS.map(f => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      onClick={() => handleExport(f.id)}
-                      className="w-full text-left px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/[0.06] transition-colors"
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-3 md:p-6 rounded-xl bg-neutral-950/40 border border-white/[0.04]">
-            <div className="flex flex-col gap-2">
-              <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-700">
-                {dimsLabel(active)}
-              </span>
-              <div ref={mockRef}>
-                {active === 'instagram' && <InstagramFeedMock tokens={tokens} />}
-                {active === 'linkedin' && <LinkedInPostMock tokens={tokens} />}
-                {active === 'poster' && <PosterMock tokens={tokens} />}
-                {active === 'stories' && <StoriesMock tokens={tokens} />}
-                {active === 'website' && <WebsiteHeroMock tokens={tokens} />}
-                {active === 'card' && <BusinessCardMock tokens={tokens} />}
-                {active === 'email' && <EmailHeaderMock tokens={tokens} />}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3 text-[11px] text-neutral-500">
-              <div>
-                <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-700">
-                  Tokens em uso
-                </span>
-                <ul className="mt-2 space-y-1.5">
-                  <li className="flex items-center gap-2">
-                    <span
-                      className="w-3 h-3 rounded-sm border border-white/10"
-                      style={{ background: tokens.primaryColor }}
-                    />
-                    <span className="font-mono text-[10px] text-neutral-400">
-                      primary · {tokens.primaryColor}
-                    </span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span
-                      className="w-3 h-3 rounded-sm border border-white/10"
-                      style={{ background: tokens.theme.accent }}
-                    />
-                    <span className="font-mono text-[10px] text-neutral-400">
-                      accent · {tokens.theme.accent}
-                    </span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span
-                      className="w-3 h-3 rounded-sm border border-white/10"
-                      style={{ background: tokens.theme.bg }}
-                    />
-                    <span className="font-mono text-[10px] text-neutral-400">
-                      bg · {tokens.theme.bg}
-                    </span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="border-t border-white/[0.04] pt-3">
-                <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-700">
-                  Tipografia
-                </span>
-                <p className="mt-1 font-mono text-[10px] text-neutral-400 truncate" title={tokens.headingFamily}>
-                  H · {firstFamily(tokens.headingFamily)}
-                </p>
-                <p className="font-mono text-[10px] text-neutral-400 truncate" title={tokens.bodyFamily}>
-                  B · {firstFamily(tokens.bodyFamily)}
-                </p>
-              </div>
-
-              <p className="text-[10px] text-neutral-600 leading-relaxed border-t border-white/[0.04] pt-3">
-                Edite tokens em <span className="text-neutral-400">Identidade Visual</span> e veja a
-                atualização ao vivo. Esse render é o mesmo contexto enviado a LLMs ao gerar
-                criativos com esta marca.
-              </p>
-            </div>
-          </div>
+        <div className={cn(
+          "grid gap-4 p-1",
+          viewMode === 'bento' ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-12" : "grid-cols-1"
+        )}>
+          <AnimatePresence>
+            {FORMATS.map(f => (
+              <BentoCard 
+                key={f.id} 
+                format={f} 
+                tokens={tokens} 
+                viewMode={viewMode}
+                onExport={handleExport}
+              />
+            ))}
+          </AnimatePresence>
         </div>
       )}
     </SectionBlock>
@@ -222,17 +284,18 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
 
 function dimsLabel(id: FormatId): string {
   switch (id) {
-    case 'instagram': return 'Instagram feed · 1080 × 1080';
-    case 'linkedin':  return 'LinkedIn post · 1200 × 627';
-    case 'poster':    return 'Poster · 1080 × 1440';
-    case 'stories':   return 'Stories · 1080 × 1920';
-    case 'website':   return 'Website hero · 1920 × 1080';
-    case 'card':      return 'Business card · 3.5 × 2 in';
-    case 'email':     return 'Email header · 600 × 200';
+    case 'instagram': return '1080 × 1080';
+    case 'linkedin':  return '1200 × 627';
+    case 'poster':    return '1080 × 1440';
+    case 'stories':   return '1080 × 1920';
+    case 'website':   return '1920 × 1080';
+    case 'card':      return '3.5 × 2 in';
+    case 'email':        return '600 × 200';
+    case 'xprofile':     return '1920 × 1200';
+    case 'socialcard':   return '800 × 1000';
+    case 'notification': return '1000 × 400';
+    case 'appstore':     return '640 × 960';
+    case 'letterhead':   return 'A4';
+    case 'slide':        return '1920 × 1080';
   }
-}
-
-function firstFamily(stack: string): string {
-  const m = stack.match(/^['"]?([^'",]+)/);
-  return m?.[1]?.trim() || stack;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
-import { Search, Globe, Instagram, FileText, Download, ExternalLink, Loader2, Image as ImageIcon, CheckCircle2, AlertCircle, X, Plus, ArrowRight, Maximize2, CloudDownload, Zap, Diamond, Copy } from 'lucide-react';
+import { Search, Globe, Instagram, FileText, Download, ExternalLink, Image as ImageIcon, CheckCircle2, AlertCircle, X, Plus, ArrowRight, Maximize2, CloudDownload, Zap, Diamond, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageShell } from '../components/ui/PageShell';
 import { imageApi, SearchImage, DesignerParams, ContentMode } from '../services/imageApi';
@@ -11,6 +11,7 @@ import JSZip from 'jszip';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
 import { cn } from '@/lib/utils';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 type ExtractionMode = 'google' | 'url' | 'instagram' | 'document';
 
 /**
@@ -146,7 +147,7 @@ const ImageCard = memo<ImageCardProps>(({
               className="w-9 h-9 border border-white/10 bg-white/5 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
               title="Upscale to ULTRA HD"
             >
-              {isUpscaling ? <Loader2 className="animate-spin" size={14} /> : <Zap size={14} />}
+              {isUpscaling ? <GlitchLoader size={14} /> : <Zap size={14} />}
             </button>
             <button
               onClick={(e) => {
@@ -662,7 +663,7 @@ export default function ExtractorPage() {
                     flex items-center justify-center hover:bg-white/5 hover:text-neutral-300 transition-all
                   "
                 >
-                  {extractingPdf ? <Loader2 className="animate-spin" size={16} /> : <FileText size={16} />}
+                  {extractingPdf ? <GlitchLoader size={16} /> : <FileText size={16} />}
                 </button>
                 <button
                   type="submit"
@@ -672,7 +673,7 @@ export default function ExtractorPage() {
                     flex items-center justify-center hover:bg-white/20 transition-all disabled:opacity-20
                   "
                 >
-                  {loading ? <Loader2 className="animate-spin" size={18} /> : <ArrowRight size={18} />}
+                  {loading ? <GlitchLoader size={18} /> : <ArrowRight size={18} />}
                 </button>
               </div>
               <input 
@@ -862,7 +863,7 @@ export default function ExtractorPage() {
             {/* Infinite scroll sentinel */}
             <div ref={loadMoreRef} className="flex justify-center py-10">
               {loading && images.length > 0 && (
-                <Loader2 className="animate-spin text-white/20" size={20} />
+                <GlitchLoader size={20} />
               )}
             </div>
           </div>

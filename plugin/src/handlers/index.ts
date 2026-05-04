@@ -44,3 +44,4 @@ export { multiplyResponsive, DEFAULT_FORMATS } from './responsiveMultiply';
 export { generateBrandGrid } from './brandGrid';
 export { generateSocialFrames } from './socialFrames';
 export { importLogoCandidates } from './brandImport';
+export { exportWithBleed } from './exportBleed';

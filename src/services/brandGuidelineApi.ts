@@ -405,6 +405,20 @@ export const brandGuidelineApi = {
     return { outputs: [{ format, filename, content }] };
   },
 
+  async uploadKnowledge(guidelineId: string, body: { source: string; data?: string; url?: string; filename?: string }): Promise<BrandKnowledgeFile> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/knowledge/upload`, {
+      method: 'POST',
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: 'Failed to upload' }));
+      throw new Error(err.error || 'Failed to upload knowledge file');
+    }
+    const data = await response.json();
+    return data.file;
+  },
+
   async deleteKnowledge(guidelineId: string, fileId: string): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/knowledge/${fileId}`, {
       method: 'DELETE',

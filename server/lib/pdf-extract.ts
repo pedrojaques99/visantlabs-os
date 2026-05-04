@@ -17,7 +17,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js'
 import { tokenizePdf, type PdfTokens, type TextBlock } from './pdf-tokenize.js'
-import { createCanvas, loadImage } from '@napi-rs/canvas'
 
 const SEMANTIC_PROMPT = `You are a brand strategy expert. Brand tokens (colors, fonts, images) have ALREADY been extracted algorithmically from the PDF. Your job is the SEMANTIC content only.
 
@@ -284,6 +283,7 @@ function blocksToMarkdown(blocks: TextBlock[], fullText: string): string {
 
 async function downscalePngBase64(dataUrl: string, maxDim: number): Promise<string> {
   try {
+    const { createCanvas, loadImage } = await import('@napi-rs/canvas')
     const b64 = dataUrl.split(',')[1] ?? dataUrl
     const buf = Buffer.from(b64, 'base64')
     const img = await loadImage(buf)

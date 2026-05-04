@@ -3,18 +3,31 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Plus, Trash2, Loader2, Image as ImageIcon, FileText, Link2, Copy, Check, MousePointerClick } from 'lucide-react';
+import { Plus, Trash2, Image as ImageIcon, FileText, Link2, Copy, Check, MousePointerClick, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { getProxiedUrl } from '@/utils/proxyUtils';
+
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
+type MediaCategory = 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other';
 
 interface MediaItem {
     id: string;
     url: string;
     type: 'image' | 'pdf';
     label?: string;
+    category?: MediaCategory;
 }
+
+const MEDIA_CATEGORIES: Array<{ value: MediaCategory; label: string }> = [
+    { value: 'background', label: 'Background' },
+    { value: 'graphic', label: 'Graphic Asset' },
+    { value: 'stock', label: 'Stock Photo' },
+    { value: 'product', label: 'Product' },
+    { value: 'texture', label: 'Texture' },
+    { value: 'other', label: 'Other' },
+];
 
 interface LogoItem {
     id: string;
@@ -142,6 +155,16 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
             toast.error("Failed to rename asset");
         }
     }, [guidelineId, logos, media, onLogosChange, onMediaChange]);
+
+    const handleCategoryChange = useCallback(async (id: string, category: MediaCategory) => {
+        const newMedia = media.map(m => m.id === id ? { ...m, category } : m);
+        onMediaChange(newMedia);
+        try {
+            await brandGuidelineApi.update(guidelineId, { media: newMedia });
+        } catch {
+            toast.error('Failed to update category');
+        }
+    }, [guidelineId, media, onMediaChange]);
 
     const fileToBase64 = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
@@ -277,7 +300,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             disabled={isBulkDeleting}
                             className="text-[10px] h-7 bg-red-500 hover:bg-red-600 font-mono"
                         >
-                            {isBulkDeleting ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                            {isBulkDeleting ? <GlitchLoader size={10} /> : <Trash2 size={10} />}
                             <span className="ml-2 uppercase">Delete</span>
                         </Button>
                     </div>
@@ -403,12 +426,17 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                                     draggable={!!onAssetDragStart}
                                                     onDragStart={(e) => onAssetDragStart?.(e, item.url, 'image')}
                                                 />
-                                                {item.label && (
+                                                {(item.label || item.category) && (
                                                     <span className={cn(
-                                                        "absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 truncate px-1",
+                                                        "absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 truncate px-1 flex items-center justify-center gap-1",
                                                         isSelected && "bg-brand-cyan text-black font-bold"
                                                     )}>
-                                                        {item.label}
+                                                        {item.category && !isSelected && (
+                                                            <span className="text-[7px] uppercase tracking-wider text-neutral-600 bg-white/5 px-1 rounded">
+                                                                {item.category}
+                                                            </span>
+                                                        )}
+                                                        {item.label || ''}
                                                     </span>
                                                 )}
                                             </>
@@ -418,6 +446,32 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                                 <span className="text-[10px] font-mono text-neutral-400 text-center px-2 truncate w-full">
                                                     {item.label || 'PDF Document'}
                                                 </span>
+                                            </div>
+                                        )}
+
+                                        {/* Category selector */}
+                                        {!readOnly && item.type === 'image' && (
+                                            <div className="absolute top-1 right-1 opacity-0 group-hover/media:opacity-100 transition-opacity z-10">
+                                                <select
+                                                    value={item.category || ''}
+                                                    onChange={(e) => {
+                                                        e.stopPropagation();
+                                                        handleCategoryChange(item.id, e.target.value as MediaCategory);
+                                                    }}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className={cn(
+                                                        "h-5 pl-1 pr-4 rounded text-[8px] font-mono uppercase tracking-wider appearance-none cursor-pointer",
+                                                        "bg-black/70 backdrop-blur-sm border border-white/10 text-neutral-300",
+                                                        "hover:border-white/20 focus:border-brand-cyan/40 focus:outline-none transition-colors",
+                                                        !item.category && "text-neutral-600"
+                                                    )}
+                                                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 2px center' }}
+                                                >
+                                                    <option value="">Tag</option>
+                                                    {MEDIA_CATEGORIES.map(c => (
+                                                        <option key={c.value} value={c.value}>{c.label}</option>
+                                                    ))}
+                                                </select>
                                             </div>
                                         )}
 

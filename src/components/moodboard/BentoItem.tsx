@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Maximize2, Download, CheckSquare, Square, Video, Play, Loader2, Film, Zap, Check, RotateCcw } from 'lucide-react';
+import { X, Maximize2, Download, CheckSquare, Square, Video, Play, Film, Zap, Check, RotateCcw } from 'lucide-react';
 import { CroppedImage, AnimationPreset } from '../../types/moodboard';
 import { ModelSelector } from '@/components/shared/ModelSelector';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import type { ImageProvider } from '@/types/types';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface BentoItemProps {
   crop: CroppedImage;
   index: number;
@@ -111,7 +112,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
 
           {crop.isUpscaling && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
-              <Loader2 size={20} className="text-white animate-spin" />
+              <GlitchLoader size={20} />
               <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-neutral-400">Upscaling</span>
               {crop.upscaleStartTime && <Timer startTime={crop.upscaleStartTime} />}
             </div>
@@ -119,7 +120,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
 
           {crop.isAnimating && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
-              <Loader2 size={20} className="text-white animate-spin" />
+              <GlitchLoader size={20} />
               <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-neutral-400">Animating</span>
               {crop.animationStartTime && <Timer startTime={crop.animationStartTime} />}
             </div>
@@ -197,7 +198,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
                         disabled={!crop.url || isRegenerating}
                         className="px-3 py-2 rounded-lg bg-neutral-800 border border-border text-neutral-300 hover:bg-white hover:text-black text-[9px] font-bold uppercase tracking-widest transition-all disabled:opacity-30 flex items-center gap-1.5 shrink-0"
                       >
-                        {isRegenerating ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+                        {isRegenerating ? <GlitchLoader size={13} /> : <Zap size={13} />}
                       </button>
                     </div>
                   </div>

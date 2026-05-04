@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Search, Loader2, Users, Layout, Globe, BookMarked } from 'lucide-react';
+import { X, Search, Users, Layout, Globe, BookMarked } from 'lucide-react';
 import { Input } from './ui/input';
 import { WorkflowCard } from './WorkflowCard';
 import { ConfirmationModal } from './ConfirmationModal';

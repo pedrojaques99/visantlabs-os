@@ -62,10 +62,14 @@ export interface BrandContextJSON {
     values?: Array<{ title: string; description: string; example: string }>;
   };
   strategy?: {
-    manifesto?: string;
+    manifesto?: string | { provocation?: string; tension?: string; promise?: string; full?: string };
     positioning?: string[];
+    coreMessage?: { product: string; differential: string; emotionalBond: string };
+    pillars?: Array<{ value: string; description: string }>;
     archetypes?: Array<{ name: string; role?: string; description: string; examples?: string[] }>;
     personas?: Array<{ name: string; age?: number; occupation?: string; traits?: string[]; bio?: string; desires?: string[]; painPoints?: string[] }>;
+    marketResearch?: { competitors?: string[]; gaps?: string[]; opportunities?: string[]; notes?: string };
+    graphicSystem?: { patterns?: string[]; grafisms?: string[]; imageRules?: string[]; editorialGrid?: string };
   };
   tokens?: {
     spacing?: Record<string, number>;
@@ -116,6 +120,8 @@ export function buildBrandContextJSON(bg: BrandGuideline): BrandContextJSON {
     strategy: bg.strategy ? {
       manifesto: bg.strategy.manifesto,
       positioning: bg.strategy.positioning,
+      coreMessage: bg.strategy.coreMessage,
+      pillars: bg.strategy.pillars,
       archetypes: bg.strategy.archetypes?.map(a => ({
         name: a.name,
         role: a.role,
@@ -131,6 +137,8 @@ export function buildBrandContextJSON(bg: BrandGuideline): BrandContextJSON {
         desires: p.desires,
         painPoints: p.painPoints,
       })),
+      marketResearch: bg.strategy.marketResearch,
+      graphicSystem: bg.strategy.graphicSystem,
     } : undefined,
     tokens: bg.tokens ? {
       spacing: bg.tokens.spacing as Record<string, number>,
@@ -138,6 +146,9 @@ export function buildBrandContextJSON(bg: BrandGuideline): BrandContextJSON {
       shadows: bg.tokens.shadows,
       components: bg.tokens.components,
     } : undefined,
+    colorThemes: bg.colorThemes?.length
+      ? bg.colorThemes.map(t => ({ name: t.name, bg: t.bg, text: t.text, primary: t.primary, accent: t.accent }))
+      : undefined,
     tags: bg.tags,
     knowledge: bg.knowledgeFiles?.length
       ? bg.knowledgeFiles.map((f: any) => ({ fileName: f.fileName, source: f.source }))
@@ -157,9 +168,13 @@ ${JSON.stringify(json, null, 2)}
 
 INSTRUCTIONS:
 - Use ONLY the colors and typography from brand_context. Primary color for main actions, secondary for accents.
+- If strategy.coreMessage exists, use it as the brand's positioning foundation (product + differential + emotional bond).
+- If strategy.pillars exist, ensure all creative output aligns with these fundamental values.
 - If strategy.archetypes exist, reflect the primary archetype's personality in layout and visual tone.
 - If strategy.personas exist, design for the primary persona's context and expectations.
-- If strategy.manifesto or strategy.positioning exist, let them guide the overall narrative.
+- If strategy.manifesto exists (structured or text), let the provocation→tension→promise arc guide the narrative.
+- If strategy.marketResearch exists, leverage gaps and opportunities for differentiation.
+- If strategy.graphicSystem exists, follow patterns, grafisms, and image rules for visual consistency.
 - If voice.values exist, apply them to any copy or text elements.
 - If tokens (spacing, radius) exist, use them for consistent layout rhythm.`;
 }
@@ -228,11 +243,28 @@ export function buildBrandContext(
 
   // Strategy - archetypes, personas, positioning, manifesto, voice values (compact skips)
   if (!compact && bg.strategy) {
-    if (bg.strategy.manifesto) {
-      lines.push(`MANIFESTO: "${bg.strategy.manifesto}"`);
-    }
-    if (bg.strategy.positioning?.length) {
+    if (bg.strategy.coreMessage) {
+      const cm = bg.strategy.coreMessage;
+      lines.push(`CORE MESSAGE: Product: ${cm.product} | Differential: ${cm.differential} | Emotional Bond: ${cm.emotionalBond}`);
+    } else if (bg.strategy.positioning?.length) {
       lines.push(`POSITIONING: ${bg.strategy.positioning.join(' | ')}`);
+    }
+    if (bg.strategy.pillars?.length) {
+      lines.push('BRAND PILLARS:');
+      for (const p of bg.strategy.pillars) {
+        lines.push(`  ${p.value}: ${p.description}`);
+      }
+    }
+    if (bg.strategy.manifesto) {
+      const m = bg.strategy.manifesto;
+      if (typeof m === 'object') {
+        if (m.provocation) lines.push(`MANIFESTO — Provocation: ${m.provocation}`);
+        if (m.tension) lines.push(`MANIFESTO — Tension: ${m.tension}`);
+        if (m.promise) lines.push(`MANIFESTO — Promise: ${m.promise}`);
+        if (m.full) lines.push(`MANIFESTO: "${m.full}"`);
+      } else {
+        lines.push(`MANIFESTO: "${m}"`);
+      }
     }
     if (bg.strategy.archetypes?.length) {
       lines.push('BRAND ARCHETYPES:');
@@ -260,6 +292,20 @@ export function buildBrandContext(
         if (p.painPoints?.length) lines.push(`    Pain Points: ${p.painPoints.join(' | ')}`);
       }
     }
+    if (bg.strategy.marketResearch) {
+      const mr = bg.strategy.marketResearch;
+      if (mr.competitors?.length) lines.push(`COMPETITORS: ${mr.competitors.join(', ')}`);
+      if (mr.gaps?.length) lines.push(`MARKET GAPS: ${mr.gaps.join(' | ')}`);
+      if (mr.opportunities?.length) lines.push(`OPPORTUNITIES: ${mr.opportunities.join(' | ')}`);
+      if (mr.notes) lines.push(`MARKET NOTES: ${mr.notes}`);
+    }
+    if (bg.strategy.graphicSystem) {
+      const gs = bg.strategy.graphicSystem;
+      if (gs.patterns?.length) lines.push(`GRAPHIC PATTERNS: ${gs.patterns.join(' | ')}`);
+      if (gs.grafisms?.length) lines.push(`GRAFISMS: ${gs.grafisms.join(' | ')}`);
+      if (gs.imageRules?.length) lines.push(`IMAGE RULES: ${gs.imageRules.join(' | ')}`);
+      if (gs.editorialGrid) lines.push(`EDITORIAL GRID: ${gs.editorialGrid}`);
+    }
     lines.push('');
   }
 
@@ -267,6 +313,15 @@ export function buildBrandContext(
   if (!compact && bg.tags && Object.keys(bg.tags).length > 0) {
     const allTags = Object.values(bg.tags).flat().filter(Boolean);
     if (allTags.length) lines.push(`TAGS: ${allTags.join(', ')}`);
+    lines.push('');
+  }
+
+  // Color Themes — curated bg/text/primary/accent combos
+  if (bg.colorThemes?.length) {
+    lines.push('COLOR THEMES:');
+    for (const t of bg.colorThemes) {
+      lines.push(`  ${t.name}: bg=${t.bg} text=${t.text} primary=${t.primary} accent=${t.accent}`);
+    }
     lines.push('');
   }
 
@@ -283,7 +338,8 @@ export function buildBrandContext(
   if (includeMedia && bg.media?.length) {
     lines.push('MEDIA KIT (reference assets):');
     for (const m of bg.media) {
-      lines.push(`  [${m.type}] ${m.url}${m.label ? ` — ${m.label}` : ''}`);
+      const cat = m.category ? ` [${m.category}]` : '';
+      lines.push(`  [${m.type}]${cat} ${m.url}${m.label ? ` — ${m.label}` : ''}`);
     }
     lines.push('');
   }

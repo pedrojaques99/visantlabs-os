@@ -17,7 +17,6 @@ import {
   Sun,
   Moon,
   Home,
-  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -166,7 +165,7 @@ export const PublicBrandGuideline: React.FC = () => {
             {error || 'This brand guideline is either private or does not exist in our secure vault.'}
           </p>
           <Link to="/">
-            <Button variant="outline" className="text-[var(--accent)] border-[var(--accent)]/20 hover:bg-[var(--accent)]/5" style={{ '--accent': guideline?.colors?.[0]?.hex || '#00E5FF' } as any}>
+            <Button variant="outline" className="text-[var(--accent)] border-[var(--accent)]/20 hover:bg-[var(--accent)]/5" style={{ '--accent': guideline?.colors?.[0]?.hex || '#888888' } as any}>
               Return to Surface
             </Button>
           </Link>
@@ -395,7 +394,7 @@ export const PublicBrandGuideline: React.FC = () => {
                   disabled={exporting}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-widest opacity-50 hover:opacity-100 transition-all disabled:opacity-30"
                 >
-                  {exporting ? <Loader2 size={11} className="animate-spin" /> : <Download size={11} />}
+                  {exporting ? <GlitchLoader size={11} /> : <Download size={11} />}
                   Export
                   <ChevronDown size={9} />
                 </button>

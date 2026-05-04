@@ -1,12 +1,13 @@
 import React, { useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, Loader2 } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { useExtractFileStream } from '@/hooks/useExtractFigStream';
 import { useIngestAsStream } from '@/hooks/useIngestAsStream';
 import { BrandIngestModal } from './BrandIngestModal';
 import type { BrandGuideline } from '@/lib/figma-types';
 import type { FigStreamState } from '@/hooks/useExtractFigStream';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface BrandIngestButtonProps {
   guideline: BrandGuideline;
   onSuccess: () => void;
@@ -59,7 +60,7 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline,
         disabled={isBusy}
         onClick={() => fileInputRef.current?.click()}
       >
-        {isBusy ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+        {isBusy ? <GlitchLoader size={13} /> : <Upload size={13} />}
         <span className="hidden sm:inline">Extract</span>
       </Button>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Users, Plus, Search, X, Loader2 } from 'lucide-react';
+import { Users, Plus, Search, X } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useNavigate } from 'react-router-dom';
 import {

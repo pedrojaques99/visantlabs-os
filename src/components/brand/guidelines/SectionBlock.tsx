@@ -3,11 +3,12 @@ import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
-import { Pencil, X, Save, Loader2, Maximize2, Minus } from 'lucide-react';
+import { Pencil, X, Save, Maximize2, Minus } from 'lucide-react';
 import {
   Dialog, DialogContent, DialogHeader, DialogBody, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 /** Context provided by GuidelineDetail — lets any SectionBlock hide itself without prop drilling */
 export const SectionHideContext = createContext<((id: string) => void) | null>(null);
 
@@ -16,7 +17,7 @@ interface SectionBlockProps {
   title: string;
   icon: React.ReactNode;
   children: React.ReactNode;
-  span?: '1' | '2' | 'full';
+  span?: '1' | '2' | '4' | '6' | '8' | '12' | 'full';
   rowSpan?: '1' | '2';
   isEditing?: boolean;
   isSaving?: boolean;
@@ -30,22 +31,31 @@ interface SectionBlockProps {
 
 export const SectionBlock: React.FC<SectionBlockProps> = ({
   id, title, icon, children,
-  span = '2', rowSpan = '1',
+  span = 'full', rowSpan = '1',
   isEditing, isSaving, onEdit, onSave, onCancel,
   actions, className, expandedContent,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const hideSection = useContext(SectionHideContext);
 
+  const spanClasses = {
+    '1': "lg:col-span-4",
+    '2': "lg:col-span-6",
+    '4': "lg:col-span-4",
+    '6': "lg:col-span-6",
+    '8': "lg:col-span-8",
+    '12': "lg:col-span-12",
+    'full': "lg:col-span-12",
+  };
+
   return (
     <>
       <div
         id={id}
         className={cn(
-          "group flex flex-col gap-2 p-1 transition-all duration-300",
-          span === '1' && "col-span-1",
-          (span === '2' || span === 'full') && "col-span-full",
-          rowSpan === '2' && "md:row-span-2",
+          "group flex flex-col gap-2 p-1 transition-all duration-300 col-span-full",
+          spanClasses[span] || "lg:col-span-12",
+          rowSpan === '2' && "lg:row-span-2",
           className
         )}
       >
@@ -55,7 +65,7 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
             {title && <MicroTitle className="text-[11px] uppercase tracking-widest text-neutral-400 font-bold">{title}</MicroTitle>}
           </div>
           <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex gap-1.5 items-center">
-            {isSaving && <Loader2 size={12} className="text-neutral-500 animate-spin mr-1" />}
+            {isSaving && <GlitchLoader size={12} className="mr-1" />}
             {isEditing ? (
               <div className="flex gap-1">
                 <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" aria-label="Cancel" onClick={onCancel}>

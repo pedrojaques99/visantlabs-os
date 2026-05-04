@@ -6,13 +6,14 @@ import { useTheme } from '@/hooks/useTheme';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { adminChatApi, AdminChatMessage, AdminChatSession, ToolCallRecord, PendingBrandKnowledgeApproval, PendingCreativePlan } from '@/services/adminChatApi';
-import { X, Bot, Loader2, Shield, FileText, Image as ImageIcon, Video, Paperclip, Plus, Trash2, ChevronLeft, ChevronRight, BookOpen, Check } from 'lucide-react';
+import { X, Bot, Shield, FileText, Image as ImageIcon, Video, Paperclip, Plus, Trash2, ChevronLeft, ChevronRight, BookOpen, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { authService } from '@/services/authService';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { ChatMessage } from '../shared/chat/ChatMessage';
 import { ChatInput } from '../shared/chat/ChatInput';
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { GlitchPickaxe } from '@/components/ui/GlitchPickaxe';
@@ -560,7 +561,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                 <div className="px-3 py-2 text-xs text-neutral-500">Recentes</div>
                                 {loadingSessions ? (
                                     <div className="flex items-center gap-2 px-3 py-2 text-xs text-neutral-500">
-                                        <Loader2 size={12} className="animate-spin" />
+                                        <GlitchLoader size={12} />
                                         Carregando…
                                     </div>
                                 ) : sessions.length === 0 ? (
@@ -775,7 +776,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                     Rejeitar
                                                 </Button>
                                                 {resolvingPendingId === pending.id && (
-                                                    <Loader2 size={12} className="animate-spin text-neutral-500" />
+                                                    <GlitchLoader size={12} />
                                                 )}
                                             </div>
                                         </div>
@@ -836,7 +837,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                     disabled={approvingPlan || isLoading}
                                                     className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs rounded-md transition-colors"
                                                 >
-                                                    {approvingPlan ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                                                    {approvingPlan ? <GlitchLoader size={12} /> : <Check size={12} />}
                                                     Aprovar e gerar
                                                 </Button>
                                                 <Button
@@ -884,7 +885,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                             )}
                                                         >
                                                             {tc.status === 'running' ? (
-                                                                <Loader2 size={12} className="animate-spin shrink-0" />
+                                                                <GlitchLoader size={12} className="shrink-0" />
                                                             ) : tc.status === 'error' ? (
                                                                 <Trash2 size={12} className="shrink-0" />
                                                             ) : (
@@ -1018,7 +1019,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                             title="Importar PDF/imagens → extrai logos, cores, tipografia, tokens e media"
                                         >
                                             {brandImport.isPending ? (
-                                                <Loader2 size={14} className="animate-spin" />
+                                                <GlitchLoader size={14} />
                                             ) : (
                                                 <Upload size={14} />
                                             )}

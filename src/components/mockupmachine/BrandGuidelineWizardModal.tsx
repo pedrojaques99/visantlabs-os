@@ -8,7 +8,7 @@ import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Loader2, FileText, X, ShieldCheck, Image as ImageIcon, Upload, Plus, Figma } from 'lucide-react';
+import { FileText, X, ShieldCheck, Image as ImageIcon, Upload, Plus, Figma } from 'lucide-react';
 import { MicroTitle } from '../ui/MicroTitle';
 import { validatePdfFile } from '@/utils/pdfUtils';
 import { buildBrandIngestPayload } from '@/hooks/queries/useBrandImport';
@@ -451,7 +451,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                                 : "bg-neutral-800/60 text-neutral-600 cursor-not-allowed"
                         )}
                     >
-                        {isSubmitting && <Loader2 size={14} className="animate-spin" />}
+                        {isSubmitting && <GlitchLoader size={14} />}
                         {isIngesting && <GlitchLoader size={14} color="black" />}
                         {submitLabel && <span>{submitLabel}</span>}
                     </Button>

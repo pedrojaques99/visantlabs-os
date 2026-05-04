@@ -9,8 +9,9 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, Copy, Check, ThumbsUp, ThumbsDown, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Upload, Copy, Check, ThumbsUp, ThumbsDown, Image as ImageIcon } from 'lucide-react';
 
+import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface GenerationResult {
   prompt: string;
   feedbackId: string;
@@ -190,7 +191,7 @@ export function ImageToPrompt() {
         >
           {loading ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <GlitchLoader size={14} className="h-4 w-4 mr-2" />
               Analisando...
             </>
           ) : (
