@@ -340,3 +340,199 @@ export const StoriesMock: React.FC<MockProps> = ({ tokens, className }) => {
     </div>
   );
 };
+
+// ── Website Hero (16:9) ─────────────────────────────────────────────────────
+export const WebsiteHeroMock: React.FC<MockProps> = ({ tokens, className }) => {
+  const { theme } = tokens;
+  return (
+    <div
+      className={cn('relative w-full overflow-hidden rounded-2xl shadow-2xl', className)}
+      style={{ aspectRatio: '16 / 9', background: theme.bg, color: theme.text }}
+    >
+      <div className="absolute inset-0 flex flex-col">
+        {/* Nav */}
+        <div className="flex items-center justify-between px-[5%] py-[3%]">
+          <Logo tokens={tokens} size={24} />
+          <div className="flex items-center gap-4">
+            {['About', 'Work', 'Contact'].map(l => (
+              <span
+                key={l}
+                className="text-[9px] uppercase tracking-[0.2em] opacity-50"
+                style={{ fontFamily: tokens.bodyFamily }}
+              >
+                {l}
+              </span>
+            ))}
+            <span
+              className="px-3 py-1 rounded-full text-[8px] uppercase tracking-[0.2em] font-semibold"
+              style={{ background: theme.accent, color: theme.accentText, fontFamily: tokens.bodyFamily }}
+            >
+              Get Started
+            </span>
+          </div>
+        </div>
+
+        {/* Hero content */}
+        <div className="flex-1 flex flex-col justify-center px-[7%] max-w-[65%]">
+          <span
+            className="text-[9px] uppercase tracking-[0.4em] opacity-50 mb-3"
+            style={{ fontFamily: tokens.bodyFamily, color: theme.accent }}
+          >
+            {tokens.tagline || tokens.name}
+          </span>
+          <h1
+            className="font-bold leading-[0.95] tracking-tight"
+            style={{
+              fontFamily: tokens.headingFamily,
+              fontSize: 'clamp(24px, 5vw, 52px)',
+            }}
+          >
+            {tokens.manifestoFirstLine?.slice(0, 60) || tokens.description?.slice(0, 60) || `Welcome to ${tokens.name}`}
+          </h1>
+          <p
+            className="mt-3 opacity-50 leading-relaxed max-w-[80%]"
+            style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(9px, 1.2vw, 13px)' }}
+          >
+            {tokens.description?.slice(0, 120) || 'Build something extraordinary with a brand that stands out.'}
+          </p>
+          <div className="flex gap-2 mt-4">
+            <span
+              className="px-4 py-1.5 rounded-lg text-[9px] uppercase tracking-[0.2em] font-semibold"
+              style={{ background: theme.accent, color: theme.accentText, fontFamily: tokens.bodyFamily }}
+            >
+              Start now
+            </span>
+            <span
+              className="px-4 py-1.5 rounded-lg text-[9px] uppercase tracking-[0.2em] font-semibold border"
+              style={{ borderColor: `${theme.text}20`, fontFamily: tokens.bodyFamily }}
+            >
+              Learn more
+            </span>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="flex items-center justify-between px-[5%] py-[2%] border-t" style={{ borderColor: `${theme.text}10` }}>
+          <div className="flex gap-1.5">
+            {tokens.palette.slice(0, 5).map((c, i) => (
+              <span key={i} className="w-2.5 h-2.5 rounded-full" style={{ background: c.hex }} />
+            ))}
+          </div>
+          <span className="text-[8px] uppercase tracking-[0.3em] opacity-30" style={{ fontFamily: tokens.bodyFamily }}>
+            {tokens.name} · {new Date().getFullYear()}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Business Card (3.5:2) ───────────────────────────────────────────────────
+export const BusinessCardMock: React.FC<MockProps> = ({ tokens, className }) => {
+  const { theme } = tokens;
+  return (
+    <div
+      className={cn('relative w-full overflow-hidden rounded-xl shadow-2xl', className)}
+      style={{ aspectRatio: '3.5 / 2', background: theme.bg, color: theme.text }}
+    >
+      <div className="absolute inset-0 flex">
+        {/* Left accent strip */}
+        <div className="w-1.5 h-full" style={{ background: theme.accent }} />
+
+        <div className="flex-1 flex flex-col justify-between p-[7%]">
+          <div className="flex items-start justify-between">
+            <Logo tokens={tokens} size={28} />
+            <div className="flex gap-1">
+              {tokens.palette.slice(0, 3).map((c, i) => (
+                <span key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: c.hex }} />
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <h3
+              className="font-bold tracking-tight"
+              style={{ fontFamily: tokens.headingFamily, fontSize: 'clamp(14px, 3vw, 22px)' }}
+            >
+              Jane Doe
+            </h3>
+            <p
+              className="text-[9px] uppercase tracking-[0.3em] opacity-60"
+              style={{ fontFamily: tokens.bodyFamily, color: theme.accent }}
+            >
+              Creative Director
+            </p>
+          </div>
+
+          <div className="flex items-end justify-between">
+            <div className="space-y-0.5">
+              <p className="text-[8px] opacity-40" style={{ fontFamily: tokens.bodyFamily }}>
+                hello@{tokens.name.toLowerCase().replace(/\s+/g, '')}.com
+              </p>
+              <p className="text-[8px] opacity-40" style={{ fontFamily: tokens.bodyFamily }}>
+                +1 (555) 000-0000
+              </p>
+            </div>
+            <span
+              className="text-[8px] uppercase tracking-[0.2em] opacity-30 font-bold"
+              style={{ fontFamily: tokens.bodyFamily }}
+            >
+              {tokens.name}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Email Header (600:200 ~3:1) ─────────────────────────────────────────────
+export const EmailHeaderMock: React.FC<MockProps> = ({ tokens, className }) => {
+  const { theme } = tokens;
+  return (
+    <div
+      className={cn('relative w-full overflow-hidden rounded-xl shadow-2xl', className)}
+      style={{ aspectRatio: '3 / 1', background: theme.bg, color: theme.text }}
+    >
+      <div className="absolute inset-0 flex items-center">
+        {/* Accent block */}
+        <div
+          className="h-full flex items-center justify-center px-[5%]"
+          style={{ background: theme.accent, minWidth: '25%' }}
+        >
+          <Logo tokens={tokens} size={32} mode="auto" />
+        </div>
+
+        <div className="flex-1 flex flex-col justify-center px-[5%] gap-2">
+          <h2
+            className="font-bold leading-tight tracking-tight"
+            style={{
+              fontFamily: tokens.headingFamily,
+              fontSize: 'clamp(16px, 3vw, 28px)',
+            }}
+          >
+            {tokens.tagline || `${tokens.name} Newsletter`}
+          </h2>
+          <p
+            className="opacity-50 leading-relaxed"
+            style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(8px, 1.2vw, 12px)' }}
+          >
+            {tokens.description?.slice(0, 80) || 'Stay updated with the latest from our team.'}
+          </p>
+        </div>
+
+        <div className="pr-[5%] flex flex-col items-end gap-1.5">
+          <span
+            className="px-3 py-1 rounded-md text-[8px] uppercase tracking-[0.2em] font-semibold"
+            style={{ background: theme.accent, color: theme.accentText, fontFamily: tokens.bodyFamily }}
+          >
+            Read more
+          </span>
+          <span className="text-[7px] opacity-30" style={{ fontFamily: tokens.bodyFamily }}>
+            Unsubscribe
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
