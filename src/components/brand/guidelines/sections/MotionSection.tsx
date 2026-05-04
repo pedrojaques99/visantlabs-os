@@ -105,11 +105,12 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
         {/* Reduced motion: hover-reveal */}
         <div className="max-h-0 overflow-hidden group-hover/motion:max-h-12 group-focus-within/motion:max-h-12 transition-[max-height] duration-150 ease-out">
           <label className="flex items-center gap-2 cursor-pointer pt-1">
-            <div onClick={() => patch({ respectsReducedMotion: !motion.respectsReducedMotion })}
+            <button type="button" onClick={() => patch({ respectsReducedMotion: !motion.respectsReducedMotion })}
               className={cn('w-7 h-3.5 rounded-full border transition-all cursor-pointer relative shrink-0', motion.respectsReducedMotion ? 'bg-white/10 border-white/20' : 'bg-white/[0.03] border-white/10')}
+              aria-label="Toggle reduced motion"
             >
               <div className={cn('absolute top-0.5 w-2.5 h-2.5 rounded-full transition-all bg-neutral-500', motion.respectsReducedMotion ? 'left-3.5 bg-neutral-300' : 'left-0.5')} />
-            </div>
+            </button>
             <span className="text-[10px] font-mono text-neutral-500">prefers-reduced-motion</span>
           </label>
         </div>

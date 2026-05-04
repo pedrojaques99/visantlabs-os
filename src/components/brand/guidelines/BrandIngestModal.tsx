@@ -84,7 +84,7 @@ const SectionShell: React.FC<{
   children?: React.ReactNode;
 }> = ({ label, loading, allChecked, someChecked, onToggleAll, children }) => (
   <div className={`rounded-md border transition-colors ${someChecked ? 'border-white/[0.10] bg-white/[0.02]' : 'border-white/[0.04]'}`}>
-    <div className="flex items-center gap-2.5 px-3 py-2 cursor-pointer select-none" onClick={onToggleAll}>
+    <div className="flex items-center gap-2.5 px-3 py-2 cursor-pointer select-none" role="button" tabIndex={0} onClick={onToggleAll} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggleAll(); } }}>
       <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${allChecked ? 'bg-white/[0.12] border-white/20' : someChecked ? 'bg-white/[0.06] border-white/15' : 'border-white/10'}`}>
         {allChecked ? <Check size={10} className="text-neutral-300" /> : someChecked ? <div className="w-2 h-0.5 bg-neutral-400 rounded" /> : null}
       </div>

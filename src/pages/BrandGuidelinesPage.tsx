@@ -219,7 +219,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                 <div className="lg:hidden">
                                     <Sheet>
                                         <SheetTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500" aria-label="Open menu">
                                                 <AlignLeft className="h-4 w-4" />
                                             </Button>
                                         </SheetTrigger>
