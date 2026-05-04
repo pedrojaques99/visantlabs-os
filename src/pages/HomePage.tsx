@@ -5,9 +5,10 @@ import { useLayout } from '@/hooks/useLayout';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SEO } from '../components/SEO';
 import { VisantLogo3D, PRESETS } from '../components/3d/VisantLogo3D';
-import { Lock } from 'lucide-react';
+import { Lock, LogIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { appsService, AppConfig } from '@/services/appsService';
+import { AuthModal } from '@/components/AuthModal';
 
 const playTick = () => {
   const a = new Audio('/sounds/hihat.wav');
@@ -24,6 +25,9 @@ const detectRealMobile = (): boolean => {
 };
 
 const MOBILE_BLOCKED = new Set(['mockup-machine', 'canvas', 'moodboard-studio']);
+
+// Apps visible to all authenticated users (not just admin/tester)
+const PUBLIC_APP_IDS = new Set(['mockup-machine', 'brand-guidelines', 'branding-machine']);
 
 // Fixed preset per appId — index into PRESETS (0=neutral 1=cyan 2=violet 3=amber 4=rose 5=green 6=blue 7=warm)
 const APP_PRESET: Record<string, number> = {
@@ -266,11 +270,14 @@ const AppList: React.FC<AppListProps> = ({ apps, listRef, focusedIndex, onSelect
 export const HomePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useLayout();
+  const { user, isAuthenticated } = useLayout();
 
   const isAdmin = user?.isAdmin === true;
   const isTester = user?.userCategory === 'tester' || user?.username === 'tester';
-  const showInternalLinks = isAdmin || isTester;
+  const isElevated = isAdmin || isTester;
+  const isLoggedIn = isAuthenticated === true;
+
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const [isMobile, setIsMobile]         = useState(false);
   const [apps, setApps]                 = useState<AppConfig[]>([]);
@@ -282,21 +289,22 @@ export const HomePage: React.FC = () => {
   useEffect(() => { setIsMobile(detectRealMobile()); }, []);
 
   useEffect(() => {
+    if (!isLoggedIn) { setApps([]); return; }
     appsService.getAll()
       .then((data) => {
         const byId = Object.fromEntries(data.map(a => [a.appId, a]));
         const pinned = PINNED_APP_IDS
           .map(id => byId[id])
           .filter(Boolean)
-          .filter(a => !isMobile || !MOBILE_BLOCKED.has(a.appId));
-        // Exporter: download — always show, blocked on mobile
-        const withExporter = isMobile
+          .filter(a => !isMobile || !MOBILE_BLOCKED.has(a.appId))
+          .filter(a => isElevated || PUBLIC_APP_IDS.has(a.appId));
+        const withExporter = isMobile || !isElevated
           ? pinned
           : [...pinned, EXPORTER_ENTRY];
         setApps(smartSort(withExporter));
       })
       .catch(() => { /* silent fail */ });
-  }, [isMobile]);
+  }, [isMobile, isLoggedIn, isElevated]);
 
   const handleSelect = useCallback((app: AppConfig) => {
     recordLastUsed(app.appId);
@@ -322,7 +330,7 @@ export const HomePage: React.FC = () => {
 
   // TUI keyboard navigation
   useEffect(() => {
-    if (!showInternalLinks || apps.length === 0) return;
+    if (!isLoggedIn || apps.length === 0) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown')  { e.preventDefault(); const n = Math.min(focusedIndex + 1, apps.length - 1); moveFocus(n, apps[n]?.appId); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); const n = Math.max(focusedIndex - 1, 0); moveFocus(n, apps[n]?.appId); }
@@ -333,7 +341,7 @@ export const HomePage: React.FC = () => {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [apps, focusedIndex, showInternalLinks, handleSelect, moveFocus]);
+  }, [apps, focusedIndex, isLoggedIn, handleSelect, moveFocus]);
 
   // Scroll focused item into view
   useEffect(() => {
@@ -373,18 +381,30 @@ export const HomePage: React.FC = () => {
           {isMobile ? (
             /* ── Mobile: stacked ─────────────────────────────────────────── */
             <div className="flex flex-col items-center px-6 max-w-xs mx-auto">
-              {/* Spacer so content sits below the 3D visual area */}
               <div className="h-[38vw] max-h-[200px]" aria-hidden />
 
               <AnimatePresence mode="wait">
-                {showInternalLinks ? (
+                {isLoggedIn ? (
                   <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full mt-3">
                     <AppList {...listProps} />
                   </motion.div>
                 ) : (
-                  <motion.div key="locked" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="flex items-center gap-2 text-neutral-700 font-mono text-[10px] uppercase tracking-widest select-none mt-4">
-                    <Lock size={10} aria-hidden /><span>restricted</span>
+                  <motion.div key="guest" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="flex flex-col items-center gap-5 mt-4">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 select-none text-center">
+                      experimental design laboratory
+                    </p>
+                    <button
+                      onClick={() => setShowAuthModal(true)}
+                      className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-[11px] uppercase tracking-widest text-neutral-400 hover:text-white transition-all duration-200"
+                    >
+                      <LogIn size={12} />
+                      <span>sign in</span>
+                    </button>
+                    <div className="flex items-center gap-6 mt-2">
+                      <button onClick={() => navigate('/about')} className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">info</button>
+                      <a href="mailto:contact@visantlabs.com" className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">contact</a>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -394,14 +414,27 @@ export const HomePage: React.FC = () => {
             <div className="absolute inset-0 flex items-center pointer-events-none">
               <div className="ml-16 pointer-events-auto inline-flex flex-col">
                 <AnimatePresence mode="wait">
-                  {showInternalLinks ? (
+                  {isLoggedIn ? (
                     <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                       <AppList {...listProps} />
                     </motion.div>
                   ) : (
-                    <motion.div key="locked" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                      className="flex items-center gap-2 text-neutral-700 font-mono text-[10px] uppercase tracking-widest select-none">
-                      <Lock size={10} aria-hidden /><span>restricted</span>
+                    <motion.div key="guest" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="flex flex-col gap-5">
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 select-none">
+                        experimental design laboratory
+                      </p>
+                      <button
+                        onClick={() => setShowAuthModal(true)}
+                        className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-[11px] uppercase tracking-widest text-neutral-400 hover:text-white transition-all duration-200 w-fit"
+                      >
+                        <LogIn size={12} />
+                        <span>sign in</span>
+                      </button>
+                      <div className="flex items-center gap-6">
+                        <button onClick={() => navigate('/about')} className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">info</button>
+                        <button onClick={() => navigate('/community')} className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">community</button>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -410,7 +443,7 @@ export const HomePage: React.FC = () => {
           )}
         </div>
 
-        {showInternalLinks && !isMobile && apps.length > 0 && (
+        {isLoggedIn && !isMobile && apps.length > 0 && (
           <motion.p
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
             className="absolute bottom-6 font-mono text-[9px] text-neutral-800 tracking-widest uppercase select-none"
@@ -420,6 +453,12 @@ export const HomePage: React.FC = () => {
           </motion.p>
         )}
       </div>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => { setShowAuthModal(false); window.location.reload(); }}
+      />
     </>
   );
 };
