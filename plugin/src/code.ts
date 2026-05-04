@@ -1,4 +1,7 @@
 /// <reference types="@figma/plugin-typings" />
+if (typeof performance === 'undefined') {
+  (globalThis as any).performance = { now: () => Date.now() };
+}
 /**
  * Visant Copilot - Figma Plugin
  * Main entry point - routes messages to handlers
@@ -51,7 +54,8 @@ import {
   multiplyResponsive,
   generateBrandGrid,
   generateSocialFrames,
-  importLogoCandidates
+  importLogoCandidates,
+  exportWithBleed
 } from './handlers/index';
 import { dispatch } from './handlers/registry';
 import { isEnvelope } from '@shared/protocol';
@@ -876,6 +880,16 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     };
     script += process(node);
     postToUI({ type: 'ILLUSTRATOR_CODE_READY', code: script });
+    return;
+  }
+
+  // ── Export with Bleed (Arte Final) ──
+  if ((msg as any).type === 'EXPORT_WITH_BLEED') {
+    try {
+      await exportWithBleed();
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
     return;
   }
 
