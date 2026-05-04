@@ -79,6 +79,9 @@ export interface OpMap {
   'ai.chat':      { payload: { prompt: string; messages?: unknown[]; stream?: boolean }; result: { text: string } };
   'ai.generate':  { payload: { context: unknown; instruction: string };                  result: unknown };
 
+  // ── Export ──
+  'export.textToMarkdown': { payload: { includeHidden?: boolean }; result: { markdown: string; filename: string } };
+
   // ── Dev / Misc ──
   'dev.stickyPrompt':      { payload: { text?: string }; result: unknown };
   'dev.varyColors':        { payload: Record<string, unknown>; result: unknown };
