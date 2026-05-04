@@ -14,6 +14,7 @@
   ],
   "networkAccess": {
     "allowedDomains": [
+      "https://api.visantlabs.com",
       "https://www.visantlabs.com",
       "https://visantlabs.com",
       "https://images.unsplash.com",
