@@ -159,38 +159,7 @@ export function extractBrandTheme(
   };
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Default asset download
-// ──────────────────────────────────────────────────────────────────────────────
-
-async function defaultTriggerDownload(url: string, filename: string) {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(blobUrl);
-  } catch {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.target = '_blank';
-    a.click();
-  }
-}
-
-function extOf(url: string): string {
-  return url.split('.').pop()?.split('?')[0] || 'png';
-}
-
-function safeNameOf(label?: string, fallback?: string): string {
-  return (label || fallback || 'asset').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-}
+import { triggerAssetDownload, safeFileName, extFromUrl } from './brand-shared-config';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Section sub-components (exported for custom composition)
@@ -704,7 +673,7 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
   const handleClick = useCallback(
     (logo: any) => {
       if (onAssetClick) return onAssetClick(logo.url, 'logo', logo);
-      defaultTriggerDownload(logo.url, `${safeNameOf(logo.label, logo.variant)}.${extOf(logo.url)}`);
+      triggerAssetDownload(logo.url, `${safeFileName(logo.label || logo.variant)}.${extFromUrl(logo.url)}`);
     },
     [onAssetClick]
   );
@@ -822,7 +791,7 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
   const handleClick = useCallback(
     (item: any) => {
       if (onAssetClick) return onAssetClick(item.url, 'media', item);
-      defaultTriggerDownload(item.url, `${safeNameOf(item.label, 'media')}.${extOf(item.url)}`);
+      triggerAssetDownload(item.url, `${safeFileName(item.label || 'media')}.${extFromUrl(item.url)}`);
     },
     [onAssetClick]
   );

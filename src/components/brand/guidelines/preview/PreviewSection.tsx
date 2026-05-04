@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useCallback } from 'react';
+import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { LayoutTemplate, Instagram, Linkedin, FileImage, Smartphone, Download, Loader2, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -38,7 +38,26 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
   const [exporting, setExporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const mockRef = useRef<HTMLDivElement>(null);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
   const tokens = useMemo(() => buildMockTokens(guideline), [guideline]);
+
+  useEffect(() => {
+    if (!showExportMenu) return;
+    const handleClick = (e: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+        setShowExportMenu(false);
+      }
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowExportMenu(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [showExportMenu]);
 
   const hasMinimum =
     (tokens.palette.length > 0) || !!tokens.primaryLogo || !!guideline.identity?.name;
@@ -73,7 +92,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-1 border-b border-white/[0.05] pb-2 overflow-x-auto">
+          <div className="flex items-center gap-1 border-b border-white/[0.05] pb-2 overflow-x-auto scrollbar-none [-webkit-mask-image:linear-gradient(to_right,transparent_0,black_16px,black_calc(100%-40px),transparent)]">
             {FORMATS.map(f => {
               const Icon = f.icon;
               const isActive = active === f.id;
@@ -96,7 +115,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
             })}
 
             {/* Export dropdown */}
-            <div className="ml-auto relative">
+            <div ref={exportMenuRef} className="ml-auto relative">
               <button
                 type="button"
                 onClick={() => setShowExportMenu(v => !v)}

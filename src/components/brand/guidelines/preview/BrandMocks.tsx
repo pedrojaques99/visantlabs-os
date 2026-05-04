@@ -22,17 +22,18 @@ const Logo: React.FC<{ tokens: MockTokens; mode?: 'light' | 'dark' | 'auto'; siz
     return (
       <img
         src={logo.url}
-        alt={tokens.name}
+        alt={tokens.name || 'Brand logo'}
         style={{ height: size, width: 'auto', objectFit: 'contain', maxWidth: size * 4 }}
       />
     );
   }
+  const displayName = tokens.name || 'Brand';
   return (
     <span
       className="font-bold tracking-tight"
       style={{ fontFamily: tokens.headingFamily, fontSize: size * 0.72 }}
     >
-      {tokens.name}
+      {displayName}
     </span>
   );
 };

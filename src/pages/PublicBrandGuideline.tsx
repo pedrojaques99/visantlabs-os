@@ -71,6 +71,25 @@ export const PublicBrandGuideline: React.FC = () => {
   const [exporting, setExporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const publicMockRef = useRef<HTMLDivElement>(null);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showExportMenu) return;
+    const handleClick = (e: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+        setShowExportMenu(false);
+      }
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowExportMenu(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [showExportMenu]);
 
   const handleExportMock = useCallback(async (format: ExportFormat) => {
     if (!publicMockRef.current || !guideline) return;
@@ -351,7 +370,7 @@ export const PublicBrandGuideline: React.FC = () => {
             </div>
 
             {/* Format selector + export */}
-            <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-1">
+            <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-1 scrollbar-none [-webkit-mask-image:linear-gradient(to_right,transparent_0,black_16px,black_calc(100%-40px),transparent)]">
               {PREVIEW_MOCKS.map(m => (
                 <button
                   key={m.id}
@@ -369,7 +388,7 @@ export const PublicBrandGuideline: React.FC = () => {
               ))}
 
               {/* Export dropdown */}
-              <div className="ml-auto relative">
+              <div ref={exportMenuRef} className="ml-auto relative">
                 <button
                   type="button"
                   onClick={() => setShowExportMenu(v => !v)}

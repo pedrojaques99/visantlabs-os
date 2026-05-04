@@ -5,19 +5,10 @@ import { FileText, FileJson, FileCode, Braces, Brain } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { downloadBlob } from '@/components/brand/brand-shared-config';
 
 interface GuidelineExportBarProps {
   guideline: BrandGuideline;
-}
-
-function downloadBlob(content: string, filename: string, type: string) {
-  const blob = new Blob([content], { type });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 function guidelineToMarkdown(g: BrandGuideline): string {
