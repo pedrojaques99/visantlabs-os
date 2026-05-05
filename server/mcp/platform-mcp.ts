@@ -534,6 +534,56 @@ export function createPlatformMcpServer(): McpServer {
     }
   );
 
+  // ═══════════════════════════════════════════
+  // AI Image Generation (simple, no brand/layout overhead)
+  // ═══════════════════════════════════════════
+  server.tool(
+    'ai-generate-image',
+    'Generate an AI image from a text prompt. Simple and direct — no brand injection, no layout plans, no project saving. Just prompt → image. Ideal for concept exploration, moodboards, visual references, and creative brainstorming. Costs credits based on model and resolution.',
+    {
+      prompt: z.string().min(1).describe('Image description. Be specific about style, composition, colors, lighting, and mood.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('Image model. gpt-image-2=best quality, gemini=fast/creative, seedream=photorealistic.'),
+      aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('Output aspect ratio.'),
+      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Output resolution. Higher = more credits.'),
+      referenceImages: z.array(z.string()).optional().describe('Reference image URLs to guide style/composition.'),
+      seed: z.number().int().optional().describe('Random seed for reproducible generation (model-dependent).'),
+    },
+    async ({ prompt, model, aspectRatio, resolution, referenceImages, seed }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({
+            promptText: prompt,
+            model,
+            aspectRatio,
+            resolution,
+            designType: 'blank',
+            referenceImages,
+            seed,
+            feature: 'agent',
+          }),
+        });
+        const result = await response.json() as any;
+        if (!response.ok) return ERR.internal(result.error || `Image generation failed (${response.status})`);
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({
+          imageUrl: result.imageUrl || null,
+          model,
+          aspectRatio,
+          resolution,
+          seed: result.seed ?? seed ?? null,
+          creditsUsed: result.creditsUsed ?? null,
+          _meta: quota,
+        });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
   server.tool(
     'mockup-generate',
     'Generate a mockup image using AI. Brand context (colors, typography, logos, voice) is auto-injected when brandGuidelineId is provided — never describe the logo in the prompt. Costs credits based on model and resolution.',
