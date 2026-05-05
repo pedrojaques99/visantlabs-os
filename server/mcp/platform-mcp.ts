@@ -975,7 +975,7 @@ export function createPlatformMcpServer(): McpServer {
   // ═══════════════════════════════════════════
 
   server.tool(
-    'document-extract',
+    'image-extract-url',
     'Extract high-resolution images from any public URL (Behance, Pinterest, Dribbble, portfolios, blogs). Returns a list of image URLs with metadata. Supports lazy-loaded images, srcset, and background images.',
     {
       url: z.string().url().describe('The public URL to extract images from (e.g. Behance gallery, portfolio page).'),
