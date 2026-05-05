@@ -45,3 +45,4 @@ export { generateBrandGrid } from './brandGrid';
 export { generateSocialFrames } from './socialFrames';
 export { importLogoCandidates } from './brandImport';
 export { exportWithBleed } from './exportBleed';
+export { exportTextToMarkdown } from './exportText';

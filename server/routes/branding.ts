@@ -5,6 +5,7 @@ import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
 import * as brandingService from '../services/brandingService.js';
+import * as brandingServiceV2 from '../services/brandingServiceV2.js';
 import type { BrandingData } from '../../src/types/branding.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
@@ -351,6 +352,66 @@ router.post('/generate-step', mockupRateLimiter, authenticate, checkSubscription
         inputTokens = archetypesResponse.inputTokens;
         outputTokens = archetypesResponse.outputTokens;
         break;
+      // ═══ Metodologia Visant v2 — Steps 101-110 ═══
+      case 101: { // Mensagem Central & Pilares
+        const r = await brandingServiceV2.generateCentralMessageAndPillars(prompt);
+        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
+        break;
+      }
+      case 102: { // Pesquisa de Mercado (3 camadas)
+        if (!previousData?.centralMessage) return res.status(400).json({ error: 'Step 101 (Mensagem Central) is required' });
+        const r = await brandingServiceV2.generateMarketResearchV2(prompt, previousData);
+        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
+        break;
+      }
+      case 103: { // Persona Visant
+        if (!previousData?.centralMessage || !previousData?.marketResearchV2) return res.status(400).json({ error: 'Steps 101-102 are required' });
+        const r = await brandingServiceV2.generatePersonaV2(prompt, previousData);
+        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
+        break;
+      }
+      case 104: { // Arquétipos & Tom de Voz
+        if (!previousData?.centralMessage || !previousData?.personaV2) return res.status(400).json({ error: 'Steps 101-103 are required' });
+        const r = await brandingServiceV2.generateArchetypesAndTone(prompt, previousData);
+        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
+        break;
+      }
+      case 105: { // Manifesto & Slogan
+        if (!previousData?.centralMessage || !previousData?.archetypesV2) return res.status(400).json({ error: 'Steps 101-104 are required' });
+        const r = await brandingServiceV2.generateManifesto(prompt, previousData);
+        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
+        break;
+      }
+      case 106: { // SWOT
+        if (!previousData?.centralMessage || !previousData?.marketResearchV2) return res.status(400).json({ error: 'Steps 101-102 are required' });
+        const r = await brandingServiceV2.generateSWOTV2(prompt, previousData);
+        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
+        break;
+      }
+      case 107: { // Paleta Cromática (cores nomeadas)
+        if (!previousData?.centralMessage || !previousData?.manifesto || !previousData?.archetypesV2) return res.status(400).json({ error: 'Steps 101-105 are required' });
+        const r = await brandingServiceV2.generateColorPaletteV2(prompt, previousData);
+        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
+        break;
+      }
+      case 108: { // Par Tipográfico
+        if (!previousData?.centralMessage || !previousData?.archetypesV2) return res.status(400).json({ error: 'Steps 101-104 are required' });
+        const r = await brandingServiceV2.generateTypography(prompt, previousData);
+        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
+        break;
+      }
+      case 109: { // Sistema Gráfico
+        if (!previousData?.manifesto || !previousData?.colorPaletteV2 || !previousData?.typography) return res.status(400).json({ error: 'Steps 105, 107, 108 are required' });
+        const r = await brandingServiceV2.generateGraphicSystem(prompt, previousData);
+        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
+        break;
+      }
+      case 110: { // Conceito de Logo
+        if (!previousData?.centralMessage || !previousData?.colorPaletteV2 || !previousData?.typography || !previousData?.archetypesV2 || !previousData?.manifesto) return res.status(400).json({ error: 'Steps 101-108 are required' });
+        const r = await brandingServiceV2.generateLogoConcept(prompt, previousData);
+        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
+        break;
+      }
       default:
         return res.status(400).json({ error: 'Invalid step number' });
     }

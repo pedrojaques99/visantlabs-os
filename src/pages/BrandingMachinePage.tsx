@@ -15,6 +15,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { migrateMarketResearch } from '@/utils/brandingHelpers';
 import type { BrandingData } from '../types/types';
+import { isVisantV2 } from '../types/branding';
 import { SEO } from '../components/SEO';
 import { SoftwareApplicationSchema } from '../components/StructuredData';
 
@@ -49,7 +50,9 @@ export const BrandingMachinePage: React.FC = () => {
   const [isExpertChatOpen, setIsExpertChatOpen] = useState(false);
   const loadedProjectIdRef = useRef<string | null>(null);
 
-  const STEPS = [
+  const [useVisantV2, setUseVisantV2] = useState(true);
+
+  const STEPS_LEGACY = [
     { id: 1, title: t('branding.steps.mercadoNicho') },
     { id: 2, title: t('branding.steps.publicoAlvo') },
     { id: 3, title: t('branding.steps.posicionamento') },
@@ -64,6 +67,21 @@ export const BrandingMachinePage: React.FC = () => {
     { id: 12, title: t('branding.steps.moodboard') },
     { id: 13, title: t('branding.steps.archetypes') },
   ];
+
+  const STEPS_V2 = [
+    { id: 101, title: t('branding.steps.centralMessage'), phase: 1 },
+    { id: 102, title: t('branding.steps.marketResearchV2'), phase: 1 },
+    { id: 103, title: t('branding.steps.personaV2'), phase: 1 },
+    { id: 104, title: t('branding.steps.archetypesTone'), phase: 1 },
+    { id: 105, title: t('branding.steps.manifesto'), phase: 1 },
+    { id: 106, title: t('branding.steps.swotV2'), phase: 1 },
+    { id: 107, title: t('branding.steps.colorPaletteV2'), phase: 2 },
+    { id: 108, title: t('branding.steps.typography'), phase: 2 },
+    { id: 109, title: t('branding.steps.graphicSystem'), phase: 2 },
+    { id: 110, title: t('branding.steps.logoConcept'), phase: 2 },
+  ];
+
+  const STEPS = useVisantV2 ? STEPS_V2 : STEPS_LEGACY;
 
   // Redirect to waitlist if user doesn't have premium access
   // Note: Admin users (including free admins) have access via usePremiumAccess hook
@@ -109,7 +127,7 @@ export const BrandingMachinePage: React.FC = () => {
         migratedData.name = project.name;
       }
       setBrandingData(migratedData);
-      // Go directly to moodboard view
+      setUseVisantV2(isVisantV2(migratedData));
       setCurrentStep(10);
       toast.success(t('branding.projectLoaded') || 'Project loaded successfully');
     } catch (error: any) {
@@ -174,6 +192,18 @@ export const BrandingMachinePage: React.FC = () => {
         if (!brandingData.insights && !brandingData.marketResearch) missing.push(4);
         break;
       // Steps 11 and 12 don't have strict dependencies
+
+      // ═══ Metodologia Visant v2 ═══
+      case 101: break; // No deps
+      case 102: if (!brandingData.centralMessage) missing.push(101); break;
+      case 103: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.marketResearchV2) missing.push(102); break;
+      case 104: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.marketResearchV2) missing.push(102); if (!brandingData.personaV2) missing.push(103); break;
+      case 105: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.archetypesV2) missing.push(104); break;
+      case 106: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.marketResearchV2) missing.push(102); if (!brandingData.personaV2) missing.push(103); break;
+      case 107: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.manifesto) missing.push(105); break;
+      case 108: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.archetypesV2) missing.push(104); break;
+      case 109: if (!brandingData.manifesto) missing.push(105); if (!brandingData.colorPaletteV2) missing.push(107); if (!brandingData.typography) missing.push(108); break;
+      case 110: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.colorPaletteV2) missing.push(107); if (!brandingData.typography) missing.push(108); break;
     }
 
     return missing;
@@ -347,6 +377,41 @@ export const BrandingMachinePage: React.FC = () => {
         case 13:
           updatedData.archetypes = data;
           break;
+
+        // ═══ Metodologia Visant v2 ═══
+        case 101:
+          updatedData.centralMessage = data.centralMessage;
+          updatedData.pillars = data.pillars;
+          updatedData.version = 'v2';
+          break;
+        case 102:
+          updatedData.marketResearchV2 = data;
+          break;
+        case 103:
+          updatedData.personaV2 = data;
+          break;
+        case 104:
+          updatedData.archetypesV2 = data.archetypes;
+          updatedData.toneOfVoice = data.toneOfVoice;
+          break;
+        case 105:
+          updatedData.manifesto = data;
+          break;
+        case 106:
+          updatedData.swot = data;
+          break;
+        case 107:
+          updatedData.colorPaletteV2 = data;
+          break;
+        case 108:
+          updatedData.typography = data;
+          break;
+        case 109:
+          updatedData.graphicSystem = data;
+          break;
+        case 110:
+          updatedData.logoConcept = data;
+          break;
       }
 
       setBrandingData(updatedData);
@@ -488,9 +553,8 @@ export const BrandingMachinePage: React.FC = () => {
       return;
     }
 
-    setBrandingData({ prompt });
-    await generateStep(1, true);
-    // Go directly to moodboard after step 1 is generated
+    setBrandingData({ prompt, ...(useVisantV2 ? { version: 'v2' as const } : {}) });
+    await generateStep(useVisantV2 ? 101 : 1, true);
     setCurrentStep(10);
   };
 
@@ -522,6 +586,28 @@ export const BrandingMachinePage: React.FC = () => {
         return brandingData.moodboard;
       case 13:
         return brandingData.archetypes;
+
+      // ═══ Metodologia Visant v2 ═══
+      case 101:
+        return brandingData.centralMessage ? { centralMessage: brandingData.centralMessage, pillars: brandingData.pillars } : null;
+      case 102:
+        return brandingData.marketResearchV2;
+      case 103:
+        return brandingData.personaV2;
+      case 104:
+        return brandingData.archetypesV2 ? { archetypes: brandingData.archetypesV2, toneOfVoice: brandingData.toneOfVoice } : null;
+      case 105:
+        return brandingData.manifesto;
+      case 106:
+        return brandingData.swot;
+      case 107:
+        return brandingData.colorPaletteV2;
+      case 108:
+        return brandingData.typography;
+      case 109:
+        return brandingData.graphicSystem;
+      case 110:
+        return brandingData.logoConcept;
       default:
         return null;
     }

@@ -55,6 +55,7 @@ const ROUTE: Record<OpName, Channel> = {
   'dev.varyColors':         'figma',
   'dev.selectionToSlices':  'figma',
   'dev.multiplyResponsive': 'figma',
+  'export.textToMarkdown':  'figma',
 
   // http (server)
   'ai.chat':       'http',

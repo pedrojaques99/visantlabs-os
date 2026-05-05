@@ -534,6 +534,56 @@ export function createPlatformMcpServer(): McpServer {
     }
   );
 
+  // ═══════════════════════════════════════════
+  // AI Image Generation (simple, no brand/layout overhead)
+  // ═══════════════════════════════════════════
+  server.tool(
+    'ai-generate-image',
+    'Generate an AI image from a text prompt. Simple and direct — no brand injection, no layout plans, no project saving. Just prompt → image. Ideal for concept exploration, moodboards, visual references, and creative brainstorming. Costs credits based on model and resolution.',
+    {
+      prompt: z.string().min(1).describe('Image description. Be specific about style, composition, colors, lighting, and mood.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('Image model. gpt-image-2=best quality, gemini=fast/creative, seedream=photorealistic.'),
+      aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('Output aspect ratio.'),
+      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Output resolution. Higher = more credits.'),
+      referenceImages: z.array(z.string()).optional().describe('Reference image URLs to guide style/composition.'),
+      seed: z.number().int().optional().describe('Random seed for reproducible generation (model-dependent).'),
+    },
+    async ({ prompt, model, aspectRatio, resolution, referenceImages, seed }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({
+            promptText: prompt,
+            model,
+            aspectRatio,
+            resolution,
+            designType: 'blank',
+            referenceImages,
+            seed,
+            feature: 'agent',
+          }),
+        });
+        const result = await response.json() as any;
+        if (!response.ok) return ERR.internal(result.error || `Image generation failed (${response.status})`);
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({
+          imageUrl: result.imageUrl || null,
+          model,
+          aspectRatio,
+          resolution,
+          seed: result.seed ?? seed ?? null,
+          creditsUsed: result.creditsUsed ?? null,
+          _meta: quota,
+        });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
   server.tool(
     'mockup-generate',
     'Generate a mockup image using AI. Brand context (colors, typography, logos, voice) is auto-injected when brandGuidelineId is provided — never describe the logo in the prompt. Costs credits based on model and resolution.',
@@ -643,18 +693,63 @@ export function createPlatformMcpServer(): McpServer {
     'Generate brand identity elements from a text prompt. Use step="full" for complete generation or target a specific step for iterative refinement. Costs credits.',
     {
       prompt: z.string().min(1).describe('Brand brief (e.g. "modern tech startup called Acme, targets developers, dark aesthetic").'),
-      step: z.enum(['full', 'market-research', 'swot', 'persona', 'archetype', 'concept-ideas', 'color-palettes', 'moodboard']).default('full').describe('Generation step. "full" runs the complete pipeline. Other values target a specific step for iterative refinement.'),
+      step: z.enum([
+        'full', 'market-research', 'swot', 'persona', 'archetype', 'concept-ideas', 'color-palettes', 'moodboard',
+        'visant-full', 'visant-central-message', 'visant-market-research', 'visant-persona', 'visant-archetypes-tone',
+        'visant-manifesto', 'visant-swot', 'visant-color-palette', 'visant-typography', 'visant-graphic-system', 'visant-logo-concept',
+      ]).default('full').describe('Generation step. "full" runs the legacy pipeline. "visant-full" runs the complete Metodologia Visant pipeline (10 steps). Use "visant-*" steps for the new methodology.'),
       previousData: z.record(z.string(), z.unknown()).optional().describe('Output from a previous step to use as context for the next step. Pass the result of the previous branding-generate call here.'),
       brandGuidelineId: z.string().optional().describe('Existing brand guideline ID to use as context/reference.'),
     },
     async ({ prompt, step, previousData, brandGuidelineId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
+
+      const visantStepMap: Record<string, number> = {
+        'visant-central-message': 101, 'visant-market-research': 102, 'visant-persona': 103,
+        'visant-archetypes-tone': 104, 'visant-manifesto': 105, 'visant-swot': 106,
+        'visant-color-palette': 107, 'visant-typography': 108, 'visant-graphic-system': 109, 'visant-logo-concept': 110,
+      };
+
+      const isVisantFull = step === 'visant-full';
+      const visantSteps = isVisantFull ? [101, 102, 103, 104, 105, 106, 107, 108, 109, 110] : [];
+
       try {
+        if (isVisantFull) {
+          let accumulatedData: any = previousData || {};
+          const results: any[] = [];
+          for (const stepNum of visantSteps) {
+            const response = await fetch(`${INTERNAL_API_BASE}/api/branding/generate-step`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+              body: JSON.stringify({ prompt, step: stepNum, previousData: accumulatedData, feature: 'agent' }),
+            });
+            const result = await response.json() as any;
+            if (!response.ok) return ERR.internal(result.error || `Visant step ${stepNum} failed`);
+            // Accumulate data for cascading context
+            if (result.data) {
+              if (stepNum === 101) { accumulatedData.centralMessage = result.data.centralMessage; accumulatedData.pillars = result.data.pillars; accumulatedData.version = 'v2'; }
+              else if (stepNum === 102) accumulatedData.marketResearchV2 = result.data;
+              else if (stepNum === 103) accumulatedData.personaV2 = result.data;
+              else if (stepNum === 104) { accumulatedData.archetypesV2 = result.data.archetypes; accumulatedData.toneOfVoice = result.data.toneOfVoice; }
+              else if (stepNum === 105) accumulatedData.manifesto = result.data;
+              else if (stepNum === 106) accumulatedData.swot = result.data;
+              else if (stepNum === 107) accumulatedData.colorPaletteV2 = result.data;
+              else if (stepNum === 108) accumulatedData.typography = result.data;
+              else if (stepNum === 109) accumulatedData.graphicSystem = result.data;
+              else if (stepNum === 110) accumulatedData.logoConcept = result.data;
+            }
+            results.push({ step: stepNum, data: result.data });
+          }
+          const quota = await getQuotaMeta(currentUserId);
+          return jsonResponse({ brandingData: accumulatedData, steps: results, _meta: quota });
+        }
+
+        const resolvedStep = visantStepMap[step] || step;
         const response = await fetch(`${INTERNAL_API_BASE}/api/branding/generate-step`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-          body: JSON.stringify({ prompt, step, previousData, brandGuidelineId, feature: 'agent' }),
+          body: JSON.stringify({ prompt, step: resolvedStep, previousData, brandGuidelineId, feature: 'agent' }),
         });
         const result = await response.json() as any;
         if (!response.ok) return ERR.internal(result.error || `Branding generation failed (${response.status})`);
@@ -869,6 +964,41 @@ export function createPlatformMcpServer(): McpServer {
         const result = await describeImage(imageInput as any, userApiKey);
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ description: result.description, title: result.title, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Image Extraction
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'document-extract',
+    'Extract high-resolution images from any public URL (Behance, Pinterest, Dribbble, portfolios, blogs). Returns a list of image URLs with metadata. Supports lazy-loaded images, srcset, and background images.',
+    {
+      url: z.string().url().describe('The public URL to extract images from (e.g. Behance gallery, portfolio page).'),
+      limit: z.number().min(1).max(200).default(80).describe('Maximum number of images to return (default 80).'),
+    },
+    async ({ url, limit }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      const scopeErr = requireScope('read');
+      if (scopeErr) return mcpError('FORBIDDEN', scopeErr);
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/images/extract-url`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-mcp-user-id': currentUserId,
+          },
+          body: JSON.stringify({ url, limit }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || 'Extraction failed');
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
         return ERR.internal(err.message);
       }

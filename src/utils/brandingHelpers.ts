@@ -66,6 +66,27 @@ export const getStepContent = (stepNumber: number, data: BrandingData) => {
       return data.moodboard;
     case 13:
       return data.archetypes;
+    // Visant v2 steps
+    case 101:
+      return data.centralMessage ? { centralMessage: data.centralMessage, pillars: data.pillars } : null;
+    case 102:
+      return data.marketResearchV2;
+    case 103:
+      return data.personaV2;
+    case 104:
+      return data.archetypesV2 ? { archetypes: data.archetypesV2, toneOfVoice: data.toneOfVoice } : null;
+    case 105:
+      return data.manifesto;
+    case 106:
+      return data.swot;
+    case 107:
+      return data.colorPaletteV2;
+    case 108:
+      return data.typography;
+    case 109:
+      return data.graphicSystem;
+    case 110:
+      return data.logoConcept;
     default:
       return null;
   }
@@ -95,6 +116,17 @@ export const getSectionEmoji = (stepNumber: number): string => {
     case 11: return '💡'; // Mockup Ideas
     case 12: return '🖼️'; // Moodboard
     case 13: return '🎭'; // Arquétipos
+    // Visant v2
+    case 101: return '🎯';
+    case 102: return '📊';
+    case 103: return '👤';
+    case 104: return '🎭';
+    case 105: return '📜';
+    case 106: return '⚖️';
+    case 107: return '🎨';
+    case 108: return '✏️';
+    case 109: return '🔷';
+    case 110: return '💎';
     default: return '📝';
   }
 };
@@ -105,8 +137,12 @@ export const getSectionColSpan = (stepNumber: number): string => {
     return 'md:col-span-2';
   }
   // SWOT gets full width
-  if (stepNumber === 7) {
+  if (stepNumber === 7 || stepNumber === 106) {
     return 'md:col-span-3';
+  }
+  // V2 wider sections
+  if ([101, 102, 103, 104, 105, 107, 108, 109, 110].includes(stepNumber)) {
+    return 'md:col-span-2';
   }
   return '';
 };
@@ -135,6 +171,17 @@ export const getStepDependencies = (stepNumber: number): number[] => {
     case 11: // Mockup Ideas - no dependencies
     case 12: // Moodboard - no dependencies
       return [];
+    // Visant v2 dependencies
+    case 101: return [];
+    case 102: return [101];
+    case 103: return [101, 102];
+    case 104: return [101, 102, 103];
+    case 105: return [101, 102, 103, 104];
+    case 106: return [101, 102, 103];
+    case 107: return [101, 102, 103, 104, 105];
+    case 108: return [101, 102, 103, 104, 105];
+    case 109: return [105, 107, 108];
+    case 110: return [101, 102, 103, 104, 105, 107, 108];
     default:
       return [];
   }
