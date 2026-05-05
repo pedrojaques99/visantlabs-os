@@ -48,6 +48,7 @@ plugin/.firecrawl/
 .github/skills/
 .github/memory/
 skills/
+!cli/skills/
 src/skills/.data/
 
 # Figma plugin dev files (generated with ngrok URL)

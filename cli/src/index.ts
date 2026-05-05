@@ -5,6 +5,7 @@ import { loginCommand } from './commands/login.js'
 import { logoutCommand } from './commands/logout.js'
 import { whoamiCommand } from './commands/whoami.js'
 import { mcpSetupCommand, mcpStatusCommand } from './commands/mcp.js'
+import { skillsInstallCommand, skillsListCommand } from './commands/skills.js'
 
 function printBanner() {
   console.log()
@@ -64,5 +65,21 @@ program
   .description('Atalho: configura MCP no projeto atual (= visant mcp setup --project)')
   .option('--global', 'Aplicar globalmente')
   .action((opts) => mcpSetupCommand({ project: !opts.global, ...opts }))
+
+const skills = program.command('skills').description('Gerenciar skills Visant Labs para Claude Code')
+
+skills
+  .command('install')
+  .description('Instalar todas as skills no ~/.claude/skills/')
+  .option('--force', 'Sobrescrever skills existentes')
+  .action((opts) => skillsInstallCommand(opts))
+
+skills
+  .command('list')
+  .description('Listar skills disponíveis e status')
+  .action(() => skillsListCommand())
+
+// Default: visant skills (sem subcomando) = install
+skills.action(() => skillsInstallCommand({}))
 
 program.parse()
