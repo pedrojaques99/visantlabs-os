@@ -55,6 +55,26 @@ const getAI = (apiKey?: string): GoogleGenAI => {
   return ai;
 };
 
+/**
+ * Lightweight text completion for pre-pass classification.
+ * Uses Flash Lite for minimal cost (~0.01 credits).
+ */
+export const quickTextCall = async (
+  systemPrompt: string,
+  userPrompt: string,
+  apiKey?: string,
+): Promise<string> => {
+  const response = await getAI(apiKey).models.generateContent({
+    model: GEMINI_MODELS.FLASH_3_LITE,
+    contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
+    config: {
+      responseMimeType: 'application/json',
+      maxOutputTokens: 256,
+    },
+  });
+  return (response.text || '').trim();
+};
+
 export class RateLimitError extends Error {
   constructor(message: string) {
     super(message);

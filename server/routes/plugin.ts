@@ -18,10 +18,35 @@ import {
   getPromptMode,
   buildDesignSystemContext,
   buildRetryFeedback,
+  refineIntentWithLLM,
   type PluginRequest,
   type DesignSystemJSON,
   type AssembledPrompt,
 } from '../lib/figmaAgentPrompt.js';
+import { quickTextCall } from '../services/geminiService.js';
+
+// ── Session error feedback (in-memory, auto-expires) ──
+const sessionErrors = new Map<string, { errors: string[]; ts: number }>();
+const SESSION_ERROR_TTL = 5 * 60 * 1000; // 5 min
+
+function getSessionErrors(sessionId?: string): string[] {
+  if (!sessionId) return [];
+  const entry = sessionErrors.get(sessionId);
+  if (!entry || Date.now() - entry.ts > SESSION_ERROR_TTL) {
+    sessionErrors.delete(sessionId);
+    return [];
+  }
+  return entry.errors;
+}
+
+function pushSessionErrors(sessionId: string | undefined, errors: string[]) {
+  if (!sessionId || !errors.length) return;
+  const existing = getSessionErrors(sessionId);
+  sessionErrors.set(sessionId, {
+    errors: [...existing, ...errors].slice(-10),
+    ts: Date.now(),
+  });
+}
 
 // Rate limiter for agent commands (strict - 20 req/min)
 const agentCommandLimiter = rateLimit({
@@ -758,6 +783,9 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       ? '\n' + buildEnforcedPrompt(tokenRegistry) + '\n'
       : '';
 
+    // Collect session errors for feedback loop
+    const previousErrors = getSessionErrors(sessionId);
+
     // Build prompt (always V2 for streaming)
     const assembled = buildSystemPromptV2(
       {
@@ -768,7 +796,30 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
         brandGuideline: brandGuideline || undefined, thinkMode,
       },
       '', // chat history handled separately
+      previousErrors.length > 0 ? previousErrors : undefined,
     );
+
+    // LLM pre-pass: refine intent when keyword confidence < 0.65
+    if (assembled.intent.confidence < 0.65 && selectedElements.length > 0) {
+      try {
+        const selectionNames = selectedElements.slice(0, 5).map((n: any) => n.name || n.type || 'unknown');
+        const enrichedIntent = await refineIntentWithLLM(
+          assembled.intent,
+          command,
+          selectionNames,
+          (sys, usr) => quickTextCall(sys, usr),
+        );
+        if (enrichedIntent.llmRefined) {
+          console.log(`[Plugin] LLM pre-pass refined intent: ${assembled.intent.intent} → ${enrichedIntent.intent} (confidence ${assembled.intent.confidence.toFixed(2)} → ${enrichedIntent.confidence.toFixed(2)})`);
+          // If intent changed to clone and we have a source frame, inject clone-first hint
+          if (enrichedIntent.intent === 'clone' && enrichedIntent.sourceFrame) {
+            assembled.intent = enrichedIntent;
+          }
+        }
+      } catch (e) {
+        console.warn('[Plugin] LLM pre-pass failed, using keyword intent:', e);
+      }
+    }
 
     let systemPrompt = assembled.system;
 
@@ -833,6 +884,16 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
 
     const validation = operationValidator.validateBatch(operations);
     const validOps = validation.valid;
+
+    // Capture validation errors for session feedback loop
+    if (validation.invalid.length > 0) {
+      const errorMsgs = validation.invalid.map((op: any) => {
+        const result = operationValidator.validate(op);
+        return `${op.type}: ${result.errors?.join(', ') || 'invalid'}`;
+      });
+      pushSessionErrors(sessionId, errorMsgs);
+      console.log(`[Plugin] ${errorMsgs.length} operation errors captured for session feedback`);
+    }
 
     // Stream operations
     send('operations', validOps);
@@ -1084,6 +1145,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     let systemPrompt: string;
     let promptMeta: AssembledPrompt | undefined;
 
+    const prevErrors = getSessionErrors(sessionId);
+
     if (promptMode === 'v2') {
       // AI-First: Dynamic intent-based prompt assembly (~70% fewer tokens)
       const assembled = buildSystemPromptV2(
@@ -1106,6 +1169,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           thinkMode,
         },
         chatHistory,
+        prevErrors.length > 0 ? prevErrors : undefined,
       );
       systemPrompt = assembled.system;
       promptMeta = assembled;
@@ -1331,6 +1395,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       validation.invalid.forEach(({ op, errors }) => {
         console.warn(`  ✗ ${op.type}: ${errors.join(', ')}`);
       });
+      // Capture for session feedback loop
+      pushSessionErrors(sessionId, validation.invalid.map(({ op, errors }) => `${op.type}: ${errors.join(', ')}`));
     }
 
     const validOps = validation.valid;
