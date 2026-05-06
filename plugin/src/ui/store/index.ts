@@ -76,6 +76,7 @@ export const usePluginStore = create<PluginStore>()(
     activeView: 'main',
     activeTab: 'brand',
     openPanel: null,
+    devMode: false,
     toastMessage: undefined,
     toastType: undefined,
 
@@ -241,7 +242,10 @@ export const usePluginStore = create<PluginStore>()(
       set((state) => { state.exportedImage = data; }),
 
     setIsGenerating: (generating) =>
-      set((state) => { state.isGenerating = generating; })
+      set((state) => { state.isGenerating = generating; }),
+
+    toggleDevMode: () =>
+      set((state) => { state.devMode = !state.devMode; })
   }))
 );
 
@@ -249,9 +253,11 @@ export const usePluginStore = create<PluginStore>()(
 
 const CHAT_STORAGE_KEY = 'chatHistory';
 let persistTimer: ReturnType<typeof setTimeout> | null = null;
-let _client: { request: (op: string, params: any) => Promise<any> } | null = null;
+type RpcClient = { request: (op: any, params: any) => Promise<any> };
 
-export function setChatPersistClient(client: { request: (op: string, params: any) => Promise<any> }) {
+let _client: RpcClient | null = null;
+
+export function setChatPersistClient(client: RpcClient) {
   _client = client;
 }
 
@@ -265,7 +271,7 @@ function scheduleChatPersist() {
   }, 1500);
 }
 
-export async function loadChatHistory(client: { request: (op: string, params: any) => Promise<any> }) {
+export async function loadChatHistory(client: RpcClient) {
   try {
     const { value } = await client.request('storage.get', { key: CHAT_STORAGE_KEY });
     if (value) {

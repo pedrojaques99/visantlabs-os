@@ -212,7 +212,7 @@ export function useFigmaMessages() {
         case 'COMPONENT_THUMBNAIL': {
           if (msg.componentId && msg.thumbnail) {
             usePluginStore.setState(state => {
-              const thumbs = { ...state.componentThumbs, [msg.componentId]: msg.thumbnail };
+              const thumbs: Record<string, string> = { ...state.componentThumbs, [msg.componentId]: msg.thumbnail };
               const keys = Object.keys(thumbs);
               if (keys.length > 50) {
                 for (const k of keys.slice(0, keys.length - 50)) delete thumbs[k];

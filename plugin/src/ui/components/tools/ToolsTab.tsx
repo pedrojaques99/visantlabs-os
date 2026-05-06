@@ -3,12 +3,12 @@ import { BrandSection } from '../brand/BrandSection';
 import { ExportSection } from './ExportSection';
 import { AutomationSection } from './AutomationSection';
 import { IntelligenceSection } from './IntelligenceSection';
-import { DevRunnerSection } from './DevRunnerSection';
 import { FontSwapSection } from './FontSwapSection';
+import { LintingSection } from './LintingSection';
 import {
   Cpu,
   Download,
-  Terminal,
+  ShieldCheck,
   Type,
   Zap
 } from 'lucide-react';
@@ -18,7 +18,7 @@ export function ToolsTab() {
     { id: 'intelligence', title: 'Intelligence', icon: Cpu, component: IntelligenceSection, badge: 'AI', defaultOpen: true },
     { id: 'fontswap', title: 'Font Swap', icon: Type, component: FontSwapSection, badge: 'TXT', defaultOpen: true },
     { id: 'automation', title: 'Automation', icon: Zap, component: AutomationSection, badge: 'AUTO', defaultOpen: true },
-    { id: 'dev', title: 'Dev Operations', icon: Terminal, component: DevRunnerSection, badge: 'DEV', defaultOpen: true },
+    { id: 'audit', title: 'Brand Audit', icon: ShieldCheck, component: LintingSection, defaultOpen: false },
     { id: 'export', title: 'Export & Layout', icon: Download, component: ExportSection, defaultOpen: false },
   ];
 
@@ -28,10 +28,10 @@ export function ToolsTab() {
         {sections.map((s) => {
           const Component = s.component;
           return (
-            <BrandSection 
-              key={s.id} 
-              title={s.title} 
-              icon={s.icon} 
+            <BrandSection
+              key={s.id}
+              title={s.title}
+              icon={s.icon}
               badge={s.badge}
               collapsible
               defaultOpen={s.defaultOpen}
@@ -44,4 +44,3 @@ export function ToolsTab() {
     </div>
   );
 }
-

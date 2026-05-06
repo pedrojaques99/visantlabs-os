@@ -33,7 +33,7 @@ function unescapeName(escaped: string): string {
 const COMPLETED_MENTION_RE = /^@"(?:[^"\\]|\\.)*"\[\w+:[\w:;/]+\]/;
 
 export function useMentions(
-  inputRef: React.RefObject<HTMLTextAreaElement>,
+  inputRef: React.RefObject<HTMLTextAreaElement | null>,
   onContentChange?: (value: string) => void
 ) {
   const [isOpen, setIsOpen] = useState(false);

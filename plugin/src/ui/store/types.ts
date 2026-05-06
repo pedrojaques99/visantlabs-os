@@ -168,6 +168,7 @@ export interface PluginStore {
   activeView: 'main' | 'settings';
   activeTab: 'brand' | 'config' | 'dev';
   openPanel: string | null;
+  devMode: boolean;
   toastMessage?: string;
   toastType?: 'success' | 'error' | 'info' | 'warning';
 
@@ -203,4 +204,5 @@ export interface PluginStore {
   setExtractSyncData: (data: any) => void;
   setExportedImage: (data: any) => void;
   setIsGenerating: (generating: boolean) => void;
+  toggleDevMode: () => void;
 }

@@ -1027,7 +1027,8 @@ export type UIMessage =
   | { type: 'ILLUSTRATOR_EXPORT' }
   | { type: 'COPY_ILLUSTRATOR_CODE' }
   | { type: 'IMPORT_SELECTION_COMPONENTS' }
-  | { type: 'GET_SELECTION_FILL' };
+  | { type: 'GET_SELECTION_FILL' }
+  | { type: 'GET_COMPONENT_THUMBNAILS'; componentIds?: string[] };
 
 // ── Sandbox → UI messages ──
 
