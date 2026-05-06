@@ -4,7 +4,7 @@ import { useMentions } from '../../hooks/useMentions';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Send, Paperclip, Zap, Scan, X } from 'lucide-react';
+import { Send, Paperclip, Zap, Scan, Image, X } from 'lucide-react';
 import { MentionsDropdown } from './MentionsDropdown';
 import type { Attachment } from '../../store/types';
 
@@ -62,6 +62,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
     setUseBrand,
     scanPage,
     setScanPage,
+    generateImage,
     pendingAttachments,
     brandGuideline,
     isGenerating
@@ -189,6 +190,15 @@ export function ChatInput({ onSend }: ChatInputProps) {
          >
            <Scan size={10} />
            SCAN
+         </Button>
+
+         <Button
+           variant={generateImage ? "default" : "secondary"}
+           onClick={() => usePluginStore.setState({ generateImage: !generateImage })}
+           className={`h-6 px-2.5 text-[10px] font-mono items-center gap-1 shrink-0 ${generateImage ? 'bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 border border-brand-cyan/30' : ''}`}
+         >
+           <Image size={10} />
+           IMAGE
          </Button>
       </div>
 

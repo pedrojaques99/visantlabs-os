@@ -1,6 +1,10 @@
 import React, { useState, useMemo, type ReactNode } from 'react';
-import { Braces, Check, Copy, Loader2, CircleCheck, CircleX, ChevronDown, ChevronUp, Undo2, RefreshCw, Clock } from 'lucide-react';
-import type { ChatMessage, SummaryItem, ToolCallRecord } from '../../store/types';
+import { Braces, Check, Copy, ChevronDown, ChevronUp, Undo2, RefreshCw, Clock, CircleCheck } from 'lucide-react';
+import type { ChatMessage, SummaryItem } from '../../store/types';
+import { copyToClipboard } from '@/utils/clipboard';
+import { relativeTime } from '@/utils/time';
+import { renderMarkdownBlocks } from '@/utils/markdownRenderer';
+import { ToolCallCard } from '@/components/shared/chat/ToolCallCard';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -21,21 +25,6 @@ function formatNum(n: number | undefined): string {
   return n.toLocaleString();
 }
 
-function relativeTime(ts: number): string {
-  const diff = Math.floor((Date.now() - ts) / 1000);
-  if (diff < 10) return 'just now';
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return new Date(ts).toLocaleDateString();
-}
-
-function formatDuration(start?: string, end?: string): string | null {
-  if (!start || !end) return null;
-  const ms = new Date(end).getTime() - new Date(start).getTime();
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-}
 
 function focusNodeInFigma(nodeId: string) {
   parent.postMessage({ pluginMessage: { type: 'FOCUS_NODE', nodeId } }, 'https://www.figma.com');
@@ -52,82 +41,9 @@ function buildNodeMap(items?: SummaryItem[]): Map<string, string> {
 
 const AT_REF_REGEX = /@"([^"]+)"/g;
 
-// Lightweight markdown renderer — bold, italic, inline code, code blocks, links, lists
-function renderMarkdown(text: string): ReactNode[] {
-  const blocks = text.split(/\n\n+/);
-  const elements: ReactNode[] = [];
-
-  for (let bi = 0; bi < blocks.length; bi++) {
-    const block = blocks[bi];
-
-    // Code block
-    if (block.startsWith('```')) {
-      const lines = block.split('\n');
-      const code = lines.slice(1, lines[lines.length - 1] === '```' ? -1 : undefined).join('\n');
-      elements.push(
-        <pre key={bi} className="mt-1.5 mb-1 p-2 rounded bg-background/60 border border-border/40 text-[10px] font-redhatmono overflow-x-auto whitespace-pre-wrap">
-          {code}
-        </pre>
-      );
-      continue;
-    }
-
-    // List items
-    if (/^[\s]*[-*•]\s/.test(block) || /^[\s]*\d+\.\s/.test(block)) {
-      const items = block.split('\n').filter(l => l.trim());
-      elements.push(
-        <ul key={bi} className="mt-1 mb-1 pl-3 space-y-0.5">
-          {items.map((item, ii) => (
-            <li key={ii} className="text-sm list-disc list-inside">
-              {renderInline(item.replace(/^[\s]*[-*•]\s*/, '').replace(/^[\s]*\d+\.\s*/, ''))}
-            </li>
-          ))}
-        </ul>
-      );
-      continue;
-    }
-
-    // Regular paragraph
-    const lines = block.split('\n');
-    elements.push(
-      <p key={bi} className="whitespace-pre-wrap break-words">
-        {lines.map((line, li) => (
-          <React.Fragment key={li}>
-            {li > 0 && <br />}
-            {renderInline(line)}
-          </React.Fragment>
-        ))}
-      </p>
-    );
-  }
-
-  return elements;
-}
-
-function renderInline(text: string): ReactNode[] {
-  const parts: ReactNode[] = [];
-  // Match: **bold**, *italic*, `code`, [text](url)
-  const regex = /(\*\*(.+?)\*\*)|(\*(.+?)\*)|(`([^`]+)`)|(\[([^\]]+)\]\(([^)]+)\))/g;
-  let lastIdx = 0;
-  let match: RegExpExecArray | null;
-  let key = 0;
-
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIdx) parts.push(text.slice(lastIdx, match.index));
-    if (match[2]) parts.push(<strong key={key++} className="font-semibold">{match[2]}</strong>);
-    else if (match[4]) parts.push(<em key={key++}>{match[4]}</em>);
-    else if (match[6]) parts.push(<code key={key++} className="px-1 py-0.5 rounded bg-background/60 border border-border/30 text-[10px] font-redhatmono">{match[6]}</code>);
-    else if (match[8] && match[9]) parts.push(<a key={key++} href={match[9]} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:underline">{match[8]}</a>);
-    lastIdx = match.index + match[0].length;
-  }
-
-  if (lastIdx < text.length) parts.push(text.slice(lastIdx));
-  return parts;
-}
-
 function renderContentWithLinks(content: string, nodeMap: Map<string, string>, useMarkdown: boolean): ReactNode[] {
   if (nodeMap.size === 0 && !useMarkdown) return [content];
-  if (nodeMap.size === 0 && useMarkdown) return renderMarkdown(content);
+  if (nodeMap.size === 0 && useMarkdown) return renderMarkdownBlocks(content);
 
   // First pass: replace @"refs" with placeholders, then render markdown
   const parts: ReactNode[] = [];
@@ -137,7 +53,7 @@ function renderContentWithLinks(content: string, nodeMap: Map<string, string>, u
   while ((match = AT_REF_REGEX.exec(content)) !== null) {
     if (match.index > lastIndex) {
       const chunk = content.slice(lastIndex, match.index);
-      if (useMarkdown) parts.push(...renderMarkdown(chunk));
+      if (useMarkdown) parts.push(...renderMarkdownBlocks(chunk));
       else parts.push(chunk);
     }
     const name = match[1];
@@ -161,42 +77,12 @@ function renderContentWithLinks(content: string, nodeMap: Map<string, string>, u
   }
   if (lastIndex < content.length) {
     const remaining = content.slice(lastIndex);
-    if (useMarkdown) parts.push(...renderMarkdown(remaining));
+    if (useMarkdown) parts.push(...renderMarkdownBlocks(remaining));
     else parts.push(remaining);
   }
   return parts;
 }
 
-function ToolCallCardItem({ tc }: { tc: ToolCallRecord }) {
-  const [expanded, setExpanded] = useState(false);
-  const duration = formatDuration(tc.startedAt, tc.endedAt);
-  const statusColor = tc.status === 'running' ? 'text-brand-cyan' : tc.status === 'done' ? 'text-green-500' : 'text-destructive';
-  const friendlyName = tc.name.replace(/_/g, ' ');
-
-  return (
-    <div className="rounded border border-border/40 bg-background/30 overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setExpanded(v => !v)}
-        className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[10px] hover:bg-muted/30 transition-colors"
-      >
-        {tc.status === 'running' && <Loader2 size={10} className="animate-spin shrink-0 text-brand-cyan" />}
-        {tc.status === 'done' && <CircleCheck size={10} className="text-green-500 shrink-0" />}
-        {tc.status === 'error' && <CircleX size={10} className="text-destructive shrink-0" />}
-        <span className={`font-redhatmono ${statusColor}`}>{friendlyName}</span>
-        {duration && <span className="text-muted-foreground/50 ml-auto font-redhatmono">{duration}</span>}
-        <ChevronDown size={8} className={`shrink-0 text-muted-foreground/40 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-      </button>
-      {expanded && (
-        <div className="px-2 pb-1.5 text-[9px] text-muted-foreground/70 border-t border-border/30 space-y-0.5">
-          {tc.args && <p className="font-redhatmono break-all">{typeof tc.args === 'string' ? tc.args : JSON.stringify(tc.args)}</p>}
-          {tc.summary && <p>{tc.summary}</p>}
-          {tc.errorMessage && <p className="text-destructive">{tc.errorMessage}</p>}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbleProps) {
   const isUser = message.role === 'user';
@@ -209,30 +95,19 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
   const visibleOps = showAllOps ? ops : ops.slice(0, OPS_PREVIEW_LIMIT);
   const hiddenCount = ops.length - OPS_PREVIEW_LIMIT;
 
-  const copyText = (text: string) => {
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).catch(() => {});
-    } else {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-    }
+  const handleCopy = (text: string) => {
+    copyToClipboard(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 1200);
   };
 
-  const copy = () => copyText(json);
+  const copy = () => handleCopy(json);
 
   const usage = message.metadata?.usage;
   const outTokens = usage?.output_tokens ?? usage?.outputTokens;
   const inTokens = usage?.input_tokens ?? usage?.inputTokens;
 
-  const copyContent = () => copyText(message.content);
+  const copyContent = () => handleCopy(message.content);
 
   const bubbleClass = isUser
     ? 'bg-brand-cyan text-black'
@@ -308,7 +183,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
         {message.toolCalls && message.toolCalls.length > 0 && (
           <div className="mt-2 flex flex-col gap-1">
             {message.toolCalls.map((tc) => (
-              <ToolCallCardItem key={tc.id} tc={tc} />
+              <ToolCallCard key={tc.id} tc={tc} />
             ))}
           </div>
         )}

@@ -7,7 +7,7 @@ import type {
   ColorVariable,
   FontVariable
 } from '@/lib/figma-types';
-import type { ToolCallRecord } from '../../../../shared/types/chat';
+import type { ToolCallRecord } from '@shared/types/chat';
 
 export interface SelectionDetail {
   id: string;
@@ -131,6 +131,7 @@ export interface PluginStore {
   thinkMode: boolean;
   useBrand: boolean;
   scanPage: boolean;
+  generateImage: boolean;
   mode: 'simple' | 'advanced';
 
   // Server

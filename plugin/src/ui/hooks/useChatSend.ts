@@ -78,6 +78,7 @@ export function useChatSend() {
           thinkMode: store.thinkMode,
           useBrand: store.useBrand,
           scanPage: store.scanPage,
+          generateImage: store.generateImage,
           attachments: serverAttachments,
           model: store.selectedModel,
           brandFonts,

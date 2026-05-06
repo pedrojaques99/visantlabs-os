@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { PluginStore, ChatMessage, SelectionDetail, ColorEntry, Component, DesignTokens } from './types';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
 
 export const usePluginStore = create<PluginStore>()(
   immer((set) => ({
@@ -33,6 +34,7 @@ export const usePluginStore = create<PluginStore>()(
     thinkMode: false,
     useBrand: true,
     scanPage: false,
+    generateImage: false,
     mode: 'simple',
 
     // Server
@@ -72,7 +74,7 @@ export const usePluginStore = create<PluginStore>()(
     // Image Generation
     selectedFrameSize: 'fullscreen',
     selectedResolution: '1x',
-    selectedModel: 'gemini-2.5-flash',
+    selectedModel: GEMINI_MODELS.FLASH_2_5,
 
     // UI State
     activeView: 'main',

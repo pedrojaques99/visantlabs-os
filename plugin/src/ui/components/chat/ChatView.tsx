@@ -1,25 +1,17 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { usePluginStore } from '../../store';
 import { useChatSend } from '../../hooks/useChatSend';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { TypingIndicator } from './TypingIndicator';
 import { Layers, Trash2, MessageSquare } from 'lucide-react';
+import { useAutoScrollToBottom } from '@/hooks/chat/useAutoScrollToBottom';
 
 export function ChatView() {
   const { chatHistory, selectionDetails, clearChatHistory } = usePluginStore();
   const { sendMessage } = useChatSend();
-  const scrollRef = useRef<HTMLDivElement>(null);
   const isGenerating = usePluginStore(s => s.isGenerating);
-
-  useEffect(() => {
-    // Auto-scroll to bottom
-    if (scrollRef.current) {
-      setTimeout(() => {
-        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-      }, 50);
-    }
-  }, [chatHistory]);
+  const scrollAnchorRef = useAutoScrollToBottom([chatHistory, isGenerating]);
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -34,7 +26,7 @@ export function ChatView() {
           </button>
         </div>
       )}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {chatHistory.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center max-w-xs space-y-4">
@@ -61,6 +53,7 @@ export function ChatView() {
           <>
             <MessageList messages={chatHistory} />
             {isGenerating && <TypingIndicator />}
+            <div ref={scrollAnchorRef} />
           </>
         )}
       </div>
