@@ -165,6 +165,7 @@ export interface PluginStore {
   extractSyncData: any | null;
   exportedImage: any | null;
   isGenerating: boolean;
+  isStreaming: boolean;
 
   // Internal: increments each time the brand state is hydrated from server.
   // Used by useBrandAutoSync to suppress echo writes.
@@ -211,5 +212,6 @@ export interface PluginStore {
   setExtractSyncData: (data: any) => void;
   setExportedImage: (data: any) => void;
   setIsGenerating: (generating: boolean) => void;
+  setIsStreaming: (streaming: boolean) => void;
   toggleDevMode: () => void;
 }

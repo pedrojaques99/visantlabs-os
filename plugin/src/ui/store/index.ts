@@ -63,6 +63,7 @@ export const usePluginStore = create<PluginStore>()(
     extractSyncData: null,
     exportedImage: null,
     isGenerating: false,
+    isStreaming: false,
 
     brandHydrationTick: 0,
     brandHydrationAtMs: 0,
@@ -243,6 +244,9 @@ export const usePluginStore = create<PluginStore>()(
 
     setIsGenerating: (generating) =>
       set((state) => { state.isGenerating = generating; }),
+
+    setIsStreaming: (streaming) =>
+      set((state) => { state.isStreaming = streaming; }),
 
     toggleDevMode: () =>
       set((state) => { state.devMode = !state.devMode; })
