@@ -478,7 +478,7 @@ export function useFigmaMessages() {
                           const data = JSON.parse(line.slice(6));
                           switch (currentEvent) {
                             case 'thinking':
-                              storeState.showToast(data.message || 'Thinking...', 'info');
+                              usePluginStore.getState().setGeneratingStatus(data.message || 'Thinking...');
                               break;
                             case 'tool_start':
                               streamToolCalls.push({
@@ -670,9 +670,17 @@ export function useFigmaMessages() {
             }
           } catch (err) {
             console.error('API call failed:', err);
-            storeState.showToast(`API error: ${(err as Error).message}`, 'error');
+            const errorMsg = (err as Error).message;
+            storeState.addChatMessage({
+              id: `msg-err-${Date.now()}`,
+              role: 'assistant' as const,
+              content: `⚠ ${errorMsg}`,
+              timestamp: Date.now(),
+              isError: true,
+            });
           } finally {
             storeState.setIsGenerating(false);
+            usePluginStore.getState().setGeneratingStatus('');
           }
           break;
         }

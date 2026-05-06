@@ -63,7 +63,8 @@ export function ChatInput({ onSend }: ChatInputProps) {
     scanPage,
     setScanPage,
     pendingAttachments,
-    brandGuideline
+    brandGuideline,
+    isGenerating
   } = usePluginStore();
 
   const mentions = useMentions(textareaRef, setContent);
@@ -260,7 +261,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
             onClick={handleSend}
             size="icon"
             className="h-8 w-8 bg-brand-cyan text-black hover:bg-brand-cyan/90 shadow-[0_0_15px_rgba(0,255,255,0.2)]"
-            disabled={!content.trim()}
+            disabled={!content.trim() || isGenerating}
           >
             <Send size={16} />
           </Button>

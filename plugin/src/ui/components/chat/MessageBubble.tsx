@@ -1,5 +1,5 @@
 import React, { useState, useMemo, type ReactNode } from 'react';
-import { Braces, Check, Copy, Loader2, CircleCheck, CircleX, ChevronDown, ChevronUp, Undo2, RefreshCw } from 'lucide-react';
+import { Braces, Check, Copy, Loader2, CircleCheck, CircleX, ChevronDown, ChevronUp, Undo2, RefreshCw, Clock } from 'lucide-react';
 import type { ChatMessage, SummaryItem, ToolCallRecord } from '../../store/types';
 
 interface MessageBubbleProps {
@@ -21,6 +21,22 @@ function formatNum(n: number | undefined): string {
   return n.toLocaleString();
 }
 
+function relativeTime(ts: number): string {
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 10) return 'just now';
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return new Date(ts).toLocaleDateString();
+}
+
+function formatDuration(start?: string, end?: string): string | null {
+  if (!start || !end) return null;
+  const ms = new Date(end).getTime() - new Date(start).getTime();
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(1)}s`;
+}
+
 function focusNodeInFigma(nodeId: string) {
   parent.postMessage({ pluginMessage: { type: 'FOCUS_NODE', nodeId } }, 'https://www.figma.com');
 }
@@ -29,24 +45,100 @@ function buildNodeMap(items?: SummaryItem[]): Map<string, string> {
   const map = new Map<string, string>();
   if (!items) return map;
   for (const item of items) {
-    if (item.nodeId && item.nodeName) {
-      map.set(item.nodeName, item.nodeId);
-    }
+    if (item.nodeId && item.nodeName) map.set(item.nodeName, item.nodeId);
   }
   return map;
 }
 
 const AT_REF_REGEX = /@"([^"]+)"/g;
 
-function renderContentWithLinks(content: string, nodeMap: Map<string, string>): ReactNode[] {
-  if (nodeMap.size === 0) return [content];
+// Lightweight markdown renderer — bold, italic, inline code, code blocks, links, lists
+function renderMarkdown(text: string): ReactNode[] {
+  const blocks = text.split(/\n\n+/);
+  const elements: ReactNode[] = [];
+
+  for (let bi = 0; bi < blocks.length; bi++) {
+    const block = blocks[bi];
+
+    // Code block
+    if (block.startsWith('```')) {
+      const lines = block.split('\n');
+      const code = lines.slice(1, lines[lines.length - 1] === '```' ? -1 : undefined).join('\n');
+      elements.push(
+        <pre key={bi} className="mt-1.5 mb-1 p-2 rounded bg-background/60 border border-border/40 text-[10px] font-redhatmono overflow-x-auto whitespace-pre-wrap">
+          {code}
+        </pre>
+      );
+      continue;
+    }
+
+    // List items
+    if (/^[\s]*[-*•]\s/.test(block) || /^[\s]*\d+\.\s/.test(block)) {
+      const items = block.split('\n').filter(l => l.trim());
+      elements.push(
+        <ul key={bi} className="mt-1 mb-1 pl-3 space-y-0.5">
+          {items.map((item, ii) => (
+            <li key={ii} className="text-sm list-disc list-inside">
+              {renderInline(item.replace(/^[\s]*[-*•]\s*/, '').replace(/^[\s]*\d+\.\s*/, ''))}
+            </li>
+          ))}
+        </ul>
+      );
+      continue;
+    }
+
+    // Regular paragraph
+    const lines = block.split('\n');
+    elements.push(
+      <p key={bi} className="whitespace-pre-wrap break-words">
+        {lines.map((line, li) => (
+          <React.Fragment key={li}>
+            {li > 0 && <br />}
+            {renderInline(line)}
+          </React.Fragment>
+        ))}
+      </p>
+    );
+  }
+
+  return elements;
+}
+
+function renderInline(text: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  // Match: **bold**, *italic*, `code`, [text](url)
+  const regex = /(\*\*(.+?)\*\*)|(\*(.+?)\*)|(`([^`]+)`)|(\[([^\]]+)\]\(([^)]+)\))/g;
+  let lastIdx = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIdx) parts.push(text.slice(lastIdx, match.index));
+    if (match[2]) parts.push(<strong key={key++} className="font-semibold">{match[2]}</strong>);
+    else if (match[4]) parts.push(<em key={key++}>{match[4]}</em>);
+    else if (match[6]) parts.push(<code key={key++} className="px-1 py-0.5 rounded bg-background/60 border border-border/30 text-[10px] font-redhatmono">{match[6]}</code>);
+    else if (match[8] && match[9]) parts.push(<a key={key++} href={match[9]} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:underline">{match[8]}</a>);
+    lastIdx = match.index + match[0].length;
+  }
+
+  if (lastIdx < text.length) parts.push(text.slice(lastIdx));
+  return parts;
+}
+
+function renderContentWithLinks(content: string, nodeMap: Map<string, string>, useMarkdown: boolean): ReactNode[] {
+  if (nodeMap.size === 0 && !useMarkdown) return [content];
+  if (nodeMap.size === 0 && useMarkdown) return renderMarkdown(content);
+
+  // First pass: replace @"refs" with placeholders, then render markdown
   const parts: ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   AT_REF_REGEX.lastIndex = 0;
   while ((match = AT_REF_REGEX.exec(content)) !== null) {
     if (match.index > lastIndex) {
-      parts.push(content.slice(lastIndex, match.index));
+      const chunk = content.slice(lastIndex, match.index);
+      if (useMarkdown) parts.push(...renderMarkdown(chunk));
+      else parts.push(chunk);
     }
     const name = match[1];
     const nodeId = nodeMap.get(name);
@@ -68,13 +160,47 @@ function renderContentWithLinks(content: string, nodeMap: Map<string, string>): 
     lastIndex = AT_REF_REGEX.lastIndex;
   }
   if (lastIndex < content.length) {
-    parts.push(content.slice(lastIndex));
+    const remaining = content.slice(lastIndex);
+    if (useMarkdown) parts.push(...renderMarkdown(remaining));
+    else parts.push(remaining);
   }
   return parts;
 }
 
+function ToolCallCardItem({ tc }: { tc: ToolCallRecord }) {
+  const [expanded, setExpanded] = useState(false);
+  const duration = formatDuration(tc.startedAt, tc.endedAt);
+  const statusColor = tc.status === 'running' ? 'text-brand-cyan' : tc.status === 'done' ? 'text-green-500' : 'text-destructive';
+  const friendlyName = tc.name.replace(/_/g, ' ');
+
+  return (
+    <div className="rounded border border-border/40 bg-background/30 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setExpanded(v => !v)}
+        className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[10px] hover:bg-muted/30 transition-colors"
+      >
+        {tc.status === 'running' && <Loader2 size={10} className="animate-spin shrink-0 text-brand-cyan" />}
+        {tc.status === 'done' && <CircleCheck size={10} className="text-green-500 shrink-0" />}
+        {tc.status === 'error' && <CircleX size={10} className="text-destructive shrink-0" />}
+        <span className={`font-redhatmono ${statusColor}`}>{friendlyName}</span>
+        {duration && <span className="text-muted-foreground/50 ml-auto font-redhatmono">{duration}</span>}
+        <ChevronDown size={8} className={`shrink-0 text-muted-foreground/40 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+      </button>
+      {expanded && (
+        <div className="px-2 pb-1.5 text-[9px] text-muted-foreground/70 border-t border-border/30 space-y-0.5">
+          {tc.args && <p className="font-redhatmono break-all">{typeof tc.args === 'string' ? tc.args : JSON.stringify(tc.args)}</p>}
+          {tc.summary && <p>{tc.summary}</p>}
+          {tc.errorMessage && <p className="text-destructive">{tc.errorMessage}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbleProps) {
   const isUser = message.role === 'user';
+  const isError = message.isError;
   const [showAllOps, setShowAllOps] = useState(false);
   const [showJson, setShowJson] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -108,13 +234,15 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
 
   const copyContent = () => copyText(message.content);
 
+  const bubbleClass = isUser
+    ? 'bg-brand-cyan text-black'
+    : isError
+      ? 'bg-destructive/10 border border-destructive/30 text-destructive'
+      : 'bg-card border border-border text-foreground';
+
   return (
-    <div className={`group/bubble flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div
-        className={`relative max-w-xs px-3 py-2 rounded-lg text-sm select-text ${
-          isUser ? 'bg-brand-cyan text-black' : 'bg-card border border-border text-foreground'
-        }`}
-      >
+    <div className={`group/bubble flex ${isUser ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-1 duration-200`}>
+      <div className={`relative max-w-xs px-3 py-2 rounded-lg text-sm select-text ${bubbleClass}`}>
         <div className={`absolute -top-2 ${isUser ? '-left-2' : '-right-2'} flex items-center gap-0.5 opacity-0 group-hover/bubble:opacity-100 transition-opacity`}>
           {!isUser && ops.length > 0 && onUndo && (
             <button
@@ -154,9 +282,10 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
           </div>
         )}
 
-        <p className="whitespace-pre-wrap break-words">
-          {useMemo(() => renderContentWithLinks(message.content, buildNodeMap(message.summaryItems)), [message.content, message.summaryItems])}
-        </p>
+        {/* Content: markdown for assistant, plain for user */}
+        <div className="space-y-1">
+          {useMemo(() => renderContentWithLinks(message.content, buildNodeMap(message.summaryItems), !isUser), [message.content, message.summaryItems, isUser])}
+        </div>
 
         {message.attachments && message.attachments.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -175,18 +304,11 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
           </div>
         )}
 
-        {/* Tool calls */}
+        {/* Tool calls — expandable cards */}
         {message.toolCalls && message.toolCalls.length > 0 && (
-          <div className="mt-2 flex flex-col gap-0.5">
+          <div className="mt-2 flex flex-col gap-1">
             {message.toolCalls.map((tc) => (
-              <div key={tc.id} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                {tc.status === 'running' && <Loader2 size={10} className="animate-spin shrink-0" />}
-                {tc.status === 'done'    && <CircleCheck size={10} className="text-green-500 shrink-0" />}
-                {tc.status === 'error'  && <CircleX size={10} className="text-destructive shrink-0" />}
-                <span className="font-mono">{tc.name}</span>
-                {tc.summary && <span className="opacity-70">— {tc.summary}</span>}
-                {tc.errorMessage && <span className="text-destructive">{tc.errorMessage}</span>}
-              </div>
+              <ToolCallCardItem key={tc.id} tc={tc} />
             ))}
           </div>
         )}
@@ -266,6 +388,14 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
               )}
               <span className="text-border">tok</span>
             </div>
+          </div>
+        )}
+
+        {/* Timestamp */}
+        {message.timestamp && (
+          <div className="mt-1 text-[9px] text-muted-foreground/40 flex items-center gap-0.5">
+            <Clock size={7} />
+            {relativeTime(message.timestamp)}
           </div>
         )}
 

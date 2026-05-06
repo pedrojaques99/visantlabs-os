@@ -4,7 +4,7 @@ import { useChatSend } from '../../hooks/useChatSend';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { TypingIndicator } from './TypingIndicator';
-import { Layers, Trash2 } from 'lucide-react';
+import { Layers, Trash2, MessageSquare } from 'lucide-react';
 
 export function ChatView() {
   const { chatHistory, selectionDetails, clearChatHistory } = usePluginStore();
@@ -37,10 +37,24 @@ export function ChatView() {
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
         {chatHistory.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center max-w-xs space-y-3">
+            <div className="text-center max-w-xs space-y-4">
+              <div className="mx-auto w-10 h-10 rounded-xl bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center">
+                <MessageSquare size={20} className="text-brand-cyan" />
+              </div>
               <p className="text-sm text-muted-foreground">
                 Descreva o que deseja criar e o Visant Copilot irá gerar designs no Figma.
               </p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {['Gerar mockup de cartão de visita', 'Criar post para Instagram', 'Design de embalagem', 'Banner para site'].map((prompt) => (
+                  <button
+                    key={prompt}
+                    onClick={() => sendMessage(prompt)}
+                    className="text-[11px] px-2.5 py-1.5 rounded-full border border-border bg-card hover:bg-muted hover:border-brand-cyan/30 text-muted-foreground hover:text-foreground transition-all"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (

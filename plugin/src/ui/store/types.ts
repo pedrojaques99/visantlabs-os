@@ -103,6 +103,7 @@ export interface ChatMessage {
   thinking?: string;
   metadata?: Record<string, any>;
   toolCalls?: ToolCallRecord[];
+  isError?: boolean;
 }
 
 export type { ToolCallRecord };
@@ -166,6 +167,7 @@ export interface PluginStore {
   exportedImage: any | null;
   isGenerating: boolean;
   isStreaming: boolean;
+  generatingStatus: string;
 
   // Internal: increments each time the brand state is hydrated from server.
   // Used by useBrandAutoSync to suppress echo writes.
@@ -213,5 +215,6 @@ export interface PluginStore {
   setExportedImage: (data: any) => void;
   setIsGenerating: (generating: boolean) => void;
   setIsStreaming: (streaming: boolean) => void;
+  setGeneratingStatus: (status: string) => void;
   toggleDevMode: () => void;
 }
