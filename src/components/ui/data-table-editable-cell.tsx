@@ -25,11 +25,11 @@ export const DataTableEditableCell = <TData,>({
     placeholder
 }: EditableCellProps<TData>) => {
     const { t } = useTranslation();
-    const [value, setValue] = useState<any>(initialValue !== undefined ? initialValue : row.original[field]);
+    const [value, setValue] = useState<any>(initialValue !== undefined ? initialValue : (row.original as any)[field]);
     const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
-        setValue(row.original[field]);
+        setValue((row.original as any)[field]);
     }, [row.original, field]);
 
     const onBlur = () => {

@@ -150,7 +150,7 @@ export class PersistentShaderRenderer {
     }
 
     // Compile and link program
-    program = createProgram(this.gl, VERTEX_SHADER_SOURCE, fragmentShaderSource);
+    program = createProgram(this.gl, VERTEX_SHADER_SOURCE, fragmentShaderSource) ?? undefined;
     if (!program) {
       throw new Error('Failed to create shader program');
     }
@@ -699,8 +699,8 @@ export async function applyShaderEffect(
 ): Promise<string> {
   // Load source image
   let image: HTMLImageElement | HTMLCanvasElement;
-  let imageWidth: number;
-  let imageHeight: number;
+  let imageWidth = 0;
+  let imageHeight = 0;
   let sourceKey: string;
 
   if (typeof imageInput === 'string') {

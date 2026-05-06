@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Send, Paperclip, Zap, Scan, Image, X } from 'lucide-react';
 import { MentionsDropdown } from './MentionsDropdown';
+import { ModelSelector } from '@/components/shared/ModelSelector';
 import type { Attachment } from '../../store/types';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -65,7 +66,8 @@ export function ChatInput({ onSend }: ChatInputProps) {
     generateImage,
     pendingAttachments,
     brandGuideline,
-    isGenerating
+    isGenerating,
+    selectedModel
   } = usePluginStore();
 
   const mentions = useMentions(textareaRef, setContent);
@@ -161,8 +163,14 @@ export function ChatInput({ onSend }: ChatInputProps) {
       onDragLeave={handleDragLeave}
       className={`border-t border-border bg-card p-3 space-y-2 transition-colors ${isDragging ? 'bg-brand-cyan/5 border-brand-cyan/40' : ''}`}
     >
-      {/* Control Pills */}
+      {/* Model + Control Pills */}
       <div className="flex gap-2 flex-wrap items-center">
+        <ModelSelector
+          selectedModel={selectedModel}
+          onModelChange={(model) => usePluginStore.setState({ selectedModel: model })}
+          type={generateImage ? 'image' : 'chat'}
+          className="!bg-transparent border-white/5 hover:border-white/10 !px-2 !py-0.5 h-auto text-xs opacity-70 hover:opacity-100 transition-opacity"
+        />
         <Button
           variant={thinkMode ? "default" : "secondary"}
           onClick={() => setThinkMode(!thinkMode)}

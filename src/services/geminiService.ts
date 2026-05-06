@@ -130,8 +130,8 @@ const withRetry = async <T>(
     model = GEMINI_MODELS.FLASH
   } = options;
 
-  const effectiveMaxRetries = maxRetries ?? DEFAULT_RETRIES[model] ?? 5;
-  const effectiveTimeout = timeout ?? DEFAULT_TIMEOUTS[model] ?? 120000;
+  const effectiveMaxRetries = maxRetries ?? (DEFAULT_RETRIES as Record<string, number>)[model] ?? 5;
+  const effectiveTimeout = timeout ?? (DEFAULT_TIMEOUTS as Record<string, number>)[model] ?? 120000;
 
   let attempt = 0;
   const startTime = Date.now();
@@ -318,7 +318,7 @@ export const generateMockup = async (
 
     let textResponse = '';
     for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
+      if (part.inlineData?.data) {
         return part.inlineData.data;
       }
       if (part.text) {
@@ -373,7 +373,7 @@ export const suggestCategories = async (
       },
     });
 
-    const suggestionsText = response.text.trim();
+    const suggestionsText = (response.text ?? '').trim();
 
     // Extract usage metadata
     const usageMetadata = (response as any).usageMetadata;
@@ -491,7 +491,7 @@ Retorne em formato JSON JSON:
     const inputTokens = usageMetadata?.promptTokenCount;
     const outputTokens = usageMetadata?.candidatesTokenCount;
 
-    const jsonString = response.text.trim();
+    const jsonString = (response.text ?? '').trim();
     if (!jsonString) {
       return {
         branding: [],
@@ -614,7 +614,7 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
     const inputTokens = usageMetadata?.promptTokenCount;
     const outputTokens = usageMetadata?.candidatesTokenCount;
 
-    const prompt = response.text.trim();
+    const prompt = (response.text ?? '').trim();
 
     // Return object with prompt and tokens for tracking
     return {
@@ -680,7 +680,7 @@ export const generateMergePrompt = async (images: UploadedImage[]): Promise<Gene
     const outputTokens = usageMetadata?.candidatesTokenCount;
 
     return {
-      prompt: response.text.trim(),
+      prompt: (response.text ?? '').trim(),
       inputTokens,
       outputTokens,
     };
@@ -724,7 +724,7 @@ Retorne APENAS o texto melhorado, sem explicações.`;
     const inputTokens = usageMetadata?.promptTokenCount;
     const outputTokens = usageMetadata?.candidatesTokenCount;
 
-    const improvedPrompt = response.text.trim();
+    const improvedPrompt = (response.text ?? '').trim();
     if (!improvedPrompt) {
       throw new Error('Nenhum prompt melhorado foi gerado na resposta.');
     }
@@ -785,7 +785,7 @@ export const suggestPromptVariations = async (basePrompt: string, apiKey?: strin
     const inputTokens = usageMetadata?.promptTokenCount;
     const outputTokens = usageMetadata?.candidatesTokenCount;
 
-    const jsonString = response.text.trim();
+    const jsonString = (response.text ?? '').trim();
     if (!jsonString) return { variations: [], inputTokens, outputTokens };
 
     try {
@@ -843,7 +843,7 @@ export const changeObjectInMockup = async (
     });
 
     for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
+      if (part.inlineData?.data) {
         return part.inlineData.data;
       }
     }
@@ -895,7 +895,7 @@ export const applyThemeToMockup = async (
     });
 
     for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
+      if (part.inlineData?.data) {
         return part.inlineData.data;
       }
     }
@@ -939,7 +939,7 @@ export const describeImage = async (
         mimeType = 'image/png';
       }
     } else {
-      imageBase64 = image.base64;
+      imageBase64 = image.base64 ?? '';
       mimeType = image.mimeType;
     }
 
@@ -984,7 +984,7 @@ Retorne em formato JSON:
     const inputTokens = usageMetadata?.promptTokenCount;
     const outputTokens = usageMetadata?.candidatesTokenCount;
 
-    const jsonString = response.text.trim();
+    const jsonString = (response.text ?? '').trim();
     if (!jsonString) {
       throw new Error('No description was generated in the response.');
     }
@@ -1000,7 +1000,7 @@ Retorne em formato JSON:
     } catch (e) {
       console.error("Failed to parse image description JSON:", e);
       return {
-        description: response.text.trim(),
+        description: (response.text ?? '').trim(),
         inputTokens,
         outputTokens,
       };

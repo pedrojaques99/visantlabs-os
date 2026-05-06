@@ -870,7 +870,7 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       try {
         const db = getDb();
         await db.collection('plugin_sessions').updateOne(
-          { _id: sessionId },
+          { _id: sessionId } as any,
           {
             $push: {
               messages: {
