@@ -21,8 +21,9 @@ interface ChatInputProps {
   className?: string;
   disabled?: boolean;
   selectedModel?: string;
-  onModelChange?: (model: string) => void;
+  onModelChange?: (model: string, provider?: import('@/types/types').ImageProvider) => void;
   showModelSelector?: boolean;
+  modelSelectorType?: 'chat' | 'image';
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -41,6 +42,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   selectedModel,
   onModelChange,
   showModelSelector = false,
+  modelSelectorType = 'chat',
 }) => {
   const { t } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -110,6 +112,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               <ModelSelector
                 selectedModel={selectedModel!}
                 onModelChange={onModelChange!}
+                type={modelSelectorType}
                 className="!min-w-[120px]"
               />
             )}

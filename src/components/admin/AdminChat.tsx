@@ -985,6 +985,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                     selectedModel={selectedModel}
                                     onModelChange={setSelectedModel}
                                     showModelSelector={true}
+                                    modelSelectorType={textMode === 'layers' ? 'chat' : 'image'}
                                 />
                                 </div>
                             </div>
