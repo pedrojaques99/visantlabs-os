@@ -1318,6 +1318,13 @@ Return ONLY valid JSON: { "operations": [ ... ] }
 4. FRAME NAMING: Always include dimensions in frame name (e.g., "Stories 1080x1920", "Banner 300x250", "A4 21x29.7cm", "Outdoor 3x2m")
 5. CRITICAL - TOP-LEVEL FRAMES: Canvas frames (Feed, Stories, Banners) must have FIXED width/height. NEVER use layoutMode on top-level frames - it causes "Hug" sizing which breaks the design. Auto-layout is ONLY for content containers INSIDE frames.
 
+## CLONE-FIRST RULE
+When the user asks for variations, adaptations, or "more layouts like this" based on a selected frame:
+1. Use CLONE_NODE with sourceName (matching the selected frame name) to duplicate the entire frame
+2. Then use SET_TEXT_CONTENT, SET_FILL, MOVE, RESIZE to modify the cloned frame
+3. This preserves logos, images, components, and complex layers that cannot be recreated with CREATE_*
+4. Only use CREATE_* from scratch when there is no existing frame to clone
+
 ## OPERATION TYPES
 
 ### PAGE CREATION
@@ -1352,12 +1359,14 @@ IMPORTANT - FRAME vs AUTO-LAYOUT:
 - CREATE_TEXT: { type: "CREATE_TEXT", ref?, parentRef?, props: { name?, content, fontSize?, fontFamily?, fills?, textAlignHorizontal?: "LEFT"|"CENTER"|"RIGHT", layoutSizingHorizontal?: "FIXED"|"HUG"|"FILL" } }
 
 ### CLONE BY NAME (PREFERRED - more robust than ID)
-- CLONE_NODE: { type: "CLONE_NODE", ref?, sourceName: "Asset Name", parentRef?, textOverrides?: [{ name: "TextLayerName", content: "New text" }] }
+- CLONE_NODE: { type: "CLONE_NODE", ref?, sourceName: "Asset Name", parentRef?, props?: { name?, x?, y? }, textOverrides?: [{ name: "TextLayerName", content: "New text" }] }
 - Use sourceName to clone existing assets by name (no fragile IDs!)
-- Use textOverrides to replace text in cloned templates
+- Use textOverrides to replace text in cloned children by their layer name
+- After cloning, use SET_FILL/SET_TEXT_CONTENT/RESIZE/MOVE on ref to modify the clone
+- IMPORTANT: Cloning preserves ALL children (logos, images, shapes, components) — always prefer over CREATE_* when a similar frame exists
 
 ### CLONE BY ID (fallback)
-- CLONE_NODE: { type: "CLONE_NODE", ref?, sourceNodeId: "123:456", parentRef? }
+- CLONE_NODE: { type: "CLONE_NODE", ref?, sourceNodeId: "123:456", parentRef?, props?: { name?, x?, y? } }
 ${assetsSection}
 ${templatesSection}
 ${pagesSection}
