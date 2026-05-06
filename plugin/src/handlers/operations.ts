@@ -1545,7 +1545,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   else if (op.type === 'CREATE_VARIABLE') {
     if (figma.variables) {
       try {
-        const collections = (figma.variables as any).getLocalVariableCollections?.() || [];
+        const collections = await figma.variables.getLocalVariableCollectionsAsync();
         let collection = collections.find((c: any) => c.name === op.collectionName);
 
         if (!collection) {
@@ -1577,7 +1577,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
         }
 
         const collectionName = op.collectionName || 'Colors';
-        const collections = (figma.variables as any).getLocalVariableCollections?.() || [];
+        const collections = await figma.variables.getLocalVariableCollectionsAsync();
         let collection = collections.find((c: any) => c.name === collectionName);
         if (!collection) {
           collection = (figma.variables as any).createVariableCollection?.(collectionName);

@@ -276,7 +276,7 @@ function scheduleChatPersist() {
   persistTimer = setTimeout(() => {
     if (!_client) return;
     const history = usePluginStore.getState().chatHistory;
-    const toSave = history.slice(-50).map(({ id, role, content, timestamp }) => ({ id, role, content, timestamp }));
+    const toSave = history.slice(-50).map(({ id, role, content, timestamp, operations, toolCalls, summaryItems, isError }) => ({ id, role, content, timestamp, operations, toolCalls, summaryItems, isError }));
     _client.request('storage.set', { key: CHAT_STORAGE_KEY, value: JSON.stringify(toSave) }).catch(() => {});
   }, 1500);
 }

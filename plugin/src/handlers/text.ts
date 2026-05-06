@@ -7,7 +7,7 @@ function collectTextNodes(nodes: readonly SceneNode[]): TextNode[] {
   const result: TextNode[] = [];
   for (const node of nodes) {
     if (node.type === 'TEXT') result.push(node);
-    if ('children' in node) result.push(...collectTextNodes((node as FrameNode).children));
+    if ('children' in node) result.push(...collectTextNodes((node as ChildrenMixin).children));
   }
   return result;
 }

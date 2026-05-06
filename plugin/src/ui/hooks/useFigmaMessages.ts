@@ -473,10 +473,10 @@ export function useFigmaMessages() {
                     for (const line of lines) {
                       if (line.startsWith('event: ')) {
                         currentEvent = line.slice(7).trim();
-                      } else if (line.startsWith('data: ') && currentEvent) {
+                      } else if (line.startsWith('data: ')) {
                         try {
                           const data = JSON.parse(line.slice(6));
-                          switch (currentEvent) {
+                          switch (currentEvent || 'message') {
                             case 'thinking':
                               usePluginStore.getState().setGeneratingStatus(data.message || 'Thinking...');
                               break;

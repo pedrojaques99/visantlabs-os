@@ -927,7 +927,7 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
     }
 
     // Save to session
-    if (sessionId && fileId) {
+    if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
       try {
         const db = getDb();
         await db.collection('plugin_sessions').updateOne(
@@ -1093,7 +1093,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
 
     // FASE 3: Load or create session for chat memory
     let chatHistory = '';
-    if (sessionId && fileId) {
+    if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
       try {
         const db = getDb();
         const collection = db.collection<any>('plugin_sessions');
@@ -1366,7 +1366,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     });
 
     // Save to session if available (FASE 3)
-    if (sessionId && fileId) {
+    if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
       try {
         const db = getDb();
         const collection = db.collection<any>('plugin_sessions');

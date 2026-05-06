@@ -2,13 +2,14 @@ import * as p from '@clack/prompts'
 import chalk from 'chalk'
 import { existsSync, mkdirSync, cpSync, readdirSync, readFileSync } from 'fs'
 import { join, dirname } from 'path'
+import { homedir } from 'os'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const BUNDLED_SKILLS_DIR = join(__dirname, '..', 'skills')
 
 function getSkillsTarget(): string {
-  const home = process.env.HOME ?? process.env.USERPROFILE ?? '~'
+  const home = homedir()
   return join(home, '.claude', 'skills')
 }
 
