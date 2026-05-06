@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { usePluginStore } from '../../store';
 import { useMentions } from '../../hooks/useMentions';
 import { Button } from '@/components/ui/button';
@@ -8,12 +8,51 @@ import { Send, Paperclip, Zap, Scan, X } from 'lucide-react';
 import { MentionsDropdown } from './MentionsDropdown';
 import type { Attachment } from '../../store/types';
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'application/pdf'];
+
+function fileToAttachment(file: File): Promise<Attachment | null> {
+  return new Promise((resolve) => {
+    if (file.size > MAX_FILE_SIZE) {
+      usePluginStore.getState().showToast(`${file.name} exceeds 5MB limit`, 'error');
+      return resolve(null);
+    }
+    if (!ACCEPTED_TYPES.some((t) => file.type.startsWith(t.split('/')[0]) || file.type === t)) {
+      usePluginStore.getState().showToast(`${file.name}: unsupported format`, 'error');
+      return resolve(null);
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      resolve({
+        id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        name: file.name,
+        type: file.type.startsWith('image/') ? 'image' : 'file',
+        size: file.size,
+        preview: base64,
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function addFiles(files: File[]) {
+  const results = await Promise.all(files.map(fileToAttachment));
+  const valid = results.filter(Boolean) as Attachment[];
+  if (valid.length) {
+    usePluginStore.setState((s) => ({
+      pendingAttachments: [...s.pendingAttachments, ...valid],
+    }));
+  }
+}
+
 interface ChatInputProps {
   onSend: (content: string) => void;
 }
 
 export function ChatInput({ onSend }: ChatInputProps) {
   const [content, setContent] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const {
@@ -64,32 +103,47 @@ export function ChatInput({ onSend }: ChatInputProps) {
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const maxSize = 5 * 1024 * 1024; // 5MB
-
-    files.forEach((file) => {
-      if (file.size > maxSize) {
-        usePluginStore.getState().showToast(`${file.name} exceeds 5MB limit`, 'error');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64 = event.target?.result as string;
-        const attachment: Attachment = {
-          id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          name: file.name,
-          type: file.type.startsWith('image/') ? 'image' : 'file',
-          size: file.size,
-          preview: base64,
-        };
-        usePluginStore.setState((s) => ({
-          pendingAttachments: [...s.pendingAttachments, attachment],
-        }));
-      };
-      reader.readAsDataURL(file);
-    });
+    addFiles(Array.from(e.target.files || []));
     e.target.value = '';
   };
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length) addFiles(files);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.types.includes('Files')) setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragging(false);
+  }, []);
+
+  // Paste images from clipboard
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      const imageFiles: File[] = [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          const file = items[i].getAsFile();
+          if (file) imageFiles.push(file);
+        }
+      }
+      if (imageFiles.length) {
+        e.preventDefault();
+        addFiles(imageFiles);
+      }
+    };
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, []);
 
   const removeAttachment = (id: string) => {
     usePluginStore.setState((s) => ({
@@ -98,7 +152,13 @@ export function ChatInput({ onSend }: ChatInputProps) {
   };
 
   return (
-    <div ref={containerRef} className="border-t border-border bg-card p-3 space-y-2">
+    <div
+      ref={containerRef}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      className={`border-t border-border bg-card p-3 space-y-2 transition-colors ${isDragging ? 'bg-brand-cyan/5 border-brand-cyan/40' : ''}`}
+    >
       {/* Control Pills */}
       <div className="flex gap-2 flex-wrap items-center">
         <Button
