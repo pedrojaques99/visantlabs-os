@@ -598,12 +598,25 @@ router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res
     }> = [];
 
     try {
-      const prePassPrompt = `You are a Figma design assistant. The user wants: "${command}"
+      const prePassPrompt = `You are a Figma design assistant deciding which tools to use before generating design operations.
 
-If you need to search the web for references, inspiration, or information to fulfill this request, use the web_search tool.
-If you don't need any tools, just respond with "READY" and nothing else.
+Available tools:
+- generate_mockup: Generate AI images/mockups. Use when user asks to create mockups, generate images, or needs visual assets. Choose model wisely:
+  - gpt-image-2: best quality + brand fidelity (default)
+  - gemini-3.1-flash-image-preview: fast/creative explorations
+  - seedream-3-0: photorealistic lifestyle/product shots
+  Choose aspectRatio based on context: 1:1 (Instagram/square), 9:16 (story/Reels), 16:9 (landscape/billboard/cover), 4:5 (portrait feed).
+  Set designType when relevant: social-media, business-card, packaging, billboard, apparel, signage.
+- describe_image: Analyze an image by URL or base64. Use when user shares an image to recreate or reference.
+- get_brand_context: Fetch brand guideline details. Use when you need brand info not already in context.
+- web_search: Search the web for references, inspiration, or information.
 
-Only use tools if the request genuinely requires external information (e.g., "search for...", "find examples of...", "look up...").`;
+Rules:
+- If the user wants a mockup/image, ALWAYS use generate_mockup. The imageUrl in the result will be used with SET_IMAGE_FILL in the design phase.
+- If brandGuidelineId is available, pass it to generate_mockup — it auto-injects logo + colors + typography.
+- If the request doesn't need any tools, respond with just "READY".
+- You can call multiple tools if needed.
+${brandGuidelineId ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this to generate_mockup and get_brand_context.` : ''}`;
 
       const prePassResult = await chatWithLLM(command, '', [], {
         provider: 'gemini',
@@ -736,7 +749,11 @@ Only use tools if the request genuinely requires external information (e.g., "se
 
     // Inject enriched context from tool pre-pass
     if (enrichedContext) {
+      const hasImageUrl = enrichedContext.includes('"imageUrl"');
       systemPrompt += `\n\n═══ CONTEXTO ADICIONAL (pesquisa) ═══${enrichedContext}`;
+      if (hasImageUrl) {
+        systemPrompt += `\n\nIMPORTANT: An image was generated. Use SET_IMAGE_FILL with the imageUrl from the tool result above to apply it to a frame. Create a frame first with the appropriate dimensions, then fill it with the image.`;
+      }
     }
 
     const userPrompt = `═══ PEDIDO DO USUÁRIO ═══\n\n"${command}"`;

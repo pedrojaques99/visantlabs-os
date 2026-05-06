@@ -110,30 +110,40 @@ REGISTRY['generate_mockup'] = {
   scope: 'public',
   declaration: {
     name: 'generate_mockup',
-    description: 'Generate a mockup image using AI. Returns an imageUrl. Brand context is auto-injected when brandGuidelineId is provided. Costs 1 credit.',
+    description: 'Generate a mockup image using AI. Brand context (logo, colors, typography, voice) is auto-injected when brandGuidelineId is provided — never describe the logo in the prompt. Returns imageUrl to use with SET_IMAGE_FILL.',
     parameters: {
       type: 'object',
       properties: {
-        prompt: { type: 'string', description: 'Scene description. Do NOT describe the logo — it is injected from brandGuidelineId.' },
-        brandGuidelineId: { type: 'string', description: 'Brand guideline ID for auto-injecting logo, colors, typography.' },
-        aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'], description: 'Output aspect ratio.' },
-        resolution: { type: 'string', enum: ['1K', '2K'], description: 'Output resolution.' },
+        prompt: { type: 'string', description: 'Scene description. Do NOT describe the logo or font — they are injected automatically from brandGuidelineId.' },
+        brandGuidelineId: { type: 'string', description: 'Brand guideline ID. Omit to use session default. Injects logo as reference image + colors + typography + voice.' },
+        model: { type: 'string', enum: ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'], description: 'Image model. gpt-image-2=best quality+brand fidelity, gemini=fast/creative, seedream=photorealistic lifestyle.' },
+        aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'], description: '1:1=square/Instagram, 9:16=story/Reels, 16:9=landscape/cover, 4:5=portrait feed.' },
+        resolution: { type: 'string', enum: ['1K', '2K', '4K'], description: '1K=standard, 2K=high quality, 4K=print/large format. Higher = more credits.' },
+        designType: { type: 'string', description: 'Design type hint: business-card, social-media, packaging, apparel, signage, billboard, etc.' },
+        baseImageUrl: { type: 'string', description: 'Base image URL for image-to-image generation.' },
+        referenceImages: { type: 'array', items: { type: 'string' }, description: 'Extra reference image URLs to guide style. Brand logos are injected automatically.' },
+        seed: { type: 'number', description: 'Random seed for reproducible generation.' },
       },
       required: ['prompt'],
     },
   },
-  execute: async (args: { prompt: string; brandGuidelineId?: string; aspectRatio?: string; resolution?: string }, ctx) => {
-    const internalBase = INTERNAL_API_BASE;
-    const response = await fetch(`${internalBase}/api/mockups/generate`, {
+  execute: async (args: {
+    prompt: string; brandGuidelineId?: string; model?: string; aspectRatio?: string;
+    resolution?: string; designType?: string; baseImageUrl?: string; referenceImages?: string[]; seed?: number;
+  }, ctx) => {
+    const response = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': ctx.userId },
       body: JSON.stringify({
         promptText: args.prompt,
         brandGuidelineId: args.brandGuidelineId || ctx.brandGuidelineId,
-        model: 'gpt-image-2',
+        model: args.model || 'gpt-image-2',
         aspectRatio: args.aspectRatio || '1:1',
         resolution: args.resolution || '1K',
-        designType: 'blank',
+        designType: args.designType || 'blank',
+        baseImageUrl: args.baseImageUrl,
+        referenceImages: args.referenceImages,
+        seed: args.seed,
         feature: 'plugin',
       }),
     });
@@ -142,8 +152,12 @@ REGISTRY['generate_mockup'] = {
     return JSON.stringify({
       imageUrl: result.imageUrl || null,
       mockupId: result.id || result.mockup?.id || null,
-      model: 'gpt-image-2',
+      model: args.model || 'gpt-image-2',
+      provider: result.provider || null,
       aspectRatio: args.aspectRatio || '1:1',
+      resolution: args.resolution || '1K',
+      seed: result.seed ?? args.seed ?? null,
+      creditsUsed: result.creditsUsed ?? null,
     });
   },
 };
