@@ -10,6 +10,8 @@
 import { CHAT_TOOLS, executeToolCall } from '../chatToolExecutor.js';
 import { ADMIN_CHAT_TOOLS, executeAdminChatTool } from '../adminChatTools.js';
 import { prisma } from '../../db/prisma.js';
+import { describeImage } from '../geminiService.js';
+const INTERNAL_API_BASE = process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3001}`;
 
 export type ChatToolScope = 'public' | 'admin';
 
@@ -101,6 +103,69 @@ REGISTRY['get_brand_context'] = {
     if (guidelines?.donts?.length) parts.push(`Don't: ${guidelines.donts.join('; ')}`);
 
     return parts.join('\n');
+  },
+};
+
+REGISTRY['generate_mockup'] = {
+  scope: 'public',
+  declaration: {
+    name: 'generate_mockup',
+    description: 'Generate a mockup image using AI. Returns an imageUrl. Brand context is auto-injected when brandGuidelineId is provided. Costs 1 credit.',
+    parameters: {
+      type: 'object',
+      properties: {
+        prompt: { type: 'string', description: 'Scene description. Do NOT describe the logo — it is injected from brandGuidelineId.' },
+        brandGuidelineId: { type: 'string', description: 'Brand guideline ID for auto-injecting logo, colors, typography.' },
+        aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'], description: 'Output aspect ratio.' },
+        resolution: { type: 'string', enum: ['1K', '2K'], description: 'Output resolution.' },
+      },
+      required: ['prompt'],
+    },
+  },
+  execute: async (args: { prompt: string; brandGuidelineId?: string; aspectRatio?: string; resolution?: string }, ctx) => {
+    const internalBase = INTERNAL_API_BASE;
+    const response = await fetch(`${internalBase}/api/mockups/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': ctx.userId },
+      body: JSON.stringify({
+        promptText: args.prompt,
+        brandGuidelineId: args.brandGuidelineId || ctx.brandGuidelineId,
+        model: 'gpt-image-2',
+        aspectRatio: args.aspectRatio || '1:1',
+        resolution: args.resolution || '1K',
+        designType: 'blank',
+        feature: 'plugin',
+      }),
+    });
+    const result = await response.json() as any;
+    if (!response.ok) return `Mockup generation failed: ${result.error || response.status}`;
+    return JSON.stringify({
+      imageUrl: result.imageUrl || null,
+      mockupId: result.id || result.mockup?.id || null,
+      model: 'gpt-image-2',
+      aspectRatio: args.aspectRatio || '1:1',
+    });
+  },
+};
+
+REGISTRY['describe_image'] = {
+  scope: 'public',
+  declaration: {
+    name: 'describe_image',
+    description: 'Analyze an image and return a detailed description. Accepts a URL or base64 data.',
+    parameters: {
+      type: 'object',
+      properties: {
+        imageUrl: { type: 'string', description: 'URL of the image to describe.' },
+        base64: { type: 'string', description: 'Base64-encoded image data (without data: prefix).' },
+      },
+    },
+  },
+  execute: async (args: { imageUrl?: string; base64?: string }) => {
+    const input = args.imageUrl || args.base64;
+    if (!input) return 'Either imageUrl or base64 is required.';
+    const result = await describeImage(input);
+    return JSON.stringify({ title: result.title, description: result.description });
   },
 };
 
