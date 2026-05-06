@@ -86,6 +86,12 @@ export interface Attachment {
   preview?: string;
 }
 
+export interface SummaryItem {
+  text: string;
+  nodeId?: string;
+  nodeName?: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -93,6 +99,7 @@ export interface ChatMessage {
   timestamp: number;
   attachments?: Attachment[];
   operations?: FigmaOperation[];
+  summaryItems?: SummaryItem[];
   thinking?: string;
   metadata?: Record<string, any>;
   toolCalls?: ToolCallRecord[];

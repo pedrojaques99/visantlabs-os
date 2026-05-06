@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, type ReactNode } from 'react';
 import { Braces, Check, Copy, Loader2, CircleCheck, CircleX, ChevronDown, ChevronUp } from 'lucide-react';
-import type { ChatMessage, ToolCallRecord } from '../../store/types';
+import type { ChatMessage, SummaryItem, ToolCallRecord } from '../../store/types';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -16,6 +16,58 @@ function friendlyOpLabel(op: any): string {
 function formatNum(n: number | undefined): string {
   if (n == null) return '?';
   return n.toLocaleString();
+}
+
+function focusNodeInFigma(nodeId: string) {
+  parent.postMessage({ pluginMessage: { type: 'FOCUS_NODE', nodeId } }, '*');
+}
+
+function buildNodeMap(items?: SummaryItem[]): Map<string, string> {
+  const map = new Map<string, string>();
+  if (!items) return map;
+  for (const item of items) {
+    if (item.nodeId && item.nodeName) {
+      map.set(item.nodeName, item.nodeId);
+    }
+  }
+  return map;
+}
+
+const AT_REF_REGEX = /@"([^"]+)"/g;
+
+function renderContentWithLinks(content: string, nodeMap: Map<string, string>): ReactNode[] {
+  if (nodeMap.size === 0) return [content];
+  const parts: ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  AT_REF_REGEX.lastIndex = 0;
+  while ((match = AT_REF_REGEX.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(content.slice(lastIndex, match.index));
+    }
+    const name = match[1];
+    const nodeId = nodeMap.get(name);
+    if (nodeId) {
+      parts.push(
+        <button
+          key={`${nodeId}-${match.index}`}
+          type="button"
+          onClick={() => focusNodeInFigma(nodeId)}
+          className="inline text-brand-cyan hover:underline cursor-pointer font-medium"
+          title={`Go to "${name}"`}
+        >
+          @"{name}"
+        </button>
+      );
+    } else {
+      parts.push(match[0]);
+    }
+    lastIndex = AT_REF_REGEX.lastIndex;
+  }
+  if (lastIndex < content.length) {
+    parts.push(content.slice(lastIndex));
+  }
+  return parts;
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
@@ -56,7 +108,9 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           </div>
         )}
 
-        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        <p className="whitespace-pre-wrap break-words">
+          {useMemo(() => renderContentWithLinks(message.content, buildNodeMap(message.summaryItems)), [message.content, message.summaryItems])}
+        </p>
 
         {message.attachments && message.attachments.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">

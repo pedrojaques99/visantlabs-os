@@ -83,6 +83,9 @@ figma.on('selectionchange', () => {
   selectionTimeout = setTimeout(notifyContextChange, 150) as any;
 });
 
+// Send current selection on plugin open
+notifyContextChange();
+
 // ═══ Message handler ═══
 figma.ui.onmessage = async (msg: UIMessage) => {
 
@@ -732,7 +735,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
-  if ((msg as any).type === 'BRAND_LINT_FOCUS') {
+  if ((msg as any).type === 'BRAND_LINT_FOCUS' || (msg as any).type === 'FOCUS_NODE') {
     focusNode((msg as any).nodeId);
     return;
   }

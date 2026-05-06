@@ -71,7 +71,8 @@ export function useFigmaMessages() {
             role: 'assistant' as const,
             content,
             timestamp: Date.now(),
-            operations: ops
+            operations: ops,
+            summaryItems: msg.summaryItems
           });
           break;
         }
