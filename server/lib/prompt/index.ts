@@ -6,7 +6,7 @@
  */
 
 import type { AssembledPrompt, ClassifiedIntent, PromptModule } from './types.js';
-import { classifyIntent, isChatOnly } from './classifier.js';
+import { classifyIntent, isChatOnly, refineIntentWithLLM } from './classifier.js';
 import { getCorePrompt } from './core.js';
 import { buildPresetContext, getFormatDimensions, buildFullPresetsReference } from './presets.js';
 import { CREATE_RULES, CREATE_EXAMPLE, MULTIPLE_FRAMES_RULES } from './modules/create.js';
@@ -21,7 +21,7 @@ import { buildSelectionContext, buildContainersHint } from './modules/context.js
 // Re-export for external use
 export * from './types.js';
 export * from './presets.js';
-export * from './classifier.js';
+export { classifyIntent, isChatOnly, refineIntentWithLLM, type EnrichedIntent } from './classifier.js';
 
 export interface PromptAssemblerInput {
   command: string;
@@ -29,11 +29,16 @@ export interface PromptAssemblerInput {
   brandColors?: Array<{ name: string; value: string; role?: string }>;
   brandFonts?: { primary?: { family?: string; style?: string; size?: number }; secondary?: { family?: string; style?: string; size?: number } };
   brandLogos?: { light?: { name: string; key?: string }; dark?: { name: string; key?: string } };
+  brandTokens?: { spacing?: Record<string, number>; radius?: Record<string, number>; shadows?: Record<string, any> };
+  brandVoice?: string;
+  brandDos?: string[];
+  brandDonts?: string[];
   availableComponents?: any[];
   colorVariables?: Array<{ id: string; name: string; value?: string }>;
   chatHistory?: string;
   thinkMode?: boolean;
   useBrand?: boolean;
+  previousErrors?: string[];
 }
 
 /**
@@ -125,6 +130,10 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
       input.brandColors,
       input.brandFonts,
       input.brandLogos,
+      input.brandTokens,
+      input.brandVoice,
+      input.brandDos,
+      input.brandDonts,
     );
     if (brandContext) {
       modules.push({ id: 'brand', content: BRAND_PRIORITY_RULE + '\n' + brandContext, priority: 85 });
@@ -192,6 +201,15 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
       id: 'think_mode',
       content: `MODO THINK: Analise o contexto e use MESSAGE para listar TODAS as perguntas antes de criar.`,
       priority: 99,
+    });
+  }
+
+  // 10. Previous errors feedback (if retrying)
+  if (input.previousErrors?.length) {
+    modules.push({
+      id: 'feedback',
+      content: `PREVIOUS ERRORS (avoid repeating):\n${input.previousErrors.slice(0, 5).map(e => `- ${e}`).join('\n')}`,
+      priority: 98,
     });
   }
 

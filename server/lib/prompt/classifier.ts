@@ -1,8 +1,12 @@
 /**
  * AI-First Prompt System - Intent Classifier
  *
- * Fast keyword-based classification (no LLM call needed).
- * Determines what modules to inject into the prompt.
+ * Two-tier classification:
+ * 1. Fast keyword-based (always runs, ~0ms)
+ * 2. Optional LLM pre-pass (runs when confidence < threshold, ~200ms with Flash Lite)
+ *
+ * The LLM pre-pass extracts structured params (source frame, count, modifications)
+ * that keyword matching can't capture.
  */
 
 import type { ClassifiedIntent, IntentType, ComplexityLevel } from './types.js';
@@ -192,4 +196,54 @@ export function isChatOnly(prompt: string): boolean {
   }
 
   return false;
+}
+
+// ── LLM Pre-pass for ambiguous intents ──
+
+export interface EnrichedIntent extends ClassifiedIntent {
+  sourceFrame?: string;
+  cloneCount?: number;
+  modifications?: string[];
+  llmRefined?: boolean;
+}
+
+const LLM_CONFIDENCE_THRESHOLD = 0.65;
+
+/**
+ * Optionally refine intent via lightweight LLM call.
+ * Only fires when keyword confidence is low (ambiguous prompts).
+ * Returns enriched intent with structured params.
+ */
+export async function refineIntentWithLLM(
+  baseIntent: ClassifiedIntent,
+  prompt: string,
+  selectionNames: string[],
+  llmCall: (systemPrompt: string, userPrompt: string) => Promise<string>,
+): Promise<EnrichedIntent> {
+  if (baseIntent.confidence >= LLM_CONFIDENCE_THRESHOLD) {
+    return { ...baseIntent, llmRefined: false };
+  }
+
+  try {
+    const system = `Classify this Figma plugin command. Return JSON only:
+{"intent":"create"|"edit"|"clone"|"arrange"|"chat","sourceFrame":"name or null","cloneCount":number|null,"modifications":["list of changes"]|null}`;
+
+    const user = `Command: "${prompt}"
+Selected frames: [${selectionNames.slice(0, 5).map(n => `"${n}"`).join(', ')}]`;
+
+    const result = await llmCall(system, user);
+    const parsed = JSON.parse(result);
+
+    return {
+      ...baseIntent,
+      intent: parsed.intent || baseIntent.intent,
+      sourceFrame: parsed.sourceFrame || undefined,
+      cloneCount: parsed.cloneCount || undefined,
+      modifications: parsed.modifications || undefined,
+      confidence: Math.max(baseIntent.confidence, 0.85),
+      llmRefined: true,
+    };
+  } catch {
+    return { ...baseIntent, llmRefined: false };
+  }
 }
