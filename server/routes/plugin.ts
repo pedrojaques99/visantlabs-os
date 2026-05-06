@@ -665,6 +665,34 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       console.error('[Plugin:Stream] Pre-pass error (non-fatal):', (prePassErr as Error).message);
     }
 
+    // Force generate_mockup if IMAGE mode is on but pre-pass didn't call it
+    if (generateImage && !toolCallRecords.some(t => t.name === 'generate_mockup')) {
+      try {
+        const tcId = `tc-${Date.now()}-force`;
+        const startedAt = new Date().toISOString();
+        const forceArgs: any = { prompt: command, model: 'gpt-image-2' };
+        if (brandGuidelineId) forceArgs.brandGuidelineId = brandGuidelineId;
+
+        send('tool_start', { id: tcId, name: 'generate_mockup', args: forceArgs });
+        toolCallRecords.push({ id: tcId, name: 'generate_mockup', status: 'running', args: forceArgs, startedAt });
+
+        const result = await executeChatTool('generate_mockup', forceArgs, {
+          userId: req.userId || '',
+          sessionId: sessionId || '',
+          authHeader: req.headers.authorization || '',
+          brandGuidelineId,
+        });
+
+        const resultStr = typeof result === 'string' ? result : JSON.stringify(result);
+        enrichedContext += `\n\n[Tool: generate_mockup] Result:\n${resultStr.slice(0, 3000)}`;
+        send('tool_end', { id: tcId, name: 'generate_mockup', duration_ms: Date.now() - new Date(startedAt).getTime() });
+        const idx = toolCallRecords.findIndex(t => t.id === tcId);
+        if (idx >= 0) { toolCallRecords[idx].status = 'done'; toolCallRecords[idx].endedAt = new Date().toISOString(); toolCallRecords[idx].summary = resultStr.slice(0, 200); }
+      } catch (forceErr) {
+        console.error('[Plugin:Stream] Forced generate_mockup failed:', (forceErr as Error).message);
+      }
+    }
+
     // ═══ Phase 2: Generate Figma Operations (reuse existing logic) ═══
     send('thinking', { message: 'Generating design...' });
 
