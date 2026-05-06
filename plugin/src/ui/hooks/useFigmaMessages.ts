@@ -412,105 +412,261 @@ export function useFigmaMessages() {
 
           try {
             storeState.setIsGenerating(true);
-            storeState.showToast('Calling Gemini...', 'info');
 
-            const response = await fetch(apiUrl('/plugin'), {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                ...(storeState.authToken ? { Authorization: `Bearer ${storeState.authToken}` } : {})
-              },
-              body: JSON.stringify(context)
-            });
+            // Try SSE streaming endpoint first
+            const useStream = true;
+            let streamSuccess = false;
 
-            if (!response.ok) {
-              const error = await response.json().catch(() => ({ error: response.statusText }));
-              throw new Error(error.error || `API error: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            // Backend returns { operations, message, ... }. The assistant's
-            // spoken text lives in ops where type === 'MESSAGE'; the rest are
-            // design operations the sandbox will apply.
-            const ops: any[] = Array.isArray(result.operations) ? result.operations : [];
-
-            // If this is a rescan response, update the previous scan tool call to done
-            if (context.scanPage) {
-              const history = usePluginStore.getState().chatHistory;
-              const scanMsg = [...history].reverse().find(m => m.toolCalls?.some(tc => tc.name === 'scan_page' && tc.status === 'running'));
-              if (scanMsg) {
-                usePluginStore.setState((s) => {
-                  const target = s.chatHistory.find(m => m.id === scanMsg.id);
-                  if (target?.toolCalls) {
-                    target.toolCalls = target.toolCalls.map(tc =>
-                      tc.name === 'scan_page' && tc.status === 'running'
-                        ? { ...tc, status: 'done' as const, endedAt: new Date().toISOString(), summary: 'Page scanned' }
-                        : tc
-                    );
-                  }
+            if (useStream) {
+              try {
+                const streamResponse = await fetch(apiUrl('/plugin/stream'), {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...(storeState.authToken ? { Authorization: `Bearer ${storeState.authToken}` } : {}),
+                  },
+                  body: JSON.stringify(context),
                 });
+
+                if (streamResponse.ok && streamResponse.body) {
+                  streamSuccess = true;
+                  const reader = streamResponse.body.getReader();
+                  const decoder = new TextDecoder();
+                  let buffer = '';
+                  const assistantMsgId = `msg-${Date.now()}`;
+                  const streamToolCalls: any[] = [];
+                  let streamOps: any[] = [];
+                  let streamMessage = '';
+                  let messageAdded = false;
+
+                  const updateAssistantMessage = (content: string, ops?: any[], tcs?: any[]) => {
+                    if (!messageAdded) {
+                      storeState.addChatMessage({
+                        id: assistantMsgId,
+                        role: 'assistant' as const,
+                        content: content || 'Processing...',
+                        timestamp: Date.now(),
+                        toolCalls: tcs && tcs.length > 0 ? tcs : undefined,
+                      });
+                      messageAdded = true;
+                    } else {
+                      usePluginStore.setState((s) => {
+                        const target = s.chatHistory.find((m) => m.id === assistantMsgId);
+                        if (target) {
+                          if (content) target.content = content;
+                          if (ops && ops.length > 0) target.operations = ops;
+                          if (tcs && tcs.length > 0) target.toolCalls = [...tcs];
+                        }
+                      });
+                    }
+                  };
+
+                  while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    let currentEvent = '';
+                    for (const line of lines) {
+                      if (line.startsWith('event: ')) {
+                        currentEvent = line.slice(7).trim();
+                      } else if (line.startsWith('data: ') && currentEvent) {
+                        try {
+                          const data = JSON.parse(line.slice(6));
+                          switch (currentEvent) {
+                            case 'thinking':
+                              storeState.showToast(data.message || 'Thinking...', 'info');
+                              break;
+                            case 'tool_start':
+                              streamToolCalls.push({
+                                id: data.id,
+                                name: data.name,
+                                status: 'running' as const,
+                                args: data.args,
+                                startedAt: new Date().toISOString(),
+                              });
+                              updateAssistantMessage(`Using ${data.name}...`, undefined, streamToolCalls);
+                              break;
+                            case 'tool_end': {
+                              const tc = streamToolCalls.find((t) => t.id === data.id);
+                              if (tc) {
+                                tc.status = data.error ? 'error' : 'done';
+                                tc.endedAt = new Date().toISOString();
+                                if (data.error) tc.summary = data.error;
+                              }
+                              updateAssistantMessage('', undefined, streamToolCalls);
+                              break;
+                            }
+                            case 'operations':
+                              streamOps = Array.isArray(data) ? data : [];
+                              break;
+                            case 'done': {
+                              const finalOps: any[] = data.operations || streamOps;
+                              const messageOps = finalOps.filter((o: any) => o?.type === 'MESSAGE' && o.content);
+                              const designOps = finalOps.filter((o: any) => o?.type !== 'MESSAGE' && o?.type !== 'REQUEST_SCAN');
+                              const spokenText = messageOps.map((o: any) => String(o.content)).join('\n\n');
+                              streamMessage = spokenText || data.message || (designOps.length > 0 ? `Generated ${designOps.length} operation(s)` : 'Done');
+
+                              const allToolCalls = data.toolCalls || streamToolCalls;
+                              updateAssistantMessage(streamMessage, designOps, allToolCalls);
+
+                              // Handle REQUEST_SCAN
+                              const scanReq = finalOps.find((o: any) => o?.type === 'REQUEST_SCAN');
+                              if (scanReq && !context.scanPage) {
+                                storeState.showToast('Scanning page...', 'info');
+                                storeState.addChatMessage({
+                                  id: `msg-${Date.now()}`,
+                                  role: 'assistant' as const,
+                                  content: scanReq.reason || 'Escaneando a página...',
+                                  timestamp: Date.now(),
+                                  toolCalls: [{ id: `tc-scan-${Date.now()}`, name: 'scan_page', status: 'running' as const, startedAt: new Date().toISOString() }],
+                                });
+                                parent.postMessage(
+                                  { pluginMessage: { type: 'GENERATE_WITH_CONTEXT', command: context.command, scanPage: true, ...context } },
+                                  'https://www.figma.com',
+                                );
+                                break;
+                              }
+
+                              if (designOps.length > 0) {
+                                parent.postMessage(
+                                  { pluginMessage: { type: 'APPLY_OPERATIONS_FROM_API', operations: designOps, pageId: context.pageId } },
+                                  'https://www.figma.com',
+                                );
+                                storeState.showToast(`Applying ${designOps.length} operation(s)…`, 'info');
+                              }
+                              break;
+                            }
+                            case 'error':
+                              storeState.showToast(`Error: ${data.message}`, 'error');
+                              if (!messageAdded) {
+                                updateAssistantMessage(data.message || 'An error occurred');
+                              }
+                              break;
+                          }
+                        } catch {}
+                        currentEvent = '';
+                      }
+                    }
+                  }
+
+                  // Handle rescan update for previous scan message
+                  if (context.scanPage) {
+                    const history = usePluginStore.getState().chatHistory;
+                    const scanMsg = [...history].reverse().find((m) => m.toolCalls?.some((tc) => tc.name === 'scan_page' && tc.status === 'running'));
+                    if (scanMsg) {
+                      usePluginStore.setState((s) => {
+                        const target = s.chatHistory.find((m) => m.id === scanMsg.id);
+                        if (target?.toolCalls) {
+                          target.toolCalls = target.toolCalls.map((tc) =>
+                            tc.name === 'scan_page' && tc.status === 'running'
+                              ? { ...tc, status: 'done' as const, endedAt: new Date().toISOString(), summary: 'Page scanned' }
+                              : tc,
+                          );
+                        }
+                      });
+                    }
+                  }
+                }
+              } catch (streamErr) {
+                console.warn('SSE stream failed, falling back to non-streaming:', streamErr);
               }
             }
 
-            // Smart SCAN: if LLM requests a page scan, re-send with full page context
-            const scanRequest = ops.find((o) => o?.type === 'REQUEST_SCAN');
-            if (scanRequest && !context.scanPage) {
-              storeState.showToast('Scanning page...', 'info');
+            // Fallback: non-streaming endpoint
+            if (!streamSuccess) {
+              storeState.showToast('Calling Gemini...', 'info');
+
+              const response = await fetch(apiUrl('/plugin'), {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...(storeState.authToken ? { Authorization: `Bearer ${storeState.authToken}` } : {}),
+                },
+                body: JSON.stringify(context),
+              });
+
+              if (!response.ok) {
+                const error = await response.json().catch(() => ({ error: response.statusText }));
+                throw new Error(error.error || `API error: ${response.status}`);
+              }
+
+              const result = await response.json();
+              const ops: any[] = Array.isArray(result.operations) ? result.operations : [];
+
+              if (context.scanPage) {
+                const history = usePluginStore.getState().chatHistory;
+                const scanMsg = [...history].reverse().find((m) => m.toolCalls?.some((tc) => tc.name === 'scan_page' && tc.status === 'running'));
+                if (scanMsg) {
+                  usePluginStore.setState((s) => {
+                    const target = s.chatHistory.find((m) => m.id === scanMsg.id);
+                    if (target?.toolCalls) {
+                      target.toolCalls = target.toolCalls.map((tc) =>
+                        tc.name === 'scan_page' && tc.status === 'running'
+                          ? { ...tc, status: 'done' as const, endedAt: new Date().toISOString(), summary: 'Page scanned' }
+                          : tc,
+                      );
+                    }
+                  });
+                }
+              }
+
+              const scanRequest = ops.find((o) => o?.type === 'REQUEST_SCAN');
+              if (scanRequest && !context.scanPage) {
+                storeState.showToast('Scanning page...', 'info');
+                storeState.addChatMessage({
+                  id: `msg-${Date.now()}`,
+                  role: 'assistant' as const,
+                  content: scanRequest.reason || 'Escaneando a página para encontrar os elementos...',
+                  timestamp: Date.now(),
+                  toolCalls: [{ id: `tc-scan-${Date.now()}`, name: 'scan_page', status: 'running' as const, startedAt: new Date().toISOString() }],
+                });
+                parent.postMessage(
+                  { pluginMessage: { type: 'GENERATE_WITH_CONTEXT', command: context.command, scanPage: true, ...context } },
+                  'https://www.figma.com',
+                );
+                break;
+              }
+
+              const messageOps = ops.filter((o) => o?.type === 'MESSAGE' && o.content);
+              const designOps = ops.filter((o) => o?.type !== 'MESSAGE' && o?.type !== 'REQUEST_SCAN');
+              const spokenText = messageOps.map((o) => String(o.content)).join('\n\n');
+              const content =
+                spokenText || result.text || result.response || result.message ||
+                (designOps.length > 0 ? `Generated ${designOps.length} operation(s)` : 'Done');
+
+              const toolCalls: any[] = result.toolCallRecord ? [result.toolCallRecord] : [];
+              if (designOps.length > 0 && !toolCalls.some((tc: any) => tc.name === 'generate_figma_operations')) {
+                toolCalls.push({
+                  id: `tc-gen-${Date.now()}`,
+                  name: 'generate_figma_operations',
+                  status: 'done' as const,
+                  startedAt: new Date().toISOString(),
+                  endedAt: new Date().toISOString(),
+                  summary: `${designOps.length} operation${designOps.length > 1 ? 's' : ''} via ${result.provider || 'gemini'}`,
+                });
+              }
+
               storeState.addChatMessage({
                 id: `msg-${Date.now()}`,
                 role: 'assistant' as const,
-                content: scanRequest.reason || 'Escaneando a página para encontrar os elementos...',
+                content,
                 timestamp: Date.now(),
-                toolCalls: [{ id: `tc-scan-${Date.now()}`, name: 'scan_page', status: 'running' as const, startedAt: new Date().toISOString() }]
+                operations: designOps,
+                toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+                metadata: result.usage ? { usage: result.usage } : undefined,
               });
-              parent.postMessage(
-                { pluginMessage: { type: 'GENERATE_WITH_CONTEXT', command: context.command, scanPage: true, ...context } },
-                'https://www.figma.com'
-              );
-              break;
-            }
 
-            const messageOps = ops.filter((o) => o?.type === 'MESSAGE' && o.content);
-            const designOps = ops.filter((o) => o?.type !== 'MESSAGE' && o?.type !== 'REQUEST_SCAN');
-            const spokenText = messageOps.map((o) => String(o.content)).join('\n\n');
-            const content =
-              spokenText ||
-              result.text ||
-              result.response ||
-              result.message ||
-              (designOps.length > 0 ? `Generated ${designOps.length} operation(s)` : 'Done');
-
-            // Build tool call records
-            const toolCalls: any[] = result.toolCallRecord ? [result.toolCallRecord] : [];
-            if (designOps.length > 0 && !toolCalls.some((tc: any) => tc.name === 'generate_figma_operations')) {
-              toolCalls.push({
-                id: `tc-gen-${Date.now()}`,
-                name: 'generate_figma_operations',
-                status: 'done' as const,
-                startedAt: new Date().toISOString(),
-                endedAt: new Date().toISOString(),
-                summary: `${designOps.length} operation${designOps.length > 1 ? 's' : ''} via ${result.provider || 'gemini'}`
-              });
-            }
-
-            storeState.addChatMessage({
-              id: `msg-${Date.now()}`,
-              role: 'assistant' as const,
-              content,
-              timestamp: Date.now(),
-              operations: designOps,
-              toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
-              metadata: result.usage ? { usage: result.usage } : undefined
-            });
-
-            if (designOps.length > 0) {
-              // Send ops back to sandbox for execution via Figma API
-              parent.postMessage(
-                { pluginMessage: { type: 'APPLY_OPERATIONS_FROM_API', operations: designOps, pageId: context.pageId } },
-                'https://www.figma.com'
-              );
-              storeState.showToast(`Applying ${designOps.length} operation(s)…`, 'info');
+              if (designOps.length > 0) {
+                parent.postMessage(
+                  { pluginMessage: { type: 'APPLY_OPERATIONS_FROM_API', operations: designOps, pageId: context.pageId } },
+                  'https://www.figma.com',
+                );
+                storeState.showToast(`Applying ${designOps.length} operation(s)…`, 'info');
+              }
             }
           } catch (err) {
             console.error('API call failed:', err);

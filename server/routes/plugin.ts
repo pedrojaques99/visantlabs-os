@@ -84,6 +84,8 @@ import { scanTemplates, buildTemplateContext } from '../lib/templateScanner.js';
 import { buildFormatPresetsContext } from '../lib/formatPresets.js';
 import { scanAgentComponents, buildComponentsContext } from '../lib/componentScanner.js';
 import { resolveContext, buildAgentContextPrompt } from '../lib/contextResolver.js';
+import { chatWithLLM } from '../services/llmRouter.js';
+import { getChatTools, executeChatTool } from '../services/chat/toolRegistry.js';
 
 const router = express.Router();
 
@@ -510,6 +512,335 @@ router.post('/scaffold-library', optionalAuth, async (req: AuthRequest, res: Res
   } catch (error) {
     console.error('[Plugin] Scaffold failed:', error);
     res.status(500).json({ error: 'Failed to scaffold library' });
+  }
+});
+
+// ============ SSE Streaming Endpoint with Tool Pre-Pass ============
+
+const streamLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 15,
+  message: { error: 'Too many streaming requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
+ * POST /api/plugin/stream
+ * SSE endpoint: tool pre-pass → generate operations → stream events
+ * Events: thinking, tool_start, tool_end, operations, message, done, error
+ */
+router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res: Response) => {
+  // SSE headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const send = (event: string, data: any) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
+
+  try {
+    const {
+      command,
+      sessionId,
+      fileId,
+      selectedElements = [],
+      selectedLogo,
+      brandLogos,
+      selectedBrandFont,
+      brandFonts,
+      selectedBrandColors,
+      availableComponents = [],
+      availableColorVariables = [],
+      availableFontVariables = [],
+      availableLayers = [],
+      apiKey: userApiKey,
+      anthropicApiKey: userAnthropicKey,
+      attachments = [],
+      mentions = [],
+      designSystem,
+      brandGuideline: brandGuidelineFromUI,
+      brandGuidelineId,
+      thinkMode = false,
+      useBrand = true,
+    } = req.body as PluginRequest;
+
+    if (!command) {
+      send('error', { message: 'Command is required' });
+      return res.end();
+    }
+
+    send('thinking', { message: 'Processando...' });
+
+    // Credit check
+    const isByok = !!(userApiKey || userAnthropicKey);
+    if (req.userId && !isByok) {
+      const credits = await checkCredits(req.userId);
+      if (!credits.canGenerate) {
+        send('error', { message: credits.reason, code: 'NO_CREDITS' });
+        return res.end();
+      }
+    }
+
+    // ═══ Phase 1: Tool Pre-Pass ═══
+    // Ask LLM if it needs any tools before generating Figma operations
+    let enrichedContext = '';
+    const toolCallRecords: Array<{
+      id: string;
+      name: string;
+      status: 'running' | 'done' | 'error';
+      args?: any;
+      startedAt: string;
+      endedAt?: string;
+      summary?: string;
+    }> = [];
+
+    try {
+      const prePassPrompt = `You are a Figma design assistant. The user wants: "${command}"
+
+If you need to search the web for references, inspiration, or information to fulfill this request, use the web_search tool.
+If you don't need any tools, just respond with "READY" and nothing else.
+
+Only use tools if the request genuinely requires external information (e.g., "search for...", "find examples of...", "look up...").`;
+
+      const prePassResult = await chatWithLLM(command, '', [], {
+        provider: 'gemini',
+        apiKey: userApiKey || undefined,
+        systemInstruction: prePassPrompt,
+        tools: getChatTools(false), // public tools only (web_search etc.)
+      });
+
+      if (prePassResult.toolCalls?.length) {
+        for (const call of prePassResult.toolCalls) {
+          const tcId = `tc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+          const startedAt = new Date().toISOString();
+
+          send('tool_start', { id: tcId, name: call.name, args: call.args });
+          toolCallRecords.push({ id: tcId, name: call.name, status: 'running', args: call.args, startedAt });
+
+          try {
+            const result = await executeChatTool(call.name, call.args, {
+              userId: req.userId || '',
+              sessionId: sessionId || '',
+              authHeader: req.headers.authorization || '',
+              brandGuidelineId,
+            });
+
+            const resultStr = typeof result === 'string' ? result : JSON.stringify(result);
+            enrichedContext += `\n\n[Tool: ${call.name}] Result:\n${resultStr.slice(0, 3000)}`;
+
+            const endedAt = new Date().toISOString();
+            send('tool_end', { id: tcId, name: call.name, duration_ms: Date.now() - new Date(startedAt).getTime() });
+            const idx = toolCallRecords.findIndex(t => t.id === tcId);
+            if (idx >= 0) {
+              toolCallRecords[idx].status = 'done';
+              toolCallRecords[idx].endedAt = endedAt;
+              toolCallRecords[idx].summary = resultStr.slice(0, 200);
+            }
+          } catch (toolErr) {
+            send('tool_end', { id: tcId, name: call.name, error: (toolErr as Error).message });
+            const idx = toolCallRecords.findIndex(t => t.id === tcId);
+            if (idx >= 0) toolCallRecords[idx].status = 'error';
+          }
+        }
+      }
+    } catch (prePassErr) {
+      console.error('[Plugin:Stream] Pre-pass error (non-fatal):', (prePassErr as Error).message);
+    }
+
+    // ═══ Phase 2: Generate Figma Operations (reuse existing logic) ═══
+    send('thinking', { message: 'Generating design...' });
+
+    // Brand resolution (same as POST /)
+    let brandGuideline: BrandGuideline | null = brandGuidelineFromUI || null;
+    let brandChoiceContext = '';
+
+    if (useBrand) {
+      if (brandGuidelineId && !brandGuideline) {
+        try {
+          const savedGuideline = await prisma.brandGuideline.findUnique({ where: { id: brandGuidelineId } });
+          if (savedGuideline) {
+            brandGuideline = {
+              id: savedGuideline.id,
+              identity: savedGuideline.identity as any,
+              logos: savedGuideline.logos as any,
+              colors: savedGuideline.colors as any,
+              typography: savedGuideline.typography as any,
+              tags: savedGuideline.tags as any,
+              media: savedGuideline.media as any,
+              tokens: savedGuideline.tokens as any,
+              guidelines: savedGuideline.guidelines as any,
+            };
+          }
+        } catch {}
+      }
+
+      if (!brandGuideline && fileId && req.userId) {
+        try {
+          const brandResult = await resolveBrandGuideline(fileId, req.userId, brandGuidelineId);
+          if (brandResult.guideline) brandGuideline = brandResult.guideline;
+          else if (brandResult.needsUserChoice) brandChoiceContext = buildGuidelineChoiceContext(brandResult.availableGuidelines);
+        } catch {}
+      }
+    }
+
+    const effectiveBrandFonts = brandFonts || (brandGuideline?.typography ? {
+      primary: (brandGuideline.typography as any[]).find(t => t.role === 'primary' || t.role === 'heading'),
+      secondary: (brandGuideline.typography as any[]).find(t => t.role === 'secondary' || t.role === 'body'),
+    } : undefined);
+
+    const effectiveBrandColors = selectedBrandColors || (brandGuideline?.colors ?
+      (brandGuideline.colors as any[]).map(c => ({ name: c.name, value: c.hex, role: c.role })) :
+      undefined);
+
+    // Template + component scanning
+    let templateContext = '';
+    let agentComponentsContext = '';
+    if (fileId && pluginBridge.getSession(fileId)) {
+      try {
+        const templates = await scanTemplates(fileId);
+        templateContext = buildTemplateContext(templates);
+      } catch {}
+      try {
+        const agentComponents = await scanAgentComponents(fileId);
+        if (agentComponents.length > 0) agentComponentsContext = buildComponentsContext(agentComponents);
+      } catch {}
+    }
+
+    const formatPresetsContext = buildFormatPresetsContext();
+    const tokenRegistry = buildTokenRegistry(brandGuideline || null, designSystem || null);
+    const enforcedTokenPrompt = (tokenRegistry.colors.size > 0 || tokenRegistry.typography.size > 0)
+      ? '\n' + buildEnforcedPrompt(tokenRegistry) + '\n'
+      : '';
+
+    // Build prompt (always V2 for streaming)
+    const assembled = buildSystemPromptV2(
+      {
+        command, selectedElements, selectedLogo, brandLogos, selectedBrandFont,
+        brandFonts: effectiveBrandFonts, selectedBrandColors: effectiveBrandColors,
+        availableComponents, availableColorVariables, availableFontVariables, availableLayers,
+        attachments, mentions, designSystem: designSystem || null,
+        brandGuideline: brandGuideline || undefined, thinkMode,
+      },
+      '', // chat history handled separately
+    );
+
+    let systemPrompt = assembled.system;
+
+    // Inject additional contexts
+    const additionalContext = [brandChoiceContext, templateContext, agentComponentsContext].filter(Boolean).join('\n\n');
+    if (additionalContext) systemPrompt += '\n\n' + additionalContext;
+    if (enforcedTokenPrompt) systemPrompt = enforcedTokenPrompt + '\n' + systemPrompt;
+
+    // Inject enriched context from tool pre-pass
+    if (enrichedContext) {
+      systemPrompt += `\n\n═══ CONTEXTO ADICIONAL (pesquisa) ═══${enrichedContext}`;
+    }
+
+    const userPrompt = `═══ PEDIDO DO USUÁRIO ═══\n\n"${command}"`;
+    const contextSize = (selectedElements?.length || 0) + (availableComponents?.length || 0) + (availableLayers?.length || 0);
+    const provider = chooseProvider(command, contextSize);
+
+    const generationStart = Date.now();
+    let operations: any[] = [];
+    let usage: any;
+
+    try {
+      const result = await provider.generateOperations(systemPrompt, userPrompt, {
+        temperature: 0.2,
+        maxTokens: 8192,
+        apiKey: userAnthropicKey || undefined,
+        attachments: attachments || [],
+        onStatus: fileId ? (message: string) => {
+          pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
+        } : undefined,
+      });
+      operations = result.operations;
+      usage = result.usage;
+    } catch (aiError) {
+      console.error(`[Plugin:Stream] ${provider.name} error:`, aiError);
+    }
+
+    const durationMs = Date.now() - generationStart;
+
+    // Validate operations
+    operations = operations.filter(op => op && op.type && (
+      op.nodeId || op.props || op.componentKey || op.nodeIds || op.fills ||
+      op.strokes || op.effects || op.layoutMode || op.variableId || op.styleId ||
+      op.content || op.name || op.width != null || op.opacity != null ||
+      op.cornerRadius != null || op.x != null
+    ));
+
+    if (tokenRegistry.colors.size > 0 || tokenRegistry.spacing.size > 0) {
+      const tokenValidation = validateOperations(operations, tokenRegistry);
+      if (!tokenValidation.isValid && tokenValidation.corrections.length > 0) {
+        tokenValidation.operations.push({
+          type: 'MESSAGE',
+          content: `⚡ Ajustes automáticos:\n${formatCorrections(tokenValidation.corrections)}`,
+        });
+        operations = tokenValidation.operations;
+      }
+    }
+
+    const validation = operationValidator.validateBatch(operations);
+    const validOps = validation.valid;
+
+    // Stream operations
+    send('operations', validOps);
+
+    // Build final tool call record for the generation itself
+    const genToolCall = {
+      id: `tc-${Date.now()}`,
+      name: 'generate_figma_operations',
+      status: 'done' as const,
+      args: { command: command.slice(0, 120) },
+      startedAt: new Date(generationStart).toISOString(),
+      endedAt: new Date().toISOString(),
+      summary: `${validOps.length} operation${validOps.length !== 1 ? 's' : ''} via ${provider.name}`,
+    };
+    toolCallRecords.push(genToolCall);
+
+    send('done', {
+      operations: validOps,
+      message: `Generated ${validOps.length} operation(s)`,
+      provider: provider.name,
+      usage,
+      durationMs,
+      toolCalls: toolCallRecords,
+    });
+
+    res.end();
+
+    // Non-blocking credit deduction
+    if (req.userId && !isByok && validOps.length > 0) {
+      deductCredit(req.userId).catch(e => console.error('[Plugin] Credit deduction error:', e));
+    }
+
+    // Save to session
+    if (sessionId && fileId) {
+      try {
+        const db = getDb();
+        await db.collection('plugin_sessions').updateOne(
+          { _id: sessionId },
+          {
+            $push: {
+              messages: {
+                $each: [
+                  { role: 'user', content: command, timestamp: new Date() },
+                  { role: 'assistant', content: `Generated ${validOps.length} operations`, operations: validOps, toolCalls: toolCallRecords, timestamp: new Date() },
+                ],
+              },
+            } as any,
+          },
+        );
+      } catch {}
+    }
+  } catch (error: any) {
+    console.error('[Plugin:Stream] Error:', error);
+    send('error', { message: error.message || 'Failed to process command' });
+    res.end();
   }
 });
 
