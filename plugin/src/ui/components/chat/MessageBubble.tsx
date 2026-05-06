@@ -83,25 +83,30 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
   const visibleOps = showAllOps ? ops : ops.slice(0, OPS_PREVIEW_LIMIT);
   const hiddenCount = ops.length - OPS_PREVIEW_LIMIT;
 
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(json);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1200);
-    } catch {}
+  const copyText = (text: string) => {
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
   };
+
+  const copy = () => copyText(json);
 
   const usage = message.metadata?.usage;
   const outTokens = usage?.output_tokens ?? usage?.outputTokens;
   const inTokens = usage?.input_tokens ?? usage?.inputTokens;
 
-  const copyContent = async () => {
-    try {
-      await navigator.clipboard.writeText(message.content);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1200);
-    } catch {}
-  };
+  const copyContent = () => copyText(message.content);
 
   return (
     <div className={`group/bubble flex ${isUser ? 'justify-end' : 'justify-start'}`}>
