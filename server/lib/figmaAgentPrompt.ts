@@ -64,6 +64,7 @@ export interface PluginRequest {
   // UI Components selected in plugin Brand tab
   selectedUIComponents?: Record<string, { key: string; name: string }>;
   useBrand?: boolean;
+  generateImage?: boolean;
 }
 
 export interface DesignSystemJSON {
