@@ -55,13 +55,23 @@ export function useChatSend() {
 
         const mentions = parseMentions(content);
 
+        const serverAttachments = store.pendingAttachments
+          .filter((a) => a.preview)
+          .map((a) => {
+            const match = a.preview!.match(/^data:([^;]+);base64,(.+)$/);
+            return match
+              ? { name: a.name, mimeType: match[1], data: match[2] }
+              : null;
+          })
+          .filter(Boolean);
+
         // Send message to sandbox with context
         const msg: any = {
           type: 'GENERATE_WITH_CONTEXT',
           command: content,
           thinkMode: store.thinkMode,
           useBrand: store.useBrand,
-          attachments: store.pendingAttachments,
+          attachments: serverAttachments,
           model: store.selectedModel,
           brandFonts,
           brandLogos,

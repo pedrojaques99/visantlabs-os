@@ -4,8 +4,9 @@ import { useMentions } from '../../hooks/useMentions';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Send, Paperclip, Zap, Scan } from 'lucide-react';
+import { Send, Paperclip, Zap, Scan, X } from 'lucide-react';
 import { MentionsDropdown } from './MentionsDropdown';
+import type { Attachment } from '../../store/types';
 
 interface ChatInputProps {
   onSend: (content: string) => void;
@@ -64,14 +65,36 @@ export function ChatInput({ onSend }: ChatInputProps) {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
     files.forEach((file) => {
-      // Handle file attachment
+      if (file.size > maxSize) {
+        usePluginStore.getState().showToast(`${file.name} exceeds 5MB limit`, 'error');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => {
-        // Store attachment in store
+        const base64 = event.target?.result as string;
+        const attachment: Attachment = {
+          id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          name: file.name,
+          type: file.type.startsWith('image/') ? 'image' : 'file',
+          size: file.size,
+          preview: base64,
+        };
+        usePluginStore.setState((s) => ({
+          pendingAttachments: [...s.pendingAttachments, attachment],
+        }));
       };
       reader.readAsDataURL(file);
     });
+    e.target.value = '';
+  };
+
+  const removeAttachment = (id: string) => {
+    usePluginStore.setState((s) => ({
+      pendingAttachments: s.pendingAttachments.filter((a) => a.id !== id),
+    }));
   };
 
   return (
@@ -112,13 +135,26 @@ export function ChatInput({ onSend }: ChatInputProps) {
        {pendingAttachments.length > 0 && (
          <div className="flex flex-wrap gap-2 pt-1">
            {pendingAttachments.map((att) => (
-             <Badge
-               key={att.id}
-               variant="secondary"
-               className="font-normal text-[10px] py-0 h-5"
-             >
-               <span className="truncate max-w-[120px]">{att.name}</span>
-             </Badge>
+             <div key={att.id} className="relative group">
+               {att.type === 'image' && att.preview ? (
+                 <img
+                   src={att.preview}
+                   alt={att.name}
+                   className="w-14 h-14 rounded-md object-cover border border-border"
+                 />
+               ) : (
+                 <div className="w-14 h-14 rounded-md border border-border bg-muted flex items-center justify-center">
+                   <Paperclip size={14} className="text-muted-foreground" />
+                 </div>
+               )}
+               <button
+                 type="button"
+                 onClick={() => removeAttachment(att.id)}
+                 className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+               >
+                 <X size={10} />
+               </button>
+             </div>
            ))}
          </div>
        )}
@@ -155,6 +191,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
             id="file-input"
             type="file"
             multiple
+            accept="image/png,image/jpeg,image/gif,image/webp,application/pdf"
             onChange={handleFileSelect}
             className="hidden"
           />

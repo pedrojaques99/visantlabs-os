@@ -59,8 +59,19 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         <p className="whitespace-pre-wrap break-words">{message.content}</p>
 
         {message.attachments && message.attachments.length > 0 && (
-          <div className="mt-2 text-xs opacity-75">
-            {message.attachments.length} attachment{message.attachments.length > 1 ? 's' : ''}
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {message.attachments.map((att) =>
+              att.type === 'image' && att.preview ? (
+                <img
+                  key={att.id}
+                  src={att.preview}
+                  alt={att.name}
+                  className="max-w-[200px] max-h-[150px] rounded-md object-contain border border-border/50"
+                />
+              ) : (
+                <span key={att.id} className="text-[10px] opacity-75">{att.name}</span>
+              )
+            )}
           </div>
         )}
 
