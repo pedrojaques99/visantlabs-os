@@ -37,22 +37,69 @@ Token: \`POST /api/auth/login\` → \`{ "email": "...", "password": "..." }\``;
 }
 
 function generatePluginMarkdown(): string {
-  return `# Figma Plugin Guide
+  return `# Figma Plugin — Visant Copilot
 
 ## Installation
 1. Open any file in Figma.
-2. Go to Resources > Plugins.
-3. Search for "Visant Copilot" and click Run.
-4. Follow the on-screen prompts to connect your account.
+2. Go to **Resources > Plugins** and search for **Visant Copilot**.
+3. Click **Run** to launch the plugin panel.
+4. Sign in with your Visant account to unlock brand-aware features and credit-based generation.
 
-## Capabilities
-- **Mockups** — select frames and convert them to 3D device mockups instantly.
-- **Chat with AI** — describe what to build; nodes are created automatically.
-- **Brand identity extraction** — upload logo + identity PDF to generate brand-aware prompts.
-- **Image generation** — text-to-image, edit, merge, upscale inside Figma.
+## AI Chat
+Describe what you want in natural language — the AI creates, edits, and organizes Figma nodes automatically.
+
+**Features:**
+- **@mentions** — type \`@\` to reference layers, components, or variables by name. The AI resolves them to real node IDs.
+- **Multimodal input** — drag-and-drop or paste images directly into the chat input for visual context.
+- **Brand context** — select a Brand Guideline to inject colors, typography, and tone into every prompt.
+- **\`/clear\` command** — type \`/clear\` to reset chat history.
+- **Clickable layer refs** — operation summaries show \`@"LayerName"\` links that select and zoom to the referenced layer.
+- **Copy & select** — hover any message bubble for a copy button; text is fully selectable.
+
+## Supported Operations (25+)
+
+### Creation
+\`CREATE_FRAME\`, \`CREATE_RECTANGLE\`, \`CREATE_ELLIPSE\`, \`CREATE_TEXT\`, \`CREATE_COMPONENT_INSTANCE\`, \`CREATE_PAGE\`
+
+### Edit
+\`SET_FILL\`, \`SET_STROKE\`, \`SET_CORNER_RADIUS\`, \`SET_EFFECTS\`, \`SET_AUTO_LAYOUT\`, \`SET_OPACITY\`, \`SET_TEXT_CONTENT\`, \`SET_TEXT_STYLE\`, \`SET_IMAGE_FILL\`, \`RESIZE\`, \`MOVE\`, \`RENAME\`
+
+### Structure
+\`GROUP_NODES\`, \`UNGROUP\`, \`DELETE_NODE\`, \`CLONE_NODE\`, \`DETACH_INSTANCE\`
+
+### Advanced
+\`CREATE_COMPONENT\`, \`CREATE_SVG\`, \`COMBINE_AS_VARIANTS\`, \`CREATE_COLOR_VARIABLES_FROM_SELECTION\`, \`BIND_NEAREST_COLOR_VARIABLES\`, \`REQUEST_SCAN\`
+
+All operations use JSON format: \`[{ "type": "OPERATION_TYPE", ...params }]\`
+
+## Brand Guidelines
+- Select a brand guideline from the sidebar to inject identity context (colors, typography, tone) into every AI prompt.
+- The last selected brand **persists across sessions** via Figma pluginData — no need to re-select each time.
+- Brand context is sent alongside the user prompt to the server, ensuring brand-consistent outputs.
+
+## Smart Scan (REQUEST_SCAN)
+When the AI needs context beyond the current selection, it automatically emits a \`REQUEST_SCAN\` operation. This triggers a full page scan, re-sending the command with complete page context. The scan status appears as a tool call in the chat UI.
 
 ## Plugin API (for developers)
-The plugin communicates with the server via WebSocket (pluginBridge). Agents can send commands via the \`/api/plugin/agent-command\` endpoint which validates and queues operations for execution inside Figma.`;
+
+### Architecture
+\`\`\`
+Figma Sandbox (code.ts) ⇄ UI iframe (React) ─fetch─▶ POST /api/plugin (Gemini)
+                        ◀── APPLY_OPERATIONS ──────────
+\`\`\`
+
+### POST /api/plugin
+Stateless endpoint. Receives serialized selection + brand context + user prompt. Returns \`{ success, operations[], message }\`.
+
+### Operation JSON Format
+\`\`\`json
+[
+  { "type": "CREATE_FRAME", "ref": "card", "props": { "name": "Card", "width": 300, "height": 200, "layoutMode": "VERTICAL" } },
+  { "type": "CREATE_TEXT", "parentRef": "card", "props": { "content": "Hello", "fontSize": 16 } }
+]
+\`\`\`
+
+\`ref\` creates a named reference; \`parentRef\` nests inside a previously created node; \`parentNodeId\` nests inside an existing Figma node by ID.`;
 }
 
 function generateAgentsMarkdown(platformMcpSpec?: MCPSpec | null): string {

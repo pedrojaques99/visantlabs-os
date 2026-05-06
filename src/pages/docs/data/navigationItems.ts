@@ -56,6 +56,14 @@ export const DOCS_NAVIGATION_ITEMS: NavigationItem[] = [
     id: 'plugin',
     label: 'Figma Plugin',
     icon: Puzzle,
+    sections: [
+      { id: 'pl-install', label: 'Installation' },
+      { id: 'pl-chat', label: 'AI Chat' },
+      { id: 'pl-operations', label: 'Operations' },
+      { id: 'pl-brand', label: 'Brand Guidelines' },
+      { id: 'pl-scan', label: 'Smart Scan' },
+      { id: 'pl-api', label: 'Plugin API' },
+    ],
   },
   {
     id: 'figma-nodes',
