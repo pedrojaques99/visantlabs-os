@@ -13,7 +13,7 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend }: ChatInputProps) {
   const [content, setContent] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null!);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     thinkMode,
@@ -26,7 +26,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
     brandGuideline
   } = usePluginStore();
 
-  const mentions = useMentions(textareaRef);
+  const mentions = useMentions(textareaRef, setContent);
 
   const activeBrandName = brandGuideline?.name || brandGuideline?.identity?.name || 'Brand';
   const brandLogo = (brandGuideline?.logos?.find(l => l.variant === 'icon' || l.variant === 'primary') ?? brandGuideline?.logos?.[0])?.url;
@@ -43,11 +43,15 @@ export function ChatInput({ onSend }: ChatInputProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Let mentions handle navigation/selection first
+    if (mentions.isOpen) {
+      mentions.handleKeyDown(e);
+      if (e.defaultPrevented) return;
+    }
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-    mentions.handleKeyDown(e);
   };
 
   const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {

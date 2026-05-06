@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { usePluginStore } from '../store';
 import { useFigmaMessages } from './useFigmaMessages';
 import type { UIMessage } from '@/lib/figma-types';
+import { parseMentions } from './useMentions';
 
 export function useChatSend() {
   const { send } = useFigmaMessages();
@@ -52,6 +53,8 @@ export function useChatSend() {
           ? Array.from(store.selectedColors.entries()).map(([role, entry]) => ({ name: entry.name || role, value: entry.hex, role }))
           : null;
 
+        const mentions = parseMentions(content);
+
         // Send message to sandbox with context
         const msg: any = {
           type: 'GENERATE_WITH_CONTEXT',
@@ -64,6 +67,7 @@ export function useChatSend() {
           brandLogos,
           brandColors,
           designSystem: store.designSystem,
+          mentions,
         };
 
         send(msg);

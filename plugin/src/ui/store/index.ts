@@ -85,18 +85,22 @@ export const usePluginStore = create<PluginStore>()(
         state.selectionDetails = selection;
       }),
 
-    addChatMessage: (message) =>
+    addChatMessage: (message) => {
       set((state) => {
         state.chatHistory.push(message);
         if (state.chatHistory.length > 100) {
           state.chatHistory = state.chatHistory.slice(-80);
         }
-      }),
+      });
+      scheduleChatPersist();
+    },
 
-    clearChatHistory: () =>
+    clearChatHistory: () => {
       set((state) => {
         state.chatHistory = [];
-      }),
+      });
+      scheduleChatPersist();
+    },
 
     setServerUrl: (url) =>
       set((state) => {
@@ -240,5 +244,37 @@ export const usePluginStore = create<PluginStore>()(
       set((state) => { state.isGenerating = generating; })
   }))
 );
+
+// ── Chat persistence via figma.clientStorage (through postMessage RPC) ──
+
+const CHAT_STORAGE_KEY = 'chatHistory';
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+let _client: { request: (op: string, params: any) => Promise<any> } | null = null;
+
+export function setChatPersistClient(client: { request: (op: string, params: any) => Promise<any> }) {
+  _client = client;
+}
+
+function scheduleChatPersist() {
+  if (persistTimer) clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    if (!_client) return;
+    const history = usePluginStore.getState().chatHistory;
+    const toSave = history.slice(-50).map(({ id, role, content, timestamp }) => ({ id, role, content, timestamp }));
+    _client.request('storage.set', { key: CHAT_STORAGE_KEY, value: JSON.stringify(toSave) }).catch(() => {});
+  }, 1500);
+}
+
+export async function loadChatHistory(client: { request: (op: string, params: any) => Promise<any> }) {
+  try {
+    const { value } = await client.request('storage.get', { key: CHAT_STORAGE_KEY });
+    if (value) {
+      const messages = JSON.parse(value as string);
+      if (Array.isArray(messages) && messages.length > 0) {
+        usePluginStore.setState({ chatHistory: messages });
+      }
+    }
+  } catch { /* first run, no history */ }
+}
 
 export type { PluginStore } from './types';

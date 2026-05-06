@@ -63,6 +63,11 @@ export const registry: Registry = {
   'sync.extract': async () => H.extractForSync() as any,
   'sync.push':    async (p) => H.pushToFigma(p as any) as any,
 
+  // Text
+  'text.scanFonts':  async () => H.scanFontsInSelection(),
+  'text.swapFonts':  async (p) => H.swapFonts(p),
+  'text.getStyles':  async (p) => H.getStylesForFamily(p),
+
   // Export
   'export.textToMarkdown': async (p) => H.exportTextToMarkdown(p),
 

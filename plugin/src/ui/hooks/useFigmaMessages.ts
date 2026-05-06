@@ -297,9 +297,13 @@ export function useFigmaMessages() {
         }
 
         case 'ELEMENTS_FOR_MENTIONS': {
-          if (msg.elements) {
-            storeState.setMentionElements(msg.elements);
-          }
+          const flat = [
+            ...(msg.frames || []).map((e: any) => ({ ...e, type: 'frame' })),
+            ...(msg.components || []).map((e: any) => ({ ...e, type: 'component' })),
+            ...(msg.layers || []).map((e: any) => ({ ...e, type: 'layer' })),
+            ...(msg.variables || []).map((e: any) => ({ ...e, type: 'variable' })),
+          ];
+          storeState.setMentionElements(flat);
           break;
         }
 
