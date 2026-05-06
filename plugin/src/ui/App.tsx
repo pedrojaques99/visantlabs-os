@@ -30,6 +30,7 @@ export function App() {
       }
 
       send({ type: 'GET_CONTEXT' } as any);
+      send({ type: 'GET_BRAND_GUIDELINE' } as any);
     };
 
     init();

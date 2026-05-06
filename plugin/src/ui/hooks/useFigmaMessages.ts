@@ -162,6 +162,22 @@ export function useFigmaMessages() {
           break;
         }
 
+        case 'BRAND_GUIDELINE_LOADED': {
+          // Persisted brand from pluginData — auto-load on startup
+          if (msg.selectedId && msg.guideline) {
+            try {
+              const parsed = typeof msg.guideline === 'string' ? JSON.parse(msg.guideline) : msg.guideline;
+              if (parsed) {
+                usePluginStore.setState({ brandGuideline: parsed, linkedGuideline: msg.selectedId });
+              }
+            } catch {}
+          } else if (msg.selectedId && msg.autoLoad) {
+            // Have ID but no cache — fetch from server
+            usePluginStore.setState({ linkedGuideline: msg.selectedId });
+          }
+          break;
+        }
+
         case 'BRAND_GUIDELINE_SAVED':
         case 'GUIDELINE_SAVED': {
           storeState.showToast('Brand guideline saved', 'success');
