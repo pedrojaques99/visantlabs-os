@@ -4,13 +4,16 @@ import { BrandTab } from '../brand/BrandTab';
 import { ToolsTab } from '../tools/ToolsTab';
 import { ProfileTab } from './ProfileTab';
 import { DevTab } from './DevTab';
+import { usePluginStore } from '../../store';
 
 export function SettingsView() {
+  const devMode = usePluginStore((s) => s.devMode);
+
   return (
     <div className="h-full overflow-hidden flex flex-col bg-background">
       <Tabs defaultValue="brand" className="h-full flex flex-col">
         <div className="px-4 pt-4">
-          <TabsList className="w-full grid grid-cols-4">
+          <TabsList className={`w-full grid ${devMode ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="brand" className="text-xs font-mono uppercase tracking-wide">
               Brand
             </TabsTrigger>
@@ -20,9 +23,11 @@ export function SettingsView() {
             <TabsTrigger value="profile" className="text-xs font-mono uppercase tracking-wide">
               Profile
             </TabsTrigger>
-            <TabsTrigger value="dev" className="text-xs font-mono uppercase tracking-wide">
-              Dev
-            </TabsTrigger>
+            {devMode && (
+              <TabsTrigger value="dev" className="text-xs font-mono uppercase tracking-wide">
+                Dev
+              </TabsTrigger>
+            )}
           </TabsList>
         </div>
 
@@ -39,9 +44,11 @@ export function SettingsView() {
             <ProfileTab />
           </TabsContent>
 
-          <TabsContent value="dev" className="mt-0 p-4">
-            <DevTab />
-          </TabsContent>
+          {devMode && (
+            <TabsContent value="dev" className="mt-0 p-4">
+              <DevTab />
+            </TabsContent>
+          )}
         </div>
       </Tabs>
     </div>

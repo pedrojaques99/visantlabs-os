@@ -10,7 +10,7 @@ import { useEffect, useRef, type DependencyList, type RefObject } from 'react';
 export function useAutoScrollToBottom<T extends HTMLElement = HTMLDivElement>(
   deps: DependencyList,
   behavior: ScrollBehavior = 'smooth'
-): RefObject<T> {
+): RefObject<T | null> {
   const ref = useRef<T>(null);
   useEffect(() => {
     ref.current?.scrollIntoView({ behavior });

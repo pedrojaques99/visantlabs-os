@@ -743,43 +743,147 @@ const result = await client.callTool({
                     )}
                   </TabsContent>
 
-                  <TabsContent value="plugin" className="space-y-6 mt-0">
-                    <Card>
+                  <TabsContent value="plugin" className="space-y-8 mt-0">
+                    {/* Header */}
+                    <Card className="bg-card border border-border">
                       <CardHeader>
-                        <CardTitle className="text-3xl">Figma Plugin Guide</CardTitle>
-                        <CardDescription>Using Visant Copilot directly inside Figma to supercharge your design workflow.</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                        <div>
-                          <h3 className="text-lg font-medium mb-3 flex items-center gap-2"><Diamond className="w-5 h-5 text-brand-cyan" /> Capabilities</h3>
-                          <ul className="space-y-2 list-none">
-                            <li className="flex items-start gap-3">
-                              <span className="bg-secondary text-brand-cyan p-1 rounded mt-0.5"><Puzzle className="w-4 h-4" /></span>
-                              <div>
-                                <strong className="block text-foreground border-none">Make mockups easily</strong>
-                                <span className="text-muted-foreground text-sm">Select frames and instantaneously convert them to 3D device mockups.</span>
-                              </div>
-                            </li>
-                            <li className="flex items-start gap-3">
-                              <span className="bg-secondary text-brand-cyan p-1 rounded mt-0.5"><Terminal className="w-4 h-4" /></span>
-                              <div>
-                                <strong className="block text-foreground border-none">Chat with AI</strong>
-                                <span className="text-muted-foreground text-sm">Tell the AI what you want to build and watch the Figma nodes create themselves.</span>
-                              </div>
-                            </li>
-                          </ul>
+                        <div className="flex items-center gap-3">
+                          <Puzzle className="h-8 w-8 text-brand-cyan" />
+                          <div>
+                            <CardTitle className="text-2xl">Figma Plugin — Visant Copilot</CardTitle>
+                            <CardDescription>AI-powered design assistant that creates, edits, and organizes Figma nodes from natural language.</CardDescription>
+                          </div>
                         </div>
+                      </CardHeader>
+                    </Card>
 
-                        <Separator />
+                    {/* Installation */}
+                    <Card id="pl-install" className="scroll-mt-20">
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2"><Puzzle className="w-5 h-5 text-brand-cyan" /> Installation</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ol className="list-decimal pl-5 space-y-2 text-muted-foreground text-sm">
+                          <li>Open any file in Figma.</li>
+                          <li>Go to <strong className="text-foreground">Resources {'>'} Plugins</strong> and search for <strong className="text-foreground">Visant Copilot</strong>.</li>
+                          <li>Click <strong className="text-foreground">Run</strong> to launch the plugin panel.</li>
+                          <li>Sign in with your Visant account to unlock brand-aware features and credit-based generation.</li>
+                        </ol>
+                      </CardContent>
+                    </Card>
 
+                    {/* AI Chat */}
+                    <Card id="pl-chat" className="scroll-mt-20">
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2"><Terminal className="w-5 h-5 text-brand-cyan" /> AI Chat</CardTitle>
+                        <CardDescription>Describe what you want in natural language — the AI creates, edits, and organizes Figma nodes automatically.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <ul className="space-y-3 list-none">
+                          {[
+                            ['@mentions', 'Type @ to reference layers, components, or variables by name. The AI resolves them to real node IDs.'],
+                            ['Multimodal input', 'Drag-and-drop or paste images directly into the chat input for visual context.'],
+                            ['Brand context', 'Select a Brand Guideline to inject colors, typography, and tone into every prompt.'],
+                            ['/clear command', 'Type /clear to reset chat history.'],
+                            ['Clickable layer refs', 'Operation summaries show @"LayerName" links that select and zoom to the referenced layer.'],
+                            ['Copy & select', 'Hover any message bubble for a copy button; text is fully selectable.'],
+                          ].map(([title, desc]) => (
+                            <li key={title} className="flex items-start gap-3">
+                              <span className="bg-secondary text-brand-cyan p-1 rounded mt-0.5 shrink-0"><Code className="w-4 h-4" /></span>
+                              <div>
+                                <strong className="block text-foreground border-none text-sm">{title}</strong>
+                                <span className="text-muted-foreground text-sm">{desc}</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+
+                    {/* Operations */}
+                    <Card id="pl-operations" className="scroll-mt-20">
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2"><Layers className="w-5 h-5 text-brand-cyan" /> Supported Operations (25+)</CardTitle>
+                        <CardDescription>All operations use JSON format: <code className="font-redhatmono bg-secondary px-1 rounded">{'[{ "type": "OP", ...params }]'}</code></CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {[
+                          { label: 'Creation', color: 'text-green-400', ops: ['CREATE_FRAME', 'CREATE_RECTANGLE', 'CREATE_ELLIPSE', 'CREATE_TEXT', 'CREATE_COMPONENT_INSTANCE', 'CREATE_PAGE'] },
+                          { label: 'Edit', color: 'text-amber-400', ops: ['SET_FILL', 'SET_STROKE', 'SET_CORNER_RADIUS', 'SET_EFFECTS', 'SET_AUTO_LAYOUT', 'SET_OPACITY', 'SET_TEXT_CONTENT', 'SET_TEXT_STYLE', 'SET_IMAGE_FILL', 'RESIZE', 'MOVE', 'RENAME'] },
+                          { label: 'Structure', color: 'text-blue-400', ops: ['GROUP_NODES', 'UNGROUP', 'DELETE_NODE', 'CLONE_NODE', 'DETACH_INSTANCE'] },
+                          { label: 'Advanced', color: 'text-purple-400', ops: ['CREATE_COMPONENT', 'CREATE_SVG', 'COMBINE_AS_VARIANTS', 'CREATE_COLOR_VARIABLES_FROM_SELECTION', 'BIND_NEAREST_COLOR_VARIABLES', 'REQUEST_SCAN'] },
+                        ].map(cat => (
+                          <div key={cat.label}>
+                            <h4 className={`text-sm font-semibold mb-2 ${cat.color}`}>{cat.label}</h4>
+                            <div className="flex flex-wrap gap-1.5">
+                              {cat.ops.map(op => (
+                                <Badge key={op} variant="secondary" className="font-redhatmono text-xs">{op}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+
+                    {/* Brand Guidelines */}
+                    <Card id="pl-brand" className="scroll-mt-20">
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2"><Diamond className="w-5 h-5 text-brand-cyan" /> Brand Guidelines</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <ul className="space-y-2 text-muted-foreground text-sm list-disc pl-5">
+                          <li>Select a brand guideline from the sidebar to inject identity context (colors, typography, tone) into every AI prompt.</li>
+                          <li>The last selected brand <strong className="text-foreground">persists across sessions</strong> via Figma pluginData — no need to re-select each time.</li>
+                          <li>Brand context is sent alongside the user prompt to the server, ensuring brand-consistent outputs.</li>
+                        </ul>
+                      </CardContent>
+                    </Card>
+
+                    {/* Smart Scan */}
+                    <Card id="pl-scan" className="scroll-mt-20">
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2"><Workflow className="w-5 h-5 text-brand-cyan" /> Smart Scan</CardTitle>
+                        <CardDescription>Automatic page-level context when the selection isn't enough.</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-muted-foreground text-sm leading-relaxed">
+                          When the AI needs context beyond the current selection, it automatically emits a <code className="font-redhatmono bg-secondary px-1 rounded">REQUEST_SCAN</code> operation.
+                          This triggers a full page scan, re-sending the command with complete page context. The scan status appears as a tool call in the chat UI.
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    {/* Plugin API */}
+                    <Card id="pl-api" className="scroll-mt-20">
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2"><Server className="w-5 h-5 text-brand-cyan" /> Plugin API</CardTitle>
+                        <CardDescription>For developers integrating with the plugin architecture.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
                         <div>
-                          <h3 className="text-lg font-medium mb-3">Installation</h3>
-                          <ol className="list-decimal pl-5 space-y-2 text-muted-foreground">
-                            <li>Open any file in Figma.</li>
-                            <li>Go to <strong>Resources {'>'} Plugins</strong>.</li>
-                            <li>Search for <strong>Visant Copilot</strong> and click Run.</li>
-                            <li>Follow the on-screen prompts to connect your account.</li>
-                          </ol>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Architecture</h4>
+                          <div className="bg-secondary/60 rounded p-4 font-redhatmono text-xs text-foreground">
+                            <pre className="whitespace-pre">{`Figma Sandbox (code.ts) ⇄ UI iframe (React) ─fetch─▶ POST /api/plugin (Gemini)
+                       ◀── APPLY_OPERATIONS ──────────`}</pre>
+                          </div>
+                        </div>
+                        <Separator />
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">POST /api/plugin</h4>
+                          <p className="text-muted-foreground text-sm mb-3">Stateless endpoint. Receives serialized selection + brand context + user prompt. Returns <code className="font-redhatmono bg-secondary px-1 rounded">{'{ success, operations[], message }'}</code>.</p>
+                        </div>
+                        <Separator />
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Operation JSON Format</h4>
+                          <div className="bg-secondary/60 rounded p-4 font-redhatmono text-xs text-foreground">
+                            <pre className="whitespace-pre">{`[
+  { "type": "CREATE_FRAME", "ref": "card", "props": { "name": "Card", "width": 300, "height": 200 } },
+  { "type": "CREATE_TEXT", "parentRef": "card", "props": { "content": "Hello", "fontSize": 16 } }
+]`}</pre>
+                          </div>
+                          <p className="text-muted-foreground text-xs mt-2">
+                            <code className="font-redhatmono bg-secondary px-1 rounded">ref</code> creates a named reference; <code className="font-redhatmono bg-secondary px-1 rounded">parentRef</code> nests inside a previously created node; <code className="font-redhatmono bg-secondary px-1 rounded">parentNodeId</code> nests inside an existing Figma node by ID.
+                          </p>
                         </div>
                       </CardContent>
                     </Card>

@@ -55,6 +55,26 @@ const getAI = (apiKey?: string): GoogleGenAI => {
   return ai;
 };
 
+/**
+ * Lightweight text completion for pre-pass classification.
+ * Uses Flash Lite for minimal cost (~0.01 credits).
+ */
+export const quickTextCall = async (
+  systemPrompt: string,
+  userPrompt: string,
+  apiKey?: string,
+): Promise<string> => {
+  const response = await getAI(apiKey).models.generateContent({
+    model: GEMINI_MODELS.FLASH_3_LITE,
+    contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
+    config: {
+      responseMimeType: 'application/json',
+      maxOutputTokens: 256,
+    },
+  });
+  return (response.text || '').trim();
+};
+
 export class RateLimitError extends Error {
   constructor(message: string) {
     super(message);
@@ -1250,153 +1270,208 @@ export interface FigmaOperationsResult {
   outputTokens?: number;
 }
 
+// ── Intent Detection ──
+
+type OperationIntent = 'clone_adapt' | 'create_fresh' | 'edit_existing' | 'linear_issue';
+
+function detectIntent(prompt: string, context: SerializedContext | EnrichedContext, isLinearIssue: boolean): OperationIntent {
+  if (isLinearIssue) return 'linear_issue';
+
+  const hasSelection = (context.nodes?.length ?? 0) > 0;
+  const lower = prompt.toLowerCase();
+
+  const cloneSignals = ['clon', 'varia', 'adapt', 'mesma pegada', 'mesmo estilo', 'parecid', 'similar', 'duplica', 'replic', 'mais layout', 'nessa linha', 'nesse estilo', 'like this', 'based on', 'more like'];
+  const editSignals = ['muda', 'troca', 'altera', 'edit', 'change', 'update', 'fix', 'ajust', 'corrij'];
+
+  if (hasSelection && cloneSignals.some(s => lower.includes(s))) return 'clone_adapt';
+  if (hasSelection && editSignals.some(s => lower.includes(s))) return 'edit_existing';
+  return 'create_fresh';
+}
+
+// ── Prompt Sections (static, cacheable) ──
+
+const CORE_IDENTITY = `You are a Figma design operations generator. Return ONLY valid JSON: { "operations": [ ... ] }`;
+
+const RULES_ORGANIZATION = `## RULES
+- Use "ref" to name nodes, "parentRef" to nest children
+- autoPosition: "right"|"below"|"grid" for auto-positioning (no manual x/y)
+- Include dimensions in frame names (e.g., "Feed 1080x1080")
+- TOP-LEVEL FRAMES: FIXED width/height, NO layoutMode (causes "Hug" sizing)
+- layoutMode: ONLY inside content containers
+- RGB: 0-1 floats (red = {r:1,g:0,b:0})`;
+
+const OPS_CREATE = `## CREATE OPERATIONS
+- CREATE_PAGE: { type, ref, props: { name } }
+- CREATE_FRAME: { type, ref?, parentRef?, props: { name, width, height, autoPosition?, positionGap?, fills?, cornerRadius?, layoutMode?, itemSpacing?, padding*, primaryAxisSizingMode?, counterAxisSizingMode?, primaryAxisAlignItems?, counterAxisAlignItems?, layoutWrap?, layoutSizingHorizontal?, layoutSizingVertical?, min/maxWidth?, min/maxHeight?, strokes?, strokeWeight?, clipsContent?, opacity? } }
+- CREATE_TEXT: { type, ref?, parentRef?, props: { name?, content, fontSize?, fontFamily?, fontStyle?, fills?, textAlignHorizontal?, textAlignVertical?, textAutoResize?, layoutSizingHorizontal?, layoutSizingVertical?, lineHeight?, letterSpacing?, textDecoration?, textCase?, paragraphSpacing?, opacity? } }
+- CREATE_RECTANGLE: { type, ref?, parentRef?, props: { name, width, height, x?, y?, fills?, cornerRadius?, strokes?, strokeWeight?, opacity?, effects?, rotation?, constraints?, layoutSizingHorizontal?, layoutSizingVertical? } }
+- CREATE_ELLIPSE: { type, ref?, parentRef?, props: { name, width, height, x?, y?, fills?, strokes?, strokeWeight?, opacity?, effects?, rotation?, constraints?, layoutSizingHorizontal?, layoutSizingVertical? } }
+- CREATE_LINE: { type, ref?, parentRef?, props: { name, width, strokes?, strokeWeight? } }
+- CREATE_POLYGON: { type, ref?, parentRef?, props: { name, width, height, pointCount, fills? } }
+- CREATE_STAR: { type, ref?, parentRef?, props: { name, width, height, pointCount, fills?, innerRadius? } }
+- CREATE_SVG: { type, ref?, parentRef?, svgString, name?, width?, height?, x?, y?, opacity? }
+- CREATE_ICON: { type, ref?, parentRef?, props: { icon (e.g. "lucide:check"), size?, color?, x?, y?, name?, opacity? } }
+- CREATE_COMPONENT: { type, ref?, parentRef?, props: { name, width, height, description?, fills?, cornerRadius?, layoutMode?, primaryAxisSizingMode?, counterAxisSizingMode?, primaryAxisAlignItems?, counterAxisAlignItems?, itemSpacing?, padding*, layoutSizingHorizontal?, layoutSizingVertical? } }
+- CREATE_COMPONENT_INSTANCE: { type, ref?, parentRef?, componentKey, name?, width?, height?, x?, y? }
+- COMBINE_AS_VARIANTS: { type, ref?, componentRefs[], name }`;
+
+const OPS_CLONE = `## CLONE OPERATIONS (preserves logos, images, components, all children)
+- CLONE_NODE by name: { type: "CLONE_NODE", ref?, sourceName: "Frame Name", sourceScope?: "page"|"file", parentRef?, props?: { name?, fills?, width?, height?, opacity?, layoutSizing* }, textOverrides?: [{ name: "LayerName", content: "New text" }] }
+- CLONE_NODE by ID: { type: "CLONE_NODE", ref?, sourceNodeId: "123:456", parentRef?, props?, textOverrides? }
+- DUPLICATE_NODE: { type: "DUPLICATE_NODE", ref?, sourceNodeId, parentRef?, props?, textOverrides? }`;
+
+const OPS_MODIFY = `## MODIFY OPERATIONS
+- SET_FILL: { type, nodeId, fills[] }
+- SET_STROKE: { type, nodeId, strokes[], strokeWeight?, strokeAlign? }
+- SET_IMAGE_FILL: { type, nodeId?, ref?, imageUrl, scaleMode? }
+- SET_CORNER_RADIUS: { type, nodeId, cornerRadius, cornerSmoothing? }
+- SET_INDIVIDUAL_CORNERS: { type, nodeId, topLeftRadius?, topRightRadius?, bottomLeftRadius?, bottomRightRadius?, cornerSmoothing? }
+- SET_EFFECTS: { type, nodeId, effects[] }
+- SET_AUTO_LAYOUT: { type, nodeId, layoutMode, primaryAxisSizingMode?, counterAxisSizingMode?, primaryAxisAlignItems?, counterAxisAlignItems?, layoutWrap?, itemSpacing?, counterAxisSpacing?, padding*, strokesIncludedInLayout?, layoutSizingHorizontal?, layoutSizingVertical? }
+- SET_TEXT_CONTENT: { type, nodeId, content, fontFamily?, fontStyle?, fontSize?, fills? }
+- SET_TEXT_STYLE: { type, nodeId, fontSize?, fontFamily?, fontStyle?, textAutoResize?, textAlignHorizontal?, textAlignVertical?, lineHeight?, letterSpacing?, fills? }
+- SET_TEXT_RANGES: { type, nodeId, ranges[]: { start, end, fontFamily?, fontStyle?, fontSize?, fills?, textDecoration?, textCase?, letterSpacing?, lineHeight? } }
+- SET_OPACITY: { type, nodeId, opacity }
+- SET_BLEND_MODE: { type, nodeId, blendMode }
+- SET_CONSTRAINTS: { type, nodeId, horizontal, vertical }
+- SET_LAYOUT_GRID: { type, nodeId, grids[]: { pattern, alignment?, count?, gutterSize?, sectionSize?, offset?, color?, visible? } }
+- RESIZE: { type, nodeId, width, height }
+- MOVE: { type, nodeId?, ref?, x, y }
+- RENAME: { type, nodeId, name }
+- REORDER_CHILD: { type, nodeId, parentNodeId, index }
+- RECOLOR_NODE: { type, ref?, nodeId?, props: { fills[] } }
+- BOOLEAN_OPERATION: { type, ref?, operation: "UNION"|"SUBTRACT"|"INTERSECT"|"EXCLUDE", nodeIds?, nodeRefs?, name? }
+- GROUP_NODES: { type, nodeIds[], name }
+- UNGROUP: { type, nodeId }
+- DETACH_INSTANCE: { type, nodeId }`;
+
+const OPS_VARIABLES = `## VARIABLE OPERATIONS
+- APPLY_VARIABLE: { type, nodeId, variableId, field }
+- APPLY_STYLE: { type, nodeId, styleId, styleType: "FILL"|"TEXT"|"EFFECT"|"GRID" }
+- CREATE_VARIABLE: { type, ref?, collectionName, name, resolvedType: "COLOR"|"FLOAT"|"STRING"|"BOOLEAN", value }
+- CREATE_COLOR_VARIABLES_FROM_SELECTION: { type, ref?, collectionName? }
+- BIND_NEAREST_COLOR_VARIABLES: { type, ref?, threshold?, scope?: "selection"|"page", collectionName? }`;
+
+// ── Few-shot Examples by Intent ──
+
+const EXAMPLE_CREATE = `## EXAMPLE
+\`\`\`json
+{"operations":[
+  {"type":"CREATE_PAGE","ref":"p1","props":{"name":"[VSN-511] Campaign"}},
+  {"type":"CREATE_FRAME","ref":"feed","parentRef":"p1","props":{"name":"Feed 1080x1080","width":1080,"height":1080,"autoPosition":"right","fills":[{"type":"SOLID","color":{"r":0.1,"g":0.1,"b":0.1}}]}},
+  {"type":"CREATE_FRAME","ref":"content","parentRef":"feed","props":{"name":"Content","layoutMode":"VERTICAL","itemSpacing":24,"paddingTop":40,"paddingBottom":40,"paddingLeft":40,"paddingRight":40,"primaryAxisSizingMode":"AUTO","counterAxisSizingMode":"FIXED","width":1000}},
+  {"type":"CREATE_TEXT","parentRef":"content","props":{"content":"Título","fontSize":48}}
+]}
+\`\`\``;
+
+const EXAMPLE_CLONE = `## EXAMPLE: Clone & adapt from selected frame
+\`\`\`json
+{"operations":[
+  {"type":"CLONE_NODE","ref":"v1","sourceName":"Frame 4639","props":{"name":"Layout/Dark 1080x1350"},"textOverrides":[{"name":"Heading","content":"NEW HEADLINE"}]},
+  {"type":"CLONE_NODE","ref":"v2","sourceName":"Frame 4639","props":{"name":"Layout/Light 1080x1350"},"textOverrides":[{"name":"Heading","content":"ALTERNATE COPY"}]},
+  {"type":"SET_FILL","nodeId":"{{v2}}","fills":[{"type":"SOLID","color":{"r":0.95,"g":0.94,"b":0.91}}]}
+]}
+\`\`\``;
+
+const EXAMPLE_EDIT = `## EXAMPLE: Modify existing nodes
+\`\`\`json
+{"operations":[
+  {"type":"SET_TEXT_CONTENT","nodeId":"123:456","content":"Updated text","fontSize":32},
+  {"type":"SET_FILL","nodeId":"123:789","fills":[{"type":"SOLID","color":{"r":0.2,"g":0.2,"b":0.8}}]},
+  {"type":"RESIZE","nodeId":"123:456","width":1080,"height":1920}
+]}
+\`\`\``;
+
+// ── Dynamic Context Builders ──
+
+function buildAssetsSection(enriched: EnrichedContext): string {
+  if (!enriched.reusableAssets?.length) return '';
+  return `\n## AVAILABLE ASSETS (use sourceName in CLONE_NODE)
+${enriched.reusableAssets.map(a => `- "${a.name}" (${a.type}, ${a.width}x${a.height})`).join('\n')}`;
+}
+
+function buildTemplatesSection(enriched: EnrichedContext): string {
+  if (!enriched.templates?.length) return '';
+  return `\n## TEMPLATES (clone with textOverrides)
+${enriched.templates.map(t => `- "${t.name}" (${t.width}x${t.height}) - slots: ${t.textSlots?.join(', ') || 'none'}`).join('\n')}`;
+}
+
+function buildPagesSection(enriched: EnrichedContext): string {
+  if (!enriched.pages?.length) return '';
+  return `\n## EXISTING PAGES
+${enriched.pages.map(p => `- "${p.name}" (${p.frameCount} frames)`).join('\n')}`;
+}
+
+function buildLinearSection(linearIssue: any): string {
+  if (!linearIssue) return '';
+  const dims = linearIssue.formato?.dimensoes?.map((d: any) => `${d.width}x${d.height}`).join(', ') || 'não especificado';
+  const textos = Object.entries(linearIssue.textos || {}).map(([k, v]) => `  - ${k}: "${(v as string).slice(0, 50)}..."`).join('\n');
+
+  return `
+## LINEAR ISSUE
+- ID: ${linearIssue.identifier} | Title: ${linearIssue.title}
+- Cliente: ${linearIssue.cliente || '-'} | Formatos: ${dims}
+${textos ? `- Textos:\n${textos}` : ''}
+- Estilo: ${linearIssue.observacoes?.join(', ') || '-'}
+
+INSTRUCTIONS: Create page "[${linearIssue.identifier}] ${linearIssue.title.slice(0, 50)}", one frame per format with dimensions in name, autoPosition: "right", clone assets by sourceName if available, include all specified texts.`;
+}
+
+// ── Prompt Assembler (intent-driven, minimal tokens) ──
+
+function buildSystemPrompt(intent: OperationIntent, enriched: EnrichedContext, linearIssue: any): string {
+  const sections: string[] = [CORE_IDENTITY, RULES_ORGANIZATION];
+
+  switch (intent) {
+    case 'clone_adapt':
+      sections.push(OPS_CLONE, OPS_MODIFY, EXAMPLE_CLONE);
+      break;
+    case 'edit_existing':
+      sections.push(OPS_MODIFY, OPS_CLONE, EXAMPLE_EDIT);
+      break;
+    case 'linear_issue':
+      sections.push(OPS_CREATE, OPS_CLONE, OPS_MODIFY, EXAMPLE_CREATE);
+      sections.push(buildLinearSection(linearIssue));
+      break;
+    case 'create_fresh':
+    default:
+      sections.push(OPS_CREATE, OPS_CLONE, OPS_MODIFY, EXAMPLE_CREATE);
+      break;
+  }
+
+  if (enriched.reusableAssets?.length || enriched.templates?.length) {
+    if (!sections.includes(OPS_CLONE)) sections.push(OPS_CLONE);
+    sections.push(OPS_VARIABLES);
+  }
+
+  sections.push(buildAssetsSection(enriched));
+  sections.push(buildTemplatesSection(enriched));
+  sections.push(buildPagesSection(enriched));
+
+  return sections.filter(Boolean).join('\n\n');
+}
+
 export const generateFigmaOperations = async (
   prompt: string,
   context: SerializedContext | EnrichedContext,
   userApiKey?: string
 ): Promise<FigmaOperationsResult> => {
   return withRetry(async () => {
-    // Preprocess prompt (detect and parse Linear issues)
     const { processedPrompt, linearIssue, isLinearIssue } = preprocessPrompt(prompt);
-
-    // Build context sections
     const enriched = context as EnrichedContext;
+    const intent = detectIntent(prompt, context, isLinearIssue);
     const nodesStr = JSON.stringify(context.nodes?.slice(0, 10) || [], null, 2);
 
-    // Build available assets section
-    let assetsSection = '';
-    if (enriched.reusableAssets?.length) {
-      assetsSection = `\n## AVAILABLE ASSETS (clone by name with sourceName)
-${enriched.reusableAssets.map(a => `- "${a.name}" (${a.type}, ${a.width}x${a.height})`).join('\n')}`;
-    }
+    const systemPrompt = buildSystemPrompt(intent, enriched, linearIssue);
 
-    // Build templates section
-    let templatesSection = '';
-    if (enriched.templates?.length) {
-      templatesSection = `\n## AVAILABLE TEMPLATES (clone with textOverrides)
-${enriched.templates.map(t => `- "${t.name}" (${t.width}x${t.height}) - slots: ${t.textSlots?.join(', ') || 'none'}`).join('\n')}`;
-    }
-
-    // Build pages section
-    let pagesSection = '';
-    if (enriched.pages?.length) {
-      pagesSection = `\n## EXISTING PAGES
-${enriched.pages.map(p => `- "${p.name}" (${p.frameCount} frames)`).join('\n')}`;
-    }
-
-    // Build Linear issue section if detected
-    let linearSection = '';
-    if (isLinearIssue && linearIssue) {
-      const dims = linearIssue.formato?.dimensoes?.map(d => `${d.width}x${d.height}`).join(', ') || 'não especificado';
-      const textos = Object.entries(linearIssue.textos || {}).map(([k, v]) => `  - ${k}: "${v.slice(0, 50)}..."`).join('\n');
-
-      linearSection = `
-## LINEAR ISSUE DETECTED
-- ID: ${linearIssue.identifier}
-- Title: ${linearIssue.title}
-- Cliente: ${linearIssue.cliente || 'não especificado'}
-- Formatos: ${dims}
-${textos ? `- Textos:\n${textos}` : ''}
-- Estilo: ${linearIssue.observacoes?.join(', ') || 'não especificado'}
-
-INSTRUÇÕES PARA ESTA ISSUE:
-1. Criar página com nome "[${linearIssue.identifier}] ${linearIssue.title.slice(0, 50)}"
-2. Criar frames para cada formato - NOME DEVE INCLUIR DIMENSÕES (ex: "Stories 1080x1920", "Feed 1080x1080")
-3. Usar autoPosition: "right" para organizar frames lado a lado
-4. Se houver assets de background disponíveis, clonar com sourceName
-5. Incluir todos os textos especificados na hierarquia correta`;
-    }
-
-    const systemPrompt = `You are a Figma plugin assistant specialized in generating organized design layouts.
-
-Return ONLY valid JSON: { "operations": [ ... ] }
-
-## ORGANIZATION RULES
-1. For multiple demands/sections: CREATE a separate PAGE for each demand FIRST
-2. Use "ref" to name pages/frames, then "parentRef" to nest frames inside pages
-3. Use autoPosition: "right" to automatically position frames side-by-side (no manual x/y needed)
-4. FRAME NAMING: Always include dimensions in frame name (e.g., "Stories 1080x1920", "Banner 300x250", "A4 21x29.7cm", "Outdoor 3x2m")
-5. CRITICAL - TOP-LEVEL FRAMES: Canvas frames (Feed, Stories, Banners) must have FIXED width/height. NEVER use layoutMode on top-level frames - it causes "Hug" sizing which breaks the design. Auto-layout is ONLY for content containers INSIDE frames.
-
-## OPERATION TYPES
-
-### PAGE CREATION
-- CREATE_PAGE: { type: "CREATE_PAGE", ref: "page_id", props: { name: "Page Name" } }
-
-### FRAME CREATION (with auto-positioning)
-- CREATE_FRAME: { type: "CREATE_FRAME", ref?, parentRef?, props: {
-    name, width, height,
-    autoPosition?: "right"|"below"|"grid",  // Auto-calculates x/y
-    positionGap?: 100,  // Gap between frames (default: 100)
-    fills?: [{ type: "SOLID", color: { r, g, b } }],
-    cornerRadius?
-  } }
-
-IMPORTANT - FRAME vs AUTO-LAYOUT:
-- TOP-LEVEL FRAMES (canvas artboards like Feed, Stories, Banners): ALWAYS use FIXED width/height, NO layoutMode
-- AUTO-LAYOUT (layoutMode): ONLY for internal content containers INSIDE frames (e.g., text groups, button containers)
-- WRONG: Creating a 1080x1080 frame with layoutMode (results in "Hug" sizing)
-- CORRECT: Create frame with fixed dimensions, then create auto-layout containers inside for content
-
-### AUTO-LAYOUT CONTAINER (for content organization inside frames)
-- CREATE_FRAME with layoutMode: { type: "CREATE_FRAME", parentRef: "mainFrame", props: {
-    name: "Content Container",
-    layoutMode: "VERTICAL",  // Only use inside another frame!
-    itemSpacing: 16,
-    paddingTop/Right/Bottom/Left: 24,
-    primaryAxisSizingMode: "AUTO",  // Hug content
-    counterAxisSizingMode: "AUTO"
-  } }
-
-### TEXT CREATION
-- CREATE_TEXT: { type: "CREATE_TEXT", ref?, parentRef?, props: { name?, content, fontSize?, fontFamily?, fills?, textAlignHorizontal?: "LEFT"|"CENTER"|"RIGHT", layoutSizingHorizontal?: "FIXED"|"HUG"|"FILL" } }
-
-### CLONE BY NAME (PREFERRED - more robust than ID)
-- CLONE_NODE: { type: "CLONE_NODE", ref?, sourceName: "Asset Name", parentRef?, textOverrides?: [{ name: "TextLayerName", content: "New text" }] }
-- Use sourceName to clone existing assets by name (no fragile IDs!)
-- Use textOverrides to replace text in cloned templates
-
-### CLONE BY ID (fallback)
-- CLONE_NODE: { type: "CLONE_NODE", ref?, sourceNodeId: "123:456", parentRef? }
-${assetsSection}
-${templatesSection}
-${pagesSection}
-${linearSection}
-
-## COLOR VALUES
-RGB: 0-1 floats. Example: red = { r: 1, g: 0, b: 0 }, orange = { r: 0.83, g: 0.29, b: 0.05 }
-
-## EXAMPLE: Correct frame structure
-\`\`\`json
-{
-  "operations": [
-    { "type": "CREATE_PAGE", "ref": "p1", "props": { "name": "[VSN-511] Credenciamento" } },
-
-    // TOP-LEVEL FRAME: Fixed dimensions, NO layoutMode
-    { "type": "CREATE_FRAME", "ref": "feed", "parentRef": "p1", "props": {
-      "name": "Feed 1080x1080", "width": 1080, "height": 1080, "autoPosition": "right",
-      "fills": [{ "type": "SOLID", "color": { "r": 0.1, "g": 0.1, "b": 0.1 } }]
-    }},
-
-    // CONTENT CONTAINER: Auto-layout INSIDE the frame
-    { "type": "CREATE_FRAME", "ref": "content", "parentRef": "feed", "props": {
-      "name": "Content", "layoutMode": "VERTICAL", "itemSpacing": 24,
-      "paddingTop": 40, "paddingBottom": 40, "paddingLeft": 40, "paddingRight": 40,
-      "primaryAxisSizingMode": "AUTO", "counterAxisSizingMode": "FIXED", "width": 1000
-    }},
-
-    { "type": "CREATE_TEXT", "parentRef": "content", "props": { "content": "Título", "fontSize": 48 } }
-  ]
-}
-\`\`\``;
-
-    const userPrompt = `Canvas context (selection):
+    const userPrompt = `Selection context:
 ${nodesStr}
 
-User prompt: ${isLinearIssue ? processedPrompt : prompt}
-${isLinearIssue ? `\nOriginal Linear issue data available in system prompt above.` : ''}
+User: ${isLinearIssue ? processedPrompt : prompt}
+${isLinearIssue ? '\nLinear issue data in system prompt above.' : ''}
+Intent detected: ${intent}
 
-Return JSON with "operations" array only.`;
+Return JSON with "operations" array.`;
 
     const response = await getAI(userApiKey).models.generateContent({
       model: GEMINI_MODELS.TEXT,

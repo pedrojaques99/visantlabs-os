@@ -7,7 +7,7 @@ import type {
   ColorVariable,
   FontVariable
 } from '@/lib/figma-types';
-import type { ToolCallRecord } from '../../../../shared/types/chat';
+import type { ToolCallRecord } from '@shared/types/chat';
 
 export interface SelectionDetail {
   id: string;
@@ -86,6 +86,12 @@ export interface Attachment {
   preview?: string;
 }
 
+export interface SummaryItem {
+  text: string;
+  nodeId?: string;
+  nodeName?: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -93,9 +99,11 @@ export interface ChatMessage {
   timestamp: number;
   attachments?: Attachment[];
   operations?: FigmaOperation[];
+  summaryItems?: SummaryItem[];
   thinking?: string;
   metadata?: Record<string, any>;
   toolCalls?: ToolCallRecord[];
+  isError?: boolean;
 }
 
 export type { ToolCallRecord };
@@ -123,6 +131,7 @@ export interface PluginStore {
   thinkMode: boolean;
   useBrand: boolean;
   scanPage: boolean;
+  generateImage: boolean;
   mode: 'simple' | 'advanced';
 
   // Server
@@ -158,6 +167,8 @@ export interface PluginStore {
   extractSyncData: any | null;
   exportedImage: any | null;
   isGenerating: boolean;
+  isStreaming: boolean;
+  generatingStatus: string;
 
   // Internal: increments each time the brand state is hydrated from server.
   // Used by useBrandAutoSync to suppress echo writes.
@@ -168,6 +179,7 @@ export interface PluginStore {
   activeView: 'main' | 'settings';
   activeTab: 'brand' | 'config' | 'dev';
   openPanel: string | null;
+  devMode: boolean;
   toastMessage?: string;
   toastType?: 'success' | 'error' | 'info' | 'warning';
 
@@ -203,4 +215,7 @@ export interface PluginStore {
   setExtractSyncData: (data: any) => void;
   setExportedImage: (data: any) => void;
   setIsGenerating: (generating: boolean) => void;
+  setIsStreaming: (streaming: boolean) => void;
+  setGeneratingStatus: (status: string) => void;
+  toggleDevMode: () => void;
 }

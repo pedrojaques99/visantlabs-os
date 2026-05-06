@@ -18,10 +18,35 @@ import {
   getPromptMode,
   buildDesignSystemContext,
   buildRetryFeedback,
+  refineIntentWithLLM,
   type PluginRequest,
   type DesignSystemJSON,
   type AssembledPrompt,
 } from '../lib/figmaAgentPrompt.js';
+import { quickTextCall } from '../services/geminiService.js';
+
+// ── Session error feedback (in-memory, auto-expires) ──
+const sessionErrors = new Map<string, { errors: string[]; ts: number }>();
+const SESSION_ERROR_TTL = 5 * 60 * 1000; // 5 min
+
+function getSessionErrors(sessionId?: string): string[] {
+  if (!sessionId) return [];
+  const entry = sessionErrors.get(sessionId);
+  if (!entry || Date.now() - entry.ts > SESSION_ERROR_TTL) {
+    sessionErrors.delete(sessionId);
+    return [];
+  }
+  return entry.errors;
+}
+
+function pushSessionErrors(sessionId: string | undefined, errors: string[]) {
+  if (!sessionId || !errors.length) return;
+  const existing = getSessionErrors(sessionId);
+  sessionErrors.set(sessionId, {
+    errors: [...existing, ...errors].slice(-10),
+    ts: Date.now(),
+  });
+}
 
 // Rate limiter for agent commands (strict - 20 req/min)
 const agentCommandLimiter = rateLimit({
@@ -84,6 +109,8 @@ import { scanTemplates, buildTemplateContext } from '../lib/templateScanner.js';
 import { buildFormatPresetsContext } from '../lib/formatPresets.js';
 import { scanAgentComponents, buildComponentsContext } from '../lib/componentScanner.js';
 import { resolveContext, buildAgentContextPrompt } from '../lib/contextResolver.js';
+import { chatWithLLM } from '../services/llmRouter.js';
+import { getChatTools, executeChatTool } from '../services/chat/toolRegistry.js';
 
 const router = express.Router();
 
@@ -513,6 +540,418 @@ router.post('/scaffold-library', optionalAuth, async (req: AuthRequest, res: Res
   }
 });
 
+// ============ SSE Streaming Endpoint with Tool Pre-Pass ============
+
+const streamLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 15,
+  message: { error: 'Too many streaming requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
+ * POST /api/plugin/stream
+ * SSE endpoint: tool pre-pass → generate operations → stream events
+ * Events: thinking, tool_start, tool_end, operations, message, done, error
+ */
+router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res: Response) => {
+  // SSE headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const send = (event: string, data: any) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
+
+  try {
+    const {
+      command,
+      sessionId,
+      fileId,
+      selectedElements = [],
+      selectedLogo,
+      brandLogos,
+      selectedBrandFont,
+      brandFonts,
+      selectedBrandColors,
+      availableComponents = [],
+      availableColorVariables = [],
+      availableFontVariables = [],
+      availableLayers = [],
+      apiKey: userApiKey,
+      anthropicApiKey: userAnthropicKey,
+      attachments = [],
+      mentions = [],
+      designSystem,
+      brandGuideline: brandGuidelineFromUI,
+      brandGuidelineId,
+      thinkMode = false,
+      useBrand = true,
+      generateImage = false,
+    } = req.body as PluginRequest;
+
+    if (!command) {
+      send('error', { message: 'Command is required' });
+      return res.end();
+    }
+
+    send('thinking', { message: 'Processando...' });
+
+    // Credit check
+    const isByok = !!(userApiKey || userAnthropicKey);
+    if (req.userId && !isByok) {
+      const credits = await checkCredits(req.userId);
+      if (!credits.canGenerate) {
+        send('error', { message: credits.reason, code: 'NO_CREDITS' });
+        return res.end();
+      }
+    }
+
+    // ═══ Phase 1: Tool Pre-Pass ═══
+    // Ask LLM if it needs any tools before generating Figma operations
+    let enrichedContext = '';
+    const toolCallRecords: Array<{
+      id: string;
+      name: string;
+      status: 'running' | 'done' | 'error';
+      args?: any;
+      startedAt: string;
+      endedAt?: string;
+      summary?: string;
+    }> = [];
+
+    try {
+      const prePassPrompt = `You are a Figma design assistant deciding which tools to use before generating design operations.
+
+Available tools:
+- generate_mockup: Generate AI images/mockups. Use when user asks to create mockups, generate images, or needs visual assets. Choose model wisely:
+  - gpt-image-2: best quality + brand fidelity (default)
+  - gemini-3.1-flash-image-preview: fast/creative explorations
+  - seedream-3-0: photorealistic lifestyle/product shots
+  Choose aspectRatio based on context: 1:1 (Instagram/square), 9:16 (story/Reels), 16:9 (landscape/billboard/cover), 4:5 (portrait feed).
+  Set designType when relevant: social-media, business-card, packaging, billboard, apparel, signage.
+- describe_image: Analyze an image by URL or base64. Use when user shares an image to recreate or reference.
+- get_brand_context: Fetch brand guideline details. Use when you need brand info not already in context.
+- web_search: Search the web for references, inspiration, or information.
+
+Rules:
+- If the user wants a mockup/image, ALWAYS use generate_mockup. The imageUrl in the result will be used with SET_IMAGE_FILL in the design phase.
+- If brandGuidelineId is available, pass it to generate_mockup — it auto-injects logo + colors + typography.
+- If the request doesn't need any tools, respond with just "READY".
+- You can call multiple tools if needed.
+${brandGuidelineId ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this to generate_mockup and get_brand_context.` : ''}
+${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call generate_mockup for this request. Infer prompt, aspectRatio, designType, and model from the user message. Do NOT respond with just "READY".` : ''}`;
+
+      const prePassResult = await chatWithLLM(command, '', [], {
+        provider: 'gemini',
+        apiKey: userApiKey || undefined,
+        systemInstruction: prePassPrompt,
+        tools: getChatTools(false),
+      });
+
+      if (prePassResult.toolCalls?.length) {
+        for (const call of prePassResult.toolCalls) {
+          const tcId = `tc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+          const startedAt = new Date().toISOString();
+
+          send('tool_start', { id: tcId, name: call.name, args: call.args });
+          toolCallRecords.push({ id: tcId, name: call.name, status: 'running', args: call.args, startedAt });
+
+          try {
+            const result = await executeChatTool(call.name, call.args, {
+              userId: req.userId || '',
+              sessionId: sessionId || '',
+              authHeader: req.headers.authorization || '',
+              brandGuidelineId,
+            });
+
+            const resultStr = typeof result === 'string' ? result : JSON.stringify(result);
+            enrichedContext += `\n\n[Tool: ${call.name}] Result:\n${resultStr.slice(0, 3000)}`;
+
+            const endedAt = new Date().toISOString();
+            send('tool_end', { id: tcId, name: call.name, duration_ms: Date.now() - new Date(startedAt).getTime() });
+            const idx = toolCallRecords.findIndex(t => t.id === tcId);
+            if (idx >= 0) {
+              toolCallRecords[idx].status = 'done';
+              toolCallRecords[idx].endedAt = endedAt;
+              toolCallRecords[idx].summary = resultStr.slice(0, 200);
+            }
+          } catch (toolErr) {
+            send('tool_end', { id: tcId, name: call.name, error: (toolErr as Error).message });
+            const idx = toolCallRecords.findIndex(t => t.id === tcId);
+            if (idx >= 0) toolCallRecords[idx].status = 'error';
+          }
+        }
+      }
+    } catch (prePassErr) {
+      console.error('[Plugin:Stream] Pre-pass error (non-fatal):', (prePassErr as Error).message);
+    }
+
+    // Force generate_mockup if IMAGE mode is on but pre-pass didn't call it
+    if (generateImage && !toolCallRecords.some(t => t.name === 'generate_mockup')) {
+      try {
+        const tcId = `tc-${Date.now()}-force`;
+        const startedAt = new Date().toISOString();
+        const forceArgs: any = { prompt: command, model: 'gpt-image-2' };
+        if (brandGuidelineId) forceArgs.brandGuidelineId = brandGuidelineId;
+
+        send('tool_start', { id: tcId, name: 'generate_mockup', args: forceArgs });
+        toolCallRecords.push({ id: tcId, name: 'generate_mockup', status: 'running', args: forceArgs, startedAt });
+
+        const result = await executeChatTool('generate_mockup', forceArgs, {
+          userId: req.userId || '',
+          sessionId: sessionId || '',
+          authHeader: req.headers.authorization || '',
+          brandGuidelineId,
+        });
+
+        const resultStr = typeof result === 'string' ? result : JSON.stringify(result);
+        enrichedContext += `\n\n[Tool: generate_mockup] Result:\n${resultStr.slice(0, 3000)}`;
+        send('tool_end', { id: tcId, name: 'generate_mockup', duration_ms: Date.now() - new Date(startedAt).getTime() });
+        const idx = toolCallRecords.findIndex(t => t.id === tcId);
+        if (idx >= 0) { toolCallRecords[idx].status = 'done'; toolCallRecords[idx].endedAt = new Date().toISOString(); toolCallRecords[idx].summary = resultStr.slice(0, 200); }
+      } catch (forceErr) {
+        console.error('[Plugin:Stream] Forced generate_mockup failed:', (forceErr as Error).message);
+      }
+    }
+
+    // ═══ Phase 2: Generate Figma Operations (reuse existing logic) ═══
+    send('thinking', { message: 'Generating design...' });
+
+    // Brand resolution (same as POST /)
+    let brandGuideline: BrandGuideline | null = brandGuidelineFromUI || null;
+    let brandChoiceContext = '';
+
+    if (useBrand) {
+      if (brandGuidelineId && !brandGuideline) {
+        try {
+          const savedGuideline = await prisma.brandGuideline.findUnique({ where: { id: brandGuidelineId } });
+          if (savedGuideline) {
+            brandGuideline = {
+              id: savedGuideline.id,
+              identity: savedGuideline.identity as any,
+              logos: savedGuideline.logos as any,
+              colors: savedGuideline.colors as any,
+              typography: savedGuideline.typography as any,
+              tags: savedGuideline.tags as any,
+              media: savedGuideline.media as any,
+              tokens: savedGuideline.tokens as any,
+              guidelines: savedGuideline.guidelines as any,
+            };
+          }
+        } catch {}
+      }
+
+      if (!brandGuideline && fileId && req.userId) {
+        try {
+          const brandResult = await resolveBrandGuideline(fileId, req.userId, brandGuidelineId);
+          if (brandResult.guideline) brandGuideline = brandResult.guideline;
+          else if (brandResult.needsUserChoice) brandChoiceContext = buildGuidelineChoiceContext(brandResult.availableGuidelines);
+        } catch {}
+      }
+    }
+
+    const effectiveBrandFonts = brandFonts || (brandGuideline?.typography ? {
+      primary: (brandGuideline.typography as any[]).find(t => t.role === 'primary' || t.role === 'heading'),
+      secondary: (brandGuideline.typography as any[]).find(t => t.role === 'secondary' || t.role === 'body'),
+    } : undefined);
+
+    const effectiveBrandColors = selectedBrandColors || (brandGuideline?.colors ?
+      (brandGuideline.colors as any[]).map(c => ({ name: c.name, value: c.hex, role: c.role })) :
+      undefined);
+
+    // Template + component scanning
+    let templateContext = '';
+    let agentComponentsContext = '';
+    if (fileId && pluginBridge.getSession(fileId)) {
+      try {
+        const templates = await scanTemplates(fileId);
+        templateContext = buildTemplateContext(templates);
+      } catch {}
+      try {
+        const agentComponents = await scanAgentComponents(fileId);
+        if (agentComponents.length > 0) agentComponentsContext = buildComponentsContext(agentComponents);
+      } catch {}
+    }
+
+    const formatPresetsContext = buildFormatPresetsContext();
+    const tokenRegistry = buildTokenRegistry(brandGuideline || null, designSystem || null);
+    const enforcedTokenPrompt = (tokenRegistry.colors.size > 0 || tokenRegistry.typography.size > 0)
+      ? '\n' + buildEnforcedPrompt(tokenRegistry) + '\n'
+      : '';
+
+    // Collect session errors for feedback loop
+    const previousErrors = getSessionErrors(sessionId);
+
+    // Build prompt (always V2 for streaming)
+    const assembled = buildSystemPromptV2(
+      {
+        command, selectedElements, selectedLogo, brandLogos, selectedBrandFont,
+        brandFonts: effectiveBrandFonts, selectedBrandColors: effectiveBrandColors,
+        availableComponents, availableColorVariables, availableFontVariables, availableLayers,
+        attachments, mentions, designSystem: designSystem || null,
+        brandGuideline: brandGuideline || undefined, thinkMode,
+      },
+      '', // chat history handled separately
+      previousErrors.length > 0 ? previousErrors : undefined,
+    );
+
+    // LLM pre-pass: refine intent when keyword confidence < 0.65
+    if (assembled.intent.confidence < 0.65 && selectedElements.length > 0) {
+      try {
+        const selectionNames = selectedElements.slice(0, 5).map((n: any) => n.name || n.type || 'unknown');
+        const enrichedIntent = await refineIntentWithLLM(
+          assembled.intent,
+          command,
+          selectionNames,
+          (sys, usr) => quickTextCall(sys, usr),
+        );
+        if (enrichedIntent.llmRefined) {
+          console.log(`[Plugin] LLM pre-pass refined intent: ${assembled.intent.intent} → ${enrichedIntent.intent} (confidence ${assembled.intent.confidence.toFixed(2)} → ${enrichedIntent.confidence.toFixed(2)})`);
+          // If intent changed to clone and we have a source frame, inject clone-first hint
+          if (enrichedIntent.intent === 'clone' && enrichedIntent.sourceFrame) {
+            assembled.intent = enrichedIntent;
+          }
+        }
+      } catch (e) {
+        console.warn('[Plugin] LLM pre-pass failed, using keyword intent:', e);
+      }
+    }
+
+    let systemPrompt = assembled.system;
+
+    // Inject additional contexts
+    const additionalContext = [brandChoiceContext, templateContext, agentComponentsContext].filter(Boolean).join('\n\n');
+    if (additionalContext) systemPrompt += '\n\n' + additionalContext;
+    if (enforcedTokenPrompt) systemPrompt = enforcedTokenPrompt + '\n' + systemPrompt;
+
+    // Inject enriched context from tool pre-pass
+    if (enrichedContext) {
+      const hasImageUrl = enrichedContext.includes('"imageUrl"');
+      systemPrompt += `\n\n═══ CONTEXTO ADICIONAL (pesquisa) ═══${enrichedContext}`;
+      if (hasImageUrl) {
+        systemPrompt += `\n\nIMPORTANT: An image was generated. Use SET_IMAGE_FILL with the imageUrl from the tool result above to apply it to a frame. Create a frame first with the appropriate dimensions, then fill it with the image.`;
+      }
+    }
+
+    const userPrompt = `═══ PEDIDO DO USUÁRIO ═══\n\n"${command}"`;
+    const contextSize = (selectedElements?.length || 0) + (availableComponents?.length || 0) + (availableLayers?.length || 0);
+    const provider = chooseProvider(command, contextSize);
+
+    const generationStart = Date.now();
+    let operations: any[] = [];
+    let usage: any;
+
+    try {
+      const result = await provider.generateOperations(systemPrompt, userPrompt, {
+        temperature: 0.2,
+        maxTokens: 8192,
+        apiKey: userAnthropicKey || undefined,
+        attachments: attachments || [],
+        onStatus: fileId ? (message: string) => {
+          pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
+        } : undefined,
+      });
+      operations = result.operations;
+      usage = result.usage;
+    } catch (aiError) {
+      console.error(`[Plugin:Stream] ${provider.name} error:`, aiError);
+    }
+
+    const durationMs = Date.now() - generationStart;
+
+    // Validate operations
+    operations = operations.filter(op => op && op.type && (
+      op.nodeId || op.props || op.componentKey || op.nodeIds || op.fills ||
+      op.strokes || op.effects || op.layoutMode || op.variableId || op.styleId ||
+      op.content || op.name || op.width != null || op.opacity != null ||
+      op.cornerRadius != null || op.x != null
+    ));
+
+    if (tokenRegistry.colors.size > 0 || tokenRegistry.spacing.size > 0) {
+      const tokenValidation = validateOperations(operations, tokenRegistry);
+      if (!tokenValidation.isValid && tokenValidation.corrections.length > 0) {
+        tokenValidation.operations.push({
+          type: 'MESSAGE',
+          content: `⚡ Ajustes automáticos:\n${formatCorrections(tokenValidation.corrections)}`,
+        });
+        operations = tokenValidation.operations;
+      }
+    }
+
+    const validation = operationValidator.validateBatch(operations);
+    const validOps = validation.valid;
+
+    // Capture validation errors for session feedback loop
+    if (validation.invalid.length > 0) {
+      const errorMsgs = validation.invalid.map((op: any) => {
+        const result = operationValidator.validate(op);
+        return `${op.type}: ${result.errors?.join(', ') || 'invalid'}`;
+      });
+      pushSessionErrors(sessionId, errorMsgs);
+      console.log(`[Plugin] ${errorMsgs.length} operation errors captured for session feedback`);
+    }
+
+    // Stream operations
+    send('operations', validOps);
+
+    // Build final tool call record for the generation itself
+    const genToolCall = {
+      id: `tc-${Date.now()}`,
+      name: 'generate_figma_operations',
+      status: 'done' as const,
+      args: { command: command.slice(0, 120) },
+      startedAt: new Date(generationStart).toISOString(),
+      endedAt: new Date().toISOString(),
+      summary: `${validOps.length} operation${validOps.length !== 1 ? 's' : ''} via ${provider.name}`,
+    };
+    toolCallRecords.push(genToolCall);
+
+    send('done', {
+      operations: validOps,
+      message: `Generated ${validOps.length} operation(s)`,
+      provider: provider.name,
+      usage,
+      durationMs,
+      toolCalls: toolCallRecords,
+    });
+
+    res.end();
+
+    // Non-blocking credit deduction
+    if (req.userId && !isByok && validOps.length > 0) {
+      deductCredit(req.userId).catch(e => console.error('[Plugin] Credit deduction error:', e));
+    }
+
+    // Save to session
+    if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
+      try {
+        const db = getDb();
+        await db.collection('plugin_sessions').updateOne(
+          { _id: sessionId } as any,
+          {
+            $push: {
+              messages: {
+                $each: [
+                  { role: 'user', content: command, timestamp: new Date() },
+                  { role: 'assistant', content: `Generated ${validOps.length} operations`, operations: validOps, toolCalls: toolCallRecords, timestamp: new Date() },
+                ],
+              },
+            } as any,
+          },
+        );
+      } catch {}
+    }
+  } catch (error: any) {
+    console.error('[Plugin:Stream] Error:', error);
+    send('error', { message: error.message || 'Failed to process command' });
+    res.end();
+  }
+});
+
 // POST /plugin - Generate design operations from natural language (FASE 3: Multi-model + Chat Memory)
 router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
   try {
@@ -539,6 +978,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       brandGuidelineId,
       thinkMode = false,
       useBrand = true,
+      generateImage = false,
     } = req.body as PluginRequest;
 
     if (!command) {
@@ -653,7 +1093,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
 
     // FASE 3: Load or create session for chat memory
     let chatHistory = '';
-    if (sessionId && fileId) {
+    if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
       try {
         const db = getDb();
         const collection = db.collection<any>('plugin_sessions');
@@ -705,6 +1145,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     let systemPrompt: string;
     let promptMeta: AssembledPrompt | undefined;
 
+    const prevErrors = getSessionErrors(sessionId);
+
     if (promptMode === 'v2') {
       // AI-First: Dynamic intent-based prompt assembly (~70% fewer tokens)
       const assembled = buildSystemPromptV2(
@@ -727,6 +1169,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           thinkMode,
         },
         chatHistory,
+        prevErrors.length > 0 ? prevErrors : undefined,
       );
       systemPrompt = assembled.system;
       promptMeta = assembled;
@@ -923,7 +1366,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     });
 
     // Save to session if available (FASE 3)
-    if (sessionId && fileId) {
+    if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
       try {
         const db = getDb();
         const collection = db.collection<any>('plugin_sessions');
@@ -952,6 +1395,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       validation.invalid.forEach(({ op, errors }) => {
         console.warn(`  ✗ ${op.type}: ${errors.join(', ')}`);
       });
+      // Capture for session feedback loop
+      pushSessionErrors(sessionId, validation.invalid.map(({ op, errors }) => `${op.type}: ${errors.join(', ')}`));
     }
 
     const validOps = validation.valid;

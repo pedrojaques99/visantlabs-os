@@ -78,6 +78,15 @@ export const LogosSection: React.FC<LogosSectionProps> = ({ guideline, logos, on
           <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))' }}>
             {logos.map((logo, i) => (
               <div key={i} className="relative group/logo flex flex-col items-center gap-1.5 p-3 rounded-md border border-white/[0.04] bg-white/[0.01] hover:border-white/[0.08] transition-colors">
+                {(() => {
+                  const ext = logo.url.split('?')[0].toLowerCase();
+                  const fmt = ext.endsWith('.svg') ? 'SVG' : ext.endsWith('.png') ? 'PNG' : ext.endsWith('.jpg') || ext.endsWith('.jpeg') ? 'JPG' : ext.endsWith('.webp') ? 'WEBP' : '';
+                  return fmt ? (
+                    <span className={`absolute top-1 right-1 text-[7px] font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-[5] ${fmt === 'SVG' ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30' : 'bg-white/10 text-neutral-400 border border-white/10'}`}>
+                      {fmt}
+                    </span>
+                  ) : null;
+                })()}
                 <div className="w-full h-16 flex items-center justify-center">
                   <img src={logo.url} alt={logo.label || `Logo ${i + 1}`} className="max-h-full max-w-full object-contain" />
                 </div>

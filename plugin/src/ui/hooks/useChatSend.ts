@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { usePluginStore } from '../store';
 import { useFigmaMessages } from './useFigmaMessages';
 import type { UIMessage } from '@/lib/figma-types';
+import { parseMentions } from './useMentions';
 
 export function useChatSend() {
   const { send } = useFigmaMessages();
@@ -11,6 +12,12 @@ export function useChatSend() {
   const sendMessage = useCallback(
     async (content: string) => {
       if (isSendingRef.current || !content.trim()) return;
+
+      if (content.trim().toLowerCase() === '/clear') {
+        usePluginStore.getState().clearChatHistory();
+        usePluginStore.getState().showToast('Chat cleared', 'info');
+        return;
+      }
 
       isSendingRef.current = true;
 
@@ -52,18 +59,34 @@ export function useChatSend() {
           ? Array.from(store.selectedColors.entries()).map(([role, entry]) => ({ name: entry.name || role, value: entry.hex, role }))
           : null;
 
+        const mentions = parseMentions(content);
+
+        const serverAttachments = store.pendingAttachments
+          .filter((a) => a.preview)
+          .map((a) => {
+            const match = a.preview!.match(/^data:([^;]+);base64,(.+)$/);
+            return match
+              ? { name: a.name, mimeType: match[1], data: match[2] }
+              : null;
+          })
+          .filter(Boolean);
+
         // Send message to sandbox with context
         const msg: any = {
           type: 'GENERATE_WITH_CONTEXT',
           command: content,
           thinkMode: store.thinkMode,
           useBrand: store.useBrand,
-          attachments: store.pendingAttachments,
+          scanPage: store.scanPage,
+          generateImage: store.generateImage,
+          attachments: serverAttachments,
           model: store.selectedModel,
           brandFonts,
           brandLogos,
           brandColors,
           designSystem: store.designSystem,
+          brandGuidelineId: store.brandGuideline?.id || null,
+          mentions,
         };
 
         send(msg);

@@ -55,6 +55,9 @@ const ROUTE: Record<OpName, Channel> = {
   'dev.varyColors':         'figma',
   'dev.selectionToSlices':  'figma',
   'dev.multiplyResponsive': 'figma',
+  'text.scanFonts':         'figma',
+  'text.swapFonts':         'figma',
+  'text.getStyles':         'figma',
   'export.textToMarkdown':  'figma',
 
   // http (server)

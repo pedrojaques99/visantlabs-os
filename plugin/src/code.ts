@@ -83,6 +83,9 @@ figma.on('selectionchange', () => {
   selectionTimeout = setTimeout(notifyContextChange, 150) as any;
 });
 
+// Send current selection on plugin open
+notifyContextChange();
+
 // ═══ Message handler ═══
 figma.ui.onmessage = async (msg: UIMessage) => {
 
@@ -503,7 +506,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
 
   // ── Lazy thumbnail export ──
   if (msg.type === 'GET_COMPONENT_THUMBNAILS') {
-    const comps = (msg as any).componentIds as string[] | undefined;
+    const comps = msg.componentIds;
     const all = (await getComponentsInCurrentFile()) || [];
     const subset = comps ? all.filter(c => comps.includes(c.id)) : all;
     exportComponentThumbnails(subset).catch(() => {});
@@ -524,6 +527,13 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   }
 
   if (msg.type === 'APPLY_OPERATIONS_FROM_API') {
+    // Restore the page that was active when the command was sent
+    if ((msg as any).pageId) {
+      const targetPage = figma.root.children.find(p => p.id === (msg as any).pageId);
+      if (targetPage && targetPage !== figma.currentPage) {
+        await figma.setCurrentPageAsync(targetPage);
+      }
+    }
     await applyOperations(msg.operations);
     return;
   }
@@ -542,6 +552,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     const context = {
       command: msg.command,
       fileId: figma.fileKey || 'local_file',
+      pageId: figma.currentPage.id,
       selectedElements: contextData.nodes,
       scanPage: useScanPage,
       availableComponents: components,
@@ -554,8 +565,10 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       brandFonts: (msg as any).brandFonts || null,
       selectedBrandColors: msg.brandColors,
       designSystem: (msg as any).designSystem || null,
+      brandGuidelineId: (msg as any).brandGuidelineId || null,
       thinkMode: (msg as any).thinkMode || false,
       useBrand: (msg as any).useBrand !== undefined ? (msg as any).useBrand : true,
+      generateImage: (msg as any).generateImage || false,
       mentions: (msg as any).mentions || [],
       attachments: (msg as any).attachments || []
     };
@@ -732,7 +745,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
-  if ((msg as any).type === 'BRAND_LINT_FOCUS') {
+  if ((msg as any).type === 'BRAND_LINT_FOCUS' || (msg as any).type === 'FOCUS_NODE') {
     focusNode((msg as any).nodeId);
     return;
   }

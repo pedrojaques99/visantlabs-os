@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
-import { Braces, Check, Copy, Loader2, CircleCheck, CircleX, ChevronDown, ChevronUp } from 'lucide-react';
-import type { ChatMessage, ToolCallRecord } from '../../store/types';
+import React, { useState, useMemo, type ReactNode } from 'react';
+import { Braces, Check, Copy, ChevronDown, ChevronUp, Undo2, RefreshCw, Clock, CircleCheck } from 'lucide-react';
+import type { ChatMessage, SummaryItem } from '../../store/types';
+import { copyToClipboard } from '@/utils/clipboard';
+import { relativeTime } from '@/utils/time';
+import { renderMarkdownBlocks } from '@/utils/markdownRenderer';
+import { ToolCallCard } from '@/components/shared/chat/ToolCallCard';
 
 interface MessageBubbleProps {
   message: ChatMessage;
+  isLast?: boolean;
+  onUndo?: () => void;
+  onRetry?: () => void;
 }
 
 const OPS_PREVIEW_LIMIT = 4;
@@ -18,8 +25,68 @@ function formatNum(n: number | undefined): string {
   return n.toLocaleString();
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+
+function focusNodeInFigma(nodeId: string) {
+  parent.postMessage({ pluginMessage: { type: 'FOCUS_NODE', nodeId } }, 'https://www.figma.com');
+}
+
+function buildNodeMap(items?: SummaryItem[]): Map<string, string> {
+  const map = new Map<string, string>();
+  if (!items) return map;
+  for (const item of items) {
+    if (item.nodeId && item.nodeName) map.set(item.nodeName, item.nodeId);
+  }
+  return map;
+}
+
+const AT_REF_REGEX = /@"([^"]+)"/g;
+
+function renderContentWithLinks(content: string, nodeMap: Map<string, string>, useMarkdown: boolean): ReactNode[] {
+  if (nodeMap.size === 0 && !useMarkdown) return [content];
+  if (nodeMap.size === 0 && useMarkdown) return renderMarkdownBlocks(content);
+
+  // First pass: replace @"refs" with placeholders, then render markdown
+  const parts: ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  AT_REF_REGEX.lastIndex = 0;
+  while ((match = AT_REF_REGEX.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      const chunk = content.slice(lastIndex, match.index);
+      if (useMarkdown) parts.push(...renderMarkdownBlocks(chunk));
+      else parts.push(chunk);
+    }
+    const name = match[1];
+    const nodeId = nodeMap.get(name);
+    if (nodeId) {
+      parts.push(
+        <button
+          key={`${nodeId}-${match.index}`}
+          type="button"
+          onClick={() => focusNodeInFigma(nodeId)}
+          className="inline text-brand-cyan hover:underline cursor-pointer font-medium"
+          title={`Go to "${name}"`}
+        >
+          @"{name}"
+        </button>
+      );
+    } else {
+      parts.push(match[0]);
+    }
+    lastIndex = AT_REF_REGEX.lastIndex;
+  }
+  if (lastIndex < content.length) {
+    const remaining = content.slice(lastIndex);
+    if (useMarkdown) parts.push(...renderMarkdownBlocks(remaining));
+    else parts.push(remaining);
+  }
+  return parts;
+}
+
+
+export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbleProps) {
   const isUser = message.role === 'user';
+  const isError = message.isError;
   const [showAllOps, setShowAllOps] = useState(false);
   const [showJson, setShowJson] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -28,25 +95,59 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   const visibleOps = showAllOps ? ops : ops.slice(0, OPS_PREVIEW_LIMIT);
   const hiddenCount = ops.length - OPS_PREVIEW_LIMIT;
 
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(json);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1200);
-    } catch {}
+  const handleCopy = (text: string) => {
+    copyToClipboard(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
   };
+
+  const copy = () => handleCopy(json);
 
   const usage = message.metadata?.usage;
   const outTokens = usage?.output_tokens ?? usage?.outputTokens;
   const inTokens = usage?.input_tokens ?? usage?.inputTokens;
 
+  const copyContent = () => handleCopy(message.content);
+
+  const bubbleClass = isUser
+    ? 'bg-brand-cyan text-black'
+    : isError
+      ? 'bg-destructive/10 border border-destructive/30 text-destructive'
+      : 'bg-card border border-border text-foreground';
+
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div
-        className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
-          isUser ? 'bg-brand-cyan text-black' : 'bg-card border border-border text-foreground'
-        }`}
-      >
+    <div className={`group/bubble flex ${isUser ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-1 duration-200`}>
+      <div className={`relative max-w-xs px-3 py-2 rounded-lg text-sm select-text ${bubbleClass}`}>
+        <div className={`absolute -top-2 ${isUser ? '-left-2' : '-right-2'} flex items-center gap-0.5 opacity-0 group-hover/bubble:opacity-100 transition-opacity`}>
+          {!isUser && ops.length > 0 && onUndo && (
+            <button
+              type="button"
+              onClick={onUndo}
+              className="w-5 h-5 rounded-full bg-card border border-border flex items-center justify-center hover:border-brand-cyan/50"
+              title="Undo operations"
+            >
+              <Undo2 size={9} />
+            </button>
+          )}
+          {!isUser && isLast && onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="w-5 h-5 rounded-full bg-card border border-border flex items-center justify-center hover:border-brand-cyan/50"
+              title="Retry"
+            >
+              <RefreshCw size={9} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={copyContent}
+            className="w-5 h-5 rounded-full bg-card border border-border flex items-center justify-center hover:border-brand-cyan/50"
+            title="Copy message"
+          >
+            {copied ? <Check size={9} /> : <Copy size={9} />}
+          </button>
+        </div>
         {message.thinking && (
           <div className="text-xs text-muted-foreground mb-2">
             <details>
@@ -56,26 +157,33 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           </div>
         )}
 
-        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        {/* Content: markdown for assistant, plain for user */}
+        <div className="space-y-1">
+          {useMemo(() => renderContentWithLinks(message.content, buildNodeMap(message.summaryItems), !isUser), [message.content, message.summaryItems, isUser])}
+        </div>
 
         {message.attachments && message.attachments.length > 0 && (
-          <div className="mt-2 text-xs opacity-75">
-            {message.attachments.length} attachment{message.attachments.length > 1 ? 's' : ''}
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {message.attachments.map((att) =>
+              att.type === 'image' && att.preview ? (
+                <img
+                  key={att.id}
+                  src={att.preview}
+                  alt={att.name}
+                  className="max-w-[200px] max-h-[150px] rounded-md object-contain border border-border/50"
+                />
+              ) : (
+                <span key={att.id} className="text-[10px] opacity-75">{att.name}</span>
+              )
+            )}
           </div>
         )}
 
-        {/* Tool calls */}
+        {/* Tool calls — expandable cards */}
         {message.toolCalls && message.toolCalls.length > 0 && (
-          <div className="mt-2 flex flex-col gap-0.5">
+          <div className="mt-2 flex flex-col gap-1">
             {message.toolCalls.map((tc) => (
-              <div key={tc.id} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                {tc.status === 'running' && <Loader2 size={10} className="animate-spin shrink-0" />}
-                {tc.status === 'done'    && <CircleCheck size={10} className="text-green-500 shrink-0" />}
-                {tc.status === 'error'  && <CircleX size={10} className="text-destructive shrink-0" />}
-                <span className="font-mono">{tc.name}</span>
-                {tc.summary && <span className="opacity-70">— {tc.summary}</span>}
-                {tc.errorMessage && <span className="text-destructive">{tc.errorMessage}</span>}
-              </div>
+              <ToolCallCard key={tc.id} tc={tc} />
             ))}
           </div>
         )}
@@ -155,6 +263,14 @@ export function MessageBubble({ message }: MessageBubbleProps) {
               )}
               <span className="text-border">tok</span>
             </div>
+          </div>
+        )}
+
+        {/* Timestamp */}
+        {message.timestamp && (
+          <div className="mt-1 text-[9px] text-muted-foreground/40 flex items-center gap-0.5">
+            <Clock size={7} />
+            {relativeTime(message.timestamp)}
           </div>
         )}
 

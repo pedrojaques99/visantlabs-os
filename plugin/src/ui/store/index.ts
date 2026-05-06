@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { PluginStore, ChatMessage, SelectionDetail, ColorEntry, Component, DesignTokens } from './types';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
 
 export const usePluginStore = create<PluginStore>()(
   immer((set) => ({
@@ -33,6 +34,7 @@ export const usePluginStore = create<PluginStore>()(
     thinkMode: false,
     useBrand: true,
     scanPage: false,
+    generateImage: false,
     mode: 'simple',
 
     // Server
@@ -63,6 +65,8 @@ export const usePluginStore = create<PluginStore>()(
     extractSyncData: null,
     exportedImage: null,
     isGenerating: false,
+    isStreaming: false,
+    generatingStatus: '',
 
     brandHydrationTick: 0,
     brandHydrationAtMs: 0,
@@ -70,12 +74,13 @@ export const usePluginStore = create<PluginStore>()(
     // Image Generation
     selectedFrameSize: 'fullscreen',
     selectedResolution: '1x',
-    selectedModel: 'gemini-2.5-flash',
+    selectedModel: GEMINI_MODELS.FLASH_2_5,
 
     // UI State
     activeView: 'main',
     activeTab: 'brand',
     openPanel: null,
+    devMode: false,
     toastMessage: undefined,
     toastType: undefined,
 
@@ -85,18 +90,22 @@ export const usePluginStore = create<PluginStore>()(
         state.selectionDetails = selection;
       }),
 
-    addChatMessage: (message) =>
+    addChatMessage: (message) => {
       set((state) => {
         state.chatHistory.push(message);
         if (state.chatHistory.length > 100) {
           state.chatHistory = state.chatHistory.slice(-80);
         }
-      }),
+      });
+      scheduleChatPersist();
+    },
 
-    clearChatHistory: () =>
+    clearChatHistory: () => {
       set((state) => {
         state.chatHistory = [];
-      }),
+      });
+      scheduleChatPersist();
+    },
 
     setServerUrl: (url) =>
       set((state) => {
@@ -237,8 +246,51 @@ export const usePluginStore = create<PluginStore>()(
       set((state) => { state.exportedImage = data; }),
 
     setIsGenerating: (generating) =>
-      set((state) => { state.isGenerating = generating; })
+      set((state) => { state.isGenerating = generating; }),
+
+    setIsStreaming: (streaming) =>
+      set((state) => { state.isStreaming = streaming; }),
+
+    setGeneratingStatus: (status) =>
+      set((state) => { state.generatingStatus = status; }),
+
+    toggleDevMode: () =>
+      set((state) => { state.devMode = !state.devMode; })
   }))
 );
+
+// ── Chat persistence via figma.clientStorage (through postMessage RPC) ──
+
+const CHAT_STORAGE_KEY = 'chatHistory';
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+type RpcClient = { request: (op: any, params: any) => Promise<any> };
+
+let _client: RpcClient | null = null;
+
+export function setChatPersistClient(client: RpcClient) {
+  _client = client;
+}
+
+function scheduleChatPersist() {
+  if (persistTimer) clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    if (!_client) return;
+    const history = usePluginStore.getState().chatHistory;
+    const toSave = history.slice(-50).map(({ id, role, content, timestamp, operations, toolCalls, summaryItems, isError }) => ({ id, role, content, timestamp, operations, toolCalls, summaryItems, isError }));
+    _client.request('storage.set', { key: CHAT_STORAGE_KEY, value: JSON.stringify(toSave) }).catch(() => {});
+  }, 1500);
+}
+
+export async function loadChatHistory(client: RpcClient) {
+  try {
+    const { value } = await client.request('storage.get', { key: CHAT_STORAGE_KEY });
+    if (value) {
+      const messages = JSON.parse(value as string);
+      if (Array.isArray(messages) && messages.length > 0) {
+        usePluginStore.setState({ chatHistory: messages });
+      }
+    }
+  } catch { /* first run, no history */ }
+}
 
 export type { PluginStore } from './types';

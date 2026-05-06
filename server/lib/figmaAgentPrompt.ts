@@ -17,12 +17,14 @@ import type { BrandGuideline } from '../types/brandGuideline.js';
 import {
   assemblePrompt,
   buildRetryFeedback,
+  refineIntentWithLLM,
   type AssembledPrompt,
   type ClassifiedIntent,
+  type EnrichedIntent,
 } from './prompt/index.js';
 
 // Re-export AI-first utilities
-export { assemblePrompt, buildRetryFeedback, type AssembledPrompt, type ClassifiedIntent };
+export { assemblePrompt, buildRetryFeedback, refineIntentWithLLM, type AssembledPrompt, type ClassifiedIntent, type EnrichedIntent };
 
 // ============ Interfaces ============
 
@@ -64,6 +66,7 @@ export interface PluginRequest {
   // UI Components selected in plugin Brand tab
   selectedUIComponents?: Record<string, { key: string; name: string }>;
   useBrand?: boolean;
+  generateImage?: boolean;
 }
 
 export interface DesignSystemJSON {
@@ -565,24 +568,31 @@ Prompt: "Cria um card de perfil com avatar, nome e descrição"
 export function buildSystemPromptV2(
   req: PluginRequest,
   chatHistory?: string,
+  previousErrors?: string[],
 ): AssembledPrompt {
+  const useBrand = req.useBrand !== false;
   return assemblePrompt({
     command: req.command,
     selectedElements: req.selectedElements,
-    brandColors: req.useBrand !== false ? req.selectedBrandColors : undefined,
-    brandFonts: (req.useBrand !== false && req.brandFonts) ? {
+    brandColors: useBrand ? req.selectedBrandColors : undefined,
+    brandFonts: (useBrand && req.brandFonts) ? {
       primary: req.brandFonts.primary ?? undefined,
       secondary: req.brandFonts.secondary ?? undefined,
     } : undefined,
-    brandLogos: (req.useBrand !== false && req.brandLogos) ? {
+    brandLogos: (useBrand && req.brandLogos) ? {
       light: req.brandLogos.light ?? undefined,
       dark: req.brandLogos.dark ?? undefined,
     } : undefined,
+    brandTokens: useBrand ? (req.designTokens || req.brandGuideline?.tokens) : undefined,
+    brandVoice: useBrand ? req.brandGuideline?.guidelines?.voice : undefined,
+    brandDos: useBrand ? req.brandGuideline?.guidelines?.dos : undefined,
+    brandDonts: useBrand ? req.brandGuideline?.guidelines?.donts : undefined,
     availableComponents: req.availableComponents,
     colorVariables: req.availableColorVariables,
     chatHistory,
     thinkMode: req.thinkMode,
     useBrand: req.useBrand,
+    previousErrors,
   });
 }
 

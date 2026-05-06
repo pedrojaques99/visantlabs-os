@@ -1,11 +1,51 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { usePluginStore } from '../../store';
 import { useMentions } from '../../hooks/useMentions';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Send, Paperclip, Zap, Scan } from 'lucide-react';
+import { Send, Paperclip, Zap, Scan, Image, X } from 'lucide-react';
 import { MentionsDropdown } from './MentionsDropdown';
+import { ModelSelector } from '@/components/shared/ModelSelector';
+import type { Attachment } from '../../store/types';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'application/pdf'];
+
+function fileToAttachment(file: File): Promise<Attachment | null> {
+  return new Promise((resolve) => {
+    if (file.size > MAX_FILE_SIZE) {
+      usePluginStore.getState().showToast(`${file.name} exceeds 5MB limit`, 'error');
+      return resolve(null);
+    }
+    if (!ACCEPTED_TYPES.some((t) => file.type.startsWith(t.split('/')[0]) || file.type === t)) {
+      usePluginStore.getState().showToast(`${file.name}: unsupported format`, 'error');
+      return resolve(null);
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      resolve({
+        id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        name: file.name,
+        type: file.type.startsWith('image/') ? 'image' : 'file',
+        size: file.size,
+        preview: base64,
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function addFiles(files: File[]) {
+  const results = await Promise.all(files.map(fileToAttachment));
+  const valid = results.filter(Boolean) as Attachment[];
+  if (valid.length) {
+    usePluginStore.setState((s) => ({
+      pendingAttachments: [...s.pendingAttachments, ...valid],
+    }));
+  }
+}
 
 interface ChatInputProps {
   onSend: (content: string) => void;
@@ -13,7 +53,8 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend }: ChatInputProps) {
   const [content, setContent] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null!);
+  const [isDragging, setIsDragging] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     thinkMode,
@@ -22,11 +63,14 @@ export function ChatInput({ onSend }: ChatInputProps) {
     setUseBrand,
     scanPage,
     setScanPage,
+    generateImage,
     pendingAttachments,
-    brandGuideline
+    brandGuideline,
+    isGenerating,
+    selectedModel
   } = usePluginStore();
 
-  const mentions = useMentions(textareaRef);
+  const mentions = useMentions(textareaRef, setContent);
 
   const activeBrandName = brandGuideline?.name || brandGuideline?.identity?.name || 'Brand';
   const brandLogo = (brandGuideline?.logos?.find(l => l.variant === 'icon' || l.variant === 'primary') ?? brandGuideline?.logos?.[0])?.url;
@@ -43,11 +87,15 @@ export function ChatInput({ onSend }: ChatInputProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Let mentions handle navigation/selection first
+    if (mentions.isOpen) {
+      mentions.handleKeyDown(e);
+      if (e.defaultPrevented) return;
+    }
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-    mentions.handleKeyDown(e);
   };
 
   const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
@@ -59,21 +107,70 @@ export function ChatInput({ onSend }: ChatInputProps) {
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    files.forEach((file) => {
-      // Handle file attachment
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        // Store attachment in store
-      };
-      reader.readAsDataURL(file);
-    });
+    addFiles(Array.from(e.target.files || []));
+    e.target.value = '';
+  };
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length) addFiles(files);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.types.includes('Files')) setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragging(false);
+  }, []);
+
+  // Paste images from clipboard
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      const imageFiles: File[] = [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          const file = items[i].getAsFile();
+          if (file) imageFiles.push(file);
+        }
+      }
+      if (imageFiles.length) {
+        e.preventDefault();
+        addFiles(imageFiles);
+      }
+    };
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, []);
+
+  const removeAttachment = (id: string) => {
+    usePluginStore.setState((s) => ({
+      pendingAttachments: s.pendingAttachments.filter((a) => a.id !== id),
+    }));
   };
 
   return (
-    <div ref={containerRef} className="border-t border-border bg-card p-3 space-y-2">
-      {/* Control Pills */}
+    <div
+      ref={containerRef}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      className={`border-t border-border bg-card p-3 space-y-2 transition-colors ${isDragging ? 'bg-brand-cyan/5 border-brand-cyan/40' : ''}`}
+    >
+      {/* Model + Control Pills */}
       <div className="flex gap-2 flex-wrap items-center">
+        <ModelSelector
+          selectedModel={selectedModel}
+          onModelChange={(model) => usePluginStore.setState({ selectedModel: model })}
+          type={generateImage ? 'image' : 'chat'}
+          className="!bg-transparent border-white/5 hover:border-white/10 !px-2 !py-0.5 h-auto text-xs opacity-70 hover:opacity-100 transition-opacity"
+        />
         <Button
           variant={thinkMode ? "default" : "secondary"}
           onClick={() => setThinkMode(!thinkMode)}
@@ -102,19 +199,41 @@ export function ChatInput({ onSend }: ChatInputProps) {
            <Scan size={10} />
            SCAN
          </Button>
+
+         <Button
+           variant={generateImage ? "default" : "secondary"}
+           onClick={() => usePluginStore.setState({ generateImage: !generateImage })}
+           className={`h-6 px-2.5 text-[10px] font-mono items-center gap-1 shrink-0 ${generateImage ? 'bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 border border-brand-cyan/30' : ''}`}
+         >
+           <Image size={10} />
+           IMAGE
+         </Button>
       </div>
 
        {/* Attachment Preview */}
        {pendingAttachments.length > 0 && (
          <div className="flex flex-wrap gap-2 pt-1">
            {pendingAttachments.map((att) => (
-             <Badge
-               key={att.id}
-               variant="secondary"
-               className="font-normal text-[10px] py-0 h-5"
-             >
-               <span className="truncate max-w-[120px]">{att.name}</span>
-             </Badge>
+             <div key={att.id} className="relative group">
+               {att.type === 'image' && att.preview ? (
+                 <img
+                   src={att.preview}
+                   alt={att.name}
+                   className="w-14 h-14 rounded-md object-cover border border-border"
+                 />
+               ) : (
+                 <div className="w-14 h-14 rounded-md border border-border bg-muted flex items-center justify-center">
+                   <Paperclip size={14} className="text-muted-foreground" />
+                 </div>
+               )}
+               <button
+                 type="button"
+                 onClick={() => removeAttachment(att.id)}
+                 className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+               >
+                 <X size={10} />
+               </button>
+             </div>
            ))}
          </div>
        )}
@@ -151,6 +270,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
             id="file-input"
             type="file"
             multiple
+            accept="image/png,image/jpeg,image/gif,image/webp,application/pdf"
             onChange={handleFileSelect}
             className="hidden"
           />
@@ -159,7 +279,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
             onClick={handleSend}
             size="icon"
             className="h-8 w-8 bg-brand-cyan text-black hover:bg-brand-cyan/90 shadow-[0_0_15px_rgba(0,255,255,0.2)]"
-            disabled={!content.trim()}
+            disabled={!content.trim() || isGenerating}
           >
             <Send size={16} />
           </Button>

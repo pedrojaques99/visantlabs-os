@@ -5,6 +5,7 @@ import { useAuth } from './hooks/useAuth';
 import { useIllustratorExport } from './hooks/useIllustratorExport';
 import { useClient } from './lib/ClientProvider';
 import { AppShell } from './components/layout/AppShell';
+import { loadChatHistory, setChatPersistClient } from './store';
 
 export function App() {
   const { activeView, authToken } = usePluginStore();
@@ -15,10 +16,13 @@ export function App() {
   useIllustratorExport();
 
   useEffect(() => {
+    setChatPersistClient(client);
+
     const init = async () => {
       const [serverUrlResult] = await Promise.allSettled([
         client.request('storage.get', { key: 'serverUrl' }),
         checkStatus(),
+        loadChatHistory(client),
       ]);
 
       if (serverUrlResult.status === 'fulfilled' && serverUrlResult.value?.value) {
@@ -26,6 +30,7 @@ export function App() {
       }
 
       send({ type: 'GET_CONTEXT' } as any);
+      send({ type: 'GET_BRAND_GUIDELINE' } as any);
     };
 
     init();

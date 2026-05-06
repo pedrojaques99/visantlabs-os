@@ -9,6 +9,9 @@
  */
 import { CHAT_TOOLS, executeToolCall } from '../chatToolExecutor.js';
 import { ADMIN_CHAT_TOOLS, executeAdminChatTool } from '../adminChatTools.js';
+import { prisma } from '../../db/prisma.js';
+import { describeImage } from '../geminiService.js';
+const INTERNAL_API_BASE = process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3001}`;
 
 export type ChatToolScope = 'public' | 'admin';
 
@@ -54,6 +57,131 @@ for (const d of adminDecls) {
       executeAdminChatTool(d.name, args, ctx.userId, ctx.sessionId, ctx.authHeader ?? '', ctx.brandGuidelineId),
   };
 }
+
+// ── Plugin-scoped tools (public, available to plugin pre-pass) ──
+
+REGISTRY['get_brand_context'] = {
+  scope: 'public',
+  declaration: {
+    name: 'get_brand_context',
+    description: 'Fetch brand guideline context (identity, colors, typography, voice) to enrich design generation.',
+    parameters: {
+      type: 'object',
+      properties: {
+        brandGuidelineId: {
+          type: 'string',
+          description: 'Brand guideline ID. Omit to use the session default.',
+        },
+      },
+    },
+  },
+  execute: async (args: { brandGuidelineId?: string }, ctx) => {
+    const id = args.brandGuidelineId || ctx.brandGuidelineId;
+    if (!id) return 'No brand guideline selected.';
+
+    const bg = await prisma.brandGuideline.findUnique({ where: { id } });
+    if (!bg) return `Brand guideline ${id} not found.`;
+
+    const identity = bg.identity as any;
+    const colors = bg.colors as any[];
+    const typography = bg.typography as any[];
+    const guidelines = bg.guidelines as any;
+
+    const parts: string[] = [];
+    if (identity?.name) parts.push(`Brand: ${identity.name}`);
+    if (identity?.tagline) parts.push(`Tagline: ${identity.tagline}`);
+    if (identity?.description) parts.push(`Description: ${identity.description}`);
+
+    if (colors?.length) {
+      parts.push('Colors: ' + colors.map(c => `${c.name || c.role}: ${c.hex}`).join(', '));
+    }
+    if (typography?.length) {
+      parts.push('Typography: ' + typography.map(t => `${t.role}: ${t.family} ${t.weight || ''}`).join(', '));
+    }
+    if (guidelines?.voice) parts.push(`Voice: ${guidelines.voice}`);
+    if (guidelines?.dos?.length) parts.push(`Do: ${guidelines.dos.join('; ')}`);
+    if (guidelines?.donts?.length) parts.push(`Don't: ${guidelines.donts.join('; ')}`);
+
+    return parts.join('\n');
+  },
+};
+
+REGISTRY['generate_mockup'] = {
+  scope: 'public',
+  declaration: {
+    name: 'generate_mockup',
+    description: 'Generate a mockup image using AI. Brand context (logo, colors, typography, voice) is auto-injected when brandGuidelineId is provided — never describe the logo in the prompt. Returns imageUrl to use with SET_IMAGE_FILL.',
+    parameters: {
+      type: 'object',
+      properties: {
+        prompt: { type: 'string', description: 'Scene description. Do NOT describe the logo or font — they are injected automatically from brandGuidelineId.' },
+        brandGuidelineId: { type: 'string', description: 'Brand guideline ID. Omit to use session default. Injects logo as reference image + colors + typography + voice.' },
+        model: { type: 'string', enum: ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'], description: 'Image model. gpt-image-2=best quality+brand fidelity, gemini=fast/creative, seedream=photorealistic lifestyle.' },
+        aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'], description: '1:1=square/Instagram, 9:16=story/Reels, 16:9=landscape/cover, 4:5=portrait feed.' },
+        resolution: { type: 'string', enum: ['1K', '2K', '4K'], description: '1K=standard, 2K=high quality, 4K=print/large format. Higher = more credits.' },
+        designType: { type: 'string', description: 'Design type hint: business-card, social-media, packaging, apparel, signage, billboard, etc.' },
+        baseImageUrl: { type: 'string', description: 'Base image URL for image-to-image generation.' },
+        referenceImages: { type: 'array', items: { type: 'string' }, description: 'Extra reference image URLs to guide style. Brand logos are injected automatically.' },
+        seed: { type: 'number', description: 'Random seed for reproducible generation.' },
+      },
+      required: ['prompt'],
+    },
+  },
+  execute: async (args: {
+    prompt: string; brandGuidelineId?: string; model?: string; aspectRatio?: string;
+    resolution?: string; designType?: string; baseImageUrl?: string; referenceImages?: string[]; seed?: number;
+  }, ctx) => {
+    const response = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': ctx.userId },
+      body: JSON.stringify({
+        promptText: args.prompt,
+        brandGuidelineId: args.brandGuidelineId || ctx.brandGuidelineId,
+        model: args.model || 'gpt-image-2',
+        aspectRatio: args.aspectRatio || '1:1',
+        resolution: args.resolution || '1K',
+        designType: args.designType || 'blank',
+        baseImageUrl: args.baseImageUrl,
+        referenceImages: args.referenceImages,
+        seed: args.seed,
+        feature: 'plugin',
+      }),
+    });
+    const result = await response.json() as any;
+    if (!response.ok) return `Mockup generation failed: ${result.error || response.status}`;
+    return JSON.stringify({
+      imageUrl: result.imageUrl || null,
+      mockupId: result.id || result.mockup?.id || null,
+      model: args.model || 'gpt-image-2',
+      provider: result.provider || null,
+      aspectRatio: args.aspectRatio || '1:1',
+      resolution: args.resolution || '1K',
+      seed: result.seed ?? args.seed ?? null,
+      creditsUsed: result.creditsUsed ?? null,
+    });
+  },
+};
+
+REGISTRY['describe_image'] = {
+  scope: 'public',
+  declaration: {
+    name: 'describe_image',
+    description: 'Analyze an image and return a detailed description. Accepts a URL or base64 data.',
+    parameters: {
+      type: 'object',
+      properties: {
+        imageUrl: { type: 'string', description: 'URL of the image to describe.' },
+        base64: { type: 'string', description: 'Base64-encoded image data (without data: prefix).' },
+      },
+    },
+  },
+  execute: async (args: { imageUrl?: string; base64?: string }) => {
+    const input = args.imageUrl || args.base64;
+    if (!input) return 'Either imageUrl or base64 is required.';
+    const result = await describeImage(input);
+    return JSON.stringify({ title: result.title, description: result.description });
+  },
+};
 
 /**
  * Tool declarations available to a role, in the Gemini SDK shape.

@@ -22,6 +22,7 @@ export interface ClassifiedIntent {
   hasSelection: boolean;
   isTemplate: boolean;
   isChart: boolean;
+  isColorSpec: boolean;
   keywords: string[];
 }
 

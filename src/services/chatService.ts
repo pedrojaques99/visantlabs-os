@@ -424,7 +424,7 @@ export async function sendChatMessage(
       // No responseModalities = text only
     });
 
-    const textResponse = response.text.trim();
+    const textResponse = response.text?.trim() ?? '';
 
     if (!textResponse) {
       throw new Error('No text response generated');

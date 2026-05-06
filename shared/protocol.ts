@@ -52,6 +52,11 @@ export interface OpMap {
   'variables.getFonts':        { payload: Record<string, never>; result: unknown };
   'variables.getFontFamilies': { payload: Record<string, never>; result: unknown };
 
+  // ── Text ──
+  'text.scanFonts':  { payload: Record<string, never>; result: { groups: FontGroup[] } };
+  'text.swapFonts':  { payload: { swaps: FontSwapEntry[] }; result: { swapped: number; failed: string[] } };
+  'text.getStyles':  { payload: { family: string }; result: { styles: string[] } };
+
   // ── Images ──
   'image.paste':    { payload: { data: string; mimeType?: string }; result: { ok: boolean } };
   'image.exportNode': { payload: { nodeId: string; format?: string }; result: { data: string } };
@@ -90,6 +95,22 @@ export interface OpMap {
 
   // ── Telemetry (batch de ops concluídas) ──
   'telemetry.log': { payload: { entries: TelemetryEntry[] }; result: { ok: boolean } };
+}
+
+export interface FontGroup {
+  key: string;
+  family: string;
+  style: string;
+  count: number;
+  nodeIds: string[];
+}
+
+export interface FontSwapEntry {
+  nodeIds: string[];
+  oldFamily: string;
+  oldStyle: string;
+  newFamily: string;
+  newStyle: string;
 }
 
 export type OpName = keyof OpMap;
