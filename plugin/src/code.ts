@@ -568,6 +568,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       brandGuidelineId: (msg as any).brandGuidelineId || null,
       thinkMode: (msg as any).thinkMode || false,
       useBrand: (msg as any).useBrand !== undefined ? (msg as any).useBrand : true,
+      generateImage: (msg as any).generateImage || false,
       mentions: (msg as any).mentions || [],
       attachments: (msg as any).attachments || []
     };

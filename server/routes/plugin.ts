@@ -565,6 +565,7 @@ router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res
       brandGuidelineId,
       thinkMode = false,
       useBrand = true,
+      generateImage = false,
     } = req.body as PluginRequest;
 
     if (!command) {
@@ -616,13 +617,14 @@ Rules:
 - If brandGuidelineId is available, pass it to generate_mockup — it auto-injects logo + colors + typography.
 - If the request doesn't need any tools, respond with just "READY".
 - You can call multiple tools if needed.
-${brandGuidelineId ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this to generate_mockup and get_brand_context.` : ''}`;
+${brandGuidelineId ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this to generate_mockup and get_brand_context.` : ''}
+${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call generate_mockup for this request. Infer prompt, aspectRatio, designType, and model from the user message. Do NOT respond with just "READY".` : ''}`;
 
       const prePassResult = await chatWithLLM(command, '', [], {
         provider: 'gemini',
         apiKey: userApiKey || undefined,
         systemInstruction: prePassPrompt,
-        tools: getChatTools(false), // public tools only (web_search etc.)
+        tools: getChatTools(false),
       });
 
       if (prePassResult.toolCalls?.length) {
@@ -887,6 +889,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       brandGuidelineId,
       thinkMode = false,
       useBrand = true,
+      generateImage = false,
     } = req.body as PluginRequest;
 
     if (!command) {
