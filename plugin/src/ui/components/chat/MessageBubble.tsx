@@ -19,7 +19,7 @@ function formatNum(n: number | undefined): string {
 }
 
 function focusNodeInFigma(nodeId: string) {
-  parent.postMessage({ pluginMessage: { type: 'FOCUS_NODE', nodeId } }, '*');
+  parent.postMessage({ pluginMessage: { type: 'FOCUS_NODE', nodeId } }, 'https://www.figma.com');
 }
 
 function buildNodeMap(items?: SummaryItem[]): Map<string, string> {
@@ -92,13 +92,31 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   const outTokens = usage?.output_tokens ?? usage?.outputTokens;
   const inTokens = usage?.input_tokens ?? usage?.inputTokens;
 
+  const copyContent = async () => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch {}
+  };
+
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div className={`group/bubble flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
+        className={`relative max-w-xs px-3 py-2 rounded-lg text-sm select-text ${
           isUser ? 'bg-brand-cyan text-black' : 'bg-card border border-border text-foreground'
         }`}
       >
+        {!isUser && (
+          <button
+            type="button"
+            onClick={copyContent}
+            className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-card border border-border flex items-center justify-center opacity-0 group-hover/bubble:opacity-100 transition-opacity"
+            title="Copy message"
+          >
+            {copied ? <Check size={9} /> : <Copy size={9} />}
+          </button>
+        )}
         {message.thinking && (
           <div className="text-xs text-muted-foreground mb-2">
             <details>

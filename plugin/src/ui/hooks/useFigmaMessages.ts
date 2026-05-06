@@ -61,19 +61,30 @@ export function useFigmaMessages() {
         // ═══ Operations & Results ═══
         case 'OPERATIONS_RESULT':
         case 'OPERATIONS_DONE': {
-          const ops = msg.operations;
-          const content =
-            msg.message ||
-            msg.summary ||
-            (typeof msg.count === 'number' ? `${msg.count} operations applied` : 'Operations applied successfully');
-          storeState.addChatMessage({
-            id: `msg-${Date.now()}`,
-            role: 'assistant' as const,
-            content,
-            timestamp: Date.now(),
-            operations: ops,
-            summaryItems: msg.summaryItems
-          });
+          const history = usePluginStore.getState().chatHistory;
+          const lastMsg = history[history.length - 1];
+          if (lastMsg?.role === 'assistant' && lastMsg.operations && lastMsg.operations.length > 0) {
+            usePluginStore.setState((s) => {
+              const target = s.chatHistory[s.chatHistory.length - 1];
+              if (target) {
+                target.summaryItems = msg.summaryItems;
+              }
+            });
+          } else {
+            const ops = msg.operations;
+            const content =
+              msg.message ||
+              msg.summary ||
+              (typeof msg.count === 'number' ? `${msg.count} operations applied` : 'Operations applied successfully');
+            storeState.addChatMessage({
+              id: `msg-${Date.now()}`,
+              role: 'assistant' as const,
+              content,
+              timestamp: Date.now(),
+              operations: ops,
+              summaryItems: msg.summaryItems
+            });
+          }
           break;
         }
 
@@ -407,8 +418,45 @@ export function useFigmaMessages() {
             // spoken text lives in ops where type === 'MESSAGE'; the rest are
             // design operations the sandbox will apply.
             const ops: any[] = Array.isArray(result.operations) ? result.operations : [];
+
+            // If this is a rescan response, update the previous scan tool call to done
+            if (context.scanPage) {
+              const history = usePluginStore.getState().chatHistory;
+              const scanMsg = [...history].reverse().find(m => m.toolCalls?.some(tc => tc.name === 'scan_page' && tc.status === 'running'));
+              if (scanMsg) {
+                usePluginStore.setState((s) => {
+                  const target = s.chatHistory.find(m => m.id === scanMsg.id);
+                  if (target?.toolCalls) {
+                    target.toolCalls = target.toolCalls.map(tc =>
+                      tc.name === 'scan_page' && tc.status === 'running'
+                        ? { ...tc, status: 'done' as const, endedAt: new Date().toISOString(), summary: 'Page scanned' }
+                        : tc
+                    );
+                  }
+                });
+              }
+            }
+
+            // Smart SCAN: if LLM requests a page scan, re-send with full page context
+            const scanRequest = ops.find((o) => o?.type === 'REQUEST_SCAN');
+            if (scanRequest && !context.scanPage) {
+              storeState.showToast('Scanning page...', 'info');
+              storeState.addChatMessage({
+                id: `msg-${Date.now()}`,
+                role: 'assistant' as const,
+                content: scanRequest.reason || 'Escaneando a página para encontrar os elementos...',
+                timestamp: Date.now(),
+                toolCalls: [{ id: `tc-scan-${Date.now()}`, name: 'scan_page', status: 'running' as const, startedAt: new Date().toISOString() }]
+              });
+              parent.postMessage(
+                { pluginMessage: { type: 'GENERATE_WITH_CONTEXT', command: context.command, scanPage: true, ...context } },
+                'https://www.figma.com'
+              );
+              break;
+            }
+
             const messageOps = ops.filter((o) => o?.type === 'MESSAGE' && o.content);
-            const designOps = ops.filter((o) => o?.type !== 'MESSAGE');
+            const designOps = ops.filter((o) => o?.type !== 'MESSAGE' && o?.type !== 'REQUEST_SCAN');
             const spokenText = messageOps.map((o) => String(o.content)).join('\n\n');
             const content =
               spokenText ||
@@ -417,20 +465,33 @@ export function useFigmaMessages() {
               result.message ||
               (designOps.length > 0 ? `Generated ${designOps.length} operation(s)` : 'Done');
 
+            // Build tool call records
+            const toolCalls: any[] = result.toolCallRecord ? [result.toolCallRecord] : [];
+            if (designOps.length > 0 && !toolCalls.some((tc: any) => tc.name === 'generate_figma_operations')) {
+              toolCalls.push({
+                id: `tc-gen-${Date.now()}`,
+                name: 'generate_figma_operations',
+                status: 'done' as const,
+                startedAt: new Date().toISOString(),
+                endedAt: new Date().toISOString(),
+                summary: `${designOps.length} operation${designOps.length > 1 ? 's' : ''} via ${result.provider || 'gemini'}`
+              });
+            }
+
             storeState.addChatMessage({
               id: `msg-${Date.now()}`,
               role: 'assistant' as const,
               content,
               timestamp: Date.now(),
               operations: designOps,
-              toolCalls: result.toolCallRecord ? [result.toolCallRecord] : undefined,
+              toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
               metadata: result.usage ? { usage: result.usage } : undefined
             });
 
             if (designOps.length > 0) {
               // Send ops back to sandbox for execution via Figma API
               parent.postMessage(
-                { pluginMessage: { type: 'APPLY_OPERATIONS_FROM_API', operations: designOps } },
+                { pluginMessage: { type: 'APPLY_OPERATIONS_FROM_API', operations: designOps, pageId: context.pageId } },
                 'https://www.figma.com'
               );
               storeState.showToast(`Applying ${designOps.length} operation(s)…`, 'info');

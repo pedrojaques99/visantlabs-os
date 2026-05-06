@@ -16,7 +16,11 @@ Use o nodeId dos elementos selecionados para editar:
 - SET_AUTO_LAYOUT: { nodeId, layoutMode, itemSpacing?, primaryAxisSizingMode?, counterAxisSizingMode? }
   REGRA: Se o frame já tem dimensões fixas, inclua primaryAxisSizingMode:"FIXED" e counterAxisSizingMode:"FIXED". Nunca aplique SET_AUTO_LAYOUT sem o usuário pedir organização/layout explicitamente.
 - SET_OPACITY: { nodeId, opacity } (0 a 1)
-- RENAME: { nodeId, name }`;
+- RENAME: { nodeId, name }
+- CREATE_COLOR_VARIABLES_FROM_SELECTION: { collectionName? }
+  REGRA: Quando o usuário pedir para extrair cores como variáveis, salvar cores no library, ou criar variables a partir da seleção, use esta operação. Ela lê automaticamente os fills de todos os elementos selecionados e cria variáveis com o nome de cada camada. Não precisa de nodeId.
+- BIND_NEAREST_COLOR_VARIABLES: { threshold?, scope?, collectionName? }
+  REGRA: Quando o usuário pedir para vincular/linkar/aplicar/refatorar cores hardcoded para variáveis/tokens, use esta operação. Ela percorre TODOS os nós recursivamente e substitui cada fill/stroke por a variável de cor mais próxima (distância RGB ≤ threshold). scope="page" para a página inteira, "selection" para apenas seleção. Não precisa de nodeId.`;
 
 export const EDIT_EXAMPLE = `EXEMPLO (mudar cor e fonte):
 [

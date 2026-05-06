@@ -13,6 +13,12 @@ export function useChatSend() {
     async (content: string) => {
       if (isSendingRef.current || !content.trim()) return;
 
+      if (content.trim().toLowerCase() === '/clear') {
+        usePluginStore.getState().clearChatHistory();
+        usePluginStore.getState().showToast('Chat cleared', 'info');
+        return;
+      }
+
       isSendingRef.current = true;
 
       // Add user message to history
@@ -71,12 +77,14 @@ export function useChatSend() {
           command: content,
           thinkMode: store.thinkMode,
           useBrand: store.useBrand,
+          scanPage: store.scanPage,
           attachments: serverAttachments,
           model: store.selectedModel,
           brandFonts,
           brandLogos,
           brandColors,
           designSystem: store.designSystem,
+          brandGuidelineId: store.brandGuideline?.id || null,
           mentions,
         };
 

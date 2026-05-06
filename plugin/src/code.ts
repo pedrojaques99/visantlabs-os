@@ -527,6 +527,13 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   }
 
   if (msg.type === 'APPLY_OPERATIONS_FROM_API') {
+    // Restore the page that was active when the command was sent
+    if ((msg as any).pageId) {
+      const targetPage = figma.root.children.find(p => p.id === (msg as any).pageId);
+      if (targetPage && targetPage !== figma.currentPage) {
+        await figma.setCurrentPageAsync(targetPage);
+      }
+    }
     await applyOperations(msg.operations);
     return;
   }
@@ -545,6 +552,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     const context = {
       command: msg.command,
       fileId: figma.fileKey || 'local_file',
+      pageId: figma.currentPage.id,
       selectedElements: contextData.nodes,
       scanPage: useScanPage,
       availableComponents: components,
@@ -557,6 +565,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       brandFonts: (msg as any).brandFonts || null,
       selectedBrandColors: msg.brandColors,
       designSystem: (msg as any).designSystem || null,
+      brandGuidelineId: (msg as any).brandGuidelineId || null,
       thinkMode: (msg as any).thinkMode || false,
       useBrand: (msg as any).useBrand !== undefined ? (msg as any).useBrand : true,
       mentions: (msg as any).mentions || [],

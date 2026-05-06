@@ -482,6 +482,22 @@ export type FigmaOperation =
     value: any;
   }
   | {
+    type: 'CREATE_COLOR_VARIABLES_FROM_SELECTION';
+    ref?: string;
+    collectionName?: string;
+  }
+  | {
+    type: 'BIND_NEAREST_COLOR_VARIABLES';
+    ref?: string;
+    threshold?: number;
+    scope?: 'selection' | 'page';
+    collectionName?: string;
+  }
+  | {
+    type: 'REQUEST_SCAN';
+    reason?: string;
+  }
+  | {
     type: 'SET_BLEND_MODE';
     nodeId: string;
     blendMode:

@@ -15,6 +15,7 @@ import { TEMPLATE_RULES, TEMPLATE_EXAMPLE } from './modules/template.js';
 import { CHART_RULES, CHART_EXAMPLE } from './modules/charts.js';
 import { BRAND_PRIORITY_RULE, buildCompactBrandContext } from './modules/brand.js';
 import { DESIGN_EXCELLENCE_RULES } from './modules/design-excellence.js';
+import { COLOR_SPEC_RULES } from './modules/color-spec.js';
 import { buildSelectionContext, buildContainersHint } from './modules/context.js';
 
 // Re-export for external use
@@ -111,6 +112,11 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
   if (intent.isChart) {
     modules.push({ id: 'chart_rules', content: CHART_RULES, priority: 82 });
     modules.push({ id: 'chart_example', content: CHART_EXAMPLE, priority: 72 });
+  }
+
+  // 3.6. Color spec rules (if detected)
+  if (intent.isColorSpec) {
+    modules.push({ id: 'color_spec', content: COLOR_SPEC_RULES, priority: 85 });
   }
 
   // 4. Brand context (if available)
