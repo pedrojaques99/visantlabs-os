@@ -23,7 +23,18 @@ export function BrandGuidelineSection() {
 
   const refresh = async () => {
     const data = await loadBrandGuidelines();
-    if (data) setGuidelines(data);
+    if (data) {
+      setGuidelines(data);
+      // Auto-restore: if linkedGuideline is set (from pluginData) but brandGuideline isn't hydrated yet
+      const state = usePluginStore.getState();
+      if (state.linkedGuideline && !state.brandGuideline) {
+        const match = data.find((g: any) => getGuidelineId(g) === state.linkedGuideline);
+        if (match) {
+          apply(match, { silent: true });
+          usePluginStore.setState({ useBrand: true });
+        }
+      }
+    }
   };
 
   useEffect(() => {
@@ -33,7 +44,16 @@ export function BrandGuidelineSection() {
 
   const handleSelectGuideline = (id: string) => {
     const guideline = guidelines.find((g) => getGuidelineId(g) === id);
-    if (guideline) apply(guideline);
+    if (guideline) {
+      apply(guideline);
+      parent.postMessage({
+        pluginMessage: {
+          type: 'SAVE_BRAND_GUIDELINE',
+          selectedId: id,
+          guideline: JSON.stringify(guideline),
+        },
+      }, 'https://www.figma.com');
+    }
   };
 
   const handleCreateNew = async () => {
@@ -41,7 +61,19 @@ export function BrandGuidelineSection() {
     if (!name) return;
     setLoading(true);
     const created = await saveBrandGuideline({ identity: { name } } as any);
-    if (created) apply(created, { silent: true });
+    if (created) {
+      apply(created, { silent: true });
+      const createdId = getGuidelineId(created);
+      if (createdId) {
+        parent.postMessage({
+          pluginMessage: {
+            type: 'SAVE_BRAND_GUIDELINE',
+            selectedId: createdId,
+            guideline: JSON.stringify(created),
+          },
+        }, 'https://www.figma.com');
+      }
+    }
     await refresh();
     setLoading(false);
   };

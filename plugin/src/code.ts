@@ -703,6 +703,174 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
+  // ── Scan Hardcoded Colors → Variable Matches ──
+  if ((msg as any).type === 'SCAN_HARDCODED_COLORS') {
+    try {
+      const threshold = (msg as any).threshold ?? 0.15;
+      const sel = figma.currentPage.selection;
+      if (sel.length === 0) {
+        postToUI({ type: 'COLOR_SCAN_RESULTS', matches: [] });
+        return;
+      }
+
+      const allVars = figma.variables
+        ? await figma.variables.getLocalVariablesAsync('COLOR')
+        : [];
+      const palette: { variable: Variable; rgb: { r: number; g: number; b: number }; hex: string; name: string }[] = [];
+
+      for (const v of allVars) {
+        const modeId = Object.keys(v.valuesByMode)[0];
+        const val = v.valuesByMode[modeId];
+        if (typeof val === 'object' && val !== null && 'r' in val) {
+          const rgb = val as { r: number; g: number; b: number };
+          const hex = '#' + [rgb.r, rgb.g, rgb.b].map(c => Math.round(c * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+          palette.push({ variable: v, rgb, hex, name: v.name });
+        }
+      }
+
+      // Also include local paint styles
+      const paintStyles = await figma.getLocalPaintStylesAsync();
+      for (const style of paintStyles) {
+        const paint = style.paints[0];
+        if (paint?.type === 'SOLID' && paint.color) {
+          const rgb = paint.color;
+          const hex = '#' + [rgb.r, rgb.g, rgb.b].map(c => Math.round(c * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+          const alreadyExists = palette.some(p => p.hex === hex);
+          if (!alreadyExists) {
+            palette.push({ variable: null as any, rgb, hex, name: style.name });
+          }
+        }
+      }
+
+      if (palette.length === 0) {
+        postToUI({ type: 'COLOR_SCAN_RESULTS', matches: [] });
+        return;
+      }
+
+      const matches: any[] = [];
+      const colorDist = (a: {r:number;g:number;b:number}, b: {r:number;g:number;b:number}) =>
+        Math.sqrt((a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2);
+
+      function scanNode(node: SceneNode) {
+        if ('fills' in node) {
+          const fills = (node as GeometryMixin).fills as Paint[];
+          if (Array.isArray(fills)) {
+            for (let i = 0; i < fills.length; i++) {
+              const fill = fills[i];
+              if (fill.type !== 'SOLID' || fill.visible === false) continue;
+              if ((fill as any).boundVariables?.color) continue;
+              const { r, g, b } = (fill as SolidPaint).color;
+              let bestDist = Infinity;
+              let bestMatch: typeof palette[0] | null = null;
+              for (const p of palette) {
+                const dist = colorDist({ r, g, b }, p.rgb);
+                if (dist < bestDist) { bestDist = dist; bestMatch = p; }
+              }
+              if (bestMatch && bestDist <= threshold) {
+                const hex = '#' + [r, g, b].map(c => Math.round(c * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+                matches.push({
+                  nodeId: node.id,
+                  nodeName: node.name,
+                  property: 'fill',
+                  index: i,
+                  currentHex: hex,
+                  matchedVariableName: bestMatch.name,
+                  matchedVariableId: bestMatch.variable?.id ?? '',
+                  matchedHex: bestMatch.hex,
+                  distance: bestDist,
+                });
+              }
+            }
+          }
+        }
+        if ('strokes' in node) {
+          const strokes = (node as GeometryMixin).strokes as Paint[];
+          if (Array.isArray(strokes)) {
+            for (let i = 0; i < strokes.length; i++) {
+              const stroke = strokes[i];
+              if (stroke.type !== 'SOLID' || stroke.visible === false) continue;
+              if ((stroke as any).boundVariables?.color) continue;
+              const { r, g, b } = (stroke as SolidPaint).color;
+              let bestDist = Infinity;
+              let bestMatch: typeof palette[0] | null = null;
+              for (const p of palette) {
+                const dist = colorDist({ r, g, b }, p.rgb);
+                if (dist < bestDist) { bestDist = dist; bestMatch = p; }
+              }
+              if (bestMatch && bestDist <= threshold) {
+                const hex = '#' + [r, g, b].map(c => Math.round(c * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+                matches.push({
+                  nodeId: node.id,
+                  nodeName: node.name,
+                  property: 'stroke',
+                  index: i,
+                  currentHex: hex,
+                  matchedVariableName: bestMatch.name,
+                  matchedVariableId: bestMatch.variable?.id ?? '',
+                  matchedHex: bestMatch.hex,
+                  distance: bestDist,
+                });
+              }
+            }
+          }
+        }
+        if ('children' in node) {
+          for (const child of (node as any).children) scanNode(child as SceneNode);
+        }
+      }
+
+      for (const node of sel) scanNode(node);
+
+      // Deduplicate by unique color pair
+      const seen = new Set<string>();
+      const deduped = matches.filter(m => {
+        const key = `${m.currentHex}:${m.matchedVariableId}`;
+        if (seen.has(key)) {
+          // Keep all but show count later
+        }
+        return true; // keep all for apply
+      });
+
+      postToUI({ type: 'COLOR_SCAN_RESULTS', matches: deduped });
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: `Scan error: ${err instanceof Error ? err.message : String(err)}` });
+    }
+    return;
+  }
+
+  // ── Apply Color Bindings (from scan results) ──
+  if ((msg as any).type === 'APPLY_COLOR_BINDINGS') {
+    try {
+      const bindings = (msg as any).bindings as Array<{
+        nodeId: string;
+        property: 'fill' | 'stroke';
+        index: number;
+        variableId: string;
+      }>;
+      let applied = 0;
+      for (const b of bindings) {
+        if (!b.variableId) continue;
+        const node = await figma.getNodeByIdAsync(b.nodeId);
+        if (!node) continue;
+        const variable = await figma.variables.getVariableByIdAsync(b.variableId);
+        if (!variable) continue;
+        const prop = b.property === 'stroke' ? 'strokes' : 'fills';
+        if (!(prop in node)) continue;
+        const paints = [...((node as any)[prop] as Paint[])];
+        const paint = paints[b.index];
+        if (!paint || paint.type !== 'SOLID') continue;
+        paints[b.index] = figma.variables.setBoundVariableForPaint(paint as SolidPaint, 'color', variable);
+        (node as any)[prop] = paints;
+        applied++;
+      }
+      postToUI({ type: 'OPERATIONS_DONE' });
+      figma.notify(`✓ Bound ${applied} colors to variables`);
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: `Apply error: ${err instanceof Error ? err.message : String(err)}` });
+    }
+    return;
+  }
+
   // ── Apply Brand Guidelines locally to selection ──
   if ((msg as any).type === 'APPLY_BRAND_GUIDELINES') {
     try {
@@ -725,12 +893,14 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   if ((msg as any).type === 'VARY_SELECTION_COLORS') {
     const brandColors = (msg as any).brandColors as string[] | undefined;
     await varySelectionColors(brandColors);
+    postToUI({ type: 'OPERATIONS_DONE' });
     return;
   }
 
   // ── Transform Selection to Slices (Dev Tool) ──
   if ((msg as any).type === 'SELECTION_TO_SLICES') {
     await selectionToSlices();
+    postToUI({ type: 'OPERATIONS_DONE' });
     return;
   }
 
@@ -765,6 +935,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     try {
       const sections = (msg as any).sections;
       await generateBrandGrid(sections);
+      postToUI({ type: 'OPERATIONS_DONE' });
     } catch (err) {
       postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
     }
@@ -786,6 +957,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     try {
       const brandColors = (msg as any).brandColors || [];
       await generateSocialFrames(brandColors);
+      postToUI({ type: 'OPERATIONS_DONE' });
     } catch (err) {
       postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
     }
@@ -797,6 +969,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     try {
       const formats = (msg as any).formats as Array<{ id: string; label: string; width: number; height: number }> | undefined;
       await multiplyResponsive(formats);
+      postToUI({ type: 'OPERATIONS_DONE' });
     } catch (err) {
       postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
     }

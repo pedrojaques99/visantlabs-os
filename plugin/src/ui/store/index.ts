@@ -60,6 +60,7 @@ export const usePluginStore = create<PluginStore>()(
     anthropicApiKey: null,
     showSmartScanModal: false,
     smartScanResults: null,
+    colorScanResults: null,
     selectedFont: null,
     brandLintReport: null,
     extractSyncData: null,

@@ -6,16 +6,48 @@ import { ChatInput } from './ChatInput';
 import { TypingIndicator } from './TypingIndicator';
 import { Layers, Trash2, MessageSquare } from 'lucide-react';
 import { useAutoScrollToBottom } from '@/hooks/chat/useAutoScrollToBottom';
+import { getGuidelineLabel } from '../../lib/brandHydration';
 
 export function ChatView() {
   const { chatHistory, selectionDetails, clearChatHistory } = usePluginStore();
+  const brandGuideline = usePluginStore(s => s.brandGuideline);
   const { sendMessage } = useChatSend();
   const isGenerating = usePluginStore(s => s.isGenerating);
   const scrollAnchorRef = useAutoScrollToBottom([chatHistory, isGenerating]);
 
+  const brandLogo = brandGuideline
+    ? (brandGuideline.logos?.find((l: any) => l.variant === 'icon' || l.variant === 'primary') ?? brandGuideline.logos?.[0])?.url
+      || brandGuideline.logos?.[0]?.thumbnailUrl
+    : null;
+  const brandName = brandGuideline ? getGuidelineLabel(brandGuideline) : null;
+
   return (
     <div className="flex flex-col h-full bg-background">
-      {chatHistory.length > 0 && (
+      {/* Brand context bar */}
+      {brandGuideline && (
+        <div className="flex items-center gap-2 px-3 py-1.5 border-b border-white/5 bg-white/[0.02]">
+          {brandLogo ? (
+            <img src={brandLogo} alt="" className="w-5 h-5 rounded object-contain bg-white/5 p-0.5 shrink-0" />
+          ) : (
+            <div className="w-5 h-5 rounded bg-neutral-800 border border-white/5 flex items-center justify-center shrink-0">
+              <span className="text-[10px] font-semibold text-neutral-300">{brandName?.[0]?.toUpperCase() || '?'}</span>
+            </div>
+          )}
+          <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider truncate">{brandName}</span>
+          {chatHistory.length > 0 && (
+            <button
+              onClick={clearChatHistory}
+              className="ml-auto flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-destructive transition-colors shrink-0"
+            >
+              <Trash2 size={10} />
+              Clear
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Clear button when no brand is linked */}
+      {!brandGuideline && chatHistory.length > 0 && (
         <div className="flex justify-end px-3 pt-2">
           <button
             onClick={clearChatHistory}

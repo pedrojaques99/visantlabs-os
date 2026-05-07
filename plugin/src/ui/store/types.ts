@@ -162,6 +162,7 @@ export interface PluginStore {
   anthropicApiKey: string | null;
   showSmartScanModal: boolean;
   smartScanResults: any | null;
+  colorScanResults: any | null;
   selectedFont: { family: string; style?: string; fontSize?: number; lineHeight?: number } | null;
   brandLintReport: any | null;
   extractSyncData: any | null;

@@ -1,8 +1,8 @@
 import OpenAI from 'openai';
 import type { Resolution, AspectRatio } from '../../src/types/types.js';
 import {
-  OPENAI_SIZE_MAP,
   OPENAI_QUALITY_MAP,
+  resolveOpenAISize,
 } from '../../src/constants/openaiModels.js';
 
 export interface OpenAIImageInput {
@@ -47,11 +47,12 @@ export async function generateOpenAIImage(params: GenerateOpenAIImageParams): Pr
     referenceImages,
     model = 'gpt-image-2',
     resolution = '1K',
+    aspectRatio,
     apiKey,
   } = params;
 
   const client = getClient(apiKey);
-  const size = OPENAI_SIZE_MAP[resolution] ?? '1024x1024';
+  const size = resolveOpenAISize(resolution, aspectRatio);
   const quality = OPENAI_QUALITY_MAP[resolution] ?? 'medium';
 
   const hasBaseImage = !!(baseImage?.base64 || baseImage?.url);

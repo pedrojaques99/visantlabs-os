@@ -14,10 +14,11 @@ import { NodeButton } from './shared/node-button';
 import { ModelSelector } from '../shared/ModelSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
-import { DEFAULT_MODEL, isAdvancedModel } from '@/constants/geminiModels';
-import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
-import { isOpenAIImageModel, getOpenAIImageModelConfig } from '@/constants/openaiModels';
-import { resolveProvider } from '@/utils/canvas/generationContext';
+import { DEFAULT_MODEL } from '@/constants/geminiModels';
+import { supportsOutputConfig } from '@/utils/canvas/generationContext';
+import { isSeedreamModel } from '@/constants/seedreamModels';
+import { isOpenAIImageModel } from '@/constants/openaiModels';
+import { resolveProvider, resolveGenerationContext } from '@/utils/canvas/generationContext';
 import { useNodeDataUpdater } from '@/hooks/canvas/useNodeDataUpdater';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 
@@ -36,10 +37,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
   const hasEnoughImages = connectedImages.length >= 2;
   const isSeedream = isSeedreamModel(model);
   const isOpenAI = isOpenAIImageModel(model);
-  const seedreamResolution = isSeedream ? (data.resolution as Resolution | undefined) || getSeedreamModelConfig(model)?.defaultResolution : undefined;
-  const openaiResolution = isOpenAI ? (data.resolution as Resolution | undefined) || getOpenAIImageModelConfig(model)?.defaultResolution : undefined;
-  const geminiResolution = !isSeedream && !isOpenAI && isAdvancedModel(model as GeminiModel) ? ((data.resolution as Resolution | undefined) || '1K') : undefined;
-  const effectiveResolution = isSeedream ? seedreamResolution : isOpenAI ? openaiResolution : geminiResolution;
+  const { resolution: effectiveResolution } = resolveGenerationContext(model, { resolution: data.resolution as Resolution | undefined });
   const creditsRequired = getCreditsRequired(model, effectiveResolution, resolveProvider(model));
 
   // Auto-resize textarea to fit content

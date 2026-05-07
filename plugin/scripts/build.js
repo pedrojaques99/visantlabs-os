@@ -39,7 +39,9 @@ async function build() {
       minify: !isDev,
       sourcemap: isDev,
       define: {
-        'process.env.NODE_ENV': isDev ? '"development"' : '"production"'
+        'process.env.NODE_ENV': isDev ? '"development"' : '"production"',
+        'import.meta.env': JSON.stringify({}),
+        'import.meta': JSON.stringify({ env: {} }),
       },
       external: [],
       logLevel: 'info'
@@ -102,9 +104,21 @@ body {
 <body>
   <div id="root"></div>
   <script>
-    // Set API URL before React app loads
-    // In development: http://localhost:3001
-    // In production: set via environment variable
+    // Figma data: URL polyfill — must run before ANY other script
+    (function(){
+      try { var x = window.localStorage; x.getItem('_'); return; } catch(e) {}
+      var s = {};
+      var mem = {
+        get length(){ return Object.keys(s).length; },
+        key: function(i){ return Object.keys(s)[i] || null; },
+        getItem: function(k){ return s.hasOwnProperty(k) ? s[k] : null; },
+        setItem: function(k,v){ s[k] = String(v); },
+        removeItem: function(k){ delete s[k]; },
+        clear: function(){ s = {}; }
+      };
+      try { Object.defineProperty(window, 'localStorage', { value: mem, writable: true, configurable: true }); } catch(e) { window.localStorage = mem; }
+      try { Object.defineProperty(window, 'sessionStorage', { value: mem, writable: true, configurable: true }); } catch(e) { window.sessionStorage = mem; }
+    })();
     window.__VISANT_API_URL__ = '${process.env.VISANT_API_URL || 'https://api.visantlabs.com'}';
   </script>
   <script>

@@ -3,6 +3,7 @@ import { usePluginStore } from '../store';
 import { apiUrl } from '../config';
 import type { UIMessage, PluginMessage } from '@/lib/figma-types';
 import type { ColorEntry } from '../store/types';
+import { hydrateBrandGuideline } from '../lib/brandHydration';
 
 // Module-level refcount — ensures exactly ONE window listener regardless of
 // how many components call useFigmaMessages(). Prevents duplicate handling
@@ -55,6 +56,16 @@ export function useFigmaMessages() {
           } else {
             storeState.showToast('No elements found', 'warning');
           }
+          break;
+        }
+
+        case 'COLOR_SCAN_RESULTS': {
+          usePluginStore.setState({ colorScanResults: msg.matches ?? [] });
+          const count = msg.matches?.length ?? 0;
+          storeState.showToast(
+            count > 0 ? `Found ${count} color matches` : 'No hardcoded colors found',
+            count > 0 ? 'success' : 'info'
+          );
           break;
         }
 
@@ -168,11 +179,12 @@ export function useFigmaMessages() {
             try {
               const parsed = typeof msg.guideline === 'string' ? JSON.parse(msg.guideline) : msg.guideline;
               if (parsed) {
-                usePluginStore.setState({ brandGuideline: parsed, linkedGuideline: msg.selectedId });
+                const slice = hydrateBrandGuideline(parsed);
+                usePluginStore.setState({ ...slice as any, useBrand: true });
               }
             } catch {}
-          } else if (msg.selectedId && msg.autoLoad) {
-            // Have ID but no cache — fetch from server
+          } else if (msg.selectedId) {
+            // Have ID but no cache — store the ID so BrandGuidelineSection auto-selects after fetch
             usePluginStore.setState({ linkedGuideline: msg.selectedId });
           }
           break;

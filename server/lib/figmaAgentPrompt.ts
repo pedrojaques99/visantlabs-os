@@ -266,7 +266,9 @@ export function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thin
   fmtLogo('Light', logos.light || req.selectedLogo);
   fmtLogo('Dark', logos.dark);
   fmtLogo('Accent', logos.accent);
-  const logoInfo = logoLines.length > 0 ? '\n' + logoLines.join('\n') : 'Nenhum selecionado';
+  const logoInfo = logoLines.length > 0
+    ? '\n' + logoLines.join('\n') + '\n  → Para inserir um logo, use CREATE_COMPONENT_INSTANCE com o "key" acima como "componentKey". Posicione com x/y e dimensione com width/height.'
+    : 'Nenhum selecionado';
 
   // Build font info — family-first with available weights
   const fonts = req.brandFonts || {};
@@ -335,7 +337,10 @@ export function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thin
   const containerTypes = new Set(['FRAME', 'COMPONENT', 'COMPONENT_SET', 'GROUP', 'SECTION']);
   const selectedContainers = selectedNodes
     .filter((n: any) => containerTypes.has(n.type))
-    .map((n: any) => `- "${n.name}" (id: "${n.id}", type: ${n.type})`);
+    .map((n: any) => {
+      const dims = (n.width != null && n.height != null) ? `, ${Math.round(n.width)}×${Math.round(n.height)}` : '';
+      return `- "${n.name}" (id: "${n.id}", type: ${n.type}${dims})`;
+    });
   const containersHint = selectedContainers.length > 0
     ? selectedContainers.join('\n')
     : 'Nenhum (criação vai para a página raiz)';

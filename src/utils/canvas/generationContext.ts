@@ -63,6 +63,19 @@ export function resolveGenerationContext(
   };
 }
 
+/**
+ * Whether a model supports output config controls (aspect ratio + resolution).
+ * Single source of truth — used by UI components and generation handlers.
+ */
+export function supportsOutputConfig(model: string): boolean {
+  if (isSeedreamModel(model)) {
+    const cfg = getSeedreamModelConfig(model);
+    return !cfg?.adaptiveSize;
+  }
+  if (isOpenAIImageModel(model)) return true;
+  return isAdvancedModel(model as GeminiModel);
+}
+
 /** Convenience: derive provider only */
 export function resolveProvider(model: string): ImageProvider {
   return isSeedreamModel(model) ? 'seedream' : isOpenAIImageModel(model) ? 'openai' : 'gemini';
