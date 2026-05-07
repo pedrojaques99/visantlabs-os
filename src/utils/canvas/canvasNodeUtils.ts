@@ -574,8 +574,8 @@ export const copyMediaAsPngFromNode = async (
         blob = await response.blob();
       } catch (fetchError) {
         console.warn('Direct fetch failed, trying proxy...', fetchError);
-        // Fallback to proxy
-        const proxyUrl = `/api/images/proxy?url=${encodeURIComponent(media.mediaUrl)}`;
+        const apiBase = (import.meta as any).env?.VITE_API_URL || '/api';
+        const proxyUrl = `${apiBase}/images/proxy?url=${encodeURIComponent(media.mediaUrl)}`;
         const proxyResponse = await fetch(proxyUrl);
 
         if (!proxyResponse.ok) {
@@ -691,8 +691,8 @@ export const copyMediaFromNode = async (
         blob = await response.blob();
       } catch (fetchError) {
         console.warn('Direct fetch failed, trying proxy...', fetchError);
-        // Fallback to proxy
-        const proxyUrl = `/api/images/proxy?url=${encodeURIComponent(media.mediaUrl)}`;
+        const apiBase = (import.meta as any).env?.VITE_API_URL || '/api';
+        const proxyUrl = `${apiBase}/images/proxy?url=${encodeURIComponent(media.mediaUrl)}`;
         const proxyResponse = await fetch(proxyUrl);
 
         if (!proxyResponse.ok) {

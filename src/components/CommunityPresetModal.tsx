@@ -69,6 +69,65 @@ const getInitialFormData = (category: PromptCategory = 'presets', presetType?: L
     useCase: '',
 });
 
+// Infer preset metadata from prompt text via keyword heuristics
+const inferFromPrompt = (prompt: string): Partial<PresetFormData> => {
+    const lower = prompt.toLowerCase();
+    const inferred: Partial<PresetFormData> = {};
+
+    // Infer category & presetType
+    if (/\b(mockup|mock-up|product shot|packaging|box|bag|bottle|cup|mug|t-?shirt|hoodie|tote|phone case|device|screen)\b/.test(lower)) {
+        inferred.category = 'presets';
+        inferred.presetType = 'mockup';
+    } else if (/\b(3d|render|blender|cinema ?4d|isometric|voxel|clay)\b/.test(lower)) {
+        inferred.category = '3d';
+    } else if (/\b(texture|material|fabric|wood|marble|concrete|grain|paper)\b/.test(lower)) {
+        inferred.category = 'presets';
+        inferred.presetType = 'texture';
+    } else if (/\b(light|lighting|neon|glow|shadow|backlit|rim light|golden hour|studio light)\b/.test(lower)) {
+        inferred.category = 'presets';
+        inferred.presetType = 'luminance';
+    } else if (/\b(mood|ambient|atmosphere|vibe|aesthetic|dreamy|cinematic|film)\b/.test(lower)) {
+        inferred.category = 'presets';
+        inferred.presetType = 'ambience';
+    } else if (/\b(angle|perspective|top.?down|bird.?eye|low angle|close.?up|macro|wide.?angle)\b/.test(lower)) {
+        inferred.category = 'presets';
+        inferred.presetType = 'angle';
+    } else if (/\b(theme|style|retro|vintage|futuristic|minimalist|brutalist|y2k|cyberpunk|art deco)\b/.test(lower)) {
+        inferred.category = 'themes';
+    } else if (/\b(aesthetic|color palette|pastel|monochrome|gradient|duotone)\b/.test(lower)) {
+        inferred.category = 'aesthetics';
+    }
+
+    // Infer aspect ratio
+    if (/\b(portrait|vertical|story|stories|9:16|reel)\b/.test(lower)) {
+        inferred.aspectRatio = '9:16';
+    } else if (/\b(square|1:1|instagram post)\b/.test(lower)) {
+        inferred.aspectRatio = '1:1';
+    } else if (/\b(ultrawide|21:9|panoramic|banner)\b/.test(lower)) {
+        inferred.aspectRatio = '21:9';
+    } else if (/\b(landscape|horizontal|16:9|youtube|thumbnail)\b/.test(lower)) {
+        inferred.aspectRatio = '16:9';
+    } else if (/\b(4:3)\b/.test(lower)) {
+        inferred.aspectRatio = '4:3';
+    } else if (/\b(3:4)\b/.test(lower)) {
+        inferred.aspectRatio = '3:4';
+    }
+
+    // Infer name: first sentence or first ~50 chars
+    const firstLine = prompt.split(/[.\n]/)[0]?.trim() || '';
+    if (firstLine.length > 0) {
+        inferred.name = firstLine.length > 50 ? firstLine.slice(0, 50).trim() : firstLine;
+    }
+
+    // Infer tags from notable keywords
+    const tagKeywords = prompt.match(/\b(minimal|luxury|organic|bold|elegant|modern|classic|playful|professional|vintage|retro|neon|dark|bright|soft|matte|glossy)\b/gi);
+    if (tagKeywords) {
+        inferred.tags = [...new Set(tagKeywords.map(t => t.toLowerCase()))];
+    }
+
+    return inferred;
+};
+
 export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
     isOpen,
     onClose,
@@ -87,6 +146,25 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
     const [error, setError] = useState<string | null>(null);
     const [isUploadingImage, setIsUploadingImage] = useState(false);
     const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+    const [autoFilled, setAutoFilled] = useState(false);
+
+    // Auto-infer fields when prompt changes (only on create, only first auto-fill or when prompt is pasted)
+    const handlePromptChange = (newPrompt: string) => {
+        const wasPaste = newPrompt.length - formData.prompt.length > 10;
+        setFormData(prev => {
+            const updated = { ...prev, prompt: newPrompt };
+            if (isCreating && newPrompt.length > 15 && (wasPaste || !autoFilled)) {
+                const inferred = inferFromPrompt(newPrompt);
+                if (!prev.name || wasPaste) updated.name = inferred.name || prev.name;
+                if (inferred.category) updated.category = inferred.category;
+                if (inferred.presetType) updated.presetType = inferred.presetType;
+                if (inferred.aspectRatio) updated.aspectRatio = inferred.aspectRatio;
+                if (inferred.tags?.length) updated.tags = inferred.tags;
+                setAutoFilled(true);
+            }
+            return updated;
+        });
+    };
 
     // Auto-generate ID from name when creating
     useEffect(() => {
@@ -112,6 +190,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
             setTagInput('');
             setError(null);
             setImageUploadError(null);
+            setAutoFilled(false);
         }
     }, [isOpen, initialData]);
 
@@ -293,6 +372,27 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                     )}
 
                     <div className="space-y-5">
+                        {/* Prompt First — paste and auto-fill */}
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <MicroTitle as="label">{t('communityPresets.promptRequired')} *</MicroTitle>
+                                <MicroTitle as="span" className="text-neutral-500 lowercase">{formData.prompt.length} chars</MicroTitle>
+                            </div>
+                            <Textarea
+                                value={formData.prompt}
+                                onChange={(e) => handlePromptChange(e.target.value)}
+                                rows={5}
+                                autoFocus
+                                className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors resize-none"
+                                placeholder={t('communityPresets.describeWhatToGenerate')}
+                            />
+                            {isCreating && autoFilled && (
+                                <p className="text-xs text-brand-cyan/70 mt-1.5">
+                                    {t('communityPresets.autoFilledHint') || 'Fields auto-filled from prompt — you can edit them below.'}
+                                </p>
+                            )}
+                        </div>
+
                         {/* Image Upload Section */}
                         {needsReferenceImage && (
                             <div className="flex items-start gap-4 pb-5 border-b border-neutral-800/40">
@@ -444,20 +544,6 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                             </div>
                         )}
 
-                        {/* Prompt */}
-                        <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                                <MicroTitle as="label">{t('communityPresets.promptRequired')} *</MicroTitle>
-                                <MicroTitle as="span" className="text-neutral-500 lowercase">{formData.prompt.length} chars</MicroTitle>
-                            </div>
-                            <Textarea
-                                value={formData.prompt}
-                                onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
-                                rows={4}
-                                className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors resize-none"
-                                placeholder={t('communityPresets.describeWhatToGenerate')}
-                            />
-                        </div>
 
                         {/* Tags */}
                         <div>

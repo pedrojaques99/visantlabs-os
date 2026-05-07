@@ -4103,7 +4103,7 @@ export const CanvasPage: React.FC = () => {
             onAddImage={() => handleAddNode(addImageNode)}
             onAddText={() => handleAddNode(addTextNode)}
             onAddMerge={() => handleAddNode(addMergeNode)}
-            onAddPrompt={() => handleAddNode(addPromptNode)}
+            onAddPrompt={() => handleAddNode(addPromptNode, { targetHandle: 'input-1' })}
             onAddVideo={() => handleAddNode(addVideoNode, { targetHandle: 'input-image' })}
             onAddBrand={() => handleAddNode(addBrandNode)}
             onAddEdit={() => handleAddNode(addEditNode)}

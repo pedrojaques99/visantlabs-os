@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Resolution, GeminiModel } from '@/types/types';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { isOpenAIImageModel, getOpenAIImageModelConfig } from '@/constants/openaiModels';
 import { cn } from '@/lib/utils';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { Select } from '@/components/ui/select';
@@ -35,11 +36,13 @@ function renderResolutionButton(
   const handleClick = () => {
     if (disabled) return;
     
-    // Auto-switch model logic
-    if (res === '512px') {
-      if (onModelChange) onModelChange(GEMINI_MODELS.FLASH);
-    } else if (IMAGE_RESOLUTIONS.includes(res) && model === GEMINI_MODELS.FLASH) {
-      if (onModelChange) onModelChange(GEMINI_MODELS.PRO);
+    // Auto-switch model logic (Gemini only)
+    if (!isOpenAIImageModel(model)) {
+      if (res === '512px') {
+        if (onModelChange) onModelChange(GEMINI_MODELS.FLASH);
+      } else if (IMAGE_RESOLUTIONS.includes(res) && model === GEMINI_MODELS.FLASH) {
+        if (onModelChange) onModelChange(GEMINI_MODELS.PRO);
+      }
     }
     
     onChange(res);
@@ -78,7 +81,12 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
   allowVideo = false
 }) => {
   const isVideo = String(model).startsWith('veo-');
-  const resolutions = (isVideo && allowVideo) ? VIDEO_RESOLUTIONS : IMAGE_RESOLUTIONS;
+  const openaiConfig = isOpenAIImageModel(model) ? getOpenAIImageModelConfig(model) : undefined;
+  const resolutions = (isVideo && allowVideo)
+    ? VIDEO_RESOLUTIONS
+    : openaiConfig
+      ? openaiConfig.supportedResolutions
+      : IMAGE_RESOLUTIONS;
 
   if (compact) {
     return (
