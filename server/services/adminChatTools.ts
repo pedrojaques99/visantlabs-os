@@ -1,6 +1,7 @@
 import { Type } from '@google/genai';
 import { prisma } from '../db/prisma.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { isOpenAIImageModel } from '../../src/constants/openaiModels.js';
 import { randomUUID } from 'crypto';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { pluginQueue } from '../lib/pluginQueue.js';
@@ -599,7 +600,7 @@ export async function executeAdminChatTool(
           resolution: args.resolution,
           aspectRatio: format,
           feature: 'canvas',
-          provider: 'gemini',
+          provider: isOpenAIImageModel(args.model || '') ? 'openai' : 'gemini',
         }),
       }),
       fetch(`${baseUrl}/api/creative/plan`, {

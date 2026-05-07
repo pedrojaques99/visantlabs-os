@@ -123,13 +123,22 @@ export const adminChatApi = {
         });
     },
 
-    async sendMessage(sessionId: string, message: string, planMode?: boolean, textMode?: string): Promise<AdminChatSendMessageResult> {
+    async sendMessage(
+        sessionId: string,
+        message: string,
+        planMode?: boolean,
+        textMode?: string,
+        outputConfig?: { model?: string; aspectRatio?: string; resolution?: string }
+    ): Promise<AdminChatSendMessageResult> {
         return chatApiRequest<AdminChatSendMessageResult>(`/admin-chat/sessions/${sessionId}/message`, {
             method: 'POST',
             body: {
                 message,
                 ...(planMode ? { planMode: true } : {}),
                 ...(textMode && textMode !== 'layers' ? { textMode } : {}),
+                ...(outputConfig?.model ? { imageModel: outputConfig.model } : {}),
+                ...(outputConfig?.aspectRatio ? { aspectRatio: outputConfig.aspectRatio } : {}),
+                ...(outputConfig?.resolution ? { resolution: outputConfig.resolution } : {}),
             },
             errorMessage: 'Failed to send message to admin chat',
         });
