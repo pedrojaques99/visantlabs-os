@@ -2,6 +2,12 @@ import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, BrandNodeData, OutputNodeData, BrandIdentity, LogoNodeData, PromptNodeData, MockupNodeData, AngleNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, PDFNodeData, VideoNodeData } from '@/types/reactFlow';
 import { getImageUrl } from '../imageUtils';
 
+// Proxy URL for CORS-restricted images
+export const getProxyUrl = (mediaUrl: string): string => {
+  const apiBase = (import.meta as any).env?.VITE_API_URL || '/api';
+  return `${apiBase}/images/proxy?url=${encodeURIComponent(mediaUrl)}`;
+};
+
 // Helper to generate node ID
 let nodeIdCounter = 0;
 export const generateNodeId = (type: string) => `${type}-${Date.now()}-${++nodeIdCounter}`;
@@ -574,8 +580,7 @@ export const copyMediaAsPngFromNode = async (
         blob = await response.blob();
       } catch (fetchError) {
         console.warn('Direct fetch failed, trying proxy...', fetchError);
-        const apiBase = (import.meta as any).env?.VITE_API_URL || '/api';
-        const proxyUrl = `${apiBase}/images/proxy?url=${encodeURIComponent(media.mediaUrl)}`;
+        const proxyUrl = getProxyUrl(media.mediaUrl);
         const proxyResponse = await fetch(proxyUrl);
 
         if (!proxyResponse.ok) {
@@ -691,8 +696,7 @@ export const copyMediaFromNode = async (
         blob = await response.blob();
       } catch (fetchError) {
         console.warn('Direct fetch failed, trying proxy...', fetchError);
-        const apiBase = (import.meta as any).env?.VITE_API_URL || '/api';
-        const proxyUrl = `${apiBase}/images/proxy?url=${encodeURIComponent(media.mediaUrl)}`;
+        const proxyUrl = getProxyUrl(media.mediaUrl);
         const proxyResponse = await fetch(proxyUrl);
 
         if (!proxyResponse.ok) {

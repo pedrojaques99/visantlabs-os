@@ -70,47 +70,43 @@ const getInitialFormData = (category: PromptCategory = 'presets', presetType?: L
 });
 
 // Infer preset metadata from prompt text via keyword heuristics
+const CATEGORY_RULES: Array<{ regex: RegExp; category: string; presetType?: string }> = [
+    { regex: /\b(mockup|mock-up|product shot|packaging|box|bag|bottle|cup|mug|t-?shirt|hoodie|tote|phone case|device|screen)\b/, category: 'presets', presetType: 'mockup' },
+    { regex: /\b(3d|render|blender|cinema ?4d|isometric|voxel|clay)\b/, category: '3d' },
+    { regex: /\b(texture|material|fabric|wood|marble|concrete|grain|paper)\b/, category: 'presets', presetType: 'texture' },
+    { regex: /\b(light|lighting|neon|glow|shadow|backlit|rim light|golden hour|studio light)\b/, category: 'presets', presetType: 'luminance' },
+    { regex: /\b(mood|ambient|atmosphere|vibe|dreamy|cinematic|film)\b/, category: 'presets', presetType: 'ambience' },
+    { regex: /\b(angle|perspective|top.?down|bird.?eye|low angle|close.?up|macro|wide.?angle)\b/, category: 'presets', presetType: 'angle' },
+    { regex: /\b(theme|style|retro|vintage|futuristic|minimalist|brutalist|y2k|cyberpunk|art deco)\b/, category: 'themes' },
+    { regex: /\b(aesthetic|color palette|pastel|monochrome|gradient|duotone)\b/, category: 'aesthetics' },
+];
+
+const ASPECT_RATIO_RULES: Array<{ regex: RegExp; ratio: string }> = [
+    { regex: /\b(portrait|vertical|story|stories|9:16|reel)\b/, ratio: '9:16' },
+    { regex: /\b(square|1:1|instagram post)\b/, ratio: '1:1' },
+    { regex: /\b(ultrawide|21:9|panoramic|banner)\b/, ratio: '21:9' },
+    { regex: /\b(landscape|horizontal|16:9|youtube|thumbnail)\b/, ratio: '16:9' },
+    { regex: /\b(4:3)\b/, ratio: '4:3' },
+    { regex: /\b(3:4)\b/, ratio: '3:4' },
+];
+
 const inferFromPrompt = (prompt: string): Partial<PresetFormData> => {
     const lower = prompt.toLowerCase();
     const inferred: Partial<PresetFormData> = {};
 
-    // Infer category & presetType
-    if (/\b(mockup|mock-up|product shot|packaging|box|bag|bottle|cup|mug|t-?shirt|hoodie|tote|phone case|device|screen)\b/.test(lower)) {
-        inferred.category = 'presets';
-        inferred.presetType = 'mockup';
-    } else if (/\b(3d|render|blender|cinema ?4d|isometric|voxel|clay)\b/.test(lower)) {
-        inferred.category = '3d';
-    } else if (/\b(texture|material|fabric|wood|marble|concrete|grain|paper)\b/.test(lower)) {
-        inferred.category = 'presets';
-        inferred.presetType = 'texture';
-    } else if (/\b(light|lighting|neon|glow|shadow|backlit|rim light|golden hour|studio light)\b/.test(lower)) {
-        inferred.category = 'presets';
-        inferred.presetType = 'luminance';
-    } else if (/\b(mood|ambient|atmosphere|vibe|aesthetic|dreamy|cinematic|film)\b/.test(lower)) {
-        inferred.category = 'presets';
-        inferred.presetType = 'ambience';
-    } else if (/\b(angle|perspective|top.?down|bird.?eye|low angle|close.?up|macro|wide.?angle)\b/.test(lower)) {
-        inferred.category = 'presets';
-        inferred.presetType = 'angle';
-    } else if (/\b(theme|style|retro|vintage|futuristic|minimalist|brutalist|y2k|cyberpunk|art deco)\b/.test(lower)) {
-        inferred.category = 'themes';
-    } else if (/\b(aesthetic|color palette|pastel|monochrome|gradient|duotone)\b/.test(lower)) {
-        inferred.category = 'aesthetics';
+    for (const rule of CATEGORY_RULES) {
+        if (rule.regex.test(lower)) {
+            inferred.category = rule.category;
+            if (rule.presetType) inferred.presetType = rule.presetType;
+            break;
+        }
     }
 
-    // Infer aspect ratio
-    if (/\b(portrait|vertical|story|stories|9:16|reel)\b/.test(lower)) {
-        inferred.aspectRatio = '9:16';
-    } else if (/\b(square|1:1|instagram post)\b/.test(lower)) {
-        inferred.aspectRatio = '1:1';
-    } else if (/\b(ultrawide|21:9|panoramic|banner)\b/.test(lower)) {
-        inferred.aspectRatio = '21:9';
-    } else if (/\b(landscape|horizontal|16:9|youtube|thumbnail)\b/.test(lower)) {
-        inferred.aspectRatio = '16:9';
-    } else if (/\b(4:3)\b/.test(lower)) {
-        inferred.aspectRatio = '4:3';
-    } else if (/\b(3:4)\b/.test(lower)) {
-        inferred.aspectRatio = '3:4';
+    for (const rule of ASPECT_RATIO_RULES) {
+        if (rule.regex.test(lower)) {
+            inferred.aspectRatio = rule.ratio;
+            break;
+        }
     }
 
     // Infer name: first sentence or first ~50 chars
@@ -155,7 +151,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
             const updated = { ...prev, prompt: newPrompt };
             if (isCreating && newPrompt.length > 15 && (wasPaste || !autoFilled)) {
                 const inferred = inferFromPrompt(newPrompt);
-                if (!prev.name || wasPaste) updated.name = inferred.name || prev.name;
+                if ((!prev.name || wasPaste) && inferred.name) updated.name = inferred.name;
                 if (inferred.category) updated.category = inferred.category;
                 if (inferred.presetType) updated.presetType = inferred.presetType;
                 if (inferred.aspectRatio) updated.aspectRatio = inferred.aspectRatio;
