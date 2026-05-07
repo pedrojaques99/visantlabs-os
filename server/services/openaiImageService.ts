@@ -82,6 +82,7 @@ export async function generateOpenAIImage(params: GenerateOpenAIImageParams): Pr
       image: imageFiles.length === 1 ? imageFiles[0] : imageFiles,
       prompt,
       size: size as any,
+      quality,
       n: 1,
     });
 

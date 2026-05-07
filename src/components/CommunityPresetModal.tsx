@@ -69,6 +69,61 @@ const getInitialFormData = (category: PromptCategory = 'presets', presetType?: L
     useCase: '',
 });
 
+// Infer preset metadata from prompt text via keyword heuristics
+const CATEGORY_RULES: Array<{ regex: RegExp; category: string; presetType?: string }> = [
+    { regex: /\b(mockup|mock-up|product shot|packaging|box|bag|bottle|cup|mug|t-?shirt|hoodie|tote|phone case|device|screen)\b/, category: 'presets', presetType: 'mockup' },
+    { regex: /\b(3d|render|blender|cinema ?4d|isometric|voxel|clay)\b/, category: '3d' },
+    { regex: /\b(texture|material|fabric|wood|marble|concrete|grain|paper)\b/, category: 'presets', presetType: 'texture' },
+    { regex: /\b(light|lighting|neon|glow|shadow|backlit|rim light|golden hour|studio light)\b/, category: 'presets', presetType: 'luminance' },
+    { regex: /\b(mood|ambient|atmosphere|vibe|dreamy|cinematic|film)\b/, category: 'presets', presetType: 'ambience' },
+    { regex: /\b(angle|perspective|top.?down|bird.?eye|low angle|close.?up|macro|wide.?angle)\b/, category: 'presets', presetType: 'angle' },
+    { regex: /\b(theme|style|retro|vintage|futuristic|minimalist|brutalist|y2k|cyberpunk|art deco)\b/, category: 'themes' },
+    { regex: /\b(aesthetic|color palette|pastel|monochrome|gradient|duotone)\b/, category: 'aesthetics' },
+];
+
+const ASPECT_RATIO_RULES: Array<{ regex: RegExp; ratio: string }> = [
+    { regex: /\b(portrait|vertical|story|stories|9:16|reel)\b/, ratio: '9:16' },
+    { regex: /\b(square|1:1|instagram post)\b/, ratio: '1:1' },
+    { regex: /\b(ultrawide|21:9|panoramic|banner)\b/, ratio: '21:9' },
+    { regex: /\b(landscape|horizontal|16:9|youtube|thumbnail)\b/, ratio: '16:9' },
+    { regex: /\b(4:3)\b/, ratio: '4:3' },
+    { regex: /\b(3:4)\b/, ratio: '3:4' },
+];
+
+const inferFromPrompt = (prompt: string): Partial<PresetFormData> => {
+    const lower = prompt.toLowerCase();
+    const inferred: Partial<PresetFormData> = {};
+
+    for (const rule of CATEGORY_RULES) {
+        if (rule.regex.test(lower)) {
+            inferred.category = rule.category;
+            if (rule.presetType) inferred.presetType = rule.presetType;
+            break;
+        }
+    }
+
+    for (const rule of ASPECT_RATIO_RULES) {
+        if (rule.regex.test(lower)) {
+            inferred.aspectRatio = rule.ratio;
+            break;
+        }
+    }
+
+    // Infer name: first sentence or first ~50 chars
+    const firstLine = prompt.split(/[.\n]/)[0]?.trim() || '';
+    if (firstLine.length > 0) {
+        inferred.name = firstLine.length > 50 ? firstLine.slice(0, 50).trim() : firstLine;
+    }
+
+    // Infer tags from notable keywords
+    const tagKeywords = prompt.match(/\b(minimal|luxury|organic|bold|elegant|modern|classic|playful|professional|vintage|retro|neon|dark|bright|soft|matte|glossy)\b/gi);
+    if (tagKeywords) {
+        inferred.tags = [...new Set(tagKeywords.map(t => t.toLowerCase()))];
+    }
+
+    return inferred;
+};
+
 export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
     isOpen,
     onClose,
@@ -87,6 +142,25 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
     const [error, setError] = useState<string | null>(null);
     const [isUploadingImage, setIsUploadingImage] = useState(false);
     const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+    const [autoFilled, setAutoFilled] = useState(false);
+
+    // Auto-infer fields when prompt changes (only on create, only first auto-fill or when prompt is pasted)
+    const handlePromptChange = (newPrompt: string) => {
+        const wasPaste = newPrompt.length - formData.prompt.length > 10;
+        setFormData(prev => {
+            const updated = { ...prev, prompt: newPrompt };
+            if (isCreating && newPrompt.length > 15 && (wasPaste || !autoFilled)) {
+                const inferred = inferFromPrompt(newPrompt);
+                if ((!prev.name || wasPaste) && inferred.name) updated.name = inferred.name;
+                if (inferred.category) updated.category = inferred.category;
+                if (inferred.presetType) updated.presetType = inferred.presetType;
+                if (inferred.aspectRatio) updated.aspectRatio = inferred.aspectRatio;
+                if (inferred.tags?.length) updated.tags = inferred.tags;
+                setAutoFilled(true);
+            }
+            return updated;
+        });
+    };
 
     // Auto-generate ID from name when creating
     useEffect(() => {
@@ -112,6 +186,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
             setTagInput('');
             setError(null);
             setImageUploadError(null);
+            setAutoFilled(false);
         }
     }, [isOpen, initialData]);
 
@@ -293,6 +368,27 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                     )}
 
                     <div className="space-y-5">
+                        {/* Prompt First — paste and auto-fill */}
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <MicroTitle as="label">{t('communityPresets.promptRequired')} *</MicroTitle>
+                                <MicroTitle as="span" className="text-neutral-500 lowercase">{formData.prompt.length} chars</MicroTitle>
+                            </div>
+                            <Textarea
+                                value={formData.prompt}
+                                onChange={(e) => handlePromptChange(e.target.value)}
+                                rows={5}
+                                autoFocus
+                                className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors resize-none"
+                                placeholder={t('communityPresets.describeWhatToGenerate')}
+                            />
+                            {isCreating && autoFilled && (
+                                <p className="text-xs text-brand-cyan/70 mt-1.5">
+                                    {t('communityPresets.autoFilledHint')}
+                                </p>
+                            )}
+                        </div>
+
                         {/* Image Upload Section */}
                         {needsReferenceImage && (
                             <div className="flex items-start gap-4 pb-5 border-b border-neutral-800/40">
@@ -444,20 +540,6 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                             </div>
                         )}
 
-                        {/* Prompt */}
-                        <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                                <MicroTitle as="label">{t('communityPresets.promptRequired')} *</MicroTitle>
-                                <MicroTitle as="span" className="text-neutral-500 lowercase">{formData.prompt.length} chars</MicroTitle>
-                            </div>
-                            <Textarea
-                                value={formData.prompt}
-                                onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
-                                rows={4}
-                                className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors resize-none"
-                                placeholder={t('communityPresets.describeWhatToGenerate')}
-                            />
-                        </div>
 
                         {/* Tags */}
                         <div>

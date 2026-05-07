@@ -4,12 +4,12 @@ import { useChatSend } from '../../hooks/useChatSend';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { TypingIndicator } from './TypingIndicator';
-import { Layers, Trash2, MessageSquare } from 'lucide-react';
+import { Layers, Trash2, MessageSquare, Brain } from 'lucide-react';
 import { useAutoScrollToBottom } from '@/hooks/chat/useAutoScrollToBottom';
 import { getGuidelineLabel } from '../../lib/brandHydration';
 
 export function ChatView() {
-  const { chatHistory, selectionDetails, clearChatHistory } = usePluginStore();
+  const { chatHistory, selectionDetails, clearChatHistory, sessionContext } = usePluginStore();
   const brandGuideline = usePluginStore(s => s.brandGuideline);
   const { sendMessage } = useChatSend();
   const isGenerating = usePluginStore(s => s.isGenerating);
@@ -17,7 +17,7 @@ export function ChatView() {
 
   const brandLogo = brandGuideline
     ? (brandGuideline.logos?.find((l: any) => l.variant === 'icon' || l.variant === 'primary') ?? brandGuideline.logos?.[0])?.url
-      || brandGuideline.logos?.[0]?.thumbnailUrl
+      || (brandGuideline.logos?.[0] as any)?.thumbnailUrl
     : null;
   const brandName = brandGuideline ? getGuidelineLabel(brandGuideline) : null;
 
@@ -89,6 +89,28 @@ export function ChatView() {
           </>
         )}
       </div>
+      {sessionContext && sessionContext.messageCount > 0 && (() => {
+        const pct = Math.min(100, Math.round((sessionContext.tokenEstimate / sessionContext.contextLimit) * 100));
+        const isHigh = pct >= 80;
+        const isMed = pct >= 50;
+        return (
+          <div className="px-3 py-1 border-t border-border/30 flex items-center gap-2">
+            <Brain size={10} className={isHigh ? 'text-destructive' : 'text-muted-foreground'} />
+            <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${isHigh ? 'bg-destructive' : isMed ? 'bg-amber-500' : 'bg-brand-cyan'}`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <span className={`text-[9px] font-mono tabular-nums ${isHigh ? 'text-destructive' : 'text-muted-foreground'}`}>
+              {pct}% · {sessionContext.messageCount} msg{sessionContext.messageCount !== 1 ? 's' : ''}
+            </span>
+            {isHigh && (
+              <span className="text-[9px] font-mono text-destructive">Clear recommended</span>
+            )}
+          </div>
+        );
+      })()}
       <ChatInput onSend={sendMessage} />
       {selectionDetails.length > 0 && (
         <div className="px-3 py-1.5 border-t border-border/50 bg-muted/30 flex items-center gap-1.5 flex-wrap">

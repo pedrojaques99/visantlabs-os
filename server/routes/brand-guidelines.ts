@@ -982,6 +982,12 @@ router.get('/public/:slug', publicRateLimiter, async (req, res) => {
 
     if (!guideline) return res.status(404).json({ error: 'Brand guideline not found or not public' })
 
+    // Increment view count (non-blocking)
+    prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { publicViews: { increment: 1 }, lastViewedAt: new Date() },
+    }).catch(() => {})
+
     // Return guideline data (strip userId for privacy)
     const { userId, ...publicData } = guideline as any
     res.json({

@@ -132,6 +132,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
     const [pendingPlan, setPendingPlan] = useState<PendingCreativePlan | null>(null);
     const [planAnswers, setPlanAnswers] = useState<Record<number, string>>({});
     const [approvingPlan, setApprovingPlan] = useState(false);
+    const [dismissedPlanId, setDismissedPlanId] = useState<string | null>(null);
     const [planModeActive, setPlanModeActive] = useState(false);
     const [textMode, setTextMode] = useState<'layers' | 'image' | 'both'>('layers');
 
@@ -145,8 +146,9 @@ export const AdminChat: React.FC<AdminChatProps> = ({
             (tc: any) => tc.name === 'propose_creative_plan' && tc.status === 'done' && tc.args?.proposals?.length
         );
         if (!planTool) return null;
+        if (dismissedPlanId === planTool.id) return null;
         return { id: planTool.id, ...planTool.args } as PendingCreativePlan;
-    }, [pendingPlan, messages, isLoading]);
+    }, [pendingPlan, messages, isLoading, dismissedPlanId]);
 
     const messagesEndRef = useAutoScrollToBottom<HTMLDivElement>([messages, isLoading, activePlan]);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -471,9 +473,9 @@ export const AdminChat: React.FC<AdminChatProps> = ({
     };
 
     const approvePlan = async () => {
-        if (!pendingPlan || !currentSessionId) return;
+        if (!activePlan || !currentSessionId) return;
         setApprovingPlan(true);
-        const answers = pendingPlan.questions
+        const answers = (activePlan.questions || [])
             .map((q, i) => planAnswers[i]?.trim() ? `${q}: ${planAnswers[i].trim()}` : null)
             .filter(Boolean)
             .join(' | ');
@@ -869,7 +871,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                 <Button
                                                     variant="ghost"
                                                     type="button"
-                                                    onClick={() => { setPendingPlan(null); setPlanAnswers({}); }}
+                                                    onClick={() => { setPendingPlan(null); setPlanAnswers({}); if (activePlan?.id) setDismissedPlanId(activePlan.id); }}
                                                     disabled={approvingPlan}
                                                     className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 text-xs rounded-md transition-colors"
                                                 >

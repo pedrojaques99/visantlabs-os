@@ -29,7 +29,8 @@ export const usePluginStore = create<PluginStore>()(
 
     // Chat
     chatHistory: [],
-    sessionId: '',
+    sessionId: crypto.randomUUID(),
+    sessionContext: null,
     pendingAttachments: [],
     thinkMode: false,
     useBrand: true,
@@ -104,6 +105,8 @@ export const usePluginStore = create<PluginStore>()(
     clearChatHistory: () => {
       set((state) => {
         state.chatHistory = [];
+        state.sessionId = crypto.randomUUID();
+        state.sessionContext = null;
       });
       scheduleChatPersist();
     },
@@ -263,6 +266,7 @@ export const usePluginStore = create<PluginStore>()(
 // ── Chat persistence via figma.clientStorage (through postMessage RPC) ──
 
 const CHAT_STORAGE_KEY = 'chatHistory';
+const SESSION_ID_KEY = 'chatSessionId';
 let persistTimer: ReturnType<typeof setTimeout> | null = null;
 type RpcClient = { request: (op: any, params: any) => Promise<any> };
 
@@ -276,20 +280,44 @@ function scheduleChatPersist() {
   if (persistTimer) clearTimeout(persistTimer);
   persistTimer = setTimeout(() => {
     if (!_client) return;
-    const history = usePluginStore.getState().chatHistory;
-    const toSave = history.slice(-50).map(({ id, role, content, timestamp, operations, toolCalls, summaryItems, isError }) => ({ id, role, content, timestamp, operations, toolCalls, summaryItems, isError }));
+    const { chatHistory, sessionId } = usePluginStore.getState();
+    const toSave = chatHistory.slice(-50).map(({ id, role, content, timestamp, operations, toolCalls, summaryItems, isError, metadata }) => ({ id, role, content, timestamp, operations, toolCalls, summaryItems, isError, metadata }));
     _client.request('storage.set', { key: CHAT_STORAGE_KEY, value: JSON.stringify(toSave) }).catch(() => {});
+    _client.request('storage.set', { key: SESSION_ID_KEY, value: sessionId }).catch(() => {});
   }, 1500);
 }
 
 export async function loadChatHistory(client: RpcClient) {
   try {
+    // Restore sessionId first
+    const sessionResult = await client.request('storage.get', { key: SESSION_ID_KEY });
+    if (sessionResult?.value && typeof sessionResult.value === 'string') {
+      usePluginStore.setState({ sessionId: sessionResult.value });
+    }
+
+    // Restore local chat history
     const { value } = await client.request('storage.get', { key: CHAT_STORAGE_KEY });
     if (value) {
       const messages = JSON.parse(value as string);
       if (Array.isArray(messages) && messages.length > 0) {
         usePluginStore.setState({ chatHistory: messages });
       }
+    }
+
+    // Fetch server-side session context (non-blocking)
+    const sid = usePluginStore.getState().sessionId;
+    if (sid) {
+      const { serverUrl, authToken } = usePluginStore.getState();
+      fetch(`${serverUrl}/api/plugin/session/${sid}/messages`, {
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+      })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data?.sessionContext) {
+            usePluginStore.setState({ sessionContext: data.sessionContext });
+          }
+        })
+        .catch(() => {});
     }
   } catch { /* first run, no history */ }
 }

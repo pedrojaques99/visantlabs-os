@@ -1,5 +1,5 @@
 import React, { useState, useMemo, type ReactNode } from 'react';
-import { Braces, Check, Copy, ChevronDown, ChevronUp, Undo2, RefreshCw, Clock, CircleCheck } from 'lucide-react';
+import { Braces, Check, Copy, ChevronDown, ChevronUp, Undo2, RefreshCw, Clock, CircleCheck, Layers, Image, Scan, Palette } from 'lucide-react';
 import type { ChatMessage, SummaryItem } from '../../store/types';
 import { copyToClipboard } from '@/utils/clipboard';
 import { relativeTime } from '@/utils/time';
@@ -161,6 +161,35 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
         <div className="space-y-1">
           {useMemo(() => renderContentWithLinks(message.content, buildNodeMap(message.summaryItems), !isUser), [message.content, message.summaryItems, isUser])}
         </div>
+
+        {/* User message context chips */}
+        {isUser && message.metadata && (() => {
+          const meta = message.metadata;
+          const frames = meta.selectedFrames as Array<{ id: string; name: string; type: string }> | undefined;
+          const chips: Array<{ icon: ReactNode; label: string }> = [];
+          if (frames && frames.length > 0) {
+            chips.push({ icon: <Layers size={8} />, label: `${frames.length} frame${frames.length > 1 ? 's' : ''}` });
+          }
+          if (meta.scanPage) chips.push({ icon: <Scan size={8} />, label: 'Page scan' });
+          if (meta.useBrand) chips.push({ icon: <Palette size={8} />, label: 'Brand' });
+          if (meta.generateImage) chips.push({ icon: <Image size={8} />, label: 'Image' });
+          if (meta.model) chips.push({ icon: null, label: String(meta.model) });
+          if (chips.length === 0) return null;
+          return (
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {chips.map((c, i) => (
+                <span key={i} className="inline-flex items-center gap-0.5 text-[8px] font-mono bg-black/20 rounded px-1 py-0.5 text-white/60">
+                  {c.icon}{c.label}
+                </span>
+              ))}
+              {frames && frames.length > 0 && (
+                <span className="text-[8px] font-mono text-white/40 truncate max-w-[180px]" title={frames.map(f => f.name).join(', ')}>
+                  {frames.map(f => f.name).join(', ')}
+                </span>
+              )}
+            </div>
+          );
+        })()}
 
         {message.attachments && message.attachments.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
