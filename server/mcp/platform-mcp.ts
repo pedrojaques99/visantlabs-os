@@ -641,6 +641,73 @@ export function createPlatformMcpServer(): McpServer {
     }
   );
 
+  // ─── Video Generation ───
+  server.tool(
+    'video-generate',
+    'Generate a video using AI (Google Veo or Kling). Supports text-to-video, image-to-video, frames-to-video, extend-video, and references modes. Costs credits based on model.',
+    {
+      prompt: z.string().min(1).describe('Video scene description.'),
+      model: z.enum([
+        'veo-3.1-generate-preview', 'veo-3.1-fast-generate-preview',
+        'kling-v3-omni', 'kling-v3', 'kling-v2.6', 'kling-v2.5-turbo',
+        'kling-v2.1', 'kling-v1.6', 'kling-v1.5', 'kling-v1',
+      ]).default('veo-3.1-generate-preview').describe('Video model. veo-3.1=high quality, veo-3.1-fast=faster, kling-v3-omni=latest Kling.'),
+      mode: z.enum(['text_to_video', 'image_to_video', 'frames_to_video', 'extend_video', 'references']).default('text_to_video').describe('Generation mode.'),
+      aspectRatio: z.enum(['16:9', '9:16', '1:1', '4:3', '3:4']).default('16:9').describe('Output aspect ratio.'),
+      duration: z.enum(['5s', '10s']).default('5s').describe('Video duration.'),
+      negativePrompt: z.string().optional().describe('What to avoid (Kling models only).'),
+      isLooping: z.boolean().optional().describe('Loop the video (Veo models only).'),
+      seed: z.number().int().optional().describe('Random seed for reproducible generation.'),
+      startFrame: z.string().optional().describe('Start frame image URL (for frames_to_video or image_to_video mode).'),
+      endFrame: z.string().optional().describe('End frame image URL (for frames_to_video mode).'),
+      referenceImages: z.array(z.string()).max(4).optional().describe('Reference image URLs (up to 4, for references mode).'),
+      inputVideo: z.string().optional().describe('Input video URL (for extend_video mode).'),
+      klingMode: z.enum(['std', 'pro', '4k']).optional().describe('Kling quality mode (Kling models only).'),
+      sound: z.enum(['on', 'off']).optional().describe('Generate audio (Kling v2.6+ and Veo 3.1).'),
+      cfgScale: z.number().min(0).max(1).optional().describe('CFG scale 0-1 (Kling v1.x only). 0=free, 1=strict prompt adherence.'),
+    },
+    async ({ prompt, model, mode, aspectRatio, duration, negativePrompt, isLooping, seed, startFrame, endFrame, referenceImages, inputVideo, klingMode, sound, cfgScale }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const response = await fetch(`${INTERNAL_API_BASE}/api/video/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({
+            prompt,
+            model,
+            mode,
+            aspectRatio,
+            duration,
+            negativePrompt,
+            isLooping,
+            seed,
+            startFrame,
+            endFrame,
+            referenceImages,
+            inputVideo,
+            klingMode,
+            sound,
+            cfgScale,
+          }),
+        });
+        const result = await response.json() as any;
+        if (!response.ok) return ERR.internal(result.error || result.message || `Video generation failed (${response.status})`);
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({
+          videoUrl: result.videoUrl || null,
+          seed: result.seed ?? seed ?? null,
+          modelUsed: result.modelUsed || model,
+          creditsDeducted: result.creditsDeducted ?? null,
+          creditsRemaining: result.creditsRemaining ?? null,
+          _meta: quota,
+        });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
   // ═══════════════════════════════════════════
   // Branding
   // ═══════════════════════════════════════════

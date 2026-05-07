@@ -565,6 +565,9 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
           startFrame,
           endFrame,
           seed: usedSeed,
+          aspectRatio,
+          duration,
+          isLooping: req.body.isLooping,
         });
       }
 
