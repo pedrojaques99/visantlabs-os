@@ -384,7 +384,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                             />
                             {isCreating && autoFilled && (
                                 <p className="text-xs text-brand-cyan/70 mt-1.5">
-                                    {t('communityPresets.autoFilledHint') || 'Fields auto-filled from prompt — you can edit them below.'}
+                                    {t('communityPresets.autoFilledHint')}
                                 </p>
                             )}
                         </div>
