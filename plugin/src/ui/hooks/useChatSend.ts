@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { usePluginStore } from '../store';
 import { useFigmaMessages } from './useFigmaMessages';
 import type { UIMessage } from '@/lib/figma-types';
+import type { ChatMessage } from '../store/types';
 import { parseMentions } from './useMentions';
 
 export function useChatSend() {
@@ -21,13 +22,21 @@ export function useChatSend() {
 
       isSendingRef.current = true;
 
-      // Add user message to history
-      const userMessage = {
+      // Add user message to history with context metadata
+      const selection = store.selectionDetails;
+      const userMessage: ChatMessage = {
         id: `msg-${Date.now()}`,
         role: 'user' as const,
         content,
         timestamp: Date.now(),
-        attachments: store.pendingAttachments.slice()
+        attachments: store.pendingAttachments.slice(),
+        metadata: {
+          selectedFrames: selection.map(f => ({ id: f.id, name: f.name, type: f.type })),
+          scanPage: store.scanPage,
+          useBrand: store.useBrand,
+          generateImage: store.generateImage,
+          model: store.selectedModel,
+        },
       };
 
       store.addChatMessage(userMessage);
@@ -74,6 +83,7 @@ export function useChatSend() {
         // Send message to sandbox with context
         const msg: any = {
           type: 'GENERATE_WITH_CONTEXT',
+          sessionId: store.sessionId,
           command: content,
           thinkMode: store.thinkMode,
           useBrand: store.useBrand,

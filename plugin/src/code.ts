@@ -551,6 +551,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     const availableLayers = getAvailableLayers();
     const context = {
       command: msg.command,
+      sessionId: (msg as any).sessionId || '',
       fileId: figma.fileKey || 'local_file',
       pageId: figma.currentPage.id,
       selectedElements: contextData.nodes,

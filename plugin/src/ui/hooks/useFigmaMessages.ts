@@ -525,6 +525,10 @@ export function useFigmaMessages() {
                               const allToolCalls = data.toolCalls || streamToolCalls;
                               updateAssistantMessage(streamMessage, designOps, allToolCalls);
 
+                              if (data.sessionContext) {
+                                usePluginStore.setState({ sessionContext: data.sessionContext });
+                              }
+
                               // Handle REQUEST_SCAN
                               const scanReq = finalOps.find((o: any) => o?.type === 'REQUEST_SCAN');
                               if (scanReq && !context.scanPage) {

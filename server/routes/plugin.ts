@@ -910,6 +910,30 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
     };
     toolCallRecords.push(genToolCall);
 
+    // Save to session and compute context info
+    let sessionContext: { messageCount: number; tokenEstimate: number; contextLimit: number } | undefined;
+    if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
+      try {
+        const db = getDb();
+        const newMessages = [
+          { role: 'user', content: command, timestamp: new Date() },
+          { role: 'assistant', content: `Generated ${validOps.length} operations`, operations: validOps, toolCalls: toolCallRecords, timestamp: new Date() },
+        ];
+        await db.collection('plugin_sessions').updateOne(
+          { _id: sessionId } as any,
+          { $push: { messages: { $each: newMessages } } as any },
+        );
+        const updated = await db.collection<any>('plugin_sessions').findOne({ _id: sessionId } as any);
+        const msgs = updated?.messages || [];
+        const totalChars = msgs.reduce((sum: number, m: any) => sum + (m.content?.length || 0), 0);
+        sessionContext = {
+          messageCount: msgs.length,
+          tokenEstimate: Math.ceil(totalChars / 4),
+          contextLimit: 80000,
+        };
+      } catch {}
+    }
+
     send('done', {
       operations: validOps,
       message: `Generated ${validOps.length} operation(s)`,
@@ -917,6 +941,7 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       usage,
       durationMs,
       toolCalls: toolCallRecords,
+      sessionContext,
     });
 
     res.end();
@@ -924,26 +949,6 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
     // Non-blocking credit deduction
     if (req.userId && !isByok && validOps.length > 0) {
       deductCredit(req.userId).catch(e => console.error('[Plugin] Credit deduction error:', e));
-    }
-
-    // Save to session
-    if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
-      try {
-        const db = getDb();
-        await db.collection('plugin_sessions').updateOne(
-          { _id: sessionId } as any,
-          {
-            $push: {
-              messages: {
-                $each: [
-                  { role: 'user', content: command, timestamp: new Date() },
-                  { role: 'assistant', content: `Generated ${validOps.length} operations`, operations: validOps, toolCalls: toolCallRecords, timestamp: new Date() },
-                ],
-              },
-            } as any,
-          },
-        );
-      } catch {}
     }
   } catch (error: any) {
     console.error('[Plugin:Stream] Error:', error);
@@ -1366,23 +1371,27 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     });
 
     // Save to session if available (FASE 3)
+    let sessionContextRest: { messageCount: number; tokenEstimate: number; contextLimit: number } | undefined;
     if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
       try {
         const db = getDb();
         const collection = db.collection<any>('plugin_sessions');
+        const newMessages = [
+          { role: 'user', content: command, timestamp: new Date() },
+          { role: 'assistant', content: `Generated ${operations.length} operations`, operations, timestamp: new Date() }
+        ];
         await collection.updateOne(
           { _id: sessionId },
-          {
-            $push: {
-              messages: {
-                $each: [
-                  { role: 'user', content: command, timestamp: new Date() },
-                  { role: 'assistant', content: `Generated ${operations.length} operations`, operations, timestamp: new Date() }
-                ]
-              }
-            } as any
-          }
+          { $push: { messages: { $each: newMessages } } as any }
         );
+        const updated = await collection.findOne({ _id: sessionId });
+        const msgs = updated?.messages || [];
+        const totalChars = msgs.reduce((sum: number, m: any) => sum + (m.content?.length || 0), 0);
+        sessionContextRest = {
+          messageCount: msgs.length,
+          tokenEstimate: Math.ceil(totalChars / 4),
+          contextLimit: 80000,
+        };
       } catch (sessionError) {
         console.error('[Plugin] Failed to save to session:', sessionError);
       }
@@ -1424,6 +1433,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       usage: usage || undefined,
       durationMs,
       toolCallRecord,
+      sessionContext: sessionContextRest,
     };
 
     // Cache plugin context for 1 hour

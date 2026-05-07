@@ -127,6 +127,7 @@ export interface PluginStore {
   // Chat
   chatHistory: ChatMessage[];
   sessionId: string;
+  sessionContext: { messageCount: number; tokenEstimate: number; contextLimit: number } | null;
   pendingAttachments: Attachment[];
   thinkMode: boolean;
   useBrand: boolean;
