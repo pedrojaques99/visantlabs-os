@@ -169,16 +169,18 @@ const withRetry = async <T>(
 
 export interface GenerateVideoParams {
   prompt: string;
-  imageBase64?: string; // Legacy support
+  imageBase64?: string;
   imageMimeType?: string;
   model?: string;
   onRetry?: (attempt: number, maxRetries: number, delay: number) => void;
-  // New props
   referenceImages?: string[];
   inputVideo?: string;
   startFrame?: string;
   endFrame?: string;
-  seed?: number; // Seed for deterministic generation
+  seed?: number;
+  aspectRatio?: string;
+  duration?: string;
+  isLooping?: boolean;
 }
 
 /**
@@ -200,6 +202,9 @@ export const generateVideo = async (
     startFrame,
     endFrame,
     seed,
+    aspectRatio,
+    duration,
+    isLooping,
   } = params;
 
   // Normalize model name - map old model names to new valid model
@@ -217,9 +222,17 @@ export const generateVideo = async (
         prompt: prompt,
       };
 
-      // Add seed for deterministic generation if provided
       if (typeof seed === 'number' && seed >= 0) {
         requestParams.seed = seed;
+      }
+      if (aspectRatio) {
+        requestParams.aspectRatio = aspectRatio;
+      }
+      if (duration) {
+        requestParams.numberOfSeconds = parseInt(duration, 10) || undefined;
+      }
+      if (isLooping !== undefined) {
+        requestParams.loop = isLooping;
       }
 
       // Helper to process base64 string
@@ -344,7 +357,8 @@ export const generateVideo = async (
             // For Google URIs, use server proxy endpoint to handle authentication
             if (isGoogleUri) {
               try {
-                const proxyUrl = `/api/images/video-proxy?url=${encodeURIComponent(videoFile.uri)}`;
+                const serverBase = process.env.BETTER_AUTH_URL || process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 3001}`;
+                const proxyUrl = `${serverBase}/api/images/video-proxy?url=${encodeURIComponent(videoFile.uri)}`;
                 const proxyResponse = await fetch(proxyUrl);
 
                 if (proxyResponse.ok) {

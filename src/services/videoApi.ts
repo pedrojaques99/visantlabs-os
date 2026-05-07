@@ -37,11 +37,16 @@ export interface GenerateVideoParams {
   inputVideo?: string;
 
   isLooping?: boolean;
-  seed?: number; // Seed for deterministic generation
+  seed?: number;
 
   model?: string;
   canvasId?: string;
   nodeId?: string;
+
+  // Kling-specific
+  klingMode?: 'std' | 'pro' | '4k';
+  sound?: 'on' | 'off';
+  cfgScale?: number;
 }
 
 export interface GenerateVideoResponse {
@@ -76,11 +81,15 @@ export const videoApi = {
         inputVideo: params.inputVideo,
 
         isLooping: params.isLooping,
-        seed: params.seed, // Deterministic generation seed
+        seed: params.seed,
 
         model: params.model || 'veo-3.1-generate-preview',
         canvasId: params.canvasId,
         nodeId: params.nodeId,
+
+        klingMode: params.klingMode,
+        sound: params.sound,
+        cfgScale: params.cfgScale,
       }),
     });
 
