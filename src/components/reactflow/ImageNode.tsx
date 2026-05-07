@@ -342,7 +342,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       <NodeHandles />
 
       <NodeImageContainer
-        className={cn("flex items-center justify-center", imageUrl && "p-4 m-4 !absolute inset-0 z-0")}
+        className={cn("flex items-center justify-center", imageUrl && "p-1 !absolute inset-0 z-0")}
         style={imageContainerStyle}
       >
         {imageUrl ? (

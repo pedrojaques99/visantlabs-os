@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useContext, useDeferredValue } from 'react';
+import React, { useState, useMemo, useContext, useDeferredValue, useEffect, useRef } from 'react';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { useTranslation } from '@/hooks/useTranslation';
 import { MockupContext } from '@/components/mockupmachine/MockupContext';
@@ -174,10 +174,47 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
   );
 };
 
+// ─── Dark image detection ────────────────────────────────────────────────────
+function useNeedsLightBg(url: string) {
+  const [needsLight, setNeedsLight] = useState(false);
+  const urlRef = useRef(url);
+  urlRef.current = url;
+
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      if (urlRef.current !== url) return;
+      try {
+        const size = 32;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, size, size);
+        const { data } = ctx.getImageData(0, 0, size, size);
+        let darkOrTransparent = 0;
+        const total = size * size;
+        for (let i = 0; i < data.length; i += 4) {
+          const a = data[i + 3];
+          if (a < 30) { darkOrTransparent++; continue; }
+          const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+          if (lum < 50) darkOrTransparent++;
+        }
+        setNeedsLight(darkOrTransparent / total > 0.7);
+      } catch { /* CORS or canvas error — keep dark bg */ }
+    };
+    img.src = url;
+  }, [url]);
+
+  return needsLight;
+}
+
 // ─── Asset Card (shared) ──────────────────────────────────────────────────────
 interface AssetCardProps { url: string; label: string; type: 'image'|'logo'; viewMode: 'grid'|'list'; onClick: ()=>void; onAdd?: ()=>void; }
 
 const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onClick, onAdd }) => {
+  const needsLightBg = useNeedsLightBg(url);
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('application/vsn-asset-url', url);
     e.dataTransfer.setData('application/vsn-asset-type', type);
@@ -189,7 +226,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
       <div draggable onDragStart={handleDragStart}
         className="flex items-center gap-3 p-2 rounded-md bg-neutral-900/30 border border-white/5 hover:border-neutral-700 transition-all group cursor-pointer"
         onClick={onClick}>
-        <div className="w-8 h-8 rounded overflow-hidden bg-neutral-950 flex-shrink-0">
+        <div className={cn("w-8 h-8 rounded overflow-hidden flex-shrink-0", needsLightBg ? "bg-white" : "bg-neutral-950")}>
           <img src={url} alt={label} className="w-full h-full object-contain" />
         </div>
         <div className="flex-1 min-w-0">
@@ -210,7 +247,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
     <div draggable onDragStart={handleDragStart}
       className="flex flex-col gap-1.5 p-2 rounded-lg bg-neutral-900/30 border border-white/5 hover:border-neutral-700 transition-all group cursor-pointer"
       onClick={onClick}>
-      <div className="relative aspect-square w-full rounded-md overflow-hidden bg-neutral-950 flex items-center justify-center p-2">
+      <div className={cn("relative aspect-square w-full rounded-md overflow-hidden flex items-center justify-center p-2", needsLightBg ? "bg-white" : "bg-neutral-950")}>
         <img src={url} alt={label} className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-300" />
         {onAdd && (
           <button onClick={e => { e.stopPropagation(); onAdd(); }}

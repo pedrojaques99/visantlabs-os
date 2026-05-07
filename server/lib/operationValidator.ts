@@ -114,7 +114,8 @@ class OperationValidator {
       }
 
       case 'CREATE_COMPONENT_INSTANCE': {
-        if (!op.componentKey && !props.componentKey && !props.symbolKey)
+        const ciProps = op.props;
+        if (!op.componentKey && !ciProps?.componentKey && !ciProps?.symbolKey)
           errors.push('CREATE_COMPONENT_INSTANCE requires componentKey');
         break;
       }
