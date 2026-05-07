@@ -96,15 +96,15 @@ const inferFromPrompt = (prompt: string): Partial<PresetFormData> => {
 
     for (const rule of CATEGORY_RULES) {
         if (rule.regex.test(lower)) {
-            inferred.category = rule.category;
-            if (rule.presetType) inferred.presetType = rule.presetType;
+            inferred.category = rule.category as PromptCategory;
+            if (rule.presetType) inferred.presetType = rule.presetType as LegacyPresetType;
             break;
         }
     }
 
     for (const rule of ASPECT_RATIO_RULES) {
         if (rule.regex.test(lower)) {
-            inferred.aspectRatio = rule.ratio;
+            inferred.aspectRatio = rule.ratio as AspectRatio;
             break;
         }
     }
