@@ -18,7 +18,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       {visible && toastMessage && (
         <div
-          className={`fixed bottom-4 right-4 px-4 py-2 rounded text-sm font-medium text-white ${
+          className={`fixed bottom-4 right-4 z-[9999] px-4 py-2 rounded text-sm font-medium text-white shadow-lg ${
             toastType === 'error'
               ? 'bg-destructive'
               : toastType === 'success'

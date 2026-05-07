@@ -114,8 +114,8 @@ class OperationValidator {
       }
 
       case 'CREATE_COMPONENT_INSTANCE': {
-        if (!op.componentKey) errors.push('CREATE_COMPONENT_INSTANCE requires componentKey');
-        // name is optional and lives on root, not inside props
+        if (!op.componentKey && !props.componentKey && !props.symbolKey)
+          errors.push('CREATE_COMPONENT_INSTANCE requires componentKey');
         break;
       }
 

@@ -18,6 +18,7 @@ import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { GlitchPickaxe } from '@/components/ui/GlitchPickaxe';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import type { AspectRatio, Resolution } from '@/types/types';
 import { usePasteImage } from '@/hooks/usePasteImage';
 import { toast } from 'sonner';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
@@ -25,6 +26,7 @@ import { useBrandImport } from '@/hooks/queries/useBrandImport';
 import { Select } from '@/components/ui/select';
 import { MediaKitGallery } from '@/components/brand/MediaKitGallery';
 import { BrandReadOnlyView } from '@/components/brand/BrandReadOnlyView';
+import { CommunityPresetsSidebar } from '@/components/canvas/CommunityPresetsSidebar';
 import { Diamond, PanelRightOpen, PanelRightClose, Upload } from 'lucide-react';
 import { useLayout } from '@/hooks/useLayout';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -66,9 +68,25 @@ export const AdminChat: React.FC<AdminChatProps> = ({
     const [selectedBrandId, setSelectedBrandId] = useState<string>('');
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
-    const [selectedModel, setSelectedModel] = useState<string>(GEMINI_MODELS.PRO_3_1); // Default admin model
+    const [selectedModel, setSelectedModel] = useState<string>('gpt-image-2');
+    const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
+    const [resolution, setResolution] = useState<Resolution>('2K');
     const [isDraggingFile, setIsDraggingFile] = useState(false);
+    const [genElapsed, setGenElapsed] = useState(0);
+    const genTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    useEffect(() => {
+        if (isLoading) {
+            setGenElapsed(0);
+            genTimerRef.current = setInterval(() => setGenElapsed(t => t + 1), 1000);
+        } else {
+            if (genTimerRef.current) clearInterval(genTimerRef.current);
+            genTimerRef.current = null;
+        }
+        return () => { if (genTimerRef.current) clearInterval(genTimerRef.current); };
+    }, [isLoading]);
     const [mediaPanelOpen, setMediaPanelOpen] = useState(true);
+    const [panelTab, setPanelTab] = useState<'media' | 'prompts'>('media');
     const [wizardOpen, setWizardOpen] = useState(false);
     const brandImportInputRef = useRef<HTMLInputElement>(null);
     const brandImport = useBrandImport(selectedBrandId || undefined);
@@ -329,11 +347,19 @@ export const AdminChat: React.FC<AdminChatProps> = ({
             setInput('');
             setAttachedFiles([]);
             setIsLoading(true);
-            setInflightToolCalls([]);
+            setInflightToolCalls(
+                textMode === 'image' || textMode === 'both'
+                    ? [{ id: '__optimistic_gen', name: 'generate_or_update_mockup', args: {}, status: 'running' as const, startedAt: now }]
+                    : []
+            );
 
             // 4. Send message to session
             try {
-                const { reply, action, actionResult, creativeProjects, toolsUsed, toolCalls, generationId } = await adminChatApi.sendMessage(sessionId, currentInput, planModeActive, textMode);
+                const { reply, action, actionResult, creativeProjects, toolsUsed, toolCalls, generationId } = await adminChatApi.sendMessage(sessionId, currentInput, planModeActive, textMode, {
+                  model: selectedModel,
+                  aspectRatio,
+                  resolution,
+                });
                 if (planModeActive) setPlanModeActive(false);
 
                 setMessages(prev => [...prev, {
@@ -868,6 +894,13 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                                         <GlitchPickaxe />
                                                     </div>
+                                                    {genElapsed > 0 && (
+                                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+                                                            <span className="px-3 py-1 rounded-full bg-neutral-950/60 backdrop-blur-md border border-white/5 text-neutral-400 text-[10px] font-mono shadow-xl">
+                                                                {Math.floor(genElapsed / 60)}:{(genElapsed % 60).toString().padStart(2, '0')}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                             {inflightToolCalls.length > 0 && (
@@ -985,45 +1018,64 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                     selectedModel={selectedModel}
                                     onModelChange={setSelectedModel}
                                     showModelSelector={true}
+                                    modelSelectorType={textMode === 'layers' ? 'chat' : 'image'}
+                                    aspectRatio={aspectRatio}
+                                    onAspectRatioChange={setAspectRatio}
+                                    resolution={resolution}
+                                    onResolutionChange={setResolution}
+                                    showOutputConfig={textMode !== 'layers'}
                                 />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Right-side: Brand Media Kit panel — click-to-attach, drag-to-chat */}
-                        {isLargeScreen && selectedBrand && mediaPanelOpen && (
+                        {/* Right-side panel — Media Kit / Prompt Library */}
+                        {isLargeScreen && mediaPanelOpen && (
                             <aside className="flex flex-col bg-neutral-950 border-l border-white/5 w-80 shrink-0">
-                                <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-                                    <div className="min-w-0">
-                                        <h4 className="text-sm font-semibold text-neutral-200 truncate leading-tight">
-                                            Media Kit
-                                        </h4>
-                                        <p className="text-xs text-neutral-500 truncate leading-tight">
-                                            {(selectedBrand as any).identity?.name || 'Marca'}
-                                        </p>
+                                <div className="flex items-center justify-between px-3 py-2 border-b border-white/5">
+                                    <div className="flex items-center bg-white/5 rounded-md p-0.5 gap-px">
+                                        {(['media', 'prompts'] as const).map((tab) => (
+                                            <button
+                                                key={tab}
+                                                type="button"
+                                                onClick={() => setPanelTab(tab)}
+                                                className={cn(
+                                                    "px-2.5 py-1 text-[11px] font-medium rounded transition-colors",
+                                                    panelTab === tab
+                                                        ? "bg-white/10 text-neutral-200"
+                                                        : "text-neutral-500 hover:text-neutral-300"
+                                                )}
+                                            >
+                                                {tab === 'media' ? 'Media Kit' : 'Prompts'}
+                                            </button>
+                                        ))}
                                     </div>
                                     <div className="flex items-center gap-1 shrink-0">
-                                        <input
-                                            ref={brandImportInputRef}
-                                            type="file"
-                                            multiple
-                                            accept="application/pdf,image/*"
-                                            className="hidden"
-                                            onChange={handleBrandImport}
-                                        />
-                                        <button
-                                            onClick={() => brandImportInputRef.current?.click()}
-                                            disabled={brandImport.isPending}
-                                            className="p-1.5 rounded-md text-neutral-500 hover:text-brand-cyan hover:bg-brand-cyan/10 transition-colors disabled:opacity-50"
-                                            aria-label="Importar PDF ou imagens para extrair logos, cores, tipografia"
-                                            title="Importar PDF/imagens → extrai logos, cores, tipografia, tokens e media"
-                                        >
-                                            {brandImport.isPending ? (
-                                                <GlitchLoader size={14} />
-                                            ) : (
-                                                <Upload size={14} />
-                                            )}
-                                        </button>
+                                        {panelTab === 'media' && selectedBrand && (
+                                            <>
+                                                <input
+                                                    ref={brandImportInputRef}
+                                                    type="file"
+                                                    multiple
+                                                    accept="application/pdf,image/*"
+                                                    className="hidden"
+                                                    onChange={handleBrandImport}
+                                                />
+                                                <button
+                                                    onClick={() => brandImportInputRef.current?.click()}
+                                                    disabled={brandImport.isPending}
+                                                    className="p-1.5 rounded-md text-neutral-500 hover:text-brand-cyan hover:bg-brand-cyan/10 transition-colors disabled:opacity-50"
+                                                    aria-label="Importar PDF ou imagens"
+                                                    title="Importar PDF/imagens → extrai logos, cores, tipografia"
+                                                >
+                                                    {brandImport.isPending ? (
+                                                        <GlitchLoader size={14} />
+                                                    ) : (
+                                                        <Upload size={14} />
+                                                    )}
+                                                </button>
+                                            </>
+                                        )}
                                         <button
                                             onClick={() => setMediaPanelOpen(false)}
                                             className="p-1 rounded-md text-neutral-500 hover:text-neutral-200 hover:bg-white/5 transition-colors"
@@ -1033,31 +1085,46 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                         </button>
                                     </div>
                                 </div>
-                                <div className="flex-1 overflow-y-auto scrollbar-thin p-3">
-                                    <p className="text-xs text-neutral-500 mb-3 px-1">
-                                        Clique ou arraste para o chat
-                                    </p>
-                                    <MediaKitGallery
-                                        guidelineId={(selectedBrand as any).id}
-                                        media={(selectedBrand as any).media || []}
-                                        logos={(selectedBrand as any).logos || []}
-                                        onMediaChange={() => queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] })}
-                                        onLogosChange={() => queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] })}
-                                        compact
-                                        onAssetClick={(url) => attachAssetFromUrl(url)}
-                                        onAssetDragStart={(e, url) => {
-                                            e.dataTransfer.setData('text/uri-list', url);
-                                            e.dataTransfer.setData('text/plain', url);
-                                            e.dataTransfer.effectAllowed = 'copy';
-                                        }}
-                                    />
 
-                                    <BrandReadOnlyView
-                                        guideline={selectedBrand as any}
-                                        compact
-                                        sections={['identity', 'manifesto', 'archetypes', 'personas', 'voiceValues', 'guidelines', 'colors', 'typography']}
-                                    />
-                                </div>
+                                {panelTab === 'media' && selectedBrand ? (
+                                    <div className="flex-1 overflow-y-auto scrollbar-thin p-3">
+                                        <p className="text-xs text-neutral-500 mb-3 px-1">
+                                            Clique ou arraste para o chat
+                                        </p>
+                                        <MediaKitGallery
+                                            guidelineId={(selectedBrand as any).id}
+                                            media={(selectedBrand as any).media || []}
+                                            logos={(selectedBrand as any).logos || []}
+                                            onMediaChange={() => queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] })}
+                                            onLogosChange={() => queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] })}
+                                            compact
+                                            onAssetClick={(url) => attachAssetFromUrl(url)}
+                                            onAssetDragStart={(e, url) => {
+                                                e.dataTransfer.setData('text/uri-list', url);
+                                                e.dataTransfer.setData('text/plain', url);
+                                                e.dataTransfer.effectAllowed = 'copy';
+                                            }}
+                                        />
+                                        <BrandReadOnlyView
+                                            guideline={selectedBrand as any}
+                                            compact
+                                            sections={['identity', 'manifesto', 'archetypes', 'personas', 'voiceValues', 'guidelines', 'colors', 'typography']}
+                                        />
+                                    </div>
+                                ) : panelTab === 'media' ? (
+                                    <div className="flex-1 flex items-center justify-center p-4">
+                                        <p className="text-xs text-neutral-500 text-center">Selecione uma brand guideline para ver o Media Kit</p>
+                                    </div>
+                                ) : (
+                                    <div className="flex-1 overflow-y-auto">
+                                        <CommunityPresetsSidebar
+                                            variant="embedded"
+                                            onImportPreset={(preset) => {
+                                                setInput(preset.prompt || preset.description || '');
+                                            }}
+                                        />
+                                    </div>
+                                )}
                             </aside>
                         )}
                     </motion.div>

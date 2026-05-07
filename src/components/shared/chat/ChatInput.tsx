@@ -5,8 +5,41 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ModelSelector } from '../ModelSelector';
+import type { AspectRatio, Resolution } from '@/types/types';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader'
+
+const ASPECT_RATIOS = ['16:9', '1:1', '4:3', '9:16'] as const;
+const RESOLUTIONS = ['1K', '2K', '4K'] as const;
+
+function OutputPills({ items, value, onChange, disabled }: {
+  items: readonly string[];
+  value: string;
+  onChange: (v: string) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex items-center bg-white/5 rounded-md p-0.5 gap-px">
+      {items.map((item) => (
+        <button
+          key={item}
+          type="button"
+          onClick={() => onChange(item)}
+          disabled={disabled}
+          className={cn(
+            "px-1.5 py-0.5 text-[10px] font-medium rounded transition-colors",
+            value === item
+              ? "bg-white/15 text-white"
+              : "text-white/30 hover:text-white/60"
+          )}
+        >
+          {item}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 interface ChatInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -21,8 +54,14 @@ interface ChatInputProps {
   className?: string;
   disabled?: boolean;
   selectedModel?: string;
-  onModelChange?: (model: string) => void;
+  onModelChange?: (model: string, provider?: import('@/types/types').ImageProvider) => void;
   showModelSelector?: boolean;
+  modelSelectorType?: 'chat' | 'image';
+  aspectRatio?: AspectRatio;
+  onAspectRatioChange?: (ratio: AspectRatio) => void;
+  resolution?: Resolution;
+  onResolutionChange?: (res: Resolution) => void;
+  showOutputConfig?: boolean;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -41,6 +80,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   selectedModel,
   onModelChange,
   showModelSelector = false,
+  modelSelectorType = 'chat',
+  aspectRatio,
+  onAspectRatioChange,
+  resolution,
+  onResolutionChange,
+  showOutputConfig = false,
 }) => {
   const { t } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -88,20 +133,38 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           style={{ height: `${minHeight}px` }}
         />
 
-        {/* Bottom action row — attach (left) + model + send (right) */}
+        {/* Bottom action row */}
         <div className="flex items-center justify-between px-2 pb-2 gap-2">
-          <div className="flex items-center">
+          <div className="flex items-center gap-1">
             {showAttach && onAttachClick && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-white/30 hover:text-white hover:bg-white/5"
+                className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/5"
                 onClick={onAttachClick}
                 disabled={isLoading || isIngesting}
                 aria-label="Anexar arquivo"
               >
-                <Paperclip size={18} />
+                <Paperclip size={16} />
               </Button>
+            )}
+
+            {showOutputConfig && onAspectRatioChange && aspectRatio && (
+              <OutputPills
+                items={ASPECT_RATIOS}
+                value={aspectRatio}
+                onChange={(v) => onAspectRatioChange(v as AspectRatio)}
+                disabled={isLoading}
+              />
+            )}
+
+            {showOutputConfig && onResolutionChange && resolution && (
+              <OutputPills
+                items={RESOLUTIONS}
+                value={resolution}
+                onChange={(v) => onResolutionChange(v as Resolution)}
+                disabled={isLoading}
+              />
             )}
           </div>
 
@@ -110,6 +173,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               <ModelSelector
                 selectedModel={selectedModel!}
                 onModelChange={onModelChange!}
+                type={modelSelectorType}
                 className="!min-w-[120px]"
               />
             )}

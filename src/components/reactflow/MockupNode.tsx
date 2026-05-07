@@ -19,7 +19,8 @@ import { NodeContainer } from './shared/NodeContainer';
 import { NodeLabel } from './shared/node-label';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
-import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel } from '@/constants/geminiModels';
+import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
+import { supportsOutputConfig } from '@/utils/canvas/generationContext';
 import { isSeedreamModel } from '@/constants/seedreamModels';
 import { NodeHeader } from './shared/node-header';
 import { toast } from 'sonner';
@@ -322,9 +323,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       ? (customPrompt ? `${connectedTextDirection}\n\n${customPrompt}` : connectedTextDirection)
       : customPrompt;
 
-    const isAdvanced = isAdvancedModel(model);
-    const finalResolution = isAdvanced ? resolution : undefined;
-    const finalAspectRatio = isAdvanced ? aspectRatio : undefined;
+    const hasConfig = supportsOutputConfig(model);
+    const finalResolution = hasConfig ? resolution : undefined;
+    const finalAspectRatio = hasConfig ? aspectRatio : undefined;
 
     await data.onGenerate(id, imageToUse, selectedPresetId, selectedColors, withHuman, finalPrompt || undefined, model, finalResolution, finalAspectRatio);
   };

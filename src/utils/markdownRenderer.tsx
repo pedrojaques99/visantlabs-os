@@ -1,194 +1,108 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 
 /**
- * Parse and render markdown text to React elements
- * Supports: **bold**, **, - bullets, [color:#hex]text[/color]
+ * Parse inline markdown: **bold**, *italic*, `code`, [text](url), [color:#hex]text[/color]
  */
+export function renderInline(text: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  const regex = /(\*\*(.+?)\*\*)|(\*(.+?)\*)|(`([^`]+)`)|(\[([^\]]+)\]\(([^)]+)\))|(\[color:([^\]]+)\]([\s\S]*?)\[\/color\])/g;
+  let lastIdx = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
 
-interface ParsedNode {
-  type: 'text' | 'bold' | '' | 'color' | 'bullet';
-  content: string;
-  color?: string;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIdx) parts.push(text.slice(lastIdx, match.index));
+    if (match[2]) {
+      parts.push(<strong key={key++} className="font-semibold text-neutral-200">{match[2]}</strong>);
+    } else if (match[4]) {
+      parts.push(<em key={key++} className="text-neutral-300">{match[4]}</em>);
+    } else if (match[6]) {
+      parts.push(<code key={key++} className="px-1 py-0.5 rounded bg-background/60 border border-border/30 text-[10px] font-mono">{match[6]}</code>);
+    } else if (match[8] && match[9]) {
+      parts.push(<a key={key++} href={match[9]} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:underline">{match[8]}</a>);
+    } else if (match[11] && match[12] !== undefined) {
+      const hexColor = match[11].startsWith('#') ? match[11] : `#${match[11]}`;
+      parts.push(<span key={key++} style={{ color: hexColor }}>{match[12]}</span>);
+    }
+    lastIdx = match.index + match[0].length;
+  }
+
+  if (lastIdx < text.length) parts.push(text.slice(lastIdx));
+  return parts;
 }
 
 /**
- * Parse markdown text into nodes
+ * Parse block-level markdown: code blocks, lists, paragraphs with inline formatting.
  */
-const parseMarkdown = (text: string): ParsedNode[] => {
+export function renderMarkdownBlocks(text: string): ReactNode[] {
   if (!text) return [];
+  const blocks = text.split(/\n\n+/);
+  const elements: ReactNode[] = [];
 
-  const nodes: ParsedNode[] = [];
-  let i = 0;
-  let currentText = '';
+  for (let bi = 0; bi < blocks.length; bi++) {
+    const block = blocks[bi];
 
-  while (i < text.length) {
-    // Check for color tags: [color:#hex]text[/color]
-    const colorTagMatch = text.substring(i).match(/^\[color:([^\]]+)\]/);
-    if (colorTagMatch) {
-      // Save any accumulated text
-      if (currentText) {
-        nodes.push({ type: 'text', content: currentText });
-        currentText = '';
-      }
-
-      const color = colorTagMatch[1];
-      const tagLength = colorTagMatch[0].length;
-      i += tagLength;
-
-      // Find closing tag
-      const closingTag = '[/color]';
-      const closingIndex = text.indexOf(closingTag, i);
-
-      if (closingIndex !== -1) {
-        const colorContent = text.substring(i, closingIndex);
-        nodes.push({ type: 'color', content: colorContent, color });
-        i = closingIndex + closingTag.length;
-        continue;
-      } else {
-        // No closing tag, treat as regular text
-        currentText += text.substring(i - tagLength, i);
-        continue;
-      }
+    // Code block
+    if (block.startsWith('```')) {
+      const lines = block.split('\n');
+      const code = lines.slice(1, lines[lines.length - 1] === '```' ? -1 : undefined).join('\n');
+      elements.push(
+        <pre key={bi} className="mt-1.5 mb-1 p-2 rounded bg-background/60 border border-border/40 text-[10px] font-mono overflow-x-auto whitespace-pre-wrap">
+          {code}
+        </pre>
+      );
+      continue;
     }
 
-    // Check for bold: **text**
-    if (text.substring(i, i + 2) === '**') {
-      // Save any accumulated text
-      if (currentText) {
-        nodes.push({ type: 'text', content: currentText });
-        currentText = '';
-      }
-
-      const closingBold = text.indexOf('**', i + 2);
-      if (closingBold !== -1) {
-        const boldContent = text.substring(i + 2, closingBold);
-        nodes.push({ type: 'bold', content: boldContent });
-        i = closingBold + 2;
-        continue;
-      }
+    // List items
+    if (/^[\s]*[-*•]\s/.test(block) || /^[\s]*\d+\.\s/.test(block)) {
+      const items = block.split('\n').filter(l => l.trim());
+      elements.push(
+        <ul key={bi} className="mt-1 mb-1 pl-3 space-y-0.5">
+          {items.map((item, ii) => (
+            <li key={ii} className="text-sm list-disc list-inside">
+              {renderInline(item.replace(/^[\s]*[-*•]\s*/, '').replace(/^[\s]*\d+\.\s*/, ''))}
+            </li>
+          ))}
+        </ul>
+      );
+      continue;
     }
 
-    // Check for : *text* (but not ** which is bold)
-    if (text[i] === '*' && text[i + 1] !== '*') {
-      // Save any accumulated text
-      if (currentText) {
-        nodes.push({ type: 'text', content: currentText });
-        currentText = '';
-      }
-
-      const closing = text.indexOf('*', i + 1);
-      if (closing !== -1) {
-        const Content = text.substring(i + 1, closing);
-        nodes.push({ type: '', content: Content });
-        i = closing + 1;
-        continue;
-      }
-    }
-
-    // Regular character
-    currentText += text[i];
-    i++;
+    // Regular paragraph
+    const lines = block.split('\n');
+    elements.push(
+      <p key={bi} className="whitespace-pre-wrap break-words">
+        {lines.map((line, li) => (
+          <React.Fragment key={li}>
+            {li > 0 && <br />}
+            {renderInline(line)}
+          </React.Fragment>
+        ))}
+      </p>
+    );
   }
 
-  // Add remaining text
-  if (currentText) {
-    nodes.push({ type: 'text', content: currentText });
-  }
-
-  return nodes;
-};
+  return elements;
+}
 
 /**
- * Render a single parsed node
- */
-const renderNode = (node: ParsedNode, key: number): React.ReactNode => {
-  switch (node.type) {
-    case 'bold':
-      return (
-        <strong key={key} className="font-semibold text-neutral-200">
-          {node.content}
-        </strong>
-      );
-    case '':
-      return (
-        <em key={key} className="font- text-neutral-300">
-          {node.content}
-        </em>
-      );
-    case 'color':
-      const color = node.color || '#ffffff';
-      // Normalize color format
-      const hexColor = color.startsWith('#') ? color : `#${color}`;
-      return (
-        <span key={key} style={{ color: hexColor }}>
-          {node.content}
-        </span>
-      );
-    case 'text':
-    default:
-      return node.content;
-  }
-};
-
-/**
- * Render markdown text with formatting
+ * Backward-compatible: render inline-only markdown (single line, no blocks).
  */
 export const renderMarkdown = (text: string): React.ReactNode => {
   if (!text) return null;
-
-  const nodes = parseMarkdown(text);
-
-  return (
-    <>
-      {nodes.map((node, index) => renderNode(node, index))}
-    </>
-  );
+  const nodes = renderInline(text);
+  return <>{nodes}</>;
 };
 
 /**
- * Render markdown text preserving line breaks and bullets
+ * Render markdown text preserving line breaks and bullets (legacy API).
  */
 export const renderMarkdownWithLines = (text: string): React.ReactNode => {
   if (!text) return null;
-
-  const lines = text.split('\n');
-
-  return (
-    <>
-      {lines.map((line, lineIndex) => {
-        const trimmedLine = line.trim();
-
-        // Check if it's a bullet point
-        const bulletMatch = trimmedLine.match(/^[-*•]\s*(.+)$/);
-        if (bulletMatch) {
-          const bulletContent = bulletMatch[1];
-          return (
-            <div key={lineIndex} className="flex items-start gap-2 mb-2">
-              <span className="text-brand-cyan mt-1 flex-shrink-0 font-bold">•</span>
-              <span className="flex-1">{renderMarkdown(bulletContent)}</span>
-            </div>
-          );
-        }
-
-        // Regular line
-        if (trimmedLine) {
-          return (
-            <p key={lineIndex} className="mb-2">
-              {renderMarkdown(trimmedLine)}
-            </p>
-          );
-        }
-
-        // Empty line
-        return <br key={lineIndex} />;
-      })}
-    </>
-  );
+  return <>{renderMarkdownBlocks(text)}</>;
 };
 
-/**
- * Component to render markdown text
- */
 interface MarkdownRendererProps {
   content: string;
   preserveLines?: boolean;
@@ -206,23 +120,3 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     </div>
   );
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

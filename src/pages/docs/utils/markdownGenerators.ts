@@ -37,22 +37,148 @@ Token: \`POST /api/auth/login\` → \`{ "email": "...", "password": "..." }\``;
 }
 
 function generatePluginMarkdown(): string {
-  return `# Figma Plugin Guide
+  return `# Figma Plugin — Visant Copilot
 
 ## Installation
 1. Open any file in Figma.
-2. Go to Resources > Plugins.
-3. Search for "Visant Copilot" and click Run.
-4. Follow the on-screen prompts to connect your account.
+2. Go to **Resources > Plugins** and search for **Visant Copilot**.
+3. Click **Run** to launch the plugin panel.
+4. Sign in with your Visant account to unlock brand-aware features and credit-based generation.
 
-## Capabilities
-- **Mockups** — select frames and convert them to 3D device mockups instantly.
-- **Chat with AI** — describe what to build; nodes are created automatically.
-- **Brand identity extraction** — upload logo + identity PDF to generate brand-aware prompts.
-- **Image generation** — text-to-image, edit, merge, upscale inside Figma.
+## AI Chat
+Describe what you want in natural language — the AI creates, edits, and organizes Figma nodes automatically.
+
+**Features:**
+- **@mentions** — type \`@\` to reference layers, components, or variables by name. The AI resolves them to real node IDs.
+- **Multimodal input** — drag-and-drop or paste images directly into the chat input for visual context.
+- **Brand context** — select a Brand Guideline to inject colors, typography, and tone into every prompt.
+- **\`/clear\` command** — type \`/clear\` to reset chat history.
+- **Clickable layer refs** — operation summaries show \`@"LayerName"\` links that select and zoom to the referenced layer.
+- **Copy & select** — hover any message bubble for a copy button; text is fully selectable.
+
+## Supported Operations (42+)
+
+### Creation
+\`CREATE_PAGE\`, \`CREATE_FRAME\`, \`CREATE_RECTANGLE\`, \`CREATE_ELLIPSE\`, \`CREATE_TEXT\`, \`CREATE_COMPONENT_INSTANCE\`, \`CREATE_COMPONENT\`, \`CREATE_SVG\`, \`CREATE_ICON\`, \`CREATE_LINE\`, \`CREATE_POLYGON\`, \`CREATE_STAR\`
+
+### Clone & Duplicate
+\`CLONE_NODE\` (by name or ID), \`DUPLICATE_NODE\` — preserves all children (logos, images, components). Supports \`textOverrides\` to replace text in cloned templates.
+
+### Edit / Style
+\`SET_FILL\`, \`SET_STROKE\`, \`SET_IMAGE_FILL\`, \`SET_CORNER_RADIUS\`, \`SET_INDIVIDUAL_CORNERS\`, \`SET_EFFECTS\`, \`SET_AUTO_LAYOUT\`, \`SET_OPACITY\`, \`SET_BLEND_MODE\`, \`SET_TEXT_CONTENT\`, \`SET_TEXT_STYLE\`, \`SET_TEXT_RANGES\`, \`SET_CONSTRAINTS\`, \`SET_LAYOUT_GRID\`, \`RESIZE\`, \`MOVE\`, \`RENAME\`, \`REORDER_CHILD\`, \`RECOLOR_NODE\`
+
+### Structure
+\`GROUP_NODES\`, \`UNGROUP\`, \`DELETE_NODE\`, \`DETACH_INSTANCE\`, \`BOOLEAN_OPERATION\` (union, subtract, intersect, exclude), \`COMBINE_AS_VARIANTS\`
+
+### Variables & Tokens
+\`APPLY_VARIABLE\`, \`APPLY_STYLE\`, \`CREATE_VARIABLE\`, \`CREATE_COLOR_VARIABLES_FROM_SELECTION\`, \`BIND_NEAREST_COLOR_VARIABLES\`
+
+### Inspection (MCP)
+\`GET_DESIGN_CONTEXT\`, \`GET_VARIABLE_DEFS\`, \`GET_SCREENSHOT\`, \`SEARCH_DESIGN_SYSTEM\`, \`GET_CODE_CONNECT_MAP\`, \`ADD_CODE_CONNECT_MAP\`
+
+All operations use JSON format: \`[{ "type": "OPERATION_TYPE", ...params }]\`
+
+## AI Prompt System (V2 — Intent-Driven)
+
+### Architecture
+The AI prompt is assembled dynamically based on intent, not as a monolithic blob. This reduces tokens by ~70% and improves accuracy.
+
+\`\`\`
+User Prompt > classifyIntent() > assemblePrompt() > LLM > operations[]
+                  |                    |
+          keyword patterns      modules by intent
+          + optional LLM        (only relevant ops)
+            pre-pass
+\`\`\`
+
+### Intent Classification (Two-Tier)
+1. **Fast keyword classifier** (~0ms) — regex-based detection of intent (\`create\`, \`edit\`, \`clone\`, \`arrange\`, \`chat\`), format (\`instagram_feed\`, \`stories\`, etc.), and complexity.
+2. **LLM pre-pass** (optional, ~200ms) — when keyword confidence < 0.65, a lightweight Flash Lite call extracts structured params: \`sourceFrame\`, \`cloneCount\`, \`modifications[]\`.
+
+### Module System
+Prompt sections are injected by priority based on detected intent:
+
+| Module | Priority | When injected |
+|--------|----------|---------------|
+| \`think_mode\` | 99 | Think mode enabled |
+| \`feedback\` | 98 | Retrying after errors |
+| \`selection\` | 95 | Frame(s) selected |
+| \`history\` | 92 | Chat history exists |
+| \`preset\` | 90 | Format detected (Stories, Feed...) |
+| \`brand\` | 85 | Brand guideline active |
+| \`template_rules\` | 85 | Clone intent |
+| \`create_rules\` | 80 | Create intent |
+| \`edit_rules\` | 80 | Edit intent |
+| \`create_example\` | 70 | Complex creation (few-shot) |
+| \`components\` | 50 | Available components |
+| \`color_vars\` | 45 | Color variables available |
+
+### Brand-Aware Context
+When a Brand Guideline is active, the prompt receives:
+- **Colors** — palette with roles (Primary, Accent, CTA, Background)
+- **Typography** — principal (headings) and secondary (body) families with available weights
+- **Logos** — light/dark variants for cloning via \`CLONE_NODE sourceName\`
+- **Design tokens** — spacing, radius from the brand guideline
+- **Voice & rules** — brand voice, dos/don'ts as hard constraints
+
+Brand context overrides generic styles (e.g., "Inter" is never used when brand fonts exist).
+
+### Feedback Loop
+When operations fail validation (>50% invalid), the system automatically retries with:
+- Lower temperature (0.1 vs 0.2)
+- Error feedback injected at priority 98 (seen before all other modules)
+- Specific error messages per operation type
+
+### Clone-First Strategy
+When the user asks for "variations", "more like this", or "same style" with a frame selected:
+1. The intent classifier detects \`clone\` intent
+2. \`CLONE_NODE\` is prioritized over \`CREATE_*\` operations
+3. \`textOverrides\` replace text in cloned children by layer name
+4. This preserves logos, images, shapes, and complex layers that can't be recreated
+
+## Brand Guidelines
+- Select a brand guideline from the sidebar to inject identity context (colors, typography, tone, tokens, voice) into every AI prompt.
+- The last selected brand **persists across sessions** via Figma pluginData — no need to re-select each time.
+- Brand context is sent alongside the user prompt to the server, ensuring brand-consistent outputs.
+
+## Smart Scan (REQUEST_SCAN)
+When the AI needs context beyond the current selection, it automatically emits a \`REQUEST_SCAN\` operation. This triggers a full page scan, re-sending the command with complete page context. The scan status appears as a tool call in the chat UI.
 
 ## Plugin API (for developers)
-The plugin communicates with the server via WebSocket (pluginBridge). Agents can send commands via the \`/api/plugin/agent-command\` endpoint which validates and queues operations for execution inside Figma.`;
+
+### Architecture
+\`\`\`
+Figma Sandbox (code.ts) <> UI iframe (React) --SSE--> POST /api/plugin/stream (Claude/Gemini)
+                        <-- APPLY_OPERATIONS ----------
+\`\`\`
+
+Two AI provider paths:
+- **Streaming (default):** \`POST /api/plugin/stream\` — SSE with Claude (agentic, multi-turn with web search)
+- **Direct (fallback):** \`POST /api/figma/generate\` — Gemini structured JSON output
+
+### POST /api/plugin/stream
+SSE endpoint. Receives serialized selection + brand context + user prompt. Streams events: \`status\`, \`thinking\`, \`text\`, \`operations\`, \`done\`.
+
+### Operation JSON Format
+\`\`\`json
+[
+  { "type": "CREATE_FRAME", "ref": "card", "props": { "name": "Card 300x200", "width": 300, "height": 200 } },
+  { "type": "CREATE_TEXT", "parentRef": "card", "props": { "content": "Hello", "fontSize": 16 } },
+  { "type": "CLONE_NODE", "ref": "v2", "sourceName": "card", "textOverrides": [{ "name": "Hello", "content": "World" }] }
+]
+\`\`\`
+
+\`ref\` creates a named reference; \`parentRef\` nests inside a previously created node; \`parentNodeId\` nests inside an existing Figma node by ID; \`sourceName\` clones by layer name; \`autoPosition: "right"\` auto-positions frames side by side.
+
+### Quality Assurance
+After operations are applied, an \`auditCreatedNodes()\` pass checks for:
+- Text truncation (\`textTruncation === 'ENDING'\`)
+- Double-fixed sizing on text (causes clipping)
+- Incorrect layout sizing in auto-layout context
+- Structural white frames (unnecessary solid fills)
+- Child overflow parent bounds
+
+Violations are reported in the \`OPERATIONS_DONE\` message telemetry.`;
 }
 
 function generateAgentsMarkdown(platformMcpSpec?: MCPSpec | null): string {

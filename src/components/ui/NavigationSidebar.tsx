@@ -248,7 +248,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 </div>
                 {isExpanded && hasSections && (
                   <div className="ml-6 space-y-1 mt-1">
-                    {item.sections.map((section) => {
+                    {item.sections?.map((section) => {
                       const isSectionActive = activeSectionId === section.id && activeItemId === item.id;
                       return (
                         <button

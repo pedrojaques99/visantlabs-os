@@ -4,6 +4,19 @@ import type { FigmaOperation } from '../../../src/lib/figma-types';
 import { postToUI } from '../utils/postMessage';
 import { ensurePagesLoaded, setPagesLoaded, setCanUndo, DEFAULT_FONT } from '../state';
 import { serializeNode, serializeSelection } from '../utils/serialize';
+import { colorDistance } from '../utils/colors';
+
+const AXIS_ALIGN_MAP: Record<string, string> = {
+  START: 'MIN', END: 'MAX', FLEX_START: 'MIN', FLEX_END: 'MAX',
+  start: 'MIN', end: 'MAX', flex_start: 'MIN', flex_end: 'MAX',
+};
+type PrimaryAxisAlign = 'MIN' | 'MAX' | 'CENTER' | 'SPACE_BETWEEN';
+type CounterAxisAlign = 'MIN' | 'MAX' | 'CENTER' | 'BASELINE';
+
+function normalizeAxisAlign(v: string | undefined, fallback: string = 'MIN'): string {
+  if (!v) return fallback;
+  return AXIS_ALIGN_MAP[v] ?? v;
+}
 
 /**
  * Summary item for operation results
@@ -222,6 +235,9 @@ function hexToRgb(hex: string): RGB {
  * Apply a batch of Figma operations
  */
 export async function applyOperations(ops: FigmaOperation[]) {
+  // Snapshot selection before processing — user may deselect during async ops
+  const snapshotSelection: readonly SceneNode[] = [...figma.currentPage.selection];
+
   // Create native Figma undo checkpoint
   figma.commitUndo();
   setCanUndo(true);
@@ -277,7 +293,7 @@ export async function applyOperations(ops: FigmaOperation[]) {
     });
 
     try {
-      await processOperation(op, { createdNodes, createdPages, pushSummary, getParent });
+      await processOperation(op, { createdNodes, createdPages, pushSummary, getParent, snapshotSelection });
 
       // Notify UI of success
       postToUI({
@@ -417,10 +433,11 @@ interface OperationContext {
   createdPages: Map<string, PageNode>;
   pushSummary: (text: string, node?: SceneNode | BaseNode | null) => void;
   getParent: (parentRef?: string, parentNodeId?: string) => Promise<BaseNode & ChildrenMixin>;
+  snapshotSelection: readonly SceneNode[];
 }
 
 async function processOperation(op: FigmaOperation, ctx: OperationContext) {
-  const { createdNodes, createdPages, pushSummary, getParent } = ctx;
+  const { createdNodes, createdPages, pushSummary, getParent, snapshotSelection } = ctx;
 
   // Resiliency: prioritize op.props but fallback to op root for flat JSON objects
   const rawOp = op as any;
@@ -480,8 +497,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       frame.layoutMode = props.layoutMode;
       frame.primaryAxisSizingMode = props.primaryAxisSizingMode ?? 'FIXED';
       frame.counterAxisSizingMode = props.counterAxisSizingMode ?? 'FIXED';
-      frame.primaryAxisAlignItems = props.primaryAxisAlignItems ?? 'MIN';
-      frame.counterAxisAlignItems = props.counterAxisAlignItems ?? 'MIN';
+      frame.primaryAxisAlignItems = normalizeAxisAlign(props.primaryAxisAlignItems, 'MIN') as PrimaryAxisAlign;
+      frame.counterAxisAlignItems = normalizeAxisAlign(props.counterAxisAlignItems, 'MIN') as CounterAxisAlign;
       frame.itemSpacing = props.itemSpacing ?? 0;
       if (props.counterAxisSpacing != null && 'counterAxisSpacing' in frame) {
         (frame as any).counterAxisSpacing = props.counterAxisSpacing;
@@ -726,21 +743,26 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   // ═══ CREATE_COMPONENT_INSTANCE ═══
   else if (op.type === 'CREATE_COMPONENT_INSTANCE') {
     const parent = await getParent(op.parentRef, op.parentNodeId);
+    const compKey = op.componentKey || props.componentKey || props.symbolKey;
+    if (!compKey) {
+      postToUI({ type: 'ERROR', message: 'CREATE_COMPONENT_INSTANCE: componentKey ausente' });
+      return;
+    }
     let component: ComponentNode | null = null;
 
     try {
       await ensurePagesLoaded();
       const allComps = figma.root.findAllWithCriteria({ types: ['COMPONENT'] });
-      component = allComps.find(c => c.key === op.componentKey) || null;
+      component = allComps.find(c => c.key === compKey) || null;
     } catch {
       // Continue to try import
     }
 
     if (!component) {
       try {
-        component = await figma.importComponentByKeyAsync(op.componentKey);
+        component = await figma.importComponentByKeyAsync(compKey);
       } catch {
-        postToUI({ type: 'ERROR', message: `Componente não encontrado: ${op.componentKey}` });
+        postToUI({ type: 'ERROR', message: `Componente não encontrado: ${compKey}` });
         return;
       }
     }
@@ -836,8 +858,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       node.layoutMode = op.layoutMode;
       if (op.primaryAxisSizingMode) node.primaryAxisSizingMode = op.primaryAxisSizingMode;
       if (op.counterAxisSizingMode) node.counterAxisSizingMode = op.counterAxisSizingMode;
-      if (op.primaryAxisAlignItems) node.primaryAxisAlignItems = op.primaryAxisAlignItems;
-      if (op.counterAxisAlignItems) node.counterAxisAlignItems = op.counterAxisAlignItems;
+      if (op.primaryAxisAlignItems) node.primaryAxisAlignItems = normalizeAxisAlign(op.primaryAxisAlignItems) as PrimaryAxisAlign;
+      if (op.counterAxisAlignItems) node.counterAxisAlignItems = normalizeAxisAlign(op.counterAxisAlignItems) as CounterAxisAlign;
       if (op.layoutWrap) node.layoutWrap = op.layoutWrap;
       if (op.itemSpacing != null) node.itemSpacing = op.itemSpacing;
       if (op.counterAxisSpacing != null && 'counterAxisSpacing' in node) {
@@ -1045,7 +1067,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     const depth = op.depth || 5;
     let node: SceneNode | null = null;
     if (nodeId) node = (await figma.getNodeByIdAsync(nodeId)) as SceneNode;
-    if (!node && figma.currentPage.selection.length > 0) node = figma.currentPage.selection[0];
+    if (!node && snapshotSelection.length > 0) node = snapshotSelection[0];
 
     const context = node ? await serializeNode(node, 0, depth) : await serializeSelection();
     postToUI({ type: 'DESIGN_CONTEXT_RESULT', nodeId: node?.id || 'selection', context });
@@ -1058,7 +1080,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       const n = await figma.getNodeByIdAsync(nodeId);
       if (n) nodes = [n as SceneNode];
     } else {
-      nodes = figma.currentPage.selection;
+      nodes = snapshotSelection;
     }
 
     const variables: any[] = [];
@@ -1091,7 +1113,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     const nodeId = op.nodeId;
     let node: SceneNode | null = null;
     if (nodeId) node = (await figma.getNodeByIdAsync(nodeId)) as SceneNode;
-    if (!node && figma.currentPage.selection.length > 0) node = figma.currentPage.selection[0];
+    if (!node && snapshotSelection.length > 0) node = snapshotSelection[0];
 
     if (node) {
       const bytes = await node.exportAsync({ format: 'JPG', constraint: { type: 'SCALE', value: 2 } });
@@ -1190,8 +1212,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       comp.layoutMode = op.props.layoutMode;
       comp.primaryAxisSizingMode = op.props.primaryAxisSizingMode ?? 'AUTO';
       comp.counterAxisSizingMode = op.props.counterAxisSizingMode ?? 'AUTO';
-      comp.primaryAxisAlignItems = op.props.primaryAxisAlignItems ?? 'MIN';
-      comp.counterAxisAlignItems = op.props.counterAxisAlignItems ?? 'MIN';
+      comp.primaryAxisAlignItems = normalizeAxisAlign(op.props.primaryAxisAlignItems, 'MIN') as PrimaryAxisAlign;
+      comp.counterAxisAlignItems = normalizeAxisAlign(op.props.counterAxisAlignItems, 'MIN') as CounterAxisAlign;
       comp.itemSpacing = op.props.itemSpacing ?? 0;
       comp.paddingTop = op.props.paddingTop ?? 0;
       comp.paddingRight = op.props.paddingRight ?? 0;
@@ -1540,7 +1562,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   else if (op.type === 'CREATE_VARIABLE') {
     if (figma.variables) {
       try {
-        const collections = (figma.variables as any).getLocalVariableCollections?.() || [];
+        const collections = await figma.variables.getLocalVariableCollectionsAsync();
         let collection = collections.find((c: any) => c.name === op.collectionName);
 
         if (!collection) {
@@ -1557,6 +1579,165 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
         }
       } catch (e) {
         postToUI({ type: 'ERROR', message: `Erro ao criar variável: ${String(e)}` });
+      }
+    }
+  }
+
+  // ═══ CREATE_COLOR_VARIABLES_FROM_SELECTION ═══
+  else if (op.type === 'CREATE_COLOR_VARIABLES_FROM_SELECTION') {
+    if (figma.variables) {
+      try {
+        const selection = snapshotSelection;
+        if (selection.length === 0) {
+          pushSummary('Nenhum elemento selecionado');
+          return;
+        }
+
+        const collectionName = op.collectionName || 'Colors';
+        const collections = await figma.variables.getLocalVariableCollectionsAsync();
+        let collection = collections.find((c: any) => c.name === collectionName);
+        if (!collection) {
+          collection = (figma.variables as any).createVariableCollection?.(collectionName);
+        }
+        if (!collection) return;
+
+        let created = 0;
+        for (const node of selection) {
+          if (!('fills' in node)) continue;
+          const fills = (node as GeometryMixin).fills;
+          if (!Array.isArray(fills) || fills.length === 0) continue;
+
+          const solidFill = fills.find((f: Paint) => f.type === 'SOLID' && f.visible !== false) as SolidPaint | undefined;
+          if (!solidFill) continue;
+
+          const varName = node.name.replace(/[^a-zA-Z0-9\s\-_\/]/g, '').trim() || `color-${created}`;
+          const variable = (figma.variables as any).createVariable?.(varName, collection.id, 'COLOR');
+          if (variable) {
+            variable.setValueForMode(collection.defaultModeId, {
+              r: solidFill.color.r,
+              g: solidFill.color.g,
+              b: solidFill.color.b,
+              a: solidFill.opacity ?? 1
+            });
+            created++;
+            pushSummary(`Variável criada: ${varName}`, node);
+          }
+        }
+
+        if (created === 0) {
+          pushSummary('Nenhuma cor sólida encontrada na seleção');
+        }
+      } catch (e) {
+        postToUI({ type: 'ERROR', message: `Erro ao criar variáveis: ${String(e)}` });
+      }
+    }
+  }
+
+  // ═══ BIND_NEAREST_COLOR_VARIABLES ═══
+  else if (op.type === 'BIND_NEAREST_COLOR_VARIABLES') {
+    if (figma.variables) {
+      try {
+        const threshold = op.threshold ?? 0.05;
+        const roots = op.scope === 'page'
+          ? [...figma.currentPage.children]
+          : [...snapshotSelection];
+
+        if (roots.length === 0) {
+          pushSummary('Nenhum elemento para processar');
+          return;
+        }
+
+        const allVars = await figma.variables.getLocalVariablesAsync('COLOR');
+        const palette: { variable: Variable; rgb: { r: number; g: number; b: number } }[] = [];
+
+        for (const v of allVars) {
+          if (op.collectionName) {
+            const coll = await figma.variables.getVariableCollectionByIdAsync(v.variableCollectionId);
+            if (coll?.name !== op.collectionName) continue;
+          }
+          const modeId = Object.keys(v.valuesByMode)[0];
+          const val = v.valuesByMode[modeId];
+          if (typeof val === 'object' && val !== null && 'r' in val) {
+            palette.push({ variable: v, rgb: val as { r: number; g: number; b: number } });
+          }
+        }
+
+        if (palette.length === 0) {
+          pushSummary('Nenhuma variável de cor encontrada');
+          return;
+        }
+
+        let bound = 0;
+        let skipped = 0;
+
+        async function bindNode(node: SceneNode) {
+          if ('fills' in node) {
+            const fills = (node as GeometryMixin).fills as Paint[];
+            if (Array.isArray(fills)) {
+              const newFills = [...fills];
+              let changed = false;
+              for (let i = 0; i < newFills.length; i++) {
+                const fill = newFills[i];
+                if (fill.type !== 'SOLID' || fill.visible === false) continue;
+                if ((fill as any).boundVariables?.color) { skipped++; continue; }
+                const { r, g, b } = (fill as SolidPaint).color;
+                let bestDist = Infinity;
+                let bestVar: Variable | null = null;
+                for (const p of palette) {
+                  const dist = colorDistance({ r, g, b }, p.rgb);
+                  if (dist < bestDist) { bestDist = dist; bestVar = p.variable; }
+                }
+                if (bestVar && bestDist <= threshold) {
+                  newFills[i] = figma.variables.setBoundVariableForPaint(fill as SolidPaint, 'color', bestVar);
+                  changed = true;
+                  bound++;
+                } else {
+                  skipped++;
+                }
+              }
+              if (changed) (node as GeometryMixin).fills = newFills;
+            }
+          }
+
+          if ('strokes' in node) {
+            const strokes = (node as GeometryMixin).strokes as Paint[];
+            if (Array.isArray(strokes)) {
+              const newStrokes = [...strokes];
+              let changed = false;
+              for (let i = 0; i < newStrokes.length; i++) {
+                const stroke = newStrokes[i];
+                if (stroke.type !== 'SOLID' || stroke.visible === false) continue;
+                if ((stroke as any).boundVariables?.color) { skipped++; continue; }
+                const { r, g, b } = (stroke as SolidPaint).color;
+                let bestDist = Infinity;
+                let bestVar: Variable | null = null;
+                for (const p of palette) {
+                  const dist = colorDistance({ r, g, b }, p.rgb);
+                  if (dist < bestDist) { bestDist = dist; bestVar = p.variable; }
+                }
+                if (bestVar && bestDist <= threshold) {
+                  newStrokes[i] = figma.variables.setBoundVariableForPaint(stroke as SolidPaint, 'color', bestVar);
+                  changed = true;
+                  bound++;
+                } else {
+                  skipped++;
+                }
+              }
+              if (changed) (node as GeometryMixin).strokes = newStrokes;
+            }
+          }
+
+          if ('children' in node) {
+            for (const child of (node as any).children) {
+              await bindNode(child as SceneNode);
+            }
+          }
+        }
+
+        for (const root of roots) await bindNode(root as SceneNode);
+        pushSummary(`Vinculou ${bound} cores a variáveis (${skipped} ignoradas, threshold: ${threshold})`);
+      } catch (e) {
+        postToUI({ type: 'ERROR', message: `Erro ao vincular variáveis: ${String(e)}` });
       }
     }
   }

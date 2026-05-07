@@ -8,6 +8,7 @@ import { ComponentLibrarySection } from './ComponentLibrarySection';
 import { BrandIntelligenceSection } from './BrandIntelligenceSection';
 import { BrandSection } from './BrandSection';
 import { BrandOperationsSection } from './BrandOperationsSection';
+import { ColorCleanupSection } from './ColorCleanupSection';
 import { useBrandAutoSync } from '../../hooks/useBrandAutoSync';
 import { usePluginStore } from '../../store';
 import {
@@ -19,6 +20,7 @@ import {
   Library,
   Box,
   Zap,
+  Paintbrush,
   ChevronDown,
   ChevronRight,
   Layers
@@ -60,6 +62,11 @@ export function BrandTab() {
         {/* ── Operations ── */}
         <BrandSection title="Operations" icon={Zap} badge="AUTO" collapsible defaultOpen={true}>
           <BrandOperationsSection />
+        </BrandSection>
+
+        {/* ── Color Cleanup ── */}
+        <BrandSection title="Color Cleanup" icon={Paintbrush} collapsible defaultOpen={false}>
+          <ColorCleanupSection />
         </BrandSection>
 
         {/* ── Intelligence ── */}

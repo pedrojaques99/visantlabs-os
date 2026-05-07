@@ -299,6 +299,50 @@ export const FIGMA_TOOLS: FigmaTool[] = [
     example: { type: 'CREATE_COMPONENT_INSTANCE', componentKey: 'abc-123', name: 'Primary Button' }
   },
   {
+    name: 'CREATE_COLOR_VARIABLES_FROM_SELECTION',
+    operationType: 'CREATE_COLOR_VARIABLES_FROM_SELECTION',
+    category: 'ADVANCED',
+    description: 'Extrai as cores dos fills da seleção atual e cria variáveis de cor no library do Figma, usando o nome de cada camada como nome da variável. Batch: processa todos os elementos selecionados de uma vez.',
+    schema: {
+      type: 'object',
+      properties: {
+        collectionName: { type: 'string', description: 'Nome da coleção de variáveis (padrão: "Colors")' }
+      },
+      required: []
+    },
+    example: { type: 'CREATE_COLOR_VARIABLES_FROM_SELECTION', collectionName: 'Brand Colors' }
+  },
+  {
+    name: 'BIND_NEAREST_COLOR_VARIABLES',
+    operationType: 'BIND_NEAREST_COLOR_VARIABLES',
+    category: 'ADVANCED',
+    description: 'Percorre nós recursivamente e vincula cada fill/stroke hardcoded à variável de cor mais próxima por distância RGB. Substitui cores hardcoded por tokens do design system.',
+    schema: {
+      type: 'object',
+      properties: {
+        threshold: { type: 'number', description: 'Distância máxima para match (0-1, padrão: 0.05)' },
+        scope: { type: 'string', enum: ['selection', 'page'], description: 'Escopo (padrão: selection)' },
+        collectionName: { type: 'string', description: 'Filtrar por coleção de variáveis' }
+      },
+      required: []
+    },
+    example: { type: 'BIND_NEAREST_COLOR_VARIABLES', threshold: 0.05, scope: 'selection' }
+  },
+  {
+    name: 'REQUEST_SCAN',
+    operationType: 'REQUEST_SCAN',
+    category: 'ADVANCED',
+    description: 'Solicita scan da página inteira quando os elementos mencionados pelo usuário não estão na seleção atual. O sistema re-envia o comando com contexto completo automaticamente.',
+    schema: {
+      type: 'object',
+      properties: {
+        reason: { type: 'string', description: 'Motivo do scan' }
+      },
+      required: []
+    },
+    example: { type: 'REQUEST_SCAN', reason: 'Frame mencionado não encontrado na seleção' }
+  },
+  {
     name: 'GROUP_NODES',
     operationType: 'GROUP_NODES',
     category: 'STRUCTURE',

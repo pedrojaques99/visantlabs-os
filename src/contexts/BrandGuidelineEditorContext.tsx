@@ -53,7 +53,7 @@ export const LiveblocksEditorProvider: React.FC<LiveblocksEditorProviderProps> =
     setLiveState(state);
   }, []);
 
-  const updateDraft = useMutation(({ storage }, patch: Partial<BrandGuideline>) => {
+  const liveMutation = useMutation(({ storage }, patch: Partial<BrandGuideline>) => {
     const liveGuideline = storage.get('guideline') as import('@liveblocks/client').LiveObject<Record<string, any>> | undefined;
     if (liveGuideline) {
       Object.entries(patch).forEach(([key, value]) => {
@@ -62,6 +62,11 @@ export const LiveblocksEditorProvider: React.FC<LiveblocksEditorProviderProps> =
     }
     onSaveRef.current(patch);
   }, []);
+
+  const updateDraft = useCallback((patch: Partial<BrandGuideline>) => {
+    if (!liveState) return;
+    liveMutation(patch);
+  }, [liveState, liveMutation]);
 
   const { undo, redo } = useHistory();
 

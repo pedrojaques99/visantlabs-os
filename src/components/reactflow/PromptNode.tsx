@@ -6,10 +6,10 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { PromptNodeData } from '@/types/reactFlow';
 import type { GeminiModel, SeedreamModel, AspectRatio, Resolution } from '@/types/types';
 import { cn } from '@/lib/utils';
-import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel as isAdvancedModelFn, getMaxHandles } from '@/constants/geminiModels';
+import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, getMaxHandles } from '@/constants/geminiModels';
 import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
 import { isOpenAIImageModel } from '@/constants/openaiModels';
-import { resolveProvider } from '@/utils/canvas/generationContext';
+import { resolveProvider, supportsOutputConfig } from '@/utils/canvas/generationContext';
 import { PromptInput } from '@/components/PromptInput';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { NodeContainer } from './shared/NodeContainer';
@@ -90,8 +90,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const promptSuggestions = nodeData.promptSuggestions || [];
   const isSeedream = isSeedreamModel(model);
   const isOpenAI = isOpenAIImageModel(model);
-  const isAdvanced = !isSeedream && !isOpenAI && isAdvancedModelFn(model as GeminiModel);
-  const effectiveResolution = (isSeedream || isOpenAI) ? resolution : (isAdvanced ? resolution : undefined);
+  const hasOutputConfig = supportsOutputConfig(model);
+  const effectiveResolution = hasOutputConfig ? resolution : undefined;
   const provider = resolveProvider(model);
   const creditsRequired = getCreditsRequired(model, effectiveResolution, provider);
 
@@ -190,10 +190,10 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     } else if (!connectedImage2) {
       updates.connectedImage2 = url;
       slotFound = true;
-    } else if (isAdvanced && !connectedImage3 && maxHandles >= 3) {
+    } else if (!connectedImage3 && maxHandles >= 3) {
       updates.connectedImage3 = url;
       slotFound = true;
-    } else if (isAdvanced && !connectedImage4 && maxHandles >= 4) {
+    } else if (!connectedImage4 && maxHandles >= 4) {
       updates.connectedImage4 = url;
       slotFound = true;
     }
@@ -226,8 +226,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     if (nodeData.onUpdateData) {
       const updates: Partial<PromptNodeData> = {};
       if (model !== nodeData.model) updates.model = model;
-      if (isAdvanced && aspectRatio !== nodeData.aspectRatio) updates.aspectRatio = aspectRatio;
-      if (isAdvanced && resolution !== nodeData.resolution) updates.resolution = resolution;
+      if (hasOutputConfig && aspectRatio !== nodeData.aspectRatio) updates.aspectRatio = aspectRatio;
+      if (hasOutputConfig && resolution !== nodeData.resolution) updates.resolution = resolution;
 
       if (Object.keys(updates).length > 0) {
         nodeData.onUpdateData(id, updates);
@@ -257,7 +257,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     if (nodeData.connectedImage2 && !brandCoreImages.includes(nodeData.connectedImage2)) {
       connectedImages.push(nodeData.connectedImage2);
     }
-    if (isAdvancedModelFn(model)) {
+    if (getMaxHandles(model) >= 3) {
       if (nodeData.connectedImage3 && !brandCoreImages.includes(nodeData.connectedImage3)) {
         connectedImages.push(nodeData.connectedImage3);
       }
@@ -695,9 +695,9 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
           {isAdvancedOpen && (
             <div className="p-3 space-y-3 border-t border-neutral-800 bg-neutral-900/50">
-              {!isSeedream && (
+              {hasOutputConfig && (
                 <AdvancedModelSettings
-                  model={model as GeminiModel}
+                  model={model}
                   aspectRatio={aspectRatio}
                   resolution={resolution}
                   onAspectRatioChange={(ratio) => {

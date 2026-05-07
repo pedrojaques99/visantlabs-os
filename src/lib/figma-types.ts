@@ -482,6 +482,22 @@ export type FigmaOperation =
     value: any;
   }
   | {
+    type: 'CREATE_COLOR_VARIABLES_FROM_SELECTION';
+    ref?: string;
+    collectionName?: string;
+  }
+  | {
+    type: 'BIND_NEAREST_COLOR_VARIABLES';
+    ref?: string;
+    threshold?: number;
+    scope?: 'selection' | 'page';
+    collectionName?: string;
+  }
+  | {
+    type: 'REQUEST_SCAN';
+    reason?: string;
+  }
+  | {
     type: 'SET_BLEND_MODE';
     nodeId: string;
     blendMode:
@@ -1027,7 +1043,8 @@ export type UIMessage =
   | { type: 'ILLUSTRATOR_EXPORT' }
   | { type: 'COPY_ILLUSTRATOR_CODE' }
   | { type: 'IMPORT_SELECTION_COMPONENTS' }
-  | { type: 'GET_SELECTION_FILL' };
+  | { type: 'GET_SELECTION_FILL' }
+  | { type: 'GET_COMPONENT_THUMBNAILS'; componentIds?: string[] };
 
 // ── Sandbox → UI messages ──
 

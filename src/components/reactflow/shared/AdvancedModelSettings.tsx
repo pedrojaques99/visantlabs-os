@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { isAdvancedModel } from '@/constants/geminiModels';
+import React from 'react';
+import { supportsOutputConfig } from '@/utils/canvas/generationContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 import { AspectRatioSelector } from './AspectRatioSelector';
@@ -8,7 +8,7 @@ import { NodeLabel } from './node-label';
 import type { GeminiModel, AspectRatio, Resolution } from '@/types/types';
 
 interface AdvancedModelSettingsProps {
-  model: GeminiModel;
+  model: GeminiModel | string;
   aspectRatio: AspectRatio;
   resolution: Resolution;
   onAspectRatioChange: (ratio: AspectRatio) => void;
@@ -20,7 +20,8 @@ interface AdvancedModelSettingsProps {
 }
 
 /**
- * Reusable Advanced Settings component (Aspect Ratio + Resolution) for advanced Models (NB2, PRO).
+ * Reusable Advanced Settings component (Aspect Ratio + Resolution).
+ * Renders for any model that supports output config (Gemini advanced, OpenAI, Seedream).
  */
 export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
   model,
@@ -35,14 +36,11 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  const isAdvanced = isAdvancedModel(model);
-  const isFlash = model === 'gemini-2.5-flash-image'; // GEMINI_MODELS.FLASH
-
-  if (!isAdvanced && !isFlash) return null;
+  if (!supportsOutputConfig(model)) return null;
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <div className={cn(!isAdvanced && "opacity-50 grayscale pointer-events-none")}>
+      <div>
         <NodeLabel className="mb-1.5 text-[10px]">
           {t('canvasNodes.promptNode.aspectRatio')}
         </NodeLabel>
@@ -50,7 +48,7 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
           <AspectRatioSelector
             value={aspectRatio}
             onChange={onAspectRatioChange}
-            disabled={isLoading || !isAdvanced}
+            disabled={isLoading}
             compact
           />
         </div>
@@ -65,7 +63,7 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
             value={resolution}
             onChange={onResolutionChange}
             onModelChange={onModelChange}
-            model={model}
+            model={model as GeminiModel}
             disabled={isLoading}
             compact
             allowVideo={allowVideo}

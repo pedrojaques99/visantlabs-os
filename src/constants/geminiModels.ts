@@ -89,8 +89,8 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     providerDomain: 'google.com',
   },
   [GEMINI_MODELS.FLASH_2_5]: {
-    label: 'Nano Banana 1',
-    emoji: '🍌',
+    label: 'Gemini 2.5 Flash',
+    emoji: '⚡',
     maxHandles: 4,
     maxRefImages: 10,
     defaultResolution: undefined,

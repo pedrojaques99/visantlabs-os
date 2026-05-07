@@ -17,12 +17,14 @@ import type { BrandGuideline } from '../types/brandGuideline.js';
 import {
   assemblePrompt,
   buildRetryFeedback,
+  refineIntentWithLLM,
   type AssembledPrompt,
   type ClassifiedIntent,
+  type EnrichedIntent,
 } from './prompt/index.js';
 
 // Re-export AI-first utilities
-export { assemblePrompt, buildRetryFeedback, type AssembledPrompt, type ClassifiedIntent };
+export { assemblePrompt, buildRetryFeedback, refineIntentWithLLM, type AssembledPrompt, type ClassifiedIntent, type EnrichedIntent };
 
 // ============ Interfaces ============
 
@@ -64,6 +66,7 @@ export interface PluginRequest {
   // UI Components selected in plugin Brand tab
   selectedUIComponents?: Record<string, { key: string; name: string }>;
   useBrand?: boolean;
+  generateImage?: boolean;
 }
 
 export interface DesignSystemJSON {
@@ -263,7 +266,9 @@ export function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thin
   fmtLogo('Light', logos.light || req.selectedLogo);
   fmtLogo('Dark', logos.dark);
   fmtLogo('Accent', logos.accent);
-  const logoInfo = logoLines.length > 0 ? '\n' + logoLines.join('\n') : 'Nenhum selecionado';
+  const logoInfo = logoLines.length > 0
+    ? '\n' + logoLines.join('\n') + '\n  → Para inserir um logo, use CREATE_COMPONENT_INSTANCE com o "key" acima como "componentKey". Posicione com x/y e dimensione com width/height.'
+    : 'Nenhum selecionado';
 
   // Build font info — family-first with available weights
   const fonts = req.brandFonts || {};
@@ -332,7 +337,10 @@ export function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thin
   const containerTypes = new Set(['FRAME', 'COMPONENT', 'COMPONENT_SET', 'GROUP', 'SECTION']);
   const selectedContainers = selectedNodes
     .filter((n: any) => containerTypes.has(n.type))
-    .map((n: any) => `- "${n.name}" (id: "${n.id}", type: ${n.type})`);
+    .map((n: any) => {
+      const dims = (n.width != null && n.height != null) ? `, ${Math.round(n.width)}×${Math.round(n.height)}` : '';
+      return `- "${n.name}" (id: "${n.id}", type: ${n.type}${dims})`;
+    });
   const containersHint = selectedContainers.length > 0
     ? selectedContainers.join('\n')
     : 'Nenhum (criação vai para a página raiz)';
@@ -565,24 +573,31 @@ Prompt: "Cria um card de perfil com avatar, nome e descrição"
 export function buildSystemPromptV2(
   req: PluginRequest,
   chatHistory?: string,
+  previousErrors?: string[],
 ): AssembledPrompt {
+  const useBrand = req.useBrand !== false;
   return assemblePrompt({
     command: req.command,
     selectedElements: req.selectedElements,
-    brandColors: req.useBrand !== false ? req.selectedBrandColors : undefined,
-    brandFonts: (req.useBrand !== false && req.brandFonts) ? {
+    brandColors: useBrand ? req.selectedBrandColors : undefined,
+    brandFonts: (useBrand && req.brandFonts) ? {
       primary: req.brandFonts.primary ?? undefined,
       secondary: req.brandFonts.secondary ?? undefined,
     } : undefined,
-    brandLogos: (req.useBrand !== false && req.brandLogos) ? {
+    brandLogos: (useBrand && req.brandLogos) ? {
       light: req.brandLogos.light ?? undefined,
       dark: req.brandLogos.dark ?? undefined,
     } : undefined,
+    brandTokens: useBrand ? (req.designTokens || req.brandGuideline?.tokens) : undefined,
+    brandVoice: useBrand ? req.brandGuideline?.guidelines?.voice : undefined,
+    brandDos: useBrand ? req.brandGuideline?.guidelines?.dos : undefined,
+    brandDonts: useBrand ? req.brandGuideline?.guidelines?.donts : undefined,
     availableComponents: req.availableComponents,
     colorVariables: req.availableColorVariables,
     chatHistory,
     thinkMode: req.thinkMode,
     useBrand: req.useBrand,
+    previousErrors,
   });
 }
 

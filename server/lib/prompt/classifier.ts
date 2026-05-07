@@ -1,12 +1,17 @@
 /**
  * AI-First Prompt System - Intent Classifier
  *
- * Fast keyword-based classification (no LLM call needed).
- * Determines what modules to inject into the prompt.
+ * Two-tier classification:
+ * 1. Fast keyword-based (always runs, ~0ms)
+ * 2. Optional LLM pre-pass (runs when confidence < threshold, ~200ms with Flash Lite)
+ *
+ * The LLM pre-pass extracts structured params (source frame, count, modifications)
+ * that keyword matching can't capture.
  */
 
 import type { ClassifiedIntent, IntentType, ComplexityLevel } from './types.js';
 import { detectFormat } from './presets.js';
+import { COLOR_SPEC_PATTERNS } from './modules/color-spec.js';
 
 // Keyword patterns for intent detection
 const INTENT_PATTERNS: Record<IntentType, RegExp[]> = {
@@ -17,6 +22,8 @@ const INTENT_PATTERNS: Record<IntentType, RegExp[]> = {
   edit: [
     /\b(edita|editar|muda|mudar|altera|alterar|troca|trocar|modifica|modificar|ajusta|ajustar|atualiza|atualizar)\b/i,
     /\b(edit|change|modify|update|adjust|fix|alter)\b/i,
+    /\b(dark|light|claro|escuro)\s*(mode|modo|tema|theme)?\b/i,
+    /\b(invert|inverter|inverte)\b/i,
   ],
   clone: [
     /\b(clona|clonar|duplica|duplicar|copia|copiar|replica|replicar)\b/i,
@@ -124,6 +131,9 @@ export function classifyIntent(
   // Check if chart/data visualization
   const isChart = CHART_PATTERNS.some(p => p.test(normalized));
 
+  // Check if color specification request
+  const isColorSpec = COLOR_SPEC_PATTERNS.some(p => p.test(normalized));
+
   // Check if needs dimensions (unknown format + dimension-needing keywords)
   const needsDimensions =
     format === 'unknown' &&
@@ -142,9 +152,23 @@ export function classifyIntent(
     hasSelection,
     isTemplate,
     isChart,
+    isColorSpec,
     keywords,
   };
 }
+
+// Short commands that are design actions, not chat
+const SHORT_ACTION_PATTERNS = [
+  /\b(dark|light|invert)\s*(mode|tema|theme)?\b/i,
+  /\b(bold|italic|uppercase|lowercase)\b/i,
+  /\b(red|blue|green|black|white|gray|grey)\s*(bg|background|fill|text|cor)?\b/i,
+  /\b(bg|fill|stroke|border|shadow|opacity|radius)\b/i,
+  /\b(align|center|left|right|top|bottom)\b/i,
+  /\b(resize|scale|rotate|flip|crop)\b/i,
+  /\b(hide|show|lock|unlock|group|ungroup)\b/i,
+  /\b(copy|paste|duplicate|delete|remove)\b/i,
+  /\b(undo|redo|reset)\b/i,
+];
 
 /**
  * Quick check if prompt is just chat (no design intent)
@@ -152,8 +176,11 @@ export function classifyIntent(
 export function isChatOnly(prompt: string): boolean {
   const normalized = prompt.toLowerCase().trim();
 
-  // Very short messages are usually chat
-  if (normalized.length < 10) return true;
+  // Very short messages are usually chat — unless they match known design actions
+  if (normalized.length < 10) {
+    if (SHORT_ACTION_PATTERNS.some(p => p.test(normalized))) return false;
+    return true;
+  }
 
   // Greetings
   if (/^(oi|ola|olá|hey|hello|hi|bom dia|boa tarde|boa noite|e ai|eai)/i.test(normalized)) {
@@ -169,4 +196,54 @@ export function isChatOnly(prompt: string): boolean {
   }
 
   return false;
+}
+
+// ── LLM Pre-pass for ambiguous intents ──
+
+export interface EnrichedIntent extends ClassifiedIntent {
+  sourceFrame?: string;
+  cloneCount?: number;
+  modifications?: string[];
+  llmRefined?: boolean;
+}
+
+const LLM_CONFIDENCE_THRESHOLD = 0.65;
+
+/**
+ * Optionally refine intent via lightweight LLM call.
+ * Only fires when keyword confidence is low (ambiguous prompts).
+ * Returns enriched intent with structured params.
+ */
+export async function refineIntentWithLLM(
+  baseIntent: ClassifiedIntent,
+  prompt: string,
+  selectionNames: string[],
+  llmCall: (systemPrompt: string, userPrompt: string) => Promise<string>,
+): Promise<EnrichedIntent> {
+  if (baseIntent.confidence >= LLM_CONFIDENCE_THRESHOLD) {
+    return { ...baseIntent, llmRefined: false };
+  }
+
+  try {
+    const system = `Classify this Figma plugin command. Return JSON only:
+{"intent":"create"|"edit"|"clone"|"arrange"|"chat","sourceFrame":"name or null","cloneCount":number|null,"modifications":["list of changes"]|null}`;
+
+    const user = `Command: "${prompt}"
+Selected frames: [${selectionNames.slice(0, 5).map(n => `"${n}"`).join(', ')}]`;
+
+    const result = await llmCall(system, user);
+    const parsed = JSON.parse(result);
+
+    return {
+      ...baseIntent,
+      intent: parsed.intent || baseIntent.intent,
+      sourceFrame: parsed.sourceFrame || undefined,
+      cloneCount: parsed.cloneCount || undefined,
+      modifications: parsed.modifications || undefined,
+      confidence: Math.max(baseIntent.confidence, 0.85),
+      llmRefined: true,
+    };
+  } catch {
+    return { ...baseIntent, llmRefined: false };
+  }
 }

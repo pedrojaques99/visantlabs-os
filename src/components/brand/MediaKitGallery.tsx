@@ -55,6 +55,34 @@ const classifyFile = (file: File): 'logo' | 'media' => {
     return 'media';
 };
 
+const detectFormat = (url: string): string => {
+    const clean = url.split('?')[0].toLowerCase();
+    if (clean.endsWith('.svg')) return 'SVG';
+    if (clean.endsWith('.png')) return 'PNG';
+    if (clean.endsWith('.jpg') || clean.endsWith('.jpeg')) return 'JPG';
+    if (clean.endsWith('.webp')) return 'WEBP';
+    if (clean.endsWith('.gif')) return 'GIF';
+    if (clean.endsWith('.pdf')) return 'PDF';
+    return '';
+};
+
+const FormatBadge: React.FC<{ url: string; className?: string }> = ({ url, className }) => {
+    const fmt = detectFormat(url);
+    if (!fmt) return null;
+    const isSvg = fmt === 'SVG';
+    return (
+        <span className={cn(
+            "absolute text-[7px] font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-[5]",
+            isSvg
+                ? "bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30"
+                : "bg-white/10 text-neutral-400 border border-white/10",
+            className || "top-1 right-1"
+        )}>
+            {fmt}
+        </span>
+    );
+};
+
 const ACCEPTED_IMAGE_TYPES = 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml';
 const ACCEPTED_ALL_TYPES = `${ACCEPTED_IMAGE_TYPES},application/pdf`;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -347,6 +375,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                             draggable={!!onAssetDragStart}
                                             onDragStart={(e) => onAssetDragStart?.(e, logo.url, 'logo')}
                                         />
+                                        <FormatBadge url={logo.url} />
+
                                         <span className={cn(
                                             "absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase",
                                             isSelected && "bg-brand-cyan text-black font-bold"
@@ -426,6 +456,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                                     draggable={!!onAssetDragStart}
                                                     onDragStart={(e) => onAssetDragStart?.(e, item.url, 'image')}
                                                 />
+                                                <FormatBadge url={item.url} className="top-1 left-1" />
                                                 {(item.label || item.category) && (
                                                     <span className={cn(
                                                         "absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 truncate px-1 flex items-center justify-center gap-1",

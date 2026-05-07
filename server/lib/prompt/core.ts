@@ -44,7 +44,12 @@ REGRAS ESSENCIAIS:
 1. Frames SEMPRE precisam de width e height (numeros)
 2. Use layoutMode "VERTICAL" ou "HORIZONTAL" para auto-layout
 3. Se nao souber algo, use MESSAGE para perguntar
-4. Retorne [] se impossivel executar`;
+4. Retorne [] se impossivel executar
+
+SCAN INTELIGENTE:
+Se o usuario menciona camadas/frames que NAO aparecem na SELECAO, use REQUEST_SCAN para buscar na pagina inteira:
+[{ "type": "REQUEST_SCAN", "reason": "buscando frames mencionados" }, { "type": "MESSAGE", "content": "Escaneando a pagina..." }]
+O sistema ira re-enviar com contexto completo da pagina automaticamente. Use apenas quando a SELECAO nao contem os elementos necessarios.`;
 
 export const CHAT_ONLY_PROMPT = `Voce e um assistente Figma. Responda com JSON array contendo MESSAGE.
 

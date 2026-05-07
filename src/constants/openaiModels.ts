@@ -1,4 +1,4 @@
-import type { Resolution } from '../types/types';
+import type { Resolution, AspectRatio } from '../types/types';
 
 export const OPENAI_IMAGE_MODELS = {
   GPT_IMAGE_1: 'gpt-image-1' as const,
@@ -24,7 +24,7 @@ export interface OpenAIImageModelConfig {
   providerDomain: string;
 }
 
-/** Maps our Resolution tokens to OpenAI size strings */
+/** Maps our Resolution tokens to OpenAI size strings (square fallback) */
 export const OPENAI_SIZE_MAP: Record<Resolution, string> = {
   '512px': '1024x1024',
   'HD':    '1024x1024',
@@ -34,6 +34,38 @@ export const OPENAI_SIZE_MAP: Record<Resolution, string> = {
   '720p':  '1024x1024',
   '1080p': '1536x1024',
 };
+
+type Orientation = 'landscape' | 'portrait' | 'square';
+
+const LANDSCAPE_RATIOS: AspectRatio[] = ['16:9', '4:3', '3:2', '21:9'];
+const PORTRAIT_RATIOS: AspectRatio[] = ['9:16', '3:4', '2:3', '4:5'];
+
+function getOrientation(aspectRatio?: AspectRatio): Orientation {
+  if (!aspectRatio || aspectRatio === '1:1' || aspectRatio === '5:4') return 'square';
+  if (LANDSCAPE_RATIOS.includes(aspectRatio)) return 'landscape';
+  if (PORTRAIT_RATIOS.includes(aspectRatio)) return 'portrait';
+  return 'square';
+}
+
+const OPENAI_ORIENTED_SIZE: Record<Resolution, Record<Orientation, string>> = {
+  '512px': { square: '1024x1024', landscape: '1024x1024', portrait: '1024x1024' },
+  'HD':    { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
+  '1K':    { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
+  '2K':    { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
+  '4K':    { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
+  '720p':  { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
+  '1080p': { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
+};
+
+/**
+ * Resolve OpenAI size from resolution + aspect ratio.
+ * Aspect ratio determines orientation (landscape/portrait/square),
+ * then maps to the correct OpenAI size string.
+ */
+export function resolveOpenAISize(resolution: Resolution, aspectRatio?: AspectRatio): string {
+  const orientation = getOrientation(aspectRatio);
+  return OPENAI_ORIENTED_SIZE[resolution]?.[orientation] ?? '1024x1024';
+}
 
 /** Maps our Resolution tokens to OpenAI quality strings */
 export const OPENAI_QUALITY_MAP: Record<Resolution, 'low' | 'medium' | 'high'> = {

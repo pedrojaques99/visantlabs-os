@@ -17,3 +17,10 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } {
     b: parseInt(clean.slice(4, 6), 16) / 255,
   };
 }
+
+export function colorDistance(
+  a: { r: number; g: number; b: number },
+  b: { r: number; g: number; b: number },
+): number {
+  return Math.sqrt((a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2);
+}

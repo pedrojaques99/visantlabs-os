@@ -620,7 +620,7 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
     const session = await getSession(req.params.id, req.userId!);
     if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
 
-    const { message, planMode, textMode } = req.body;
+    const { message, planMode, textMode, imageModel, aspectRatio, resolution } = req.body;
     if (!message) return res.status(400).json({ error: 'message required' });
 
     const userApiKey = await getGeminiApiKey(req.userId!).catch(() => undefined);
@@ -670,12 +670,18 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
     );
 
     // 6. Execute tool calls in parallel
-    // Propagate request-level textMode into every generate_or_update_mockup call
-    const resolvedToolCalls = (toolCalls || []).map(tc =>
-      tc.name === 'generate_or_update_mockup' && textMode
-        ? { ...tc, args: { ...tc.args, textMode } }
-        : tc
-    );
+    // Propagate request-level overrides into every generate_or_update_mockup call
+    const resolvedToolCalls = (toolCalls || []).map(tc => {
+      if (tc.name !== 'generate_or_update_mockup') return tc;
+      const overrides: Record<string, string> = {};
+      if (textMode) overrides.textMode = textMode;
+      if (imageModel) overrides.model = imageModel;
+      if (aspectRatio) overrides.aspectRatio = aspectRatio;
+      if (resolution) overrides.resolution = resolution;
+      return Object.keys(overrides).length > 0
+        ? { ...tc, args: { ...tc.args, ...overrides } }
+        : tc;
+    });
     const { reply: rawExecutedReply, creativeProjects, toolsUsed, toolCallRecords } =
       await executeToolCalls(rawReply, resolvedToolCalls, session, req.userId!, req.headers.authorization || '');
     // Fallback reply when agent only proposed a plan (no text output)

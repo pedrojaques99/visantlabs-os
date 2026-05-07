@@ -717,12 +717,20 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       aspectRatio,
       referenceImages,
       feature, // Optional: 'mockupmachine' | 'canvas'
-      provider = 'gemini', // 'gemini' | 'seedream' | 'openai'
+      provider: rawProvider = 'gemini', // 'gemini' | 'seedream' | 'openai'
       width, // Optional: custom width in pixels (for Figma plugin)
       height, // Optional: custom height in pixels (for Figma plugin)
       brandGuidelineId, // Optional: brand guideline ID for context injection
       seed: rawSeed, // Optional: seed for deterministic generation
     } = req.body;
+
+    // Auto-infer provider from model when caller omits it
+    let provider = rawProvider;
+    if (provider === 'gemini' && isOpenAIImageModel(model)) {
+      provider = 'openai';
+    } else if (provider === 'gemini' && isSeedreamModel(model)) {
+      provider = 'seedream';
+    }
 
     // Validate seed: must be a non-negative integer within Int32 range
     const validSeed = (typeof rawSeed === 'number' && Number.isInteger(rawSeed) && rawSeed >= 0 && rawSeed <= 2_147_483_647)
@@ -1047,7 +1055,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
             console.error(`${logPrefix} [API KEY] Failed to decrypt Seedream key:`, decryptError);
           }
         }
-      } else if (provider === 'openai') {
+      } else if (provider === 'openai' || isOpenAIImageModel(model)) {
         // Check for OpenAI API Key (user BYOK) via helper — never access raw key field directly
         const { getOpenAiApiKey } = await import('../utils/openAiApiKey.js');
         userApiKey = await getOpenAiApiKey(req.userId!, { skipFallback: true });

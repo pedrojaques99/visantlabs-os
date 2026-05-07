@@ -19,10 +19,10 @@ describe('MCP Generator', () => {
       expect(Array.isArray(spec.tools)).toBe(true);
     });
 
-    it('should include all 15 MCP tools', () => {
+    it('should include all 18 MCP tools', () => {
       const spec = generateMCPSpec();
 
-      expect(spec.tools.length).toBe(15);
+      expect(spec.tools.length).toBe(18);
 
       // generateMCPSpec lowercases all tool names from the registry
       const toolNames = spec.tools.map((t) => t.name);
@@ -41,6 +41,9 @@ describe('MCP Generator', () => {
       expect(toolNames).toContain('create_component_instance');
       expect(toolNames).toContain('group_nodes');
       expect(toolNames).toContain('set_text_style');
+      expect(toolNames).toContain('create_color_variables_from_selection');
+      expect(toolNames).toContain('bind_nearest_color_variables');
+      expect(toolNames).toContain('request_scan');
     });
 
     it('should include proper tool structure', () => {
@@ -105,7 +108,7 @@ describe('MCP Generator', () => {
       const spec = generateMCPSpec();
       const count = countMCPTools(spec);
 
-      expect(count).toBe(15);
+      expect(count).toBe(18);
     });
 
     it('should throw ValidationError for invalid spec', () => {

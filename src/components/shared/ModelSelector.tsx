@@ -3,9 +3,9 @@ import {
   CHAT_MODELS,
   MODEL_CONFIG,
   AVAILABLE_IMAGE_MODELS,
-  isAdvancedModel,
   getModelConfig
 } from '../../constants/geminiModels';
+import { supportsOutputConfig, resolveGenerationContext } from '@/utils/canvas/generationContext';
 import {
   SEEDREAM_IMAGE_MODELS,
   SEEDREAM_MODEL_CONFIG,
@@ -67,7 +67,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         const config = MODEL_CONFIG[modelId];
         if (!config) return null;
 
-        const effectiveResolution = isAdvancedModel(modelId as GeminiModel)
+        const effectiveResolution = supportsOutputConfig(modelId)
           ? (selectedModel === modelId ? resolution : config?.defaultResolution)
           : undefined;
 

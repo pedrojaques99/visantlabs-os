@@ -1,15 +1,34 @@
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { usePluginStore } from '../../store';
 import { useServerStatus } from '../../hooks/useServerStatus';
 import { Button } from '@/components/ui/button';
 import { Settings, Pickaxe, User as UserIcon } from 'lucide-react';
 
 export function Header() {
-  const { setActiveView, credits, activeView, userInfo } = usePluginStore();
+  const { setActiveView, credits, activeView, userInfo, toggleDevMode, devMode } = usePluginStore();
   const { isConnected } = useServerStatus();
+  const clickCount = useRef(0);
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTitleClick = useCallback(() => {
+    clickCount.current++;
+    if (clickTimer.current) clearTimeout(clickTimer.current);
+    if (clickCount.current >= 5) {
+      clickCount.current = 0;
+      toggleDevMode();
+    } else {
+      clickTimer.current = setTimeout(() => { clickCount.current = 0; }, 800);
+    }
+  }, [toggleDevMode]);
 
   return (
-    <header className="border-b border-border bg-card px-4 py-3 flex items-center justify-end">
+    <header className="border-b border-border bg-card px-4 py-3 flex items-center justify-between">
+      <span
+        className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground select-none cursor-default"
+        onClick={handleTitleClick}
+      >
+        Visant Copilot{devMode ? ' ⚡' : ''}
+      </span>
 
       <div className="flex items-center gap-3">
         {/* Server Status Indicator */}
