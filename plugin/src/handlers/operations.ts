@@ -6,6 +6,15 @@ import { ensurePagesLoaded, setPagesLoaded, setCanUndo, DEFAULT_FONT } from '../
 import { serializeNode, serializeSelection } from '../utils/serialize';
 import { colorDistance } from '../utils/colors';
 
+const AXIS_ALIGN_MAP: Record<string, string> = {
+  START: 'MIN', END: 'MAX', FLEX_START: 'MIN', FLEX_END: 'MAX',
+  start: 'MIN', end: 'MAX', flex_start: 'MIN', flex_end: 'MAX',
+};
+function normalizeAxisAlign(v: string | undefined, fallback: string = 'MIN'): 'MIN' | 'MAX' | 'CENTER' | 'SPACE_BETWEEN' {
+  if (!v) return fallback as any;
+  return (AXIS_ALIGN_MAP[v] ?? v) as any;
+}
+
 /**
  * Summary item for operation results
  */
@@ -485,8 +494,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       frame.layoutMode = props.layoutMode;
       frame.primaryAxisSizingMode = props.primaryAxisSizingMode ?? 'FIXED';
       frame.counterAxisSizingMode = props.counterAxisSizingMode ?? 'FIXED';
-      frame.primaryAxisAlignItems = props.primaryAxisAlignItems ?? 'MIN';
-      frame.counterAxisAlignItems = props.counterAxisAlignItems ?? 'MIN';
+      frame.primaryAxisAlignItems = normalizeAxisAlign(props.primaryAxisAlignItems, 'MIN');
+      frame.counterAxisAlignItems = normalizeAxisAlign(props.counterAxisAlignItems, 'MIN');
       frame.itemSpacing = props.itemSpacing ?? 0;
       if (props.counterAxisSpacing != null && 'counterAxisSpacing' in frame) {
         (frame as any).counterAxisSpacing = props.counterAxisSpacing;
@@ -841,8 +850,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       node.layoutMode = op.layoutMode;
       if (op.primaryAxisSizingMode) node.primaryAxisSizingMode = op.primaryAxisSizingMode;
       if (op.counterAxisSizingMode) node.counterAxisSizingMode = op.counterAxisSizingMode;
-      if (op.primaryAxisAlignItems) node.primaryAxisAlignItems = op.primaryAxisAlignItems;
-      if (op.counterAxisAlignItems) node.counterAxisAlignItems = op.counterAxisAlignItems;
+      if (op.primaryAxisAlignItems) node.primaryAxisAlignItems = normalizeAxisAlign(op.primaryAxisAlignItems);
+      if (op.counterAxisAlignItems) node.counterAxisAlignItems = normalizeAxisAlign(op.counterAxisAlignItems);
       if (op.layoutWrap) node.layoutWrap = op.layoutWrap;
       if (op.itemSpacing != null) node.itemSpacing = op.itemSpacing;
       if (op.counterAxisSpacing != null && 'counterAxisSpacing' in node) {
@@ -1195,8 +1204,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       comp.layoutMode = op.props.layoutMode;
       comp.primaryAxisSizingMode = op.props.primaryAxisSizingMode ?? 'AUTO';
       comp.counterAxisSizingMode = op.props.counterAxisSizingMode ?? 'AUTO';
-      comp.primaryAxisAlignItems = op.props.primaryAxisAlignItems ?? 'MIN';
-      comp.counterAxisAlignItems = op.props.counterAxisAlignItems ?? 'MIN';
+      comp.primaryAxisAlignItems = normalizeAxisAlign(op.props.primaryAxisAlignItems, 'MIN');
+      comp.counterAxisAlignItems = normalizeAxisAlign(op.props.counterAxisAlignItems, 'MIN');
       comp.itemSpacing = op.props.itemSpacing ?? 0;
       comp.paddingTop = op.props.paddingTop ?? 0;
       comp.paddingRight = op.props.paddingRight ?? 0;
