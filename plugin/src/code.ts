@@ -831,7 +831,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         return true; // keep all for apply
       });
 
-      postToUI({ type: 'COLOR_SCAN_RESULTS', matches: deduped });
+      postToUI({ type: 'COLOR_SCAN_RESULTS', matches: deduped.filter((m: any) => m.matchedVariableId) });
     } catch (err) {
       postToUI({ type: 'ERROR', message: `Scan error: ${err instanceof Error ? err.message : String(err)}` });
     }
