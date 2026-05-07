@@ -1241,6 +1241,31 @@ export const CanvasPage: React.FC = () => {
   const handleImportCommunityPreset = useCallback((preset: CommunityPrompt, type: string) => {
     if (!reactFlowInstance) return;
 
+    // Brand assets → create ImageNode with the URL already set
+    if (type === 'brand-asset' && (preset as any).url) {
+      const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+      const nodeId = addImageNode(center);
+      if (nodeId) {
+        const assetUrl = (preset as any).url as string;
+        const assetType = (preset as any).type as string;
+        updateNodeData(nodeId, {
+          mockup: {
+            _id: `brand-${Date.now()}`,
+            imageUrl: assetUrl,
+            imageBase64: '',
+            prompt: assetType === 'logo' ? 'Brand Logo' : 'Brand Asset',
+            designType: assetType === 'logo' ? 'logo' : 'brand-asset',
+            tags: [],
+            brandingTags: [],
+            aspectRatio: '1:1',
+          },
+        });
+        setNodes(nds => nds.map(n => ({ ...n, selected: n.id === nodeId })));
+        toast.success('Brand asset added to canvas');
+      }
+      return;
+    }
+
     // Determine target category/type
     const targetCategory = type === 'all' ? (preset.category || 'presets') : type;
     const presetType = preset.presetType || (targetCategory !== 'presets' ? targetCategory : null);
@@ -1283,7 +1308,7 @@ export const CanvasPage: React.FC = () => {
       // Select the new node
       setNodes(nds => nds.map(n => ({ ...n, selected: n.id === nodeId })));
     }
-  }, [reactFlowInstance, addMockupNode, addAngleNode, addTextureNode, addAmbienceNode, addLuminanceNode, addPromptNode, updateNodeData, setNodes, t]);
+  }, [reactFlowInstance, addMockupNode, addAngleNode, addTextureNode, addAmbienceNode, addLuminanceNode, addPromptNode, addImageNode, updateNodeData, setNodes, t]);
 
 
   // Register handleSavePrompt in handlersRef for new nodes
