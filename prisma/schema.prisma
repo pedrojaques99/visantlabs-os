@@ -516,8 +516,10 @@ model BrandGuideline {
   folder     String?   // User-defined folder for grouping guidelines
 
   // Public sharing
-  publicSlug String?    // Handled by sparse index manually
-  isPublic   Boolean  @default(false)
+  publicSlug   String?    // Handled by sparse index manually
+  isPublic     Boolean  @default(false)
+  publicViews  Int      @default(0)
+  lastViewedAt DateTime?
 
   // Collaborative editing — arrays of userId strings
   canEdit    Json?    // string[] — users with edit access

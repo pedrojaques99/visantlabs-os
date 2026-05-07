@@ -402,6 +402,43 @@ router.get('/debug/sessions', authenticate, async (req: AuthRequest, res: Respon
   }
 });
 
+/**
+ * GET /api/plugin/session/:id/messages
+ * Restore chat history for a plugin session (used on plugin reopen)
+ */
+router.get('/session/:id/messages', optionalAuth, async (req: AuthRequest, res: Response) => {
+  const sessionId = req.params.id;
+  if (!sessionId || !isSafeId(sessionId)) {
+    return res.status(400).json({ error: 'Invalid session ID' });
+  }
+  try {
+    const db = getDb();
+    const session = await db.collection<any>('plugin_sessions').findOne({ _id: sessionId });
+    if (!session) return res.json({ messages: [], sessionContext: null });
+
+    const msgs = session.messages || [];
+    const totalChars = msgs.reduce((sum: number, m: any) => sum + (m.content?.length || 0), 0);
+    res.json({
+      messages: msgs.slice(-50).map((m: any) => ({
+        id: m.id || `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        role: m.role,
+        content: m.content,
+        timestamp: m.timestamp ? new Date(m.timestamp).getTime() : Date.now(),
+        operations: m.operations,
+        toolCalls: m.toolCalls,
+      })),
+      sessionContext: {
+        messageCount: msgs.length,
+        tokenEstimate: Math.ceil(totalChars / 4),
+        contextLimit: 80_000,
+      },
+    });
+  } catch (err) {
+    console.error('[Plugin] Session restore error:', err);
+    res.status(500).json({ error: 'Failed to restore session' });
+  }
+});
+
 // ============ Documentation Route ============
 
 /**
@@ -610,6 +647,39 @@ router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res
       }
     }
 
+    // ═══ Load session history ═══
+    let streamChatHistory = '';
+    if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
+      try {
+        const db = getDb();
+        const session = await db.collection<any>('plugin_sessions').findOneAndUpdate(
+          { _id: sessionId },
+          { $set: { updatedAt: new Date(), fileId }, $setOnInsert: { createdAt: new Date(), messages: [], context: {} } },
+          { upsert: true, returnDocument: 'after' },
+        );
+        if (session?.messages?.length > 0) {
+          const msgs = session.messages as Array<{ role: string; content: string }>;
+          const HISTORY_TOKEN_BUDGET = 12_000;
+          const tail = msgs.slice(-4);
+          const older = msgs.slice(0, -4);
+          const tailTokens = tail.reduce((s, m) => s + Math.ceil((m.content?.length || 0) / 4), 0);
+          let budget = HISTORY_TOKEN_BUDGET - tailTokens;
+          const included: typeof msgs = [];
+          for (let i = older.length - 1; i >= 0 && budget > 0; i--) {
+            const t = Math.ceil((older[i].content?.length || 0) / 4);
+            if (t > budget) break;
+            included.unshift(older[i]);
+            budget -= t;
+          }
+          streamChatHistory = [...included, ...tail]
+            .map((m) => `[${(m.role || 'user').toUpperCase()}]: ${m.content}`)
+            .join('\n');
+        }
+      } catch (e) {
+        console.error('[Plugin:Stream] Session load error:', e);
+      }
+    }
+
     // ═══ Phase 1: Tool Pre-Pass ═══
     // Ask LLM if it needs any tools before generating Figma operations
     let enrichedContext = '';
@@ -795,7 +865,7 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
         attachments, mentions, designSystem: designSystem || null,
         brandGuideline: brandGuideline || undefined, thinkMode,
       },
-      '', // chat history handled separately
+      streamChatHistory,
       previousErrors.length > 0 ? previousErrors : undefined,
     );
 
@@ -1112,11 +1182,23 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           { upsert: true, returnDocument: 'after' }
         );
 
-        // Build chat history from last 10 messages (FASE 3)
+        // Build chat history with adaptive token budget
         if (session && session.messages && session.messages.length > 0) {
-          chatHistory = session.messages
-            .slice(-10)
-            .map((m: any) => `[${m.role.toUpperCase()}]: ${m.content}`)
+          const msgs = session.messages as Array<{ role: string; content: string }>;
+          const HISTORY_TOKEN_BUDGET = 12_000;
+          const tail = msgs.slice(-4);
+          const older = msgs.slice(0, -4);
+          const tailTokens = tail.reduce((s, m) => s + Math.ceil((m.content?.length || 0) / 4), 0);
+          let budget = HISTORY_TOKEN_BUDGET - tailTokens;
+          const included: typeof msgs = [];
+          for (let i = older.length - 1; i >= 0 && budget > 0; i--) {
+            const t = Math.ceil((older[i].content?.length || 0) / 4);
+            if (t > budget) break;
+            included.unshift(older[i]);
+            budget -= t;
+          }
+          chatHistory = [...included, ...tail]
+            .map((m) => `[${(m.role || 'user').toUpperCase()}]: ${m.content}`)
             .join('\n');
         }
       } catch (sessionError) {

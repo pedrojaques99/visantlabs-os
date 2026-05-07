@@ -19,7 +19,7 @@ import { DesignSystemValidation } from '@/components/brand/guidelines/DesignSyst
 import { ShareGuidelineDialog } from '@/components/brand/guidelines/ShareGuidelineDialog';
 import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButton';
 import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandCompletenessPill';
-import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck, Zap } from 'lucide-react';
+import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck, Zap, Figma, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -95,6 +95,7 @@ export const BrandGuidelinesPage: React.FC = () => {
     const [editingGuideline, setEditingGuideline] = useState<BrandGuideline | null>(null);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
+    const [figmaCopied, setFigmaCopied] = useState(false);
     const [activeTabId, setActiveTabId] = useState(SECTION_TABS[0].id);
     const updateMutation = useUpdateGuideline();
     const queryClient = useQueryClient();
@@ -275,6 +276,21 @@ export const BrandGuidelinesPage: React.FC = () => {
                                     <Button variant="ghost" onClick={() => setIsShareOpen(true)} className="h-8 px-3 gap-1.5 text-xs border border-white/10">
                                         <Share2 size={13} />
                                         <span className="hidden sm:inline">Share</span>
+                                    </Button>
+                                )}
+                                {selected && (
+                                    <Button
+                                        variant="ghost"
+                                        className="h-8 px-3 gap-1.5 text-xs border border-white/10"
+                                        title="Copy guideline ID for the Figma plugin"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(selected.id!);
+                                            setFigmaCopied(true);
+                                            setTimeout(() => setFigmaCopied(false), 2000);
+                                        }}
+                                    >
+                                        {figmaCopied ? <Check size={13} className="text-green-400" /> : <Figma size={13} />}
+                                        <span className="hidden sm:inline">{figmaCopied ? 'Copied!' : 'Use in Figma'}</span>
                                     </Button>
                                 )}
                             </div>

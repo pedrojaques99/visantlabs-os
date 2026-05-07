@@ -23,8 +23,52 @@ import {
   Paintbrush,
   ChevronDown,
   ChevronRight,
-  Layers
+  Layers,
+  CheckCircle2,
+  Circle
 } from 'lucide-react';
+
+function BrandCompletenessBar() {
+  const guideline = usePluginStore((s) => s.brandGuideline);
+  const colors = usePluginStore((s) => s.selectedColors);
+  const logos = usePluginStore((s) => s.logos);
+  const typography = usePluginStore((s) => s.typography);
+  const designSystem = usePluginStore((s) => s.designSystem);
+
+  const steps = [
+    { label: 'Guideline', done: !!guideline },
+    { label: 'Colors', done: colors.size > 0 },
+    { label: 'Logos', done: logos.some(l => l.src || l.url) },
+    { label: 'Typography', done: typography.some(t => t.fontFamily) },
+    { label: 'Tokens', done: !!(designSystem?.tokens && Object.keys(designSystem.tokens).length > 0) },
+  ];
+
+  const completed = steps.filter(s => s.done).length;
+  if (completed === steps.length) return null;
+
+  return (
+    <div className="rounded-lg border border-border/40 bg-card/50 px-3 py-2 mb-3">
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Brand Setup</span>
+        <span className="text-[10px] font-mono text-muted-foreground">{completed}/{steps.length}</span>
+      </div>
+      <div className="h-1 bg-muted rounded-full overflow-hidden mb-2">
+        <div
+          className="h-full bg-brand-cyan rounded-full transition-all"
+          style={{ width: `${(completed / steps.length) * 100}%` }}
+        />
+      </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+        {steps.map(s => (
+          <span key={s.label} className={`flex items-center gap-1 text-[9px] ${s.done ? 'text-brand-cyan' : 'text-muted-foreground/50'}`}>
+            {s.done ? <CheckCircle2 size={8} /> : <Circle size={8} />}
+            {s.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function BrandTab() {
   useBrandAutoSync();
@@ -46,6 +90,8 @@ export function BrandTab() {
   return (
     <div className="flex flex-col h-full -mx-1 px-1">
       <div className="space-y-3 pb-8 flex-1">
+
+        <BrandCompletenessBar />
 
         {/* ── CORE: Contexto ── */}
         <div className="rounded-xl border-2 border-brand-cyan/20 bg-brand-cyan/[0.03] overflow-hidden">

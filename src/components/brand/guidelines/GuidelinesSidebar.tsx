@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Plus, FileText, RefreshCw, Settings, Search, MoreVertical,
-  Copy, Trash2, X, Folder, FolderOpen, Zap,
+  Copy, Trash2, X, Folder, FolderOpen, Zap, Eye,
 } from 'lucide-react';
 import { creativeProjectApi } from '@/services/creativeProjectApi';
 import { toast } from 'sonner';
@@ -171,11 +171,18 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                   <span className="truncate block font-medium">
                     {brandName}
                   </span>
-                  {g.folder && (
-                    <span className="text-[10px] text-neutral-600 flex items-center gap-1 mt-0.5">
-                      <Folder size={8} />{g.folder}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {g.folder && (
+                      <span className="text-[10px] text-neutral-600 flex items-center gap-1">
+                        <Folder size={8} />{g.folder}
+                      </span>
+                    )}
+                    {(g as any).isPublic && (g as any).publicViews > 0 && (
+                      <span className="text-[10px] text-neutral-600 flex items-center gap-0.5" title="Public page views">
+                        <Eye size={8} />{(g as any).publicViews}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   {selectedId === g.id && <div className="w-1 h-1 rounded-full bg-neutral-400" />}
