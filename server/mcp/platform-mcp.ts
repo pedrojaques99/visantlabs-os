@@ -144,6 +144,21 @@ function jsonResponse(data: unknown) {
   };
 }
 
+// ─── Community likes helper ──────────────────────────────────────────────────
+async function getCommunityLikesMap(db: any, presetIds: string[], userId?: string): Promise<Map<string, { likesCount: number; isLikedByUser: boolean }>> {
+  const likes = await db.collection('community_preset_likes').find({ presetId: { $in: presetIds } }).toArray();
+  const map = new Map<string, { likesCount: number; isLikedByUser: boolean }>();
+  presetIds.forEach(id => map.set(id, { likesCount: 0, isLikedByUser: false }));
+  const userOid = userId ? new ObjectId(userId) : null;
+  likes.forEach((like: any) => {
+    const entry = map.get(like.presetId) || { likesCount: 0, isLikedByUser: false };
+    entry.likesCount++;
+    if (userOid && like.userId.equals(userOid)) entry.isLikedByUser = true;
+    map.set(like.presetId, entry);
+  });
+  return map;
+}
+
 /** Base URL for internal API calls (reuses existing route logic for credits, validation, etc.) */
 const INTERNAL_API_BASE = process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3001}`;
 
@@ -1727,27 +1742,265 @@ export function createPlatformMcpServer(): McpServer {
   );
 
   // ═══════════════════════════════════════════
-  // Community (public, no auth needed)
+  // Community
   // ═══════════════════════════════════════════
+
+  const validCategories = ['3d', 'presets', 'aesthetics', 'themes', 'mockup', 'angle', 'texture', 'ambience', 'luminance'] as const;
+  const validPresetTypes = ['mockup', 'angle', 'texture', 'ambience', 'luminance'] as const;
 
   server.tool(
     'community-presets',
-    'Browse community-shared mockup presets. Useful for discovering templates and inspiration. No auth required.',
+    'Browse approved community presets. Filter by category or search by keyword. No auth required.',
     {
       limit: z.number().int().min(1).max(50).default(20).describe('Max presets to return (1-50).'),
       skip: z.number().int().min(0).default(0).describe('Number of items to skip for pagination.'),
+      category: z.enum(validCategories).optional().describe('Filter by category.'),
+      search: z.string().max(200).optional().describe('Search presets by name or tags.'),
+    },
+    async ({ limit, skip, category, search }) => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const filter: any = { isApproved: true };
+        if (category) filter.category = category;
+        if (search) {
+          const regex = { $regex: search, $options: 'i' };
+          filter.$or = [{ name: regex }, { description: regex }, { tags: regex }];
+        }
+        const [presets, total] = await Promise.all([
+          db.collection('community_presets').find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+          db.collection('community_presets').countDocuments(filter),
+        ]);
+        const presetIds = presets.map((p: any) => p.id);
+        const likesData = presetIds.length > 0 ? await getCommunityLikesMap(db, presetIds) : new Map();
+        const enriched = presets.map((p: any) => {
+          const likes = likesData.get(p.id);
+          return { ...p, _id: undefined, likesCount: likes?.likesCount ?? 0 };
+        });
+        return jsonResponse({ presets: enriched, total, page: { limit, skip, hasMore: skip + limit < total } });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'community-preset-get',
+    'Get a single community preset by ID. No auth required.',
+    {
+      id: z.string().min(1).describe('Preset ID.'),
+    },
+    async ({ id }) => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const preset = await db.collection('community_presets').findOne({ id });
+        if (!preset) return ERR.notFound('Preset');
+        const likesData = await getCommunityLikesMap(db, [id]);
+        const likes = likesData.get(id);
+        return jsonResponse({ ...preset, _id: undefined, likesCount: likes?.likesCount ?? 0 });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'community-preset-create',
+    'Create a new community preset. Requires auth. The preset will be publicly visible once approved.',
+    {
+      name: z.string().min(1).max(500).describe('Preset name.'),
+      description: z.string().min(1).max(5000).describe('What this preset does.'),
+      prompt: z.string().min(1).max(50000).describe('The generation prompt.'),
+      category: z.enum(validCategories).describe('Preset category.'),
+      presetType: z.enum(validPresetTypes).optional().describe('Required when category is "presets".'),
+      aspectRatio: z.string().max(20).default('1:1').describe('Aspect ratio (e.g. 1:1, 16:9, 9:16, 4:5).'),
+      model: z.string().max(100).optional().describe('AI model used (e.g. gemini-2.0-flash).'),
+      tags: z.array(z.string().max(50)).max(20).optional().describe('Tags for discoverability.'),
+      referenceImageUrl: z.string().url().max(2000).optional().describe('Reference image URL.'),
+      difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional().describe('Difficulty level.'),
+      context: z.enum(['canvas', 'mockup', 'branding', 'general']).optional().describe('Usage context.'),
+      useCase: z.string().max(1000).optional().describe('Example use case description.'),
+      examples: z.array(z.string().max(2000)).max(5).optional().describe('Example outputs or variations.'),
+    },
+    async ({ name, description, prompt, category, presetType, aspectRatio, model, tags, referenceImageUrl, difficulty, context, useCase, examples }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        if (category === 'presets' && !presetType) {
+          return ERR.validation('presetType is required when category is "presets".');
+        }
+        await connectToMongoDB();
+        const db = getDb();
+        const { nanoid } = await import('nanoid');
+        const id = `preset-${nanoid(12)}`;
+        const now = new Date().toISOString();
+        const preset: any = {
+          id,
+          userId: new ObjectId(currentUserId),
+          category,
+          name,
+          description,
+          prompt,
+          aspectRatio,
+          isApproved: true,
+          createdAt: now,
+          updatedAt: now,
+        };
+        if (presetType) preset.presetType = presetType;
+        if (model) preset.model = model;
+        if (tags && tags.length > 0) preset.tags = tags.map(t => t.trim()).filter(Boolean);
+        if (referenceImageUrl) preset.referenceImageUrl = referenceImageUrl;
+        if (difficulty) preset.difficulty = difficulty;
+        if (context) preset.context = context;
+        if (useCase) preset.useCase = useCase;
+        if (examples && examples.length > 0) preset.examples = examples.map(e => e.trim()).filter(Boolean);
+
+        await db.collection('community_presets').insertOne(preset);
+        return jsonResponse({ created: true, preset: { ...preset, _id: undefined } });
+      } catch (err: any) {
+        if (err.code === 11000) return ERR.validation('A preset with this ID already exists.');
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'community-preset-update',
+    'Update your own community preset. Only provided fields are changed. Requires auth.',
+    {
+      id: z.string().min(1).describe('Preset ID to update.'),
+      name: z.string().min(1).max(500).optional().describe('New name.'),
+      description: z.string().min(1).max(5000).optional().describe('New description.'),
+      prompt: z.string().min(1).max(50000).optional().describe('New prompt.'),
+      category: z.enum(validCategories).optional().describe('New category.'),
+      presetType: z.enum(validPresetTypes).optional().describe('New preset type.'),
+      aspectRatio: z.string().max(20).optional().describe('New aspect ratio.'),
+      model: z.string().max(100).optional().describe('New model.'),
+      tags: z.array(z.string().max(50)).max(20).optional().describe('New tags.'),
+      referenceImageUrl: z.string().url().max(2000).optional().describe('New reference image URL.'),
+      difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+      context: z.enum(['canvas', 'mockup', 'branding', 'general']).optional(),
+      useCase: z.string().max(1000).optional(),
+      examples: z.array(z.string().max(2000)).max(5).optional(),
+    },
+    async ({ id, ...fields }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const preset = await db.collection('community_presets').findOne({ id });
+        if (!preset) return ERR.notFound('Preset');
+        if (preset.userId.toString() !== currentUserId) {
+          return mcpError('FORBIDDEN', 'You can only edit your own presets.');
+        }
+        const update: any = { updatedAt: new Date().toISOString() };
+        if (fields.name !== undefined) update.name = fields.name;
+        if (fields.description !== undefined) update.description = fields.description;
+        if (fields.prompt !== undefined) update.prompt = fields.prompt;
+        if (fields.category !== undefined) update.category = fields.category;
+        if (fields.presetType !== undefined) update.presetType = fields.presetType;
+        if (fields.aspectRatio !== undefined) update.aspectRatio = fields.aspectRatio;
+        if (fields.model !== undefined) update.model = fields.model;
+        if (fields.tags !== undefined) update.tags = fields.tags.map(t => t.trim()).filter(Boolean);
+        if (fields.referenceImageUrl !== undefined) update.referenceImageUrl = fields.referenceImageUrl;
+        if (fields.difficulty !== undefined) update.difficulty = fields.difficulty;
+        if (fields.context !== undefined) update.context = fields.context;
+        if (fields.useCase !== undefined) update.useCase = fields.useCase;
+        if (fields.examples !== undefined) update.examples = fields.examples.map(e => e.trim()).filter(Boolean);
+
+        await db.collection('community_presets').updateOne({ id }, { $set: update });
+        const updated = await db.collection('community_presets').findOne({ id });
+        return jsonResponse({ updated: true, preset: { ...updated, _id: undefined } });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'community-preset-delete',
+    'Delete your own community preset permanently. Requires auth.',
+    {
+      id: z.string().min(1).describe('Preset ID to delete.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const preset = await db.collection('community_presets').findOne({ id });
+        if (!preset) return ERR.notFound('Preset');
+        if (preset.userId.toString() !== currentUserId) {
+          return mcpError('FORBIDDEN', 'You can only delete your own presets.');
+        }
+        await Promise.all([
+          db.collection('community_presets').deleteOne({ id }),
+          db.collection('community_preset_likes').deleteMany({ presetId: id }),
+        ]);
+        return jsonResponse({ deleted: true, id });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'community-preset-like',
+    'Toggle like/unlike on a community preset. Returns updated like count. Requires auth.',
+    {
+      id: z.string().min(1).describe('Preset ID to like/unlike.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const preset = await db.collection('community_presets').findOne({ id });
+        if (!preset) return ERR.notFound('Preset');
+        const userId = new ObjectId(currentUserId);
+        const existing = await db.collection('community_preset_likes').findOne({ presetId: id, userId });
+        if (existing) {
+          await db.collection('community_preset_likes').deleteOne({ presetId: id, userId });
+        } else {
+          await db.collection('community_preset_likes').insertOne({ presetId: id, userId, createdAt: new Date().toISOString() });
+        }
+        const likesCount = await db.collection('community_preset_likes').countDocuments({ presetId: id });
+        return jsonResponse({ liked: !existing, likesCount });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'community-my-presets',
+    'List your own community presets (approved and pending). Requires auth.',
+    {
+      limit: z.number().int().min(1).max(50).default(20).describe('Max presets to return.'),
+      skip: z.number().int().min(0).default(0).describe('Items to skip for pagination.'),
     },
     async ({ limit, skip }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
       try {
+        await connectToMongoDB();
         const db = getDb();
-        const presets = await db
-          .collection('community_presets')
-          .find({ public: true })
-          .skip(skip)
-          .limit(limit)
-          .toArray();
-        const total = await db.collection('community_presets').countDocuments({ public: true });
-        return jsonResponse({ presets, total, page: { limit, skip, hasMore: skip + limit < total } });
+        const filter = { userId: new ObjectId(currentUserId) };
+        const [presets, total] = await Promise.all([
+          db.collection('community_presets').find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+          db.collection('community_presets').countDocuments(filter),
+        ]);
+        const presetIds = presets.map((p: any) => p.id);
+        const likesData = presetIds.length > 0 ? await getCommunityLikesMap(db, presetIds, currentUserId) : new Map();
+        const enriched = presets.map((p: any) => {
+          const likes = likesData.get(p.id);
+          return { ...p, _id: undefined, likesCount: likes?.likesCount ?? 0, isLikedByUser: likes?.isLikedByUser ?? false };
+        });
+        return jsonResponse({ presets: enriched, total, page: { limit, skip, hasMore: skip + limit < total } });
       } catch (err: any) {
         return ERR.internal(err.message);
       }

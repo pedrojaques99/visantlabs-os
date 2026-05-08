@@ -209,9 +209,17 @@ For older clients: \`GET /api/mcp/sse\` (deprecated, use POST /api/mcp)
 - \`creative-projects-get\` — Get creative project with all layers
 - \`creative-generate\` — Generate layered creative layout with brand context (1 credit)
 
-**Community** (no auth required):
-- \`community-presets\` — Browse shared mockup presets (paginated)
-- \`community-profiles\` — Browse public creator profiles (paginated)
+**Community** (public):
+- \`community-presets\` — Browse approved presets with category/search filters
+- \`community-preset-get\` — Get a single preset by ID
+- \`community-profiles\` — Browse public creator profiles
+
+**Community** (auth required):
+- \`community-preset-create\` — Create a new community preset
+- \`community-preset-update\` — Update your own preset
+- \`community-preset-delete\` — Delete your own preset
+- \`community-preset-like\` — Toggle like/unlike on a preset
+- \`community-my-presets\` — List your own presets
 
 ### Error format (MCP tools)
 
