@@ -1347,6 +1347,7 @@
       "generationMode": "Generation Mode",
       "mode": {
         "text_to_video": "Text to Video",
+        "image_to_video": "Image to Video",
         "frames_to_video": "Frames to Video",
         "extend_video": "Extend Video",
         "references": "References"

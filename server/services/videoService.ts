@@ -235,15 +235,22 @@ export const generateVideo = async (
         requestParams.loop = isLooping;
       }
 
-      // Helper to process base64 string
-      const processBase64 = (b64: string) => {
-        if (b64.startsWith('data:')) {
-          const match = b64.match(/^data:([^;]+);base64,(.+)$/);
+      // Helper to process base64 string or URL into { mimeType, data }
+      const processBase64 = async (input: string) => {
+        if (input.startsWith('data:')) {
+          const match = input.match(/^data:([^;]+);base64,(.+)$/);
           if (match) {
             return { mimeType: match[1], data: match[2] };
           }
         }
-        return { mimeType: imageMimeType, data: b64 };
+        if (input.startsWith('http://') || input.startsWith('https://')) {
+          const resp = await fetch(input);
+          if (!resp.ok) throw new Error(`Failed to fetch image from URL: ${resp.status}`);
+          const buffer = Buffer.from(await resp.arrayBuffer());
+          const contentType = resp.headers.get('content-type') || imageMimeType;
+          return { mimeType: contentType.split(';')[0], data: buffer.toString('base64') };
+        }
+        return { mimeType: imageMimeType, data: input };
       };
 
       // Handle Inputs (Veo 3.1)
@@ -253,7 +260,7 @@ export const generateVideo = async (
 
       // Process video input if provided
       if (inputVideo) {
-        const processed = processBase64(inputVideo);
+        const processed = await processBase64(inputVideo);
         requestParams.video = {
           videoBytes: processed.data,
           mimeType: processed.mimeType
@@ -268,21 +275,15 @@ export const generateVideo = async (
       let primaryImage: string | undefined = startFrame || (referenceImages && referenceImages.length > 0 ? referenceImages[0] : undefined) || imageBase64;
 
       if (primaryImage) {
-        const processed = processBase64(primaryImage);
+        const processed = await processBase64(primaryImage);
         requestParams.image = {
           imageBytes: processed.data,
           mimeType: processed.mimeType
         };
       }
 
-      // NOTE: Current SDK constraints often limit us to a single primary image input.
-      // If the SDK is updated to support multiple reference images or separate style/content
-      // inputs (e.g., 'reference_images' or 'style_image' fields), this logic should be expanded.
-      // For now, we prioritize the most relevant single input to ensure reliable generation.
-
       if (endFrame) {
-        // Some experimental versions of Veo support an end frame
-        const processed = processBase64(endFrame);
+        const processed = await processBase64(endFrame);
         requestParams.end_image = {
           imageBytes: processed.data,
           mimeType: processed.mimeType
