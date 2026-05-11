@@ -18,6 +18,7 @@ import {
 import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
 import { resolveGenerationContext } from '@/utils/canvas/generationContext';
 import { collectVariables, applyVariables } from '@/utils/canvas/resolveVariables';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
 
 interface UsePromptNodeHandlersParams {
@@ -113,6 +114,7 @@ export const usePromptNodeHandlers = ({
       resultImageBase64: undefined,
     }, 'prompt');
 
+    trackCanvasEvent('generation_started', 'prompt', undefined, { model: selectedModel, provider });
     updateNodeLoadingState<PromptNodeData>(nodeId, true, 'prompt');
 
     let newOutputNodeId: string | null = null;
@@ -280,8 +282,10 @@ export const usePromptNodeHandlers = ({
         console.error('Failed to refresh subscription status:', statusError);
       }
 
+      trackCanvasEvent('generation_completed', 'prompt', undefined, { model: selectedModel, provider });
       toast.success('Image generated successfully!', { duration: 3000 });
     } catch (error: any) {
+      trackCanvasEvent('generation_failed', 'prompt', undefined, { model: selectedModel, provider, error: error?.message });
       console.error('[handlePromptGenerate] ❌ Error generating image', {
         nodeId,
         error: error?.message,

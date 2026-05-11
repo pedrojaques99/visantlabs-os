@@ -12,6 +12,7 @@ import { validateBase64Image, normalizeImagesToUploadedImages } from '../utils/n
 import { getBrandContextForNode, buildEnhancement } from '../useBrandContext';
 import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 import { resolveGenerationContext } from '@/utils/canvas/generationContext';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
 
 interface UseMockupNodeHandlersParams {
@@ -136,6 +137,7 @@ export const useMockupNodeHandlers = ({
     const hasCredits = await validateCredits(model, resolution, provider);
     if (!hasCredits) return;
 
+    trackCanvasEvent('generation_started', 'mockup', undefined, { model, provider });
     setNodes((nds: Node<FlowNodeData>[]) =>
       nds.map((n: Node<FlowNodeData>) =>
         n.id === nodeId
@@ -327,8 +329,10 @@ export const useMockupNodeHandlers = ({
         console.error('Failed to refresh subscription status:', statusError);
       }
 
+      trackCanvasEvent('generation_completed', 'mockup', undefined, { model, provider });
       toast.success('Mockup generated successfully!', { duration: 3000 });
     } catch (error: any) {
+      trackCanvasEvent('generation_failed', 'mockup', undefined, { model, provider, error: error?.message });
       cleanupFailedNode(newOutputNodeId);
       updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
       toast.error(error?.message || 'Failed to generate mockup', { duration: 5000 });

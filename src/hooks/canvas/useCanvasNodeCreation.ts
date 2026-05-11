@@ -6,6 +6,7 @@ import type { Mockup } from '@/services/mockupApi';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import type { MockupPresetType } from '@/types/mockupPresets';
 import { generateNodeId } from '@/utils/canvas/canvasNodeUtils';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
 import { useCanvasStrategyHandler } from './useCanvasStrategyHandler';
 import { useCanvasChatHandler } from './useCanvasChatHandler';
@@ -195,6 +196,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -251,6 +253,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -304,6 +307,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -358,6 +362,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -413,6 +418,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef, subscriptionStatus]);
 
@@ -463,6 +469,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -527,6 +534,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -576,6 +584,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -625,6 +634,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -674,6 +684,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -723,6 +734,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -771,6 +783,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -820,6 +833,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -880,6 +894,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
     toast.success('Image node added! Upload an image to fill it.', { duration: 3000 });
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, handleView, handleEdit, handleDelete, nodes, edges, addToHistory, setNodes, handlersRef, updateNodeData]);
 
@@ -1294,6 +1309,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1412,6 +1428,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1465,6 +1482,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1516,6 +1534,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1574,6 +1593,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1629,6 +1649,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1680,6 +1701,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1744,6 +1766,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1790,6 +1813,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1834,6 +1858,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1881,6 +1906,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1943,6 +1969,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1996,6 +2023,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef, handleDelete, handleDuplicate]);
 
@@ -2032,6 +2060,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
 
+    trackCanvasEvent('node_created', newNode.type, canvasId);
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes]);
 

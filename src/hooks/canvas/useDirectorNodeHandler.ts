@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData, DirectorNodeData, PromptNodeData } from '@/types/reactFlow';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
 import { aiApi } from '@/services/aiApi';
 import { generateNodeId } from '@/utils/canvas/canvasNodeUtils';
@@ -54,6 +55,7 @@ export const useDirectorNodeHandler = ({
       return;
     }
 
+    trackCanvasEvent('generation_started', 'director');
     // Set analyzing state
     updateNodeData<DirectorNodeData>(nodeId, {
       isAnalyzing: true,
@@ -122,8 +124,10 @@ export const useDirectorNodeHandler = ({
         selectedCategoryTags: analysis.categories?.slice(0, 1) || [],
       }, 'director');
 
+      trackCanvasEvent('generation_completed', 'director');
       toast.success('Image analyzed! Select tags to generate your prompt.');
     } catch (error: any) {
+      trackCanvasEvent('generation_failed', 'director', undefined, { error: error?.message });
       if (isLocalDevelopment()) {
         console.error('[DirectorNode] Analysis error:', error);
       }

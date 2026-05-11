@@ -6,6 +6,7 @@ import { mockupApi } from '@/services/mockupApi';
 import { applyVariables } from '@/utils/canvas/resolveVariables';
 import { resolveGenerationContext } from '@/utils/canvas/generationContext';
 import { DEFAULT_MODEL } from '@/constants/geminiModels';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
 
 interface UseBatchRunnerHandlersParams {
@@ -78,6 +79,7 @@ export function useBatchRunnerHandlers({
 
     cancelRef.current = false;
 
+    trackCanvasEvent('generation_started', 'batchRunner', undefined, { rows: rows.length, model: selectedModel, provider });
     updateNodeData<BatchRunnerNodeData>(batchNodeId, {
       status: 'running',
       results: initialResults,
@@ -137,6 +139,7 @@ export function useBatchRunnerHandlers({
     const done = results.filter((r) => r.status === 'done').length;
     const failed = results.filter((r) => r.status === 'error').length;
 
+    trackCanvasEvent(hadCancel ? 'generation_failed' : 'generation_completed', 'batchRunner', undefined, { rows: rows.length, done, failed });
     if (!hadCancel) {
       toast.success(`Batch complete — ${done} generated, ${failed} failed.`);
     } else {

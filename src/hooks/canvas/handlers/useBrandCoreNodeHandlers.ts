@@ -5,6 +5,7 @@ import type { UploadedImage } from '@/types/types';
 import { extractBrandIdentity } from '@/services/brandIdentityService';
 import { canvasApi } from '@/services/canvasApi';
 import { detectMimeType } from '@/services/reactFlowService';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
 
 interface UseBrandCoreNodeHandlersParams {
@@ -31,6 +32,7 @@ export const useBrandCoreNodeHandlers = ({
     if (!node || node.type !== 'brandCore') return;
 
     const brandCoreData = node.data as BrandCoreData;
+    trackCanvasEvent('generation_started', 'brandCore');
     updateNodeData<BrandCoreData>(nodeId, { isAnalyzing: true }, 'brandCore');
 
     try {
@@ -50,8 +52,10 @@ export const useBrandCoreNodeHandlers = ({
 
       updateNodeData<BrandCoreData>(nodeId, { brandIdentity, isAnalyzing: false }, 'brandCore');
       saveImmediately && setTimeout(() => saveImmediately(), 100);
+      trackCanvasEvent('generation_completed', 'brandCore');
       toast.success('Brand identity analyzed successfully', { duration: 2000 });
     } catch (error: any) {
+      trackCanvasEvent('generation_failed', 'brandCore', undefined, { error: error?.message });
       console.error('Error analyzing brand identity:', error);
       toast.error(error?.message || 'Failed to analyze brand identity', { duration: 5000 });
       updateNodeData<BrandCoreData>(nodeId, { isAnalyzing: false }, 'brandCore');

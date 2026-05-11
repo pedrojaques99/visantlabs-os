@@ -12,6 +12,7 @@ import { aiApi } from '@/services/aiApi';
 import { authService } from '@/services/authService';
 import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 import { resolveProvider } from '@/utils/canvas/generationContext';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
 
 interface UseEditNodeHandlersParams {
@@ -86,6 +87,7 @@ export const useEditNodeHandlers = ({
     const hasCredits = await validateCredits(model, resolution, resolveProvider(model));
     if (!hasCredits) return;
 
+    trackCanvasEvent('generation_started', 'edit', undefined, { model });
     updateNodeData<EditNodeData>(nodeId, { ...config, isLoading: true }, 'edit');
 
     const rawPrompt = config.promptPreview || config.additionalPrompt || 'Apply the requested changes to this image while maintaining its overall composition and quality.';
@@ -120,8 +122,10 @@ export const useEditNodeHandlers = ({
       }
 
       await refreshSubscriptionStatus();
+      trackCanvasEvent('generation_completed', 'edit', undefined, { model });
       toast.success('Image edited successfully! New node created.', { duration: 3000 });
     } catch (error: any) {
+      trackCanvasEvent('generation_failed', 'edit', undefined, { model, error: error?.message });
       cleanupFailedNode(newOutputNodeId);
       updateNodeData<EditNodeData>(nodeId, { ...config, isLoading: false }, 'edit');
       toast.error(error?.message || 'Failed to edit image', { duration: 5000 });
@@ -167,6 +171,7 @@ export const useEditNodeHandlers = ({
     const hasCredits = await validateCredits(model, resolution, 'gemini');
     if (!hasCredits) return;
 
+    trackCanvasEvent('generation_started', 'upscale', undefined, { model, resolution });
     updateNodeLoadingState<UpscaleNodeData>(nodeId, true, 'upscale');
 
     let newOutputNodeId: string | null = null;
@@ -216,8 +221,10 @@ export const useEditNodeHandlers = ({
       }
 
       await refreshSubscriptionStatus();
+      trackCanvasEvent('generation_completed', 'upscale', undefined, { model, resolution });
       toast.success(`Image upscaled to ${resolution}!`, { duration: 3000 });
     } catch (error: any) {
+      trackCanvasEvent('generation_failed', 'upscale', undefined, { model, resolution, error: error?.message });
       cleanupFailedNode(newOutputNodeId);
       updateNodeLoadingState<UpscaleNodeData>(nodeId, false, 'upscale');
       toast.error(error?.message || 'Failed to upscale image', { duration: 5000 });

@@ -255,6 +255,15 @@ export const AdminPage: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<string>('overview');
 
+  // Canvas Analytics state
+  const [canvasEventStats, setCanvasEventStats] = useState<{
+    byNodeType: { nodeType: string; count: number }[];
+    byEvent: { event: string; count: number }[];
+    timeline: { date: string; count: number }[];
+    period: { days: number; since: string };
+  } | null>(null);
+  const [canvasEventsLoading, setCanvasEventsLoading] = useState(false);
+
   // Feedback & RAG tab state
   const [feedbackStats, setFeedbackStats] = useState<any>(null);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
@@ -278,6 +287,23 @@ export const AdminPage: React.FC = () => {
       toast.error('Failed to load feedback stats');
     } finally {
       setFeedbackLoading(false);
+    }
+  };
+
+  const fetchCanvasEventStats = async (days = 30) => {
+    const token = authService.getToken();
+    if (!token) return;
+    setCanvasEventsLoading(true);
+    try {
+      const resp = await fetch(`/api/canvas/events/stats?days=${days}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!resp.ok) throw new Error('Failed to fetch canvas event stats');
+      setCanvasEventStats(await resp.json());
+    } catch (err) {
+      console.error('[AdminPage] canvas event stats error:', err);
+    } finally {
+      setCanvasEventsLoading(false);
     }
   };
 
@@ -952,6 +978,9 @@ export const AdminPage: React.FC = () => {
                   if (val === 'feedback-rag' && !feedbackStats) {
                     fetchFeedbackStats(feedbackFeatureFilter);
                   }
+                  if (val === 'generations' && !canvasEventStats) {
+                    fetchCanvasEventStats();
+                  }
                 }
               }}
               className="space-y-6"
@@ -1541,6 +1570,109 @@ export const AdminPage: React.FC = () => {
                           </CardContent>
                         </Card>
                       </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Canvas Node Analytics */}
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                    <CardHeader>
+                      <CardTitle className="text-neutral-300 flex items-center gap-2">
+                        <Database className="h-5 w-5 text-brand-cyan" />
+                        Canvas Node Analytics
+                      </CardTitle>
+                      <CardDescription className="text-neutral-500">
+                        Uso de nodes e taxa de sucesso de gerações (últimos 30 dias)
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {canvasEventsLoading ? (
+                        <div className="flex items-center justify-center py-12">
+                          <RefreshCw className="h-5 w-5 animate-spin text-brand-cyan" />
+                          <span className="ml-2 text-neutral-500 font-mono text-sm">Carregando analytics...</span>
+                        </div>
+                      ) : canvasEventStats ? (
+                        <div className="space-y-6">
+                          {/* Event type KPIs */}
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {canvasEventStats.byEvent.map((e) => (
+                              <Card key={e.event} className="bg-neutral-900/50 border border-neutral-800/30 rounded-md">
+                                <CardContent className="p-4">
+                                  <p className="text-xs text-neutral-500 font-mono mb-2">{e.event.replace(/_/g, ' ')}</p>
+                                  <p className={`text-2xl font-bold font-mono ${e.event === 'generation_failed' ? 'text-red-400' : e.event === 'generation_completed' ? 'text-green-400' : 'text-brand-cyan'}`}>
+                                    {e.count.toLocaleString()}
+                                  </p>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+
+                          {/* Node type ranking */}
+                          {canvasEventStats.byNodeType.length > 0 && (
+                            <div>
+                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">Ranking de Nodes</p>
+                              <div className="space-y-2">
+                                {canvasEventStats.byNodeType.map((n, i) => {
+                                  const maxCount = canvasEventStats.byNodeType[0]?.count || 1;
+                                  const pct = Math.round((n.count / maxCount) * 100);
+                                  return (
+                                    <div key={n.nodeType} className="flex items-center gap-3">
+                                      <span className="text-xs text-neutral-500 font-mono w-5 text-right">{i + 1}.</span>
+                                      <span className="text-sm text-neutral-300 font-mono w-28 truncate" title={n.nodeType}>{n.nodeType}</span>
+                                      <div className="flex-1 h-6 bg-neutral-800/50 rounded-md overflow-hidden">
+                                        <div
+                                          className="h-full bg-brand-cyan/30 rounded-md transition-all duration-500"
+                                          style={{ width: `${pct}%` }}
+                                        />
+                                      </div>
+                                      <span className="text-sm font-bold text-brand-cyan font-mono w-16 text-right">{n.count}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Daily timeline */}
+                          {canvasEventStats.timeline.length > 0 && (
+                            <div>
+                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">Eventos por Dia</p>
+                              <div className="h-[200px] w-full">
+                                <ChartContainer config={{ events: { label: 'Eventos', color: '#52ddeb' } }} className="aspect-auto h-full w-full">
+                                  <AreaChart data={canvasEventStats.timeline}>
+                                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#333" />
+                                    <XAxis
+                                      dataKey="date"
+                                      tickLine={false}
+                                      axisLine={false}
+                                      tickFormatter={(v) => v.slice(5)}
+                                      tick={{ fill: '#666', fontSize: 10 }}
+                                    />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Area
+                                      type="monotone"
+                                      dataKey="count"
+                                      fill="#52ddeb"
+                                      fillOpacity={0.15}
+                                      stroke="#52ddeb"
+                                      strokeWidth={2}
+                                    />
+                                  </AreaChart>
+                                </ChartContainer>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <p className="text-neutral-500 font-mono text-sm">Sem dados de canvas events ainda</p>
+                          <button
+                            onClick={() => fetchCanvasEventStats()}
+                            className="mt-3 text-brand-cyan hover:underline text-sm font-mono"
+                          >
+                            Carregar agora
+                          </button>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </TabsContent>
