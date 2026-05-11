@@ -13,8 +13,20 @@ import { JWT_SECRET } from '../utils/jwtSecret.js';
 import { signupSchema, signinSchema, forgotPasswordSchema, resetPasswordSchema, formatZodError } from '../utils/schemas.js';
 import { isValidEmail } from '../utils/validation.js';
 import { bruteForceGuard } from '../middleware/bruteForceGuard.js';
+import crypto from 'crypto';
 
 const router = express.Router();
+
+// In-memory store for plugin OAuth sessions (sessionId → { token, createdAt })
+const pluginOAuthSessions = new Map<string, { token?: string; error?: string; createdAt: number }>();
+const PLUGIN_SESSION_TTL = 5 * 60 * 1000; // 5 minutes
+
+function cleanExpiredSessions() {
+  const now = Date.now();
+  for (const [id, session] of pluginOAuthSessions) {
+    if (now - session.createdAt > PLUGIN_SESSION_TTL) pluginOAuthSessions.delete(id);
+  }
+}
 
 const getEmailFromBody = (req: express.Request) =>
   typeof req.body?.email === 'string' ? req.body.email : undefined;
@@ -287,9 +299,20 @@ router.get('/google', oauthRateLimiter, (req, res) => {
       return res.status(500).json({ error: 'OAuth configuration missing' });
     }
 
-    // Get referral code from query param if provided
+    const source = req.query.source as string | undefined;
     const referralCode = req.query.ref as string | undefined;
-    const state = referralCode ? `ref:${referralCode}` : undefined;
+
+    let state: string | undefined;
+    let sessionId: string | undefined;
+
+    if (source === 'plugin') {
+      cleanExpiredSessions();
+      sessionId = crypto.randomBytes(16).toString('hex');
+      pluginOAuthSessions.set(sessionId, { createdAt: Date.now() });
+      state = `plugin:${sessionId}`;
+    } else if (referralCode) {
+      state = `ref:${referralCode}`;
+    }
 
     const authUrl = client.generateAuthUrl({
       access_type: 'offline',
@@ -297,7 +320,7 @@ router.get('/google', oauthRateLimiter, (req, res) => {
       prompt: 'consent',
       state: state,
     });
-    res.json({ authUrl });
+    res.json({ authUrl, ...(sessionId && { sessionId }) });
   } catch (error: any) {
     console.error('Error generating auth URL:', error);
     res.status(500).json({ error: 'Failed to generate auth URL', message: error.message });
@@ -364,11 +387,13 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
     }
 
     // Extract referral code from state parameter (if provided)
-    // State format: "ref:ABC123" or just the referral code
-    const referralCode = state ? (state as string).startsWith('ref:')
-      ? (state as string).substring(4)
-      : (state as string)
-      : undefined;
+    // State format: "ref:ABC123", "plugin:sessionId", or just the referral code
+    const stateStr = state as string | undefined;
+    const referralCode = stateStr?.startsWith('ref:')
+      ? stateStr.substring(4)
+      : (stateStr && !stateStr.startsWith('plugin:') && !stateStr.startsWith('link:'))
+        ? stateStr
+        : undefined;
 
     // Find or create user
     let user = await prisma.user.findUnique({
@@ -427,12 +452,52 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    // Plugin OAuth: store token for polling and show success page
+    if (typeof state === 'string' && (state as string).startsWith('plugin:')) {
+      const sessionId = (state as string).substring(7);
+      const session = pluginOAuthSessions.get(sessionId);
+      if (session) {
+        session.token = token;
+      }
+      return res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Visant – Login OK</title>
+<style>body{background:#0a0a0a;color:#fff;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+.card{text-align:center;padding:2rem}.check{font-size:3rem;margin-bottom:1rem}p{color:#999;font-size:.9rem}</style></head>
+<body><div class="card"><div class="check">&#10003;</div><h2>Login realizado!</h2><p>Volte para o Figma. Você pode fechar esta aba.</p></div></body></html>`);
+    }
+
     // Redirect to frontend with token
     res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth?token=${token}`);
   } catch (error) {
     console.error('OAuth callback error:', error);
+
+    if (typeof (req.query.state as string) === 'string' && (req.query.state as string).startsWith('plugin:')) {
+      const sessionId = (req.query.state as string).substring(7);
+      const session = pluginOAuthSessions.get(sessionId);
+      if (session) session.error = 'oauth_failed';
+      return res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Visant – Erro</title>
+<style>body{background:#0a0a0a;color:#fff;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+.card{text-align:center;padding:2rem}p{color:#999;font-size:.9rem}</style></head>
+<body><div class="card"><h2>Erro no login</h2><p>Tente novamente pelo plugin.</p></div></body></html>`);
+    }
+
     res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth?error=oauth_failed`);
   }
+});
+
+// Poll for plugin OAuth result
+router.get('/google/poll/:sessionId', oauthRateLimiter, (req, res) => {
+  const session = pluginOAuthSessions.get(req.params.sessionId);
+  if (!session) return res.json({ status: 'expired' });
+  if (session.error) {
+    pluginOAuthSessions.delete(req.params.sessionId);
+    return res.json({ status: 'error', error: session.error });
+  }
+  if (session.token) {
+    const token = session.token;
+    pluginOAuthSessions.delete(req.params.sessionId);
+    return res.json({ status: 'complete', token });
+  }
+  res.json({ status: 'pending' });
 });
 
 // Google OAuth callback for linking account
