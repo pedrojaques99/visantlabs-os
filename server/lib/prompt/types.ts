@@ -15,6 +15,7 @@ export type ComplexityLevel = 'simple' | 'medium' | 'complex';
 
 export interface ClassifiedIntent {
   intent: IntentType;
+  secondaryIntent?: IntentType;
   format: FormatType;
   complexity: ComplexityLevel;
   confidence: number;

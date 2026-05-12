@@ -208,6 +208,8 @@ export interface BrandGuideline {
   // UI preferences
   activeSections?: string[]
   orderedBlocks?: string[]
+  // Knowledge RAG
+  knowledgeFiles?: Array<{ id: string; fileName: string; source: 'pdf' | 'image' | 'url' | 'text'; vectorIds: string[]; addedByUserId: string; addedAt: string }>
   // Public sharing
   publicSlug?: string
   isPublic?: boolean
