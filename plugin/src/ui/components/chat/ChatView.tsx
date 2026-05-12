@@ -66,10 +66,10 @@ export function ChatView() {
                 <MessageSquare size={20} className="text-brand-cyan" />
               </div>
               <p className="text-sm text-muted-foreground">
-                Descreva o que deseja criar e o Visant Copilot irá gerar designs no Figma.
+                Describe what you want to create and Visant Copilot will generate designs in Figma.
               </p>
               <div className="flex flex-wrap gap-2 justify-center">
-                {['Gerar mockup de cartão de visita', 'Criar post para Instagram', 'Design de embalagem', 'Banner para site'].map((prompt) => (
+                {['Mockup de cartão de visita', 'Design para Instagram', 'Design de embalagem', 'Banner para site'].map((prompt) => (
                   <button
                     key={prompt}
                     onClick={() => sendMessage(prompt)}

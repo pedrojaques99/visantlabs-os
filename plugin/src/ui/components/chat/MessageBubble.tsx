@@ -1,5 +1,5 @@
 import React, { useState, useMemo, type ReactNode } from 'react';
-import { Braces, Check, Copy, ChevronDown, ChevronUp, Undo2, RefreshCw, Clock, CircleCheck, Layers, Image, Scan, Palette } from 'lucide-react';
+import { Braces, Check, Copy, ChevronDown, ChevronUp, Undo2, RefreshCw, Clock, CircleCheck, Layers, Image, Scan, Palette, Download, ExternalLink, Maximize2 } from 'lucide-react';
 import type { ChatMessage, SummaryItem } from '../../store/types';
 import { copyToClipboard } from '@/utils/clipboard';
 import { relativeTime } from '@/utils/time';
@@ -127,6 +127,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
             <button
               type="button"
               onClick={onUndo}
+              aria-label="Undo operations"
               className="w-5 h-5 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:border-brand-cyan/50"
               title="Undo operations"
             >
@@ -139,6 +140,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
               onClick={onRetry}
               className="w-5 h-5 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:border-brand-cyan/50"
               title="Retry"
+              aria-label="Retry"
             >
               <RefreshCw size={9} />
             </button>
@@ -148,6 +150,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
             onClick={copyContent}
             className="w-5 h-5 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:border-brand-cyan/50"
             title="Copy message"
+            aria-label="Copy message"
           >
             {copied ? <Check size={9} /> : <Copy size={9} />}
           </button>
@@ -221,6 +224,45 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
           </div>
         )}
 
+        {/* Generated mockup image */}
+        {message.generatedImageUrl && (
+          <div className="mt-2 group/img relative max-w-[280px]">
+            <img
+              src={message.generatedImageUrl}
+              alt="Generated mockup"
+              className="w-full rounded-lg border border-border/50 object-contain cursor-pointer"
+              loading="lazy"
+              onClick={() => window.open(message.generatedImageUrl, '_blank')}
+            />
+            <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover/img:opacity-100 transition-opacity">
+              <button
+                type="button"
+                onClick={() => window.open(message.generatedImageUrl, '_blank')}
+                className="p-1 rounded bg-black/60 hover:bg-black/80 text-white/80 hover:text-white transition-colors"
+                title="Open full size"
+              >
+                <Maximize2 size={10} />
+              </button>
+              <button
+                type="button"
+                onClick={() => copyToClipboard(message.generatedImageUrl!)}
+                className="p-1 rounded bg-black/60 hover:bg-black/80 text-white/80 hover:text-white transition-colors"
+                title="Copy URL"
+              >
+                <Copy size={10} />
+              </button>
+              <a
+                href={message.generatedImageUrl}
+                download
+                className="p-1 rounded bg-black/60 hover:bg-black/80 text-white/80 hover:text-white transition-colors"
+                title="Download"
+              >
+                <Download size={10} />
+              </a>
+            </div>
+          </div>
+        )}
+
         {/* Operations applied */}
         {ops.length > 0 && (
           <div className="mt-2.5 rounded-md border border-border/50 bg-background/40 overflow-hidden">
@@ -280,12 +322,9 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
               )}
             </div>
             {showJson && (
-              <textarea
-                readOnly
-                value={json}
-                onFocus={(e) => e.currentTarget.select()}
-                className="w-full h-36 text-[10px] font-mono p-2 bg-background/60 border-t border-border/40 resize-y focus:outline-none"
-              />
+              <pre className="w-full max-h-48 overflow-auto text-[9px] font-mono p-2 bg-background/60 border-t border-border/40 text-muted-foreground/70 leading-relaxed select-text">
+                {json}
+              </pre>
             )}
           </div>
         )}

@@ -34,6 +34,8 @@ export function Header() {
         {/* Server Status Indicator */}
         <div
           className="w-2 h-2 rounded-full"
+          role="status"
+          aria-label={isConnected === true ? 'Server connected' : isConnected === false ? 'Server disconnected' : 'Checking connection'}
           style={{
             backgroundColor: isConnected === true ? '#00ff00' : isConnected === false ? '#ff4444' : '#888888',
             transition: 'background-color 0.3s'
@@ -62,6 +64,7 @@ export function Header() {
           onClick={() => setActiveView(activeView === 'main' ? 'settings' : 'main')}
           className="h-7 w-7 bg-neutral-900/50 hover:bg-neutral-800"
           title="Settings"
+          aria-label={activeView === 'main' ? 'Open settings' : 'Close settings'}
         >
           <Settings size={14} className="text-neutral-400" />
         </Button>

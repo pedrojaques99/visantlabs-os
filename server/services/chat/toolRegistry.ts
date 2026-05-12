@@ -183,6 +183,45 @@ REGISTRY['describe_image'] = {
   },
 };
 
+REGISTRY['brand_guideline_list'] = {
+  scope: 'public',
+  declaration: {
+    name: 'brand_guideline_list',
+    description:
+      'List all brand guidelines owned by the user. Use when no brandGuidelineId is set and you need to find the right brand, ' +
+      'or when the user mentions a brand name and you need to resolve it to an ID.',
+    parameters: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  execute: async (_args: any, ctx) => {
+    const guidelines = await prisma.brandGuideline.findMany({
+      where: { userId: ctx.userId },
+      select: { id: true, identity: true, updatedAt: true },
+      orderBy: { updatedAt: 'desc' },
+      take: 20,
+    });
+    if (!guidelines.length) return 'No brand guidelines found. Create one with brand_guideline_create.';
+    return JSON.stringify(
+      guidelines.map(g => ({
+        id: g.id,
+        name: (g.identity as any)?.name || 'Untitled',
+        updatedAt: g.updatedAt.toISOString().slice(0, 10),
+      })),
+    );
+  },
+};
+
+// ── Promote admin tools to plugin scope ──
+// These already exist in adminChatTools with full schemas and Prisma-direct
+// execution. Promote to 'public' so the plugin pre-pass can use them.
+for (const name of ['brand_guideline_update', 'brand_guideline_create', 'save_to_brand_knowledge', 'update_session_memory']) {
+  if (REGISTRY[name]) {
+    REGISTRY[name].scope = 'public';
+  }
+}
+
 /**
  * Tool declarations available to a role, in the Gemini SDK shape.
  * Admins get the union of public + admin tools.

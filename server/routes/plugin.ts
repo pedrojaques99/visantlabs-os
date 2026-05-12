@@ -588,6 +588,7 @@ const streamLimiter = rateLimit({
  * Events: thinking, tool_start, tool_end, operations, message, done, error
  */
 router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res: Response) => {
+  const streamStartMs = Date.now();
   // SSE headers
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -690,6 +691,21 @@ router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res
     }> = [];
 
     try {
+      // Extract text content from selected elements for brand extraction
+      const extractTextFromNode = (node: any): string[] => {
+        const texts: string[] = [];
+        if (node.characters) texts.push(`[${node.name || node.type}]: ${node.characters}`);
+        if (node.children) for (const child of node.children) texts.push(...extractTextFromNode(child));
+        return texts;
+      };
+      const selectionTextContent = selectedElements
+        .flatMap(extractTextFromNode)
+        .filter(Boolean);
+
+      const selectionContext = selectionTextContent.length > 0
+        ? `\n\nSELECTED ELEMENTS TEXT CONTENT (${selectionTextContent.length} text nodes):\n${selectionTextContent.slice(0, 200).join('\n')}`
+        : '';
+
       const prePassPrompt = `You are a Figma design assistant deciding which tools to use before generating design operations.
 
 Available tools:
@@ -702,14 +718,21 @@ Available tools:
 - describe_image: Analyze an image by URL or base64. Use when user shares an image to recreate or reference.
 - get_brand_context: Fetch brand guideline details. Use when you need brand info not already in context.
 - web_search: Search the web for references, inspiration, or information.
+- brand_guideline_update: Update sections of a brand guideline with structured data. Use when the user wants to "feed", "populate", "update", "send", or "alimentar" content from Figma frames to a brand guideline. Read the SELECTED ELEMENTS TEXT CONTENT below, parse it into structured brand data (strategy, personas, archetypes, manifesto, voice, colors, typography, etc.), and call this tool with the parsed data. Pass brand_guideline_id if available. This is a DATA EXTRACTION + API UPDATE tool, NOT a visual Figma operation.
+- brand_guideline_create: Create a new brand guideline. Use when user wants to start a new brand from scratch.
+- brand_guideline_list: List all user's brand guidelines (name + ID). Use when no brandGuidelineId is set and you need to find the right brand by name, or when the user mentions a brand name you need to resolve to an ID.
+- save_to_brand_knowledge: Save strategic insights, decisions, or references to the brand's long-term memory (RAG). Use when the user wants to save notes or context about the brand.
+- update_session_memory: Persist detected brands, client names, project references, and decisions in session memory so they're available in follow-up messages.
 
 Rules:
 - If the user wants a mockup/image, ALWAYS use generate_mockup. The imageUrl in the result will be used with SET_IMAGE_FILL in the design phase.
 - If brandGuidelineId is available, pass it to generate_mockup — it auto-injects logo + colors + typography.
+- If the user wants to feed/populate/update brand guidelines with content from the selection, use brand_guideline_update. Parse the selected text content into the appropriate structured fields (strategy.manifesto, strategy.archetypes, strategy.personas, strategy.voiceValues, guidelines.voice, etc.).
+- If the user mentions a brand by name but no brandGuidelineId is active, call brand_guideline_list first to resolve the name to an ID, then proceed with the resolved ID.
 - If the request doesn't need any tools, respond with just "READY".
 - You can call multiple tools if needed.
-${brandGuidelineId ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this to generate_mockup and get_brand_context.` : ''}
-${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call generate_mockup for this request. Infer prompt, aspectRatio, designType, and model from the user message. Do NOT respond with just "READY".` : ''}`;
+${brandGuidelineId ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this as brand_guideline_id to brand_guideline_update, and as brandGuidelineId to generate_mockup and get_brand_context.` : '\nNo brandGuidelineId is active. If the user references a brand, call brand_guideline_list to find it.'}
+${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call generate_mockup for this request. Infer prompt, aspectRatio, designType, and model from the user message. Do NOT respond with just "READY".` : ''}${selectionContext}`;
 
       const prePassResult = await chatWithLLM(command, '', [], {
         provider: 'gemini',
@@ -782,6 +805,83 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       } catch (forceErr) {
         console.error('[Plugin:Stream] Forced generate_mockup failed:', (forceErr as Error).message);
       }
+    }
+
+    // Extract imageUrl from pre-pass mockup result (if any)
+    const mockupRecord = toolCallRecords.find(t => t.name === 'generate_mockup' && t.status === 'done');
+    let generatedImageUrl: string | undefined;
+    if (mockupRecord?.summary) {
+      const imgMatch = mockupRecord.summary.match(/"imageUrl"\s*:\s*"([^"]+)"/);
+      if (imgMatch) generatedImageUrl = imgMatch[1];
+    }
+    if (!generatedImageUrl && enrichedContext) {
+      const ctxMatch = enrichedContext.match(/"imageUrl"\s*:\s*"([^"]+)"/);
+      if (ctxMatch) generatedImageUrl = ctxMatch[1];
+    }
+
+    // If mockup was generated, skip Phase 2 LLM and build ops directly
+    if (generatedImageUrl) {
+      const aspectMap: Record<string, { w: number; h: number }> = {
+        '1:1': { w: 1024, h: 1024 }, '16:9': { w: 1280, h: 720 },
+        '9:16': { w: 720, h: 1280 }, '4:5': { w: 800, h: 1000 },
+      };
+      const detectedAspect = mockupRecord?.args?.aspectRatio || '1:1';
+      const dims = aspectMap[detectedAspect] || aspectMap['1:1'];
+
+      const mockupOps = [
+        { type: 'CREATE_FRAME', ref: 'mockup_frame', props: { name: `Mockup — ${command.slice(0, 40)}`, width: dims.w, height: dims.h, fills: [{ type: 'SOLID', color: '#000000', opacity: 0 }] } },
+        { type: 'SET_IMAGE_FILL', ref: 'mockup_frame', imageUrl: generatedImageUrl, scaleMode: 'FILL' },
+        { type: 'MESSAGE', content: `Mockup gerado e aplicado no canvas.` },
+      ];
+
+      send('operations', mockupOps);
+
+      const genToolCall = {
+        id: `tc-${Date.now()}`,
+        name: 'apply_mockup_to_canvas',
+        status: 'done' as const,
+        args: { imageUrl: generatedImageUrl.slice(0, 80) + '...' },
+        startedAt: new Date().toISOString(),
+        endedAt: new Date().toISOString(),
+        summary: `Applied mockup image to ${dims.w}×${dims.h} frame`,
+      };
+      toolCallRecords.push(genToolCall);
+
+      let sessionContext: { messageCount: number; tokenEstimate: number; contextLimit: number } | undefined;
+      if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
+        try {
+          const db = getDb();
+          const newMessages = [
+            { role: 'user', content: command, timestamp: new Date() },
+            { role: 'assistant', content: `Generated mockup`, operations: mockupOps, toolCalls: toolCallRecords, timestamp: new Date() },
+          ];
+          await db.collection('plugin_sessions').updateOne(
+            { _id: sessionId } as any,
+            { $push: { messages: { $each: newMessages } } as any },
+          );
+          const updated = await db.collection<any>('plugin_sessions').findOne({ _id: sessionId } as any);
+          const msgs = updated?.messages || [];
+          const totalChars = msgs.reduce((sum: number, m: any) => sum + (m.content?.length || 0), 0);
+          sessionContext = { messageCount: msgs.length, tokenEstimate: Math.ceil(totalChars / 4), contextLimit: 80000 };
+        } catch {}
+      }
+
+      send('done', {
+        operations: mockupOps,
+        message: 'Mockup gerado e aplicado no canvas.',
+        provider: 'pre-pass',
+        durationMs: Date.now() - streamStartMs,
+        toolCalls: toolCallRecords,
+        sessionContext,
+        generatedImageUrl,
+      });
+
+      res.end();
+
+      if (req.userId && !isByok) {
+        deductCredit(req.userId).catch(e => console.error('[Plugin] Credit deduction error:', e));
+      }
+      return;
     }
 
     // ═══ Phase 2: Generate Figma Operations (reuse existing logic) ═══

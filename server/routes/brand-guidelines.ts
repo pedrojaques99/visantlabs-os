@@ -140,8 +140,8 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     const fields = ['identity', 'logos', 'colors', 'colorThemes', 'typography', 'tags', 'media', 'tokens', 'guidelines', 'extraction', 'activeSections', 'folder', 'strategy', 'orderedBlocks', 'gradients', 'shadows', 'motion', 'borders', 'validation', 'isPublic', 'publicSlug', 'knowledgeFiles', 'figmaFileUrl', 'figmaFileKey', 'canEdit', 'canView'] as const
 
     for (const field of fields) {
-      if (update[field] !== undefined) {
-        (merged as any)[field] = update[field]
+      if ((update as any)[field] !== undefined) {
+        (merged as any)[field] = (update as any)[field]
       }
     }
 
