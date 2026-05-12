@@ -84,10 +84,10 @@ export const WaitlistPage: React.FC = () => {
           <GlassPanel padding="lg" className="md:p-12 shadow-sm relative overflow-hidden">
             {/* Header */}
             <div className="text-center mb-8 md:mb-12 animate-fade-in-fast">
-              <h1 className="text-4xl md:text-5xl font-semibold font-manrope text-neutral-200 mb-4 tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-semibold font-manrope text-neutral-900 mb-4 tracking-tight">
                 {t('waitlist.title') || 'Closed Alpha // VSN Labs®'}
               </h1>
-              <p className="text-neutral-400 font-mono text-sm md:text-base max-w-2xl mx-auto mt-4">
+              <p className="text-neutral-700 font-mono text-sm md:text-base max-w-2xl mx-auto mt-4">
                 {t('waitlist.subtitle') || 'Be among the first to access our premium tools. Get notified when we open access.'}
               </p>
             </div>
@@ -97,7 +97,7 @@ export const WaitlistPage: React.FC = () => {
               {!isSubmitted ? (
                 <form onSubmit={handleEmailSubmit} className="space-y-4">
                   <div>
-                    <label htmlFor="email" className="block text-sm font-mono text-neutral-400 mb-2">
+                    <label htmlFor="email" className="block text-sm font-mono text-neutral-700 mb-2">
                       {t('waitlist.emailLabel') || 'Email Address'}
                     </label>
                     <div className="relative">
@@ -149,10 +149,10 @@ export const WaitlistPage: React.FC = () => {
               )}
 
               {/* Mockup Machine Button */}
-              <div className="pt-4 border-t border-neutral-800/50">
+              <div className="pt-4 border-t border-neutral-400/30">
                 <PremiumButton
                   onClick={() => navigate('/')}
-                  className="w-full h-12 bg-neutral-950/70 border-neutral-800/60 hover:border-brand-cyan/50 text-neutral-300 hover:text-brand-cyan shadow-none"
+                  className="w-full h-12 bg-neutral-900/80 border-neutral-700/60 hover:border-brand-cyan/50 text-neutral-200 hover:text-brand-cyan shadow-none"
                   icon={Pickaxe}
                 >
                   {t('waitlist.tryMockupMachineNow') || 'Try Mockup Machine Now'}

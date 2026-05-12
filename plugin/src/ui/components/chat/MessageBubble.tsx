@@ -92,8 +92,12 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
   const [copied, setCopied] = useState(false);
   const json = message.operations ? JSON.stringify(message.operations, null, 2) : '';
   const ops = message.operations ?? [];
-  const visibleOps = showAllOps ? ops : ops.slice(0, OPS_PREVIEW_LIMIT);
-  const hiddenCount = ops.length - OPS_PREVIEW_LIMIT;
+  const summaryItems = message.summaryItems ?? [];
+  const displayItems = summaryItems.length > 0
+    ? summaryItems.map((item, i) => ({ label: item.text, nodeId: item.nodeId, key: i }))
+    : ops.map((op, i) => ({ label: friendlyOpLabel(op), nodeId: undefined, key: i }));
+  const visibleItems = showAllOps ? displayItems : displayItems.slice(0, OPS_PREVIEW_LIMIT);
+  const hiddenItemCount = displayItems.length - OPS_PREVIEW_LIMIT;
 
   const handleCopy = (text: string) => {
     copyToClipboard(text);
@@ -123,7 +127,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
             <button
               type="button"
               onClick={onUndo}
-              className="w-5 h-5 rounded-full bg-card border border-border flex items-center justify-center hover:border-brand-cyan/50"
+              className="w-5 h-5 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:border-brand-cyan/50"
               title="Undo operations"
             >
               <Undo2 size={9} />
@@ -133,7 +137,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
             <button
               type="button"
               onClick={onRetry}
-              className="w-5 h-5 rounded-full bg-card border border-border flex items-center justify-center hover:border-brand-cyan/50"
+              className="w-5 h-5 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:border-brand-cyan/50"
               title="Retry"
             >
               <RefreshCw size={9} />
@@ -142,7 +146,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
           <button
             type="button"
             onClick={copyContent}
-            className="w-5 h-5 rounded-full bg-card border border-border flex items-center justify-center hover:border-brand-cyan/50"
+            className="w-5 h-5 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:border-brand-cyan/50"
             title="Copy message"
           >
             {copied ? <Check size={9} /> : <Copy size={9} />}
@@ -227,21 +231,32 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
               </span>
             </div>
             <ul className="px-2.5 py-1.5 space-y-0.5">
-              {visibleOps.map((op, i) => (
-                <li key={i} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              {visibleItems.map((item) => (
+                <li key={item.key} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <span className="w-1 h-1 rounded-full bg-brand-cyan/50 shrink-0" />
-                  <span className="truncate">{friendlyOpLabel(op)}</span>
+                  {item.nodeId ? (
+                    <button
+                      type="button"
+                      onClick={() => focusNodeInFigma(item.nodeId!)}
+                      className="truncate text-left hover:text-brand-cyan transition-colors cursor-pointer"
+                      title={`Select in Figma`}
+                    >
+                      {item.label}
+                    </button>
+                  ) : (
+                    <span className="truncate">{item.label}</span>
+                  )}
                 </li>
               ))}
             </ul>
-            {ops.length > OPS_PREVIEW_LIMIT && (
+            {displayItems.length > OPS_PREVIEW_LIMIT && (
               <button
                 type="button"
                 onClick={() => setShowAllOps((v) => !v)}
                 className="w-full flex items-center justify-center gap-1 text-[10px] text-muted-foreground/70 hover:text-muted-foreground py-1 border-t border-border/40 hover:bg-muted/30 transition-colors"
               >
                 {showAllOps ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-                {showAllOps ? 'Show less' : `Show ${hiddenCount} more`}
+                {showAllOps ? 'Show less' : `Show ${hiddenItemCount} more`}
               </button>
             )}
             <div className="px-2.5 pb-2 pt-1 border-t border-border/40 flex items-center justify-between">

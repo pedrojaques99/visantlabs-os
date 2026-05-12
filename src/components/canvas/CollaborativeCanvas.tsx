@@ -47,6 +47,8 @@ export interface CollaborativeCanvasProps {
   onAddColorExtractor?: (position?: { x: number; y: number }) => void;
 
   // Drawing props
+  strokeColor?: string;
+  strokeSize?: number;
   isDrawingMode?: boolean;
   drawingType?: 'freehand' | 'text' | 'shape';
   onDrawingStart?: (event: React.MouseEvent | React.TouchEvent) => void;
@@ -68,6 +70,8 @@ export interface CollaborativeCanvasProps {
   onStopEditingText?: () => void;
   onCreateTextDrawing?: (position: { x: number; y: number }) => void;
   onUpdateDrawingBounds?: (id: string, bounds: { x: number; y: number; width: number; height: number }) => void;
+  onMoveDrawings?: (ids: Set<string>, delta: { x: number; y: number }) => void;
+  onInteractionEnd?: () => void;
   shapePreview?: {
     startPosition: { x: number; y: number } | null;
     currentPosition: { x: number; y: number } | null;
@@ -105,6 +109,8 @@ export const CollaborativeCanvas: React.FC<CollaborativeCanvasProps> = ({
   onDropImage,
   onDropNode,
   onAddColorExtractor,
+  strokeColor,
+  strokeSize,
   isDrawingMode = false,
   drawingType = 'freehand',
   onDrawingStart,
@@ -126,6 +132,8 @@ export const CollaborativeCanvas: React.FC<CollaborativeCanvasProps> = ({
   onStopEditingText,
   onCreateTextDrawing,
   onUpdateDrawingBounds,
+  onMoveDrawings,
+  onInteractionEnd,
   shapePreview = null,
 }) => {
   const { t } = useTranslation();
@@ -221,6 +229,8 @@ export const CollaborativeCanvas: React.FC<CollaborativeCanvasProps> = ({
         reactFlowInstance={reactFlowInstance}
         cursorColor={cursorColor}
         brandCyan={brandCyan || undefined}
+        strokeColor={strokeColor}
+        strokeSize={strokeSize}
         isDrawingMode={isDrawingMode}
         drawingType={drawingType}
         onDrawingStart={onDrawingStart}
@@ -242,6 +252,8 @@ export const CollaborativeCanvas: React.FC<CollaborativeCanvasProps> = ({
         onStopEditingText={onStopEditingText}
         onCreateTextDrawing={onCreateTextDrawing}
         onUpdateDrawingBounds={onUpdateDrawingBounds}
+        onMoveDrawings={onMoveDrawings}
+        onInteractionEnd={onInteractionEnd}
         shapePreview={shapePreview}
       />
       {reactFlowInstance && reactFlowWrapper.current && (

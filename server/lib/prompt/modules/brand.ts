@@ -10,7 +10,7 @@ export const BRAND_PRIORITY_RULE = `BRAND (HARD CONSTRAINTS — override generic
 - Principal font → Headings/Titles. Secundária → Body/Captions.
 - Brand colors (Primary, Secondary, Accent) override any generic palette.
 - If color variables ($v) exist, prefer APPLY_VARIABLE for dynamic binding.
-- Clone brand logos via CLONE_NODE sourceName for layout signatures.`;
+- Logos: use CREATE_COMPONENT_INSTANCE com componentKey do logo. Posicione com x/y e width/height.`;
 
 export interface BrandContextInput {
   colors?: Array<{ name: string; value: string; role?: string }>;
@@ -66,10 +66,10 @@ export function buildCompactBrandContext(
 
   if (logos?.light || logos?.dark) {
     const logoList = [
-      logos.light ? `Light: "${logos.light.name}"` : '',
-      logos.dark ? `Dark: "${logos.dark.name}"` : '',
+      logos.light ? `Light: "${logos.light.name}"${logos.light.key ? ` (key:"${logos.light.key}")` : ''}` : '',
+      logos.dark ? `Dark: "${logos.dark.name}"${logos.dark.key ? ` (key:"${logos.dark.key}")` : ''}` : '',
     ].filter(Boolean).join(', ');
-    parts.push(`Logos: ${logoList}`);
+    parts.push(`Logos (use CREATE_COMPONENT_INSTANCE com key): ${logoList}`);
   }
 
   if (tokens) {

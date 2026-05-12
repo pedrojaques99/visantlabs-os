@@ -24,6 +24,8 @@ const INTENT_PATTERNS: Record<IntentType, RegExp[]> = {
     /\b(edit|change|modify|update|adjust|fix|alter)\b/i,
     /\b(dark|light|claro|escuro)\s*(mode|modo|tema|theme)?\b/i,
     /\b(invert|inverter|inverte)\b/i,
+    /\b(escurece|clareia|aumenta|diminui|gruda|agrupa|desagrupa)\b/i,
+    /\b(maior|menor|grande|pequeno|vermelho|azul|verde|branco|preto)\b/i,
   ],
   clone: [
     /\b(clona|clonar|duplica|duplicar|copia|copiar|replica|replicar)\b/i,
@@ -34,8 +36,8 @@ const INTENT_PATTERNS: Record<IntentType, RegExp[]> = {
     /\b(delete|remove|erase|clear)\b/i,
   ],
   arrange: [
-    /\b(organiza|organizar|alinha|alinhar|distribui|distribuir|posiciona|posicionar|move|mover)\b/i,
-    /\b(arrange|align|distribute|position|layout)\b/i,
+    /\b(organiza|organizar|alinha|alinhar|distribui|distribuir|posiciona|posicionar|move|mover|centraliza|centralizar)\b/i,
+    /\b(arrange|align|distribute|position|layout|center)\b/i,
   ],
   chat: [
     /\b(oi|ola|olá|hey|hello|hi|como|what|how|why|quando|where|pode|can|help|ajuda)\b/i,
@@ -88,9 +90,11 @@ export function classifyIntent(
   const normalized = prompt.toLowerCase();
   const keywords: string[] = [];
 
-  // Detect primary intent
+  // Detect primary + secondary intent (handles mixed commands like "clone and edit")
   let intent: IntentType = 'chat';
+  let secondaryIntent: IntentType | undefined;
   let maxMatches = 0;
+  let secondMaxMatches = 0;
 
   for (const [intentType, patterns] of Object.entries(INTENT_PATTERNS)) {
     let matches = 0;
@@ -102,8 +106,13 @@ export function classifyIntent(
       }
     }
     if (matches > maxMatches) {
+      secondMaxMatches = maxMatches;
+      secondaryIntent = intent !== 'chat' ? intent : undefined;
       maxMatches = matches;
       intent = intentType as IntentType;
+    } else if (matches > secondMaxMatches && matches > 0) {
+      secondMaxMatches = matches;
+      secondaryIntent = intentType as IntentType;
     }
   }
 
@@ -145,6 +154,7 @@ export function classifyIntent(
 
   return {
     intent,
+    secondaryIntent,
     format,
     complexity,
     confidence,
@@ -168,6 +178,9 @@ const SHORT_ACTION_PATTERNS = [
   /\b(hide|show|lock|unlock|group|ungroup)\b/i,
   /\b(copy|paste|duplicate|delete|remove)\b/i,
   /\b(undo|redo|reset)\b/i,
+  // PT-BR short action verbs
+  /\b(escurece|clareia|aumenta|diminui|centraliza|gruda|inverte|apaga|agrupa|desagrupa)\b/i,
+  /\b(maior|menor|grande|pequeno|vermelho|azul|verde|branco|preto)\b/i,
 ];
 
 /**

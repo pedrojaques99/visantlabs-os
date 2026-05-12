@@ -94,6 +94,8 @@ interface CanvasFlowProps {
   edgeStyle?: 'solid' | 'dashed';
   edgeStrokeWidth?: 'normal' | 'thin';
   brandCyan?: string;
+  strokeColor?: string;
+  strokeSize?: number;
 }
 
 export const CanvasFlow: React.FC<CanvasFlowProps> = ({
@@ -149,6 +151,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   edgeStyle = 'solid',
   edgeStrokeWidth = 'normal',
   brandCyan = '#00d9ff',
+  strokeColor: strokeColorProp,
+  strokeSize: strokeSizeProp,
 }) => {
   // Get actual brand color value (convert from CSS variable if needed)
   const actualBrandColor = useMemo(() => {
@@ -193,6 +197,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   const [isProcessingFiles, setIsProcessingFiles] = useState(false);
   const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0, fileName: '' });
   const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
+  const paneRef = useRef<Element | null>(null);
   const justFinishedSelectionRef = useRef(false);
   const selectionDraggedRef = useRef(false);
   const [zoom, setZoom] = useState(1);
@@ -363,8 +368,10 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
 
     if (!reactFlowInstanceRef.current) return;
 
-    const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-    if (!pane) return;
+    if (!paneRef.current) {
+      paneRef.current = reactFlowWrapper.current?.querySelector('.react-flow__pane') ?? null;
+    }
+    if (!paneRef.current) return;
 
     const clientX = e.clientX;
     const clientY = e.clientY;
@@ -544,9 +551,11 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     if (params.nodeId) {
       setIsConnecting(true);
       setShowCreateIndicator(true);
-      const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-      if (pane) {
-        const rect = pane.getBoundingClientRect();
+      if (!paneRef.current) {
+        paneRef.current = reactFlowWrapper.current?.querySelector('.react-flow__pane') ?? null;
+      }
+      if (paneRef.current) {
+        const rect = paneRef.current.getBoundingClientRect();
         const clientX = 'clientX' in event ? event.clientX : event.touches[0].clientX;
         const clientY = 'clientY' in event ? event.clientY : event.touches[0].clientY;
         setCreateIndicatorPos({
@@ -570,10 +579,12 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     if (!showCreateIndicator) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-      if (!pane) return;
+      if (!paneRef.current) {
+        paneRef.current = reactFlowWrapper.current?.querySelector('.react-flow__pane') ?? null;
+      }
+      if (!paneRef.current) return;
 
-      const rect = pane.getBoundingClientRect();
+      const rect = paneRef.current.getBoundingClientRect();
       setCreateIndicatorPos({
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
@@ -1064,8 +1075,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         selectedDrawingIds={selectedDrawingIds}
         onDrawingClick={onDrawingClick || (() => { })}
         viewport={viewport}
-        strokeColor="var(--brand-cyan)"
-        strokeSize={2}
+        strokeColor={strokeColorProp || '#00d9ff'}
+        strokeSize={strokeSizeProp || 2}
         selectionBox={selectionBox}
         editingDrawingId={editingDrawingId}
         onStartEditingText={onStartEditingText}

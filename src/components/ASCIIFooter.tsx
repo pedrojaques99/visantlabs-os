@@ -74,10 +74,12 @@ export default function ASCIIFooter({
     setIsPoliciesMenuOpen(false)
   }
 
-  const separator = <span className="text-neutral-700/50 mx-1 select-none">/</span>;
+  const textColor = isDarkMode ? 'text-neutral-500' : 'text-neutral-600';
+  const hoverColor = isDarkMode ? '#fff' : '#000';
+  const separator = <span className={`${isDarkMode ? 'text-neutral-700/50' : 'text-neutral-400/50'} mx-1 select-none`}>/</span>;
 
   return (
-    <footer className={`relative border-t border-neutral-900/50 bg-background/50 backdrop-blur-sm z-50 ${className}`}>
+    <footer className={`relative border-t ${isDarkMode ? 'border-neutral-900/50 bg-background/50' : 'border-neutral-300/50 bg-white/10'} backdrop-blur-sm z-50 ${className}`}>
       {/* Dynamic top line effect */}
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-cyan/20 to-transparent" />
 
@@ -85,12 +87,12 @@ export default function ASCIIFooter({
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 font-mono">
 
           {/* Left: VSN & App Version - Dynamic Scale Text */}
-          <div className="flex items-center gap-3 text-[clamp(10px,1vw,11px)] text-neutral-500 whitespace-nowrap order-2 md:order-1">
+          <div className={`flex items-center gap-3 text-[clamp(10px,1vw,11px)] ${textColor} whitespace-nowrap order-2 md:order-1`}>
             <UniversalFooter isDarkMode={isDarkMode} className="text-left" />
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="px-1.5 py-0.5 rounded-sm bg-neutral-900/30 border border-neutral-800/50 flex items-center gap-1.5"
+              className={`px-1.5 py-0.5 rounded-sm ${isDarkMode ? 'bg-neutral-900/30 border-neutral-800/50' : 'bg-neutral-900/60 border-neutral-700/50'} border flex items-center gap-1.5`}
             >
               <div className="w-1 h-1 rounded-full bg-brand-cyan animate-pulse" />
               <span className="text-neutral-600 uppercase tracking-tighter">LIVE_SYS_v1.2</span>
@@ -98,8 +100,8 @@ export default function ASCIIFooter({
           </div>
 
           {/* Center: Dynamic Info & Links - Responsive Wrapping */}
-          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[clamp(10px,1vw,11px)] text-neutral-500 order-1 md:order-2">
-            <motion.div whileHover={{ color: '#fff' }} className="flex items-center gap-1.5 transition-colors cursor-default group">
+          <div className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[clamp(10px,1vw,11px)] ${textColor} order-1 md:order-2`}>
+            <motion.div whileHover={{ color: hoverColor }} className="flex items-center gap-1.5 transition-colors cursor-default group">
               <Clock size={10} className="group-hover:text-brand-cyan transition-colors" />
               <span className="tabular-nums">{time}</span>
             </motion.div>
@@ -110,7 +112,7 @@ export default function ASCIIFooter({
               href="https://vsn-labs.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
-              whileHover={{ color: '#fff' }}
+              whileHover={{ color: hoverColor }}
               className="hover:underline decoration-neutral-700 underline-offset-2 transition-colors cursor-pointer whitespace-nowrap"
             >
               {t('footer.rightsReservedShort')}
@@ -120,7 +122,7 @@ export default function ASCIIFooter({
 
             <motion.a
               href="/privacy"
-              whileHover={{ color: '#fff' }}
+              whileHover={{ color: hoverColor }}
               onClick={(e) => {
                 e.preventDefault();
                 if (onPrivacyClick) handlePolicyClick(onPrivacyClick);
@@ -134,15 +136,15 @@ export default function ASCIIFooter({
           </div>
 
           {/* Right: Menus & Language - Grouped for Desktop */}
-          <div className="flex items-center gap-4 text-[clamp(10px,1vw,11px)] text-neutral-500 order-3">
+          <div className={`flex items-center gap-4 text-[clamp(10px,1vw,11px)] ${textColor} order-3`}>
 
             {/* Policies Dropdown */}
             {(onTermsClick || onUsagePolicyClick || onRefundClick) && (
               <div className="relative" data-policies-dropdown>
                 <motion.button
-                  whileHover={{ color: '#fff' }}
+                  whileHover={{ color: hoverColor }}
                   onClick={() => setIsPoliciesMenuOpen(!isPoliciesMenuOpen)}
-                  className="flex items-center gap-1.5 px-2 py-1 hover:bg-neutral-900/50 rounded-sm transition-all"
+                  className={`flex items-center gap-1.5 px-2 py-1 ${isDarkMode ? 'hover:bg-neutral-900/50' : 'hover:bg-neutral-900/20'} rounded-sm transition-all`}
                 >
                   <Scale size={10} />
                   <span>{t('footer.legal')}</span>
@@ -186,16 +188,16 @@ export default function ASCIIFooter({
               </div>
             )}
 
-            <div className="w-[1px] h-3 bg-neutral-800/50 hidden md:block" />
+            <div className={`w-[1px] h-3 ${isDarkMode ? 'bg-neutral-800/50' : 'bg-neutral-400/50'} hidden md:block`} />
 
             {/* Language Selector */}
             <div className="relative" data-language-dropdown>
               <motion.button
-                whileHover={{ color: '#fff' }}
+                whileHover={{ color: hoverColor }}
                 onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
-                className="flex items-center gap-1.5 px-2 py-1 hover:bg-neutral-900/50 rounded-sm transition-all"
+                className={`flex items-center gap-1.5 px-2 py-1 ${isDarkMode ? 'hover:bg-neutral-900/50' : 'hover:bg-neutral-900/20'} rounded-sm transition-all`}
               >
-                <Globe size={10} className="text-neutral-500" />
+                <Globe size={10} className={textColor} />
                 <span className="uppercase tracking-widest">{locale?.split('-')[0] || 'EN'}</span>
                 <ChevronDown size={8} className={`transition-transform duration-300 ${isLanguageMenuOpen ? 'rotate-180' : ''}`} />
               </motion.button>

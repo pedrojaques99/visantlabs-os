@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { getSvgPathFromStroke, calculateBounds } from '@/utils/drawingUtils';
 import type { DrawingType, ShapeType, DrawingBounds } from '@/types/drawing';
@@ -46,17 +46,19 @@ export interface DrawingState {
   shapeFill: boolean;
 }
 
+const DEFAULT_BRAND_CYAN = '#00d9ff';
+
 const DEFAULT_STATE: DrawingState = {
   isDrawingMode: false,
   drawingType: 'freehand',
-  strokeColor: 'brand-cyan',
+  strokeColor: DEFAULT_BRAND_CYAN,
   strokeSize: 2,
-  textColor: 'brand-cyan',
+  textColor: DEFAULT_BRAND_CYAN,
   fontSize: 16,
   fontFamily: 'Manrope',
   shapeType: 'rectangle',
-  shapeColor: 'brand-cyan',
-  shapeStrokeColor: 'brand-cyan',
+  shapeColor: DEFAULT_BRAND_CYAN,
+  shapeStrokeColor: DEFAULT_BRAND_CYAN,
   shapeStrokeWidth: 2,
   shapeFill: false,
 };
@@ -381,7 +383,6 @@ export const useCanvasDrawing = (
   }, []);
 
   // Update drawing bounds (for move and resize)
-  // Update drawing bounds (for move and resize)
   const updateDrawingBounds = useCallback((id: string, bounds: DrawingBounds) => {
     setDrawings((prev) =>
       prev.map((d) =>
@@ -472,11 +473,31 @@ export const useCanvasDrawing = (
     setSelectionBox({ start: position, end: position });
   }, []);
 
+  const selectionBoxRafRef = useRef<number | null>(null);
+  const pendingSelectionPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (selectionBoxRafRef.current !== null) {
+        cancelAnimationFrame(selectionBoxRafRef.current);
+      }
+    };
+  }, []);
+
   const updateSelectionBox = useCallback((position: { x: number; y: number }) => {
-    setSelectionBox((prev) => {
-      if (!prev) return null;
-      return { ...prev, end: position };
-    });
+    pendingSelectionPosRef.current = position;
+    if (selectionBoxRafRef.current === null) {
+      selectionBoxRafRef.current = requestAnimationFrame(() => {
+        const pos = pendingSelectionPosRef.current;
+        if (pos) {
+          setSelectionBox((prev) => {
+            if (!prev) return null;
+            return { ...prev, end: pos };
+          });
+        }
+        selectionBoxRafRef.current = null;
+      });
+    }
   }, []);
 
   const endSelectionBox = useCallback(() => {
@@ -491,11 +512,20 @@ export const useCanvasDrawing = (
     const minY = Math.min(selectionBox.start.y, selectionBox.end.y);
     const maxY = Math.max(selectionBox.start.y, selectionBox.end.y);
 
+    const boxWidth = maxX - minX;
+    const boxHeight = maxY - minY;
+    const MIN_SELECTION_SIZE = 5;
+
+    // Skip selection if the box is too small (just a click, not a real drag)
+    if (boxWidth < MIN_SELECTION_SIZE && boxHeight < MIN_SELECTION_SIZE) {
+      setSelectionBox(null);
+      return;
+    }
+
     // Find drawings that intersect with selection box
     const selectedIds = new Set<string>();
     drawings.forEach((drawing) => {
       const bounds = drawing.bounds;
-      // Check if drawing bounds intersect with selection box
       if (
         bounds.x < maxX &&
         bounds.x + bounds.width > minX &&
@@ -510,15 +540,13 @@ export const useCanvasDrawing = (
     const bounds = {
       x: minX,
       y: minY,
-      width: maxX - minX,
-      height: maxY - minY,
+      width: boxWidth,
+      height: boxHeight,
     };
-    
-    // Use partial match (true) so nodes partially inside the box are selected
+
     const intersectingNodes = reactFlowInstance.getIntersectingNodes?.(bounds, true) || [];
     const intersectingNodeIds = new Set(intersectingNodes.map((n: any) => n.id));
 
-    // Update ReactFlow nodes selection state directly via the instance or prop
     const updateNodes = (nodes: any[]) => nodes.map(n => ({
       ...n,
       selected: intersectingNodeIds.has(n.id)

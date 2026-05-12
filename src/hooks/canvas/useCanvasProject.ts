@@ -178,10 +178,23 @@ export const useCanvasProject = (
         setCanView(Array.isArray(project.canView) ? project.canView : []);
         setLinkedGuidelineId(project.linkedGuidelineId || null);
 
-        // Load drawings if available
+        // Load drawings if available (with color migration for legacy 'brand-cyan' strings)
         if (setDrawings && project.drawings !== undefined && project.drawings !== null) {
           if (Array.isArray(project.drawings)) {
-            setDrawings(project.drawings);
+            const migratedDrawings = project.drawings.map((d: any) => {
+              const fixColor = (c: string | undefined) =>
+                c && !c.startsWith('#') && !c.startsWith('rgb') && !c.startsWith('var(')
+                  ? '#00d9ff'
+                  : c;
+              return {
+                ...d,
+                color: fixColor(d.color) ?? d.color,
+                textColor: fixColor(d.textColor),
+                shapeColor: fixColor(d.shapeColor),
+                shapeStrokeColor: fixColor(d.shapeStrokeColor),
+              };
+            });
+            setDrawings(migratedDrawings);
           } else {
             setDrawings([]);
           }
