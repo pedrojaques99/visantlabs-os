@@ -719,15 +719,18 @@ Available tools:
 - web_search: Search the web for references, inspiration, or information.
 - brand_guideline_update: Update sections of a brand guideline with structured data. Use when the user wants to "feed", "populate", "update", "send", or "alimentar" content from Figma frames to a brand guideline. Read the SELECTED ELEMENTS TEXT CONTENT below, parse it into structured brand data (strategy, personas, archetypes, manifesto, voice, colors, typography, etc.), and call this tool with the parsed data. Pass brand_guideline_id if available. This is a DATA EXTRACTION + API UPDATE tool, NOT a visual Figma operation.
 - brand_guideline_create: Create a new brand guideline. Use when user wants to start a new brand from scratch.
+- brand_guideline_list: List all user's brand guidelines (name + ID). Use when no brandGuidelineId is set and you need to find the right brand by name, or when the user mentions a brand name you need to resolve to an ID.
 - save_to_brand_knowledge: Save strategic insights, decisions, or references to the brand's long-term memory (RAG). Use when the user wants to save notes or context about the brand.
+- update_session_memory: Persist detected brands, client names, project references, and decisions in session memory so they're available in follow-up messages.
 
 Rules:
 - If the user wants a mockup/image, ALWAYS use generate_mockup. The imageUrl in the result will be used with SET_IMAGE_FILL in the design phase.
 - If brandGuidelineId is available, pass it to generate_mockup — it auto-injects logo + colors + typography.
 - If the user wants to feed/populate/update brand guidelines with content from the selection, use brand_guideline_update. Parse the selected text content into the appropriate structured fields (strategy.manifesto, strategy.archetypes, strategy.personas, strategy.voiceValues, guidelines.voice, etc.).
+- If the user mentions a brand by name but no brandGuidelineId is active, call brand_guideline_list first to resolve the name to an ID, then proceed with the resolved ID.
 - If the request doesn't need any tools, respond with just "READY".
 - You can call multiple tools if needed.
-${brandGuidelineId ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this as brand_guideline_id to brand_guideline_update, and as brandGuidelineId to generate_mockup and get_brand_context.` : ''}
+${brandGuidelineId ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this as brand_guideline_id to brand_guideline_update, and as brandGuidelineId to generate_mockup and get_brand_context.` : '\nNo brandGuidelineId is active. If the user references a brand, call brand_guideline_list to find it.'}
 ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call generate_mockup for this request. Infer prompt, aspectRatio, designType, and model from the user message. Do NOT respond with just "READY".` : ''}${selectionContext}`;
 
       const prePassResult = await chatWithLLM(command, '', [], {
