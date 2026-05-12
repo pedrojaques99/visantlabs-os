@@ -1,7 +1,6 @@
-import React from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, FileJson, FileCode, Braces, Brain } from 'lucide-react';
+import { Download, ChevronDown, FileJson, FileCode, Braces, FileText, Brain, Check, ClipboardCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -10,85 +9,122 @@ import { extractExportData, renderCSS, renderTailwind, renderMarkdown, renderDes
 
 interface GuidelineExportBarProps {
   guideline: BrandGuideline;
+  onStartReview?: () => void;
 }
 
-export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guideline }) => {
-  const { t } = useTranslation();
-  const safeName = (guideline.identity?.name || guideline.name || 'brand').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+interface ExportItem {
+  id: string;
+  label: string;
+  group: string;
+  icon: React.FC<{ size?: number; className?: string }>;
+  action: () => void;
+  highlight?: boolean;
+}
 
+export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guideline, onStartReview }) => {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const safeName = (guideline.identity?.name || guideline.name || 'brand').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
   const data = extractExportData(guideline);
 
-  const exportJSON = () => {
-    downloadBlob(JSON.stringify(guideline, null, 2), `${safeName}-guidelines.json`, 'application/json');
-    toast.success('Exported as JSON');
-  };
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [open]);
 
-  const exportMarkdown = () => {
-    downloadBlob(renderMarkdown(data), `${safeName}-guidelines.md`, 'text/markdown');
-    toast.success('Exported as Markdown');
-  };
+  const items: ExportItem[] = [
+    { id: 'json', label: 'JSON', group: 'Devs', icon: FileJson, action: () => { downloadBlob(JSON.stringify(guideline, null, 2), `${safeName}-guidelines.json`, 'application/json'); toast.success('Exported as JSON'); } },
+    { id: 'css', label: 'CSS Variables', group: 'Devs', icon: FileCode, action: () => { downloadBlob(renderCSS(data), `${safeName}-variables.css`, 'text/css'); toast.success('Exported as CSS'); } },
+    { id: 'tailwind', label: 'Tailwind Config', group: 'Devs', icon: Braces, action: () => { downloadBlob(renderTailwind(data), `${safeName}.tailwind.config.js`, 'text/javascript'); toast.success('Exported as Tailwind'); } },
+    { id: 'markdown', label: 'Markdown', group: 'Docs', icon: FileText, action: () => { downloadBlob(renderMarkdown(data), `${safeName}-guidelines.md`, 'text/markdown'); toast.success('Exported as Markdown'); } },
+    { id: 'design-md', label: 'DESIGN.md', group: 'AI', icon: Brain, action: () => { downloadBlob(renderDesignMd(data), 'DESIGN.md', 'text/markdown'); toast.success('Exported as DESIGN.md'); }, highlight: true },
+  ];
 
-  const exportCSS = () => {
-    downloadBlob(renderCSS(data), `${safeName}-variables.css`, 'text/css');
-    toast.success('Exported as CSS Variables');
-  };
-
-  const exportTailwind = () => {
-    downloadBlob(renderTailwind(data), `${safeName}.tailwind.config.js`, 'text/javascript');
-    toast.success('Exported as Tailwind Config');
-  };
-
-  const exportDesignMd = () => {
-    downloadBlob(renderDesignMd(data), 'DESIGN.md', 'text/markdown');
-    toast.success('Exported as DESIGN.md — LLM-ready spec');
-  };
-
-  const groupBtn =
-    'h-8 px-3 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan hover:bg-brand-cyan/5 gap-2';
-  const groupLabel =
-    'text-[9px] font-mono text-neutral-700 uppercase tracking-widest mr-1 shrink-0';
-  const divider = 'h-4 w-px bg-white/[0.06] mx-1';
+  const groups = ['Devs', 'Docs', 'AI'] as const;
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 pt-6 border-t border-white/[0.03]">
-      <span className="text-[10px] font-mono text-neutral-700 uppercase tracking-widest mr-2">
-        Export
-      </span>
+    <div className="sticky bottom-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between h-12 border-t border-white/[0.06] bg-neutral-950/90 backdrop-blur-xl">
+        {/* Left: saved status */}
+        <div className="flex items-center gap-2">
+          <Check size={12} className="text-green-500/60" />
+          <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">Saved</span>
+        </div>
 
-      {/* Devs */}
-      <span className={groupLabel}>Devs</span>
-      <Button variant="ghost" size="sm" onClick={exportJSON} className={groupBtn}>
-        <FileJson size={12} /> JSON
-      </Button>
-      <Button variant="ghost" size="sm" onClick={exportCSS} className={groupBtn}>
-        <FileCode size={12} /> CSS
-      </Button>
-      <Button variant="ghost" size="sm" onClick={exportTailwind} className={groupBtn}>
-        <Braces size={12} /> Tailwind
-      </Button>
+        {/* Right: Review + Export */}
+        <div className="flex items-center gap-2">
+          {onStartReview && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onStartReview}
+              className="h-8 px-3 text-[10px] font-mono uppercase tracking-wider text-neutral-500 hover:text-neutral-300 gap-1.5"
+            >
+              <ClipboardCheck size={12} />
+              Review
+            </Button>
+          )}
 
-      <span className={divider} aria-hidden />
+          <div ref={menuRef} className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setOpen(v => !v)}
+              className="h-8 px-3 text-[10px] font-mono uppercase tracking-wider text-neutral-400 hover:text-neutral-200 gap-1.5 border border-white/[0.06] hover:border-white/10"
+            >
+              <Download size={12} />
+              Export
+              <ChevronDown size={10} className={cn('transition-transform', open && 'rotate-180')} />
+            </Button>
 
-      {/* Docs */}
-      <span className={groupLabel}>Docs</span>
-      <Button variant="ghost" size="sm" onClick={exportMarkdown} className={groupBtn}>
-        <FileText size={12} /> Markdown
-      </Button>
-
-      <span className={divider} aria-hidden />
-
-      {/* Para IA */}
-      <span className={cn(groupLabel, 'text-brand-cyan/60')}>Para IA</span>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={exportDesignMd}
-        className="h-8 px-3 text-[10px] font-mono gap-2 text-brand-cyan/90 hover:text-brand-cyan bg-brand-cyan/[0.04] hover:bg-brand-cyan/[0.08] border border-brand-cyan/20 hover:border-brand-cyan/40 transition-all"
-        title="LLM-ready spec — copia direto pra prompts ou IDE assistants"
-      >
-        <Brain size={12} />
-        DESIGN.md
-      </Button>
+            {open && (
+              <div className="absolute right-0 bottom-full mb-2 z-50 w-52 bg-neutral-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden">
+                {groups.map((group, gi) => (
+                  <React.Fragment key={group}>
+                    {gi > 0 && <div className="h-px bg-white/[0.04]" />}
+                    <div className="px-3 pt-2 pb-1">
+                      <span className={cn(
+                        'text-[9px] font-mono uppercase tracking-widest',
+                        group === 'AI' ? 'text-brand-cyan/60' : 'text-neutral-600'
+                      )}>{group === 'AI' ? 'For AI' : `For ${group}`}</span>
+                    </div>
+                    {items.filter(i => i.group === group).map(item => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => { item.action(); setOpen(false); }}
+                          className={cn(
+                            'w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors',
+                            item.highlight
+                              ? 'text-brand-cyan/90 hover:bg-brand-cyan/[0.08]'
+                              : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
+                          )}
+                        >
+                          <Icon size={13} className="shrink-0" />
+                          <span className="text-[11px] font-medium">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

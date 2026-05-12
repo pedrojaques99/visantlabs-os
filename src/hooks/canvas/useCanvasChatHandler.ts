@@ -9,6 +9,7 @@ import type {
   TextNodeData,
   FlowNodeType
 } from '@/types/reactFlow';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
 import { sendChatMessage, parseCanvasCommand } from '@/services/chatService';
 import { getChatMessageCreditsRequired } from '@/utils/creditCalculator';
@@ -366,6 +367,7 @@ export const useCanvasChatHandler = ({
 
     const updatedMessages = [...(chatData.messages || []), userMessage];
 
+    trackCanvasEvent('generation_started', 'chat');
     // Update node with user message and set loading state
     updateNodeData<ChatNodeData>(nodeId, {
       messages: updatedMessages,
@@ -408,10 +410,12 @@ export const useCanvasChatHandler = ({
         isLoading: false,
       }, 'chat');
 
+      trackCanvasEvent('generation_completed', 'chat');
       if (saveImmediately) {
         setTimeout(() => saveImmediately(), 100);
       }
     } catch (error: any) {
+      trackCanvasEvent('generation_failed', 'chat', undefined, { error: error?.message });
       console.error('[ChatHandler] Error sending message:', error);
 
       // On error, remove user message and reset count

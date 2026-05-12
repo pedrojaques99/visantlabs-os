@@ -15,7 +15,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/utils';
 import { getTextColors, lightenColor } from '@/utils/colorUtils';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
+import { HexColorPicker } from 'react-colorful';
 
 export type CanvasTool = 'hand' | 'select' | 'draw' | 'color' | 'type' | 'shapes';
 
@@ -44,7 +45,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
   isDrawingMode = false,
   drawingType = 'freehand',
   onDrawingTypeChange,
-  strokeColor = 'brand-cyan',
+  strokeColor = '#00d9ff',
   onColorChange,
   onShapeTypeChange,
   shapeType = 'rectangle',
@@ -155,7 +156,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
   // Organização moderna das cores por categorias
   const colorPalette = {
     primary: {
-      brand: 'brand-cyan', // brand cyan - cor principal
+      brand: '#00d9ff',
       black: '#000000',
     },
     basic: [
@@ -257,7 +258,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
   };
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50" ref={toolbarRef}>
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pb-[env(safe-area-inset-bottom)]" ref={toolbarRef}>
       <div
         className={cn(
           "flex items-center gap-1 backdrop-blur-xl border rounded-xl px-2 py-1.5 shadow-lg",
@@ -512,14 +513,10 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   {/* Seletor de cor customizado */}
                   <div className="space-y-1.5">
                     <div className="text-xs px-1" style={{ color: textColors.muted }}>Custom Color</div>
-                    <input
-                      type="color"
-                      value={strokeColor}
-                      onChange={(e) => onColorChange?.(e.target.value)}
-                      className={cn(
-                        "w-full h-9 rounded-md border bg-transparent cursor-pointer transition-colors",
-                        isLight ? "border-neutral-300 hover:border-neutral-400" : "border-neutral-700 hover:border-neutral-600"
-                      )}
+                    <HexColorPicker
+                      color={strokeColor.startsWith('#') ? strokeColor : '#00d9ff'}
+                      onChange={(color) => onColorChange?.(color)}
+                      style={{ width: '100%', height: '120px' }}
                     />
                   </div>
                 </div>

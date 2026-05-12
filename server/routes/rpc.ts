@@ -10,7 +10,7 @@ import type { Envelope, OpName, Result, TelemetryEntry } from '../../shared/prot
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { logger } from '../lib/logger.js';
 import { resolveBrandGuideline } from '../lib/brandResolver.js';
-import { buildBrandContextJSONString } from '../lib/brandContextBuilder.js';
+import { buildBrandContextWithKnowledge } from '../lib/brandContextBuilder.js';
 import { improvePrompt } from '../services/geminiService.js';
 
 const router = express.Router();
@@ -18,10 +18,6 @@ const router = express.Router();
 type Handler = (payload: any, req: express.Request) => Promise<unknown>;
 
 const handlers: Partial<Record<OpName, Handler>> = {
-  /**
-   * ai.chat — injeta BrandGuideline ativa (meta.brandId) no prompt antes de chamar o LLM.
-   * Diferencial Visant (CLAUDE.md): guidelines são INPUT, não apenas output.
-   */
   'ai.chat': async (p: { prompt: string; messages?: unknown[]; stream?: boolean }, req) => {
     const env = req.body as Envelope;
     const userId = (req as AuthRequest).userId;
@@ -31,7 +27,8 @@ const handlers: Partial<Record<OpName, Handler>> = {
     if (userId && brandId) {
       const { guideline } = await resolveBrandGuideline('', userId, brandId);
       if (guideline) {
-        brandPreamble = `# Brand Context\n${buildBrandContextJSONString(guideline)}\n\n# User Request\n`;
+        const ctx = await buildBrandContextWithKnowledge(guideline as any, { userId, prompt: p.prompt });
+        brandPreamble = `# Brand Context\n${ctx}\n\n# User Request\n`;
       }
     }
 

@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
 import { useExtractFileStream } from '@/hooks/useExtractFigStream';
@@ -11,6 +11,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface BrandIngestButtonProps {
   guideline: BrandGuideline;
   onSuccess: () => void;
+  triggerRef?: React.MutableRefObject<((files: FileList) => void) | null>;
 }
 
 type SourceTag = 'fig_file' | 'pdf' | 'images';
@@ -23,7 +24,7 @@ type ActiveSource = { state: FigStreamState; reset: () => void; title: string; s
  *   images → useIngestAsStream (dryRun /ingest → normalised FigStreamState)
  * All paths share BrandIngestModal for the approve/select/apply step.
  */
-export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline, onSuccess }) => {
+export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline, onSuccess, triggerRef }) => {
   const fig    = useExtractFileStream(guideline.id!, 'extract-fig');
   const pdf    = useExtractFileStream(guideline.id!, 'extract-pdf');
   const images = useIngestAsStream(guideline.id!);
@@ -47,10 +48,17 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline,
       fig.stream(file);
     } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
       pdf.stream(file);
+    } else if (file.name.endsWith('.txt') || file.name.endsWith('.md') || file.type === 'text/plain' || file.type === 'text/markdown') {
+      pdf.stream(file);
     } else {
       await images.ingest(Array.from(files));
     }
   }, [fig, pdf, images]);
+
+  useEffect(() => {
+    if (triggerRef) triggerRef.current = handleFiles;
+    return () => { if (triggerRef) triggerRef.current = null; };
+  }, [triggerRef, handleFiles]);
 
   return (
     <>
@@ -68,7 +76,7 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline,
         ref={fileInputRef}
         type="file"
         className="hidden"
-        accept=".fig,.pdf,image/*"
+        accept=".fig,.pdf,.txt,.md,text/plain,text/markdown,image/*"
         multiple
         onChange={e => { handleFiles(e.target.files); e.target.value = ''; }}
       />

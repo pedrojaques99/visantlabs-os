@@ -157,6 +157,19 @@ export function buildBrandContextJSON(bg: BrandGuideline): BrandContextJSON {
   };
 }
 
+const BRAND_INSTRUCTIONS = `INSTRUCTIONS:
+- Use ONLY the colors and typography from brand_context. Primary color for main actions, secondary for accents.
+- If strategy.coreMessage exists, use it as the brand's positioning foundation (product + differential + emotional bond).
+- If strategy.pillars exist, ensure all creative output aligns with these fundamental values.
+- If strategy.archetypes exist, reflect the primary archetype's personality in layout and visual tone.
+- If strategy.personas exist, design for the primary persona's context and expectations.
+- If strategy.manifesto exists (structured or text), let the provocation→tension→promise arc guide the narrative.
+- If strategy.marketResearch exists, leverage gaps and opportunities for differentiation.
+- If strategy.graphicSystem exists, follow patterns, grafisms, and image rules for visual consistency.
+- If voice.values exist, apply them to any copy or text elements.
+- If tokens (spacing, radius) exist, use them for consistent layout rhythm.
+- If brand_knowledge exists, use it as additional context for brand-consistent outputs — it contains source material the brand owner uploaded.`;
+
 /**
  * Build JSON string context for system prompt injection.
  * Wraps buildBrandContextJSON in a descriptive format.
@@ -167,17 +180,37 @@ export function buildBrandContextJSONString(bg: BrandGuideline): string {
 ${JSON.stringify(json, null, 2)}
 </brand_context>
 
-INSTRUCTIONS:
-- Use ONLY the colors and typography from brand_context. Primary color for main actions, secondary for accents.
-- If strategy.coreMessage exists, use it as the brand's positioning foundation (product + differential + emotional bond).
-- If strategy.pillars exist, ensure all creative output aligns with these fundamental values.
-- If strategy.archetypes exist, reflect the primary archetype's personality in layout and visual tone.
-- If strategy.personas exist, design for the primary persona's context and expectations.
-- If strategy.manifesto exists (structured or text), let the provocation→tension→promise arc guide the narrative.
-- If strategy.marketResearch exists, leverage gaps and opportunities for differentiation.
-- If strategy.graphicSystem exists, follow patterns, grafisms, and image rules for visual consistency.
-- If voice.values exist, apply them to any copy or text elements.
-- If tokens (spacing, radius) exist, use them for consistent layout rhythm.`;
+${BRAND_INSTRUCTIONS}`;
+}
+
+/**
+ * Async variant that enriches brand context with RAG knowledge retrieval.
+ * Use this for generation routes where deeper brand context improves output.
+ */
+export async function buildBrandContextWithKnowledge(
+  bg: BrandGuideline,
+  opts: { userId: string; prompt?: string }
+): Promise<string> {
+  const base = buildBrandContextJSONString(bg);
+
+  if (!bg.knowledgeFiles?.length || !bg.id) return base;
+
+  try {
+    const { knowledgeService } = await import('../services/knowledgeService.js');
+    const query = opts.prompt || bg.identity?.name || 'brand context';
+    const ragContext = await knowledgeService.getContext(query, opts.userId, bg.id);
+
+    if (!ragContext?.trim()) return base;
+
+    return `${base}
+
+<brand_knowledge>
+${ragContext}
+</brand_knowledge>`;
+  } catch (e) {
+    console.error('[brandContextBuilder] RAG enrichment failed, falling back to base context:', e);
+    return base;
+  }
 }
 
 /**

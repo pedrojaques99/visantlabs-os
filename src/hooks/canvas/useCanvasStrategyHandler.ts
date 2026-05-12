@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData, StrategyNodeData } from '@/types/reactFlow';
 import type { BrandingData } from '@/types/types';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
 
 interface UseStrategyNodeHandlerParams {
@@ -48,6 +49,7 @@ export const useCanvasStrategyHandler = ({
       return;
     }
 
+    trackCanvasEvent('generation_started', 'strategy', undefined, { strategyType });
     updateNodeData<StrategyNodeData>(nodeId, { isGenerating: true, generatingStep: strategyType }, 'strategy');
 
     try {
@@ -78,10 +80,12 @@ export const useCanvasStrategyHandler = ({
         generatingStep: undefined
       }, 'strategy');
 
+      trackCanvasEvent('generation_completed', 'strategy', undefined, { strategyType });
       if (saveImmediately) {
         setTimeout(() => saveImmediately(), 100);
       }
     } catch (error: any) {
+      trackCanvasEvent('generation_failed', 'strategy', undefined, { strategyType, error: error?.message });
       console.error('Error generating strategy:', error);
       toast.error(error?.message || 'Failed to generate strategy', { duration: 5000 });
       updateNodeData<StrategyNodeData>(nodeId, { isGenerating: false, generatingStep: undefined }, 'strategy');

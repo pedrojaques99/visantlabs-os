@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDeleteGuideline, useIngestGuideline } from '@/hooks/queries/useBrandGuidelines';
 import { motion } from 'framer-motion';
-import { ClipboardCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useHotkeys } from 'react-hotkeys-hook';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -199,25 +198,7 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
         </motion.div>
       </SectionHideContext.Provider>
 
-      <div className="flex items-center justify-between pt-2">
-        {(isDirty || isSaving) && (
-          <span className="text-[10px] font-mono uppercase tracking-widest transition-colors text-neutral-600">
-            {isSaving ? 'Salvando...' : '✓ Salvo'}
-          </span>
-        )}
-        {onStartReview && (
-          <button
-            onClick={onStartReview}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04] transition-all group"
-          >
-            <ClipboardCheck size={13} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
-            <span className="text-[10px] font-mono text-neutral-600 group-hover:text-neutral-400 transition-colors uppercase tracking-widest">Review Design System</span>
-          </button>
-        )}
-        <div className="ml-auto">
-          <GuidelineExportBar guideline={guideline} />
-        </div>
-      </div>
+      <GuidelineExportBar guideline={guideline} onStartReview={onStartReview} />
     </div>
   );
 };

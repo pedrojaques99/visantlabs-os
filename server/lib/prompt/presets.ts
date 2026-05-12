@@ -127,16 +127,3 @@ export function buildPresetContext(format: FormatType): string {
   const preset = FORMAT_PRESETS[format];
   return `DIMENSOES: ${preset.label} = ${preset.width}x${preset.height}px (usar automaticamente)`;
 }
-
-/**
- * Build full presets reference (for complex intents)
- */
-export function buildFullPresetsReference(): string {
-  const lines = ['FORMATOS DISPONIVEIS:'];
-
-  for (const [, preset] of Object.entries(FORMAT_PRESETS)) {
-    lines.push(`  ${preset.label}: ${preset.width}x${preset.height}px`);
-  }
-
-  return lines.join('\n');
-}

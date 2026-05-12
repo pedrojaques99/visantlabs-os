@@ -194,6 +194,18 @@
     color: #0a0a0a;
   }
 
+  /* Invert selection on cyan backgrounds so highlight is visible */
+  .bg-brand-cyan ::selection,
+  .bg-brand-cyan::selection {
+    background-color: #0a0a0a;
+    color: var(--brand-cyan);
+  }
+  .bg-brand-cyan ::-moz-selection,
+  .bg-brand-cyan::-moz-selection {
+    background-color: #0a0a0a;
+    color: var(--brand-cyan);
+  }
+
   /* Cursor pointer para elementos clicáveis */
   a,
   button,

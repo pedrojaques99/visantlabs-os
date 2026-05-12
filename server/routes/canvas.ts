@@ -828,6 +828,100 @@ router.get('/shared/:shareId', apiRateLimiter, async (req, res) => {
   }
 });
 
+// ── Canvas Analytics Events ─────────────────────────────────────────────────
+let eventsIndexed = false;
+async function ensureEventIndexes(db: any) {
+  if (eventsIndexed) return;
+  eventsIndexed = true;
+  const col = db.collection('canvas_events');
+  await Promise.all([
+    col.createIndex({ serverTs: 1 }, { expireAfterSeconds: 90 * 86400 }),
+    col.createIndex({ event: 1, serverTs: 1 }),
+    col.createIndex({ nodeType: 1, serverTs: 1 }),
+    col.createIndex({ userId: 1, serverTs: 1 }),
+  ]).catch(() => {});
+}
+
+router.post('/events', apiRateLimiter, async (req, res) => {
+  try {
+    const { events } = req.body;
+    if (!Array.isArray(events) || events.length === 0 || events.length > 50) {
+      return res.status(400).json({ error: 'Invalid events payload' });
+    }
+
+    let userId: string | undefined;
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const jwt = await import('jsonwebtoken');
+        const token = authHeader.slice(7);
+        const decoded = jwt.default.verify(token, process.env.JWT_SECRET || 'dev-secret') as any;
+        userId = decoded.userId;
+      } catch {}
+    }
+
+    const { getDb } = await import('../db/mongodb.js');
+    const db = getDb();
+    await ensureEventIndexes(db);
+
+    const docs = events.map((e: any) => ({
+      event: String(e.event).slice(0, 50),
+      nodeType: e.nodeType ? String(e.nodeType).slice(0, 50) : undefined,
+      canvasId: e.canvasId ? String(e.canvasId).slice(0, 100) : undefined,
+      meta: e.meta && typeof e.meta === 'object' ? e.meta : undefined,
+      userId,
+      clientTs: typeof e.ts === 'number' ? new Date(e.ts) : undefined,
+      serverTs: new Date(),
+    }));
+
+    await db.collection('canvas_events').insertMany(docs, { ordered: false });
+    res.status(204).end();
+  } catch (error: any) {
+    console.error('Error storing canvas events:', error.message);
+    res.status(500).json({ error: 'Failed to store events' });
+  }
+});
+
+router.get('/events/stats', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Not authenticated' });
+
+    const { getDb } = await import('../db/mongodb.js');
+    const db = getDb();
+
+    const daysBack = Math.min(parseInt(req.query.days as string) || 30, 90);
+    const since = new Date(Date.now() - daysBack * 86400000);
+
+    const [byNodeType, byEvent, timeline] = await Promise.all([
+      db.collection('canvas_events').aggregate([
+        { $match: { serverTs: { $gte: since }, nodeType: { $exists: true } } },
+        { $group: { _id: '$nodeType', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]).toArray(),
+      db.collection('canvas_events').aggregate([
+        { $match: { serverTs: { $gte: since } } },
+        { $group: { _id: '$event', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]).toArray(),
+      db.collection('canvas_events').aggregate([
+        { $match: { serverTs: { $gte: since } } },
+        { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$serverTs' } }, count: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+      ]).toArray(),
+    ]);
+
+    res.json({
+      period: { days: daysBack, since: since.toISOString() },
+      byNodeType: byNodeType.map((r: any) => ({ nodeType: r._id, count: r.count })),
+      byEvent: byEvent.map((r: any) => ({ event: r._id, count: r.count })),
+      timeline: timeline.map((r: any) => ({ date: r._id, count: r.count })),
+    });
+  } catch (error: any) {
+    console.error('Error fetching canvas event stats:', error.message);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
 // Get canvas project by ID
 router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {

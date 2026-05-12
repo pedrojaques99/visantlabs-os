@@ -2,6 +2,7 @@ import React from 'react';
 import type { DrawingStroke } from '@/hooks/canvas/useCanvasDrawing';
 import { cn } from '@/lib/utils';
 import { DrawingTextRenderer } from '../reactflow/shared/DrawingTextRenderer';
+import { CANVAS_SELECTION } from '@/constants/canvasColors';
 
 interface DrawingLayerProps {
   drawings: DrawingStroke[];
@@ -58,8 +59,23 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
   onMoveDrawings,
   onInteractionEnd,
 }) => {
+  // Viewport culling: only render drawings visible on screen (with margin)
+  const visibleDrawings = React.useMemo(() => {
+    if (drawings.length < 30) return drawings;
+    const margin = 200;
+    const screenW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+    const screenH = typeof window !== 'undefined' ? window.innerHeight : 1080;
+    const minX = -viewport.x / viewport.zoom - margin;
+    const minY = -viewport.y / viewport.zoom - margin;
+    const maxX = (screenW - viewport.x) / viewport.zoom + margin;
+    const maxY = (screenH - viewport.y) / viewport.zoom + margin;
+    return drawings.filter((d) => {
+      const b = d.bounds;
+      return b.x + b.width > minX && b.x < maxX && b.y + b.height > minY && b.y < maxY;
+    });
+  }, [drawings, viewport.x, viewport.y, viewport.zoom]);
+
   const [draggingId, setDraggingId] = React.useState<string | null>(null);
-  const [dragOffset, setDragOffset] = React.useState<{ x: number; y: number } | null>(null);
   const [resizingId, setResizingId] = React.useState<string | null>(null);
   const [resizeStart, setResizeStart] = React.useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [resizeHandle, setResizeHandle] = React.useState<string | null>(null);
@@ -156,7 +172,6 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
         onInteractionEnd?.();
       }
       setDraggingId(null);
-      setDragOffset(null);
       setResizingId(null);
       setResizeStart(null);
       setResizeHandle(null);
@@ -183,8 +198,8 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
       <g
         transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.zoom})`}
       >
-        {/* Saved drawings */}
-        {drawings.map((drawing) => {
+        {/* Saved drawings (viewport-culled for performance) */}
+        {visibleDrawings.map((drawing) => {
           if (drawing.type === 'freehand' && drawing.pathData) {
             return (
               <g key={drawing.id}>
@@ -204,7 +219,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                   }}
                   style={{
                     filter: selectedDrawingIds.has(drawing.id)
-                      ? 'drop-shadow(0 0 4px rgba(82, 221, 235, 0.8))'
+                      ? CANVAS_SELECTION.glow
                       : 'none',
                   }}
                 />
@@ -216,7 +231,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                     width={drawing.bounds.width + 10}
                     height={drawing.bounds.height + 10}
                     fill="transparent"
-                    stroke="rgba(82, 221, 235, 0.5)"
+                    stroke={CANVAS_SELECTION.stroke}
                     strokeWidth={2}
                     strokeDasharray="5,5"
                     className="pointer-events-none"
@@ -235,7 +250,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                 <foreignObject
                   x={drawing.bounds.x}
                   y={drawing.bounds.y}
-                  width={Math.max(drawing.bounds.width, 200)}
+                  width={Math.max(drawing.bounds.width, 100)}
                   height={Math.max(drawing.bounds.height, 40)}
                   className="pointer-events-auto"
                   style={{ cursor: isEditing ? 'text' : isDragging ? 'grabbing' : 'grab' }}
@@ -251,7 +266,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                     }
                   }}
                 >
-                  <div className="drawing-text-editor">
+                  <div className="drawing-text-editor" role="textbox" tabIndex={0} aria-label="Drawing text editor">
                     <DrawingTextRenderer
                       text={drawing.text || ''}
                       textColor={drawing.textColor || drawing.color}
@@ -283,7 +298,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                       width={drawing.bounds.width + 10}
                       height={drawing.bounds.height + 10}
                       fill="transparent"
-                      stroke="rgba(82, 221, 235, 0.5)"
+                      stroke={CANVAS_SELECTION.stroke}
                       strokeWidth={2}
                       strokeDasharray="5,5"
                       className="pointer-events-none"
@@ -303,8 +318,8 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                           cx={x}
                           cy={y}
                           r={4}
-                          fill="rgba(82, 221, 235, 0.9)"
-                          stroke="rgba(82, 221, 235, 1)"
+                          fill={CANVAS_SELECTION.handle}
+                          stroke={CANVAS_SELECTION.handleStroke}
                           strokeWidth={1.5}
                           className="resize-handle pointer-events-auto cursor-nwse-resize"
                           style={{
@@ -444,7 +459,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                     width={width + 10}
                     height={height + 10}
                     fill="transparent"
-                    stroke="rgba(82, 221, 235, 0.5)"
+                    stroke={CANVAS_SELECTION.stroke}
                     strokeWidth={2}
                     strokeDasharray="5,5"
                     className="pointer-events-none"
@@ -610,7 +625,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                         x={shapeX + finalWidth / 2}
                         y={shapeY - 12}
                         textAnchor="middle"
-                        fill="rgba(82, 221, 235, 0.9)"
+                        fill={CANVAS_SELECTION.label}
                         fontSize="11"
                         fontFamily="Manrope, sans-serif"
                         fontWeight="600"
@@ -633,7 +648,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
             y={Math.min(selectionBox.start.y, selectionBox.end.y)}
             width={Math.abs(selectionBox.end.x - selectionBox.start.x)}
             height={Math.abs(selectionBox.end.y - selectionBox.start.y)}
-            fill="rgba(82, 221, 235, 0.1)"
+            fill={CANVAS_SELECTION.fill}
             stroke="rgba(82, 221, 235, 0.5)"
             strokeWidth={2}
             strokeDasharray="5,5"

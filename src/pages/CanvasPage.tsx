@@ -5,6 +5,7 @@ import { useLayout } from '@/hooks/useLayout';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { getImageUrl } from '@/utils/imageUtils';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { ImageNode } from '../components/reactflow/ImageNode';
 import { MergeNode } from '../components/reactflow/MergeNode';
 import { EditNode } from '../components/reactflow/EditNode';
@@ -64,6 +65,7 @@ import type { PipelineAsset } from '@/services/pipelineApi';
 import { useCanvasHeader } from '../components/canvas/CanvasHeaderContext';
 import { CanvasFlow } from '../components/canvas/CanvasFlow';
 import { CollaborativeCanvas } from '../components/canvas/CollaborativeCanvas';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { UniversalSidePanel } from '../components/canvas/UniversalSidePanel';
 import { DirectorSidePanel } from '../components/canvas/DirectorSidePanel';
 import { cleanEdgeHandles, mockupArraysEqual, arraysEqual, getConnectedBrandIdentity, generateNodeId, getImageFromSourceNode, syncConnectedImage, getMediaFromNodeForCopy } from '@/utils/canvas/canvasNodeUtils';
@@ -1481,6 +1483,7 @@ export const CanvasPage: React.FC = () => {
         ...metadata,
         nodes,
         edges,
+        drawings: drawing.drawings,
       });
 
       toast.success(t('workflows.messages.saved') || 'Workflow saved successfully!');
@@ -1489,7 +1492,7 @@ export const CanvasPage: React.FC = () => {
       toast.error(error.message || t('workflows.errors.failedToSave') || 'Failed to save workflow');
       throw error;
     }
-  }, [nodes, edges, t]);
+  }, [nodes, edges, drawing.drawings, t]);
 
   const handleLoadWorkflow = useCallback((workflow: CanvasWorkflow) => {
     // Add to history before clearing
@@ -1500,14 +1503,16 @@ export const CanvasPage: React.FC = () => {
     setEdges([]);
     drawing.setDrawings([]);
 
-    // Load workflow nodes and edges
+    // Load workflow nodes, edges, and drawings
+    const workflowDrawings = Array.isArray(workflow.drawings) ? workflow.drawings : [];
     setTimeout(() => {
       setNodes(workflow.nodes as Node<FlowNodeData>[]);
       setEdges(workflow.edges as Edge[]);
+      drawing.setDrawings(workflowDrawings);
 
       // Add to history after loading
       setTimeout(() => {
-        addToHistory(workflow.nodes as Node<FlowNodeData>[], workflow.edges as Edge[], []);
+        addToHistory(workflow.nodes as Node<FlowNodeData>[], workflow.edges as Edge[], workflowDrawings);
       }, 100);
     }, 50);
 
@@ -2154,6 +2159,7 @@ export const CanvasPage: React.FC = () => {
     const node = nodes.find(n => n.id === nodeId);
     if (!node) return;
 
+    trackCanvasEvent('node_deleted', node.type, projectId);
     addToHistory(nodes, edges);
 
     // If it's a ChatNode, clear history before deleting
@@ -3895,6 +3901,7 @@ export const CanvasPage: React.FC = () => {
         <div className="flex-1 relative flex overflow-hidden">
           {/* Main Canvas Area */}
           <div className="flex-1 relative order-2 overflow-hidden flex flex-col">
+            <ErrorBoundary>
             {isCollaborative && projectId && isAuthenticated && authService.getToken() ? (
               <RoomProvider
                 id={`canvas-${projectId}`}
@@ -3927,6 +3934,8 @@ export const CanvasPage: React.FC = () => {
                   onDropImage={handleDropImage}
                   onDropNode={handleDropNode}
                   onAddColorExtractor={addColorExtractorNode}
+                  strokeColor={drawing.drawingState.strokeColor}
+                  strokeSize={drawing.drawingState.strokeSize}
                   isDrawingMode={drawing.drawingState.isDrawingMode}
                   drawingType={drawing.drawingState.drawingType}
                   onDrawingStart={drawing.startDrawing}
@@ -3955,6 +3964,12 @@ export const CanvasPage: React.FC = () => {
                   onUpdateDrawingBounds={(id, bounds) => {
                     addToHistory(nodes, edges, drawing.drawings);
                     drawing.updateDrawingBounds?.(id, bounds);
+                  }}
+                  onMoveDrawings={(ids, delta) => {
+                    drawing.moveDrawings?.(ids, delta);
+                  }}
+                  onInteractionEnd={() => {
+                    addToHistory(nodes, edges, drawing.drawings);
                   }}
                   shapePreview={
                     drawing.drawingState.drawingType === 'shape' &&
@@ -4005,6 +4020,8 @@ export const CanvasPage: React.FC = () => {
                 edgeStyle={edgeStyle}
                 edgeStrokeWidth={edgeStrokeWidth}
                 onAddColorExtractor={addColorExtractorNode}
+                strokeColor={drawing.drawingState.strokeColor}
+                strokeSize={drawing.drawingState.strokeSize}
                 isDrawingMode={drawing.drawingState.isDrawingMode}
                 drawingType={drawing.drawingState.drawingType}
                 onDrawingStart={drawing.startDrawing}
@@ -4057,6 +4074,7 @@ export const CanvasPage: React.FC = () => {
                 }
               />
             )}
+          </ErrorBoundary>
           </div>
         </div>
 

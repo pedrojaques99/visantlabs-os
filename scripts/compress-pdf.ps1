@@ -11,7 +11,7 @@
   Path to the source PDF (or folder if -Recurse).
 
 .PARAMETER Output
-  Output PDF path. Defaults to "<name>.compressed.pdf" next to the input.
+  Output PDF path. Defaults to "<name> -.pdf" next to the input.
 
 .PARAMETER Dpi
   Target DPI for color/gray/mono images. Default 300.
@@ -118,37 +118,53 @@ function Compress-One {
   }
   $gsArgs += @("-sOutputFile=$tmp", $In)
 
-  Write-Host "→ Ghostscript: $In" -ForegroundColor Cyan
+  $fileName = Split-Path $In -Leaf
+  $before = (Get-Item $In).Length
+  $sizeMB = "{0:N2} MB" -f ($before / 1MB)
+  Write-Host "    [$fileName] ($sizeMB)" -ForegroundColor White -NoNewline
+
+  Write-Host " GS..." -ForegroundColor DarkGray -NoNewline
   & $gs @gsArgs
-  if ($LASTEXITCODE -ne 0) { throw "Ghostscript failed on $In" }
+  if ($LASTEXITCODE -ne 0) { Write-Host " ERRO" -ForegroundColor Red; throw "Ghostscript failed on $In" }
 
   if (-not $SkipQpdf) {
-    Write-Host "→ qpdf polish: $tmp" -ForegroundColor Cyan
+    Write-Host " qpdf..." -ForegroundColor DarkGray -NoNewline
     & $qpdf --compress-streams=y --recompress-flate --object-streams=generate $tmp $Out
-    if ($LASTEXITCODE -ne 0) { throw "qpdf failed on $tmp" }
+    if ($LASTEXITCODE -ne 0) { Write-Host " ERRO" -ForegroundColor Red; throw "qpdf failed on $tmp" }
     Remove-Item $tmp -Force
   }
 
-  $before = (Get-Item $In).Length
-  $after  = (Get-Item $Out).Length
-  $pct    = if ($before -gt 0) { [math]::Round(100 - ($after / $before * 100), 1) } else { 0 }
-  Write-Host ("✔ {0} → {1}  ({2:N2} MB → {3:N2} MB, -{4}%)" -f $In, $Out, ($before/1MB), ($after/1MB), $pct) -ForegroundColor Green
+  $after = (Get-Item $Out).Length
+  $pct   = if ($before -gt 0) { [math]::Round(100 - ($after / $before * 100), 1) } else { 0 }
+  $afterMB = "{0:N2} MB" -f ($after / 1MB)
+  Write-Host " -> $afterMB (-${pct}%)" -ForegroundColor Green
 }
 
 if ($Recurse) {
   if (-not (Test-Path $Path -PathType Container)) { throw "-Recurse requires a folder path." }
-  $files = Get-ChildItem -LiteralPath $Path -Filter *.pdf -Recurse -File | Where-Object { $_.Name -notmatch '\.compressed(\.gs)?\.pdf$' }
+  $files = @(Get-ChildItem -LiteralPath $Path -Filter *.pdf -Recurse -File | Where-Object { $_.Name -notmatch ' -\.pdf$' })
+  if ($files.Count -eq 0) { Write-Host "    Nenhum PDF encontrado para comprimir." -ForegroundColor DarkGray; return }
+  Write-Host "    $($files.Count) PDF(s) encontrado(s)" -ForegroundColor Cyan
+  Write-Host ""
+  $totalBefore = 0; $totalAfter = 0; $i = 0
   foreach ($f in $files) {
-    $out = [System.IO.Path]::Combine($f.DirectoryName, [System.IO.Path]::GetFileNameWithoutExtension($f.Name) + '.compressed.pdf')
+    $i++
+    Write-Host "    [$i/$($files.Count)]" -ForegroundColor DarkCyan -NoNewline
+    $out = [System.IO.Path]::Combine($f.DirectoryName, [System.IO.Path]::GetFileNameWithoutExtension($f.Name) + ' -.pdf')
+    $totalBefore += $f.Length
     Compress-One -In $f.FullName -Out $out
+    $totalAfter += (Get-Item $out).Length
   }
+  Write-Host ""
+  $totalPct = if ($totalBefore -gt 0) { [math]::Round(100 - ($totalAfter / $totalBefore * 100), 1) } else { 0 }
+  Write-Host ("    Total: {0:N2} MB -> {1:N2} MB (-{2}%)" -f ($totalBefore/1MB), ($totalAfter/1MB), $totalPct) -ForegroundColor Green
 } else {
   if (-not (Test-Path $Path -PathType Leaf)) { throw "Input file not found: $Path" }
   $in = (Resolve-Path $Path).Path
   if (-not $Output) {
     $dir = Split-Path $in -Parent
     $name = [System.IO.Path]::GetFileNameWithoutExtension($in)
-    $Output = Join-Path $dir "$name.compressed.pdf"
+    $Output = Join-Path $dir "$name -.pdf"
   }
   Compress-One -In $in -Out $Output
 }

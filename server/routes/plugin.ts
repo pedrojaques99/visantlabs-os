@@ -13,10 +13,6 @@ import { redisClient } from '../lib/redis.js';
 import { CACHE_TTL, CacheKey, hashObject } from '../lib/cache-utils.js';
 import {
   buildSystemPrompt,
-  buildSystemPromptV2,
-  buildSmartPrompt,
-  getPromptMode,
-  buildDesignSystemContext,
   buildRetryFeedback,
   refineIntentWithLLM,
   type PluginRequest,
@@ -106,7 +102,6 @@ import { buildTokenRegistry } from '../lib/tokenRegistry.js';
 import { validateOperations, formatCorrections } from '../lib/tokenValidator.js';
 import { resolveBrandGuideline, buildGuidelineChoiceContext } from '../lib/brandResolver.js';
 import { scanTemplates, buildTemplateContext } from '../lib/templateScanner.js';
-import { buildFormatPresetsContext } from '../lib/formatPresets.js';
 import { scanAgentComponents, buildComponentsContext } from '../lib/componentScanner.js';
 import { resolveContext, buildAgentContextPrompt } from '../lib/contextResolver.js';
 import { chatWithLLM } from '../services/llmRouter.js';
@@ -628,6 +623,7 @@ router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res
       thinkMode = false,
       useBrand = true,
       generateImage = false,
+      scanPage = false,
     } = req.body as PluginRequest;
 
     if (!command) {
@@ -847,7 +843,6 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       } catch {}
     }
 
-    const formatPresetsContext = buildFormatPresetsContext();
     const tokenRegistry = buildTokenRegistry(brandGuideline || null, designSystem || null);
     const enforcedTokenPrompt = (tokenRegistry.colors.size > 0 || tokenRegistry.typography.size > 0)
       ? '\n' + buildEnforcedPrompt(tokenRegistry) + '\n'
@@ -856,17 +851,36 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
     // Collect session errors for feedback loop
     const previousErrors = getSessionErrors(sessionId);
 
-    // Build prompt (always V2 for streaming)
-    const assembled = buildSystemPromptV2(
+    // Resolve brand knowledge RAG context (fire-and-forget on error)
+    let brandKnowledgeContext: string | undefined;
+    if (brandGuideline?.knowledgeFiles?.length && brandGuideline.id && req.userId) {
+      try {
+        const { knowledgeService } = await import('../services/knowledgeService.js');
+        brandKnowledgeContext = await knowledgeService.getContext(command, req.userId, brandGuideline.id) || undefined;
+      } catch (e) {
+        console.warn('[plugin] Knowledge RAG failed, skipping:', (e as Error).message);
+      }
+    }
+
+    // Build prompt (all contexts flow through assembler)
+    const assembled = buildSystemPrompt(
       {
-        command, selectedElements, selectedLogo, brandLogos, selectedBrandFont,
+        command, selectedElements, scanPage: !!scanPage,
+        selectedLogo, brandLogos, selectedBrandFont,
         brandFonts: effectiveBrandFonts, selectedBrandColors: effectiveBrandColors,
         availableComponents, availableColorVariables, availableFontVariables, availableLayers,
         attachments, mentions, designSystem: designSystem || null,
         brandGuideline: brandGuideline || undefined, thinkMode,
       },
-      streamChatHistory,
-      previousErrors.length > 0 ? previousErrors : undefined,
+      {
+        chatHistory: streamChatHistory,
+        previousErrors: previousErrors.length > 0 ? previousErrors : undefined,
+        templateContext,
+        agentComponentsContext,
+        enforcedTokens: enforcedTokenPrompt || undefined,
+        brandChoiceContext: brandChoiceContext || undefined,
+        brandKnowledgeContext,
+      },
     );
 
     // LLM pre-pass: refine intent when keyword confidence < 0.65
@@ -892,11 +906,6 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
     }
 
     let systemPrompt = assembled.system;
-
-    // Inject additional contexts
-    const additionalContext = [brandChoiceContext, templateContext, agentComponentsContext].filter(Boolean).join('\n\n');
-    if (additionalContext) systemPrompt += '\n\n' + additionalContext;
-    if (enforcedTokenPrompt) systemPrompt = enforcedTokenPrompt + '\n' + systemPrompt;
 
     // Inject enriched context from tool pre-pass
     if (enrichedContext) {
@@ -1163,9 +1172,6 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // ═══ BRANDED SOCIAL POSTS: Format presets ═══
-    const formatPresetsContext = buildFormatPresetsContext();
-
     // FASE 3: Load or create session for chat memory
     let chatHistory = '';
     if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
@@ -1227,107 +1233,49 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       ? '\n' + buildEnforcedPrompt(tokenRegistry) + '\n'
       : '';
 
-    // Build context-aware prompt (V1 or V2 based on feature flag)
-    const promptMode = getPromptMode();
-    let systemPrompt: string;
-    let promptMeta: AssembledPrompt | undefined;
-
     const prevErrors = getSessionErrors(sessionId);
 
-    if (promptMode === 'v2') {
-      // AI-First: Dynamic intent-based prompt assembly (~70% fewer tokens)
-      const assembled = buildSystemPromptV2(
-        {
-          command,
-          selectedElements,
-          selectedLogo,
-          brandLogos,
-          selectedBrandFont,
-          brandFonts: effectiveBrandFonts,
-          selectedBrandColors: effectiveBrandColors,
-          availableComponents,
-          availableColorVariables,
-          availableFontVariables,
-          availableLayers,
-          attachments,
-          mentions,
-          designSystem: designSystem || null,
-          brandGuideline: brandGuideline || undefined,
-          thinkMode,
-        },
-        chatHistory,
-        prevErrors.length > 0 ? prevErrors : undefined,
-      );
-      systemPrompt = assembled.system;
-      promptMeta = assembled;
-      console.log(`[Plugin] AI-First prompt: ${assembled.tokenEstimate} tokens, intent: ${assembled.intent.intent}, format: ${assembled.intent.format}, modules: [${assembled.modules.join(', ')}]`);
-
-      // V2: Inject additional context at the end (simpler, no marker needed)
-      const additionalContext = [
-        brandChoiceContext,
-        templateContext,
-        agentComponentsContext,
-        // Note: formatPresetsContext is built-in to V2
-      ].filter(Boolean).join('\n\n');
-
-      if (additionalContext) {
-        systemPrompt += '\n\n' + additionalContext;
-      }
-
-      // Inject enforced token prompt
-      if (enforcedTokenPrompt) {
-        systemPrompt = enforcedTokenPrompt + '\n' + systemPrompt;
-      }
-    } else {
-      // V1: Legacy monolithic prompt (backward compatible)
-      systemPrompt = buildSystemPrompt(
-        {
-          command,
-          selectedElements,
-          selectedLogo,
-          brandLogos,
-          selectedBrandFont,
-          brandFonts: effectiveBrandFonts,
-          selectedBrandColors: effectiveBrandColors,
-          availableComponents,
-          availableColorVariables,
-          availableFontVariables,
-          availableLayers,
-          attachments,
-          mentions,
-          designSystem: designSystem || null,
-          brandGuideline: brandGuideline || undefined,
-        },
-        chatHistory,
-        thinkMode
-      );
-
-      // ═══ BRANDED SOCIAL POSTS: Inject additional context ═══
-      const additionalContext = [
-        brandChoiceContext,
-        templateContext,
-        agentComponentsContext,
-        formatPresetsContext,
-      ].filter(Boolean).join('\n\n');
-
-      if (additionalContext) {
-        // Insert before "═══ OPERAÇÕES DISPONÍVEIS ═══"
-        const insertPoint = systemPrompt.indexOf('═══ OPERAÇÕES DISPONÍVEIS ═══');
-        if (insertPoint > 0) {
-          systemPrompt = systemPrompt.slice(0, insertPoint) + additionalContext + '\n\n' + systemPrompt.slice(insertPoint);
-        } else {
-          systemPrompt += '\n\n' + additionalContext;
-        }
-      }
-
-      // Inject enforced token prompt (replaces soft brand context with strict tokens)
-      if (enforcedTokenPrompt) {
-        systemPrompt = systemPrompt.replace(
-          '═══ CONTEXTO DO ARQUIVO ═══',
-          enforcedTokenPrompt + '\n═══ CONTEXTO DO ARQUIVO ═══'
-        );
-      }
+    let brandKnowledgeCtx2: string | undefined;
+    if (brandGuideline?.knowledgeFiles?.length && brandGuideline.id && req.userId) {
+      try {
+        const { knowledgeService } = await import('../services/knowledgeService.js');
+        brandKnowledgeCtx2 = await knowledgeService.getContext(command, req.userId, brandGuideline.id) || undefined;
+      } catch {}
     }
+
+    const assembled = buildSystemPrompt(
+      {
+        command,
+        selectedElements,
+        scanPage: !!(req.body as any).scanPage,
+        selectedLogo,
+        brandLogos,
+        selectedBrandFont,
+        brandFonts: effectiveBrandFonts,
+        selectedBrandColors: effectiveBrandColors,
+        availableComponents,
+        availableColorVariables,
+        availableFontVariables,
+        availableLayers,
+        attachments,
+        mentions,
+        designSystem: designSystem || null,
+        brandGuideline: brandGuideline || undefined,
+        thinkMode,
+      },
+      {
+        chatHistory,
+        previousErrors: prevErrors.length > 0 ? prevErrors : undefined,
+        templateContext,
+        agentComponentsContext,
+        enforcedTokens: enforcedTokenPrompt || undefined,
+        brandChoiceContext: brandChoiceContext || undefined,
+        brandKnowledgeContext: brandKnowledgeCtx2,
+      },
+    );
+    let systemPrompt = assembled.system;
+    const promptMeta = assembled;
+    console.log(`[Plugin] Prompt: ${assembled.tokenEstimate} tokens, intent: ${assembled.intent.intent}, format: ${assembled.intent.format}, modules: [${assembled.modules.join(', ')}]`);
 
     const userPrompt = `═══ PEDIDO DO USUÁRIO ═══\n\n"${command}"`;
 
@@ -1336,7 +1284,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     let usage: { inputTokens: number; outputTokens: number; totalTokens: number } | undefined;
     const generationStart = Date.now();
     const toolCallStartedAt = new Date().toISOString();
-    const maxRetries = promptMode === 'v2' ? 1 : 0; // V2 gets 1 retry with feedback
+    const maxRetries = 1;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       const isRetry = attempt > 0;
@@ -1379,8 +1327,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           console.log(`[Plugin] First operation:`, JSON.stringify(operations[0]).slice(0, 300));
         }
 
-        // V2: Check if retry is needed (>50% invalid operations)
-        if (promptMode === 'v2' && !isRetry && operations.length > 0) {
+        // Check if retry is needed (>50% invalid operations)
+        if (!isRetry && operations.length > 0) {
           const preValidation = operationValidator.validateBatch(operations);
           const invalidRatio = preValidation.invalid.length / operations.length;
           if (invalidRatio > 0.5) {

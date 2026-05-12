@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2, Beaker, Diamond, Link } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { HexColorPicker } from 'react-colorful';
 
 interface CanvasSettingsModalProps {
   isOpen: boolean;
@@ -112,7 +113,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-neutral-950 border border-neutral-800/50 rounded-md p-4 w-full max-w-2xl mx-4 shadow-xl"
+        className="bg-neutral-950 border border-neutral-800/50 rounded-md p-4 w-full max-w-2xl mx-4 sm:mx-6 shadow-xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -271,17 +272,14 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 {t('canvas.backgroundColor') || 'Background Color'}
               </label>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={bgColor}
-                onChange={(e) => {
-                  const newColor = e.target.value;
+            <div className="space-y-2">
+              <HexColorPicker
+                color={bgColor}
+                onChange={(newColor) => {
                   setBgColor(newColor);
                   onBackgroundColorChange?.(newColor);
                 }}
-                className="w-10 h-10 rounded border border-neutral-700/50 cursor-pointer bg-transparent flex-shrink-0"
-                title={t('canvas.selectColor') || 'Select color'}
+                style={{ width: '100%', height: '120px' }}
               />
               <Input
                 type="text"
@@ -318,13 +316,10 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 />
               </Button>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={gridCol.startsWith('rgba') ? '#FFFFFF' : (gridCol.startsWith('#') ? gridCol : '#FFFFFF')}
-                onChange={(e) => {
-                  const hex = e.target.value;
-                  // Convert hex to rgba for better grid visibility
+            <div className="space-y-2">
+              <HexColorPicker
+                color={gridCol.startsWith('rgba') ? '#FFFFFF' : (gridCol.startsWith('#') ? gridCol : '#FFFFFF')}
+                onChange={(hex) => {
                   const r = parseInt(hex.slice(1, 3), 16);
                   const g = parseInt(hex.slice(3, 5), 16);
                   const b = parseInt(hex.slice(5, 7), 16);
@@ -332,8 +327,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   setGridCol(newColor);
                   onGridColorChange?.(newColor);
                 }}
-                className="w-10 h-10 rounded border border-neutral-700/50 cursor-pointer bg-transparent flex-shrink-0"
-                title={t('canvas.selectColor') || 'Select color'}
+                style={{ width: '100%', height: '120px' }}
               />
               <Input
                 type="text"
@@ -357,13 +351,11 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 {t('canvas.cursorColor') || 'Cursor Color'}
               </label>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={curColor}
-                onChange={(e) => handleCursorColorChange(e.target.value)}
-                className="w-10 h-10 rounded border border-neutral-700/50 cursor-pointer bg-transparent flex-shrink-0"
-                title={t('canvas.selectColor') || 'Select color'}
+            <div className="space-y-2">
+              <HexColorPicker
+                color={curColor}
+                onChange={handleCursorColorChange}
+                style={{ width: '100%', height: '120px' }}
               />
               <Input
                 type="text"
@@ -383,13 +375,11 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 {t('canvas.brandCyanColor') || 'Brand Cyan Color'}
               </label>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={brandCyanColor}
-                onChange={(e) => handleBrandCyanChange(e.target.value)}
-                className="w-10 h-10 rounded border border-neutral-700/50 cursor-pointer bg-transparent flex-shrink-0"
-                title={t('canvas.selectColor') || 'Select color'}
+            <div className="space-y-2">
+              <HexColorPicker
+                color={brandCyanColor.startsWith('#') ? brandCyanColor : '#00d9ff'}
+                onChange={handleBrandCyanChange}
+                style={{ width: '100%', height: '120px' }}
               />
               <Input
                 type="text"
@@ -405,7 +395,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
         <div className="mt-4 pt-3 border-t border-neutral-800/50">
           <Button variant="brand"
             onClick={onClose}
-            className="w-full px-3 py-1.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded-md transition-all text-xs font-mono cursor-pointer"
+            className="w-full px-3 py-1.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 hover:border-brand-cyan/50 rounded-md transition-all text-xs font-mono cursor-pointer"
           >
             {t('common.close') || 'Close'}
           </Button>

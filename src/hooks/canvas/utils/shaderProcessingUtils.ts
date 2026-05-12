@@ -13,6 +13,7 @@ import { canvasApi } from '@/services/canvasApi';
 import { applyShaderEffect, applyShaderEffectToVideo } from '@/utils/shaders/shaderRenderer';
 import type { ShaderSettings as ShaderRendererSettings } from '@/utils/shaders/shaderRenderer';
 import { uploadImageToR2Auto, uploadImageToR2Debounced } from './r2UploadUtils';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 
 interface ShaderProcessingParams<T extends FlowNodeData> {
   nodeId: string;
@@ -83,6 +84,7 @@ export const processImageOrVideoWithShader = async <T extends FlowNodeData>({
     return;
   }
 
+  trackCanvasEvent('generation_started', nodeType, canvasId, { shaderType: settings.shaderType });
   updateNodeLoadingState<T>(nodeId, true, nodeType);
 
   try {
@@ -178,9 +180,10 @@ export const processImageOrVideoWithShader = async <T extends FlowNodeData>({
         onImageResult(base64Only);
       }
 
-      // Don't show success notification for images (user can see result visually)
+      trackCanvasEvent('generation_completed', nodeType, canvasId, { shaderType: settings.shaderType });
     }
   } catch (error: any) {
+    trackCanvasEvent('generation_failed', nodeType, canvasId, { shaderType: settings.shaderType, error: error?.message });
     console.error(`Error processing ${nodeType}:`, error);
     updateNodeLoadingState<T>(nodeId, false, nodeType);
     toast.error(error?.message || `Failed to process ${nodeType}`, { duration: 5000 });

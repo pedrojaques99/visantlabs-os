@@ -70,20 +70,46 @@ export function useAuth() {
 
   const loginWithGoogle = useCallback(async () => {
     try {
-      const response = await fetch(apiUrl('/auth/google'));
+      const response = await fetch(apiUrl('/auth/google?source=plugin'));
       if (!response.ok) {
         showToast('Erro ao iniciar Google OAuth', 'error');
         return;
       }
-      const { authUrl } = await response.json();
-      if (authUrl) {
-        window.parent.postMessage({ pluginMessage: { type: 'OPEN_EXTERNAL_URL', url: authUrl } }, 'https://www.figma.com');
-        showToast('Janela de login aberta no navegador', 'info');
-      }
+      const { authUrl, sessionId } = await response.json();
+      if (!authUrl || !sessionId) return;
+
+      window.parent.postMessage({ pluginMessage: { type: 'OPEN_EXTERNAL_URL', url: authUrl } }, 'https://www.figma.com');
+      showToast('Faça login no navegador...', 'info');
+
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        attempts++;
+        if (attempts > 60) { clearInterval(poll); showToast('Login expirou', 'error'); return; }
+        try {
+          const r = await fetch(apiUrl(`/auth/google/poll/${sessionId}`));
+          const data = await r.json();
+          if (data.status === 'complete' && data.token) {
+            clearInterval(poll);
+            setAuthToken(data.token);
+            setAuthEmail(null);
+            send({ type: 'SAVE_AUTH_TOKEN', token: data.token, rememberMe: true } as any);
+            fetch(apiUrl('/plugin/auth/status'), {
+              headers: { Authorization: `Bearer ${data.token}`, 'Content-Type': 'application/json' }
+            }).then(r => r.ok ? r.json() : null).then(status => {
+              if (status?.email) setAuthEmail(status.email);
+              if (typeof status?.creditsUsed === 'number') updateCredits({ used: status.creditsUsed, limit: status.monthlyCredits });
+            }).catch(() => {});
+            showToast('Login realizado', 'success');
+          } else if (data.status === 'error' || data.status === 'expired') {
+            clearInterval(poll);
+            showToast('Falha no login Google', 'error');
+          }
+        } catch { /* retry */ }
+      }, 3000);
     } catch {
       showToast('Erro de conexão com OAuth', 'error');
     }
-  }, [showToast]);
+  }, [showToast, setAuthToken, setAuthEmail, send, updateCredits]);
 
   const logout = useCallback(() => {
     // Clear local state

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { usePluginStore } from '../../store';
 import { useBrandSync } from '../../hooks/useBrandSync';
 import { useBrandGuidelineLoader } from '../../hooks/useBrandGuidelineLoader';
@@ -6,7 +6,7 @@ import { getGuidelineId, getGuidelineLabel } from '../../lib/brandHydration';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { Link2, Plus, RefreshCw, BookOpen } from 'lucide-react';
+import { Link2, Plus, RefreshCw, BookOpen, Check, X } from 'lucide-react';
 import { useBrandImport } from '../../hooks/useBrandImport';
 import { NamingGuideModal, PushPreviewModal } from './BrandModals';
 
@@ -20,6 +20,9 @@ export function BrandGuidelineSection() {
   const [loading, setLoading] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [pushOpen, setPushOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newName, setNewName] = useState('');
+  const newNameInputRef = useRef<HTMLInputElement>(null);
 
   const refresh = async () => {
     const data = await loadBrandGuidelines();
@@ -57,9 +60,16 @@ export function BrandGuidelineSection() {
   };
 
   const handleCreateNew = async () => {
-    const name = prompt('New guideline name:');
-    if (!name) return;
+    if (!isCreating) {
+      setIsCreating(true);
+      setNewName('');
+      setTimeout(() => newNameInputRef.current?.focus(), 50);
+      return;
+    }
+    const name = newName.trim();
+    if (!name) { setIsCreating(false); return; }
     setLoading(true);
+    setIsCreating(false);
     const created = await saveBrandGuideline({ identity: { name } } as any);
     if (created) {
       apply(created, { silent: true });
@@ -76,13 +86,14 @@ export function BrandGuidelineSection() {
     }
     await refresh();
     setLoading(false);
+    setNewName('');
   };
 
   return (
     <div className="space-y-3">
       <div className="space-y-2">
         <div className="flex gap-2">
-          {guidelines.length > 0 && (
+          {guidelines.length > 0 && !isCreating && (
             <Select
               options={guidelines.map((g) => ({ value: getGuidelineId(g)!, label: getGuidelineLabel(g) }))}
               value={linkedGuideline || ''}
@@ -92,13 +103,37 @@ export function BrandGuidelineSection() {
               className="flex-1"
             />
           )}
-          <Button onClick={handleCreateNew} variant="outline" size="sm" className="h-8" disabled={loading}>
-            <Plus size={14} className="mr-2" />
-            New
-          </Button>
-          <Button onClick={refresh} variant="ghost" size="sm" className="h-8">
-            <RefreshCw size={14} />
-          </Button>
+          {isCreating && (
+            <input
+              ref={newNameInputRef}
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleCreateNew(); if (e.key === 'Escape') setIsCreating(false); }}
+              placeholder="Guideline name..."
+              className="flex-1 h-8 px-2 text-xs bg-white/5 border border-white/10 rounded outline-none focus:border-brand-cyan"
+            />
+          )}
+          {isCreating ? (
+            <>
+              <Button onClick={handleCreateNew} variant="outline" size="sm" className="h-8" disabled={!newName.trim()}>
+                <Check size={14} />
+              </Button>
+              <Button onClick={() => setIsCreating(false)} variant="ghost" size="sm" className="h-8">
+                <X size={14} />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button onClick={handleCreateNew} variant="outline" size="sm" className="h-8" disabled={loading}>
+                <Plus size={14} className="mr-2" />
+                New
+              </Button>
+              <Button onClick={refresh} variant="ghost" size="sm" className="h-8">
+                <RefreshCw size={14} />
+              </Button>
+            </>
+          )}
         </div>
 
         {guidelines.length === 0 && (

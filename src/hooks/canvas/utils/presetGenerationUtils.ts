@@ -23,6 +23,7 @@ import {
 import { uploadImageToR2Auto } from './r2UploadUtils';
 import { DEFAULT_MODEL } from '@/constants/geminiModels';
 import { resolveGenerationContext } from '@/utils/canvas/generationContext';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 
 interface Preset {
   id: string;
@@ -97,6 +98,7 @@ export const generateImageWithPreset = async ({
   const hasCredits = await validateCredits(model, resolution, provider);
   if (!hasCredits) return;
 
+  trackCanvasEvent('generation_started', nodeType, canvasId, { model, presetId });
   updateNodeLoadingState(nodeId, true, nodeType);
 
   let imageBase64: string;
@@ -168,8 +170,10 @@ export const generateImageWithPreset = async ({
       console.error('Failed to refresh subscription status:', statusError);
     }
 
+    trackCanvasEvent('generation_completed', nodeType, canvasId, { model, presetId });
     toast.success(successMessage, { duration: 3000 });
   } catch (error: any) {
+    trackCanvasEvent('generation_failed', nodeType, canvasId, { model, presetId, error: error?.message });
     cleanupFailedNode(newOutputNodeId, setNodes, setEdges);
     updateNodeLoadingState(nodeId, false, nodeType);
     toast.error(error?.message || `Failed to generate ${nodeType}`, { duration: 5000 });

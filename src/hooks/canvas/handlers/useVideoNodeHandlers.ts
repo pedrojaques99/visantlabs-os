@@ -6,6 +6,7 @@ import { videoApi } from '@/services/videoApi';
 import { canvasApi } from '@/services/canvasApi';
 import { validateVideoCredits } from '@/services/reactFlowService';
 import { videoToBase64 } from '@/utils/fileUtils';
+import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
 
 interface UseVideoNodeHandlersParams {
@@ -100,6 +101,7 @@ export const useVideoNodeHandlers = ({
     const hasCredits = await validateVideoCredits();
     if (!hasCredits || videoData.isLoading) return;
 
+    trackCanvasEvent('generation_started', 'video', canvasId, { mode: params.mode });
     updateNodeLoadingState<VideoNodeData>(nodeId, true, 'video');
 
     let newOutputNodeId: string | null = null;
@@ -193,8 +195,10 @@ export const useVideoNodeHandlers = ({
         updateNodeData<VideoNodeData>(nodeId, { seed: result.seed } as any, 'video');
       }
 
+      trackCanvasEvent('generation_completed', 'video', canvasId, { mode: params.mode });
       toast.success('Video generated successfully!', { duration: 3000 });
     } catch (error: any) {
+      trackCanvasEvent('generation_failed', 'video', canvasId, { mode: params.mode, error: error?.message });
       cleanupFailedNode(newOutputNodeId);
       const msg = error?.status === 409
         ? 'Video generation already in progress. Please wait.'

@@ -2233,6 +2233,33 @@ router.post('/:id/extract-pdf', apiRateLimiter, authenticate, upload.single('fil
     try {
       const { extractPdfStreaming } = await import('../lib/pdf-extract.js')
       await extractPdfStreaming(req.file.buffer, writeEvent, req.userId)
+
+      // Auto-upload to knowledge (fire-and-forget)
+      const fileBuffer = req.file.buffer
+      const fileName = req.file.originalname || 'extracted.pdf'
+      const guidelineId = req.params.id
+      const userId = req.userId!
+      setImmediate(async () => {
+        try {
+          const base64 = fileBuffer.toString('base64')
+          const existingFiles: KnowledgeFile[] = (existing!.knowledgeFiles as unknown as KnowledgeFile[] | null) || []
+          if (existingFiles.some(f => f.fileName === fileName)) return
+          const ingestResult: any = await knowledgeService.ingestContent({
+            userId,
+            projectId: guidelineId,
+            parts: [{ inlineData: { mimeType: 'application/pdf', data: base64 } }],
+            metadata: { fileName, source: 'pdf', brandGuidelineId: guidelineId, ingestedByUserId: userId },
+          })
+          const vectorIds: string[] = ingestResult?.ids ?? (ingestResult?.id ? [ingestResult.id] : [])
+          await prisma.brandGuideline.update({
+            where: { id: guidelineId },
+            data: { knowledgeFiles: [...existingFiles, { id: uuidv4(), fileName, source: 'pdf', vectorIds, addedByUserId: userId, addedAt: new Date().toISOString() }] as any },
+          })
+          console.log(`[extract-pdf] Auto-uploaded to knowledge: ${fileName}`)
+        } catch (e) {
+          console.error('[extract-pdf] Knowledge auto-upload failed:', e)
+        }
+      })
     } catch (err: any) {
       console.error('[extract-pdf]', err)
       writeEvent({ type: 'error', message: err?.message || 'PDF extraction failed' })
@@ -2265,6 +2292,31 @@ router.post('/:id/extract-fig', apiRateLimiter, authenticate, upload.single('fil
     try {
       const { extractFigTokensStreaming } = await import('../lib/fig-extract.js')
       await extractFigTokensStreaming(req.file.buffer, writeEvent)
+
+      // Auto-upload to knowledge (fire-and-forget)
+      const fileName = req.file.originalname || 'extracted.fig'
+      const guidelineId = req.params.id
+      const userId = req.userId!
+      setImmediate(async () => {
+        try {
+          const existingFiles: KnowledgeFile[] = (existing!.knowledgeFiles as unknown as KnowledgeFile[] | null) || []
+          if (existingFiles.some(f => f.fileName === fileName)) return
+          const ingestResult: any = await knowledgeService.ingestContent({
+            userId,
+            projectId: guidelineId,
+            parts: [{ text: `Figma design tokens extracted from ${fileName}` }],
+            metadata: { fileName, source: 'text', brandGuidelineId: guidelineId, ingestedByUserId: userId },
+          })
+          const vectorIds: string[] = ingestResult?.ids ?? (ingestResult?.id ? [ingestResult.id] : [])
+          await prisma.brandGuideline.update({
+            where: { id: guidelineId },
+            data: { knowledgeFiles: [...existingFiles, { id: uuidv4(), fileName, source: 'text', vectorIds, addedByUserId: userId, addedAt: new Date().toISOString() }] as any },
+          })
+          console.log(`[extract-fig] Auto-uploaded to knowledge: ${fileName}`)
+        } catch (e) {
+          console.error('[extract-fig] Knowledge auto-upload failed:', e)
+        }
+      })
     } catch (err: any) {
       console.error('[extract-fig]', err)
       writeEvent({ type: 'error', message: err?.message || 'Extraction failed' })

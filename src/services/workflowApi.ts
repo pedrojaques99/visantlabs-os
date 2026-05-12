@@ -29,6 +29,7 @@ export interface CanvasWorkflow {
     tags: string[];
     nodes: Node[];
     edges: Edge[];
+    drawings?: any[];
     thumbnailUrl?: string;
     isPublic: boolean;
     isApproved: boolean;
