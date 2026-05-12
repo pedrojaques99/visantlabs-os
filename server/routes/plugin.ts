@@ -690,6 +690,21 @@ router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res
     }> = [];
 
     try {
+      // Extract text content from selected elements for brand extraction
+      const extractTextFromNode = (node: any): string[] => {
+        const texts: string[] = [];
+        if (node.characters) texts.push(`[${node.name || node.type}]: ${node.characters}`);
+        if (node.children) for (const child of node.children) texts.push(...extractTextFromNode(child));
+        return texts;
+      };
+      const selectionTextContent = selectedElements
+        .flatMap(extractTextFromNode)
+        .filter(Boolean);
+
+      const selectionContext = selectionTextContent.length > 0
+        ? `\n\nSELECTED ELEMENTS TEXT CONTENT (${selectionTextContent.length} text nodes):\n${selectionTextContent.slice(0, 200).join('\n')}`
+        : '';
+
       const prePassPrompt = `You are a Figma design assistant deciding which tools to use before generating design operations.
 
 Available tools:
@@ -702,14 +717,16 @@ Available tools:
 - describe_image: Analyze an image by URL or base64. Use when user shares an image to recreate or reference.
 - get_brand_context: Fetch brand guideline details. Use when you need brand info not already in context.
 - web_search: Search the web for references, inspiration, or information.
+- update_brand_guidelines: Extract strategy/brand content from the current Figma selection and update a brand guideline via the Visant API. Use when the user wants to "feed", "populate", "update", "send", or "alimentar" content from Figma frames to a brand guideline. Read the SELECTED ELEMENTS TEXT CONTENT below, parse it into structured brand data (strategy, personas, archetypes, manifesto, voice, colors, etc.), and call this tool with the parsed data. This is a DATA EXTRACTION + API UPDATE tool, NOT a visual Figma operation.
 
 Rules:
 - If the user wants a mockup/image, ALWAYS use generate_mockup. The imageUrl in the result will be used with SET_IMAGE_FILL in the design phase.
 - If brandGuidelineId is available, pass it to generate_mockup — it auto-injects logo + colors + typography.
+- If the user wants to feed/populate/update brand guidelines with content from the selection, use update_brand_guidelines. Parse the selected text content into the appropriate structured fields (strategy.manifesto, strategy.archetypes, strategy.personas, strategy.voiceValues, guidelines.voice, etc.).
 - If the request doesn't need any tools, respond with just "READY".
 - You can call multiple tools if needed.
-${brandGuidelineId ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this to generate_mockup and get_brand_context.` : ''}
-${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call generate_mockup for this request. Infer prompt, aspectRatio, designType, and model from the user message. Do NOT respond with just "READY".` : ''}`;
+${brandGuidelineId ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this to generate_mockup, get_brand_context, and update_brand_guidelines.` : ''}
+${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call generate_mockup for this request. Infer prompt, aspectRatio, designType, and model from the user message. Do NOT respond with just "READY".` : ''}${selectionContext}`;
 
       const prePassResult = await chatWithLLM(command, '', [], {
         provider: 'gemini',

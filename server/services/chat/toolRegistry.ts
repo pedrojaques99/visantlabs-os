@@ -183,6 +183,135 @@ REGISTRY['describe_image'] = {
   },
 };
 
+REGISTRY['update_brand_guidelines'] = {
+  scope: 'public',
+  declaration: {
+    name: 'update_brand_guidelines',
+    description:
+      'Extract strategy/brand content from the current Figma selection and update a brand guideline via the Visant API. ' +
+      'Use when the user wants to "feed", "populate", "update", or "send" content from Figma frames to a brand guideline. ' +
+      'The selectedElements with their text (characters) are available in the user message context. ' +
+      'Parse the text content from the selection to populate the appropriate fields.',
+    parameters: {
+      type: 'object',
+      properties: {
+        brandGuidelineId: { type: 'string', description: 'Brand guideline ID to update. Omit to use session default.' },
+        identity: {
+          type: 'object',
+          description: 'Brand identity fields to update.',
+          properties: {
+            name: { type: 'string' },
+            tagline: { type: 'string' },
+            description: { type: 'string' },
+          },
+        },
+        strategy: {
+          type: 'object',
+          description: 'Brand strategy to update.',
+          properties: {
+            manifesto: { type: 'string', description: 'Brand manifesto text.' },
+            positioning: { type: 'array', items: { type: 'string' }, description: 'Positioning statements.' },
+            archetypes: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  description: { type: 'string' },
+                  role: { type: 'string', enum: ['primary', 'secondary'] },
+                },
+                required: ['name', 'description'],
+              },
+            },
+            personas: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  age: { type: 'number' },
+                  occupation: { type: 'string' },
+                  bio: { type: 'string' },
+                  traits: { type: 'array', items: { type: 'string' } },
+                  desires: { type: 'array', items: { type: 'string' } },
+                  painPoints: { type: 'array', items: { type: 'string' } },
+                },
+                required: ['name'],
+              },
+            },
+            voiceValues: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string' },
+                  description: { type: 'string' },
+                  example: { type: 'string' },
+                },
+                required: ['title', 'description', 'example'],
+              },
+            },
+          },
+        },
+        guidelines: {
+          type: 'object',
+          description: 'Brand guidelines (voice, dos, donts).',
+          properties: {
+            voice: { type: 'string' },
+            dos: { type: 'array', items: { type: 'string' } },
+            donts: { type: 'array', items: { type: 'string' } },
+          },
+        },
+        colors: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              hex: { type: 'string' },
+              name: { type: 'string' },
+              role: { type: 'string' },
+            },
+            required: ['hex', 'name'],
+          },
+        },
+      },
+    },
+  },
+  execute: async (args: any, ctx) => {
+    const id = args.brandGuidelineId || ctx.brandGuidelineId;
+    if (!id) return 'Error: No brand guideline ID provided or set in session. Ask the user which brand to update.';
+
+    const updatePayload: any = { id };
+    if (args.identity) updatePayload.identity = args.identity;
+    if (args.strategy) updatePayload.strategy = args.strategy;
+    if (args.guidelines) updatePayload.guidelines = args.guidelines;
+    if (args.colors) updatePayload.colors = args.colors;
+
+    try {
+      const response = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-mcp-user-id': ctx.userId,
+          ...(ctx.authHeader ? { 'Authorization': ctx.authHeader } : {}),
+        },
+        body: JSON.stringify(updatePayload),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({})) as any;
+        return `Failed to update brand guideline: ${err.error || response.status}`;
+      }
+
+      const result = await response.json() as any;
+      const sections = Object.keys(updatePayload).filter(k => k !== 'id');
+      return `Brand guideline "${result.identity?.name || id}" updated successfully. Sections updated: ${sections.join(', ')}.`;
+    } catch (err) {
+      return `Error updating brand guideline: ${(err as Error).message}`;
+    }
+  },
+};
+
 /**
  * Tool declarations available to a role, in the Gemini SDK shape.
  * Admins get the union of public + admin tools.
