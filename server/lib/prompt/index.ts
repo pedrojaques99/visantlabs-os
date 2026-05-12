@@ -13,7 +13,7 @@ import { CREATE_RULES, CREATE_EXAMPLE, MULTIPLE_FRAMES_RULES } from './modules/c
 import { EDIT_RULES, EDIT_EXAMPLE, TEXT_EDIT_WARNING } from './modules/edit.js';
 import { TEMPLATE_RULES, TEMPLATE_EXAMPLE } from './modules/template.js';
 import { CHART_RULES, CHART_EXAMPLE } from './modules/charts.js';
-import { BRAND_PRIORITY_RULE, buildCompactBrandContext } from './modules/brand.js';
+import { BRAND_PRIORITY_RULE, buildCompactBrandContext, buildBrandStrategyContext, type BrandStrategyInput } from './modules/brand.js';
 import { DESIGN_EXCELLENCE_RULES } from './modules/design-excellence.js';
 import { COLOR_SPEC_RULES } from './modules/color-spec.js';
 import { buildSelectionContext, buildContainersHint } from './modules/context.js';
@@ -36,6 +36,7 @@ export interface PromptAssemblerInput {
   brandVoice?: string;
   brandDos?: string[];
   brandDonts?: string[];
+  brandStrategy?: BrandStrategyInput;
   availableComponents?: any[];
   colorVariables?: Array<{ id: string; name: string; value?: string }>;
   fontVariables?: any[];
@@ -175,6 +176,10 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
     );
     if (brandContext) {
       modules.push({ id: 'brand', content: BRAND_PRIORITY_RULE + '\n' + brandContext, priority: 85 });
+    }
+    const strategyContext = buildBrandStrategyContext(input.brandStrategy);
+    if (strategyContext) {
+      modules.push({ id: 'brand_strategy', content: strategyContext, priority: 84 });
     }
     if (input.brandKnowledgeContext) {
       modules.push({ id: 'brand_knowledge', content: `<brand_knowledge>\n${input.brandKnowledgeContext}\n</brand_knowledge>`, priority: 84 });

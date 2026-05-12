@@ -121,6 +121,7 @@ export function buildSystemPrompt(
     brandVoice: useBrand ? req.brandGuideline?.guidelines?.voice : undefined,
     brandDos: useBrand ? req.brandGuideline?.guidelines?.dos : undefined,
     brandDonts: useBrand ? req.brandGuideline?.guidelines?.donts : undefined,
+    brandStrategy: useBrand ? req.brandGuideline?.strategy : undefined,
     availableComponents: req.availableComponents,
     colorVariables: req.availableColorVariables,
     fontVariables: req.availableFontVariables,
