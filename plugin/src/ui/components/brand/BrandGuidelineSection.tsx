@@ -6,7 +6,7 @@ import { getGuidelineId, getGuidelineLabel } from '../../lib/brandHydration';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { Link2, Plus, RefreshCw, BookOpen, Check, X } from 'lucide-react';
+import { Plus, RefreshCw, BookOpen, Check, X } from 'lucide-react';
 import { useBrandImport } from '../../hooks/useBrandImport';
 import { NamingGuideModal, PushPreviewModal } from './BrandModals';
 
@@ -95,7 +95,16 @@ export function BrandGuidelineSection() {
         <div className="flex gap-2">
           {guidelines.length > 0 && !isCreating && (
             <Select
-              options={guidelines.map((g) => ({ value: getGuidelineId(g)!, label: getGuidelineLabel(g) }))}
+              options={guidelines.map((g) => {
+                const colors = Array.isArray(g.colors) ? g.colors as any[] : [];
+                const primary = colors.find((c: any) => c?.role === 'primary') || colors[0];
+                const swatch = primary?.hex ? (
+                  <span className="w-3 h-3 rounded-full shrink-0 border border-white/10" style={{ backgroundColor: primary.hex }} />
+                ) : (
+                  <span className="w-3 h-3 rounded-full shrink-0 bg-neutral-700 border border-white/10" />
+                );
+                return { value: getGuidelineId(g)!, label: getGuidelineLabel(g), icon: swatch };
+              })}
               value={linkedGuideline || ''}
               onChange={(value) => handleSelectGuideline(value as string)}
               variant="node"
@@ -129,7 +138,7 @@ export function BrandGuidelineSection() {
                 <Plus size={14} className="mr-2" />
                 New
               </Button>
-              <Button onClick={refresh} variant="ghost" size="sm" className="h-8">
+              <Button onClick={refresh} variant="ghost" size="sm" className="h-8" aria-label="Refresh guidelines">
                 <RefreshCw size={14} />
               </Button>
             </>
@@ -141,19 +150,19 @@ export function BrandGuidelineSection() {
         )}
 
         {linkedGuideline && (
-          <div className="flex items-center justify-between bg-white/[0.02] border border-white/5 rounded px-3 py-1.5 text-[10px]">
-            <span className="text-neutral-500 font-mono uppercase tracking-wider">Linked Workspace Active</span>
-            <div className="flex items-center gap-1">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 px-2 text-brand-cyan hover:bg-brand-cyan/10 uppercase tracking-widest text-[8px] font-bold"
-                onClick={() => setPushOpen(true)}
-              >
-                Push to Cloud
-              </Button>
-              <Link2 size={12} className="text-brand-cyan ml-1" />
+          <div className="flex items-center justify-between bg-brand-cyan/[0.04] border border-brand-cyan/10 rounded px-3 py-1.5 text-[10px]">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
+              <span className="text-neutral-400 font-mono uppercase tracking-wider">Brand Active</span>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-brand-cyan hover:bg-brand-cyan/10 uppercase tracking-widest text-[8px] font-bold"
+              onClick={() => setPushOpen(true)}
+            >
+              Push to Cloud
+            </Button>
           </div>
         )}
       </div>
