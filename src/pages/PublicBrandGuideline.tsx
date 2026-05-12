@@ -268,26 +268,26 @@ export const PublicBrandGuideline: React.FC = () => {
           variant="ghost"
           aria-label="Download brand guidelines as JSON"
           className={cn(
-            "h-10 w-10 p-0 rounded-full border transition-colors",
+            "h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest",
             theme === 'dark'
               ? "bg-neutral-900/50 border-white/5 text-neutral-400 hover:text-white"
               : "bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm"
           )}
         >
-          <Download size={14} aria-hidden="true" />
+          <Download size={14} aria-hidden="true" /> JSON
         </Button>
         <Button
           onClick={handleDownloadCSS}
           variant="ghost"
           aria-label="Download brand variables as CSS"
           className={cn(
-            "h-10 w-10 p-0 rounded-full border transition-colors",
+            "h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest",
             theme === 'dark'
               ? "bg-neutral-900/50 border-white/5 text-neutral-400 hover:text-white"
               : "bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm"
           )}
         >
-          <Download size={14} aria-hidden="true" />
+          <Download size={14} aria-hidden="true" /> CSS
         </Button>
       </div>
 
@@ -329,6 +329,26 @@ export const PublicBrandGuideline: React.FC = () => {
                 />
               </div>
 
+              {/* Mobile tab selector */}
+              <div className="md:hidden border-t border-[var(--brand-text)]/10 pt-3 flex gap-1 overflow-x-auto scrollbar-none">
+                {PUBLIC_TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    aria-current={activeTab === tab.id ? 'true' : undefined}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0",
+                      activeTab === tab.id
+                        ? "bg-[var(--accent)] text-[var(--accent-text)]"
+                        : "opacity-40 hover:opacity-100 hover:bg-[var(--brand-text)]/5"
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Desktop tabs */}
               <div className="hidden md:flex items-center gap-1 border-l border-[var(--brand-text)]/10 pl-4">
                 {PUBLIC_TABS.map((tab) => (
                   <button

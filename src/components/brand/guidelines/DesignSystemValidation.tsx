@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, ArrowRight, Palette, Type, Layers2, Blend, Zap, Frame, FileText, Shapes } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Palette, Type, Layers2, Blend, Zap, Frame, FileText, Shapes, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ComponentPreviewCard, type ValidationState } from './ComponentPreviewCard';
@@ -379,6 +379,80 @@ const VALIDATION_SECTIONS: ValidationSection[] = [
   },
 ];
 
+// ─── Empty Drop Zone ─────────────────────────────────────────────────────────
+
+const ACCEPTED_TYPES = '.fig,.pdf,.txt,.md,text/plain,text/markdown,image/*';
+
+const EmptyDropZone: React.FC<{ onExtractFiles?: (files: FileList) => void }> = ({ onExtractFiles }) => {
+  const [dragging, setDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const zoneRef = useRef<HTMLDivElement>(null);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    if (e.dataTransfer.files?.length && onExtractFiles) {
+      onExtractFiles(e.dataTransfer.files);
+    }
+  }, [onExtractFiles]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    if (zoneRef.current && !zoneRef.current.contains(e.relatedTarget as Node)) {
+      setDragging(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const files = e.clipboardData?.files;
+      if (files?.length && onExtractFiles) {
+        e.preventDefault();
+        onExtractFiles(files);
+      }
+    };
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [onExtractFiles]);
+
+  return (
+    <div
+      ref={zoneRef}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      className={cn(
+        'py-16 text-center space-y-4 border-2 border-dashed rounded-2xl transition-all cursor-pointer',
+        dragging
+          ? 'border-brand-cyan/40 bg-brand-cyan/5'
+          : 'border-white/[0.06] hover:border-white/10 hover:bg-white/[0.01]'
+      )}
+      onClick={() => fileInputRef.current?.click()}
+    >
+      <Upload size={28} className={cn('mx-auto transition-colors', dragging ? 'text-brand-cyan' : 'text-neutral-600')} />
+      <p className="text-[11px] font-mono text-neutral-600 uppercase tracking-widest">No sections to review yet</p>
+      <p className="text-[11px] text-neutral-500 max-w-sm mx-auto">
+        Drop a PDF, .fig, image, .txt or .md file here to extract brand tokens — or click to browse.
+        You can also paste from clipboard (Ctrl+V).
+      </p>
+      {onExtractFiles && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          accept={ACCEPTED_TYPES}
+          multiple
+          onChange={e => { if (e.target.files?.length) onExtractFiles(e.target.files); e.target.value = ''; }}
+        />
+      )}
+    </div>
+  );
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 interface DesignSystemValidationProps {
@@ -386,6 +460,7 @@ interface DesignSystemValidationProps {
   onUpdate: (patch: Partial<BrandGuideline>) => void;
   onComplete: () => void;
   onEditSection: (sectionId: string) => void;
+  onExtractFiles?: (files: FileList) => void;
 }
 
 export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
@@ -393,6 +468,7 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
   onUpdate,
   onComplete,
   onEditSection,
+  onExtractFiles,
 }) => {
   const validation = guideline.validation || {};
   const primaryFont = guideline.typography?.[0]?.family;
@@ -477,12 +553,9 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
         })}
       </div>
 
-      {/* Empty state if no sections available */}
+      {/* Empty state with drop zone */}
       {availableSections.length === 0 && (
-        <div className="py-16 text-center space-y-3">
-          <p className="text-[11px] font-mono text-neutral-600 uppercase tracking-widest">No sections to review yet</p>
-          <p className="text-[11px] text-neutral-500">Add colors, typography, and other brand tokens to start the review.</p>
-        </div>
+        <EmptyDropZone onExtractFiles={onExtractFiles} />
       )}
 
       {/* Complete CTA */}

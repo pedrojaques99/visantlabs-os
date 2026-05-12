@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
@@ -149,6 +149,7 @@ export const BrandGuidelinesPage: React.FC = () => {
     }, []);
 
     const [reviewGuidelineId, setReviewGuidelineId] = useState<string | null>(null);
+    const ingestTriggerRef = useRef<((files: FileList) => void) | null>(null);
 
     const handleWizardSuccess = useCallback((id: string) => {
         setIsWizardOpen(false);
@@ -262,36 +263,41 @@ export const BrandGuidelinesPage: React.FC = () => {
                                     <BrandIngestButton
                                         guideline={selected}
                                         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] })}
+                                        triggerRef={ingestTriggerRef}
                                     />
                                 )}
-                                {selected && selected.isPublic && (
-                                    <Link to={`/brand/${selected.publicSlug}`}>
-                                        <Button variant="ghost" className="h-8 px-3 gap-1.5 text-xs border border-white/10">
-                                            <Eye size={13} />
-                                            <span className="hidden sm:inline">Ver pública</span>
-                                        </Button>
-                                    </Link>
-                                )}
                                 {selected && (
-                                    <Button variant="ghost" onClick={() => setIsShareOpen(true)} className="h-8 px-3 gap-1.5 text-xs border border-white/10">
-                                        <Share2 size={13} />
-                                        <span className="hidden sm:inline">Share</span>
-                                    </Button>
-                                )}
-                                {selected && (
-                                    <Button
-                                        variant="ghost"
-                                        className="h-8 px-3 gap-1.5 text-xs border border-white/10"
-                                        title="Copy guideline ID for the Figma plugin"
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(selected.id!);
-                                            setFigmaCopied(true);
-                                            setTimeout(() => setFigmaCopied(false), 2000);
-                                        }}
-                                    >
-                                        {figmaCopied ? <Check size={13} className="text-green-400" /> : <Figma size={13} />}
-                                        <span className="hidden sm:inline">{figmaCopied ? 'Copied!' : 'Use in Figma'}</span>
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-8 w-8 p-0 text-neutral-500 hover:text-neutral-300 border border-white/[0.06]">
+                                                <Plus size={14} className="rotate-0" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="min-w-[160px]">
+                                            <button
+                                                onClick={() => setIsShareOpen(true)}
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/[0.04] transition-colors"
+                                            >
+                                                <Share2 size={13} /> Share
+                                            </button>
+                                            {selected.isPublic && (
+                                                <Link to={`/brand/${selected.publicSlug}`} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/[0.04] transition-colors">
+                                                    <Eye size={13} /> View Public
+                                                </Link>
+                                            )}
+                                            <button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(selected.id!);
+                                                    setFigmaCopied(true);
+                                                    setTimeout(() => setFigmaCopied(false), 2000);
+                                                }}
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/[0.04] transition-colors"
+                                            >
+                                                {figmaCopied ? <Check size={13} className="text-green-400" /> : <Figma size={13} />}
+                                                {figmaCopied ? 'Copied!' : 'Use in Figma'}
+                                            </button>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 )}
                             </div>
                         </div>
@@ -388,6 +394,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                         const tab = SECTION_TABS.find(t => t.sections.includes(sectionId));
                                                         if (tab) setActiveTabId(tab.id);
                                                     }}
+                                                    onExtractFiles={(files) => ingestTriggerRef.current?.(files)}
                                                 />
                                             ) : (
                                                 <ErrorBoundary>

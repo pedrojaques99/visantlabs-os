@@ -88,7 +88,7 @@ export const PUBLIC_TABS: PublicTab[] = [
     id: 'all',
     label: 'Overview',
     icon: Globe,
-    sections: ['identity', 'manifesto', 'archetypes', 'personas', 'voiceValues', 'colors', 'typography', 'logos', 'media', 'guidelines'],
+    sections: ['identity', 'coreMessage', 'pillars', 'manifesto', 'archetypes', 'personas', 'voiceValues', 'colors', 'typography', 'logos', 'media', 'guidelines'],
   },
   {
     id: 'identity',
@@ -100,7 +100,7 @@ export const PUBLIC_TABS: PublicTab[] = [
     id: 'strategy',
     label: 'Strategy',
     icon: Compass,
-    sections: ['manifesto', 'archetypes', 'personas', 'voiceValues', 'guidelines'],
+    sections: ['coreMessage', 'pillars', 'manifesto', 'archetypes', 'personas', 'voiceValues', 'guidelines'],
   },
   {
     id: 'colors',

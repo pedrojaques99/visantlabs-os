@@ -673,11 +673,11 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({ guideline, com
               </div>
               <div>
                 <p className="text-xs font-bold truncate uppercase tracking-tight opacity-90">{color.name || 'Untitled'}</p>
-                <p className="text-[10px] font-mono opacity-40 uppercase flex items-center gap-2">
+                <span className="text-[10px] font-mono opacity-40 uppercase flex items-center gap-2">
                   {color.hex}
-                  <div className="w-1 h-1 rounded-full bg-current opacity-20" />
+                  <span className="w-1 h-1 rounded-full bg-current opacity-20" />
                   {color.role || 'Accent'}
-                </p>
+                </span>
               </div>
             </motion.button>
           ))}
@@ -995,7 +995,7 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
                 <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
                   <div className="space-y-1">
                     <p className="text-sm font-bold text-white tracking-tight">{item.label || 'Production File'}</p>
-                    <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Asset // 0{i + 1}</span>
+                    <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Asset // {String(i + 1).padStart(2, '0')}</span>
                   </div>
                 </div>
               </div>
@@ -1074,7 +1074,8 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
         <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
           {g.dos && g.dos.length > 0 && (
             <div className="space-y-6">
-              <ul className="space-y-4 pt-12">
+              <MicroTitle className="text-green-500/60 tracking-wider pt-12">Do</MicroTitle>
+              <ul className="space-y-4">
                 {g.dos.map((item, i) => (
                   <li key={i} className="flex gap-4 group">
                     <div className="mt-1.5 w-1 h-1 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]" />
@@ -1086,7 +1087,8 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
           )}
           {g.donts && g.donts.length > 0 && (
             <div className="space-y-6">
-              <ul className="space-y-4 pt-12">
+              <MicroTitle className="text-red-500/60 tracking-wider pt-12">Don't</MicroTitle>
+              <ul className="space-y-4">
                 {g.donts.map((item, i) => (
                   <li key={i} className="flex gap-4 group">
                     <div className="mt-1.5 w-1 h-1 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]" />
