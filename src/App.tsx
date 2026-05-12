@@ -56,6 +56,8 @@ const AdminChatPage = lazyWithRetry(() => import('./pages/AdminChatPage').then(m
 const OnboardPage = lazyWithRetry(() => import('./pages/OnboardPage').then(m => ({ default: m.OnboardPage })));
 const MoodboardStudioPage = lazyWithRetry(() => import('./pages/MoodboardStudioPage').then(m => ({ default: m.MoodboardStudioPage })));
 const GridPaintPage = lazyWithRetry(() => import('./pages/GridPaintPage').then(m => ({ default: m.GridPaintPage })));
+const LabsPage = lazyWithRetry(() => import('./pages/labs/LabsPage').then(m => ({ default: m.LabsPage })));
+const WindTunnelPage = lazyWithRetry(() => import('./pages/labs/WindTunnelPage').then(m => ({ default: m.WindTunnelPage })));
 
 
 const LoadingFallback = () => (
@@ -100,6 +102,8 @@ const App: React.FC = () => {
                 <Route path="/instagram-extractor" element={<Navigate to="/extractor" replace />} />
                 <Route path="/qrcode" element={<QRCodePage />} />
                 <Route path="/grid-paint" element={<GridPaintPage />} />
+                <Route path="/labs" element={<LabsPage />} />
+                <Route path="/labs/wind-tunnel" element={<WindTunnelPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/onboard" element={<OnboardPage />} />
                 <Route path="/privacy" element={<PrivacyPolicyPage />} />
