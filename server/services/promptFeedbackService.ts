@@ -79,8 +79,8 @@ export async function saveFeedback(feedback: {
     feedbackId: feedback.feedbackId,
     componentType: validComponentType,
     success: feedback.success,
-    improvement: validImprovement,
-    generatedPrompt: validPrompt,
+    improvement: validImprovement ?? undefined,
+    generatedPrompt: validPrompt ?? undefined,
     timestamp: new Date(),
     learning,
     confidence: 0.5, // Initial confidence

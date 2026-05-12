@@ -16,7 +16,8 @@
   },
   "include": [
     "**/*.ts",
-    "../src/services/**/*.ts",
+    "../src/services/r2Service.ts",
+    "../src/services/geminiService.ts",
     "../types/types.ts"
   ],
   "exclude": [

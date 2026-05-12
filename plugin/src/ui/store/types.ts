@@ -103,6 +103,7 @@ export interface ChatMessage {
   thinking?: string;
   metadata?: Record<string, any>;
   toolCalls?: ToolCallRecord[];
+  generatedImageUrl?: string;
   isError?: boolean;
 }
 

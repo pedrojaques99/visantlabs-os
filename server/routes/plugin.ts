@@ -806,6 +806,83 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       }
     }
 
+    // Extract imageUrl from pre-pass mockup result (if any)
+    const mockupRecord = toolCallRecords.find(t => t.name === 'generate_mockup' && t.status === 'done');
+    let generatedImageUrl: string | undefined;
+    if (mockupRecord?.summary) {
+      const imgMatch = mockupRecord.summary.match(/"imageUrl"\s*:\s*"([^"]+)"/);
+      if (imgMatch) generatedImageUrl = imgMatch[1];
+    }
+    if (!generatedImageUrl && enrichedContext) {
+      const ctxMatch = enrichedContext.match(/"imageUrl"\s*:\s*"([^"]+)"/);
+      if (ctxMatch) generatedImageUrl = ctxMatch[1];
+    }
+
+    // If mockup was generated, skip Phase 2 LLM and build ops directly
+    if (generatedImageUrl) {
+      const aspectMap: Record<string, { w: number; h: number }> = {
+        '1:1': { w: 1024, h: 1024 }, '16:9': { w: 1280, h: 720 },
+        '9:16': { w: 720, h: 1280 }, '4:5': { w: 800, h: 1000 },
+      };
+      const detectedAspect = mockupRecord?.args?.aspectRatio || '1:1';
+      const dims = aspectMap[detectedAspect] || aspectMap['1:1'];
+
+      const mockupOps = [
+        { type: 'CREATE_FRAME', ref: 'mockup_frame', props: { name: `Mockup — ${command.slice(0, 40)}`, width: dims.w, height: dims.h, fills: [{ type: 'SOLID', color: '#000000', opacity: 0 }] } },
+        { type: 'SET_IMAGE_FILL', ref: 'mockup_frame', imageUrl: generatedImageUrl, scaleMode: 'FILL' },
+        { type: 'MESSAGE', content: `Mockup gerado e aplicado no canvas.` },
+      ];
+
+      send('operations', mockupOps);
+
+      const genToolCall = {
+        id: `tc-${Date.now()}`,
+        name: 'apply_mockup_to_canvas',
+        status: 'done' as const,
+        args: { imageUrl: generatedImageUrl.slice(0, 80) + '...' },
+        startedAt: new Date().toISOString(),
+        endedAt: new Date().toISOString(),
+        summary: `Applied mockup image to ${dims.w}×${dims.h} frame`,
+      };
+      toolCallRecords.push(genToolCall);
+
+      let sessionContext: { messageCount: number; tokenEstimate: number; contextLimit: number } | undefined;
+      if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
+        try {
+          const db = getDb();
+          const newMessages = [
+            { role: 'user', content: command, timestamp: new Date() },
+            { role: 'assistant', content: `Generated mockup`, operations: mockupOps, toolCalls: toolCallRecords, timestamp: new Date() },
+          ];
+          await db.collection('plugin_sessions').updateOne(
+            { _id: sessionId } as any,
+            { $push: { messages: { $each: newMessages } } as any },
+          );
+          const updated = await db.collection<any>('plugin_sessions').findOne({ _id: sessionId } as any);
+          const msgs = updated?.messages || [];
+          const totalChars = msgs.reduce((sum: number, m: any) => sum + (m.content?.length || 0), 0);
+          sessionContext = { messageCount: msgs.length, tokenEstimate: Math.ceil(totalChars / 4), contextLimit: 80000 };
+        } catch {}
+      }
+
+      send('done', {
+        operations: mockupOps,
+        message: 'Mockup gerado e aplicado no canvas.',
+        provider: 'pre-pass',
+        durationMs: Date.now() - Date.now(),
+        toolCalls: toolCallRecords,
+        sessionContext,
+        generatedImageUrl,
+      });
+
+      res.end();
+
+      if (req.userId && !isByok) {
+        deductCredit(req.userId).catch(e => console.error('[Plugin] Credit deduction error:', e));
+      }
+      return;
+    }
+
     // ═══ Phase 2: Generate Figma Operations (reuse existing logic) ═══
     send('thinking', { message: 'Generating design...' });
 

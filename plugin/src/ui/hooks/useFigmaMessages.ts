@@ -96,6 +96,8 @@ export function useFigmaMessages() {
               summaryItems: msg.summaryItems
             });
           }
+          const count = msg.count || msg.summaryItems?.length || 0;
+          storeState.showToast(`${count} operation${count !== 1 ? 's' : ''} applied ✓`, 'success');
           break;
         }
 
@@ -451,7 +453,7 @@ export function useFigmaMessages() {
                   let streamMessage = '';
                   let messageAdded = false;
 
-                  const updateAssistantMessage = (content: string, ops?: any[], tcs?: any[]) => {
+                  const updateAssistantMessage = (content: string, ops?: any[], tcs?: any[], imageUrl?: string) => {
                     if (!messageAdded) {
                       storeState.addChatMessage({
                         id: assistantMsgId,
@@ -459,6 +461,7 @@ export function useFigmaMessages() {
                         content: content || 'Processing...',
                         timestamp: Date.now(),
                         toolCalls: tcs && tcs.length > 0 ? tcs : undefined,
+                        generatedImageUrl: imageUrl,
                       });
                       messageAdded = true;
                     } else {
@@ -468,6 +471,7 @@ export function useFigmaMessages() {
                           if (content) target.content = content;
                           if (ops && ops.length > 0) target.operations = ops;
                           if (tcs && tcs.length > 0) target.toolCalls = [...tcs];
+                          if (imageUrl) target.generatedImageUrl = imageUrl;
                         }
                       });
                     }
@@ -507,7 +511,16 @@ export function useFigmaMessages() {
                               if (tc) {
                                 tc.status = data.error ? 'error' : 'done';
                                 tc.endedAt = new Date().toISOString();
-                                if (data.error) tc.summary = data.error;
+                                if (data.error) {
+                                  tc.errorMessage = data.error;
+                                  tc.summary = data.error;
+                                  if (data.name === 'generate_mockup') {
+                                    storeState.showToast(`Mockup failed: ${data.error}`, 'error');
+                                  }
+                                }
+                                if (data.name === 'generate_mockup' && !data.error) {
+                                  storeState.showToast('Mockup generated! Applying to canvas...', 'success');
+                                }
                               }
                               updateAssistantMessage('', undefined, streamToolCalls);
                               break;
@@ -523,7 +536,7 @@ export function useFigmaMessages() {
                               streamMessage = spokenText || data.message || (designOps.length > 0 ? `Generated ${designOps.length} operation(s)` : 'Done');
 
                               const allToolCalls = data.toolCalls || streamToolCalls;
-                              updateAssistantMessage(streamMessage, designOps, allToolCalls);
+                              updateAssistantMessage(streamMessage, designOps, allToolCalls, data.generatedImageUrl);
 
                               if (data.sessionContext) {
                                 usePluginStore.setState({ sessionContext: data.sessionContext });

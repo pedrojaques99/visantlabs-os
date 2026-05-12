@@ -984,7 +984,7 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
   try {
     const apiKey = await getGeminiApiKey(req.userId!);
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const genAI = new GoogleGenerativeAI(apiKey!);
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.FLASH });
 
     let brandContext = '';
@@ -1026,7 +1026,7 @@ router.post('/extract-colors', apiRateLimiter, authenticate, async (req: AuthReq
   try {
     const apiKey = await getGeminiApiKey(req.userId!);
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const genAI = new GoogleGenerativeAI(apiKey!);
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.FLASH });
 
     let base64Data = image.base64;

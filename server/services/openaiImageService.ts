@@ -86,7 +86,7 @@ export async function generateOpenAIImage(params: GenerateOpenAIImageParams): Pr
       n: 1,
     });
 
-    const result = response.data[0];
+    const result = response.data?.[0];
     if (!result?.b64_json) throw new Error('OpenAI image edit returned no image data');
 
     return {
@@ -104,7 +104,7 @@ export async function generateOpenAIImage(params: GenerateOpenAIImageParams): Pr
     n: 1,
   });
 
-  const result = response.data[0];
+  const result = response.data?.[0];
   // gpt-image-1/2 return b64_json by default; fallback to url if needed
   const b64 = result?.b64_json;
   if (!b64) throw new Error('OpenAI image generation returned no image data');
