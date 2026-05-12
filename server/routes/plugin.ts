@@ -588,6 +588,7 @@ const streamLimiter = rateLimit({
  * Events: thinking, tool_start, tool_end, operations, message, done, error
  */
 router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res: Response) => {
+  const streamStartMs = Date.now();
   // SSE headers
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -869,7 +870,7 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
         operations: mockupOps,
         message: 'Mockup gerado e aplicado no canvas.',
         provider: 'pre-pass',
-        durationMs: Date.now() - Date.now(),
+        durationMs: Date.now() - streamStartMs,
         toolCalls: toolCallRecords,
         sessionContext,
         generatedImageUrl,
