@@ -1,7 +1,5 @@
-/**
- * Export image with scale using Canvas API
- * Maintains original resolution while applying scale
- */
+import { getProxiedUrl } from './proxyUtils';
+import { downloadBlob } from './clipboard';
 
 export async function exportImageWithScale(
   imageUrl: string,
@@ -63,27 +61,7 @@ export async function exportImageWithScale(
       reject(new Error('Failed to load image for export'));
     };
 
-    // Handle CORS issues
-    // Handle CORS issues by using proxy for external images
-    if (imageUrl.startsWith('data:') || imageUrl.startsWith('blob:')) {
-      img.src = imageUrl;
-    } else {
-      try {
-        // Check if it's an external URL
-        const isExternal = imageUrl.startsWith('http') && new URL(imageUrl).origin !== window.location.origin;
-
-        if (isExternal) {
-          const apiBaseUrl = (import.meta as any).env?.VITE_API_URL || '/api';
-          const cleanBaseUrl = apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
-          img.src = `${cleanBaseUrl}/images/stream?url=${encodeURIComponent(imageUrl)}`;
-        } else {
-          img.src = imageUrl;
-        }
-      } catch (e) {
-        // If URL parsing fails, fallback to direct loading
-        img.src = imageUrl;
-      }
-    }
+    img.src = getProxiedUrl(imageUrl);
   });
 }
 
@@ -105,15 +83,7 @@ function exportAsImage(
             return;
           }
 
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `${fileName}-${scale}x.${format}`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-
+          downloadBlob(blob, `${fileName}-${scale}x.${format}`);
           resolve();
         },
         mimeType,
@@ -142,17 +112,8 @@ async function exportAsSVG(
     <image width="${width}" height="${height}" xlink:href="${dataUrl}"/>
   </svg>`;
 
-      // Create blob and download
       const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${fileName}-${width}x${height}.svg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
+      downloadBlob(blob, `${fileName}-${width}x${height}.svg`);
       resolve();
     } catch (error: any) {
       reject(new Error(`Failed to export as SVG: ${error.message}`));

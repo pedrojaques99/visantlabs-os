@@ -6,7 +6,7 @@ import { rateLimit } from 'express-rate-limit';
 import { redisClient } from '../lib/redis.js';
 import { CACHE_TTL, CacheKey, hashQuery } from '../lib/cache-utils.js';
 import { prisma } from '../db/prisma.js';
-import { buildBrandContext } from '../lib/brandContextBuilder.js';
+import { buildBrandContext, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
 
 const expertRateLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -97,7 +97,7 @@ router.post('/chat', expertRateLimiter, authenticate, async (req: AuthRequest, r
         });
 
         if (guideline && guideline.userId === req.userId!) {
-          brandContext = buildBrandContext(guideline as any);
+          brandContext = buildBrandContext(guideline as any, { sections: BRAND_SECTION_PRESETS.copy });
           console.log(`[Expert] Using brand guidelines: ${(guideline.identity as { name?: string } | null)?.name || 'Unnamed'}`);
         }
       } catch (e) {

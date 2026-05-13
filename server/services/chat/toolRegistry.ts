@@ -11,6 +11,7 @@ import { CHAT_TOOLS, executeToolCall } from '../chatToolExecutor.js';
 import { ADMIN_CHAT_TOOLS, executeAdminChatTool } from '../adminChatTools.js';
 import { prisma } from '../../db/prisma.js';
 import { describeImage } from '../geminiService.js';
+import { buildBrandContext, BRAND_SECTION_PRESETS, type BrandContextSection } from '../../lib/brandContextBuilder.js';
 const INTERNAL_API_BASE = process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3001}`;
 
 export type ChatToolScope = 'public' | 'admin';
@@ -64,7 +65,7 @@ REGISTRY['get_brand_context'] = {
   scope: 'public',
   declaration: {
     name: 'get_brand_context',
-    description: 'Fetch brand guideline context (identity, colors, typography, voice) to enrich design generation.',
+    description: 'Fetch brand guideline context. Use "sections" to fetch only what you need — e.g. ["colors","typography"] for visual tweaks, "minimal" for simple tasks. Presets: "visual", "copy", "minimal", "imageGen", "full". Omit sections for full context.',
     parameters: {
       type: 'object',
       properties: {
@@ -72,37 +73,29 @@ REGISTRY['get_brand_context'] = {
           type: 'string',
           description: 'Brand guideline ID. Omit to use the session default.',
         },
+        sections: {
+          oneOf: [
+            { type: 'array', items: { type: 'string', enum: ['identity', 'colors', 'typography', 'voice', 'strategy', 'tokens', 'logos', 'media', 'tags', 'themes', 'knowledge'] } },
+            { type: 'string', enum: ['visual', 'copy', 'full', 'imageGen', 'minimal'] },
+          ],
+          description: 'Which brand sections to include. Array of specific sections or a preset name. Defaults to full.',
+        },
       },
     },
   },
-  execute: async (args: { brandGuidelineId?: string }, ctx) => {
+  execute: async (args: { brandGuidelineId?: string; sections?: BrandContextSection[] | string }, ctx) => {
     const id = args.brandGuidelineId || ctx.brandGuidelineId;
     if (!id) return 'No brand guideline selected.';
 
     const bg = await prisma.brandGuideline.findUnique({ where: { id } });
     if (!bg) return `Brand guideline ${id} not found.`;
 
-    const identity = bg.identity as any;
-    const colors = bg.colors as any[];
-    const typography = bg.typography as any[];
-    const guidelines = bg.guidelines as any;
+    const resolvedSections: BrandContextSection[] | undefined =
+      typeof args.sections === 'string'
+        ? BRAND_SECTION_PRESETS[args.sections as keyof typeof BRAND_SECTION_PRESETS]
+        : args.sections;
 
-    const parts: string[] = [];
-    if (identity?.name) parts.push(`Brand: ${identity.name}`);
-    if (identity?.tagline) parts.push(`Tagline: ${identity.tagline}`);
-    if (identity?.description) parts.push(`Description: ${identity.description}`);
-
-    if (colors?.length) {
-      parts.push('Colors: ' + colors.map(c => `${c.name || c.role}: ${c.hex}`).join(', '));
-    }
-    if (typography?.length) {
-      parts.push('Typography: ' + typography.map(t => `${t.role}: ${t.family} ${t.weight || ''}`).join(', '));
-    }
-    if (guidelines?.voice) parts.push(`Voice: ${guidelines.voice}`);
-    if (guidelines?.dos?.length) parts.push(`Do: ${guidelines.dos.join('; ')}`);
-    if (guidelines?.donts?.length) parts.push(`Don't: ${guidelines.donts.join('; ')}`);
-
-    return parts.join('\n');
+    return buildBrandContext(bg as any, { sections: resolvedSections });
   },
 };
 

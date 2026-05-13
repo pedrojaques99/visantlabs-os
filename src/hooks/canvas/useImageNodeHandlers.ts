@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import type { FlowNodeData, ImageNodeData, OutputNodeData } from '@/types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
 import { generateNodeId, copyMediaFromNode, getMediaFromNodeForCopy, copyMediaAsPngFromNode } from '@/utils/canvas/canvasNodeUtils';
+import { base64ToUint8Array, downloadBlob } from '@/utils/clipboard';
 import { canvasApi } from '@/services/canvasApi';
 import { mockupApi } from '@/services/mockupApi';
 import type { Mockup } from '@/services/mockupApi';
@@ -137,23 +138,10 @@ export const useImageNodeHandlers = ({
                 mimeType.includes('gif') ? 'gif' : 'png';
             fileName = `${node.type === 'image' ? 'image' : 'output'}-${Date.now()}.${extension}`;
 
-            const byteCharacters = atob(base64Data);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-              byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            blob = new Blob([byteArray], { type: mimeType });
+            blob = new Blob([base64ToUint8Array(base64Data)], { type: mimeType });
           } else {
-            // Fallback: try to extract base64 without data URL prefix
             const base64Data = imageUrl.includes(',') ? imageUrl.split(',')[1] : imageUrl;
-            const byteCharacters = atob(base64Data);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-              byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            blob = new Blob([byteArray], { type: 'image/png' });
+            blob = new Blob([base64ToUint8Array(base64Data)], { type: 'image/png' });
           }
         } catch (base64Error) {
           console.error('Base64 conversion error:', base64Error);
@@ -202,19 +190,7 @@ export const useImageNodeHandlers = ({
         }
       }
 
-      // Create download link
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Clean up after a short delay
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-      }, 100);
+      downloadBlob(blob, fileName);
 
       toast.success(t('canvas.imageDownloaded') || 'Image downloaded!', { duration: 2000 });
     } catch (error: any) {

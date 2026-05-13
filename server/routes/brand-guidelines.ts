@@ -1041,7 +1041,7 @@ router.post('/:id/health-check', apiRateLimiter, authenticate, async (req: AuthR
  */
 router.get('/public/:slug/context', publicRateLimiter, async (req, res) => {
   try {
-    const { format = 'full', output = 'text' } = req.query as { format?: string; output?: string }
+    const { format = 'full', output = 'text', sections: sectionsParam } = req.query as { format?: string; output?: string; sections?: string }
 
     const guideline = await prisma.brandGuideline.findFirst({
       where: { publicSlug: req.params.slug, isPublic: true },
@@ -1064,10 +1064,18 @@ router.get('/public/:slug/context', publicRateLimiter, async (req, res) => {
       guidelines: guideline.guidelines as any,
     }
 
+    // Resolve sections filter
+    const { BRAND_SECTION_PRESETS } = await import('../lib/brandContextBuilder.js')
+    const resolvedSections = sectionsParam
+      ? (sectionsParam in BRAND_SECTION_PRESETS
+        ? (BRAND_SECTION_PRESETS as any)[sectionsParam]
+        : sectionsParam.split(','))
+      : undefined
+
     // Build context based on format
     const context = format === 'compact'
       ? buildBrandContextForImageGen(guidelineData)
-      : buildBrandContext(guidelineData)
+      : buildBrandContext(guidelineData, { sections: resolvedSections })
 
     // Return based on output format
     if (output === 'json') {
@@ -1104,7 +1112,7 @@ router.get('/:id/context', apiRateLimiter, authenticate, async (req: AuthRequest
   try {
     if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
 
-    const { format = 'full', output = 'text' } = req.query as { format?: string; output?: string }
+    const { format = 'full', output = 'text', sections: sectionsParam } = req.query as { format?: string; output?: string; sections?: string }
 
     const guideline = await prisma.brandGuideline.findFirst({
       where: { id: req.params.id, userId: req.userId },
@@ -1127,10 +1135,18 @@ router.get('/:id/context', apiRateLimiter, authenticate, async (req: AuthRequest
       guidelines: guideline.guidelines as any,
     }
 
+    // Resolve sections filter
+    const { BRAND_SECTION_PRESETS } = await import('../lib/brandContextBuilder.js')
+    const resolvedSections = sectionsParam
+      ? (sectionsParam in BRAND_SECTION_PRESETS
+        ? (BRAND_SECTION_PRESETS as any)[sectionsParam]
+        : sectionsParam.split(','))
+      : undefined
+
     // Build context based on format
     const context = format === 'compact'
       ? buildBrandContextForImageGen(guidelineData)
-      : buildBrandContext(guidelineData)
+      : buildBrandContext(guidelineData, { sections: resolvedSections })
 
     // Return based on output format
     if (output === 'json') {

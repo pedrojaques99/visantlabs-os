@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { redisClient } from '../lib/redis.js';
-import { buildBrandContextJSON } from '../lib/brandContextBuilder.js';
+import { buildBrandContextJSON, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateMockup as generateGeminiImage } from '../services/geminiService.js';
 import { uploadCanvasImage } from '../services/r2Service.js';
@@ -229,7 +229,7 @@ async function runCampaign(params: {
       const bg = await prisma.brandGuideline.findFirst({
         where: { id: brandGuidelineId, userId },
       });
-      if (bg) brandContext = buildBrandContextJSON(bg as any);
+      if (bg) brandContext = buildBrandContextJSON(bg as any, BRAND_SECTION_PRESETS.imageGen);
     }
 
     // Step 2: Plan prompts via GPT-4o

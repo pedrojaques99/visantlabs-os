@@ -18,7 +18,7 @@ import {
   type CreativeAIResponseValidated,
 } from './creative-schema.js';
 import { withResilience } from './ai-resilience.js';
-import { buildBrandContextJSON } from './brandContextBuilder.js';
+import { buildBrandContextJSON, BRAND_SECTION_PRESETS } from './brandContextBuilder.js';
 import type { BrandGuideline } from '../../src/lib/figma-types.js';
 
 // Lazy init so scripts that call dotenv after import order still work.
@@ -131,7 +131,7 @@ export async function planFromBrand({
   let brandLine = '';
   let hasLogosFlag = false;
   if (brandGuideline) {
-    brandLine = `Brand: ${JSON.stringify(buildBrandContextJSON(brandGuideline))}`;
+    brandLine = `Brand: ${JSON.stringify(buildBrandContextJSON(brandGuideline, BRAND_SECTION_PRESETS.imageGen))}`;
     hasLogosFlag = (brandGuideline.logos ?? []).length > 0;
   }
 

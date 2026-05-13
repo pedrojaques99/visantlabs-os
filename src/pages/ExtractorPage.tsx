@@ -6,6 +6,7 @@ import { imageApi, SearchImage, DesignerParams, ContentMode } from '../services/
 import { applyShaderEffect } from '../utils/shaders/shaderRenderer';
 import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
+import { copyImageAsPng } from '@/utils/clipboard';
 import { useTranslation } from '@/hooks/useTranslation';
 import JSZip from 'jszip';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
@@ -433,71 +434,11 @@ export default function ExtractorPage() {
   const handleCopyAsPng = useCallback(async (e: React.MouseEvent, img: SearchImage) => {
     e.stopPropagation();
     toast.info('Processing for clipboard...');
-
-    let blobUrl: string | null = null;
-
-    try {
-      let blob: Blob;
-
-      if (img.url.startsWith('data:')) {
-        // Handle data URL directly
-        const base64Data = img.url.split(',')[1];
-        const byteCharacters = atob(base64Data);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const mimeMatch = img.url.match(/data:(.*?);/);
-        const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
-        blob = new Blob([byteArray], { type: mimeType });
-      } else if (img.url.startsWith('blob:')) {
-        // Handle blob URL
-        const response = await fetch(img.url);
-        blob = await response.blob();
-      } else {
-        // Stream external URLs to avoid CORS issues
-        const streamUrl = `/api/images/stream?url=${encodeURIComponent(img.url)}`;
-        const response = await fetch(streamUrl);
-        blob = await response.blob();
-      }
-
-      const imgObj = new Image();
-      imgObj.crossOrigin = 'anonymous';
-      blobUrl = URL.createObjectURL(blob);
-
-      await new Promise((resolve, reject) => {
-        imgObj.onload = resolve;
-        imgObj.onerror = reject;
-        imgObj.src = blobUrl!;
-      });
-
-      const canvas = document.createElement('canvas');
-      canvas.width = imgObj.width;
-      canvas.height = imgObj.height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Canvas context failed');
-      ctx.drawImage(imgObj, 0, 0);
-
-      const pngBlob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-      if (!pngBlob) throw new Error('Failed to create PNG blob');
-
-      // Copy to clipboard
-      if (!navigator.clipboard?.write) {
-        throw new Error('Clipboard API not supported in this browser');
-      }
-
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': pngBlob })
-      ]);
-
-      URL.revokeObjectURL(blobUrl);
+    const result = await copyImageAsPng(img.url);
+    if (result.success) {
       toast.success('Asset copied to clipboard');
-    } catch (err) {
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      console.error('Copy failed:', message);
-      toast.error(`Failed to copy: ${message}`);
+    } else {
+      toast.error(`Failed to copy: ${result.error}`);
     }
   }, []);
 

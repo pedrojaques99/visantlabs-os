@@ -1,4 +1,5 @@
 import type { Node, Edge } from '@xyflow/react';
+import { downloadBlob } from '../clipboard';
 
 export const VISANT_CANVAS_SCHEMA = 'visant-canvas/v1';
 
@@ -149,15 +150,8 @@ export function exportCanvasToJson(
 export function downloadJsonFile(data: VisantCanvasExport, baseName: string): void {
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
   const safeName = (baseName || 'canvas').replace(/[^a-z0-9\-_]/gi, '_');
-  a.href = url;
-  a.download = `${safeName}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  downloadBlob(blob, `${safeName}.json`);
 }
 
 /** Returns true if the parsed JSON looks like a valid Visant canvas export. */

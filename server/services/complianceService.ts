@@ -7,7 +7,7 @@
 
 import { GoogleGenAI } from '@google/genai';
 import type { BrandGuideline } from '../../src/lib/figma-types.js';
-import { buildBrandContext } from '../lib/brandContextBuilder.js';
+import { buildBrandContext, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 
 // --------------------------------------------------------------------------
@@ -294,7 +294,7 @@ async function analyzeImageCompliance(
 
   try {
     const ai = new GoogleGenAI({ apiKey: apiKey || process.env.GEMINI_API_KEY || '' });
-    const brandContext = buildBrandContext(guideline, { compact: true });
+    const brandContext = buildBrandContext(guideline, { compact: true, sections: BRAND_SECTION_PRESETS.visual });
 
     const prompt = `You are a brand compliance analyst. Analyze if this image aligns with the brand guidelines.
 

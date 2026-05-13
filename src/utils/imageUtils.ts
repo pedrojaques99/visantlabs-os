@@ -1,4 +1,5 @@
 import type { Mockup } from '../services/mockupApi';
+import { downloadBlob } from './clipboard';
 
 /**
  * Get image URL from mockup, supporting both R2 URLs and Base64 fallback
@@ -164,61 +165,35 @@ export function isImageFromR2(mockup: Mockup): boolean {
 export async function downloadImage(imageUrl: string, filenamePrefix: string = 'image'): Promise<void> {
   if (!imageUrl) return;
 
+  const getExtension = (mimeOrUrl: string): string => {
+    const map: Record<string, string> = {
+      'video/mp4': '.mp4', 'video/webm': '.webm', 'image/jpeg': '.jpg',
+      'image/webp': '.webp', 'image/gif': '.gif', 'image/png': '.png',
+    };
+    for (const [mime, ext] of Object.entries(map)) {
+      if (mimeOrUrl.includes(mime)) return ext;
+    }
+    const urlExt = mimeOrUrl.split('.').pop()?.split('?')[0]?.toLowerCase();
+    if (urlExt && ['mp4', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'webm'].includes(urlExt)) {
+      return `.${urlExt}`;
+    }
+    return '.png';
+  };
+
   try {
     const response = await fetch(imageUrl);
     const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-
-    // Determine extension from content-type or url
-    let extension = '.png';
-    const contentType = response.headers.get('content-type');
-    if (contentType) {
-      if (contentType.includes('video/mp4')) extension = '.mp4';
-      else if (contentType.includes('image/jpeg')) extension = '.jpg';
-      else if (contentType.includes('image/webp')) extension = '.webp';
-      else if (contentType.includes('image/gif')) extension = '.gif';
-      else if (contentType.includes('image/png')) extension = '.png';
-    } else {
-      // Fallback to URL extension
-      const urlExt = imageUrl.split('.').pop()?.split('?')[0];
-      if (urlExt && ['mp4', 'jpg', 'jpeg', 'png', 'webp', 'gif'].includes(urlExt.toLowerCase())) {
-        extension = `.${urlExt}`;
-      }
-    }
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${filenamePrefix}-${Date.now()}${extension}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    const contentType = response.headers.get('content-type') || '';
+    const extension = getExtension(contentType || imageUrl);
+    downloadBlob(blob, `${filenamePrefix}-${Date.now()}${extension}`);
   } catch (error) {
     console.error('Fetch download failed, falling back to direct link:', error);
-    // Fallback: try to download directly if fetch fails
+    const mimeSource = imageUrl.startsWith('data:')
+      ? imageUrl.split(';')[0].split(':')[1] || ''
+      : imageUrl;
+    const extension = getExtension(mimeSource);
     const link = document.createElement('a');
     link.href = imageUrl;
-
-    // Attempt to guess extension for fallback
-    let extension = '.png';
-
-    if (imageUrl.startsWith('data:')) {
-      // Extract mime type from data URL
-      const mime = imageUrl.split(';')[0].split(':')[1];
-      if (mime) {
-        if (mime.includes('video/mp4')) extension = '.mp4';
-        else if (mime.includes('video/webm')) extension = '.webm';
-        else if (mime.includes('image/jpeg')) extension = '.jpg';
-        else if (mime.includes('image/webp')) extension = '.webp';
-        else if (mime.includes('image/gif')) extension = '.gif';
-      }
-    } else {
-      const urlExt = imageUrl.split('.').pop()?.split('?')[0];
-      if (urlExt && ['mp4', 'jpg', 'jpeg', 'png', 'webp', 'gif'].includes(urlExt.toLowerCase())) {
-        extension = `.${urlExt}`;
-      }
-    }
-
     link.download = `${filenamePrefix}-${Date.now()}${extension}`;
     document.body.appendChild(link);
     link.click();
