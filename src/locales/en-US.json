@@ -239,6 +239,10 @@
       "description": "Minimalist vector drawing tool with precision",
       "name": "Grid Paint"
     },
+    "studio3d": {
+      "description": "Turn SVGs and PNGs into configurable 3D scenes for videos, loops and images",
+      "name": "3D Studio"
+    },
     "halftoneMachine": {
       "description": "Create halftone effects from your images",
       "name": "Halftone Machine"
