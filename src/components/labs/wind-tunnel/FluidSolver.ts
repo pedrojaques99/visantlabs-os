@@ -82,6 +82,10 @@ export class FluidSolver {
     this.addSource(this.u, this.u0, dt);
     this.addSource(this.v, this.v0, dt);
 
+    for (let i = 0; i < this.size; i++) {
+      if (this.obstacle[i]) { this.u[i] = 0; this.v[i] = 0; }
+    }
+
     this.swap(this.u, this.u0);
     this.diffuse(1, this.u, this.u0, this.visc, dt);
     this.swap(this.v, this.v0);
@@ -218,8 +222,6 @@ export class FluidSolver {
 
   private project(u: Float64Array, v: Float64Array, p: Float64Array, div: Float64Array): void {
     const N = this.N;
-    const h = 1.0 / N;
-
     for (let i = 1; i <= N; i++) {
       for (let j = 1; j <= N; j++) {
         if (this.obstacle[this.IX(i, j)]) {
@@ -227,10 +229,10 @@ export class FluidSolver {
           p[this.IX(i, j)] = 0;
           continue;
         }
-        div[this.IX(i, j)] = -0.5 * h * (
+        div[this.IX(i, j)] = -0.5 * (
           u[this.IX(i + 1, j)] - u[this.IX(i - 1, j)] +
           v[this.IX(i, j + 1)] - v[this.IX(i, j - 1)]
-        );
+        ) / N;
         p[this.IX(i, j)] = 0;
       }
     }
@@ -260,8 +262,8 @@ export class FluidSolver {
           v[this.IX(i, j)] = 0;
           continue;
         }
-        u[this.IX(i, j)] -= 0.5 * (p[this.IX(i + 1, j)] - p[this.IX(i - 1, j)]) * N;
-        v[this.IX(i, j)] -= 0.5 * (p[this.IX(i, j + 1)] - p[this.IX(i, j - 1)]) * N;
+        u[this.IX(i, j)] -= 0.5 * N * (p[this.IX(i + 1, j)] - p[this.IX(i - 1, j)]);
+        v[this.IX(i, j)] -= 0.5 * N * (p[this.IX(i, j + 1)] - p[this.IX(i, j - 1)]);
       }
     }
     this.setBnd(1, u);

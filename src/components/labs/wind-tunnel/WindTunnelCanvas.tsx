@@ -3,9 +3,10 @@ import { FluidSolver } from './FluidSolver';
 import { ParticleSystem } from './ParticleSystem';
 import { rasterizeTextToObstacles, autoFontSize } from './TextObstacles';
 import { rasterizeShapeToObstacles } from './ShapeObstacles';
+import { rasterizeImageToObstacles } from './ImageObstacles';
 
 export interface WindTunnelConfig {
-  obstacleType: 'text' | 'circle' | 'triangle' | 'square' | 'diamond' | 'airfoil';
+  obstacleType: 'text' | 'circle' | 'triangle' | 'square' | 'diamond' | 'airfoil' | 'image';
   text: string;
   fontFamily: string;
   bold: boolean;
@@ -18,14 +19,19 @@ export interface WindTunnelConfig {
   baseColor: string;
   showObstacles: boolean;
   perspective: number;
+  obstacleImage?: HTMLImageElement;
+  paused?: boolean;
 }
 
 export interface WindTunnelHandle {
   getActiveCount: () => number;
+  getFps: () => number;
+  getCanvasRef: () => HTMLCanvasElement | null;
+  resetSimulation: () => void;
 }
 
 const GRID_SIZE = 96;
-const MAX_PARTICLES = 8000;
+const MAX_PARTICLES = 15000;
 const TRAIL_LENGTH = 16;
 
 export const WindTunnelCanvas = forwardRef<WindTunnelHandle, { config: WindTunnelConfig }>(
@@ -36,11 +42,34 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, { config: WindTunne
     const animRef = useRef<number>(0);
     const configRef = useRef(config);
     const activeCountRef = useRef(0);
+    const fpsRef = useRef(0);
     const obstaclesRef = useRef<boolean[]>([]);
+    const sizeRef = useRef({ w: 0, h: 0 });
     configRef.current = config;
 
     useImperativeHandle(ref, () => ({
       getActiveCount: () => activeCountRef.current,
+      getFps: () => fpsRef.current,
+      getCanvasRef: () => canvasRef.current,
+      resetSimulation: () => {
+        const solver = solverRef.current;
+        const particles = particlesRef.current;
+        if (!solver || !particles) return;
+        solver.reset();
+        particles.clear();
+        const { w, h } = sizeRef.current;
+        const cfg = configRef.current;
+        const initCount = Math.min(cfg.particleCount, MAX_PARTICLES);
+        for (let i = 0; i < initCount; i++) {
+          particles.emit(Math.random() * w, Math.random() * h, 1, cfg.windSpeed * 0.3);
+        }
+        for (let warm = 0; warm < 30; warm++) {
+          const N = GRID_SIZE;
+          const wf = cfg.windSpeed * 3;
+          for (let j = 1; j <= N; j++) solver.addVelocity(1, j, wf, 0);
+          solver.step(0.016);
+        }
+      },
     }));
 
     const rebuildObstacles = useCallback((width: number, height: number) => {
@@ -51,7 +80,14 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, { config: WindTunne
       const N = GRID_SIZE;
       let obstacles: boolean[];
 
-      if (cfg.obstacleType === 'text') {
+      if (cfg.obstacleType === 'image') {
+        if (!cfg.obstacleImage) {
+          solver.clearObstacles();
+          obstaclesRef.current = [];
+          return;
+        }
+        obstacles = rasterizeImageToObstacles(cfg.obstacleImage, N, width, height);
+      } else if (cfg.obstacleType === 'text') {
         if (!cfg.text.trim()) {
           solver.clearObstacles();
           obstaclesRef.current = [];
@@ -90,16 +126,21 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, { config: WindTunne
 
       const ctx = canvas.getContext('2d', { alpha: false })!;
       const dpr = window.devicePixelRatio || 1;
-      let w = 0, h = 0;
+
+      let resizeTimer: ReturnType<typeof setTimeout> | null = null;
 
       const resize = () => {
         const rect = canvas.getBoundingClientRect();
-        w = rect.width;
-        h = rect.height;
-        canvas.width = w * dpr;
-        canvas.height = h * dpr;
+        sizeRef.current = { w: rect.width, h: rect.height };
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        rebuildObstacles(w, h);
+        rebuildObstacles(rect.width, rect.height);
+      };
+
+      const debouncedResize = () => {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(resize, 150);
       };
 
       const solver = new FluidSolver(GRID_SIZE);
@@ -109,14 +150,13 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, { config: WindTunne
 
       resize();
 
-      // Seed the entire canvas with particles on init
       const cfg0 = configRef.current;
+      const { w, h } = sizeRef.current;
       const initCount = Math.min(cfg0.particleCount, MAX_PARTICLES);
       for (let i = 0; i < initCount; i++) {
         particles.emit(Math.random() * w, Math.random() * h, 1, cfg0.windSpeed * 0.3);
       }
 
-      // Pre-warm the solver so particles move immediately
       for (let warm = 0; warm < 30; warm++) {
         const N = GRID_SIZE;
         const wf = cfg0.windSpeed * 3;
@@ -124,60 +164,84 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, { config: WindTunne
         solver.step(0.016);
       }
 
-      const observer = new ResizeObserver(resize);
+      const observer = new ResizeObserver(debouncedResize);
       observer.observe(canvas);
 
       let lastTime = performance.now();
+      let frameCount = 0;
+      let fpsAccum = 0;
 
       const loop = (now: number) => {
         const dt = Math.min((now - lastTime) / 1000, 0.04);
         lastTime = now;
 
+        frameCount++;
+        fpsAccum += dt;
+        if (fpsAccum >= 0.5) {
+          fpsRef.current = Math.round(frameCount / fpsAccum);
+          frameCount = 0;
+          fpsAccum = 0;
+        }
+
         const cfg = configRef.current;
+        const { w: cw, h: ch } = sizeRef.current;
 
-        solver.setViscosity(cfg.viscosity * 0.001);
-        solver.setDiffusion(0.00001);
+        if (!cfg.paused) {
+          solver.setViscosity(cfg.viscosity * 0.001);
+          solver.setDiffusion(0.00001);
 
-        const N = GRID_SIZE;
-        const windForce = cfg.windSpeed * 5;
-        for (let j = 1; j <= N; j++) {
-          solver.addVelocity(1, j, windForce, (Math.random() - 0.5) * windForce * 0.03);
-          // Add ambient horizontal push across the whole field
-          if (j % 4 === 0) {
-            for (let col = 2; col <= N; col += 8) {
-              solver.addVelocity(col, j, windForce * 0.3, 0);
+          const N = GRID_SIZE;
+          const windForce = cfg.windSpeed * 5;
+          for (let j = 1; j <= N; j++) {
+            solver.addVelocity(1, j, windForce, (Math.random() - 0.5) * windForce * 0.03);
+            if (j % 4 === 0) {
+              for (let col = 2; col <= N; col += 8) {
+                solver.addVelocity(col, j, windForce * 0.3, 0);
+              }
             }
           }
-        }
 
-        solver.step(dt);
+          solver.step(dt);
 
-        const target = cfg.particleCount;
-        const current = particles.getActiveCount();
-        if (current < target) {
-          const deficit = target - current;
-          const batch = Math.min(Math.ceil(deficit / 10), 100);
-          for (let i = 0; i < batch; i++) {
-            if (Math.random() < 0.7) {
-              // 70% from left edge (wind source)
-              particles.emit(0, Math.random() * h, 1, cfg.windSpeed * 0.4);
-            } else {
-              // 30% scattered across canvas (fill gaps)
-              particles.emit(Math.random() * w * 0.3, Math.random() * h, 1, cfg.windSpeed * 0.2);
+          const target = Math.min(cfg.particleCount, MAX_PARTICLES);
+          const current = particles.getActiveCount();
+          if (current < target) {
+            const deficit = target - current;
+            const batch = Math.min(Math.ceil(deficit / 10), 100);
+            for (let i = 0; i < batch; i++) {
+              if (Math.random() < 0.7) {
+                particles.emit(0, Math.random() * ch, 1, cfg.windSpeed * 0.4);
+              } else {
+                particles.emit(Math.random() * cw * 0.3, Math.random() * ch, 1, cfg.windSpeed * 0.2);
+              }
             }
           }
+
+          particles.update(solver, dt, cw, ch);
         }
 
-        particles.update(solver, dt, w, h);
         activeCountRef.current = particles.getActiveCount();
 
         ctx.fillStyle = '#0a0a0a';
-        ctx.fillRect(0, 0, w, h);
+        ctx.fillRect(0, 0, cw, ch);
+
+        const perspective = cfg.perspective / 100;
+        if (perspective > 0) {
+          ctx.save();
+          const cx = cw / 2;
+          const cy = ch / 2;
+          ctx.translate(cx, cy);
+          const skewX = perspective * 0.15;
+          const scaleY = 1 - perspective * 0.25;
+          ctx.transform(1, skewX * 0.3, 0, scaleY, 0, perspective * cy * 0.15);
+          ctx.translate(-cx, -cy);
+        }
 
         if (cfg.showObstacles && obstaclesRef.current.length > 0) {
           ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-          const cellW = w / N;
-          const cellH = h / N;
+          const N = GRID_SIZE;
+          const cellW = cw / N;
+          const cellH = ch / N;
           const obs = obstaclesRef.current;
           for (let j = 1; j <= N; j++)
             for (let i = 1; i <= N; i++)
@@ -185,7 +249,11 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, { config: WindTunne
                 ctx.fillRect((i - 1) * cellW, (j - 1) * cellH, cellW, cellH);
         }
 
-        particles.render(ctx, w, h, cfg.colorMode, cfg.baseColor, cfg.particleSize, solver, cfg.renderMode);
+        particles.render(ctx, cw, ch, cfg.colorMode, cfg.baseColor, cfg.particleSize, solver, cfg.renderMode);
+
+        if (perspective > 0) {
+          ctx.restore();
+        }
 
         animRef.current = requestAnimationFrame(loop);
       };
@@ -195,6 +263,7 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, { config: WindTunne
       return () => {
         cancelAnimationFrame(animRef.current);
         observer.disconnect();
+        if (resizeTimer) clearTimeout(resizeTimer);
       };
     }, [rebuildObstacles]);
 
@@ -202,25 +271,28 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, { config: WindTunne
     const prevFontRef = useRef(config.fontFamily);
     const prevBoldRef = useRef(config.bold);
     const prevShapeRef = useRef(config.obstacleType);
+    const prevImageRef = useRef(config.obstacleImage);
 
     useEffect(() => {
       if (
         config.text !== prevTextRef.current ||
         config.fontFamily !== prevFontRef.current ||
         config.bold !== prevBoldRef.current ||
-        config.obstacleType !== prevShapeRef.current
+        config.obstacleType !== prevShapeRef.current ||
+        config.obstacleImage !== prevImageRef.current
       ) {
         prevTextRef.current = config.text;
         prevFontRef.current = config.fontFamily;
         prevBoldRef.current = config.bold;
         prevShapeRef.current = config.obstacleType;
+        prevImageRef.current = config.obstacleImage;
         const canvas = canvasRef.current;
         if (canvas) {
           const rect = canvas.getBoundingClientRect();
           rebuildObstacles(rect.width, rect.height);
         }
       }
-    }, [config.text, config.fontFamily, config.bold, config.obstacleType, rebuildObstacles]);
+    }, [config.text, config.fontFamily, config.bold, config.obstacleType, config.obstacleImage, rebuildObstacles]);
 
     return (
       <canvas
