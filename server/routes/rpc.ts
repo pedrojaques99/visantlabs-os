@@ -10,7 +10,7 @@ import type { Envelope, OpName, Result, TelemetryEntry } from '../../shared/prot
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { logger } from '../lib/logger.js';
 import { resolveBrandGuideline } from '../lib/brandResolver.js';
-import { buildBrandContextWithKnowledge } from '../lib/brandContextBuilder.js';
+import { buildBrandContextWithKnowledge, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
 import { improvePrompt } from '../services/geminiService.js';
 
 const router = express.Router();
@@ -27,7 +27,7 @@ const handlers: Partial<Record<OpName, Handler>> = {
     if (userId && brandId) {
       const { guideline } = await resolveBrandGuideline('', userId, brandId);
       if (guideline) {
-        const ctx = await buildBrandContextWithKnowledge(guideline as any, { userId, prompt: p.prompt });
+        const ctx = await buildBrandContextWithKnowledge(guideline as any, { userId, prompt: p.prompt, sections: BRAND_SECTION_PRESETS.copy });
         brandPreamble = `# Brand Context\n${ctx}\n\n# User Request\n`;
       }
     }

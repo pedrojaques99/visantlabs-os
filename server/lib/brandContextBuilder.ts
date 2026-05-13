@@ -15,6 +15,31 @@ import type { TokenRegistry } from './tokenRegistry.js';
 import { redisClient } from './redis.js';
 import { CACHE_TTL, CacheKey } from './cache-utils.js';
 
+export type BrandContextSection =
+  | 'identity'
+  | 'colors'
+  | 'typography'
+  | 'voice'
+  | 'strategy'
+  | 'tokens'
+  | 'logos'
+  | 'media'
+  | 'tags'
+  | 'themes'
+  | 'knowledge';
+
+export const BRAND_SECTION_PRESETS = {
+  visual: ['identity', 'colors', 'typography', 'tokens', 'themes'] as BrandContextSection[],
+  copy: ['identity', 'voice', 'strategy'] as BrandContextSection[],
+  full: ['identity', 'colors', 'typography', 'voice', 'strategy', 'tokens', 'logos', 'media', 'tags', 'themes', 'knowledge'] as BrandContextSection[],
+  imageGen: ['identity', 'colors', 'typography', 'voice', 'strategy', 'themes'] as BrandContextSection[],
+  minimal: ['identity', 'colors', 'typography'] as BrandContextSection[],
+};
+
+function shouldInclude(sections: BrandContextSection[] | undefined, section: BrandContextSection): boolean {
+  return !sections || sections.includes(section);
+}
+
 // ═══════════════════════════════════════════
 // Hex to RGB conversion utility
 // ═══════════════════════════════════════════
@@ -89,28 +114,30 @@ export interface BrandContextJSON {
  * @param bg - The BrandGuideline object
  * @returns Structured JSON object for LLM context
  */
-export function buildBrandContextJSON(bg: BrandGuideline): BrandContextJSON {
+export function buildBrandContextJSON(bg: BrandGuideline, sections?: BrandContextSection[]): BrandContextJSON {
+  const s = (section: BrandContextSection) => shouldInclude(sections, section);
+
   return {
     brand: {
       name: bg.identity?.name || 'Brand',
-      tagline: bg.identity?.tagline,
-      website: bg.identity?.website,
-      description: bg.identity?.description,
+      tagline: s('identity') ? bg.identity?.tagline : undefined,
+      website: s('identity') ? bg.identity?.website : undefined,
+      description: s('identity') ? bg.identity?.description : undefined,
     },
-    colors: (bg.colors || []).map(c => ({
+    colors: s('colors') ? (bg.colors || []).map(c => ({
       name: c.name,
       hex: c.hex,
       rgb: hexToRgb(c.hex) || { r: 0, g: 0, b: 0 },
       role: c.role,
-    })),
-    typography: (bg.typography || []).map((t: any) => ({
+    })) : [],
+    typography: s('typography') ? (bg.typography || []).map((t: any) => ({
       role: t.role || t.name || 'body',
       family: t.family || t.fontFamily || '',
       style: t.style || t.fontStyle,
       size: t.size || t.fontSize,
       lineHeight: t.lineHeight,
-    })).filter((t: any) => t.family),
-    voice: (bg.guidelines || bg.strategy?.voiceValues) ? {
+    })).filter((t: any) => t.family) : [],
+    voice: s('voice') && (bg.guidelines || bg.strategy?.voiceValues) ? {
       tone: bg.guidelines?.voice,
       dos: bg.guidelines?.dos,
       donts: bg.guidelines?.donts,
@@ -118,7 +145,7 @@ export function buildBrandContextJSON(bg: BrandGuideline): BrandContextJSON {
       accessibility: bg.guidelines?.accessibility,
       values: bg.strategy?.voiceValues,
     } : undefined,
-    strategy: bg.strategy ? {
+    strategy: s('strategy') && bg.strategy ? {
       manifesto: bg.strategy.manifesto,
       positioning: bg.strategy.positioning,
       coreMessage: bg.strategy.coreMessage,
@@ -141,17 +168,17 @@ export function buildBrandContextJSON(bg: BrandGuideline): BrandContextJSON {
       marketResearch: bg.strategy.marketResearch,
       graphicSystem: bg.strategy.graphicSystem,
     } : undefined,
-    tokens: bg.tokens ? {
+    tokens: s('tokens') && bg.tokens ? {
       spacing: bg.tokens.spacing as Record<string, number>,
       radius: bg.tokens.radius as Record<string, number>,
       shadows: bg.tokens.shadows,
       components: bg.tokens.components,
     } : undefined,
-    colorThemes: bg.colorThemes?.length
+    colorThemes: s('themes') && bg.colorThemes?.length
       ? bg.colorThemes.map(t => ({ name: t.name, bg: t.bg, text: t.text, primary: t.primary, accent: t.accent }))
       : undefined,
-    tags: bg.tags,
-    knowledge: bg.knowledgeFiles?.length
+    tags: s('tags') ? bg.tags : undefined,
+    knowledge: s('knowledge') && bg.knowledgeFiles?.length
       ? bg.knowledgeFiles.map((f: any) => ({ fileName: f.fileName, source: f.source }))
       : undefined,
   };
@@ -174,8 +201,8 @@ const BRAND_INSTRUCTIONS = `INSTRUCTIONS:
  * Build JSON string context for system prompt injection.
  * Wraps buildBrandContextJSON in a descriptive format.
  */
-export function buildBrandContextJSONString(bg: BrandGuideline): string {
-  const json = buildBrandContextJSON(bg);
+export function buildBrandContextJSONString(bg: BrandGuideline, sections?: BrandContextSection[]): string {
+  const json = buildBrandContextJSON(bg, sections);
   return `<brand_context>
 ${JSON.stringify(json, null, 2)}
 </brand_context>
@@ -189,9 +216,9 @@ ${BRAND_INSTRUCTIONS}`;
  */
 export async function buildBrandContextWithKnowledge(
   bg: BrandGuideline,
-  opts: { userId: string; prompt?: string }
+  opts: { userId: string; prompt?: string; sections?: BrandContextSection[] }
 ): Promise<string> {
-  const base = buildBrandContextJSONString(bg);
+  const base = buildBrandContextJSONString(bg, opts.sections);
 
   if (!bg.knowledgeFiles?.length || !bg.id) return base;
 
@@ -230,19 +257,22 @@ export function buildBrandContext(
     includeMedia?: boolean;
     /** Compact mode for shorter prompts (default: false) */
     compact?: boolean;
+    /** Only include these sections (default: all) */
+    sections?: BrandContextSection[];
   }
 ): string {
-  const { includeLogos = true, includeMedia = true, compact = false } = options || {};
+  const { includeLogos = true, includeMedia = true, compact = false, sections } = options || {};
+  const s = (section: BrandContextSection) => shouldInclude(sections, section);
   const lines: string[] = [];
   const name = bg.identity?.name || 'Brand';
 
   lines.push(`═══ BRAND: ${name} ═══`);
-  if (bg.identity?.tagline) lines.push(`"${bg.identity.tagline}"`);
-  if (!compact && bg.identity?.website) lines.push(`Site: ${bg.identity.website}`);
+  if (s('identity') && bg.identity?.tagline) lines.push(`"${bg.identity.tagline}"`);
+  if (s('identity') && !compact && bg.identity?.website) lines.push(`Site: ${bg.identity.website}`);
   lines.push('');
 
   // Colors - always include, critical for visual consistency
-  if (bg.colors?.length) {
+  if (s('colors') && bg.colors?.length) {
     lines.push('COLORS:');
     for (const c of bg.colors) {
       lines.push(`  ${c.name}: ${c.hex}${c.role ? ` (${c.role})` : ''}`);
@@ -251,7 +281,7 @@ export function buildBrandContext(
   }
 
   // Typography - important for text-based generations
-  if (bg.typography?.length) {
+  if (s('typography') && bg.typography?.length) {
     lines.push('FONTS:');
     for (const t of bg.typography as any[]) {
       const role = t.role || t.name || 'body';
@@ -266,7 +296,7 @@ export function buildBrandContext(
   }
 
   // Guidelines - voice, dos/donts, imagery, accessibility
-  if (bg.guidelines) {
+  if (s('voice') && bg.guidelines) {
     if (bg.guidelines.voice) lines.push(`TONE: ${bg.guidelines.voice}`);
     if (bg.guidelines.dos?.length) lines.push(`DO: ${bg.guidelines.dos.join(' | ')}`);
     if (bg.guidelines.donts?.length) lines.push(`AVOID: ${bg.guidelines.donts.join(' | ')}`);
@@ -276,7 +306,7 @@ export function buildBrandContext(
   }
 
   // Strategy - archetypes, personas, positioning, manifesto, voice values (compact skips)
-  if (!compact && bg.strategy) {
+  if (s('strategy') && !compact && bg.strategy) {
     if (bg.strategy.coreMessage) {
       const cm = bg.strategy.coreMessage;
       lines.push(`CORE MESSAGE: Product: ${cm.product} | Differential: ${cm.differential} | Emotional Bond: ${cm.emotionalBond}`);
@@ -344,14 +374,14 @@ export function buildBrandContext(
   }
 
   // Tags — industry/keyword context
-  if (!compact && bg.tags && Object.keys(bg.tags).length > 0) {
+  if (s('tags') && !compact && bg.tags && Object.keys(bg.tags).length > 0) {
     const allTags = Object.values(bg.tags).flat().filter(Boolean);
     if (allTags.length) lines.push(`TAGS: ${allTags.join(', ')}`);
     lines.push('');
   }
 
   // Color Themes — curated bg/text/primary/accent combos
-  if (bg.colorThemes?.length) {
+  if (s('themes') && bg.colorThemes?.length) {
     lines.push('COLOR THEMES:');
     for (const t of bg.colorThemes) {
       lines.push(`  ${t.name}: bg=${t.bg} text=${t.text} primary=${t.primary} accent=${t.accent}`);
@@ -360,7 +390,7 @@ export function buildBrandContext(
   }
 
   // Logos - optional, useful for Figma but not for image generation
-  if (includeLogos && bg.logos?.length) {
+  if (s('logos') && includeLogos && bg.logos?.length) {
     lines.push('LOGOS:');
     for (const l of bg.logos) {
       lines.push(`  ${l.variant}: ${l.url}${l.label ? ` (${l.label})` : ''}`);
@@ -369,7 +399,7 @@ export function buildBrandContext(
   }
 
   // Media Kit - optional, useful for Figma reference
-  if (includeMedia && bg.media?.length) {
+  if (s('media') && includeMedia && bg.media?.length) {
     lines.push('MEDIA KIT (reference assets):');
     for (const m of bg.media) {
       const cat = m.category ? ` [${m.category}]` : '';
@@ -379,23 +409,23 @@ export function buildBrandContext(
   }
 
   // Design tokens
-  if (bg.tokens?.spacing) {
+  if (s('tokens') && bg.tokens?.spacing) {
     lines.push(`SPACING: ${Object.entries(bg.tokens.spacing).map(([k, v]) => `${k}=${v}`).join(' ')}`);
   }
-  if (bg.tokens?.radius) {
+  if (s('tokens') && bg.tokens?.radius) {
     lines.push(`RADIUS: ${Object.entries(bg.tokens.radius).map(([k, v]) => `${k}=${v}`).join(' ')}`);
   }
-  if (!compact && bg.tokens?.shadows) {
+  if (s('tokens') && !compact && bg.tokens?.shadows) {
     const shadowEntries = Object.entries(bg.tokens.shadows).map(([k, v]: [string, any]) =>
       `${k}=(x:${v.x} y:${v.y} blur:${v.blur} color:${v.color} opacity:${v.opacity})`
     );
     if (shadowEntries.length) lines.push(`SHADOWS: ${shadowEntries.join(' | ')}`);
   }
-  if (!compact && bg.tokens?.components) {
+  if (s('tokens') && !compact && bg.tokens?.components) {
     const compKeys = Object.keys(bg.tokens.components);
     if (compKeys.length) lines.push(`COMPONENT TOKENS: ${compKeys.join(', ')}`);
   }
-  if (!compact && bg.knowledgeFiles?.length) {
+  if (s('knowledge') && !compact && bg.knowledgeFiles?.length) {
     const names = (bg.knowledgeFiles as any[]).map((f: any) => f.fileName).filter(Boolean);
     if (names.length) lines.push(`KNOWLEDGE BASE: ${names.join(', ')} (use as brand reference)`);
   }
@@ -411,12 +441,11 @@ export function buildBrandContext(
  * @returns Compact formatted string for image generation context
  */
 export function buildBrandContextForImageGen(bg: BrandGuideline): string {
-  // Full context (not compact) so strategy, voice, tone, imagery guidelines are included.
-  // Logos and media are excluded from TEXT — they are injected as referenceImages by the caller.
   return buildBrandContext(bg, {
     includeLogos: false,
     includeMedia: false,
     compact: false,
+    sections: BRAND_SECTION_PRESETS.imageGen,
   });
 }
 
@@ -526,6 +555,7 @@ export async function buildBrandContextCached(
     includeLogos?: boolean;
     includeMedia?: boolean;
     compact?: boolean;
+    sections?: BrandContextSection[];
   }
 ): Promise<string> {
   const format = JSON.stringify(options) || 'default';

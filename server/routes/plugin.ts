@@ -716,7 +716,7 @@ Available tools:
   Choose aspectRatio based on context: 1:1 (Instagram/square), 9:16 (story/Reels), 16:9 (landscape/billboard/cover), 4:5 (portrait feed).
   Set designType when relevant: social-media, business-card, packaging, billboard, apparel, signage.
 - describe_image: Analyze an image by URL or base64. Use when user shares an image to recreate or reference.
-- get_brand_context: Fetch brand guideline details. Use when you need brand info not already in context.
+- get_brand_context: Fetch brand guideline details. IMPORTANT: always pass "sections" to fetch only what you need — "minimal" for text/rename tasks, "visual" for color/typography/layout, "copy" for voice/strategy, "imageGen" for image generation. Only omit sections (= full) for complex multi-aspect tasks.
 - web_search: Search the web for references, inspiration, or information.
 - brand_guideline_update: Update sections of a brand guideline with structured data. Use when the user wants to "feed", "populate", "update", "send", or "alimentar" content from Figma frames to a brand guideline. Read the SELECTED ELEMENTS TEXT CONTENT below, parse it into structured brand data (strategy, personas, archetypes, manifesto, voice, colors, typography, etc.), and call this tool with the parsed data. Pass brand_guideline_id if available. This is a DATA EXTRACTION + API UPDATE tool, NOT a visual Figma operation.
 - brand_guideline_create: Create a new brand guideline. Use when user wants to start a new brand from scratch.

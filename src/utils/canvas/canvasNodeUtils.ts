@@ -1,12 +1,7 @@
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, BrandNodeData, OutputNodeData, BrandIdentity, LogoNodeData, PromptNodeData, MockupNodeData, AngleNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, PDFNodeData, VideoNodeData } from '@/types/reactFlow';
 import { getImageUrl } from '../imageUtils';
-
-// Proxy URL for CORS-restricted images
-export const getProxyUrl = (mediaUrl: string): string => {
-  const apiBase = (import.meta as any).env?.VITE_API_URL || '/api';
-  return `${apiBase}/images/proxy?url=${encodeURIComponent(mediaUrl)}`;
-};
+import { copyImageAsPng, copyImageOriginal } from '../clipboard';
 
 // Helper to generate node ID
 let nodeIdCounter = 0;
@@ -539,11 +534,6 @@ export const getMediaFromNodeForCopy = (
   return null;
 };
 
-/**
- * Copy image from a node to clipboard specifically as PNG
- * @param node - The node to copy image from
- * @returns Promise that resolves when copy is complete
- */
 export const copyMediaAsPngFromNode = async (
   node: Node<FlowNodeData>
 ): Promise<{ success: boolean; error?: string }> => {
@@ -551,112 +541,9 @@ export const copyMediaAsPngFromNode = async (
   if (!media) {
     return { success: false, error: 'No media found in node' };
   }
-
-  try {
-    let blob: Blob;
-
-    if (media.mediaUrl.startsWith('data:')) {
-      const base64Data = media.mediaUrl.split(',')[1];
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-
-      let mimeType = media.mimeType;
-      if (!mimeType) {
-        const mimeMatch = media.mediaUrl.match(/data:(.*?);/);
-        mimeType = mimeMatch ? mimeMatch[1] : (media.isVideo ? 'video/mp4' : 'image/png');
-      }
-
-      blob = new Blob([byteArray], { type: mimeType });
-    } else {
-      try {
-        const response = await fetch(media.mediaUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch media: ${response.statusText}`);
-        }
-        blob = await response.blob();
-      } catch (fetchError) {
-        console.warn('Direct fetch failed, trying proxy...', fetchError);
-        const proxyUrl = getProxyUrl(media.mediaUrl);
-        const proxyResponse = await fetch(proxyUrl);
-
-        if (!proxyResponse.ok) {
-          throw new Error('Failed to fetch from proxy');
-        }
-
-        const data = await proxyResponse.json();
-        if (data.error) {
-          throw new Error(data.error);
-        }
-
-        // Convert base64 from proxy to blob
-        const base64Data = data.base64;
-        const byteCharacters = atob(base64Data);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        blob = new Blob([byteArray], { type: data.mimeType || 'image/png' });
-      }
-    }
-
-    // If it's a video or not PNG, we try to convert it to PNG
-    if (media.isVideo || blob.type !== 'image/png') {
-      const convertToPng = async (inputBlob: Blob): Promise<Blob> => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-              reject(new Error('Failed to get canvas context'));
-              return;
-            }
-            ctx.drawImage(img, 0, 0);
-            canvas.toBlob((resultBlob) => {
-              if (resultBlob) {
-                resolve(resultBlob);
-              } else {
-                reject(new Error('Failed to convert to PNG blob'));
-              }
-            }, 'image/png');
-            URL.revokeObjectURL(img.src);
-          };
-          img.onerror = () => {
-            reject(new Error('Failed to load image for conversion'));
-            URL.revokeObjectURL(img.src);
-          };
-          img.src = URL.createObjectURL(inputBlob);
-        });
-      };
-
-      blob = await convertToPng(blob);
-    }
-
-    // Copy to clipboard
-    await navigator.clipboard.write([
-      new ClipboardItem({ 'image/png': blob })
-    ]);
-
-    return { success: true };
-  } catch (error: any) {
-    console.error('Failed to copy media as PNG:', error);
-    return { success: false, error: error?.message || 'Failed to copy media to clipboard' };
-  }
+  return copyImageAsPng(media.mediaUrl);
 };
 
-/**
- * Copy image or video from a node to clipboard
- * @param node - The node to copy media from
- * @returns Promise that resolves when copy is complete
- */
 export const copyMediaFromNode = async (
   node: Node<FlowNodeData>
 ): Promise<{ success: boolean; error?: string }> => {
@@ -664,79 +551,6 @@ export const copyMediaFromNode = async (
   if (!media) {
     return { success: false, error: 'No media found in node' };
   }
-
-  try {
-    let blob: Blob;
-
-    if (media.mediaUrl.startsWith('data:')) {
-      // Handle data URL
-      const base64Data = media.mediaUrl.split(',')[1];
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-
-      // Extract mime type from data URL or use provided mimeType
-      let mimeType = media.mimeType;
-      if (!mimeType) {
-        const mimeMatch = media.mediaUrl.match(/data:(.*?);/);
-        mimeType = mimeMatch ? mimeMatch[1] : (media.isVideo ? 'video/mp4' : 'image/png');
-      }
-
-      blob = new Blob([byteArray], { type: mimeType });
-    } else {
-      // Fetch from URL
-      try {
-        const response = await fetch(media.mediaUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch media: ${response.statusText}`);
-        }
-        blob = await response.blob();
-      } catch (fetchError) {
-        console.warn('Direct fetch failed, trying proxy...', fetchError);
-        const proxyUrl = getProxyUrl(media.mediaUrl);
-        const proxyResponse = await fetch(proxyUrl);
-
-        if (!proxyResponse.ok) {
-          throw new Error('Failed to fetch from proxy');
-        }
-
-        const data = await proxyResponse.json();
-        if (data.error) {
-          throw new Error(data.error);
-        }
-
-        // Convert base64 from proxy to blob
-        const base64Data = data.base64;
-        const byteCharacters = atob(base64Data);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        blob = new Blob([byteArray], { type: data.mimeType || 'image/png' });
-      }
-    }
-
-    // Copy to clipboard
-    // Note: Some browsers only support a limited set of types for ClipboardItem (usually image/png)
-    // If it's not a common type, it might fail.
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({ [blob.type]: blob })
-      ]);
-    } catch (clipboardError) {
-      console.warn('Direct clipboard write failed, trying conversion to PNG:', clipboardError);
-      // Fallback: Use the PNG conversion logic
-      return await copyMediaAsPngFromNode(node);
-    }
-
-    return { success: true };
-  } catch (error: any) {
-    console.error('Failed to copy media:', error);
-    return { success: false, error: error?.message || 'Failed to copy media to clipboard' };
-  }
+  return copyImageOriginal(media.mediaUrl);
 };
 

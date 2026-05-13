@@ -12,7 +12,7 @@ import { ObjectId } from 'mongodb';
 import { improvePrompt, describeImage } from '../services/geminiService.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { getCurrentUserId, runWithContext } from '../lib/request-context.js';
-import { buildBrandContext } from '../lib/brandContextBuilder.js';
+import { buildBrandContext, BRAND_SECTION_PRESETS, type BrandContextSection } from '../lib/brandContextBuilder.js';
 
 // ─── Structured error codes ───────────────────────────────────────────────────
 function mcpError(code: string, message: string, extra?: Record<string, any>) {
@@ -1114,12 +1114,16 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'brand-guidelines-get',
-    'Get a detailed brand guideline by ID, including colors, typography, logos, and strategy context.',
+    'Get a brand guideline by ID. Use "sections" to fetch only what you need (e.g. ["colors","typography"] for visual tasks). Presets: "visual" (colors/typo/tokens), "copy" (voice/strategy), "minimal" (identity/colors/typo), "imageGen", "full". Omit sections for full context.',
     {
       id: z.string().describe('The brand guideline ID.'),
       format: z.enum(['structured', 'prompt']).default('structured').describe('Output format: "structured" (JSON) or "prompt" (LLM-ready text).'),
+      sections: z.union([
+        z.array(z.enum(['identity', 'colors', 'typography', 'voice', 'strategy', 'tokens', 'logos', 'media', 'tags', 'themes', 'knowledge'])),
+        z.enum(['visual', 'copy', 'full', 'imageGen', 'minimal']),
+      ]).optional().describe('Which brand sections to include. Pass an array of specific sections or a preset name. Omit for full context.'),
     },
-    async ({ id, format }) => {
+    async ({ id, format, sections: sectionsInput }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
@@ -1127,12 +1131,17 @@ export function createPlatformMcpServer(): McpServer {
           where: { id, userId: currentUserId },
         });
         if (!guideline) return jsonResponse({ error: 'Brand guideline not found' });
-        
+
         const quota = await getQuotaMeta(currentUserId);
 
+        const resolvedSections: BrandContextSection[] | undefined =
+          typeof sectionsInput === 'string'
+            ? BRAND_SECTION_PRESETS[sectionsInput]
+            : sectionsInput;
+
         if (format === 'prompt') {
-          const context = buildBrandContext(guideline as any);
-          return jsonResponse({ context, id: guideline.id, _meta: quota });
+          const context = buildBrandContext(guideline as any, { sections: resolvedSections });
+          return jsonResponse({ context, id: guideline.id, sections: resolvedSections || 'full', _meta: quota });
         }
 
         return jsonResponse({ ...guideline, _meta: quota });

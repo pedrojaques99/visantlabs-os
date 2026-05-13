@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { BrandGuideline } from '../../src/lib/figma-types.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { buildBrandContext, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -85,17 +86,19 @@ export class BrandIntelligenceService {
    */
   async generateDesignTips(brandContext: BrandGuideline) {
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.PRO_2_0 });
+    const ctx = buildBrandContext(brandContext, { sections: BRAND_SECTION_PRESETS.visual, compact: true });
 
     const prompt = `
-      Gere 5 dicas de design "sexy" e profissionais para a marca ${brandContext.identity?.name}.
-      Use as cores ${JSON.stringify(brandContext.colors)} e tipografia ${JSON.stringify(brandContext.typography)}.
-      
+      Gere 5 dicas de design "sexy" e profissionais para esta marca.
+
+      ${ctx}
+
       Considere:
       - Hierarquia visual
       - Uso de espaços em branco (whitespace)
       - Combinação de cores
       - Estilo de botões e cards
-      
+
       Retorne um array JSON de objetos: { title, description }.
     `;
 
@@ -111,14 +114,13 @@ export class BrandIntelligenceService {
   async adaptOperationsToBrand(operations: any[], brandGuideline: any) {
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.PRO_2_0 });
 
+    const ctx = buildBrandContext(brandGuideline, { sections: BRAND_SECTION_PRESETS.visual, compact: true });
+
     const prompt = `
       Você é um Design Engineer especialista em Figma e Brand Systems.
-      
-      MARCA: "${brandGuideline.identity?.name || 'Marca'}"
-      GUIA DE CORES: ${JSON.stringify(brandGuideline.colors)}
-      TIPOGRAFIA: ${JSON.stringify(brandGuideline.typography)}
-      PRINCÍPIOS: ${JSON.stringify(brandGuideline.guidelines)}
-      
+
+      ${ctx}
+
       TAREFA:
       Recebi um JSON de operações Figma (CREATE_FRAME, CREATE_TEXT, etc). 
       Sua missão é REESCREVER esse JSON mapeando as cores e fontes genéricas para os TOKENS E VALORES DA MARCA acima.

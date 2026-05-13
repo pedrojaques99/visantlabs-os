@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, PanelRightClose, PanelRight, Download } from 'lucide-react';
+import { ChevronLeft, PanelRightClose, PanelRight, Download, Upload, X, Play, Pause, RotateCcw } from 'lucide-react';
+import { toast } from 'sonner';
+import { loadImageFromFile } from '@/components/labs/wind-tunnel/ImageObstacles';
 import { Button } from '@/components/ui/button';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -24,6 +26,7 @@ const DEFAULT_CONFIG: WindTunnelConfig = {
   baseColor: 'rgba(100, 180, 255, 1)',
   showObstacles: true,
   perspective: 0,
+  paused: false,
 };
 
 const OBSTACLE_SHAPES = [
@@ -33,6 +36,7 @@ const OBSTACLE_SHAPES = [
   { key: 'square', label: 'Square' },
   { key: 'diamond', label: 'Diamond' },
   { key: 'airfoil', label: 'Airfoil' },
+  { key: 'image', label: 'Image' },
 ] as const;
 
 const COLOR_MODES = [
@@ -56,11 +60,38 @@ export function WindTunnelPage() {
   const [config, setConfig] = useState<WindTunnelConfig>(DEFAULT_CONFIG);
   const [showPanel, setShowPanel] = useState(true);
   const [activeCount, setActiveCount] = useState(0);
+  const [fps, setFps] = useState(0);
+  const [dragging, setDragging] = useState(false);
   const tunnelRef = useRef<WindTunnelHandle>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageName, setImageName] = useState<string | null>(null);
+
+  const handleImageUpload = useCallback(async (file: File) => {
+    if (!file.type.match(/^image\/(png|svg\+xml|jpeg|webp)$/)) {
+      toast.error('Unsupported format. Use PNG, SVG, JPEG, or WebP.');
+      return;
+    }
+    try {
+      const img = await loadImageFromFile(file);
+      setConfig(prev => ({ ...prev, obstacleType: 'image' as const, obstacleImage: img }));
+      setImageName(file.name);
+    } catch {
+      toast.error('Failed to load image.');
+    }
+  }, []);
+
+  const handleClearImage = useCallback(() => {
+    setConfig(prev => ({ ...prev, obstacleType: 'text' as const, obstacleImage: undefined }));
+    setImageName(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
 
   useEffect(() => {
     const id = setInterval(() => {
-      if (tunnelRef.current) setActiveCount(tunnelRef.current.getActiveCount());
+      if (tunnelRef.current) {
+        setActiveCount(tunnelRef.current.getActiveCount());
+        setFps(tunnelRef.current.getFps());
+      }
     }, 500);
     return () => clearInterval(id);
   }, []);
@@ -69,26 +100,75 @@ export function WindTunnelPage() {
     setConfig(prev => ({ ...prev, [key]: value }));
   }, []);
 
-  const handleReset = useCallback(() => setConfig(DEFAULT_CONFIG), []);
+  const handleReset = useCallback(() => {
+    setConfig(DEFAULT_CONFIG);
+    setImageName(null);
+  }, []);
+
+  const handleResetSim = useCallback(() => {
+    tunnelRef.current?.resetSimulation();
+  }, []);
+
+  const togglePause = useCallback(() => {
+    setConfig(prev => ({ ...prev, paused: !prev.paused }));
+  }, []);
 
   const handleExport = useCallback(() => {
-    const canvas = document.querySelector<HTMLCanvasElement>('canvas');
-    if (!canvas) return;
-    const link = document.createElement('a');
-    link.download = `wind-tunnel-${Date.now()}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    try {
+      const canvas = tunnelRef.current?.getCanvasRef();
+      if (!canvas) return;
+      const link = document.createElement('a');
+      link.download = `wind-tunnel-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      toast.success('PNG exported.');
+    } catch {
+      toast.error('Export failed.');
+    }
   }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement).tagName === 'INPUT') return;
+      if (e.code === 'Space') { e.preventDefault(); togglePause(); }
+      if (e.code === 'KeyP') setShowPanel(p => !p);
+      if ((e.ctrlKey || e.metaKey) && e.code === 'KeyS') { e.preventDefault(); handleExport(); }
+      if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) handleResetSim();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [togglePause, handleExport, handleResetSim]);
+
+  // Drag-and-drop on canvas
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleImageUpload(file);
+  }, [handleImageUpload]);
 
   return (
     <AppShell>
-      <WindTunnelCanvas ref={tunnelRef} config={config} />
+      <div
+        className="absolute inset-0"
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={handleDrop}
+      >
+        <WindTunnelCanvas ref={tunnelRef} config={config} />
+        {dragging && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 border-2 border-dashed border-[var(--brand-cyan)]/40 pointer-events-none">
+            <span className="text-sm text-neutral-400 font-mono">Drop image to use as obstacle</span>
+          </div>
+        )}
+      </div>
 
       <AppShellTopBar
         left={
           <>
             <Tooltip content="Back to Labs" position="bottom">
-              <Button variant="ghost" size="icon-sm" onClick={() => navigate('/labs')}>
+              <Button variant="ghost" size="icon-sm" onClick={() => navigate('/labs')} aria-label="Back to Labs">
                 <ChevronLeft size={14} />
               </Button>
             </Tooltip>
@@ -98,13 +178,23 @@ export function WindTunnelPage() {
         }
         right={
           <>
-            <Tooltip content="Export PNG" position="bottom">
-              <Button variant="surface" size="xs" onClick={handleExport}>
+            <Tooltip content={config.paused ? 'Resume (Space)' : 'Pause (Space)'} position="bottom">
+              <Button variant="ghost" size="icon-sm" onClick={togglePause} aria-label={config.paused ? 'Resume simulation' : 'Pause simulation'}>
+                {config.paused ? <Play size={12} /> : <Pause size={12} />}
+              </Button>
+            </Tooltip>
+            <Tooltip content="Restart simulation (R)" position="bottom">
+              <Button variant="ghost" size="icon-sm" onClick={handleResetSim} aria-label="Restart simulation">
+                <RotateCcw size={12} />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Export PNG (Ctrl+S)" position="bottom">
+              <Button variant="surface" size="xs" onClick={handleExport} aria-label="Export PNG">
                 <Download size={12} className="mr-1" /> PNG
               </Button>
             </Tooltip>
-            <Tooltip content={showPanel ? 'Hide panel' : 'Show panel'} position="bottom">
-              <Button variant="ghost" size="icon-sm" onClick={() => setShowPanel(p => !p)}>
+            <Tooltip content={showPanel ? 'Hide panel (P)' : 'Show panel (P)'} position="bottom">
+              <Button variant="ghost" size="icon-sm" onClick={() => setShowPanel(p => !p)} aria-label={showPanel ? 'Hide panel' : 'Show panel'}>
                 {showPanel ? <PanelRightClose size={14} /> : <PanelRight size={14} />}
               </Button>
             </Tooltip>
@@ -133,6 +223,41 @@ export function WindTunnelPage() {
             </div>
           </div>
 
+          {/* Image Upload (only when obstacle=image) */}
+          {config.obstacleType === 'image' && (
+            <div className="p-3 space-y-2 border-b border-white/[0.06]">
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Image</MicroTitle>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/svg+xml,image/jpeg,image/webp"
+                className="hidden"
+                aria-label="Upload obstacle image"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageUpload(file);
+                }}
+              />
+              {imageName ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-neutral-400 truncate flex-1">{imageName}</span>
+                  <Button variant="ghost" size="icon-sm" onClick={handleClearImage} className="text-neutral-500 hover:text-white shrink-0" aria-label="Clear image">
+                    <X size={10} />
+                  </Button>
+                </div>
+              ) : null}
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-[9px] text-neutral-500 hover:text-white w-full flex items-center justify-center gap-1"
+              >
+                <Upload size={10} /> {imageName ? 'Replace' : 'Upload SVG / PNG'}
+              </Button>
+              <p className="text-[8px] text-neutral-700 text-center">or drag & drop onto canvas</p>
+            </div>
+          )}
+
           {/* Text Controls (only when obstacle=text) */}
           {config.obstacleType === 'text' && (
             <div className="p-3 space-y-2 border-b border-white/[0.06]">
@@ -141,7 +266,9 @@ export function WindTunnelPage() {
                 value={config.text}
                 onChange={(e) => update('text', e.target.value)}
                 placeholder="VISANT"
+                maxLength={24}
                 className="h-7 text-xs bg-transparent border-white/10"
+                aria-label="Obstacle text"
               />
               <div className="flex items-center gap-1 flex-wrap">
                 {FONT_OPTIONS.map(f => (
@@ -162,6 +289,7 @@ export function WindTunnelPage() {
                 size="xs"
                 onClick={() => update('bold', !config.bold)}
                 className={`text-[10px] font-bold ${config.bold ? 'text-white bg-white/10' : 'text-neutral-600'}`}
+                aria-label="Toggle bold"
               >
                 B
               </Button>
@@ -219,7 +347,7 @@ export function WindTunnelPage() {
             <NodeSlider label="Perspective" value={config.perspective} min={0} max={100} step={1} onChange={v => update('perspective', v)} formatValue={v => String(Math.round(v))} />
           </div>
 
-          {/* Visibility */}
+          {/* Visibility & Actions */}
           <div className="p-3 space-y-2">
             <div className="flex items-center justify-between">
               <MicroTitle className="text-neutral-500 text-[10px]">Show obstacles</MicroTitle>
@@ -228,24 +356,43 @@ export function WindTunnelPage() {
                 size="xs"
                 onClick={() => update('showObstacles', !config.showObstacles)}
                 className={`text-[9px] ${config.showObstacles ? 'text-white' : 'text-neutral-600'}`}
+                aria-label="Toggle obstacle visibility"
               >
                 {config.showObstacles ? 'ON' : 'OFF'}
               </Button>
             </div>
+            <Button variant="ghost" size="xs" onClick={handleResetSim} className="text-[9px] text-neutral-500 hover:text-white w-full">
+              Restart Simulation
+            </Button>
             <Button variant="ghost" size="xs" onClick={handleReset} className="text-[9px] text-neutral-500 hover:text-white w-full">
               Reset All
             </Button>
+          </div>
+
+          {/* Shortcuts hint */}
+          <div className="p-3 pt-0">
+            <p className="text-[8px] text-neutral-700 leading-relaxed">
+              Space: pause &middot; P: panel &middot; R: restart &middot; Ctrl+S: export
+            </p>
           </div>
 
         </GlassPanel>
       </AppShellPanel>
 
       <AppShellStatusBar>
-        <span>{activeCount.toLocaleString()} particles</span>
+        <span aria-live="polite">{activeCount.toLocaleString()} particles</span>
+        <span className="text-neutral-800">|</span>
+        <span>{fps} fps</span>
         <span className="text-neutral-800">|</span>
         <span>{config.renderMode}</span>
         <span className="text-neutral-800">|</span>
         <span>{config.colorMode}</span>
+        {config.paused && (
+          <>
+            <span className="text-neutral-800">|</span>
+            <span className="text-amber-500">PAUSED</span>
+          </>
+        )}
       </AppShellStatusBar>
     </AppShell>
   );

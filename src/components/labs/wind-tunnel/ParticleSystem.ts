@@ -189,6 +189,12 @@ export class ParticleSystem {
       const b = 30 + t * 50;
       return `hsla(200, 80%, ${b}%, ${alpha})`;
     }
+    if (baseColor) {
+      const match = baseColor.match(/[\d.]+/g);
+      if (match && match.length >= 3) {
+        return `rgba(${match[0]}, ${match[1]}, ${match[2]}, ${alpha})`;
+      }
+    }
     return `rgba(100, 180, 255, ${alpha})`;
   }
 
