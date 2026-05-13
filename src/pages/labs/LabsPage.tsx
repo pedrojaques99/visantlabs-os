@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wind, Sparkles } from 'lucide-react';
+import { Wind, Atom } from 'lucide-react';
 
 interface LabTool {
   title: string;
@@ -22,7 +22,7 @@ const TOOLS: LabTool[] = [
     title: 'Reaction Diffusion',
     description: 'Turing patterns and organic textures generated from mathematical models.',
     path: '/labs/reaction-diffusion',
-    icon: <Sparkles className="w-5 h-5" />,
+    icon: <Atom className="w-5 h-5" />,
     status: 'soon',
   },
 ];
