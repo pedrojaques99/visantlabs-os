@@ -27,6 +27,11 @@ const TABS = [
   { id: 'export' as const, label: 'Export', icon: Download },
 ] as const;
 
+const FONT_OPTIONS = [
+  'DM Sans', 'Bebas Neue', 'Playfair Display', 'Righteous', 'Black Ops One',
+  'Permanent Marker', 'Rubik Mono One', 'Pacifico', 'Oswald', 'Archivo Black',
+];
+
 const COLOR_SWATCHES = [
   '#00e5ff', '#ff00ff', '#ffd700', '#ff6b35', '#8b5cf6',
   '#00ff88', '#ffffff', '#ff3366', '#4a9eff', '#e8ddd3',
@@ -105,7 +110,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
             className={cn(
               'flex-1 flex flex-col items-center gap-0.5 py-2 px-1 text-[9px] uppercase tracking-wider transition-colors',
               store.activeTab === tab.id
-                ? 'text-cyan-400 border-b border-cyan-400'
+                ? 'text-white border-b border-white/40'
                 : 'text-neutral-500 hover:text-neutral-300'
             )}
           >
@@ -126,7 +131,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
                   onClick={() => store.setInputMode('svg')}
                   className={cn(
                     'flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors',
-                    store.inputMode === 'svg' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-white/5 text-neutral-500'
+                    store.inputMode === 'svg' ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-500'
                   )}
                 >
                   <FileText size={12} /> SVG / PNG
@@ -135,7 +140,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
                   onClick={() => store.setInputMode('text')}
                   className={cn(
                     'flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors',
-                    store.inputMode === 'text' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-white/5 text-neutral-500'
+                    store.inputMode === 'text' ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-500'
                   )}
                 >
                   <Type size={12} /> Text
@@ -152,12 +157,12 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
                   className={cn(
                     'flex flex-col items-center gap-2 p-4 border border-dashed rounded-lg cursor-pointer transition-all',
                     isDragging
-                      ? 'border-cyan-400 bg-cyan-500/10 scale-[1.02]'
-                      : 'border-white/10 hover:border-cyan-500/30'
+                      ? 'border-white/30 bg-white/5 scale-[1.02]'
+                      : 'border-white/10 hover:border-white/20'
                   )}
                 >
-                  <Upload size={20} className={cn('transition-colors', isDragging ? 'text-cyan-400' : 'text-neutral-500')} />
-                  <span className={cn('text-[10px] uppercase tracking-wider transition-colors text-center', isDragging ? 'text-cyan-400' : 'text-neutral-500')}>
+                  <Upload size={20} className={cn('transition-colors', isDragging ? 'text-white' : 'text-neutral-500')} />
+                  <span className={cn('text-[10px] uppercase tracking-wider transition-colors text-center', isDragging ? 'text-white' : 'text-neutral-500')}>
                     {store.isLoading ? 'Processing...' : store.fileName || 'Click or drop SVG / PNG'}
                   </span>
                   <input
@@ -169,13 +174,24 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
                   />
                 </div>
               ) : (
-                <input
-                  type="text"
-                  value={store.text}
-                  onChange={(e) => store.setText(e.target.value)}
-                  placeholder="Type your text..."
-                  className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/30"
-                />
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={store.text}
+                    onChange={(e) => store.setText(e.target.value)}
+                    placeholder="Type your text..."
+                    className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/20"
+                  />
+                  <select
+                    value={store.font}
+                    onChange={(e) => store.setFont(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-neutral-300 focus:outline-none focus:border-white/20 appearance-none cursor-pointer"
+                  >
+                    {FONT_OPTIONS.map((f) => (
+                      <option key={f} value={f} className="bg-neutral-900">{f}</option>
+                    ))}
+                  </select>
+                </div>
               )}
             </Section>
 
@@ -192,7 +208,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
                   <button
                     key={name}
                     onClick={() => store.applyScenePreset(name)}
-                    className="px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-cyan-500/10 hover:text-cyan-400 transition-colors text-left"
+                    className="px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors text-left"
                   >
                     {name}
                   </button>
@@ -213,7 +229,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
                     className={cn(
                       'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
                       store.material === m.id
-                        ? 'bg-cyan-500/20 text-cyan-400'
+                        ? 'bg-white/10 text-white'
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10'
                     )}
                   >
@@ -268,7 +284,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
                     className={cn(
                       'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
                       store.environment === env.id
-                        ? 'bg-cyan-500/20 text-cyan-400'
+                        ? 'bg-white/10 text-white'
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10'
                     )}
                   >
@@ -284,6 +300,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Shadows</span>
                 <Switch checked={store.shadow} onCheckedChange={store.setShadow} />
+              </div>
+            </Section>
+
+            <Section title="INTERACTION">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Cursor Orbit</span>
+                <Switch checked={store.interactive} onCheckedChange={store.setInteractive} />
               </div>
             </Section>
 
@@ -313,7 +336,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
                     className={cn(
                       'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
                       store.animate === a.id
-                        ? 'bg-cyan-500/20 text-cyan-400'
+                        ? 'bg-white/10 text-white'
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10'
                     )}
                   >
@@ -344,7 +367,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
                     className={cn(
                       'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
                       store.exportFormat === f
-                        ? 'bg-cyan-500/20 text-cyan-400'
+                        ? 'bg-white/10 text-white'
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10'
                     )}
                   >
@@ -363,7 +386,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
                     className={cn(
                       'px-1 py-1.5 rounded text-[10px] tracking-wider transition-colors text-center',
                       store.aspectRatio === r
-                        ? 'bg-cyan-500/20 text-cyan-400'
+                        ? 'bg-white/10 text-white'
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10'
                     )}
                   >
@@ -383,7 +406,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
                       className={cn(
                         'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
                         store.exportResolution === r.id
-                          ? 'bg-cyan-500/20 text-cyan-400'
+                          ? 'bg-white/10 text-white'
                           : 'bg-white/5 text-neutral-400 hover:bg-white/10'
                       )}
                     >
@@ -403,7 +426,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
             <Button
               onClick={onExport}
               disabled={store.isExporting || (!store.svgData && !store.text)}
-              className="w-full mt-2 bg-cyan-500 hover:bg-cyan-600 text-black font-medium"
+              className="w-full mt-2 bg-white hover:bg-neutral-200 text-black font-medium"
             >
               {store.isExporting ? 'Exporting...' : `Export ${store.exportFormat.toUpperCase()}`}
             </Button>

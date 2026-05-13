@@ -239,6 +239,7 @@ interface Studio3DState {
   setAnimate: (a: AnimationType) => void;
   setAnimateSpeed: (v: number) => void;
   setAnimateReverse: (v: boolean) => void;
+  setInteractive: (v: boolean) => void;
   setRotationX: (v: number) => void;
   setRotationY: (v: number) => void;
   setZoom: (v: number) => void;
@@ -258,7 +259,7 @@ const INITIAL_STATE = {
   svgData: '',
   inputMode: 'svg' as const,
   text: '',
-  font: 'Inter',
+  font: 'DM Sans',
   fileName: '',
   depth: 3,
   smoothness: 1,
@@ -284,7 +285,7 @@ const INITIAL_STATE = {
   rotationX: 0,
   rotationY: 0,
   zoom: 1,
-  interactive: true,
+  interactive: false,
   exportFormat: 'png' as ExportFormat,
   aspectRatio: '1:1' as AspectRatio,
   exportResolution: '2k' as const,
@@ -324,6 +325,7 @@ export const useStudio3DStore = create<Studio3DState>((set) => ({
   setAnimate: (animate) => set({ animate }),
   setAnimateSpeed: (animateSpeed) => set({ animateSpeed }),
   setAnimateReverse: (animateReverse) => set({ animateReverse }),
+  setInteractive: (interactive) => set({ interactive }),
   setRotationX: (rotationX) => set({ rotationX }),
   setRotationY: (rotationY) => set({ rotationY }),
   setZoom: (zoom) => set({ zoom }),
