@@ -1,6 +1,7 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw } from 'lucide-react';
+import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
@@ -9,10 +10,23 @@ import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 import { useStudio3DStore } from '@/stores/studio3dStore';
 import { exportPNG, exportVideo } from '@/components/3d-studio/ExportManager';
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+}
+
 export const Studio3DPage: React.FC = () => {
   const navigate = useNavigate();
   const store = useStudio3DStore();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const isMobile = useIsMobile();
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
   const handleCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
     canvasRef.current = canvas;
@@ -64,36 +78,73 @@ export const Studio3DPage: React.FC = () => {
                 <RotateCcw size={14} />
               </Button>
             </Tooltip>
-            <Tooltip content={store.panelVisible ? 'Hide panel' : 'Show panel'}>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => store.setPanelVisible(!store.panelVisible)}>
-                {store.panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
-              </Button>
-            </Tooltip>
+            {!isMobile && (
+              <Tooltip content={store.panelVisible ? 'Hide panel' : 'Show panel'}>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => store.setPanelVisible(!store.panelVisible)}>
+                  {store.panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+                </Button>
+              </Tooltip>
+            )}
           </>
         }
       />
 
-      <div className="absolute inset-0 pt-10 pb-10" style={{ paddingRight: store.panelVisible ? 236 : 0 }}>
+      {/* Canvas area */}
+      <div
+        className="absolute inset-0 pt-10 transition-all duration-300"
+        style={{
+          paddingRight: !isMobile && store.panelVisible ? 236 : 0,
+          paddingBottom: isMobile ? (mobileSheetOpen ? '55%' : 52) : 40,
+        }}
+      >
         <SceneCanvas onCanvasReady={handleCanvasReady} />
       </div>
 
-      <AppShellPanel side="right" visible={store.panelVisible} width={220}>
-        <ControlsPanel onExport={handleExport} />
-      </AppShellPanel>
+      {/* Desktop: side panel */}
+      {!isMobile && (
+        <AppShellPanel side="right" visible={store.panelVisible} width={220}>
+          <ControlsPanel onExport={handleExport} />
+        </AppShellPanel>
+      )}
 
-      <AppShellStatusBar>
-        <span>{store.material}</span>
-        <span>•</span>
-        <span>depth {store.depth}</span>
-        <span>•</span>
-        <span>{store.animate !== 'none' ? store.animate : 'static'}</span>
-        {store.fileName && (
-          <>
-            <span>•</span>
-            <span className="max-w-[120px] truncate">{store.fileName}</span>
-          </>
-        )}
-      </AppShellStatusBar>
+      {/* Mobile: bottom sheet */}
+      {isMobile && (
+        <div
+          className={cn(
+            'absolute left-0 right-0 bottom-0 z-20 transition-all duration-300 ease-out',
+            mobileSheetOpen ? 'h-[55%]' : 'h-[52px]',
+          )}
+        >
+          <button
+            onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
+            className="w-full flex items-center justify-center gap-1 py-2 bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400"
+          >
+            {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            <span className="text-[10px] uppercase tracking-widest">Controls</span>
+          </button>
+          {mobileSheetOpen && (
+            <div className="h-[calc(100%-36px)] bg-neutral-950/95 backdrop-blur-xl overflow-hidden">
+              <ControlsPanel onExport={handleExport} />
+            </div>
+          )}
+        </div>
+      )}
+
+      {!isMobile && (
+        <AppShellStatusBar>
+          <span>{store.material}</span>
+          <span>•</span>
+          <span>depth {store.depth}</span>
+          <span>•</span>
+          <span>{store.animate !== 'none' ? store.animate : 'static'}</span>
+          {store.fileName && (
+            <>
+              <span>•</span>
+              <span className="max-w-[120px] truncate">{store.fileName}</span>
+            </>
+          )}
+        </AppShellStatusBar>
+      )}
     </AppShell>
   );
 };

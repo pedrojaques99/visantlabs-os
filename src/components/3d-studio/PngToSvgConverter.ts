@@ -1,5 +1,6 @@
 export async function pngToSvg(file: File): Promise<string> {
-  const ImageTracer = (await import('imagetracerjs')).default || (await import('imagetracerjs'));
+  const mod = await import('imagetracerjs');
+  const ImageTracer = (mod as any).default || mod;
 
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

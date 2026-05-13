@@ -151,11 +151,6 @@ export const EXPORT_RESOLUTIONS = [
 
 export const TEXTURE_PRESETS = [
   { id: 'none', label: 'None', url: '' },
-  { id: 'wood', label: 'Wood', url: '/textures/wood.jpg' },
-  { id: 'marble', label: 'Marble', url: '/textures/marble.jpg' },
-  { id: 'carbon', label: 'Carbon', url: '/textures/carbon.jpg' },
-  { id: 'concrete', label: 'Concrete', url: '/textures/concrete.jpg' },
-  { id: 'brushed-metal', label: 'Brushed Metal', url: '/textures/brushed-metal.jpg' },
 ] as const;
 
 interface Studio3DState {

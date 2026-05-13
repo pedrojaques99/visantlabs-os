@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -16,7 +16,7 @@ import {
 } from '@/stores/studio3dStore';
 import {
   Box, Palette, Sun, Play, Download,
-  Image, FileText, Type,
+  Upload, FileText, Type,
 } from 'lucide-react';
 
 const TABS = [
@@ -38,11 +38,11 @@ interface ControlsPanelProps {
 
 export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
   const store = useStudio3DStore();
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounter = useRef(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const processFile = useCallback(async (file: File) => {
     if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
       const text = await file.text();
       store.setSvgData(text, file.name);
@@ -58,8 +58,41 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
         store.setIsLoading(false);
       }
     }
-    e.target.value = '';
   }, [store]);
+
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) await processFile(file);
+    e.target.value = '';
+  }, [processFile]);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) setIsDragging(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    dragCounter.current = 0;
+    const file = e.dataTransfer.files?.[0];
+    if (file) await processFile(file);
+  }, [processFile]);
 
   return (
     <GlassPanel className="h-full overflow-hidden flex flex-col">
@@ -110,18 +143,31 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
               </div>
 
               {store.inputMode === 'svg' ? (
-                <label className="flex flex-col items-center gap-2 p-4 border border-dashed border-white/10 rounded-lg cursor-pointer hover:border-cyan-500/30 transition-colors">
-                  <Image size={20} className="text-neutral-500" />
-                  <span className="text-[10px] text-neutral-500 uppercase tracking-wider">
-                    {store.fileName || 'Drop SVG or PNG'}
+                <div
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={cn(
+                    'flex flex-col items-center gap-2 p-4 border border-dashed rounded-lg cursor-pointer transition-all',
+                    isDragging
+                      ? 'border-cyan-400 bg-cyan-500/10 scale-[1.02]'
+                      : 'border-white/10 hover:border-cyan-500/30'
+                  )}
+                >
+                  <Upload size={20} className={cn('transition-colors', isDragging ? 'text-cyan-400' : 'text-neutral-500')} />
+                  <span className={cn('text-[10px] uppercase tracking-wider transition-colors text-center', isDragging ? 'text-cyan-400' : 'text-neutral-500')}>
+                    {store.isLoading ? 'Processing...' : store.fileName || 'Click or drop SVG / PNG'}
                   </span>
                   <input
+                    ref={fileInputRef}
                     type="file"
                     accept=".svg,.png,.jpg,.jpeg,.webp"
                     onChange={handleFileUpload}
                     className="hidden"
                   />
-                </label>
+                </div>
               ) : (
                 <input
                   type="text"
@@ -290,13 +336,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
         {store.activeTab === 'export' && (
           <>
             <Section title="FORMAT">
-              <div className="grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-3 gap-1">
                 {(['png', 'mp4', 'gif'] as const).map((f) => (
                   <button
                     key={f}
                     onClick={() => store.setExportFormat(f)}
                     className={cn(
-                      'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
+                      'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
                       store.exportFormat === f
                         ? 'bg-cyan-500/20 text-cyan-400'
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10'
@@ -308,26 +354,24 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
               </div>
             </Section>
 
-            {(
-              <Section title="ASPECT RATIO">
-                <div className="grid grid-cols-4 gap-1">
-                  {(Object.keys(ASPECT_RATIOS) as Array<keyof typeof ASPECT_RATIOS>).map((r) => (
-                    <button
-                      key={r}
-                      onClick={() => store.setAspectRatio(r)}
-                      className={cn(
-                        'px-1 py-1.5 rounded text-[10px] tracking-wider transition-colors text-center',
-                        store.aspectRatio === r
-                          ? 'bg-cyan-500/20 text-cyan-400'
-                          : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-                      )}
-                    >
-                      {r}
-                    </button>
-                  ))}
-                </div>
-              </Section>
-            )}
+            <Section title="ASPECT RATIO">
+              <div className="grid grid-cols-4 gap-1">
+                {(Object.keys(ASPECT_RATIOS) as Array<keyof typeof ASPECT_RATIOS>).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => store.setAspectRatio(r)}
+                    className={cn(
+                      'px-1 py-1.5 rounded text-[10px] tracking-wider transition-colors text-center',
+                      store.aspectRatio === r
+                        ? 'bg-cyan-500/20 text-cyan-400'
+                        : 'bg-white/5 text-neutral-400 hover:bg-white/10'
+                    )}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </Section>
 
             {store.exportFormat === 'png' && (
               <Section title="RESOLUTION">
