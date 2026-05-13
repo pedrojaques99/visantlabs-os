@@ -36,10 +36,13 @@ export const trackPurchase = (data: PurchaseEvent) => {
   }
 };
 
+let _lastIdentifiedEmail: string | null = null;
+
 /**
- * Identifies a user in Himetrica
+ * Identifies a user in Himetrica (deduped — only fires once per email per session)
  */
 export const identifyUser = (identity: UserIdentity) => {
+  if (_lastIdentifiedEmail === identity.email) return;
   if (typeof window !== 'undefined' && (window as any).himetrica) {
     try {
       (window as any).himetrica.identify({
@@ -47,6 +50,7 @@ export const identifyUser = (identity: UserIdentity) => {
         email: identity.email,
         metadata: identity.metadata
       });
+      _lastIdentifiedEmail = identity.email;
       console.debug('📊 Analytics: identifyUser called', identity.email);
     } catch (error) {
       console.error('Failed to identify user via Himetrica:', error);
