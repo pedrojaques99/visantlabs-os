@@ -2,7 +2,9 @@ import type { Resolution, AspectRatio } from '../types/types';
 
 // ── Model IDs (single source of truth) ────────────────────────────────────────
 export const SEEDREAM_MODELS = {
-  /** Seedream 4.5 — Latest flagship, t2i + i2i, 2K/4K, batch, up to 14 ref images */
+  /** Seedream 5.0 Lite — Newest flagship, t2i + i2i, 2K/3K/4K, batch, up to 14 ref images, png/jpeg output */
+  SD_5_LITE: 'seedream-5-0-lite' as const,
+  /** Seedream 4.5 — t2i + i2i, 2K/3K/4K, batch, up to 14 ref images */
   SD_4_5: 'seedream-4.5' as const,
   /** Seedream 4.0 — t2i + i2i, 1K/2K/4K, batch, up to 14 ref images */
   SD_4_0: 'seedream-4.0' as const,
@@ -16,6 +18,7 @@ export type SeedreamModelId = typeof SEEDREAM_MODELS[keyof typeof SEEDREAM_MODEL
 
 // ── Ordered list for UI display ────────────────────────────────────────────────
 export const SEEDREAM_IMAGE_MODELS: SeedreamModelId[] = [
+  SEEDREAM_MODELS.SD_5_LITE,
   SEEDREAM_MODELS.SD_4_5,
   SEEDREAM_MODELS.SD_4_0,
   SEEDREAM_MODELS.SD_3_T2I,
@@ -55,29 +58,45 @@ export interface SeedreamModelConfig {
 }
 
 export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig> = {
-  [SEEDREAM_MODELS.SD_4_5]: {
-    label: 'Seedream 4.5',
+  [SEEDREAM_MODELS.SD_5_LITE]: {
+    label: 'Seedream 5 Lite',
     badge: 'latest' as const,
-    description: 'Latest — 2K/4K, batch, multi-ref',
+    description: 'Newest — 2K/3K/4K, batch, multi-ref, png/jpeg',
     maxRefImages: 14,
     requiresImage: false,
     supportsBatch: true,
-    supportsSeed: false,
-    supportsGuidanceScale: false,
-    resolutionKeywords: ['2K', '4K'],
+    supportsSeed: true,
+    supportsGuidanceScale: true,
+    defaultGuidanceScale: 2.5,
+    resolutionKeywords: ['2K', '3K', '4K'],
+    defaultResolution: '2K',
+    adaptiveSize: false,
+    providerDomain: 'bytedance.com',
+  },
+  [SEEDREAM_MODELS.SD_4_5]: {
+    label: 'Seedream 4.5',
+    description: '2K/3K/4K, batch, multi-ref',
+    maxRefImages: 14,
+    requiresImage: false,
+    supportsBatch: true,
+    supportsSeed: true,
+    supportsGuidanceScale: true,
+    defaultGuidanceScale: 2.5,
+    resolutionKeywords: ['2K', '3K', '4K'],
     defaultResolution: '2K',
     adaptiveSize: false,
     providerDomain: 'bytedance.com',
   },
   [SEEDREAM_MODELS.SD_4_0]: {
     label: 'Seedream 4',
-    description: '1K/2K/4K, batch, multi-ref',
+    description: '1K/2K/3K/4K, batch, multi-ref',
     maxRefImages: 14,
     requiresImage: false,
     supportsBatch: true,
-    supportsSeed: false,
-    supportsGuidanceScale: false,
-    resolutionKeywords: ['1K', '2K', '4K'],
+    supportsSeed: true,
+    supportsGuidanceScale: true,
+    defaultGuidanceScale: 2.5,
+    resolutionKeywords: ['1K', '2K', '3K', '4K'],
     defaultResolution: '2K',
     adaptiveSize: false,
     providerDomain: 'bytedance.com',
@@ -122,6 +141,18 @@ export interface SizePreset {
   label?: string;
 }
 
+/** Presets for seedream-5-0-lite (higher resolution range per docs) */
+export const SEEDREAM_5_LITE_SIZE_PRESETS: SizePreset[] = [
+  { ratio: '1:1',  size: '2048x2048' },
+  { ratio: '4:3',  size: '2304x1728' },
+  { ratio: '3:4',  size: '1728x2304' },
+  { ratio: '16:9', size: '2560x1440' },
+  { ratio: '9:16', size: '1440x2560' },
+  { ratio: '3:2',  size: '2496x1664' },
+  { ratio: '2:3',  size: '1664x2496' },
+  { ratio: '21:9', size: '3024x1296' },
+];
+
 /** Presets for seedream-4.5 and seedream-4.0 (same pixel recommendations per docs) */
 export const SEEDREAM_4X_SIZE_PRESETS: SizePreset[] = [
   { ratio: '1:1',  size: '2048x2048' },
@@ -149,6 +180,8 @@ export const SEEDREAM_3_T2I_SIZE_PRESETS: SizePreset[] = [
 /** Get size presets for a given model */
 export function getSeedreamSizePresets(model: SeedreamModelId): SizePreset[] {
   switch (model) {
+    case SEEDREAM_MODELS.SD_5_LITE:
+      return SEEDREAM_5_LITE_SIZE_PRESETS;
     case SEEDREAM_MODELS.SD_4_5:
     case SEEDREAM_MODELS.SD_4_0:
       return SEEDREAM_4X_SIZE_PRESETS;

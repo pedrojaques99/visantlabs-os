@@ -29,7 +29,7 @@ export type GeminiModel =
   | 'veo-3.1-generate-preview'
   | 'veo-3.1-fast-generate-preview';
 
-// Seedream / Seededit models via APIFree.ai — single source of truth is seedreamModels.ts
+// Seedream / Seededit models via BytePlus API — single source of truth is seedreamModels.ts
 export type { SeedreamModelId as SeedreamModel } from '../constants/seedreamModels';
 
 // Image generation provider
@@ -49,7 +49,7 @@ export enum GenerationMode {
   REFERENCES = 'references',
 }
 
-export type Resolution = '512px' | '1K' | '2K' | '4K' | 'HD' | '720p' | '1080p';
+export type Resolution = '512px' | '1K' | '2K' | '3K' | '4K' | 'HD' | '720p' | '1080p';
 
 export type AspectRatio = '9:16' | '21:9' | '1:4' | '4:1' | '1:8' | '8:1' | '2:3' | '3:2' | '3:4' | '4:3' | '4:5' | '5:4' | '16:9' | '1:1';
 

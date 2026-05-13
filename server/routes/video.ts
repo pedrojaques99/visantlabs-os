@@ -6,6 +6,7 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { generateVideo } from '../services/videoService.js';
 import { generateKlingVideo } from '../services/klingService.js';
+import { generateSeedanceVideo } from '../services/seedanceService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { uploadCanvasVideo, isR2Configured } from '../services/r2Service.js';
@@ -510,17 +511,18 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       console.log(`${logPrefix} [Model Normalization] ${model} -> ${normalizedModel}`);
     }
 
-    // Validate model is supported (Veo or Kling)
+    // Validate model is supported (Veo, Kling, or Seedance)
     const isKlingModel = normalizedModel.startsWith('kling-');
     const isVeoModel = normalizedModel.startsWith('veo-');
+    const isSeedanceModel = normalizedModel.startsWith('seedance-');
 
-    if (!isKlingModel && !isVeoModel) {
+    if (!isKlingModel && !isVeoModel && !isSeedanceModel) {
       if (lockKey) {
         await db.collection('credit_locks').deleteOne({ lockKey, requestId });
       }
       return res.status(400).json({
         error: 'Unsupported model',
-        message: `Model "${model}" is not supported. Use a Veo or Kling model.`,
+        message: `Model "${model}" is not supported. Use a Veo, Kling, or Seedance model.`,
       });
     }
 
@@ -531,11 +533,24 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
         userId: req.userId,
         requestId,
         model: normalizedModel,
-        provider: isKlingModel ? 'kling' : 'veo',
+        provider: isSeedanceModel ? 'seedance' : isKlingModel ? 'kling' : 'veo',
         promptLength: prompt?.length || 0,
       });
 
-      if (isKlingModel) {
+      if (isSeedanceModel) {
+        const result = await generateSeedanceVideo({
+          model: normalizedModel as any,
+          prompt,
+          startFrame,
+          endFrame,
+          referenceImages,
+          aspectRatio,
+          duration,
+          generateAudio: sound === 'on' ? true : sound === 'off' ? false : undefined,
+          seed: usedSeed,
+        });
+        videoBase64 = result.videoUrl;
+      } else if (isKlingModel) {
         // Kling: returns a public URL directly (no base64 needed)
         const videoUrl = await generateKlingVideo({
           model: normalizedModel,

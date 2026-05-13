@@ -27,17 +27,15 @@ const detectRealMobile = (): boolean => {
 const MOBILE_BLOCKED = new Set(['mockup-machine', 'canvas', 'moodboard-studio']);
 
 // Apps visible to all authenticated users (not just admin/tester)
-const PUBLIC_APP_IDS = new Set(['mockup-machine', 'brand-guidelines', 'branding-machine']);
+const PUBLIC_APP_IDS = new Set(['mockup-machine', 'brand-guidelines', 'canvas', 'community', 'labs']);
 
 // Fixed preset per appId — index into PRESETS (0=neutral 1=cyan 2=violet 3=amber 4=rose 5=green 6=blue 7=warm)
 const APP_PRESET: Record<string, number> = {
   'canvas':               1,
   'mockup-machine':       2,
   'brand-guidelines':     3,
-  'instagram-extractor':  6,
-  'moodboard-studio':     5,
-  'ignite':               4,
-  'branding-machine':     7,
+  'community':            5,
+  'labs':                 4,
   'vsn-exporter':         0,
 };
 const LS_KEY         = 'vsn_app_last_used';
@@ -47,10 +45,6 @@ const PINNED_APP_IDS = [
   'canvas',
   'mockup-machine',
   'brand-guidelines',
-  'instagram-extractor',
-  'moodboard-studio',
-  'ignite',
-  'branding-machine',
 ] as const;
 
 // Synthetic entry for Visant Exporter (not a backend app — download action)
@@ -66,6 +60,36 @@ const EXPORTER_ENTRY: AppConfig = {
   isExternal:   false,
   free:         true,
   displayOrder: 99,
+  isHidden:     false,
+};
+
+const COMMUNITY_ENTRY: AppConfig = {
+  id:           'community',
+  appId:        'community',
+  name:         'Community',
+  description:  'Explore presets and profiles shared by the community',
+  link:         '/community',
+  badge:        'FREE',
+  badgeVariant: 'free',
+  category:     'community',
+  isExternal:   false,
+  free:         true,
+  displayOrder: 4,
+  isHidden:     false,
+};
+
+const LABS_ENTRY: AppConfig = {
+  id:           'labs',
+  appId:        'labs',
+  name:         'Labs',
+  description:  'Experimental tools and prototypes',
+  link:         '/labs',
+  badge:        'NEW',
+  badgeVariant: 'free',
+  category:     'experimental',
+  isExternal:   false,
+  free:         true,
+  displayOrder: 5,
   isHidden:     false,
 };
 
@@ -298,10 +322,9 @@ export const HomePage: React.FC = () => {
           .filter(Boolean)
           .filter(a => !isMobile || !MOBILE_BLOCKED.has(a.appId))
           .filter(a => isElevated || PUBLIC_APP_IDS.has(a.appId));
-        const withExporter = isMobile || !isElevated
-          ? pinned
-          : [...pinned, EXPORTER_ENTRY];
-        setApps(smartSort(withExporter));
+        const withExtras = [...pinned, COMMUNITY_ENTRY, LABS_ENTRY];
+        if (!isMobile && isElevated) withExtras.push(EXPORTER_ENTRY);
+        setApps(smartSort(withExtras));
       })
       .catch(() => { /* silent fail */ });
   }, [isMobile, isLoggedIn, isElevated]);

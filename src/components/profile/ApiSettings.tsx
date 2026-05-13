@@ -333,11 +333,11 @@ export const ApiSettings: React.FC = () => {
                     />
 
                     {/* Seedream */}
-                    <SectionDivider icon={<Diamond size={14} />} title="Seedream (APIFree.ai)" />
+                    <SectionDivider icon={<Diamond size={14} />} title="Seedream (BytePlus)" />
                     <KeyRow
                         id="seedream-key"
                         label="Seedream"
-                        getKeyUrl="https://www.apifree.ai/console"
+                        getKeyUrl="https://console.byteplus.com/ark/region:ark+ap-southeast-1/apiKey"
                         getKeyLabel="Get key"
                         value={seedreamKey}
                         onChange={setSeedreamKey}
