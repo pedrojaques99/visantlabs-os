@@ -33,11 +33,13 @@ export function getCreditsRequired(
     }
   }
 
-  // Seedream / Seededit models (via APIFree.ai)
+  // Seedream / Seededit models (via BytePlus API)
   if (provider === 'seedream' || isSeedreamModel(model)) {
     switch (resolution) {
       case '2K':
         return 3;
+      case '3K':
+        return 4;
       case '4K':
         return 5;
       default:
@@ -116,6 +118,10 @@ export function getTotalBrandingCredits(): number {
  * @returns Credits required (15 for fast, 40 for standard)
  */
 export function getVideoCreditsRequired(model?: string): number {
+  if (model?.startsWith('seedance-')) {
+    const isFast = model.includes('fast') || model.includes('lite');
+    return isFast ? 20 : 35;
+  }
   const isFast = model?.includes('fast') ?? false;
   return isFast ? 15 : 40;
 }

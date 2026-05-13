@@ -1163,7 +1163,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     let usedSeed: number | undefined;
 
     if (provider === 'seedream') {
-      // Use Seedream via APIFree.ai
+      // Use Seedream via BytePlus API
       let seedreamModel = model;
       if (!isSeedreamModel(seedreamModel)) {
         console.warn(`${logPrefix} [GENERATION] Invalid Seedream model "${model}" detected. Defaulting to "seedream-4.5"`);

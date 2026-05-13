@@ -1,7 +1,13 @@
 import type { AspectRatio } from '../types/types';
+import {
+  SEEDANCE_VIDEO_MODELS,
+  SEEDANCE_VIDEO_MODEL_LIST,
+  SEEDANCE_VIDEO_MODEL_CONFIG,
+  isSeedanceModel as _isSeedanceModel,
+} from './seedanceModels';
 
 // ── Provider types ─────────────────────────────────────────────────────────────
-export type VideoProvider = 'veo' | 'kling';
+export type VideoProvider = 'veo' | 'kling' | 'seedance';
 
 // ── Shared types ───────────────────────────────────────────────────────────────
 export type VideoMode = 'standard' | 'fast' | 'std' | 'pro' | '4k';
@@ -49,6 +55,13 @@ export const VIDEO_MODEL_IDS = {
   // Google Veo
   VEO_3_1: 'veo-3.1-generate-preview',
   VEO_3_1_FAST: 'veo-3.1-fast-generate-preview',
+  // Seedance (BytePlus)
+  SEEDANCE_2_0: SEEDANCE_VIDEO_MODELS.V2_0,
+  SEEDANCE_2_0_FAST: SEEDANCE_VIDEO_MODELS.V2_0_FAST,
+  SEEDANCE_1_5_PRO: SEEDANCE_VIDEO_MODELS.V1_5_PRO,
+  SEEDANCE_1_0_PRO: SEEDANCE_VIDEO_MODELS.V1_0_PRO,
+  SEEDANCE_1_0_PRO_FAST: SEEDANCE_VIDEO_MODELS.V1_0_PRO_FAST,
+  SEEDANCE_1_0_LITE: SEEDANCE_VIDEO_MODELS.V1_0_LITE,
   // Kling
   KLING_V3_OMNI: 'kling-v3-omni',
   KLING_V3: 'kling-v3',
@@ -68,6 +81,12 @@ export type VideoModelId = typeof VIDEO_MODEL_IDS[keyof typeof VIDEO_MODEL_IDS];
 export const VIDEO_MODEL_LIST: VideoModelId[] = [
   VIDEO_MODEL_IDS.VEO_3_1,
   VIDEO_MODEL_IDS.VEO_3_1_FAST,
+  VIDEO_MODEL_IDS.SEEDANCE_2_0,
+  VIDEO_MODEL_IDS.SEEDANCE_2_0_FAST,
+  VIDEO_MODEL_IDS.SEEDANCE_1_5_PRO,
+  VIDEO_MODEL_IDS.SEEDANCE_1_0_PRO,
+  VIDEO_MODEL_IDS.SEEDANCE_1_0_PRO_FAST,
+  VIDEO_MODEL_IDS.SEEDANCE_1_0_LITE,
   VIDEO_MODEL_IDS.KLING_V3_OMNI,
   VIDEO_MODEL_IDS.KLING_V3,
   VIDEO_MODEL_IDS.KLING_V2_6,
@@ -83,8 +102,42 @@ export const VIDEO_MODEL_LIST: VideoModelId[] = [
 const VEO_ASPECT_RATIOS = ['16:9', '9:16', '1:1'];
 const KLING_ASPECT_RATIOS = ['16:9', '9:16', '1:1'];
 
+// ── Build Seedance entries from seedanceModels ────────────────────────────────
+function buildSeedanceEntries(): Record<string, VideoModelCapabilities> {
+  const entries: Record<string, VideoModelCapabilities> = {};
+  for (const id of SEEDANCE_VIDEO_MODEL_LIST) {
+    const cfg = SEEDANCE_VIDEO_MODEL_CONFIG[id];
+    entries[id] = {
+      label: cfg.label,
+      badge: cfg.badge as any,
+      provider: 'seedance',
+      providerDomain: cfg.providerDomain,
+      description: cfg.description,
+      modes: ['standard'],
+      defaultMode: 'standard',
+      durations: cfg.durations,
+      defaultDuration: cfg.defaultDuration,
+      aspectRatios: cfg.aspectRatios,
+      supportsTextToVideo: cfg.supportsTextToVideo,
+      supportsImageToVideo: cfg.supportsImageToVideo,
+      supportsStartEndFrame: cfg.supportsImageToVideo,
+      supportsMultiShot: false,
+      supportsCameraControl: false,
+      supportsMotionBrush: false,
+      supportsSound: cfg.supportsGenerateAudio,
+      supportsVideoExtension: false,
+      supportsCfgScale: false,
+      supportsNegativePrompt: false,
+      supportsLoop: false,
+      supportsSeed: true,
+      resolutionByMode: { standard: '1080p' },
+    };
+  }
+  return entries;
+}
+
 // ── Unified capabilities registry ─────────────────────────────────────────────
-export const VIDEO_MODEL_CONFIG: Record<VideoModelId, VideoModelCapabilities> = {
+export const VIDEO_MODEL_CONFIG = {
   // ── Google Veo ───────────────────────────────────────────────────────────────
   [VIDEO_MODEL_IDS.VEO_3_1]: {
     label: 'Veo 3.1',
@@ -136,6 +189,9 @@ export const VIDEO_MODEL_CONFIG: Record<VideoModelId, VideoModelCapabilities> = 
     supportsSeed: true,
     resolutionByMode: { standard: '720p', fast: '720p' },
   },
+
+  // ── Seedance (BytePlus) ──────────────────────────────────────────────────────
+  ...buildSeedanceEntries(),
 
   // ── Kling ────────────────────────────────────────────────────────────────────
   [VIDEO_MODEL_IDS.KLING_V3_OMNI]: {
@@ -398,8 +454,14 @@ export function isVeoModel(model: string): boolean {
   return model.startsWith('veo-');
 }
 
+export function isSeedanceVideoModel(model: string): boolean {
+  return _isSeedanceModel(model);
+}
+
 export function getVideoProvider(model: string): VideoProvider {
-  return isKlingModel(model) ? 'kling' : 'veo';
+  if (isKlingModel(model)) return 'kling';
+  if (isSeedanceVideoModel(model)) return 'seedance';
+  return 'veo';
 }
 
 /** Build Select options for model picker */

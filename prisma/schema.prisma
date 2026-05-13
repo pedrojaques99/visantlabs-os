@@ -44,7 +44,7 @@ model User {
   isAdmin              Boolean   @default(false)
   userCategory         String?   // Category for special access (e.g., 'tester')
   encryptedGeminiApiKey String?  // Encrypted Gemini API key for user's own quota
-  encryptedSeedreamApiKey String? // Encrypted Seedream API key (APIFree.ai)
+  encryptedSeedreamApiKey String? // Encrypted Seedream API key (BytePlus)
   encryptedOpenAiApiKey String?  // Encrypted OpenAI API key for GPT-Image and other OpenAI models
   encryptedFigmaToken   String?  // Encrypted Figma Personal Access Token for REST API
   storageLimitBytes    Int?      // Custom storage limit in bytes (optional, overrides tier-based limit)

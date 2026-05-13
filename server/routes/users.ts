@@ -841,7 +841,7 @@ router.put('/settings/seedream-api-key', apiRateLimiter, authenticate, async (re
 
     // Basic validation
     const trimmedKey = apiKey.trim();
-    if (trimmedKey.length < 10) { // Seedream/APIFree keys might be shorter or different format
+    if (trimmedKey.length < 10) { // Seedream/BytePlus keys might be shorter or different format
       return res.status(400).json({ error: 'Invalid API key format' });
     }
 
