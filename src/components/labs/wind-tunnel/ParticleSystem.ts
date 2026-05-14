@@ -73,9 +73,20 @@ export class ParticleSystem {
       this.trailX[0][i] = this.x[i];
       this.trailY[0][i] = this.y[i];
 
-      const gi = Math.max(1, Math.min(N, Math.floor((this.x[i] / width) * N) + 1));
-      const gj = Math.max(1, Math.min(N, Math.floor((this.y[i] / height) * N) + 1));
-      const [fu, fv] = solver.getVelocity(gi, gj);
+      const gx = (this.x[i] / width) * N + 0.5;
+      const gy = (this.y[i] / height) * N + 0.5;
+      const gi0 = Math.max(1, Math.min(N, Math.floor(gx)));
+      const gj0 = Math.max(1, Math.min(N, Math.floor(gy)));
+      const gi1 = Math.min(N, gi0 + 1);
+      const gj1 = Math.min(N, gj0 + 1);
+      const fx = gx - gi0;
+      const fy = gy - gj0;
+      const [u00, v00] = solver.getVelocity(gi0, gj0);
+      const [u10, v10] = solver.getVelocity(gi1, gj0);
+      const [u01, v01] = solver.getVelocity(gi0, gj1);
+      const [u11, v11] = solver.getVelocity(gi1, gj1);
+      const fu = u00 * (1 - fx) * (1 - fy) + u10 * fx * (1 - fy) + u01 * (1 - fx) * fy + u11 * fx * fy;
+      const fv = v00 * (1 - fx) * (1 - fy) + v10 * fx * (1 - fy) + v01 * (1 - fx) * fy + v11 * fx * fy;
 
       this.vx[i] = this.vx[i] * 0.92 + fu * scaleX * 0.8;
       this.vy[i] = this.vy[i] * 0.92 + fv * scaleX * 0.8;

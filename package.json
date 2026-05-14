@@ -131,7 +131,6 @@
     "@vercel/speed-insights": "^1.2.0",
     "@xyflow/react": "^12.9.3",
     "@zseven-w/pen-figma": "^0.7.6",
-    "3dsvg": "^0.2.1",
     "abacatepay-nodejs-sdk": "^1.6.0",
     "bcryptjs": "^2.4.3",
     "botid": "^1.5.10",

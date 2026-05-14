@@ -6,6 +6,8 @@ export interface RasterizeParams {
   canvasWidth: number;
   canvasHeight: number;
   bold?: boolean;
+  offsetX?: number;
+  offsetY?: number;
 }
 
 function IX(i: number, j: number, N: number): number {
@@ -13,7 +15,7 @@ function IX(i: number, j: number, N: number): number {
 }
 
 function createTextCanvas(
-  text: string, font: string, w: number, h: number
+  text: string, font: string, w: number, h: number, ox = 0, oy = 0
 ): CanvasRenderingContext2D {
   const c = document.createElement("canvas");
   c.width = w;
@@ -25,7 +27,7 @@ function createTextCanvas(
   ctx.font = font;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(text, w / 2, h / 2);
+  ctx.fillText(text, w / 2 + ox * w, h / 2 + oy * h);
   return ctx;
 }
 
@@ -35,7 +37,7 @@ export function rasterizeTextToObstacles(p: RasterizeParams): boolean[] {
   const obs = new Array<boolean>(size).fill(false);
   const weight = p.bold ? "bold " : "";
   const font = `${weight}${p.fontSize}px ${p.fontFamily}`;
-  const ctx = createTextCanvas(p.text, font, p.canvasWidth, p.canvasHeight);
+  const ctx = createTextCanvas(p.text, font, p.canvasWidth, p.canvasHeight, p.offsetX ?? 0, p.offsetY ?? 0);
   const img = ctx.getImageData(0, 0, p.canvasWidth, p.canvasHeight);
   const d = img.data;
   const cw = p.canvasWidth, ch = p.canvasHeight;
@@ -69,16 +71,16 @@ export function rasterizeTextToObstacles(p: RasterizeParams): boolean[] {
 }
 
 export function autoFontSize(
-  text: string, canvasWidth: number, canvasHeight: number, fontFamily: string
+  text: string, canvasWidth: number, canvasHeight: number, fontFamily: string, scale = 1
 ): number {
   const c = document.createElement("canvas");
   c.width = canvasWidth;
   c.height = canvasHeight;
   const ctx = c.getContext("2d")!;
-  const target = canvasWidth * 0.6;
+  const target = canvasWidth * 0.6 * scale;
   let size = Math.floor((target / text.length) * 1.5);
   ctx.font = `${size}px ${fontFamily}`;
   const measured = ctx.measureText(text).width;
   size = Math.floor(size * (target / measured));
-  return Math.min(size, Math.floor(canvasHeight * 0.8));
+  return Math.min(size, Math.floor(canvasHeight * 0.8 * scale));
 }
