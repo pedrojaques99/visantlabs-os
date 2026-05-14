@@ -177,11 +177,20 @@ export function useExtrudedGeometry(
       tempGeo.dispose();
 
       const complexity = allShapes.length;
-      const qualityScale = complexity > 200 ? 0.3 : complexity > 50 ? 0.6 : 1;
+      const budget = 800_000;
+      const vertsBudgetPerShape = Math.max(Math.floor(budget / Math.max(complexity, 1)), 200);
       const scaledDepth = (depth / 10) * maxFlatDim;
       const bevelScale = Math.min(maxFlatDim * 0.02, 1);
-      const bevelSegments = Math.min(Math.round((3 + smoothness * 5) * qualityScale), 12);
-      const curveSegments = Math.min(Math.round((12 + smoothness * 24) * qualityScale), 48);
+
+      const idealBevel = Math.round(3 + smoothness * 4);
+      const idealCurve = Math.round(12 + smoothness * 36);
+      const estimatedVerts = idealBevel * idealCurve * 6;
+      const reductionFactor = estimatedVerts > vertsBudgetPerShape
+        ? Math.sqrt(vertsBudgetPerShape / estimatedVerts)
+        : 1;
+      const bevelSegments = Math.max(2, Math.min(Math.round(idealBevel * reductionFactor), 16));
+      const curveSegments = Math.max(6, Math.min(Math.round(idealCurve * reductionFactor), 64));
+
       const bevelThickness = bevelScale * (0.15 + smoothness * 0.2);
       const bevelSize = bevelScale * (0.15 + smoothness * 0.2);
 
