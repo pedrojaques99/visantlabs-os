@@ -19,7 +19,9 @@ uniform float uACBeatIntensity;
 
 varying vec2 v_texCoord;
 
+#ifndef PI
 #define PI 3.14159265
+#endif
 
 vec3 tex2D( sampler2D _tex, vec2 _p ){
   vec3 col = texture2D( _tex, _p ).xyz;

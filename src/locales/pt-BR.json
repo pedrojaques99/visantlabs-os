@@ -239,6 +239,18 @@
       "description": "Ferramenta de desenho vetorial minimalista com precisão",
       "name": "Grid Paint"
     },
+    "studio3d": {
+      "description": "Transforme SVGs e PNGs em cenas 3D configuráveis para vídeos, loops e imagens",
+      "name": "3D Studio"
+    },
+    "cmykHalftone": {
+      "description": "Efeito halftone CMYK profissional com WebGL — controle de pontos, ângulos de tela, cores de tinta e modos de mistura",
+      "name": "CMYK Halftone"
+    },
+    "gridMachine": {
+      "description": "Faça upload de um logo SVG e analise sua grade de construção — pontos de ancoragem, handles bezier, linhas de alinhamento e estrutura geométrica",
+      "name": "Grid Machine"
+    },
     "halftoneMachine": {
       "description": "Crie efeitos halftone a partir das suas imagens",
       "name": "Halftone Machine"
@@ -258,6 +270,7 @@
     },
     "seoDescription": "Escolha entre nossas ferramentas criativas: Mockup Machine, Branding Machine, Budget Machine e Canvas Editor.",
     "seoKeywords": "apps, aplicativos, ferramentas criativas, mockup, branding, budget, canvas",
+    "searchPlaceholder": "Buscar apps...",
     "seoTitle": "Aplicativos Criativos",
     "subscribeNow": "ASSINAR AGORA",
     "subtitle": "Escolha um aplicativo para começar",

@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, PanelRightClose, PanelRight, Download, Upload, X, Play, Pause, RotateCcw } from 'lucide-react';
+import { ChevronLeft, PanelRightClose, PanelRight, Download, Upload, X, Play, Pause, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { loadImageFromFile } from '@/components/labs/wind-tunnel/ImageObstacles';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { NodeSlider } from '@/components/reactflow/shared/node-slider';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
+import { useIsMobile } from '@/hooks/use-media-query';
 import { Input } from '@/components/ui/input';
 import { WindTunnelCanvas, type WindTunnelConfig, type WindTunnelHandle } from '@/components/labs/wind-tunnel/WindTunnelCanvas';
 
@@ -57,6 +59,10 @@ const FONT_OPTIONS = [
 
 export function WindTunnelPage() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  useEffect(() => { document.title = 'Wind Tunnel — Visant'; }, []);
+
   const [config, setConfig] = useState<WindTunnelConfig>(DEFAULT_CONFIG);
   const [showPanel, setShowPanel] = useState(true);
   const [activeCount, setActiveCount] = useState(0);
@@ -202,7 +208,8 @@ export function WindTunnelPage() {
         }
       />
 
-      <AppShellPanel visible={showPanel} width={232}>
+      {!isMobile && (
+      <AppShellPanel visible={showPanel} width={300}>
         <GlassPanel className="h-full overflow-y-auto backdrop-blur-xl bg-neutral-950/80 scrollbar-none rounded-xl">
 
           {/* Obstacle Shape */}
@@ -378,6 +385,87 @@ export function WindTunnelPage() {
 
         </GlassPanel>
       </AppShellPanel>
+      )}
+
+      {/* Mobile bottom sheet */}
+      {isMobile && (
+        <div className={cn(
+          'absolute left-0 right-0 bottom-0 z-20 transition-all duration-300 ease-out',
+          mobileSheetOpen ? 'h-[55%]' : 'h-[52px]',
+        )}>
+          <button
+            onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
+            className="w-full flex items-center justify-center gap-1 py-2 bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400"
+          >
+            {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            <span className="text-[10px] uppercase tracking-widest">Controls</span>
+          </button>
+          {mobileSheetOpen && (
+            <div className="h-[calc(100%-36px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
+              <GlassPanel className="backdrop-blur-xl bg-transparent scrollbar-none">
+                {/* Obstacle Shape */}
+                <div className="p-3 space-y-2 border-b border-white/[0.06]">
+                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Obstacle</MicroTitle>
+                  <div className="grid grid-cols-3 gap-1">
+                    {OBSTACLE_SHAPES.map(s => (
+                      <Button key={s.key} variant="ghost" size="xs" onClick={() => update('obstacleType', s.key)} className={`text-[9px] font-medium ${config.obstacleType === s.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{s.label}</Button>
+                    ))}
+                  </div>
+                </div>
+                {/* Text Controls (only when obstacle=text) */}
+                {config.obstacleType === 'text' && (
+                  <div className="p-3 space-y-2 border-b border-white/[0.06]">
+                    <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Text</MicroTitle>
+                    <Input value={config.text} onChange={(e) => update('text', e.target.value)} placeholder="VISANT" maxLength={24} className="h-7 text-xs bg-transparent border-white/10" aria-label="Obstacle text" />
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {FONT_OPTIONS.map(f => (
+                        <Button key={f} variant="ghost" size="xs" onClick={() => update('fontFamily', f)} className={`text-[8px] px-1.5 ${config.fontFamily === f ? 'text-white bg-white/10' : 'text-neutral-600 hover:text-white'}`} style={{ fontFamily: f }}>{f.split(' ')[0]}</Button>
+                      ))}
+                    </div>
+                    <Button variant="ghost" size="xs" onClick={() => update('bold', !config.bold)} className={`text-[10px] font-bold ${config.bold ? 'text-white bg-white/10' : 'text-neutral-600'}`} aria-label="Toggle bold">B</Button>
+                  </div>
+                )}
+                {/* Render Mode */}
+                <div className="p-3 space-y-2 border-b border-white/[0.06]">
+                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Render</MicroTitle>
+                  <div className="flex gap-1">
+                    {RENDER_MODES.map(m => (
+                      <Button key={m.key} variant="ghost" size="xs" onClick={() => update('renderMode', m.key)} className={`text-[9px] flex-1 ${config.renderMode === m.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{m.label}</Button>
+                    ))}
+                  </div>
+                </div>
+                {/* Color Mode */}
+                <div className="p-3 space-y-2 border-b border-white/[0.06]">
+                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Color</MicroTitle>
+                  <div className="grid grid-cols-2 gap-1">
+                    {COLOR_MODES.map(m => (
+                      <Button key={m.key} variant="ghost" size="xs" onClick={() => update('colorMode', m.key)} className={`text-[9px] ${config.colorMode === m.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{m.label}</Button>
+                    ))}
+                  </div>
+                </div>
+                {/* Simulation Sliders */}
+                <div className="p-3 space-y-3 border-b border-white/[0.06]">
+                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Simulation</MicroTitle>
+                  <NodeSlider label="Wind" value={config.windSpeed} min={1} max={100} step={1} onChange={v => update('windSpeed', v)} formatValue={v => String(Math.round(v))} />
+                  <NodeSlider label="Viscosity" value={config.viscosity} min={1} max={100} step={1} onChange={v => update('viscosity', v)} formatValue={v => String(Math.round(v))} />
+                  <NodeSlider label="Particles" value={config.particleCount} min={500} max={15000} step={500} onChange={v => update('particleCount', v)} formatValue={v => String(Math.round(v))} />
+                  <NodeSlider label="Size" value={config.particleSize} min={0.5} max={4} step={0.5} onChange={v => update('particleSize', v)} formatValue={v => v.toFixed(1)} />
+                </div>
+                {/* 3D Perspective */}
+                <div className="p-3 space-y-3 border-b border-white/[0.06]">
+                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">3D</MicroTitle>
+                  <NodeSlider label="Perspective" value={config.perspective} min={0} max={100} step={1} onChange={v => update('perspective', v)} formatValue={v => String(Math.round(v))} />
+                </div>
+                {/* Actions */}
+                <div className="p-3 space-y-2">
+                  <Button variant="ghost" size="xs" onClick={handleResetSim} className="text-[9px] text-neutral-500 hover:text-white w-full">Restart Simulation</Button>
+                  <Button variant="ghost" size="xs" onClick={handleReset} className="text-[9px] text-neutral-500 hover:text-white w-full">Reset All</Button>
+                </div>
+              </GlassPanel>
+            </div>
+          )}
+        </div>
+      )}
 
       <AppShellStatusBar>
         <span aria-live="polite">{activeCount.toLocaleString()} particles</span>

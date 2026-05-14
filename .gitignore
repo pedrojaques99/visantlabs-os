@@ -159,3 +159,4 @@ scripts/test-pdf-output.txt
 scripts/test-pdf-result*.json
 scripts/test-page-*.png
 package-lock.json
+app-thumbnail-report.txt

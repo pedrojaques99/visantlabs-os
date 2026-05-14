@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Download, Trash2, RotateCcw, Copy,
   ChevronLeft, Maximize2, ZoomIn, ZoomOut, Shuffle, Dices,
+  ChevronUp, ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +13,7 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { NodeSlider } from '@/components/reactflow/shared/node-slider';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel } from '@/components/ui/AppShell';
+import { useIsMobile } from '@/hooks/use-media-query';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -413,6 +415,8 @@ function hitTestErase(mx: number, my: number, state: GridState, config: VisualCo
 
 export const GridPaintPage: React.FC = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
   const pencilLastCell = useRef<{ r: number; c: number } | null>(null);
@@ -423,6 +427,8 @@ export const GridPaintPage: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [showPanel, setShowPanel] = useState(true);
   const [activeCount, setActiveCount] = useState(0);
+
+  useEffect(() => { document.title = 'Grid Paint — Visant'; }, []);
 
   const [config, setConfig] = useState<VisualConfig>(DEFAULT_CONFIG);
   const [grid, setGrid] = useState<GridState>(() => {
@@ -804,8 +810,9 @@ export const GridPaintPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Right panel */}
-      <AppShellPanel visible={showPanel} width={232}>
+      {/* Right panel – desktop */}
+      {!isMobile && (
+      <AppShellPanel visible={showPanel} width={300}>
         <GlassPanel className="h-full overflow-y-auto backdrop-blur-xl bg-neutral-950/80 scrollbar-none rounded-xl">
           {/* Presets */}
           <div className="p-3 space-y-2 border-b border-white/[0.06]">
@@ -926,6 +933,76 @@ export const GridPaintPage: React.FC = () => {
           </div>
         </GlassPanel>
       </AppShellPanel>
+      )}
+
+      {/* Mobile bottom sheet */}
+      {isMobile && (
+        <div className={cn(
+          'absolute left-0 right-0 bottom-0 z-20 transition-all duration-300 ease-out',
+          mobileSheetOpen ? 'h-[55%]' : 'h-[52px]',
+        )}>
+          <button
+            onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
+            className="w-full flex items-center justify-center gap-1 py-2 bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400"
+          >
+            {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            <span className="text-[10px] uppercase tracking-widest">Controls</span>
+          </button>
+          {mobileSheetOpen && (
+            <div className="h-[calc(100%-36px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
+              <GlassPanel className="backdrop-blur-xl bg-transparent scrollbar-none">
+                {/* Presets */}
+                <div className="p-3 space-y-2 border-b border-white/[0.06]">
+                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Presets</MicroTitle>
+                  <div className="grid grid-cols-3 gap-1">
+                    {Object.entries(PRESETS).map(([name, preset]) => (
+                      <Button key={name} variant="ghost" size="xs" onClick={() => updateConfig(preset)} className="text-[9px] text-neutral-500 hover:text-white font-medium">{name}</Button>
+                    ))}
+                  </div>
+                </div>
+                {/* Seeds */}
+                <div className="p-3 space-y-2 border-b border-white/[0.06]">
+                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Seeds</MicroTitle>
+                  <div className="grid grid-cols-3 gap-1">
+                    {Object.keys(SEEDS).map(name => (
+                      <Button key={name} variant="ghost" size="xs" onClick={() => applySeed(name)} className="text-[9px] text-neutral-500 hover:text-white font-medium">
+                        {name === 'Random' ? <><Dices size={10} className="mr-0.5" /> Rand</> : name}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                {/* Shape */}
+                <div className="p-3 space-y-1 border-b border-white/[0.06]">
+                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Shape</MicroTitle>
+                  <NodeSlider label="Dot Radius" value={config.dotRadius} min={2} max={40} step={1} onChange={v => updateConfig({ dotRadius: v })} formatValue={v => `${v}px`} />
+                  <NodeSlider label="Blob" value={config.blobFactor} min={0.05} max={1} step={0.05} onChange={v => updateConfig({ blobFactor: v })} />
+                  <NodeSlider label="Tension" value={config.curveTension} min={0.05} max={1} step={0.05} onChange={v => updateConfig({ curveTension: v })} />
+                  <NodeSlider label="Glow" value={config.glow} min={0} max={30} step={1} onChange={v => updateConfig({ glow: v })} formatValue={v => `${v}px`} />
+                </div>
+                {/* Stroke */}
+                <div className="p-3 space-y-2.5 border-b border-white/[0.06]">
+                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Stroke</MicroTitle>
+                  <div className="flex items-center justify-between">
+                    <MicroTitle className="text-neutral-500 text-[10px]">Outline mode</MicroTitle>
+                    <Switch checked={config.strokeOnly} onCheckedChange={v => updateConfig({ strokeOnly: v })} />
+                  </div>
+                  {config.strokeOnly && (
+                    <NodeSlider label="Width" value={config.strokeWidth} min={0.5} max={5} step={0.25} onChange={v => updateConfig({ strokeWidth: v })} formatValue={v => `${v}px`} />
+                  )}
+                </div>
+                {/* Connections */}
+                <div className="p-3 space-y-2.5">
+                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Connections</MicroTitle>
+                  <div className="flex items-center justify-between">
+                    <MicroTitle className="text-neutral-500 text-[10px]">Diagonals</MicroTitle>
+                    <Switch checked={config.connectDiagonals} onCheckedChange={v => updateConfig({ connectDiagonals: v })} />
+                  </div>
+                </div>
+              </GlassPanel>
+            </div>
+          )}
+        </div>
+      )}
 
     </AppShell>
   );

@@ -91,8 +91,8 @@ export const useCanvasCollaboration = ({
     if (!isCollaborative || !liveNodes || !liveEdges) return;
     if (!(liveNodes instanceof LiveList) || !(liveEdges instanceof LiveList)) return;
 
-    const nodesArray = liveNodes.toArray().map((n: any) => n.toObject());
-    const edgesArray = liveEdges.toArray().map((e: any) => e.toObject());
+    const nodesArray = (liveNodes as any).toArray().map((n: any) => n.toObject());
+    const edgesArray = (liveEdges as any).toArray().map((e: any) => e.toObject());
 
     const nodesChanged = JSON.stringify(nodesArray) !== JSON.stringify(nodes);
     const edgesChanged = JSON.stringify(edgesArray) !== JSON.stringify(edges);
