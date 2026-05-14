@@ -246,6 +246,8 @@ export class DynamicShaderEffect extends Effect {
     _renderer: any,
     _inputBuffer: any,
     deltaTime?: number,
+    width?: number,
+    height?: number,
   ) {
     if (this._needsTime) {
       const u = this.uniforms.get('u_time');
@@ -253,8 +255,8 @@ export class DynamicShaderEffect extends Effect {
     }
 
     const res = this.uniforms.get('iResolution');
-    if (res) {
-      (res.value as Vector2).set(window.innerWidth, window.innerHeight);
+    if (res && width && height) {
+      (res.value as Vector2).set(width, height);
     }
   }
 

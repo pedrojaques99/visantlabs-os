@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Vector2 } from 'three';
 import { EffectComposer } from '@react-three/postprocessing';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { DynamicShaderEffect } from './createShaderEffect';
 import type { ShaderType, HalftoneVariant } from '@/utils/shaders/shaderRegistry';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
@@ -17,11 +16,14 @@ const ShaderEffectBridge: React.FC<{
   settings: ShaderSettings;
   halftoneVariant: HalftoneVariant;
 }> = ({ shaderType, settings, halftoneVariant }) => {
-  const effectRef = useRef<DynamicShaderEffect | null>(null);
+  const prevEffectRef = useRef<DynamicShaderEffect | null>(null);
+  const { size } = useThree();
 
   const effect = useMemo(() => {
+    const prev = prevEffectRef.current;
     const e = new DynamicShaderEffect(shaderType, settings, halftoneVariant);
-    effectRef.current = e;
+    prevEffectRef.current = e;
+    if (prev) prev.dispose();
     return e;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shaderType, halftoneVariant]);
@@ -31,15 +33,15 @@ const ShaderEffectBridge: React.FC<{
   }, [effect, settings]);
 
   useFrame((_state, delta) => {
-    effect.update(null, null, delta);
+    effect.update(null, null, delta, size.width, size.height);
   });
 
   useEffect(() => {
     return () => {
-      effectRef.current?.dispose();
-      effectRef.current = null;
+      prevEffectRef.current?.dispose();
+      prevEffectRef.current = null;
     };
-  }, [effect]);
+  }, []);
 
   return <primitive object={effect} dispose={null} />;
 };

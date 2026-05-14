@@ -393,6 +393,6 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
 
   resetScene: () => {
     const { _cameraControlsRef } = get();
-    set({ ...INITIAL_STATE, _cameraControlsRef, resetKey: Date.now() });
+    set({ ...INITIAL_STATE, _cameraControlsRef, resetKey: Date.now(), shaderEnabled: false, shaderType: 'halftone' as any, shaderValues: {} });
   },
 }));

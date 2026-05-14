@@ -253,8 +253,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                         <button
                           key={m.id}
                           onClick={() => {
-                            store.setMaterial(m.id as any);
-                            if (m.color) store.setColor(m.color);
+                            store.setMaterial(m.id);
                           }}
                           className={cn(
                             'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-left flex items-center gap-1.5',
