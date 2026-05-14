@@ -47,9 +47,9 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = ({ onCanvasReady }) => {
       rotationX={store.rotationX}
       rotationY={store.rotationY}
       zoom={store.zoom}
-      interactive={store.interactive}
+      interactive
       cursorOrbit={store.interactive}
-      draggable={store.interactive}
+      draggable
       scrollZoom
       lightPosition={store.lightPosition}
       lightIntensity={store.lightIntensity}
