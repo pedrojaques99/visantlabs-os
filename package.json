@@ -164,6 +164,7 @@
     "multer": "^2.1.1",
     "nanoid": "^5.1.7",
     "openai": "^6.34.0",
+    "opentype.js": "^2.0.0",
     "papaparse": "^5.5.3",
     "patch-package": "^8.0.1",
     "pdf-lib": "^1.17.1",
