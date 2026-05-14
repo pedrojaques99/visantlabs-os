@@ -7,12 +7,14 @@ import { NodeSlider } from '@/components/reactflow/shared/node-slider';
 import { Button } from '@/components/ui/button';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useHalftoneStore, BLEND_MODES, HALFTONE_PRESETS } from '@/stores/halftoneStore';
-import { Sliders, Palette, Layers, Download, Eye, EyeOff, ImageIcon, X, ChevronRight } from 'lucide-react';
+import { Sliders, Palette, Layers, Download, Eye, EyeOff, ImageIcon, X, ChevronRight, Diamond } from 'lucide-react';
+import { ShaderControls } from '@/components/shared/ShaderControls';
 
 const TABS = [
   { id: 'halftone' as const, label: 'Halftone', icon: Sliders },
   { id: 'color' as const, label: 'Ink', icon: Palette },
   { id: 'channels' as const, label: 'Channels', icon: Layers },
+  { id: 'shader' as const, label: 'Shader', icon: Diamond },
   { id: 'export' as const, label: 'Export', icon: Download },
 ] as const;
 
@@ -232,6 +234,17 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
               <NodeSlider label="Black" value={blackAngle} min={0} max={360} step={5} onChange={setBlackAngle} formatValue={(v) => `${v}°`} />
             </Section>
           </>
+        )}
+
+        {store.activeTab === 'shader' && (
+          <ShaderControls
+            enabled={store.shaderEnabled}
+            shaderType={store.shaderType}
+            values={store.shaderValues}
+            onEnabledChange={store.setShaderEnabled}
+            onTypeChange={store.setShaderType}
+            onValueChange={store.setShaderValue}
+          />
         )}
 
         {store.activeTab === 'export' && (

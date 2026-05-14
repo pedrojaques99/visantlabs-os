@@ -10,6 +10,13 @@ import './shaders/matrixDither';
 import './shaders/upscale';
 import './shaders/dither';
 import './shaders/duotone';
+import './shaders/filmGrain';
+import './shaders/pixelate';
+import './shaders/posterize';
+import './shaders/chromaticAberration';
+import './shaders/crtScanlines';
+import './shaders/edgeDetect';
+import './shaders/glitch';
 import { getHalftoneShaderSource } from './shaders/halftone';
 import { getShaderDefinition, type ShaderType, type HalftoneVariant } from './shaderRegistry';
 
@@ -489,6 +496,58 @@ export class PersistentShaderRenderer {
       if (brightnessLocation !== null) {
         gl.uniform1f(brightnessLocation, brightness);
       }
+    } else if (shaderType === 'filmGrain') {
+      const strength = settings.filmGrainStrength ?? 16.0;
+      const grainSize = settings.filmGrainSize ?? 1.0;
+      const colored = settings.filmGrainColored ?? 0.0;
+
+      const strengthLocation = gl.getUniformLocation(program, 'u_grain_strength');
+      if (strengthLocation !== null) gl.uniform1f(strengthLocation, strength);
+
+      const sizeLocation = gl.getUniformLocation(program, 'u_grain_size');
+      if (sizeLocation !== null) gl.uniform1f(sizeLocation, grainSize);
+
+      const timeLocation = gl.getUniformLocation(program, 'u_time');
+      if (timeLocation !== null) gl.uniform1f(timeLocation, performance.now() / 1000);
+
+      const coloredLocation = gl.getUniformLocation(program, 'u_colored');
+      if (coloredLocation !== null) gl.uniform1f(coloredLocation, colored);
+    } else if (shaderType === 'pixelate') {
+      const loc = gl.getUniformLocation(program, 'u_pixel_size');
+      if (loc !== null) gl.uniform1f(loc, settings.pixelateSize ?? 8.0);
+    } else if (shaderType === 'posterize') {
+      const loc = gl.getUniformLocation(program, 'u_levels');
+      if (loc !== null) gl.uniform1f(loc, settings.posterizeLevels ?? 4.0);
+    } else if (shaderType === 'chromaticAberration') {
+      const oLoc = gl.getUniformLocation(program, 'u_offset');
+      if (oLoc !== null) gl.uniform1f(oLoc, settings.chromaticOffset ?? 0.005);
+      const aLoc = gl.getUniformLocation(program, 'u_angle');
+      if (aLoc !== null) gl.uniform1f(aLoc, settings.chromaticAngle ?? 0.0);
+    } else if (shaderType === 'crtScanlines') {
+      const lwLoc = gl.getUniformLocation(program, 'u_line_width');
+      if (lwLoc !== null) gl.uniform1f(lwLoc, settings.crtLineWidth ?? 2.0);
+      const iLoc = gl.getUniformLocation(program, 'u_intensity');
+      if (iLoc !== null) gl.uniform1f(iLoc, settings.crtIntensity ?? 0.3);
+      const vLoc = gl.getUniformLocation(program, 'u_vignette');
+      if (vLoc !== null) gl.uniform1f(vLoc, settings.crtVignette ?? 0.3);
+      const cLoc = gl.getUniformLocation(program, 'u_curvature');
+      if (cLoc !== null) gl.uniform1f(cLoc, settings.crtCurvature ?? 0.0);
+    } else if (shaderType === 'edgeDetect') {
+      const tLoc = gl.getUniformLocation(program, 'u_threshold');
+      if (tLoc !== null) gl.uniform1f(tLoc, settings.edgeThreshold ?? 0.1);
+      const sLoc = gl.getUniformLocation(program, 'u_strength');
+      if (sLoc !== null) gl.uniform1f(sLoc, settings.edgeStrength ?? 2.0);
+      const oLoc = gl.getUniformLocation(program, 'u_overlay');
+      if (oLoc !== null) gl.uniform1f(oLoc, settings.edgeOverlay ?? 0.0);
+    } else if (shaderType === 'glitch') {
+      const aLoc = gl.getUniformLocation(program, 'u_amount');
+      if (aLoc !== null) gl.uniform1f(aLoc, settings.glitchAmount ?? 0.03);
+      const sLoc = gl.getUniformLocation(program, 'u_speed');
+      if (sLoc !== null) gl.uniform1f(sLoc, settings.glitchSpeed ?? 3.0);
+      const bLoc = gl.getUniformLocation(program, 'u_block_size');
+      if (bLoc !== null) gl.uniform1f(bLoc, settings.glitchBlockSize ?? 20.0);
+      const tLoc = gl.getUniformLocation(program, 'u_time');
+      if (tLoc !== null) gl.uniform1f(tLoc, performance.now() / 1000);
     }
   }
 
@@ -674,6 +733,37 @@ export interface ShaderSettings {
   ditherOffset?: number; // -0.5 to 0.5, default 0.0 (luminosity offset)
   ditherBitDepth?: number; // 1.0 to 8.0, default 4.0 (color depth bands)
   ditherPalette?: number; // 0.0 to 4.0, default 0.0 (color palette preset: 0=Monochrome, 1=Gameboy, 2=CRT Amber, 3=CRT Green, 4=Sepia)
+
+  // Film Grain shader parameters
+  filmGrainStrength?: number; // 0 to 40, default 16
+  filmGrainSize?: number; // 0.5 to 4.0, default 1.0
+  filmGrainColored?: number; // 0 or 1, default 0
+
+  // Pixelate shader parameters
+  pixelateSize?: number; // 4 to 64, default 8
+
+  // Posterize shader parameters
+  posterizeLevels?: number; // 2 to 16, default 4
+
+  // Chromatic Aberration shader parameters
+  chromaticOffset?: number; // 0.001 to 0.05, default 0.005
+  chromaticAngle?: number; // 0 to 360, default 0
+
+  // CRT Scanlines shader parameters
+  crtLineWidth?: number; // 1 to 4, default 2
+  crtIntensity?: number; // 0.1 to 0.8, default 0.3
+  crtVignette?: number; // 0 to 1, default 0.3
+  crtCurvature?: number; // 0 to 1, default 0
+
+  // Edge Detection shader parameters
+  edgeThreshold?: number; // 0.01 to 0.5, default 0.1
+  edgeStrength?: number; // 1 to 5, default 2
+  edgeOverlay?: number; // 0 or 1, default 0
+
+  // Glitch shader parameters
+  glitchAmount?: number; // 0.01 to 0.15, default 0.03
+  glitchSpeed?: number; // 0.5 to 10, default 3
+  glitchBlockSize?: number; // 5 to 50, default 20
 
   // Duotone shader parameters
   duotoneShadowColor?: [number, number, number]; // RGB array [0-1, 0-1, 0-1] for shadow color

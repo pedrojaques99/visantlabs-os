@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { MaterialPreset } from '3dsvg';
+import { createShaderSlice, type ShaderSlice } from './shaderSlice';
 
 type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'spinFloat' | 'swing';
 type ExportFormat = 'png' | 'mp4' | 'gif';
@@ -209,7 +210,7 @@ interface Studio3DState {
 
   // UI
   panelVisible: boolean;
-  activeTab: 'geometry' | 'material' | 'scene' | 'animation' | 'export';
+  activeTab: 'geometry' | 'material' | 'scene' | 'animation' | 'shader' | 'export';
   isLoading: boolean;
   resetKey: number;
 
@@ -297,10 +298,11 @@ const INITIAL_STATE = {
   resetKey: 0,
 };
 
-export const useStudio3DStore = create<Studio3DState>((set) => ({
+export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get, api) => ({
+  ...createShaderSlice(set as any, get as any, api as any),
   ...INITIAL_STATE,
 
-  setSvgData: (svg, fileName) => set({ svgData: svg, fileName: fileName || '', inputMode: 'svg' }),
+  setSvgData: (svg: string, fileName?: string) => set({ svgData: svg, fileName: fileName || '', inputMode: 'svg' }),
   setText: (text) => set({ text }),
   setFont: (font) => set({ font }),
   setInputMode: (mode) => set({ inputMode: mode }),

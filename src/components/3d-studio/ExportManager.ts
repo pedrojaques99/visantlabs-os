@@ -1,4 +1,6 @@
 import { ASPECT_RATIOS, EXPORT_RESOLUTIONS } from '@/stores/studio3dStore';
+import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
+import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
 
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
 type ExportResolution = 'hd' | '2k' | '4k';
@@ -52,8 +54,12 @@ export async function exportPNG(
   transparentBg: boolean,
   bgColor: string,
   fileName: string,
+  shader?: ShaderSettings,
 ): Promise<void> {
-  const offscreen = getExportCanvas(canvas, aspectRatio, resolution, transparentBg, bgColor);
+  let offscreen = getExportCanvas(canvas, aspectRatio, resolution, transparentBg, bgColor);
+  if (shader) {
+    offscreen = await applyShaderToCanvas(offscreen, shader);
+  }
   const blob = await new Promise<Blob>((resolve) => {
     offscreen.toBlob((b) => resolve(b!), 'image/png');
   });
@@ -65,8 +71,32 @@ export async function exportVideo(
   duration: number,
   fileName: string,
   onProgress?: (progress: number) => void,
+  shader?: ShaderSettings,
 ): Promise<void> {
-  const stream = canvas.captureStream(60);
+  let captureSource = canvas;
+
+  // For shader video: render each frame through shader onto an offscreen canvas
+  let shaderCanvas: HTMLCanvasElement | undefined;
+  let shaderAnimId: number | undefined;
+  if (shader) {
+    shaderCanvas = document.createElement('canvas');
+    shaderCanvas.width = canvas.width;
+    shaderCanvas.height = canvas.height;
+    const shaderCtx = shaderCanvas.getContext('2d')!;
+
+    const renderLoop = async () => {
+      try {
+        const processed = await applyShaderToCanvas(canvas, shader);
+        shaderCtx.clearRect(0, 0, shaderCanvas!.width, shaderCanvas!.height);
+        shaderCtx.drawImage(processed, 0, 0);
+      } catch { /* skip frame */ }
+      shaderAnimId = requestAnimationFrame(renderLoop);
+    };
+    renderLoop();
+    captureSource = shaderCanvas;
+  }
+
+  const stream = captureSource.captureStream(60);
   const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
     ? 'video/webm;codecs=vp9'
     : 'video/webm';
@@ -82,6 +112,7 @@ export async function exportVideo(
 
   return new Promise((resolve) => {
     recorder.onstop = () => {
+      if (shaderAnimId) cancelAnimationFrame(shaderAnimId);
       const blob = new Blob(chunks, { type: 'video/webm' });
       downloadBlob(blob, `${fileName || '3d-export'}.webm`);
       resolve();

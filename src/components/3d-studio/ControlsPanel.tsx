@@ -390,6 +390,12 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
 
         {store.activeTab === 'export' && (
           <>
+            {store.shaderEnabled && (
+              <div className="flex items-center gap-2 px-2.5 py-2 rounded bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 uppercase tracking-wider">
+                <Diamond size={12} />
+                {store.shaderType} shader will be applied
+              </div>
+            )}
             <Section title="FORMAT">
               <div className="grid grid-cols-3 gap-1.5">
                 {(['png', 'mp4', 'gif'] as const).map((f) => (

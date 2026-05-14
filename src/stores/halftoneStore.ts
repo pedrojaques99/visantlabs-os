@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { HALFTONE_DEFAULTS, type HalftoneSettings } from '@/components/halftone/HalftoneRenderer';
+import { createShaderSlice, type ShaderSlice } from './shaderSlice';
 
 export const BLEND_MODES = [
   { id: 0, label: 'Subtractive (CMYK)' },
@@ -20,7 +21,7 @@ interface HalftoneState extends HalftoneSettings {
   imageUrl: string;
   fileName: string;
   panelVisible: boolean;
-  activeTab: 'halftone' | 'color' | 'channels' | 'export';
+  activeTab: 'halftone' | 'color' | 'channels' | 'shader' | 'export';
   isExporting: boolean;
 
   setImageUrl: (url: string, fileName: string) => void;
@@ -33,7 +34,8 @@ interface HalftoneState extends HalftoneSettings {
   getSettings: () => HalftoneSettings;
 }
 
-export const useHalftoneStore = create<HalftoneState>((set, get) => ({
+export const useHalftoneStore = create<HalftoneState & ShaderSlice>()((set, get, api) => ({
+  ...createShaderSlice(set as any, get as any, api as any),
   ...HALFTONE_DEFAULTS,
   imageUrl: '',
   fileName: '',

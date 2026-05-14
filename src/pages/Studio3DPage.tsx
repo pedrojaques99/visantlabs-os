@@ -40,6 +40,8 @@ export const Studio3DPage: React.FC = () => {
   const depth = useStudio3DStore((s) => s.depth);
   const animate = useStudio3DStore((s) => s.animate);
   const fileName = useStudio3DStore((s) => s.fileName);
+  const shaderEnabled = useStudio3DStore((s) => s.shaderEnabled);
+  const shaderType = useStudio3DStore((s) => s.shaderType);
 
   const handleCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
     canvasRef.current = canvas;
@@ -192,6 +194,12 @@ export const Studio3DPage: React.FC = () => {
           <span>depth {depth}</span>
           <span>•</span>
           <span>{animate !== 'none' ? animate : 'static'}</span>
+          {shaderEnabled && (
+            <>
+              <span>•</span>
+              <span className="text-cyan-400">{shaderType}</span>
+            </>
+          )}
           {fileName && (
             <>
               <span>•</span>

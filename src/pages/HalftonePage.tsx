@@ -11,6 +11,7 @@ import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { HalftoneCanvas } from '@/components/halftone/HalftoneCanvas';
 import { HalftoneControls } from '@/components/halftone/HalftoneControls';
 import { useHalftoneStore } from '@/stores/halftoneStore';
+import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
@@ -37,6 +38,8 @@ export const HalftonePage: React.FC = () => {
   const dotSize = useHalftoneStore((s) => s.dotSize);
   const blendMode = useHalftoneStore((s) => s.blendMode);
   const fileName = useHalftoneStore((s) => s.fileName);
+  const shaderEnabled = useHalftoneStore((s) => s.shaderEnabled);
+  const shaderType = useHalftoneStore((s) => s.shaderType);
 
   const handleCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
     canvasRef.current = canvas;
@@ -47,8 +50,12 @@ export const HalftonePage: React.FC = () => {
     const store = useHalftoneStore.getState();
     store.setIsExporting(true);
     try {
+      let exportCanvas = canvasRef.current;
+      if (store.shaderEnabled) {
+        exportCanvas = await applyShaderToCanvas(exportCanvas, store.getShaderSettings());
+      }
       const blob = await new Promise<Blob>((resolve) => {
-        canvasRef.current!.toBlob((b) => resolve(b!), 'image/png');
+        exportCanvas.toBlob((b) => resolve(b!), 'image/png');
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -151,6 +158,12 @@ export const HalftonePage: React.FC = () => {
           <span>dot {dotSize.toFixed(2)}</span>
           <span>•</span>
           <span>{['subtractive', 'additive', 'normal'][blendMode]}</span>
+          {shaderEnabled && (
+            <>
+              <span>•</span>
+              <span className="text-cyan-400">{shaderType}</span>
+            </>
+          )}
           {fileName && (
             <>
               <span>•</span>
