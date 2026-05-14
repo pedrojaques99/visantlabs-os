@@ -247,6 +247,10 @@
       "description": "Professional CMYK halftone effect with WebGL — dot control, screen angles, ink colors and blend modes",
       "name": "CMYK Halftone"
     },
+    "gridMachine": {
+      "description": "Upload an SVG logo and analyze its construction grid — anchor points, bezier handles, alignment lines and geometric structure",
+      "name": "Grid Machine"
+    },
     "halftoneMachine": {
       "description": "Create halftone effects from your images",
       "name": "Halftone Machine"

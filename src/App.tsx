@@ -60,6 +60,7 @@ const LabsPage = lazyWithRetry(() => import('./pages/labs/LabsPage').then(m => (
 const WindTunnelPage = lazyWithRetry(() => import('./pages/labs/WindTunnelPage').then(m => ({ default: m.WindTunnelPage })));
 const Studio3DPage = lazyWithRetry(() => import('./pages/Studio3DPage').then(m => ({ default: m.Studio3DPage })));
 const HalftonePage = lazyWithRetry(() => import('./pages/HalftonePage').then(m => ({ default: m.HalftonePage })));
+const GridMachinePage = lazyWithRetry(() => import('./pages/GridMachinePage').then(m => ({ default: m.GridMachinePage })));
 
 
 const LoadingFallback = () => (
@@ -106,6 +107,7 @@ const App: React.FC = () => {
                 <Route path="/grid-paint" element={<GridPaintPage />} />
                 <Route path="/3d-studio" element={<Studio3DPage />} />
                 <Route path="/cmyk-halftone" element={<HalftonePage />} />
+                <Route path="/grid-machine" element={<GridMachinePage />} />
                 <Route path="/labs" element={<LabsPage />} />
                 <Route path="/labs/wind-tunnel" element={<WindTunnelPage />} />
                 <Route path="/about" element={<AboutPage />} />
