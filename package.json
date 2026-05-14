@@ -19,7 +19,7 @@
     "url": "https://github.com/pedrojaques99/visantlabs-os"
   },
   "scripts": {
-    "prepare": "bash scripts/setup-hooks.sh || true",
+    "prepare": "node -e \"try{require('child_process').execSync('bash scripts/setup-hooks.sh',{stdio:'inherit'})}catch(e){}\"",
     "type-check": "tsc",
     "dev": "vite",
     "dev:server": "tsx watch server/index.ts",
