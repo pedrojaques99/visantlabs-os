@@ -284,7 +284,7 @@ const INITIAL_STATE = {
   animateReverse: false,
   rotationX: 0,
   rotationY: 0,
-  zoom: 1,
+  zoom: 8,
   interactive: false,
   exportFormat: 'png' as ExportFormat,
   aspectRatio: '1:1' as AspectRatio,
