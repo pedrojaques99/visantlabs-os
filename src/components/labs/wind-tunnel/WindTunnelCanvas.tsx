@@ -27,6 +27,9 @@ export interface WindTunnelConfig {
   bgColor: string;
   showGrid: boolean;
   glowIntensity: number;
+  particleLifetime: number;
+  trailLength: number;
+  spread: number;
 }
 
 export interface WindTunnelHandle {
@@ -81,23 +84,26 @@ function renderObstacleOverlay(
     ctx.fillText(cfg.text, cw / 2 + ox, ch / 2 + oy);
   } else if (cfg.obstacleType !== 'text' && cfg.obstacleType !== 'image') {
     const cx = cw / 2 + ox, cy = ch / 2 + oy;
-    const r = Math.min(cw, ch) * 0.15 * scale;
+    const minDim = Math.min(cw, ch);
+    const rPixels = minDim * 0.15 * scale;
+    const rx = rPixels;
+    const ry = rPixels;
     ctx.beginPath();
     switch (cfg.obstacleType) {
       case 'circle':
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
         break;
       case 'square':
-        ctx.rect(cx - r, cy - r, r * 2, r * 2);
+        ctx.rect(cx - rx, cy - ry, rx * 2, ry * 2);
         break;
       case 'diamond':
-        ctx.moveTo(cx, cy - r * 1.2); ctx.lineTo(cx + r * 1.2, cy);
-        ctx.lineTo(cx, cy + r * 1.2); ctx.lineTo(cx - r * 1.2, cy);
+        ctx.moveTo(cx, cy - ry * 1.2); ctx.lineTo(cx + rx * 1.2, cy);
+        ctx.lineTo(cx, cy + ry * 1.2); ctx.lineTo(cx - rx * 1.2, cy);
         ctx.closePath();
         break;
       case 'triangle': {
-        const h = r * 1.4;
-        const base = r * 1.6;
+        const h = ry * 1.4;
+        const base = rx * 1.6;
         ctx.moveTo(cx, cy - h * 0.6);
         ctx.lineTo(cx + base, cy + h * 0.4);
         ctx.lineTo(cx - base, cy + h * 0.4);
@@ -105,18 +111,18 @@ function renderObstacleOverlay(
         break;
       }
       case 'airfoil': {
-        const chord = r * 3;
+        const chord = rx * 3;
         ctx.moveTo(cx - chord * 0.4, cy);
         for (let t = 0; t <= 1; t += 0.02) {
           const x = cx - chord * 0.4 + t * chord;
-          const thickness = 0.12 * chord * (
+          const thickness = 0.12 * ry * 3 * (
             2.98 * Math.sqrt(t) - 1.32 * t - 3.286 * t * t + 2.441 * t * t * t - 0.815 * t * t * t * t
           );
           ctx.lineTo(x, cy - thickness);
         }
         for (let t = 1; t >= 0; t -= 0.02) {
           const x = cx - chord * 0.4 + t * chord;
-          const thickness = 0.12 * chord * (
+          const thickness = 0.12 * ry * 3 * (
             2.98 * Math.sqrt(t) - 1.32 * t - 3.286 * t * t + 2.441 * t * t * t - 0.815 * t * t * t * t
           );
           ctx.lineTo(x, cy + thickness);
@@ -162,6 +168,7 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, {
     const fpsRef = useRef(0);
     const obstaclesRef = useRef<boolean[]>([]);
     const sizeRef = useRef({ w: 0, h: 0 });
+    const glowCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const touchRef = useRef<TouchState | null>(null);
     configRef.current = config;
 
@@ -194,11 +201,23 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, {
         }
         if (cfg.showObstacles) renderObstacleOverlay(oc, w, h, cfg);
         const glow = cfg.glowIntensity;
-        if (glow > 0) { oc.save(); oc.shadowBlur = glow * multiplier; oc.shadowColor = cfg.colorMode === 'uniform' ? cfg.baseColor : 'rgba(100, 180, 255, 0.6)'; }
         const solver = solverRef.current;
         const particles = particlesRef.current;
-        if (particles && solver) particles.render(oc, w, h, cfg.colorMode, cfg.baseColor, cfg.particleSize, solver, cfg.renderMode);
-        if (glow > 0) oc.restore();
+        if (particles && solver) {
+          if (glow > 0) {
+            const gc = document.createElement('canvas');
+            gc.width = expW; gc.height = expH;
+            const gctx = gc.getContext('2d')!;
+            gctx.scale(multiplier, multiplier);
+            particles.render(gctx, w, h, cfg.colorMode, cfg.baseColor, cfg.particleSize, solver, cfg.renderMode);
+            oc.filter = `blur(${glow * multiplier}px)`;
+            oc.globalAlpha = 0.6;
+            oc.drawImage(gc, 0, 0);
+            oc.filter = 'none';
+            oc.globalAlpha = 1;
+          }
+          particles.render(oc, w, h, cfg.colorMode, cfg.baseColor, cfg.particleSize, solver, cfg.renderMode);
+        }
         if (perspective > 0) oc.restore();
         oc.save();
         oc.globalAlpha = 0.08;
@@ -218,9 +237,10 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, {
         particles.clear();
         const { w, h } = sizeRef.current;
         const cfg = configRef.current;
+        particles.setTrailLength(cfg.trailLength);
         const initCount = Math.min(cfg.particleCount, MAX_PARTICLES);
         for (let i = 0; i < initCount; i++) {
-          particles.emit(Math.random() * w, Math.random() * h, 1, cfg.windSpeed * 0.3);
+          particles.emit(Math.random() * w, Math.random() * h, 1, cfg.windSpeed * 0.3, cfg.particleLifetime, cfg.spread);
         }
         for (let warm = 0; warm < 30; warm++) {
           const N = GRID_SIZE;
@@ -324,7 +344,7 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, {
       const { w, h } = sizeRef.current;
       const initCount = Math.min(cfg0.particleCount, MAX_PARTICLES);
       for (let i = 0; i < initCount; i++) {
-        particles.emit(Math.random() * w, Math.random() * h, 1, cfg0.windSpeed * 0.3);
+        particles.emit(Math.random() * w, Math.random() * h, 1, cfg0.windSpeed * 0.3, cfg0.particleLifetime, cfg0.spread);
       }
 
       for (let warm = 0; warm < 30; warm++) {
@@ -357,6 +377,7 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, {
         const { w: cw, h: ch } = sizeRef.current;
 
         if (!cfg.paused) {
+          particles.setTrailLength(cfg.trailLength);
           solver.setViscosity(cfg.viscosity * 0.001);
           solver.setDiffusion(0.00001);
 
@@ -396,9 +417,9 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, {
             const batch = Math.min(Math.ceil(deficit / 10), 100);
             for (let i = 0; i < batch; i++) {
               if (Math.random() < 0.7) {
-                particles.emit(0, Math.random() * ch, 1, cfg.windSpeed * 0.4);
+                particles.emit(0, Math.random() * ch, 1, cfg.windSpeed * 0.4, cfg.particleLifetime, cfg.spread);
               } else {
-                particles.emit(Math.random() * cw * 0.3, Math.random() * ch, 1, cfg.windSpeed * 0.2);
+                particles.emit(Math.random() * cw * 0.3, Math.random() * ch, 1, cfg.windSpeed * 0.2, cfg.particleLifetime, cfg.spread);
               }
             }
           }
@@ -432,17 +453,24 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, {
         }
 
         const glow = cfg.glowIntensity;
+
         if (glow > 0) {
-          ctx.save();
-          ctx.shadowBlur = glow;
-          ctx.shadowColor = cfg.colorMode === 'uniform' ? cfg.baseColor : 'rgba(100, 180, 255, 0.6)';
+          if (!glowCanvasRef.current || glowCanvasRef.current.width !== cw || glowCanvasRef.current.height !== ch) {
+            glowCanvasRef.current = document.createElement('canvas');
+            glowCanvasRef.current.width = cw;
+            glowCanvasRef.current.height = ch;
+          }
+          const gc = glowCanvasRef.current.getContext('2d')!;
+          gc.clearRect(0, 0, cw, ch);
+          particles.render(gc, cw, ch, cfg.colorMode, cfg.baseColor, cfg.particleSize, solver, cfg.renderMode);
+          ctx.filter = `blur(${glow}px)`;
+          ctx.globalAlpha = 0.6;
+          ctx.drawImage(glowCanvasRef.current, 0, 0);
+          ctx.filter = 'none';
+          ctx.globalAlpha = 1;
         }
 
         particles.render(ctx, cw, ch, cfg.colorMode, cfg.baseColor, cfg.particleSize, solver, cfg.renderMode);
-
-        if (glow > 0) {
-          ctx.restore();
-        }
 
         if (perspective > 0) {
           ctx.restore();
@@ -467,6 +495,7 @@ export const WindTunnelCanvas = forwardRef<WindTunnelHandle, {
         cancelAnimationFrame(animRef.current);
         observer.disconnect();
         if (resizeTimer) clearTimeout(resizeTimer);
+        glowCanvasRef.current = null;
       };
     }, [rebuildObstacles]);
 
