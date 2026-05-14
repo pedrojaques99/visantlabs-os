@@ -3,6 +3,9 @@ export interface ShapeParams {
   gridSize: number;
   canvasWidth: number;
   canvasHeight: number;
+  scale?: number;
+  offsetX?: number;
+  offsetY?: number;
 }
 
 function IX(i: number, j: number, N: number): number {
@@ -13,9 +16,10 @@ export function rasterizeShapeToObstacles(p: ShapeParams): boolean[] {
   const N = p.gridSize;
   const size = (N + 2) * (N + 2);
   const obs = new Array<boolean>(size).fill(false);
-  const cx = N / 2;
-  const cy = N / 2;
-  const r = N * 0.15;
+  const scale = p.scale ?? 1;
+  const cx = N / 2 + (p.offsetX ?? 0) * N;
+  const cy = N / 2 + (p.offsetY ?? 0) * N;
+  const r = N * 0.15 * scale;
 
   for (let j = 1; j <= N; j++) {
     for (let i = 1; i <= N; i++) {

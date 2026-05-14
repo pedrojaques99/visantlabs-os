@@ -380,8 +380,8 @@ const ExportPanel: React.FC<{
             </div>
           )}
 
-          <div className="grid grid-cols-3 gap-1">
-            {(['png', 'mp4', 'gif'] as const).map((f) => (
+          <div className="grid grid-cols-5 gap-1">
+            {(['png', 'mp4', 'gif', 'glb', 'obj'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => store.setExportFormat(f)}
@@ -395,20 +395,28 @@ const ExportPanel: React.FC<{
             ))}
           </div>
 
-          <div className="grid grid-cols-4 gap-1">
-            {(Object.keys(ASPECT_RATIOS) as Array<keyof typeof ASPECT_RATIOS>).map((r) => (
-              <button
-                key={r}
-                onClick={() => store.setAspectRatio(r)}
-                className={cn(
-                  'py-1 rounded text-[10px] tracking-wider transition-colors text-center',
-                  store.aspectRatio === r ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-                )}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
+          {store.exportFormat !== 'glb' && store.exportFormat !== 'obj' && (
+            <div className="grid grid-cols-4 gap-1">
+              {(Object.keys(ASPECT_RATIOS) as Array<keyof typeof ASPECT_RATIOS>).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => store.setAspectRatio(r)}
+                  className={cn(
+                    'py-1 rounded text-[10px] tracking-wider transition-colors text-center',
+                    store.aspectRatio === r ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-400 hover:bg-white/10'
+                  )}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {(store.exportFormat === 'glb' || store.exportFormat === 'obj') && (
+            <div className="px-2 py-1.5 rounded bg-white/5 text-[9px] text-neutral-400 uppercase tracking-wider">
+              {store.exportFormat === 'glb' ? '3D model with materials' : 'Geometry only (no materials)'}
+            </div>
+          )}
 
           {store.exportFormat === 'png' && (
             <div className="grid grid-cols-3 gap-1">

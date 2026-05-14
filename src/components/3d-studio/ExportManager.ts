@@ -1,6 +1,7 @@
 import { ASPECT_RATIOS, EXPORT_RESOLUTIONS } from '@/stores/studio3dStore';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
+import type { Scene, Camera, WebGLRenderer } from 'three';
 
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
 type ExportResolution = 'hd' | '2k' | '4k';
@@ -75,7 +76,6 @@ export async function exportVideo(
 ): Promise<void> {
   let captureSource = canvas;
 
-  // For shader video: render each frame through shader onto an offscreen canvas
   let shaderCanvas: HTMLCanvasElement | undefined;
   let shaderAnimId: number | undefined;
   if (shader) {
@@ -131,6 +131,28 @@ export async function exportVideo(
       }
     }, 100);
   });
+}
+
+export async function exportGLB(
+  scene: Scene,
+  fileName: string,
+): Promise<void> {
+  const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
+  const exporter = new GLTFExporter();
+  const result = await exporter.parseAsync(scene, { binary: true });
+  const blob = new Blob([result as ArrayBuffer], { type: 'model/gltf-binary' });
+  downloadBlob(blob, `${fileName || '3d-export'}.glb`);
+}
+
+export async function exportOBJ(
+  scene: Scene,
+  fileName: string,
+): Promise<void> {
+  const { OBJExporter } = await import('three/examples/jsm/exporters/OBJExporter.js');
+  const exporter = new OBJExporter();
+  const result = exporter.parse(scene);
+  const blob = new Blob([result], { type: 'text/plain' });
+  downloadBlob(blob, `${fileName || '3d-export'}.obj`);
 }
 
 function downloadBlob(blob: Blob, filename: string) {

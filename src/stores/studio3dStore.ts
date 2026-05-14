@@ -4,7 +4,7 @@ import { createShaderSlice, type ShaderSlice } from './shaderSlice';
 type MaterialPreset = 'default' | 'plastic' | 'metal' | 'glass' | 'rubber' | 'chrome' | 'gold' | 'clay' | 'emissive' | 'holographic' | 'brushedSteel' | 'aluminum' | 'copper' | 'roseGold' | 'platinum' | 'ceramic' | 'marble' | 'concrete' | 'wood' | 'velvet' | 'leather' | 'frostedGlass' | 'diamond' | 'pearl' | 'carbonFiber' | 'carPaint' | 'ice' | 'obsidian' | 'wax' | 'mattePaint';
 
 type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'spinFloat' | 'swing';
-type ExportFormat = 'png' | 'mp4' | 'gif';
+type ExportFormat = 'png' | 'mp4' | 'gif' | 'glb' | 'obj';
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
 
 interface ScenePreset {
@@ -219,7 +219,7 @@ interface Studio3DState {
   animateSpeed: number;
   animateReverse: boolean;
 
-  // Camera (rotationX/Y/zoom are initial orientation for SVG3D; CameraControls owns live camera)
+  // Camera
   rotationX: number;
   rotationY: number;
   zoom: number;
@@ -373,7 +373,6 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
     set({
       material: preset.material,
       color: preset.color,
-      depth: preset.depth,
       roughness: preset.roughness,
       metalness: preset.metalness,
       animate: preset.animate,

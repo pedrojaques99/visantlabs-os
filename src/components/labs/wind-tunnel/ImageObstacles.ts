@@ -1,3 +1,9 @@
+export interface ImageTransform {
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+}
+
 function IX(i: number, j: number, N: number): number {
   return i + (N + 2) * j;
 }
@@ -6,7 +12,8 @@ export function rasterizeImageToObstacles(
   img: HTMLImageElement,
   gridSize: number,
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
+  transform?: ImageTransform
 ): boolean[] {
   const N = gridSize;
   const size = (N + 2) * (N + 2);
@@ -20,19 +27,20 @@ export function rasterizeImageToObstacles(
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
+  const scaleFactor = (transform?.scale ?? 1) * 0.6;
   const aspect = img.naturalWidth / img.naturalHeight;
   const canvasAspect = canvasWidth / canvasHeight;
   let dw: number, dh: number, dx: number, dy: number;
 
   if (aspect > canvasAspect) {
-    dw = canvasWidth * 0.6;
+    dw = canvasWidth * scaleFactor;
     dh = dw / aspect;
   } else {
-    dh = canvasHeight * 0.6;
+    dh = canvasHeight * scaleFactor;
     dw = dh * aspect;
   }
-  dx = (canvasWidth - dw) / 2;
-  dy = (canvasHeight - dh) / 2;
+  dx = (canvasWidth - dw) / 2 + (transform?.offsetX ?? 0) * canvasWidth;
+  dy = (canvasHeight - dh) / 2 + (transform?.offsetY ?? 0) * canvasHeight;
 
   ctx.drawImage(img, dx, dy, dw, dh);
 

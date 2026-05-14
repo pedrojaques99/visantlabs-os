@@ -12,13 +12,15 @@ import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 
 const SceneCanvas = React.lazy(() => import('@/components/3d-studio/SceneCanvas').then(m => ({ default: m.SceneCanvas })));
 import { useStudio3DStore } from '@/stores/studio3dStore';
-import { exportPNG, exportVideo } from '@/components/3d-studio/ExportManager';
+import { exportPNG, exportVideo, exportGLB, exportOBJ } from '@/components/3d-studio/ExportManager';
+import type { SceneHandle } from '@/components/3d-studio/engine/useSceneRef';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { setCameraView, resetCamera, dollyCamera, rotateCamera, DEG15 } from '@/components/3d-studio/CameraBridge';
 
 export const Studio3DPage: React.FC = () => {
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const sceneHandleRef = useRef<SceneHandle | null>(null);
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -42,6 +44,10 @@ export const Studio3DPage: React.FC = () => {
     canvasRef.current = canvas;
   }, []);
 
+  const handleSceneReady = useCallback((handle: SceneHandle) => {
+    sceneHandleRef.current = handle;
+  }, []);
+
   const handleExport = useCallback(async () => {
     if (!canvasRef.current) return;
     const store = useStudio3DStore.getState();
@@ -61,10 +67,17 @@ export const Studio3DPage: React.FC = () => {
         case 'gif':
           await exportVideo(canvas, store.videoDuration, name, undefined, shader);
           break;
+        case 'glb':
+          if (!sceneHandleRef.current) throw new Error('Scene not ready');
+          await exportGLB(sceneHandleRef.current.scene, name);
+          break;
+        case 'obj':
+          if (!sceneHandleRef.current) throw new Error('Scene not ready');
+          await exportOBJ(sceneHandleRef.current.scene, name);
+          break;
       }
       toast.success(`${store.exportFormat.toUpperCase()} exported`);
     } catch (err) {
-      console.error('Export failed:', err);
       toast.error('Export failed — try again');
     } finally {
       setIsExporting(false);
@@ -165,7 +178,7 @@ export const Studio3DPage: React.FC = () => {
         onDrop={handleViewportDrop}
       >
         <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-neutral-950"><span className="text-[10px] uppercase tracking-widest text-neutral-600 animate-pulse">Loading 3D Engine...</span></div>}>
-          <SceneCanvas onCanvasReady={handleCanvasReady} />
+          <SceneCanvas onCanvasReady={handleCanvasReady} onSceneReady={handleSceneReady} />
         </Suspense>
       </div>
 

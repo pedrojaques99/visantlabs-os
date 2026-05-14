@@ -1,0 +1,317 @@
+import { useRef, useEffect } from 'react';
+import { useThree, useFrame } from '@react-three/fiber';
+import type { Group } from 'three';
+
+export const introComplete = { current: false };
+
+interface IntroAnimationProps {
+  type: 'none' | 'zoom' | 'fade';
+  duration: number;
+  from: { zoom?: number; opacity?: number };
+  to: { zoom?: number; opacity?: number };
+  onComplete?: () => void;
+}
+
+export function IntroAnimation({ type, duration, from, to, onComplete }: IntroAnimationProps) {
+  const { camera, gl } = useThree();
+  const progress = useRef(0);
+  const initialized = useRef(false);
+  const completeFired = useRef(false);
+
+  if (!initialized.current && type !== 'none') {
+    initialized.current = true;
+    introComplete.current = false;
+    camera.position.z = from.zoom ?? 18;
+    gl.domElement.style.opacity = String(from.opacity ?? 0);
+  }
+  if (type === 'none' && !initialized.current) {
+    initialized.current = true;
+    introComplete.current = true;
+    camera.position.z = to.zoom ?? 8;
+    gl.domElement.style.opacity = '1';
+  }
+
+  useFrame((_, delta) => {
+    if (type === 'none' || progress.current >= 1) return;
+    progress.current = Math.min(1, progress.current + delta / duration);
+    const t = 1 - Math.pow(1 - progress.current, 4);
+    const fromZ = from.zoom ?? 18;
+    const toZ = to.zoom ?? 8;
+    const fromOpacity = from.opacity ?? 0;
+    const toOpacity = to.opacity ?? 1;
+
+    if (type === 'zoom') {
+      camera.position.z = fromZ + (toZ - fromZ) * t;
+      gl.domElement.style.opacity = String(fromOpacity + (toOpacity - fromOpacity) * Math.min(1, t * 1.5));
+    } else if (type === 'fade') {
+      camera.position.z = toZ;
+      gl.domElement.style.opacity = String(fromOpacity + (toOpacity - fromOpacity) * t);
+    }
+
+    if (progress.current >= 1) {
+      introComplete.current = true;
+      gl.domElement.style.opacity = '1';
+      camera.position.z = toZ;
+      if (!completeFired.current) {
+        completeFired.current = true;
+        onComplete?.();
+      }
+    }
+  });
+
+  return null;
+}
+
+type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'swing' | 'spinFloat';
+
+interface LoopAnimationProps {
+  type: AnimationType;
+  speed: number;
+  reverse: boolean;
+  meshRef: React.RefObject<Group | null>;
+}
+
+export function LoopAnimation({ type, speed, reverse, meshRef }: LoopAnimationProps) {
+  const elapsed = useRef(0);
+  const initialY = useRef<number | null>(null);
+  const dir = reverse ? -1 : 1;
+
+  useFrame((_, delta) => {
+    if (type === 'none' || !meshRef.current) return;
+    elapsed.current += delta * speed;
+    const t = elapsed.current;
+
+    if (initialY.current === null) {
+      initialY.current = meshRef.current.position.y;
+    }
+
+    switch (type) {
+      case 'spin':
+        meshRef.current.rotation.y += delta * 0.5 * speed * dir;
+        break;
+      case 'float':
+        meshRef.current.position.y = initialY.current + Math.sin(t * 1.5) * 0.3;
+        break;
+      case 'pulse': {
+        const pulse = 1 + Math.sin(t * 2) * 0.05;
+        const sx = meshRef.current.scale.x;
+        const sy = meshRef.current.scale.y;
+        const sz = meshRef.current.scale.z;
+        meshRef.current.scale.set(
+          Math.sign(sx) * Math.abs(sx / (1 + Math.sin((t - delta * speed) * 2) * 0.05)) * pulse,
+          Math.sign(sy) * Math.abs(sy / (1 + Math.sin((t - delta * speed) * 2) * 0.05)) * pulse,
+          Math.sign(sz) * Math.abs(sz / (1 + Math.sin((t - delta * speed) * 2) * 0.05)) * pulse,
+        );
+        break;
+      }
+      case 'wobble':
+        meshRef.current.rotation.z = Math.sin(t * 2) * 0.1 * dir;
+        break;
+      case 'swing':
+        meshRef.current.rotation.y = Math.sin(t * 1.5) * 0.26 * dir;
+        break;
+      case 'spinFloat':
+        meshRef.current.rotation.y += delta * 0.4 * speed * dir;
+        meshRef.current.position.y = initialY.current + Math.sin(t * 1.2) * 0.25;
+        break;
+    }
+  });
+
+  return null;
+}
+
+interface SmoothControlsProps {
+  rotationX: number;
+  rotationY: number;
+  meshRef: React.RefObject<Group | null>;
+  cursorOrbit: boolean;
+  orbitStrength: number;
+  draggable: boolean;
+  scrollZoom: boolean;
+  zoom: number;
+  resetOnIdle: boolean;
+  resetDelay: number;
+  resetKey?: number;
+}
+
+export function SmoothControls({
+  rotationX, rotationY, meshRef, cursorOrbit, orbitStrength,
+  draggable, scrollZoom, zoom, resetOnIdle, resetDelay, resetKey,
+}: SmoothControlsProps) {
+  const { gl, camera } = useThree();
+  const isDragging = useRef(false);
+  const lastPos = useRef({ x: 0, y: 0 });
+  const baseRotation = useRef({ x: rotationX, y: rotationY });
+  const targetRotation = useRef({ x: rotationX, y: rotationY });
+  const targetZoom = useRef(zoom);
+  const velocity = useRef({ x: 0, y: 0 });
+  const cursorOffset = useRef({ x: 0, y: 0 });
+  const lastInteraction = useRef(performance.now());
+  const isResetting = useRef(false);
+  const cursorInWindow = useRef(true);
+
+  const damping = 0.08;
+  const friction = 0.92;
+  const orbitDamping = 0.04;
+  const resetDamping = 0.03;
+
+  const markActive = () => {
+    lastInteraction.current = performance.now();
+    isResetting.current = false;
+  };
+
+  useEffect(() => {
+    baseRotation.current = { x: rotationX, y: rotationY };
+    targetRotation.current = { x: rotationX, y: rotationY };
+    velocity.current = { x: 0, y: 0 };
+  }, [rotationX, rotationY, resetKey]);
+
+  useEffect(() => { targetZoom.current = zoom; }, [zoom]);
+
+  useFrame(() => {
+    if (!meshRef.current) return;
+
+    let resetting = false;
+    if (resetOnIdle && introComplete.current) {
+      const idle = performance.now() - lastInteraction.current;
+      resetting = !isDragging.current && (!cursorInWindow.current || idle > resetDelay * 1e3);
+    }
+
+    if (!isDragging.current && !resetting) {
+      velocity.current.x *= friction;
+      velocity.current.y *= friction;
+      if (Math.abs(velocity.current.x) > 1e-4 || Math.abs(velocity.current.y) > 1e-4) {
+        baseRotation.current.x += velocity.current.x;
+        baseRotation.current.y += velocity.current.y;
+      }
+    }
+
+    if (resetting) {
+      velocity.current = { x: 0, y: 0 };
+      baseRotation.current.x += (rotationX - baseRotation.current.x) * resetDamping;
+      baseRotation.current.y += (rotationY - baseRotation.current.y) * resetDamping;
+      cursorOffset.current.x += (0 - cursorOffset.current.x) * resetDamping;
+      cursorOffset.current.y += (0 - cursorOffset.current.y) * resetDamping;
+      targetZoom.current += (zoom - targetZoom.current) * resetDamping;
+    }
+
+    targetRotation.current.x = baseRotation.current.x + (cursorOrbit ? cursorOffset.current.x : 0);
+    targetRotation.current.y = baseRotation.current.y + (cursorOrbit ? cursorOffset.current.y : 0);
+
+    const cur = meshRef.current.rotation;
+    cur.x += (targetRotation.current.x - cur.x) * (cursorOrbit && !isDragging.current ? orbitDamping : damping);
+    cur.y += (targetRotation.current.y - cur.y) * (cursorOrbit && !isDragging.current ? orbitDamping : damping);
+
+    if (introComplete.current) {
+      const aspect = gl.domElement.clientWidth / (gl.domElement.clientHeight || 1);
+      const responsiveFactor = aspect < 1 ? 1 / aspect : 1;
+      camera.position.z += (targetZoom.current * responsiveFactor - camera.position.z) * damping;
+    }
+  });
+
+  useEffect(() => {
+    if (!resetOnIdle) return;
+    const onDocLeave = () => { cursorInWindow.current = false; };
+    const onDocEnter = () => { cursorInWindow.current = true; markActive(); };
+    document.addEventListener('mouseleave', onDocLeave);
+    document.addEventListener('mouseenter', onDocEnter);
+    return () => {
+      document.removeEventListener('mouseleave', onDocLeave);
+      document.removeEventListener('mouseenter', onDocEnter);
+    };
+  }, [resetOnIdle]);
+
+  useEffect(() => {
+    if (!cursorOrbit) { cursorOffset.current = { x: 0, y: 0 }; return; }
+    const onMouseMove = (e: MouseEvent) => {
+      if (isDragging.current) return;
+      if (resetOnIdle) markActive();
+      const nx = (e.clientX / window.innerWidth - 0.5) * 2;
+      const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+      cursorOffset.current = { x: ny * orbitStrength, y: nx * orbitStrength };
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    return () => window.removeEventListener('mousemove', onMouseMove);
+  }, [cursorOrbit, orbitStrength, resetOnIdle]);
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const activeTouches = new Set<number>();
+    const isPinching = () => activeTouches.size >= 2;
+
+    const onPointerDown = (e: PointerEvent) => {
+      activeTouches.add(e.pointerId);
+      if (!draggable || isPinching()) return;
+      isDragging.current = true;
+      lastPos.current = { x: e.clientX, y: e.clientY };
+      velocity.current = { x: 0, y: 0 };
+      canvas.setPointerCapture(e.pointerId);
+      if (resetOnIdle) markActive();
+    };
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDragging.current || isPinching()) return;
+      const dx = e.clientX - lastPos.current.x;
+      const dy = e.clientY - lastPos.current.y;
+      lastPos.current = { x: e.clientX, y: e.clientY };
+      const sensitivity = 0.01;
+      baseRotation.current.x += dy * sensitivity;
+      baseRotation.current.y += dx * sensitivity;
+      velocity.current = { x: dy * sensitivity, y: dx * sensitivity };
+    };
+    const onPointerUp = (e: PointerEvent) => {
+      activeTouches.delete(e.pointerId);
+      if (!isDragging.current) return;
+      if (activeTouches.size > 0) velocity.current = { x: 0, y: 0 };
+      isDragging.current = false;
+      canvas.releasePointerCapture(e.pointerId);
+      if (resetOnIdle) markActive();
+    };
+    const onWheel = (e: WheelEvent) => {
+      if (!scrollZoom) return;
+      e.preventDefault();
+      targetZoom.current = Math.max(2, Math.min(20, targetZoom.current + e.deltaY * 0.01));
+      if (resetOnIdle) markActive();
+    };
+
+    let lastPinchDist = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        lastPinchDist = Math.sqrt(dx * dx + dy * dy);
+      }
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && scrollZoom) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const delta = lastPinchDist - dist;
+        targetZoom.current = Math.max(2, Math.min(20, targetZoom.current + delta * 0.03));
+        lastPinchDist = dist;
+        if (resetOnIdle) markActive();
+      }
+    };
+
+    canvas.addEventListener('pointerdown', onPointerDown);
+    canvas.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('pointerup', onPointerUp);
+    if (scrollZoom) {
+      canvas.addEventListener('wheel', onWheel, { passive: false });
+      canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+      canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    }
+    return () => {
+      canvas.removeEventListener('pointerdown', onPointerDown);
+      canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('pointerup', onPointerUp);
+      canvas.removeEventListener('wheel', onWheel);
+      canvas.removeEventListener('touchstart', onTouchStart);
+      canvas.removeEventListener('touchmove', onTouchMove);
+    };
+  }, [gl, draggable, scrollZoom, resetOnIdle]);
+
+  return null;
+}
