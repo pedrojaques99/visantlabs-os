@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState, useEffect } from 'react';
+import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,10 +23,19 @@ function useIsMobile() {
 
 export const Studio3DPage: React.FC = () => {
   const navigate = useNavigate();
-  const store = useStudio3DStore();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+
+  const panelVisible = useStudio3DStore((s) => s.panelVisible);
+  const setPanelVisible = useStudio3DStore((s) => s.setPanelVisible);
+  const resetScene = useStudio3DStore((s) => s.resetScene);
+  const setIsExporting = useStudio3DStore((s) => s.setIsExporting);
+
+  const material = useStudio3DStore((s) => s.material);
+  const depth = useStudio3DStore((s) => s.depth);
+  const animate = useStudio3DStore((s) => s.animate);
+  const fileName = useStudio3DStore((s) => s.fileName);
 
   const handleCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
     canvasRef.current = canvas;
@@ -34,7 +43,8 @@ export const Studio3DPage: React.FC = () => {
 
   const handleExport = useCallback(async () => {
     if (!canvasRef.current) return;
-    store.setIsExporting(true);
+    const store = useStudio3DStore.getState();
+    setIsExporting(true);
 
     try {
       const canvas = canvasRef.current;
@@ -52,9 +62,14 @@ export const Studio3DPage: React.FC = () => {
     } catch (err) {
       console.error('Export failed:', err);
     } finally {
-      store.setIsExporting(false);
+      setIsExporting(false);
     }
-  }, [store]);
+  }, [setIsExporting]);
+
+  const containerStyle = useMemo(() => ({
+    paddingRight: !isMobile && panelVisible ? 236 : 0,
+    paddingBottom: isMobile ? (mobileSheetOpen ? '55%' : 52) : 40,
+  }), [isMobile, panelVisible, mobileSheetOpen]);
 
   return (
     <AppShell>
@@ -74,14 +89,14 @@ export const Studio3DPage: React.FC = () => {
         right={
           <>
             <Tooltip content="Reset scene">
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={store.resetScene}>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={resetScene}>
                 <RotateCcw size={14} />
               </Button>
             </Tooltip>
             {!isMobile && (
-              <Tooltip content={store.panelVisible ? 'Hide panel' : 'Show panel'}>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => store.setPanelVisible(!store.panelVisible)}>
-                  {store.panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+              <Tooltip content={panelVisible ? 'Hide panel' : 'Show panel'}>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
+                  {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                 </Button>
               </Tooltip>
             )}
@@ -89,25 +104,16 @@ export const Studio3DPage: React.FC = () => {
         }
       />
 
-      {/* Canvas area */}
-      <div
-        className="absolute inset-0 pt-10 transition-all duration-300"
-        style={{
-          paddingRight: !isMobile && store.panelVisible ? 236 : 0,
-          paddingBottom: isMobile ? (mobileSheetOpen ? '55%' : 52) : 40,
-        }}
-      >
+      <div className="absolute inset-0 pt-10 transition-all duration-300" style={containerStyle}>
         <SceneCanvas onCanvasReady={handleCanvasReady} />
       </div>
 
-      {/* Desktop: side panel */}
       {!isMobile && (
-        <AppShellPanel side="right" visible={store.panelVisible} width={220}>
+        <AppShellPanel side="right" visible={panelVisible} width={220}>
           <ControlsPanel onExport={handleExport} />
         </AppShellPanel>
       )}
 
-      {/* Mobile: bottom sheet */}
       {isMobile && (
         <div
           className={cn(
@@ -132,15 +138,15 @@ export const Studio3DPage: React.FC = () => {
 
       {!isMobile && (
         <AppShellStatusBar>
-          <span>{store.material}</span>
+          <span>{material}</span>
           <span>•</span>
-          <span>depth {store.depth}</span>
+          <span>depth {depth}</span>
           <span>•</span>
-          <span>{store.animate !== 'none' ? store.animate : 'static'}</span>
-          {store.fileName && (
+          <span>{animate !== 'none' ? animate : 'static'}</span>
+          {fileName && (
             <>
               <span>•</span>
-              <span className="max-w-[120px] truncate">{store.fileName}</span>
+              <span className="max-w-[120px] truncate">{fileName}</span>
             </>
           )}
         </AppShellStatusBar>

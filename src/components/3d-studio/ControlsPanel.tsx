@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -37,15 +37,42 @@ const COLOR_SWATCHES = [
   '#00ff88', '#ffffff', '#ff3366', '#4a9eff', '#e8ddd3',
 ];
 
+function useDebouncedSlider(storeValue: number, setter: (v: number) => void, delay = 60) {
+  const [local, setLocal] = useState(storeValue);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => { setLocal(storeValue); }, [storeValue]);
+
+  const onChange = useCallback((v: number) => {
+    setLocal(v);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setter(v), delay);
+  }, [setter, delay]);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  return [local, onChange] as const;
+}
+
 interface ControlsPanelProps {
   onExport: () => void;
 }
 
-export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
+export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExport }) => {
   const store = useStudio3DStore();
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [depth, setDepth] = useDebouncedSlider(store.depth, store.setDepth);
+  const [smoothness, setSmoothness] = useDebouncedSlider(store.smoothness, store.setSmoothness);
+  const [metalness, setMetalness] = useDebouncedSlider(store.metalness, store.setMetalness);
+  const [roughness, setRoughness] = useDebouncedSlider(store.roughness, store.setRoughness);
+  const [opacity, setOpacity] = useDebouncedSlider(store.opacity, store.setOpacity);
+  const [lightIntensity, setLightIntensity] = useDebouncedSlider(store.lightIntensity, store.setLightIntensity);
+  const [ambientIntensity, setAmbientIntensity] = useDebouncedSlider(store.ambientIntensity, store.setAmbientIntensity);
+  const [animateSpeed, setAnimateSpeed] = useDebouncedSlider(store.animateSpeed, store.setAnimateSpeed);
+  const [videoDuration, setVideoDuration] = useDebouncedSlider(store.videoDuration, store.setVideoDuration);
 
   const processFile = useCallback(async (file: File) => {
     if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
@@ -197,8 +224,8 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
 
             {/* Geometry */}
             <Section title="GEOMETRY">
-              <NodeSlider label="Depth" value={store.depth} min={0.5} max={10} step={0.1} onChange={store.setDepth} />
-              <NodeSlider label="Smoothness" value={store.smoothness} min={0} max={5} step={0.1} onChange={store.setSmoothness} />
+              <NodeSlider label="Depth" value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
+              <NodeSlider label="Smoothness" value={smoothness} min={0} max={5} step={0.1} onChange={setSmoothness} />
             </Section>
 
             {/* Scene Presets */}
@@ -262,9 +289,9 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
             </Section>
 
             <Section title="PROPERTIES">
-              <NodeSlider label="Metalness" value={store.metalness} min={0} max={1} step={0.01} onChange={store.setMetalness} />
-              <NodeSlider label="Roughness" value={store.roughness} min={0} max={1} step={0.01} onChange={store.setRoughness} />
-              <NodeSlider label="Opacity" value={store.opacity} min={0} max={1} step={0.01} onChange={store.setOpacity} />
+              <NodeSlider label="Metalness" value={metalness} min={0} max={1} step={0.01} onChange={setMetalness} />
+              <NodeSlider label="Roughness" value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} />
+              <NodeSlider label="Opacity" value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} />
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Wireframe</span>
                 <Switch checked={store.wireframe} onCheckedChange={store.setWireframe} />
@@ -295,8 +322,8 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
             </Section>
 
             <Section title="LIGHTING">
-              <NodeSlider label="Key Light" value={store.lightIntensity} min={0} max={3} step={0.05} onChange={store.setLightIntensity} />
-              <NodeSlider label="Ambient" value={store.ambientIntensity} min={0} max={2} step={0.05} onChange={store.setAmbientIntensity} />
+              <NodeSlider label="Key Light" value={lightIntensity} min={0} max={3} step={0.05} onChange={setLightIntensity} />
+              <NodeSlider label="Ambient" value={ambientIntensity} min={0} max={2} step={0.05} onChange={setAmbientIntensity} />
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Shadows</span>
                 <Switch checked={store.shadow} onCheckedChange={store.setShadow} />
@@ -347,7 +374,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
             </Section>
 
             <Section title="CONTROLS">
-              <NodeSlider label="Speed" value={store.animateSpeed} min={0.1} max={5} step={0.1} onChange={store.setAnimateSpeed} />
+              <NodeSlider label="Speed" value={animateSpeed} min={0.1} max={5} step={0.1} onChange={setAnimateSpeed} />
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Reverse</span>
                 <Switch checked={store.animateReverse} onCheckedChange={store.setAnimateReverse} />
@@ -419,7 +446,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
 
             {(store.exportFormat === 'mp4' || store.exportFormat === 'gif') && (
               <Section title="VIDEO">
-                <NodeSlider label="Duration (s)" value={store.videoDuration} min={1} max={10} step={0.5} onChange={store.setVideoDuration} />
+                <NodeSlider label="Duration (s)" value={videoDuration} min={1} max={10} step={0.5} onChange={setVideoDuration} />
               </Section>
             )}
 
@@ -435,7 +462,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ onExport }) => {
       </div>
     </GlassPanel>
   );
-};
+});
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div className="space-y-2">

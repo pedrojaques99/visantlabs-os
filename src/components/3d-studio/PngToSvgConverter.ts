@@ -1,6 +1,15 @@
+let cachedTracer: any = null;
+
+async function getImageTracer() {
+  if (!cachedTracer) {
+    const mod = await import('imagetracerjs');
+    cachedTracer = (mod as any).default || mod;
+  }
+  return cachedTracer;
+}
+
 export async function pngToSvg(file: File): Promise<string> {
-  const mod = await import('imagetracerjs');
-  const ImageTracer = (mod as any).default || mod;
+  const ImageTracer = await getImageTracer();
 
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
