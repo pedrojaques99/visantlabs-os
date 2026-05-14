@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { NodeSlider } from '@/components/reactflow/shared/node-slider';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useHalftoneStore, BLEND_MODES, HALFTONE_PRESETS } from '@/stores/halftoneStore';
-import { Sliders, Palette, Layers, Download, Eye, EyeOff } from 'lucide-react';
+import { Sliders, Palette, Layers, Download, Eye, EyeOff, ImageIcon, X } from 'lucide-react';
 
 const TABS = [
   { id: 'halftone' as const, label: 'Halftone', icon: Sliders },
@@ -19,11 +19,71 @@ interface HalftoneControlsProps {
   onExport: () => void;
 }
 
-export const HalftoneControls: React.FC<HalftoneControlsProps> = ({ onExport }) => {
+export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ onExport }) => {
   const store = useHalftoneStore();
+
+  const update = useCallback(<K extends string>(key: K, value: any) => {
+    store.updateSetting(key as any, value);
+  }, [store]);
+
+  const [frequency, setFrequency] = useDebouncedSlider(store.frequency, (v) => update('frequency', v));
+  const [dotSize, setDotSize] = useDebouncedSlider(store.dotSize, (v) => update('dotSize', v));
+  const [roughness, setRoughness] = useDebouncedSlider(store.roughness, (v) => update('roughness', v));
+  const [fuzz, setFuzz] = useDebouncedSlider(store.fuzz, (v) => update('fuzz', v));
+  const [randomness, setRandomness] = useDebouncedSlider(store.randomness, (v) => update('randomness', v));
+  const [threshold, setThreshold] = useDebouncedSlider(store.threshold, (v) => update('threshold', v));
+  const [contrast, setContrast] = useDebouncedSlider(store.contrast, (v) => update('contrast', v));
+  const [lightness, setLightness] = useDebouncedSlider(store.lightness, (v) => update('lightness', v));
+  const [blur, setBlur] = useDebouncedSlider(store.blur, (v) => update('blur', v));
+  const [paperNoise, setPaperNoise] = useDebouncedSlider(store.paperNoise, (v) => update('paperNoise', v));
+  const [inkNoise, setInkNoise] = useDebouncedSlider(store.inkNoise, (v) => update('inkNoise', v));
+  const [cyanAlpha, setCyanAlpha] = useDebouncedSlider(store.cyanAlpha, (v) => update('cyanAlpha', v));
+  const [cyanAngle, setCyanAngle] = useDebouncedSlider(store.cyanAngle, (v) => update('cyanAngle', v));
+  const [magentaAlpha, setMagentaAlpha] = useDebouncedSlider(store.magentaAlpha, (v) => update('magentaAlpha', v));
+  const [magentaAngle, setMagentaAngle] = useDebouncedSlider(store.magentaAngle, (v) => update('magentaAngle', v));
+  const [yellowAlpha, setYellowAlpha] = useDebouncedSlider(store.yellowAlpha, (v) => update('yellowAlpha', v));
+  const [yellowAngle, setYellowAngle] = useDebouncedSlider(store.yellowAngle, (v) => update('yellowAngle', v));
+  const [blackAlpha, setBlackAlpha] = useDebouncedSlider(store.blackAlpha, (v) => update('blackAlpha', v));
+  const [blackAngle, setBlackAngle] = useDebouncedSlider(store.blackAngle, (v) => update('blackAngle', v));
+  const [paperAlpha, setPaperAlpha] = useDebouncedSlider(store.paperAlpha, (v) => update('paperAlpha', v));
 
   return (
     <GlassPanel className="h-full overflow-hidden flex flex-col">
+      {store.imageUrl && (
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.06] shrink-0">
+          <img
+            src={store.imageUrl}
+            alt={store.fileName}
+            className="w-8 h-8 rounded object-cover bg-neutral-800 shrink-0"
+          />
+          <span className="text-[10px] text-neutral-400 font-mono truncate flex-1">{store.fileName}</span>
+          <button
+            onClick={() => store.setImageUrl('', '')}
+            className="text-neutral-600 hover:text-neutral-300 transition-colors shrink-0"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      )}
+      {!store.imageUrl && (
+        <label className="flex items-center gap-2 px-3 py-2.5 border-b border-white/[0.06] shrink-0 cursor-pointer text-neutral-500 hover:text-neutral-300 transition-colors">
+          <ImageIcon size={14} />
+          <span className="text-[10px] uppercase tracking-widest">Upload image</span>
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const url = URL.createObjectURL(file);
+                store.setImageUrl(url, file.name);
+              }
+              if (e.target) e.target.value = '';
+            }}
+          />
+        </label>
+      )}
       <div className="flex border-b border-white/[0.06] shrink-0">
         {TABS.map((tab) => (
           <button
@@ -60,23 +120,23 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = ({ onExport }) 
             </Section>
 
             <Section title="DOT">
-              <NodeSlider label="Frequency" value={store.frequency} min={20} max={500} step={1} onChange={(v) => store.updateSetting('frequency', v)} />
-              <NodeSlider label="Dot Size" value={store.dotSize} min={0.1} max={1} step={0.01} onChange={(v) => store.updateSetting('dotSize', v)} />
-              <NodeSlider label="Roughness" value={store.roughness} min={0} max={2} step={0.05} onChange={(v) => store.updateSetting('roughness', v)} />
-              <NodeSlider label="Edge Fuzz" value={store.fuzz} min={0} max={0.5} step={0.01} onChange={(v) => store.updateSetting('fuzz', v)} />
-              <NodeSlider label="Randomness" value={store.randomness} min={0} max={0.4} step={0.01} onChange={(v) => store.updateSetting('randomness', v)} />
-              <NodeSlider label="Threshold" value={store.threshold} min={0} max={0.5} step={0.01} onChange={(v) => store.updateSetting('threshold', v)} />
+              <NodeSlider label="Frequency" value={frequency} min={20} max={500} step={1} onChange={setFrequency} />
+              <NodeSlider label="Dot Size" value={dotSize} min={0.1} max={1} step={0.01} onChange={setDotSize} />
+              <NodeSlider label="Roughness" value={roughness} min={0} max={2} step={0.05} onChange={setRoughness} />
+              <NodeSlider label="Edge Fuzz" value={fuzz} min={0} max={0.5} step={0.01} onChange={setFuzz} />
+              <NodeSlider label="Randomness" value={randomness} min={0} max={0.4} step={0.01} onChange={setRandomness} />
+              <NodeSlider label="Threshold" value={threshold} min={0} max={0.5} step={0.01} onChange={setThreshold} />
             </Section>
 
             <Section title="IMAGE">
-              <NodeSlider label="Contrast" value={store.contrast} min={0.3} max={2} step={0.01} onChange={(v) => store.updateSetting('contrast', v)} />
-              <NodeSlider label="Lightness" value={store.lightness} min={-0.5} max={0.5} step={0.01} onChange={(v) => store.updateSetting('lightness', v)} />
-              <NodeSlider label="Blur" value={store.blur} min={0} max={30} step={0.5} onChange={(v) => store.updateSetting('blur', v)} />
+              <NodeSlider label="Contrast" value={contrast} min={0.3} max={2} step={0.01} onChange={setContrast} />
+              <NodeSlider label="Lightness" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
+              <NodeSlider label="Blur" value={blur} min={0} max={30} step={0.5} onChange={setBlur} />
             </Section>
 
             <Section title="NOISE">
-              <NodeSlider label="Paper Noise" value={store.paperNoise} min={0} max={1} step={0.01} onChange={(v) => store.updateSetting('paperNoise', v)} />
-              <NodeSlider label="Ink Noise" value={store.inkNoise} min={0} max={1} step={0.01} onChange={(v) => store.updateSetting('inkNoise', v)} />
+              <NodeSlider label="Paper Noise" value={paperNoise} min={0} max={1} step={0.01} onChange={setPaperNoise} />
+              <NodeSlider label="Ink Noise" value={inkNoise} min={0} max={1} step={0.01} onChange={setInkNoise} />
             </Section>
 
             <Section title="BLEND MODE">
@@ -105,38 +165,38 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = ({ onExport }) 
             <InkSection
               title="CYAN"
               color={store.cyanInk}
-              alpha={store.cyanAlpha}
-              angle={store.cyanAngle}
+              alpha={cyanAlpha}
+              angle={cyanAngle}
               onColor={(v) => store.updateSetting('cyanInk', v)}
-              onAlpha={(v) => store.updateSetting('cyanAlpha', v)}
-              onAngle={(v) => store.updateSetting('cyanAngle', v)}
+              onAlpha={setCyanAlpha}
+              onAngle={setCyanAngle}
             />
             <InkSection
               title="MAGENTA"
               color={store.magentaInk}
-              alpha={store.magentaAlpha}
-              angle={store.magentaAngle}
+              alpha={magentaAlpha}
+              angle={magentaAngle}
               onColor={(v) => store.updateSetting('magentaInk', v)}
-              onAlpha={(v) => store.updateSetting('magentaAlpha', v)}
-              onAngle={(v) => store.updateSetting('magentaAngle', v)}
+              onAlpha={setMagentaAlpha}
+              onAngle={setMagentaAngle}
             />
             <InkSection
               title="YELLOW"
               color={store.yellowInk}
-              alpha={store.yellowAlpha}
-              angle={store.yellowAngle}
+              alpha={yellowAlpha}
+              angle={yellowAngle}
               onColor={(v) => store.updateSetting('yellowInk', v)}
-              onAlpha={(v) => store.updateSetting('yellowAlpha', v)}
-              onAngle={(v) => store.updateSetting('yellowAngle', v)}
+              onAlpha={setYellowAlpha}
+              onAngle={setYellowAngle}
             />
             <InkSection
               title="BLACK"
               color={store.blackInk}
-              alpha={store.blackAlpha}
-              angle={store.blackAngle}
+              alpha={blackAlpha}
+              angle={blackAngle}
               onColor={(v) => store.updateSetting('blackInk', v)}
-              onAlpha={(v) => store.updateSetting('blackAlpha', v)}
-              onAngle={(v) => store.updateSetting('blackAngle', v)}
+              onAlpha={setBlackAlpha}
+              onAngle={setBlackAngle}
             />
             <Section title="PAPER">
               <div className="flex items-center gap-2">
@@ -148,7 +208,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = ({ onExport }) 
                 />
                 <span className="text-[10px] text-neutral-500 font-mono uppercase">{store.paperColor}</span>
               </div>
-              <NodeSlider label="Opacity" value={store.paperAlpha} min={0} max={1} step={0.01} onChange={(v) => store.updateSetting('paperAlpha', v)} />
+              <NodeSlider label="Opacity" value={paperAlpha} min={0} max={1} step={0.01} onChange={setPaperAlpha} />
             </Section>
           </>
         )}
@@ -163,10 +223,10 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = ({ onExport }) 
             </Section>
 
             <Section title="SCREEN ANGLES">
-              <NodeSlider label="Cyan" value={store.cyanAngle} min={0} max={360} step={5} onChange={(v) => store.updateSetting('cyanAngle', v)} formatValue={(v) => `${v}°`} />
-              <NodeSlider label="Magenta" value={store.magentaAngle} min={0} max={360} step={5} onChange={(v) => store.updateSetting('magentaAngle', v)} formatValue={(v) => `${v}°`} />
-              <NodeSlider label="Yellow" value={store.yellowAngle} min={0} max={360} step={5} onChange={(v) => store.updateSetting('yellowAngle', v)} formatValue={(v) => `${v}°`} />
-              <NodeSlider label="Black" value={store.blackAngle} min={0} max={360} step={5} onChange={(v) => store.updateSetting('blackAngle', v)} formatValue={(v) => `${v}°`} />
+              <NodeSlider label="Cyan" value={cyanAngle} min={0} max={360} step={5} onChange={setCyanAngle} formatValue={(v) => `${v}°`} />
+              <NodeSlider label="Magenta" value={magentaAngle} min={0} max={360} step={5} onChange={setMagentaAngle} formatValue={(v) => `${v}°`} />
+              <NodeSlider label="Yellow" value={yellowAngle} min={0} max={360} step={5} onChange={setYellowAngle} formatValue={(v) => `${v}°`} />
+              <NodeSlider label="Black" value={blackAngle} min={0} max={360} step={5} onChange={setBlackAngle} formatValue={(v) => `${v}°`} />
             </Section>
           </>
         )}
@@ -197,7 +257,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = ({ onExport }) 
       </div>
     </GlassPanel>
   );
-};
+});
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div className="space-y-2">

@@ -1,10 +1,11 @@
-import React, { useCallback, useState, useRef, useEffect } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { NodeSlider } from '@/components/reactflow/shared/node-slider';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import {
   useStudio3DStore,
   MATERIAL_PRESETS,
@@ -36,23 +37,6 @@ const COLOR_SWATCHES = [
   '#00e5ff', '#ff00ff', '#ffd700', '#ff6b35', '#8b5cf6',
   '#00ff88', '#ffffff', '#ff3366', '#4a9eff', '#e8ddd3',
 ];
-
-function useDebouncedSlider(storeValue: number, setter: (v: number) => void, delay = 60) {
-  const [local, setLocal] = useState(storeValue);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  useEffect(() => { setLocal(storeValue); }, [storeValue]);
-
-  const onChange = useCallback((v: number) => {
-    setLocal(v);
-    clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setter(v), delay);
-  }, [setter, delay]);
-
-  useEffect(() => () => clearTimeout(timerRef.current), []);
-
-  return [local, onChange] as const;
-}
 
 interface ControlsPanelProps {
   onExport: () => void;
