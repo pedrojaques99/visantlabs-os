@@ -180,8 +180,8 @@ export function useExtrudedGeometry(
       const qualityScale = complexity > 200 ? 0.3 : complexity > 50 ? 0.6 : 1;
       const scaledDepth = (depth / 10) * maxFlatDim;
       const bevelScale = Math.min(maxFlatDim * 0.02, 1);
-      const bevelSegments = Math.round((3 + smoothness * 20) * qualityScale);
-      const curveSegments = Math.round((24 + smoothness * 176) * qualityScale);
+      const bevelSegments = Math.min(Math.round((3 + smoothness * 5) * qualityScale), 12);
+      const curveSegments = Math.min(Math.round((12 + smoothness * 24) * qualityScale), 48);
       const bevelThickness = bevelScale * (0.15 + smoothness * 0.2);
       const bevelSize = bevelScale * (0.15 + smoothness * 0.2);
 
