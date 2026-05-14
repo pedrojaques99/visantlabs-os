@@ -51,9 +51,14 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
 
   if (!hasContent) {
     return (
-      <div className="w-full h-full flex items-center justify-center" style={{ background: s.background }}>
-        <p className="text-neutral-600 text-xs uppercase tracking-widest">
-          Upload SVG / PNG or type text
+      <div className="w-full h-full flex flex-col items-center justify-center gap-3" style={{ background: s.background }}>
+        <div className="w-16 h-16 rounded-2xl border border-dashed border-neutral-700 flex items-center justify-center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-neutral-600">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+          </svg>
+        </div>
+        <p className="text-neutral-600 text-[10px] uppercase tracking-widest">
+          Drop SVG / PNG or use the panel
         </p>
       </div>
     );

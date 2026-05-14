@@ -1,7 +1,9 @@
 import React, { useCallback, useState, useRef } from 'react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { NodeSlider } from '@/components/reactflow/shared/node-slider';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -17,14 +19,16 @@ import {
 } from '@/stores/studio3dStore';
 import {
   Box, Palette, Sun, Play, Download,
-  Upload, FileText, Type, ChevronRight,
+  Upload, FileText, Type, ChevronRight, Diamond,
 } from 'lucide-react';
+import { ShaderControls } from '@/components/shared/ShaderControls';
 
 const TABS = [
   { id: 'geometry' as const, label: 'Shape', icon: Box },
   { id: 'material' as const, label: 'Material', icon: Palette },
   { id: 'scene' as const, label: 'Scene', icon: Sun },
   { id: 'animation' as const, label: 'Animate', icon: Play },
+  { id: 'shader' as const, label: 'Shader', icon: Diamond },
   { id: 'export' as const, label: 'Export', icon: Download },
 ] as const;
 
@@ -62,14 +66,16 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
     if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
       const text = await file.text();
       store.setSvgData(text, file.name);
+      toast.success(`Loaded ${file.name}`);
     } else if (file.type.startsWith('image/')) {
       store.setIsLoading(true);
       try {
         const { pngToSvg } = await import('./PngToSvgConverter');
         const svg = await pngToSvg(file);
         store.setSvgData(svg, file.name);
+        toast.success(`Converted ${file.name} to SVG`);
       } catch {
-        console.error('Failed to trace PNG to SVG');
+        toast.error('Failed to process image');
       } finally {
         store.setIsLoading(false);
       }
@@ -174,7 +180,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                 >
                   <Upload size={20} className={cn('transition-colors', isDragging ? 'text-white' : 'text-neutral-500')} />
                   <span className={cn('text-[10px] uppercase tracking-wider transition-colors text-center', isDragging ? 'text-white' : 'text-neutral-500')}>
-                    {store.isLoading ? 'Processing...' : store.fileName || 'Click or drop SVG / PNG'}
+                    {store.isLoading ? <GlitchLoader size={12} /> : store.fileName || 'Click or drop SVG / PNG'}
                   </span>
                   <input
                     ref={fileInputRef}
@@ -369,6 +375,17 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
               </div>
             </Section>
           </>
+        )}
+
+        {store.activeTab === 'shader' && (
+          <ShaderControls
+            enabled={store.shaderEnabled}
+            shaderType={store.shaderType}
+            values={store.shaderValues}
+            onEnabledChange={store.setShaderEnabled}
+            onTypeChange={store.setShaderType}
+            onValueChange={store.setShaderValue}
+          />
         )}
 
         {store.activeTab === 'export' && (

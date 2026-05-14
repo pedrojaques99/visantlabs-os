@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -78,6 +79,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
               if (file) {
                 const url = URL.createObjectURL(file);
                 store.setImageUrl(url, file.name);
+                toast.success(`Loaded ${file.name}`);
               }
               if (e.target) e.target.value = '';
             }}

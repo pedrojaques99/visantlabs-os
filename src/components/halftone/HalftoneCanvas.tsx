@@ -1,4 +1,7 @@
 import React, { useRef, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
+import { Upload } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { HalftoneRenderer } from './HalftoneRenderer';
 import { useHalftoneStore } from '@/stores/halftoneStore';
 
@@ -10,7 +13,7 @@ export const HalftoneCanvas: React.FC<HalftoneCanvasProps> = ({ onCanvasReady })
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<HalftoneRenderer | null>(null);
   const store = useHalftoneStore();
-  const settings = useHalftoneStore((s) => s.getSettings());
+  const settingsJson = useHalftoneStore((s) => JSON.stringify(s.getSettings()));
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -35,8 +38,8 @@ export const HalftoneCanvas: React.FC<HalftoneCanvasProps> = ({ onCanvasReady })
 
   useEffect(() => {
     if (!rendererRef.current?.isImageLoaded) return;
-    rendererRef.current.render(settings);
-  }, [settings]);
+    rendererRef.current.render(store.getSettings());
+  }, [settingsJson]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -44,6 +47,7 @@ export const HalftoneCanvas: React.FC<HalftoneCanvasProps> = ({ onCanvasReady })
     if (file?.type.startsWith('image/')) {
       const url = URL.createObjectURL(file);
       store.setImageUrl(url, file.name);
+      toast.success(`Loaded ${file.name}`);
     }
   }, [store]);
 
@@ -53,9 +57,12 @@ export const HalftoneCanvas: React.FC<HalftoneCanvasProps> = ({ onCanvasReady })
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
-      {!store.imageUrl ? (
-        <label className="flex flex-col items-center gap-3 cursor-pointer text-neutral-600 hover:text-neutral-400 transition-colors">
-          <span className="text-xs uppercase tracking-widest">Drop an image or click to upload</span>
+      {!store.imageUrl && (
+        <label className="absolute inset-0 flex flex-col items-center justify-center gap-3 cursor-pointer text-neutral-600 hover:text-neutral-300 transition-colors z-10 group">
+          <div className="w-16 h-16 rounded-2xl border border-dashed border-neutral-700 group-hover:border-neutral-500 flex items-center justify-center transition-colors">
+            <Upload size={24} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
+          </div>
+          <span className="text-[10px] uppercase tracking-widest">Drop an image or click to upload</span>
           <input
             type="file"
             accept="image/*"
@@ -65,19 +72,18 @@ export const HalftoneCanvas: React.FC<HalftoneCanvasProps> = ({ onCanvasReady })
               if (file) {
                 const url = URL.createObjectURL(file);
                 store.setImageUrl(url, file.name);
+                toast.success(`Loaded ${file.name}`);
               }
               e.target.value = '';
             }}
           />
         </label>
-      ) : (
-        <canvas
-          ref={canvasRef}
-          className="max-w-full max-h-full object-contain"
-          style={{ imageRendering: 'auto' }}
-        />
       )}
-      {!store.imageUrl && <canvas ref={canvasRef} className="hidden" />}
+      <canvas
+        ref={canvasRef}
+        className={cn('max-w-full max-h-full object-contain', !store.imageUrl && 'hidden')}
+        style={{ imageRendering: 'auto' }}
+      />
     </div>
   );
 };

@@ -1,10 +1,13 @@
 import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { toast } from 'sonner';
 import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { SceneCanvas } from '@/components/3d-studio/SceneCanvas';
 import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 import { useStudio3DStore } from '@/stores/studio3dStore';
@@ -26,6 +29,7 @@ export const Studio3DPage: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   const panelVisible = useStudio3DStore((s) => s.panelVisible);
   const setPanelVisible = useStudio3DStore((s) => s.setPanelVisible);
@@ -46,25 +50,65 @@ export const Studio3DPage: React.FC = () => {
     const store = useStudio3DStore.getState();
     setIsExporting(true);
 
+    const shader = store.shaderEnabled ? store.getShaderSettings() : undefined;
+
     try {
       const canvas = canvasRef.current;
       const name = store.fileName?.replace(/\.[^.]+$/, '') || '3d-export';
 
       switch (store.exportFormat) {
         case 'png':
-          await exportPNG(canvas, store.aspectRatio, store.exportResolution, store.transparentBg, store.background, name);
+          await exportPNG(canvas, store.aspectRatio, store.exportResolution, store.transparentBg, store.background, name, shader);
           break;
         case 'mp4':
         case 'gif':
-          await exportVideo(canvas, store.videoDuration, name);
+          await exportVideo(canvas, store.videoDuration, name, undefined, shader);
           break;
       }
+      toast.success(`${store.exportFormat.toUpperCase()} exported`);
     } catch (err) {
       console.error('Export failed:', err);
+      toast.error('Export failed — try again');
     } finally {
       setIsExporting(false);
     }
   }, [setIsExporting]);
+
+  const handleReset = useCallback(() => {
+    resetScene();
+    setConfirmReset(false);
+    toast.success('Scene reset');
+  }, [resetScene]);
+
+  // Keyboard shortcuts
+  useHotkeys('mod+e', (e) => { e.preventDefault(); handleExport(); }, { enableOnFormTags: false });
+  useHotkeys('r', () => setConfirmReset(true), { enableOnFormTags: false });
+  useHotkeys('mod+\\', () => setPanelVisible(!panelVisible), { enableOnFormTags: false });
+
+  // Drag&drop on entire viewport
+  const handleViewportDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    const store = useStudio3DStore.getState();
+    if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
+      const text = await file.text();
+      store.setSvgData(text, file.name);
+      toast.success(`Loaded ${file.name}`);
+    } else if (file.type.startsWith('image/')) {
+      store.setIsLoading(true);
+      try {
+        const { pngToSvg } = await import('@/components/3d-studio/PngToSvgConverter');
+        const svg = await pngToSvg(file);
+        store.setSvgData(svg, file.name);
+        toast.success(`Converted ${file.name} to SVG`);
+      } catch {
+        toast.error('Failed to process image');
+      } finally {
+        store.setIsLoading(false);
+      }
+    }
+  }, []);
 
   const containerStyle = useMemo(() => ({
     paddingRight: !isMobile && panelVisible ? 236 : 0,
@@ -88,13 +132,13 @@ export const Studio3DPage: React.FC = () => {
         }
         right={
           <>
-            <Tooltip content="Reset scene">
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={resetScene}>
+            <Tooltip content="Reset scene (R)">
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setConfirmReset(true)}>
                 <RotateCcw size={14} />
               </Button>
             </Tooltip>
             {!isMobile && (
-              <Tooltip content={panelVisible ? 'Hide panel' : 'Show panel'}>
+              <Tooltip content={panelVisible ? 'Hide panel (⌘\\)' : 'Show panel (⌘\\)'}>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
                   {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                 </Button>
@@ -104,7 +148,12 @@ export const Studio3DPage: React.FC = () => {
         }
       />
 
-      <div className="absolute inset-0 pt-10 transition-all duration-300" style={containerStyle}>
+      <div
+        className="absolute inset-0 pt-10 transition-all duration-300"
+        style={containerStyle}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleViewportDrop}
+      >
         <SceneCanvas onCanvasReady={handleCanvasReady} />
       </div>
 
@@ -151,6 +200,16 @@ export const Studio3DPage: React.FC = () => {
           )}
         </AppShellStatusBar>
       )}
+
+      <ConfirmationModal
+        isOpen={confirmReset}
+        onClose={() => setConfirmReset(false)}
+        onConfirm={handleReset}
+        title="Reset scene"
+        message="All settings will return to defaults. This cannot be undone."
+        confirmText="Reset"
+        variant="warning"
+      />
     </AppShell>
   );
 };

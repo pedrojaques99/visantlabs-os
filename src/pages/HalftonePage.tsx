@@ -1,10 +1,13 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { toast } from 'sonner';
 import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { HalftoneCanvas } from '@/components/halftone/HalftoneCanvas';
 import { HalftoneControls } from '@/components/halftone/HalftoneControls';
 import { useHalftoneStore } from '@/stores/halftoneStore';
@@ -22,10 +25,18 @@ function useIsMobile() {
 
 export const HalftonePage: React.FC = () => {
   const navigate = useNavigate();
-  const store = useHalftoneStore();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
+
+  const panelVisible = useHalftoneStore((s) => s.panelVisible);
+  const setPanelVisible = useHalftoneStore((s) => s.setPanelVisible);
+  const resetSettings = useHalftoneStore((s) => s.resetSettings);
+  const frequency = useHalftoneStore((s) => s.frequency);
+  const dotSize = useHalftoneStore((s) => s.dotSize);
+  const blendMode = useHalftoneStore((s) => s.blendMode);
+  const fileName = useHalftoneStore((s) => s.fileName);
 
   const handleCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
     canvasRef.current = canvas;
@@ -33,6 +44,7 @@ export const HalftonePage: React.FC = () => {
 
   const handleExport = useCallback(async () => {
     if (!canvasRef.current) return;
+    const store = useHalftoneStore.getState();
     store.setIsExporting(true);
     try {
       const blob = await new Promise<Blob>((resolve) => {
@@ -44,10 +56,24 @@ export const HalftonePage: React.FC = () => {
       a.download = `halftone_${Date.now()}.png`;
       a.click();
       URL.revokeObjectURL(url);
+      toast.success('PNG exported');
+    } catch {
+      toast.error('Export failed — try again');
     } finally {
       store.setIsExporting(false);
     }
-  }, [store]);
+  }, []);
+
+  const handleReset = useCallback(() => {
+    resetSettings();
+    setConfirmReset(false);
+    toast.success('Settings reset');
+  }, [resetSettings]);
+
+  // Keyboard shortcuts
+  useHotkeys('mod+e', (e) => { e.preventDefault(); handleExport(); }, { enableOnFormTags: false });
+  useHotkeys('r', () => setConfirmReset(true), { enableOnFormTags: false });
+  useHotkeys('mod+\\', () => setPanelVisible(!panelVisible), { enableOnFormTags: false });
 
   return (
     <AppShell>
@@ -66,15 +92,15 @@ export const HalftonePage: React.FC = () => {
         }
         right={
           <>
-            <Tooltip content="Reset settings">
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={store.resetSettings}>
+            <Tooltip content="Reset settings (R)">
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setConfirmReset(true)}>
                 <RotateCcw size={14} />
               </Button>
             </Tooltip>
             {!isMobile && (
-              <Tooltip content={store.panelVisible ? 'Hide panel' : 'Show panel'}>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => store.setPanelVisible(!store.panelVisible)}>
-                  {store.panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+              <Tooltip content={panelVisible ? 'Hide panel (⌘\\)' : 'Show panel (⌘\\)'}>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
+                  {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                 </Button>
               </Tooltip>
             )}
@@ -85,7 +111,7 @@ export const HalftonePage: React.FC = () => {
       <div
         className="absolute inset-0 pt-10 transition-all duration-300"
         style={{
-          paddingRight: !isMobile && store.panelVisible ? 236 : 0,
+          paddingRight: !isMobile && panelVisible ? 236 : 0,
           paddingBottom: isMobile ? (mobileSheetOpen ? '55%' : 52) : 40,
         }}
       >
@@ -93,7 +119,7 @@ export const HalftonePage: React.FC = () => {
       </div>
 
       {!isMobile && (
-        <AppShellPanel side="right" visible={store.panelVisible} width={220}>
+        <AppShellPanel side="right" visible={panelVisible} width={220}>
           <HalftoneControls onExport={handleExport} />
         </AppShellPanel>
       )}
@@ -120,19 +146,29 @@ export const HalftonePage: React.FC = () => {
 
       {!isMobile && (
         <AppShellStatusBar>
-          <span>freq {store.frequency}</span>
+          <span>freq {frequency}</span>
           <span>•</span>
-          <span>dot {store.dotSize.toFixed(2)}</span>
+          <span>dot {dotSize.toFixed(2)}</span>
           <span>•</span>
-          <span>{['subtractive', 'additive', 'normal'][store.blendMode]}</span>
-          {store.fileName && (
+          <span>{['subtractive', 'additive', 'normal'][blendMode]}</span>
+          {fileName && (
             <>
               <span>•</span>
-              <span className="max-w-[120px] truncate">{store.fileName}</span>
+              <span className="max-w-[120px] truncate">{fileName}</span>
             </>
           )}
         </AppShellStatusBar>
       )}
+
+      <ConfirmationModal
+        isOpen={confirmReset}
+        onClose={() => setConfirmReset(false)}
+        onConfirm={handleReset}
+        title="Reset settings"
+        message="All halftone settings will return to defaults. This cannot be undone."
+        confirmText="Reset"
+        variant="warning"
+      />
     </AppShell>
   );
 };
