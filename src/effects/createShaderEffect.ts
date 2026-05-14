@@ -97,6 +97,10 @@ function adaptFragmentShader(originalSource: string): string {
 
   src = src.replace(/precision\s+(lowp|mediump|highp)\s+float\s*;/g, '');
   src = src.replace(/varying\s+vec2\s+v_texCoord\s*;/g, '');
+  // Three.js <common> chunk already defines PI — strip redefinitions to avoid macro collision
+  src = src.replace(/^\s*#define\s+PI\s+[\d.]+\s*$/gm, '');
+  src = src.replace(/^\s*#ifndef\s+PI[\s\S]*?#endif\s*$/gm, '');
+  src = src.replace(/^\s*const\s+float\s+PI\s*=\s*[\d.]+\s*;\s*$/gm, '');
 
   src = src.replace(/\biChannel0\b/g, 'inputBuffer');
   src = src.replace(/\biTime\b/g, 'u_time');
@@ -137,8 +141,7 @@ function adaptFragmentShader(originalSource: string): string {
     .replace(/uniform\s+sampler2D\s+inputBuffer\s*;/g, '')
     .trim();
 
-  // Replace v_texCoord with _vuv to avoid shadowing the mainImage `uv` param
-  mainBody = mainBody.replace(/v_texCoord/g, '_vuv');
+  mainBody = mainBody.replace(/v_texCoord/g, 'vUv');
 
   mainBody = mainBody.replace(
     /gl_FragColor\s*=\s*([^;]+);/g,
@@ -155,8 +158,7 @@ ${uniformDecls.join('\n')}
 
 ${beforeMain}
 
-void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
-  vec2 _vuv = uv;
+void mainImage(const in vec4 inputColor, const in vec2 vUv, out vec4 outputColor) {
   ${mainBody}
 }
 `;

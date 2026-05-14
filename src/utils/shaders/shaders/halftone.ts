@@ -7,7 +7,9 @@ import { registerShader, type ShaderDefinition, type HalftoneVariant } from '../
 
 // Helper functions for cosine-based halftone
 const HELPER_FUNCTIONS = `
-const float PI = 3.1415926535897932384626433832795;
+#ifndef PI
+#define PI 3.14159265
+#endif
 const float PI180 = float(PI / 180.0);
 
 float sind(float a) {
