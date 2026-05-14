@@ -12,17 +12,7 @@ import { HalftoneCanvas } from '@/components/halftone/HalftoneCanvas';
 import { HalftoneControls } from '@/components/halftone/HalftoneControls';
 import { useHalftoneStore } from '@/stores/halftoneStore';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-  return isMobile;
-}
+import { useIsMobile } from '@/hooks/use-media-query';
 
 export const HalftonePage: React.FC = () => {
   const navigate = useNavigate();
@@ -30,6 +20,9 @@ export const HalftonePage: React.FC = () => {
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  useEffect(() => { document.title = 'CMYK Halftone — Visant'; }, []);
 
   const panelVisible = useHalftoneStore((s) => s.panelVisible);
   const setPanelVisible = useHalftoneStore((s) => s.setPanelVisible);
@@ -82,6 +75,27 @@ export const HalftonePage: React.FC = () => {
   useHotkeys('r', () => setConfirmReset(true), { enableOnFormTags: false });
   useHotkeys('mod+\\', () => setPanelVisible(!panelVisible), { enableOnFormTags: false });
 
+  // Drag & drop image upload
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const url = URL.createObjectURL(file);
+    useHalftoneStore.getState().setImageUrl(url, file.name);
+    toast.success(`Loaded ${file.name}`);
+  }, []);
+
   return (
     <AppShell>
       <AppShellTopBar
@@ -121,12 +135,21 @@ export const HalftonePage: React.FC = () => {
           paddingRight: !isMobile && panelVisible ? 236 : 0,
           paddingBottom: isMobile ? (mobileSheetOpen ? '55%' : 52) : 40,
         }}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         <HalftoneCanvas onCanvasReady={handleCanvasReady} />
+
+        {isDragOver && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm border-2 border-dashed border-cyan-500/50 rounded-lg">
+            <span className="text-sm text-cyan-400 font-mono uppercase tracking-widest">Drop image here</span>
+          </div>
+        )}
       </div>
 
       {!isMobile && (
-        <AppShellPanel side="right" visible={panelVisible} width={220}>
+        <AppShellPanel side="right" visible={panelVisible} width={300}>
           <HalftoneControls onExport={handleExport} />
         </AppShellPanel>
       )}

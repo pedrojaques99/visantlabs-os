@@ -1,7 +1,9 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { SVG3D } from '3dsvg';
 import { useStudio3DStore } from '@/stores/studio3dStore';
 import { useShallow } from 'zustand/react/shallow';
+import { ShaderPostProcess } from '@/effects/ShaderPostProcess';
+import { CameraBridge } from './CameraBridge';
 
 interface SceneCanvasProps {
   onCanvasReady: (canvas: HTMLCanvasElement) => void;
@@ -25,7 +27,6 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   rotationX: s.rotationX,
   rotationY: s.rotationY,
   zoom: s.zoom,
-  interactive: s.interactive,
   lightPosition: s.lightPosition,
   lightIntensity: s.lightIntensity,
   ambientIntensity: s.ambientIntensity,
@@ -36,10 +37,21 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   transparentBg: s.transparentBg,
   background: s.background,
   resetKey: s.resetKey,
+  shaderEnabled: s.shaderEnabled,
+  shaderType: s.shaderType,
+  shaderValues: s.shaderValues,
+  getShaderSettings: s.getShaderSettings,
 });
 
 export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasReady }) => {
   const s = useStudio3DStore(useShallow(sceneSelector));
+
+  const shaderSettings = useMemo(() => {
+    if (!s.shaderEnabled) return null;
+    return s.getShaderSettings();
+  }, [s.shaderEnabled, s.shaderType, s.shaderValues, s.getShaderSettings]);
+
+  const halftoneVariant = s.shaderValues.halftoneVariant ?? 'ellipse';
 
   const handleRegisterCanvas = useCallback((canvas: HTMLCanvasElement) => {
     onCanvasReady(canvas);
@@ -73,7 +85,7 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
       depth={s.depth}
       smoothness={s.smoothness}
       color={s.color}
-      material={s.material}
+      material={s.material as any}
       metalness={s.metalness}
       roughness={s.roughness}
       opacity={s.opacity}
@@ -84,10 +96,10 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
       rotationX={s.rotationX}
       rotationY={s.rotationY}
       zoom={s.zoom}
-      interactive
-      cursorOrbit={s.interactive}
-      draggable
-      scrollZoom
+      interactive={false}
+      cursorOrbit={false}
+      draggable={false}
+      scrollZoom={false}
       lightPosition={s.lightPosition}
       lightIntensity={s.lightIntensity}
       ambientIntensity={s.ambientIntensity}
@@ -101,6 +113,15 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
       width="100%"
       height="100%"
       registerCanvas={handleRegisterCanvas}
-    />
+    >
+      <CameraBridge />
+      {shaderSettings && (
+        <ShaderPostProcess
+          shaderType={s.shaderType}
+          settings={shaderSettings}
+          halftoneVariant={halftoneVariant}
+        />
+      )}
+    </SVG3D>
   );
 });

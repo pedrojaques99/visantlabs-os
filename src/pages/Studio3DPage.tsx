@@ -12,17 +12,8 @@ import { SceneCanvas } from '@/components/3d-studio/SceneCanvas';
 import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 import { useStudio3DStore } from '@/stores/studio3dStore';
 import { exportPNG, exportVideo } from '@/components/3d-studio/ExportManager';
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-  return isMobile;
-}
+import { useIsMobile } from '@/hooks/use-media-query';
+import { setCameraView, resetCamera, dollyCamera, rotateCamera, DEG15 } from '@/components/3d-studio/CameraBridge';
 
 export const Studio3DPage: React.FC = () => {
   const navigate = useNavigate();
@@ -30,6 +21,8 @@ export const Studio3DPage: React.FC = () => {
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+
+  useEffect(() => { document.title = '3D Studio — Visant'; }, []);
 
   const panelVisible = useStudio3DStore((s) => s.panelVisible);
   const setPanelVisible = useStudio3DStore((s) => s.setPanelVisible);
@@ -42,6 +35,7 @@ export const Studio3DPage: React.FC = () => {
   const fileName = useStudio3DStore((s) => s.fileName);
   const shaderEnabled = useStudio3DStore((s) => s.shaderEnabled);
   const shaderType = useStudio3DStore((s) => s.shaderType);
+  const cameraInfo = useStudio3DStore((s) => s._cameraInfo);
 
   const handleCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
     canvasRef.current = canvas;
@@ -86,6 +80,20 @@ export const Studio3DPage: React.FC = () => {
   useHotkeys('mod+e', (e) => { e.preventDefault(); handleExport(); }, { enableOnFormTags: false });
   useHotkeys('r', () => setConfirmReset(true), { enableOnFormTags: false });
   useHotkeys('mod+\\', () => setPanelVisible(!panelVisible), { enableOnFormTags: false });
+
+  // Camera shortcuts
+  useHotkeys('1', () => setCameraView('front'), { enableOnFormTags: false });
+  useHotkeys('3', () => setCameraView('right'), { enableOnFormTags: false });
+  useHotkeys('7', () => setCameraView('top'), { enableOnFormTags: false });
+  useHotkeys('9', () => setCameraView('back'), { enableOnFormTags: false });
+  useHotkeys('5', () => setCameraView('iso'), { enableOnFormTags: false });
+  useHotkeys('home', () => resetCamera(), { enableOnFormTags: false });
+  useHotkeys('equal', () => dollyCamera(2), { enableOnFormTags: false });
+  useHotkeys('minus', () => dollyCamera(-2), { enableOnFormTags: false });
+  useHotkeys('left', () => rotateCamera(-DEG15, 0), { enableOnFormTags: false });
+  useHotkeys('right', () => rotateCamera(DEG15, 0), { enableOnFormTags: false });
+  useHotkeys('up', () => rotateCamera(0, -DEG15), { enableOnFormTags: false });
+  useHotkeys('down', () => rotateCamera(0, DEG15), { enableOnFormTags: false });
 
   // Drag&drop on entire viewport
   const handleViewportDrop = useCallback(async (e: React.DragEvent) => {
@@ -160,7 +168,7 @@ export const Studio3DPage: React.FC = () => {
       </div>
 
       {!isMobile && (
-        <AppShellPanel side="right" visible={panelVisible} width={220}>
+        <AppShellPanel side="right" visible={panelVisible} width={300}>
           <ControlsPanel onExport={handleExport} />
         </AppShellPanel>
       )}
@@ -198,6 +206,14 @@ export const Studio3DPage: React.FC = () => {
             <>
               <span>•</span>
               <span className="text-cyan-400">{shaderType}</span>
+            </>
+          )}
+          {cameraInfo && (
+            <>
+              <span>•</span>
+              {cameraInfo.view && <span className="text-cyan-400">{cameraInfo.view}</span>}
+              <span>{cameraInfo.polar}° / {cameraInfo.azimuth}°</span>
+              <span>d:{cameraInfo.distance}</span>
             </>
           )}
           {fileName && (

@@ -7,7 +7,7 @@ export interface AppShellProps {
 }
 
 export const AppShell: React.FC<AppShellProps> = ({ children, className }) => (
-  <div className={cn('fixed inset-0 bg-neutral-950 overflow-hidden select-none', className)} style={{ zIndex: 9999 }}>
+  <div className={cn('fixed inset-0 top-10 md:top-14 bg-neutral-950 overflow-hidden select-none', className)} style={{ zIndex: 40 }}>
     {children}
   </div>
 );
@@ -26,11 +26,11 @@ export const AppShellPanel: React.FC<{
   visible?: boolean;
   width?: number;
   className?: string;
-}> = ({ children, side = 'right', visible = true, width = 220, className }) => (
+}> = ({ children, side = 'right', visible = true, width = 300, className }) => (
   <div className={cn(
     'absolute top-12 bottom-12 z-10 transition-all duration-300',
     side === 'right' ? 'right-3' : 'left-3',
-    visible ? 'translate-x-0 opacity-100' : side === 'right' ? 'translate-x-[240px] opacity-0 pointer-events-none' : '-translate-x-[240px] opacity-0 pointer-events-none',
+    visible ? 'translate-x-0 opacity-100' : side === 'right' ? 'translate-x-[320px] opacity-0 pointer-events-none' : '-translate-x-[320px] opacity-0 pointer-events-none',
     className,
   )} style={{ width }}>
     {children}

@@ -22,6 +22,7 @@ import {
   Upload, FileText, Type, ChevronRight, Diamond,
 } from 'lucide-react';
 import { ShaderControls } from '@/components/shared/ShaderControls';
+import { setCameraView, resetCamera } from './CameraBridge';
 
 const TABS = [
   { id: 'geometry' as const, label: 'Shape', icon: Box },
@@ -240,22 +241,41 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         {store.activeTab === 'material' && (
           <>
             <Section title="PRESET">
-              <div className="grid grid-cols-2 gap-1.5">
-                {MATERIAL_PRESETS.map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => store.setMaterial(m.id)}
-                    className={cn(
-                      'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
-                      store.material === m.id
-                        ? 'bg-white/10 text-white'
-                        : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-                    )}
-                  >
-                    {m.label}
-                  </button>
-                ))}
-              </div>
+              {(['basic', 'metals', 'surfaces', 'glass', 'special'] as const).map((cat) => {
+                const items = MATERIAL_PRESETS.filter((m) => m.category === cat);
+                if (items.length === 0) return null;
+                const catLabels = { basic: 'Basic', metals: 'Metals', surfaces: 'Surfaces', glass: 'Glass & Gem', special: 'Special' };
+                return (
+                  <div key={cat} className="mb-2">
+                    <p className="text-[9px] uppercase tracking-widest text-neutral-500 mb-1">{catLabels[cat]}</p>
+                    <div className="grid grid-cols-2 gap-1">
+                      {items.map((m) => (
+                        <button
+                          key={m.id}
+                          onClick={() => {
+                            store.setMaterial(m.id as any);
+                            if (m.color) store.setColor(m.color);
+                          }}
+                          className={cn(
+                            'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-left flex items-center gap-1.5',
+                            store.material === m.id
+                              ? 'bg-white/10 text-white'
+                              : 'bg-white/5 text-neutral-400 hover:bg-white/10'
+                          )}
+                        >
+                          {m.color && (
+                            <span
+                              className="w-2.5 h-2.5 rounded-full flex-shrink-0 border border-white/10"
+                              style={{ backgroundColor: m.color }}
+                            />
+                          )}
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </Section>
 
             <Section title="COLOR">
@@ -324,10 +344,28 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
               </div>
             </Section>
 
-            <Section title="INTERACTION">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Cursor Orbit</span>
-                <Switch checked={store.interactive} onCheckedChange={store.setInteractive} />
+            <Section title="CAMERA">
+              <div className="grid grid-cols-3 gap-1.5">
+                {(['front', 'top', 'right', 'back', 'iso'] as const).map((view) => (
+                  <button
+                    key={view}
+                    onClick={() => setCameraView(view)}
+                    className={cn(
+                      'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
+                      store._cameraInfo?.view === view
+                        ? 'bg-white/10 text-white'
+                        : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200'
+                    )}
+                  >
+                    {view}
+                  </button>
+                ))}
+                <button
+                  onClick={() => resetCamera()}
+                  className="px-2.5 py-2 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors text-center"
+                >
+                  Reset
+                </button>
               </div>
             </Section>
 

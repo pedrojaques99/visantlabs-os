@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import type { MaterialPreset } from '3dsvg';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
+
+type MaterialPreset = 'default' | 'plastic' | 'metal' | 'glass' | 'rubber' | 'chrome' | 'gold' | 'clay' | 'emissive' | 'holographic' | 'brushedSteel' | 'aluminum' | 'copper' | 'roseGold' | 'platinum' | 'ceramic' | 'marble' | 'concrete' | 'wood' | 'velvet' | 'leather' | 'frostedGlass' | 'diamond' | 'pearl' | 'carbonFiber' | 'carPaint' | 'ice' | 'obsidian' | 'wax' | 'mattePaint';
 
 type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'spinFloat' | 'swing';
 type ExportFormat = 'png' | 'mp4' | 'gif';
@@ -114,17 +115,49 @@ export const ENVIRONMENT_PRESETS = [
   { id: 'lobby', label: 'Lobby' },
 ] as const;
 
-export const MATERIAL_PRESETS: { id: MaterialPreset; label: string }[] = [
-  { id: 'default', label: 'Default' },
-  { id: 'plastic', label: 'Plastic' },
-  { id: 'metal', label: 'Metal' },
-  { id: 'glass', label: 'Glass' },
-  { id: 'rubber', label: 'Rubber' },
-  { id: 'chrome', label: 'Chrome' },
-  { id: 'gold', label: 'Gold' },
-  { id: 'clay', label: 'Clay' },
-  { id: 'emissive', label: 'Emissive' },
-  { id: 'holographic', label: 'Holographic' },
+export interface MaterialPresetDef {
+  id: MaterialPreset;
+  label: string;
+  category: 'basic' | 'metals' | 'surfaces' | 'glass' | 'special';
+  color?: string;
+}
+
+export const MATERIAL_PRESETS: MaterialPresetDef[] = [
+  // Basic
+  { id: 'default', label: 'Default', category: 'basic' },
+  { id: 'plastic', label: 'Plastic', category: 'basic' },
+  { id: 'rubber', label: 'Rubber', category: 'basic' },
+  { id: 'clay', label: 'Clay', category: 'basic', color: '#e8ddd3' },
+  { id: 'mattePaint', label: 'Matte Paint', category: 'basic' },
+  { id: 'emissive', label: 'Emissive', category: 'basic' },
+  // Metals
+  { id: 'metal', label: 'Metal', category: 'metals' },
+  { id: 'chrome', label: 'Chrome', category: 'metals', color: '#cccccc' },
+  { id: 'brushedSteel', label: 'Brushed Steel', category: 'metals', color: '#c0c0c0' },
+  { id: 'aluminum', label: 'Aluminum', category: 'metals', color: '#e8eaea' },
+  { id: 'gold', label: 'Gold', category: 'metals', color: '#ffd891' },
+  { id: 'roseGold', label: 'Rose Gold', category: 'metals', color: '#e8a090' },
+  { id: 'copper', label: 'Copper', category: 'metals', color: '#f7bc9e' },
+  { id: 'platinum', label: 'Platinum', category: 'metals', color: '#d3cec6' },
+  // Surfaces
+  { id: 'ceramic', label: 'Ceramic', category: 'surfaces', color: '#f5f5f0' },
+  { id: 'marble', label: 'Marble', category: 'surfaces', color: '#e8e0d8' },
+  { id: 'concrete', label: 'Concrete', category: 'surfaces', color: '#888888' },
+  { id: 'wood', label: 'Wood', category: 'surfaces', color: '#8b6a4a' },
+  { id: 'leather', label: 'Leather', category: 'surfaces', color: '#6b4226' },
+  { id: 'velvet', label: 'Velvet', category: 'surfaces', color: '#442244' },
+  { id: 'carbonFiber', label: 'Carbon Fiber', category: 'surfaces', color: '#222222' },
+  { id: 'carPaint', label: 'Car Paint', category: 'surfaces' },
+  // Glass & Gem
+  { id: 'glass', label: 'Glass', category: 'glass' },
+  { id: 'frostedGlass', label: 'Frosted Glass', category: 'glass' },
+  { id: 'diamond', label: 'Diamond', category: 'glass', color: '#ffffff' },
+  { id: 'ice', label: 'Ice', category: 'glass', color: '#d8eeff' },
+  // Special
+  { id: 'pearl', label: 'Pearl', category: 'special', color: '#fef0e0' },
+  { id: 'obsidian', label: 'Obsidian', category: 'special', color: '#1a1a1a' },
+  { id: 'wax', label: 'Wax', category: 'special', color: '#f5e6c8' },
+  { id: 'holographic', label: 'Holographic', category: 'special' },
 ];
 
 export const ANIMATION_PRESETS: { id: AnimationType; label: string }[] = [
@@ -195,11 +228,12 @@ interface Studio3DState {
   animateSpeed: number;
   animateReverse: boolean;
 
-  // Camera
+  // Camera (rotationX/Y/zoom are initial orientation for SVG3D; CameraControls owns live camera)
   rotationX: number;
   rotationY: number;
   zoom: number;
-  interactive: boolean;
+  _cameraControlsRef: { current: any } | null;
+  _cameraInfo: { polar: number; azimuth: number; distance: number; view: string | null } | null;
 
   // Export
   exportFormat: ExportFormat;
@@ -240,7 +274,6 @@ interface Studio3DState {
   setAnimate: (a: AnimationType) => void;
   setAnimateSpeed: (v: number) => void;
   setAnimateReverse: (v: boolean) => void;
-  setInteractive: (v: boolean) => void;
   setRotationX: (v: number) => void;
   setRotationY: (v: number) => void;
   setZoom: (v: number) => void;
@@ -286,7 +319,8 @@ const INITIAL_STATE = {
   rotationX: 0,
   rotationY: 0,
   zoom: 8,
-  interactive: false,
+  _cameraControlsRef: null as { current: any } | null,
+  _cameraInfo: null as { polar: number; azimuth: number; distance: number; view: string | null } | null,
   exportFormat: 'png' as ExportFormat,
   aspectRatio: '1:1' as AspectRatio,
   exportResolution: '2k' as const,
@@ -327,7 +361,6 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
   setAnimate: (animate) => set({ animate }),
   setAnimateSpeed: (animateSpeed) => set({ animateSpeed }),
   setAnimateReverse: (animateReverse) => set({ animateReverse }),
-  setInteractive: (interactive) => set({ interactive }),
   setRotationX: (rotationX) => set({ rotationX }),
   setRotationY: (rotationY) => set({ rotationY }),
   setZoom: (zoom) => set({ zoom }),
@@ -358,5 +391,8 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
     });
   },
 
-  resetScene: () => set({ ...INITIAL_STATE, resetKey: Date.now() }),
+  resetScene: () => {
+    const { _cameraControlsRef } = get();
+    set({ ...INITIAL_STATE, _cameraControlsRef, resetKey: Date.now() });
+  },
 }));

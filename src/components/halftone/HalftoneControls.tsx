@@ -88,13 +88,13 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
           />
         </label>
       )}
-      <div className="flex border-b border-white/[0.06] shrink-0">
+      <div className="flex overflow-x-auto border-b border-white/[0.06] shrink-0 gap-1 px-2">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => store.setActiveTab(tab.id)}
             className={cn(
-              'flex-1 flex flex-col items-center gap-0.5 py-2 px-1 text-[9px] uppercase tracking-wider transition-colors',
+              'shrink-0 flex flex-col items-center gap-0.5 py-2 px-3 text-[9px] uppercase tracking-wider transition-colors',
               store.activeTab === tab.id
                 ? 'text-white border-b border-white/40'
                 : 'text-neutral-500 hover:text-neutral-300'

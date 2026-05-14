@@ -12,17 +12,7 @@ import { GridCanvas, type GridCanvasHandle } from '@/components/grid-machine/Gri
 import { GridMachineControls } from '@/components/grid-machine/ControlsPanel';
 import { useGridMachineStore } from '@/stores/gridMachineStore';
 import { analyzeSvg } from '@/components/grid-machine/SvgAnalyzer';
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-  return isMobile;
-}
+import { useIsMobile } from '@/hooks/use-media-query';
 
 export const GridMachinePage: React.FC = () => {
   const navigate = useNavigate();
