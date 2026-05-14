@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
@@ -23,6 +23,11 @@ import {
 } from 'lucide-react';
 import { ShaderControls } from '@/components/shared/ShaderControls';
 import { setCameraView, resetCamera } from './CameraBridge';
+
+const MATERIAL_CATEGORIES = ['basic', 'metals', 'surfaces', 'glass', 'special'] as const;
+const MATERIAL_CAT_LABELS: Record<string, string> = {
+  basic: 'Basic', metals: 'Metals', surfaces: 'Surfaces', glass: 'Glass & Gem', special: 'Special',
+};
 
 const TABS = [
   { id: 'geometry' as const, label: 'Shape', icon: Box },
@@ -139,7 +144,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-5 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto p-3 space-y-4 scrollbar-thin">
         {store.activeTab === 'geometry' && (
           <>
             {/* Input Mode */}
@@ -239,78 +244,12 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         )}
 
         {store.activeTab === 'material' && (
-          <>
-            <Section title="PRESET">
-              {(['basic', 'metals', 'surfaces', 'glass', 'special'] as const).map((cat) => {
-                const items = MATERIAL_PRESETS.filter((m) => m.category === cat);
-                if (items.length === 0) return null;
-                const catLabels = { basic: 'Basic', metals: 'Metals', surfaces: 'Surfaces', glass: 'Glass & Gem', special: 'Special' };
-                return (
-                  <div key={cat} className="mb-2">
-                    <p className="text-[9px] uppercase tracking-widest text-neutral-500 mb-1">{catLabels[cat]}</p>
-                    <div className="grid grid-cols-2 gap-1">
-                      {items.map((m) => (
-                        <button
-                          key={m.id}
-                          onClick={() => {
-                            store.setMaterial(m.id);
-                          }}
-                          className={cn(
-                            'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-left flex items-center gap-1.5',
-                            store.material === m.id
-                              ? 'bg-white/10 text-white'
-                              : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-                          )}
-                        >
-                          {m.color && (
-                            <span
-                              className="w-2.5 h-2.5 rounded-full flex-shrink-0 border border-white/10"
-                              style={{ backgroundColor: m.color }}
-                            />
-                          )}
-                          {m.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </Section>
-
-            <Section title="COLOR">
-              <div className="flex gap-1 flex-wrap mb-2">
-                {COLOR_SWATCHES.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => store.setColor(c)}
-                    className={cn(
-                      'w-5 h-5 rounded-full border-2 transition-transform hover:scale-110',
-                      store.color === c ? 'border-white scale-110' : 'border-transparent'
-                    )}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
-              <input
-                type="color"
-                value={store.color}
-                onChange={(e) => store.setColor(e.target.value)}
-                className="w-full h-6 rounded cursor-pointer bg-transparent"
-              />
-            </Section>
-
-            <Section title="PROPERTIES">
-              <NodeSlider label="Metalness" value={metalness} min={0} max={1} step={0.01} onChange={setMetalness} />
-              <NodeSlider label="Roughness" value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} />
-              <Disclosure label="Advanced">
-                <NodeSlider label="Opacity" value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} />
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Wireframe</span>
-                  <Switch checked={store.wireframe} onCheckedChange={store.setWireframe} />
-                </div>
-              </Disclosure>
-            </Section>
-          </>
+          <MaterialTab
+            store={store}
+            metalness={metalness} setMetalness={setMetalness}
+            roughness={roughness} setRoughness={setRoughness}
+            opacity={opacity} setOpacity={setOpacity}
+          />
         )}
 
         {store.activeTab === 'scene' && (
@@ -519,8 +458,8 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
   </div>
 );
 
-const Disclosure: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => {
-  const [open, setOpen] = useState(false);
+const Disclosure: React.FC<{ label: string; children: React.ReactNode; defaultOpen?: boolean }> = ({ label, children, defaultOpen = false }) => {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div>
       <button
@@ -534,3 +473,133 @@ const Disclosure: React.FC<{ label: string; children: React.ReactNode }> = ({ la
     </div>
   );
 };
+
+/* ── Material Tab ─────────────────────────────────────────── */
+
+type StoreState = ReturnType<typeof useStudio3DStore.getState>;
+
+interface MaterialTabProps {
+  store: StoreState;
+  metalness: number; setMetalness: (v: number) => void;
+  roughness: number; setRoughness: (v: number) => void;
+  opacity: number; setOpacity: (v: number) => void;
+}
+
+const MaterialTab: React.FC<MaterialTabProps> = React.memo(({
+  store, metalness, setMetalness, roughness, setRoughness, opacity, setOpacity,
+}) => {
+  const activeCat = useMemo(
+    () => MATERIAL_PRESETS.find((m) => m.id === store.material)?.category ?? 'basic',
+    [store.material],
+  );
+
+  return (
+    <>
+      {/* Category chips + preset grid */}
+      <Section title="MATERIAL">
+        <MaterialCategoryTabs activeCat={activeCat} store={store} />
+      </Section>
+
+      {/* Color — inline swatches + picker */}
+      <Section title="COLOR">
+        <div className="flex items-center gap-1.5">
+          <div className="flex gap-1 flex-wrap flex-1">
+            {COLOR_SWATCHES.map((c) => (
+              <button
+                key={c}
+                onClick={() => store.setColor(c)}
+                className={cn(
+                  'w-4.5 h-4.5 rounded-full border transition-transform hover:scale-110',
+                  store.color === c ? 'border-white scale-110 ring-1 ring-white/30' : 'border-white/10'
+                )}
+                style={{ backgroundColor: c }}
+              />
+            ))}
+          </div>
+          <label className="relative w-6 h-6 rounded overflow-hidden cursor-pointer flex-shrink-0 border border-white/10">
+            <span className="absolute inset-0 rounded" style={{ backgroundColor: store.color }} />
+            <input
+              type="color"
+              value={store.color}
+              onChange={(e) => store.setColor(e.target.value)}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
+          </label>
+        </div>
+      </Section>
+
+      {/* Properties — flat, no disclosure */}
+      <Section title="PROPERTIES">
+        <NodeSlider label="Metalness" value={metalness} min={0} max={1} step={0.01} onChange={setMetalness} />
+        <NodeSlider label="Roughness" value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} />
+        <NodeSlider label="Opacity" value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} />
+        <div className="flex items-center justify-between pt-0.5">
+          <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Wireframe</span>
+          <Switch checked={store.wireframe} onCheckedChange={store.setWireframe} />
+        </div>
+      </Section>
+    </>
+  );
+});
+
+const MaterialCategoryTabs: React.FC<{
+  activeCat: string;
+  store: StoreState;
+}> = React.memo(({ activeCat, store }) => {
+  const [openCat, setOpenCat] = useState(activeCat);
+
+  const handleCat = useCallback((cat: string) => {
+    setOpenCat((prev) => (prev === cat ? '' : cat));
+  }, []);
+
+  return (
+    <div className="space-y-1.5">
+      {/* Category pills */}
+      <div className="flex gap-1 flex-wrap">
+        {MATERIAL_CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => handleCat(cat)}
+            className={cn(
+              'px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest transition-colors',
+              openCat === cat
+                ? 'bg-white/12 text-white'
+                : 'bg-white/5 text-neutral-500 hover:text-neutral-300'
+            )}
+          >
+            {MATERIAL_CAT_LABELS[cat]}
+          </button>
+        ))}
+      </div>
+
+      {/* Active category grid */}
+      {openCat && (
+        <div className="grid grid-cols-3 gap-1">
+          {MATERIAL_PRESETS.filter((m) => m.category === openCat).map((m) => (
+            <button
+              key={m.id}
+              onClick={() => store.setMaterial(m.id)}
+              className={cn(
+                'flex flex-col items-center gap-1 py-1.5 px-1 rounded transition-colors',
+                store.material === m.id
+                  ? 'bg-white/10 text-white'
+                  : 'bg-white/[0.03] text-neutral-500 hover:bg-white/[0.07] hover:text-neutral-300'
+              )}
+            >
+              <span
+                className={cn(
+                  'w-5 h-5 rounded-full border flex-shrink-0',
+                  store.material === m.id ? 'border-white/40' : 'border-white/10'
+                )}
+                style={{ backgroundColor: m.color || '#666' }}
+              />
+              <span className="text-[8px] uppercase tracking-wider leading-tight text-center truncate w-full">
+                {m.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});

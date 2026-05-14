@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
@@ -14,6 +14,7 @@ import { useStudio3DStore } from '@/stores/studio3dStore';
 import { exportPNG, exportVideo } from '@/components/3d-studio/ExportManager';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { setCameraView, resetCamera, dollyCamera, rotateCamera, DEG15 } from '@/components/3d-studio/CameraBridge';
+import { ViewGizmo } from '@/components/3d-studio/ViewGizmo';
 
 export const Studio3DPage: React.FC = () => {
   const navigate = useNavigate();
@@ -120,10 +121,6 @@ export const Studio3DPage: React.FC = () => {
     }
   }, []);
 
-  const containerStyle = useMemo(() => ({
-    paddingRight: !isMobile && panelVisible ? 236 : 0,
-    paddingBottom: isMobile ? (mobileSheetOpen ? '55%' : 52) : 40,
-  }), [isMobile, panelVisible, mobileSheetOpen]);
 
   return (
     <AppShell>
@@ -159,12 +156,16 @@ export const Studio3DPage: React.FC = () => {
       />
 
       <div
-        className="absolute inset-0 pt-10 transition-all duration-300"
-        style={containerStyle}
+        className="absolute top-10 left-0 bottom-0 transition-all duration-300"
+        style={{
+          right: !isMobile && panelVisible ? 316 : 0,
+          paddingBottom: isMobile ? (mobileSheetOpen ? '55%' : 52) : 40,
+        }}
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleViewportDrop}
       >
         <SceneCanvas onCanvasReady={handleCanvasReady} />
+        {!isMobile && <ViewGizmo />}
       </div>
 
       {!isMobile && (

@@ -126,38 +126,28 @@ export const MATERIAL_PRESETS: MaterialPresetDef[] = [
   // Basic
   { id: 'default', label: 'Default', category: 'basic' },
   { id: 'plastic', label: 'Plastic', category: 'basic' },
-  { id: 'rubber', label: 'Rubber', category: 'basic' },
   { id: 'clay', label: 'Clay', category: 'basic', color: '#e8ddd3' },
-  { id: 'mattePaint', label: 'Matte Paint', category: 'basic' },
   { id: 'emissive', label: 'Emissive', category: 'basic' },
   // Metals
-  { id: 'metal', label: 'Metal', category: 'metals' },
   { id: 'chrome', label: 'Chrome', category: 'metals', color: '#cccccc' },
   { id: 'brushedSteel', label: 'Brushed Steel', category: 'metals', color: '#c0c0c0' },
-  { id: 'aluminum', label: 'Aluminum', category: 'metals', color: '#e8eaea' },
   { id: 'gold', label: 'Gold', category: 'metals', color: '#ffd891' },
   { id: 'roseGold', label: 'Rose Gold', category: 'metals', color: '#e8a090' },
   { id: 'copper', label: 'Copper', category: 'metals', color: '#f7bc9e' },
-  { id: 'platinum', label: 'Platinum', category: 'metals', color: '#d3cec6' },
   // Surfaces
-  { id: 'ceramic', label: 'Ceramic', category: 'surfaces', color: '#f5f5f0' },
   { id: 'marble', label: 'Marble', category: 'surfaces', color: '#e8e0d8' },
-  { id: 'concrete', label: 'Concrete', category: 'surfaces', color: '#888888' },
   { id: 'wood', label: 'Wood', category: 'surfaces', color: '#8b6a4a' },
   { id: 'leather', label: 'Leather', category: 'surfaces', color: '#6b4226' },
-  { id: 'velvet', label: 'Velvet', category: 'surfaces', color: '#442244' },
   { id: 'carbonFiber', label: 'Carbon Fiber', category: 'surfaces', color: '#222222' },
   { id: 'carPaint', label: 'Car Paint', category: 'surfaces' },
   // Glass & Gem
   { id: 'glass', label: 'Glass', category: 'glass' },
-  { id: 'frostedGlass', label: 'Frosted Glass', category: 'glass' },
+  { id: 'frostedGlass', label: 'Frosted', category: 'glass' },
   { id: 'diamond', label: 'Diamond', category: 'glass', color: '#ffffff' },
-  { id: 'ice', label: 'Ice', category: 'glass', color: '#d8eeff' },
   // Special
   { id: 'pearl', label: 'Pearl', category: 'special', color: '#fef0e0' },
   { id: 'obsidian', label: 'Obsidian', category: 'special', color: '#1a1a1a' },
-  { id: 'wax', label: 'Wax', category: 'special', color: '#f5e6c8' },
-  { id: 'holographic', label: 'Holographic', category: 'special' },
+  { id: 'holographic', label: 'Holo', category: 'special' },
 ];
 
 export const ANIMATION_PRESETS: { id: AnimationType; label: string }[] = [
@@ -295,7 +285,7 @@ const INITIAL_STATE = {
   text: '',
   font: 'DM Sans',
   fileName: '',
-  depth: 3,
+  depth: 0.9,
   smoothness: 1,
   material: 'default' as MaterialPreset,
   color: '#00e5ff',
@@ -314,7 +304,7 @@ const INITIAL_STATE = {
   background: '#0a0a0a',
   transparentBg: false,
   animate: 'spin' as AnimationType,
-  animateSpeed: 1,
+  animateSpeed: 0.3,
   animateReverse: false,
   rotationX: 0,
   rotationY: 0,
