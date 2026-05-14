@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -6,7 +6,7 @@ import { NodeSlider } from '@/components/reactflow/shared/node-slider';
 import { Button } from '@/components/ui/button';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useHalftoneStore, BLEND_MODES, HALFTONE_PRESETS } from '@/stores/halftoneStore';
-import { Sliders, Palette, Layers, Download, Eye, EyeOff, ImageIcon, X } from 'lucide-react';
+import { Sliders, Palette, Layers, Download, Eye, EyeOff, ImageIcon, X, ChevronRight } from 'lucide-react';
 
 const TABS = [
   { id: 'halftone' as const, label: 'Halftone', icon: Sliders },
@@ -102,16 +102,16 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-4 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto p-4 space-y-5 scrollbar-thin">
         {store.activeTab === 'halftone' && (
           <>
             <Section title="PRESETS">
-              <div className="grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-2 gap-1.5">
                 {Object.keys(HALFTONE_PRESETS).map((name) => (
                   <button
                     key={name}
                     onClick={() => store.applyPreset(name)}
-                    className="px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors text-left"
+                    className="px-2.5 py-2 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors text-left"
                   >
                     {name}
                   </button>
@@ -122,21 +122,22 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
             <Section title="DOT">
               <NodeSlider label="Frequency" value={frequency} min={20} max={500} step={1} onChange={setFrequency} />
               <NodeSlider label="Dot Size" value={dotSize} min={0.1} max={1} step={0.01} onChange={setDotSize} />
-              <NodeSlider label="Roughness" value={roughness} min={0} max={2} step={0.05} onChange={setRoughness} />
-              <NodeSlider label="Edge Fuzz" value={fuzz} min={0} max={0.5} step={0.01} onChange={setFuzz} />
-              <NodeSlider label="Randomness" value={randomness} min={0} max={0.4} step={0.01} onChange={setRandomness} />
-              <NodeSlider label="Threshold" value={threshold} min={0} max={0.5} step={0.01} onChange={setThreshold} />
+              <Disclosure label="Advanced">
+                <NodeSlider label="Roughness" value={roughness} min={0} max={2} step={0.05} onChange={setRoughness} />
+                <NodeSlider label="Edge Fuzz" value={fuzz} min={0} max={0.5} step={0.01} onChange={setFuzz} />
+                <NodeSlider label="Randomness" value={randomness} min={0} max={0.4} step={0.01} onChange={setRandomness} />
+                <NodeSlider label="Threshold" value={threshold} min={0} max={0.5} step={0.01} onChange={setThreshold} />
+              </Disclosure>
             </Section>
 
             <Section title="IMAGE">
               <NodeSlider label="Contrast" value={contrast} min={0.3} max={2} step={0.01} onChange={setContrast} />
               <NodeSlider label="Lightness" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
-              <NodeSlider label="Blur" value={blur} min={0} max={30} step={0.5} onChange={setBlur} />
-            </Section>
-
-            <Section title="NOISE">
-              <NodeSlider label="Paper Noise" value={paperNoise} min={0} max={1} step={0.01} onChange={setPaperNoise} />
-              <NodeSlider label="Ink Noise" value={inkNoise} min={0} max={1} step={0.01} onChange={setInkNoise} />
+              <Disclosure label="Advanced">
+                <NodeSlider label="Blur" value={blur} min={0} max={30} step={0.5} onChange={setBlur} />
+                <NodeSlider label="Paper Noise" value={paperNoise} min={0} max={1} step={0.01} onChange={setPaperNoise} />
+                <NodeSlider label="Ink Noise" value={inkNoise} min={0} max={1} step={0.01} onChange={setInkNoise} />
+              </Disclosure>
             </Section>
 
             <Section title="BLEND MODE">
@@ -146,7 +147,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
                     key={m.id}
                     onClick={() => store.updateSetting('blendMode', m.id)}
                     className={cn(
-                      'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
+                      'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
                       store.blendMode === m.id
                         ? 'bg-white/10 text-white'
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10'
@@ -260,11 +261,27 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
 });
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <div className="space-y-2">
+  <div className="space-y-3">
     <MicroTitle>{title}</MicroTitle>
     {children}
   </div>
 );
+
+const Disclosure: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 text-[9px] text-neutral-600 uppercase tracking-widest hover:text-neutral-400 transition-colors py-1"
+      >
+        <ChevronRight size={10} className={cn('transition-transform', open && 'rotate-90')} />
+        {label}
+      </button>
+      {open && <div className="space-y-3 pt-1">{children}</div>}
+    </div>
+  );
+};
 
 const InkSection: React.FC<{
   title: string;

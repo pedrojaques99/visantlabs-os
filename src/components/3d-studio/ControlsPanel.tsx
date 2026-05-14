@@ -17,7 +17,7 @@ import {
 } from '@/stores/studio3dStore';
 import {
   Box, Palette, Sun, Play, Download,
-  Upload, FileText, Type,
+  Upload, FileText, Type, ChevronRight,
 } from 'lucide-react';
 
 const TABS = [
@@ -132,7 +132,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-4 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto p-4 space-y-5 scrollbar-thin">
         {store.activeTab === 'geometry' && (
           <>
             {/* Input Mode */}
@@ -209,17 +209,19 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             {/* Geometry */}
             <Section title="GEOMETRY">
               <NodeSlider label="Depth" value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
-              <NodeSlider label="Smoothness" value={smoothness} min={0} max={5} step={0.1} onChange={setSmoothness} />
+              <Disclosure label="Advanced">
+                <NodeSlider label="Smoothness" value={smoothness} min={0} max={5} step={0.1} onChange={setSmoothness} />
+              </Disclosure>
             </Section>
 
             {/* Scene Presets */}
             <Section title="SCENE PRESETS">
-              <div className="grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-2 gap-1.5">
                 {Object.keys(SCENE_PRESETS).map((name) => (
                   <button
                     key={name}
                     onClick={() => store.applyScenePreset(name)}
-                    className="px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors text-left"
+                    className="px-2.5 py-2 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors text-left"
                   >
                     {name}
                   </button>
@@ -232,13 +234,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         {store.activeTab === 'material' && (
           <>
             <Section title="PRESET">
-              <div className="grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-2 gap-1.5">
                 {MATERIAL_PRESETS.map((m) => (
                   <button
                     key={m.id}
                     onClick={() => store.setMaterial(m.id)}
                     className={cn(
-                      'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
+                      'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
                       store.material === m.id
                         ? 'bg-white/10 text-white'
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10'
@@ -275,11 +277,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             <Section title="PROPERTIES">
               <NodeSlider label="Metalness" value={metalness} min={0} max={1} step={0.01} onChange={setMetalness} />
               <NodeSlider label="Roughness" value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} />
-              <NodeSlider label="Opacity" value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} />
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Wireframe</span>
-                <Switch checked={store.wireframe} onCheckedChange={store.setWireframe} />
-              </div>
+              <Disclosure label="Advanced">
+                <NodeSlider label="Opacity" value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} />
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Wireframe</span>
+                  <Switch checked={store.wireframe} onCheckedChange={store.setWireframe} />
+                </div>
+              </Disclosure>
             </Section>
           </>
         )}
@@ -287,13 +291,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         {store.activeTab === 'scene' && (
           <>
             <Section title="ENVIRONMENT">
-              <div className="grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-2 gap-1.5">
                 {ENVIRONMENT_PRESETS.map((env) => (
                   <button
                     key={env.id}
                     onClick={() => store.setEnvironment(env.id)}
                     className={cn(
-                      'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
+                      'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
                       store.environment === env.id
                         ? 'bg-white/10 text-white'
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10'
@@ -339,13 +343,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         {store.activeTab === 'animation' && (
           <>
             <Section title="TYPE">
-              <div className="grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-2 gap-1.5">
                 {ANIMATION_PRESETS.map((a) => (
                   <button
                     key={a.id}
                     onClick={() => store.setAnimate(a.id)}
                     className={cn(
-                      'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
+                      'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
                       store.animate === a.id
                         ? 'bg-white/10 text-white'
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10'
@@ -370,13 +374,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         {store.activeTab === 'export' && (
           <>
             <Section title="FORMAT">
-              <div className="grid grid-cols-3 gap-1">
+              <div className="grid grid-cols-3 gap-1.5">
                 {(['png', 'mp4', 'gif'] as const).map((f) => (
                   <button
                     key={f}
                     onClick={() => store.setExportFormat(f)}
                     className={cn(
-                      'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
+                      'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
                       store.exportFormat === f
                         ? 'bg-white/10 text-white'
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10'
@@ -389,7 +393,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             </Section>
 
             <Section title="ASPECT RATIO">
-              <div className="grid grid-cols-4 gap-1">
+              <div className="grid grid-cols-4 gap-1.5">
                 {(Object.keys(ASPECT_RATIOS) as Array<keyof typeof ASPECT_RATIOS>).map((r) => (
                   <button
                     key={r}
@@ -409,13 +413,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
 
             {store.exportFormat === 'png' && (
               <Section title="RESOLUTION">
-                <div className="grid grid-cols-3 gap-1">
+                <div className="grid grid-cols-3 gap-1.5">
                   {EXPORT_RESOLUTIONS.map((r) => (
                     <button
                       key={r.id}
                       onClick={() => store.setExportResolution(r.id)}
                       className={cn(
-                        'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
+                        'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
                         store.exportResolution === r.id
                           ? 'bg-white/10 text-white'
                           : 'bg-white/5 text-neutral-400 hover:bg-white/10'
@@ -449,8 +453,24 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
 });
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <div className="space-y-2">
+  <div className="space-y-3">
     <MicroTitle>{title}</MicroTitle>
     {children}
   </div>
 );
+
+const Disclosure: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 text-[9px] text-neutral-600 uppercase tracking-widest hover:text-neutral-400 transition-colors py-1"
+      >
+        <ChevronRight size={10} className={cn('transition-transform', open && 'rotate-90')} />
+        {label}
+      </button>
+      {open && <div className="space-y-3 pt-1">{children}</div>}
+    </div>
+  );
+};
