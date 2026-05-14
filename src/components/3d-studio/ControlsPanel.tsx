@@ -53,6 +53,8 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
 
   const [depth, setDepth] = useDebouncedSlider(store.depth, store.setDepth);
   const [smoothness, setSmoothness] = useDebouncedSlider(store.smoothness, store.setSmoothness);
+  const [bevelThickness, setBevelThickness] = useDebouncedSlider(store.bevelThickness, store.setBevelThickness);
+  const [bevelSize, setBevelSize] = useDebouncedSlider(store.bevelSize, store.setBevelSize);
   const [metalness, setMetalness] = useDebouncedSlider(store.metalness, store.setMetalness);
   const [roughness, setRoughness] = useDebouncedSlider(store.roughness, store.setRoughness);
   const [opacity, setOpacity] = useDebouncedSlider(store.opacity, store.setOpacity);
@@ -214,7 +216,17 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             {/* Geometry */}
             <Section title="GEOMETRY">
               <NodeSlider label="Depth" value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
-              <NodeSlider label="Bevel" value={smoothness} min={0} max={8} step={0.1} onChange={setSmoothness} />
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Bevel</span>
+                <Switch checked={store.bevelEnabled} onCheckedChange={store.setBevelEnabled} />
+              </div>
+              {store.bevelEnabled && (
+                <>
+                  <NodeSlider label="Smoothness" value={smoothness} min={0} max={8} step={0.1} onChange={setSmoothness} />
+                  <NodeSlider label="Thickness" value={bevelThickness} min={0} max={2} step={0.01} onChange={setBevelThickness} />
+                  <NodeSlider label="Size" value={bevelSize} min={0} max={2} step={0.01} onChange={setBevelSize} />
+                </>
+              )}
             </Section>
 
             {/* Scene Presets */}

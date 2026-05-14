@@ -23,6 +23,9 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   font: s.font,
   depth: s.depth,
   smoothness: s.smoothness,
+  bevelEnabled: s.bevelEnabled,
+  bevelThickness: s.bevelThickness,
+  bevelSize: s.bevelSize,
   color: s.color,
   material: s.material,
   metalness: s.metalness,
@@ -122,6 +125,9 @@ function SceneContent() {
             svgString={svgString}
             depth={s.depth}
             smoothness={s.smoothness}
+            bevelEnabled={s.bevelEnabled}
+            bevelThickness={s.bevelThickness}
+            bevelSize={s.bevelSize}
             color={s.color}
             materialSettings={materialSettings}
             rotationX={s.rotationX}

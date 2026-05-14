@@ -128,10 +128,17 @@ const EMPTY_RESULT = {
   baseScale: 1,
 };
 
+export interface BevelOptions {
+  bevelEnabled?: boolean;
+  bevelThickness?: number;
+  bevelSize?: number;
+}
+
 export function useExtrudedGeometry(
   svgString: string,
   depth: number,
   smoothness: number,
+  bevelOpts: BevelOptions = {},
 ): ExtrudedGeometryResult {
   const [result, setResult] = useState(EMPTY_RESULT);
   const [loading, setLoading] = useState(false);
@@ -176,6 +183,7 @@ export function useExtrudedGeometry(
       const maxFlatDim = Math.max(flatSize.x, flatSize.y, 1);
       tempGeo.dispose();
 
+      const { bevelEnabled = true, bevelThickness: userThickness = 0.5, bevelSize: userSize = 0.5 } = bevelOpts;
       const complexity = allShapes.length;
       const budget = 800_000;
       const vertsBudgetPerShape = Math.max(Math.floor(budget / Math.max(complexity, 1)), 200);
@@ -191,12 +199,12 @@ export function useExtrudedGeometry(
       const bevelSegments = Math.max(2, Math.min(Math.round(idealBevel * reductionFactor), 16));
       const curveSegments = Math.max(6, Math.min(Math.round(idealCurve * reductionFactor), 64));
 
-      const bevelThickness = bevelScale * (0.15 + smoothness * 0.2);
-      const bevelSize = bevelScale * (0.15 + smoothness * 0.2);
+      const bevelThickness = bevelScale * userThickness;
+      const bevelSize = bevelScale * userSize;
 
       const extrudeSettings = {
         depth: scaledDepth,
-        bevelEnabled: true,
+        bevelEnabled,
         bevelThickness,
         bevelSize,
         bevelSegments,
@@ -262,7 +270,7 @@ export function useExtrudedGeometry(
     })();
 
     return () => { cancelRef.current = true; };
-  }, [svgString, depth, smoothness]);
+  }, [svgString, depth, smoothness, bevelOpts.bevelEnabled, bevelOpts.bevelThickness, bevelOpts.bevelSize]);
 
   return { ...result, loading, progress, cancel };
 }
