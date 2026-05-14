@@ -12,7 +12,6 @@ import {
   useStudio3DStore,
   MATERIAL_PRESETS,
   ANIMATION_PRESETS,
-  ENVIRONMENT_PRESETS,
   SCENE_PRESETS,
   ASPECT_RATIOS,
   EXPORT_RESOLUTIONS,
@@ -35,17 +34,11 @@ const TABS = [
   { id: 'scene' as const, label: 'Scene', icon: Sun },
   { id: 'animation' as const, label: 'Animate', icon: Play },
   { id: 'shader' as const, label: 'Shader', icon: Diamond },
-  { id: 'export' as const, label: 'Export', icon: Download },
 ] as const;
 
 const FONT_OPTIONS = [
   'DM Sans', 'Bebas Neue', 'Playfair Display', 'Righteous', 'Black Ops One',
   'Permanent Marker', 'Rubik Mono One', 'Pacifico', 'Oswald', 'Archivo Black',
-];
-
-const COLOR_SWATCHES = [
-  '#00e5ff', '#ff00ff', '#ffd700', '#ff6b35', '#8b5cf6',
-  '#00ff88', '#ffffff', '#ff3366', '#4a9eff', '#e8ddd3',
 ];
 
 interface ControlsPanelProps {
@@ -221,9 +214,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             {/* Geometry */}
             <Section title="GEOMETRY">
               <NodeSlider label="Depth" value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
-              <Disclosure label="Advanced">
-                <NodeSlider label="Smoothness" value={smoothness} min={0} max={5} step={0.1} onChange={setSmoothness} />
-              </Disclosure>
+              <NodeSlider label="Bevel" value={smoothness} min={0} max={8} step={0.1} onChange={setSmoothness} />
             </Section>
 
             {/* Scene Presets */}
@@ -254,31 +245,16 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
 
         {store.activeTab === 'scene' && (
           <>
-            <Section title="ENVIRONMENT">
-              <div className="grid grid-cols-2 gap-1.5">
-                {ENVIRONMENT_PRESETS.map((env) => (
-                  <button
-                    key={env.id}
-                    onClick={() => store.setEnvironment(env.id)}
-                    className={cn(
-                      'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
-                      store.environment === env.id
-                        ? 'bg-white/10 text-white'
-                        : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-                    )}
-                  >
-                    {env.label}
-                  </button>
-                ))}
-              </div>
-            </Section>
-
             <Section title="LIGHTING">
               <NodeSlider label="Key Light" value={lightIntensity} min={0} max={3} step={0.05} onChange={setLightIntensity} />
               <NodeSlider label="Ambient" value={ambientIntensity} min={0} max={2} step={0.05} onChange={setAmbientIntensity} />
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Shadows</span>
                 <Switch checked={store.shadow} onCheckedChange={store.setShadow} />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Grid</span>
+                <Switch checked={store.showGrid} onCheckedChange={store.setShowGrid} />
               </div>
             </Section>
 
@@ -364,90 +340,126 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
           />
         )}
 
-        {store.activeTab === 'export' && (
-          <>
-            {store.shaderEnabled && (
-              <div className="flex items-center gap-2 px-2.5 py-2 rounded bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 uppercase tracking-wider">
-                <Diamond size={12} />
-                {store.shaderType} shader will be applied
-              </div>
-            )}
-            <Section title="FORMAT">
-              <div className="grid grid-cols-3 gap-1.5">
-                {(['png', 'mp4', 'gif'] as const).map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => store.setExportFormat(f)}
-                    className={cn(
-                      'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
-                      store.exportFormat === f
-                        ? 'bg-white/10 text-white'
-                        : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-                    )}
-                  >
-                    {f.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </Section>
-
-            <Section title="ASPECT RATIO">
-              <div className="grid grid-cols-4 gap-1.5">
-                {(Object.keys(ASPECT_RATIOS) as Array<keyof typeof ASPECT_RATIOS>).map((r) => (
-                  <button
-                    key={r}
-                    onClick={() => store.setAspectRatio(r)}
-                    className={cn(
-                      'px-1 py-1.5 rounded text-[10px] tracking-wider transition-colors text-center',
-                      store.aspectRatio === r
-                        ? 'bg-white/10 text-white'
-                        : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-                    )}
-                  >
-                    {r}
-                  </button>
-                ))}
-              </div>
-            </Section>
-
-            {store.exportFormat === 'png' && (
-              <Section title="RESOLUTION">
-                <div className="grid grid-cols-3 gap-1.5">
-                  {EXPORT_RESOLUTIONS.map((r) => (
-                    <button
-                      key={r.id}
-                      onClick={() => store.setExportResolution(r.id)}
-                      className={cn(
-                        'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
-                        store.exportResolution === r.id
-                          ? 'bg-white/10 text-white'
-                          : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-                      )}
-                    >
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
-              </Section>
-            )}
-
-            {(store.exportFormat === 'mp4' || store.exportFormat === 'gif') && (
-              <Section title="VIDEO">
-                <NodeSlider label="Duration (s)" value={videoDuration} min={1} max={10} step={0.5} onChange={setVideoDuration} />
-              </Section>
-            )}
-
-            <Button
-              onClick={onExport}
-              disabled={store.isExporting || (!store.svgData && !store.text)}
-              className="w-full mt-2 bg-white hover:bg-neutral-200 text-black font-medium"
-            >
-              {store.isExporting ? 'Exporting...' : `Export ${store.exportFormat.toUpperCase()}`}
-            </Button>
-          </>
-        )}
       </div>
+
+      {/* ── Export Panel (collapsible, pinned bottom) ─────────── */}
+      <ExportPanel store={store} videoDuration={videoDuration} setVideoDuration={setVideoDuration} onExport={onExport} />
     </GlassPanel>
+  );
+});
+
+/* ── Export Panel (collapsible, Adobe-style) ───────────────── */
+
+const ExportPanel: React.FC<{
+  store: StoreState;
+  videoDuration: number;
+  setVideoDuration: (v: number) => void;
+  onExport: () => void;
+}> = React.memo(({ store, videoDuration, setVideoDuration, onExport }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="shrink-0 border-t border-white/[0.06]">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/[0.02] transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Download size={12} className="text-neutral-500" />
+          <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-medium">Export</span>
+        </div>
+        <ChevronRight size={10} className={cn('text-neutral-600 transition-transform', open && 'rotate-90')} />
+      </button>
+
+      {open && (
+        <div className="px-3 pb-3 space-y-3">
+          {store.shaderEnabled && (
+            <div className="flex items-center gap-2 px-2 py-1.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-[9px] text-cyan-400 uppercase tracking-wider">
+              <Diamond size={10} />
+              {store.shaderType} shader active
+            </div>
+          )}
+
+          <div className="grid grid-cols-3 gap-1">
+            {(['png', 'mp4', 'gif'] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => store.setExportFormat(f)}
+                className={cn(
+                  'py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
+                  store.exportFormat === f ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-400 hover:bg-white/10'
+                )}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-4 gap-1">
+            {(Object.keys(ASPECT_RATIOS) as Array<keyof typeof ASPECT_RATIOS>).map((r) => (
+              <button
+                key={r}
+                onClick={() => store.setAspectRatio(r)}
+                className={cn(
+                  'py-1 rounded text-[10px] tracking-wider transition-colors text-center',
+                  store.aspectRatio === r ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-400 hover:bg-white/10'
+                )}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+
+          {store.exportFormat === 'png' && (
+            <div className="grid grid-cols-3 gap-1">
+              {EXPORT_RESOLUTIONS.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => store.setExportResolution(r.id)}
+                  className={cn(
+                    'py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
+                    store.exportResolution === r.id ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-400 hover:bg-white/10'
+                  )}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {(store.exportFormat === 'mp4' || store.exportFormat === 'gif') && (
+            <div className="space-y-2">
+              <NodeSlider label="Duration (s)" value={videoDuration} min={1} max={10} step={0.5} onChange={setVideoDuration} />
+              {store.animate !== 'none' && (() => {
+                const loopPeriod = Math.round((2 * Math.PI / store.animateSpeed) * 2) / 2;
+                const clamped = Math.min(Math.max(loopPeriod, 1), 10);
+                return (
+                  <button
+                    onClick={() => setVideoDuration(clamped)}
+                    className={cn(
+                      'w-full py-1 rounded text-[9px] uppercase tracking-wider transition-colors',
+                      videoDuration === clamped
+                        ? 'bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20'
+                        : 'bg-white/5 text-neutral-400 hover:bg-white/10'
+                    )}
+                  >
+                    Perfect Loop — {clamped}s
+                  </button>
+                );
+              })()}
+            </div>
+          )}
+
+          <Button
+            onClick={onExport}
+            disabled={store.isExporting}
+            className="w-full bg-white hover:bg-neutral-200 text-black font-medium text-xs"
+          >
+            {store.isExporting ? 'Exporting...' : `Export ${store.exportFormat.toUpperCase()}`}
+          </Button>
+        </div>
+      )}
+    </div>
   );
 });
 
@@ -500,24 +512,11 @@ const MaterialTab: React.FC<MaterialTabProps> = React.memo(({
         <MaterialCategoryTabs activeCat={activeCat} store={store} />
       </Section>
 
-      {/* Color — inline swatches + picker */}
+      {/* Color — hex input + picker */}
       <Section title="COLOR">
-        <div className="flex items-center gap-1.5">
-          <div className="flex gap-1 flex-wrap flex-1">
-            {COLOR_SWATCHES.map((c) => (
-              <button
-                key={c}
-                onClick={() => store.setColor(c)}
-                className={cn(
-                  'w-4.5 h-4.5 rounded-full border transition-transform hover:scale-110',
-                  store.color === c ? 'border-white scale-110 ring-1 ring-white/30' : 'border-white/10'
-                )}
-                style={{ backgroundColor: c }}
-              />
-            ))}
-          </div>
-          <label className="relative w-6 h-6 rounded overflow-hidden cursor-pointer flex-shrink-0 border border-white/10">
-            <span className="absolute inset-0 rounded" style={{ backgroundColor: store.color }} />
+        <div className="flex items-center gap-2">
+          <label className="relative w-8 h-8 rounded cursor-pointer flex-shrink-0 border border-white/10 overflow-hidden">
+            <span className="absolute inset-0" style={{ backgroundColor: store.color }} />
             <input
               type="color"
               value={store.color}
@@ -525,7 +524,30 @@ const MaterialTab: React.FC<MaterialTabProps> = React.memo(({
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
           </label>
+          <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-1.5">
+            <span className="text-[10px] text-neutral-500 mr-1">#</span>
+            <input
+              type="text"
+              value={store.color.replace('#', '').toUpperCase()}
+              onChange={(e) => {
+                const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+                if (v.length === 6) store.setColor(`#${v}`);
+              }}
+              onBlur={(e) => {
+                const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+                if (v.length === 6) store.setColor(`#${v}`);
+              }}
+              maxLength={6}
+              className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+              placeholder="00E5FF"
+            />
+          </div>
         </div>
+      </Section>
+
+      {/* Texture */}
+      <Section title="TEXTURE">
+        <TextureControls store={store} />
       </Section>
 
       {/* Properties — flat, no disclosure */}
@@ -599,6 +621,197 @@ const MaterialCategoryTabs: React.FC<{
             </button>
           ))}
         </div>
+      )}
+    </div>
+  );
+});
+
+/* ── Procedural textures ──────────────────────────────────── */
+
+function makeCanvas(size: number) {
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  return { canvas: c, ctx: c.getContext('2d')! };
+}
+
+function perlinNoise(ctx: CanvasRenderingContext2D, size: number, scale: number, intensity: number) {
+  const img = ctx.getImageData(0, 0, size, size);
+  const d = img.data;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const i = (y * size + x) * 4;
+      const nx = x / scale, ny = y / scale;
+      const v1 = Math.sin(nx * 1.2 + ny * 0.8) * 0.5;
+      const v2 = Math.sin(nx * 2.5 - ny * 1.7) * 0.25;
+      const v3 = Math.sin(nx * 5.1 + ny * 4.3) * 0.125;
+      const fine = (Math.random() - 0.5) * 0.3;
+      const n = (v1 + v2 + v3 + fine) * intensity;
+      const base = d[i];
+      const v = Math.max(0, Math.min(255, base + n * 128));
+      d[i] = d[i + 1] = d[i + 2] = v;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+function generateGrainTexture(size = 1024): string {
+  const { canvas, ctx } = makeCanvas(size);
+  ctx.fillStyle = '#808080';
+  ctx.fillRect(0, 0, size, size);
+  perlinNoise(ctx, size, 80, 0.6);
+  const img = ctx.getImageData(0, 0, size, size);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const fine = (Math.random() - 0.5) * 40;
+    d[i] = Math.max(0, Math.min(255, d[i] + fine));
+    d[i + 1] = d[i + 2] = d[i];
+  }
+  ctx.putImageData(img, 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
+function generateScratchTexture(size = 1024): string {
+  const { canvas, ctx } = makeCanvas(size);
+  ctx.fillStyle = '#808080';
+  ctx.fillRect(0, 0, size, size);
+  for (let layer = 0; layer < 3; layer++) {
+    const count = [400, 200, 80][layer];
+    const alpha = [0.12, 0.2, 0.35][layer];
+    const width = [0.3, 0.6, 1.0][layer];
+    const maxLen = [40, 80, 120][layer];
+    ctx.lineWidth = width;
+    for (let i = 0; i < count; i++) {
+      const bright = 128 + (Math.random() - 0.5) * 80;
+      ctx.strokeStyle = `rgba(${bright},${bright},${bright},${alpha})`;
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const len = 5 + Math.random() * maxLen;
+      const angle = (Math.random() - 0.5) * 0.6;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      const segments = 3 + Math.floor(Math.random() * 4);
+      let cx = x, cy = y;
+      for (let s = 0; s < segments; s++) {
+        const drift = (Math.random() - 0.5) * 4;
+        cx += Math.cos(angle) * (len / segments);
+        cy += Math.sin(angle) * (len / segments) + drift;
+        ctx.lineTo(cx, cy);
+      }
+      ctx.stroke();
+    }
+  }
+  return canvas.toDataURL('image/png');
+}
+
+function generateNoiseTexture(size = 1024): string {
+  const { canvas, ctx } = makeCanvas(size);
+  ctx.fillStyle = '#808080';
+  ctx.fillRect(0, 0, size, size);
+  perlinNoise(ctx, size, 40, 1.0);
+  return canvas.toDataURL('image/png');
+}
+
+function generateStuccoTexture(size = 1024): string {
+  const { canvas, ctx } = makeCanvas(size);
+  ctx.fillStyle = '#808080';
+  ctx.fillRect(0, 0, size, size);
+  perlinNoise(ctx, size, 60, 0.8);
+  for (let i = 0; i < 2000; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const r = 1 + Math.random() * 4;
+    const bright = 100 + Math.random() * 60;
+    ctx.fillStyle = `rgba(${bright},${bright},${bright},0.15)`;
+    ctx.beginPath();
+    ctx.ellipse(x, y, r, r * (0.5 + Math.random()), Math.random() * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  return canvas.toDataURL('image/png');
+}
+
+const PROCEDURAL_TEXTURES = [
+  { id: 'grain', label: 'Grain', generate: generateGrainTexture },
+  { id: 'scratch', label: 'Scratch', generate: generateScratchTexture },
+  { id: 'noise', label: 'Noise', generate: generateNoiseTexture },
+  { id: 'stucco', label: 'Stucco', generate: generateStuccoTexture },
+] as const;
+
+/* ── Texture Controls ─────────────────────────────────────── */
+
+const TextureControls: React.FC<{ store: StoreState }> = React.memo(({ store }) => {
+  const textureInputRef = useRef<HTMLInputElement>(null);
+  const [activeProc, setActiveProc] = useState<string | null>(null);
+
+  const handleTextureUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    store.setTexture(url);
+    setActiveProc(null);
+    e.target.value = '';
+  }, [store]);
+
+  const applyProcedural = useCallback((pt: typeof PROCEDURAL_TEXTURES[number]) => {
+    store.setTexture(pt.generate());
+    setActiveProc(pt.id);
+  }, [store]);
+
+  const hasTexture = !!store.texture;
+
+  return (
+    <div className="space-y-2">
+      {/* Procedural presets */}
+      <div className="grid grid-cols-2 gap-1">
+        {PROCEDURAL_TEXTURES.map((pt) => (
+          <button
+            key={pt.id}
+            onClick={() => applyProcedural(pt)}
+            className={cn(
+              'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors',
+              activeProc === pt.id
+                ? 'bg-white/10 text-white'
+                : 'bg-white/[0.03] text-neutral-500 hover:bg-white/[0.07] hover:text-neutral-300'
+            )}
+          >
+            {pt.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Upload */}
+      <button
+        onClick={() => textureInputRef.current?.click()}
+        className="w-full px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+      >
+        Upload Image
+      </button>
+      <input
+        ref={textureInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleTextureUpload}
+        className="hidden"
+      />
+
+      {/* Controls when texture active */}
+      {hasTexture && (
+        <>
+          <NodeSlider label="Repeat" value={store.textureRepeat} min={0.5} max={10} step={0.5} onChange={store.setTextureRepeat} />
+          {activeProc && (
+            <button
+              onClick={() => applyProcedural(PROCEDURAL_TEXTURES.find(p => p.id === activeProc)!)}
+              className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-500 hover:text-neutral-300 transition-colors"
+            >
+              Regenerate
+            </button>
+          )}
+          <button
+            onClick={() => { store.setTexture(''); setActiveProc(null); }}
+            className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-600 hover:text-red-400 transition-colors"
+          >
+            Remove
+          </button>
+        </>
       )}
     </div>
   );

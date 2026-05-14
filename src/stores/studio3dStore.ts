@@ -207,6 +207,7 @@ interface Studio3DState {
   lightIntensity: number;
   ambientIntensity: number;
   shadow: boolean;
+  showGrid: boolean;
 
   // Environment
   environment: string;
@@ -258,6 +259,7 @@ interface Studio3DState {
   setLightIntensity: (v: number) => void;
   setAmbientIntensity: (v: number) => void;
   setShadow: (v: boolean) => void;
+  setShowGrid: (v: boolean) => void;
   setEnvironment: (e: string) => void;
   setBackground: (c: string) => void;
   setTransparentBg: (v: boolean) => void;
@@ -286,7 +288,7 @@ const INITIAL_STATE = {
   font: 'DM Sans',
   fileName: '',
   depth: 0.9,
-  smoothness: 1,
+  smoothness: 0.2,
   material: 'default' as MaterialPreset,
   color: '#00e5ff',
   metalness: 0.5,
@@ -300,6 +302,7 @@ const INITIAL_STATE = {
   lightIntensity: 1,
   ambientIntensity: 0.4,
   shadow: true,
+  showGrid: false,
   environment: 'studio',
   background: '#0a0a0a',
   transparentBg: false,
@@ -345,6 +348,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
   setLightIntensity: (lightIntensity) => set({ lightIntensity }),
   setAmbientIntensity: (ambientIntensity) => set({ ambientIntensity }),
   setShadow: (shadow) => set({ shadow }),
+  setShowGrid: (showGrid) => set({ showGrid }),
   setEnvironment: (environment) => set({ environment }),
   setBackground: (background) => set({ background }),
   setTransparentBg: (transparentBg) => set({ transparentBg }),

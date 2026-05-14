@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState, useEffect } from 'react';
+import React, { useRef, useCallback, useState, useEffect, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
@@ -8,13 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
-import { SceneCanvas } from '@/components/3d-studio/SceneCanvas';
 import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
+
+const SceneCanvas = React.lazy(() => import('@/components/3d-studio/SceneCanvas').then(m => ({ default: m.SceneCanvas })));
 import { useStudio3DStore } from '@/stores/studio3dStore';
 import { exportPNG, exportVideo } from '@/components/3d-studio/ExportManager';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { setCameraView, resetCamera, dollyCamera, rotateCamera, DEG15 } from '@/components/3d-studio/CameraBridge';
-import { ViewGizmo } from '@/components/3d-studio/ViewGizmo';
 
 export const Studio3DPage: React.FC = () => {
   const navigate = useNavigate();
@@ -156,7 +156,7 @@ export const Studio3DPage: React.FC = () => {
       />
 
       <div
-        className="absolute top-10 left-0 bottom-0 transition-all duration-300"
+        className="absolute top-10 left-0 bottom-0 transition-all duration-300 cursor-grab active:cursor-grabbing"
         style={{
           right: !isMobile && panelVisible ? 316 : 0,
           paddingBottom: isMobile ? (mobileSheetOpen ? '55%' : 52) : 40,
@@ -164,8 +164,9 @@ export const Studio3DPage: React.FC = () => {
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleViewportDrop}
       >
-        <SceneCanvas onCanvasReady={handleCanvasReady} />
-        {!isMobile && <ViewGizmo />}
+        <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-neutral-950"><span className="text-[10px] uppercase tracking-widest text-neutral-600 animate-pulse">Loading 3D Engine...</span></div>}>
+          <SceneCanvas onCanvasReady={handleCanvasReady} />
+        </Suspense>
       </div>
 
       {!isMobile && (
