@@ -46,6 +46,7 @@ import {
   EmailHeaderMock,
 } from '@/components/brand/guidelines/preview/BrandMocks';
 import { exportMockElement, EXPORT_FORMATS, type ExportFormat } from '@/components/brand/guidelines/preview/exportMock';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const PREVIEW_MOCKS = [
   { id: 'instagram', label: 'Instagram', Component: InstagramFeedMock },
@@ -58,6 +59,7 @@ const PREVIEW_MOCKS = [
 ] as const;
 
 export const PublicBrandGuideline: React.FC = () => {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [guideline, setGuideline] = useState<BrandGuideline | null>(null);
@@ -125,14 +127,14 @@ export const PublicBrandGuideline: React.FC = () => {
     if (!guideline) return;
     const name = safeFileName(guideline.identity?.name, 'brand');
     downloadBlob(JSON.stringify(guideline, null, 2), `${name}-guidelines.json`, 'application/json');
-    toast.success('Downloaded as JSON');
+    toast.success(t('public.brand.guideline.downloaded_as_json'));
   };
 
   const handleDownloadCSS = () => {
     if (!guideline) return;
     const name = safeFileName(guideline.identity?.name, 'brand');
     downloadBlob(toCSSVariables(guideline), `${name}-variables.css`, 'text/css');
-    toast.success('Downloaded as CSS');
+    toast.success(t('public.brand.guideline.downloaded_as_css'));
   };
 
   const brandTheme = useMemo(() => extractBrandTheme(guideline, theme), [guideline, theme]);
@@ -149,7 +151,7 @@ export const PublicBrandGuideline: React.FC = () => {
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 flex flex-col items-center gap-4">
           <GlitchLoader size={40} />
-          <MicroTitle className="text-neutral-600 uppercase tracking-[0.1em]">Decrypting Brand Assets</MicroTitle>
+          <MicroTitle className="text-neutral-600 uppercase tracking-[0.1em]">{t('public.brand.guideline.decrypting_brand_assets')}</MicroTitle>
         </motion.div>
       </div>
     );
@@ -160,7 +162,7 @@ export const PublicBrandGuideline: React.FC = () => {
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-6">
         <GlassPanel padding="lg" className="relative z-10 max-w-md text-center border-red-500/10 bg-red-500/[0.02]">
           <AlertCircle size={48} className="mx-auto text-red-500/40 mb-4" />
-          <h1 className="text-xl font-bold text-neutral-200 mb-2 font-manrope">Access Denied</h1>
+          <h1 className="text-xl font-bold text-neutral-200 mb-2 font-manrope">{t('public.brand.guideline.access_denied')}</h1>
           <p className="text-neutral-500 text-sm mb-6 leading-relaxed">
             {error || 'This brand guideline is either private or does not exist in our secure vault.'}
           </p>
@@ -197,7 +199,7 @@ export const PublicBrandGuideline: React.FC = () => {
       <SEO title={`${brandName} - Brand Portal`} description={guideline.identity?.description || guideline.identity?.tagline} />
 
       {/* Floating Side Nav (Desktop) */}
-      <nav aria-label="Brand sections" className="fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4">
+      <nav aria-label={t('public.brand.guideline.brand_sections')} className="fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4">
         {PUBLIC_TABS.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -266,7 +268,7 @@ export const PublicBrandGuideline: React.FC = () => {
         <Button
           onClick={handleDownloadJSON}
           variant="ghost"
-          aria-label="Download brand guidelines as JSON"
+          aria-label={t('public.brand.guideline.download_brand_guidelines_a')}
           className={cn(
             "h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest",
             theme === 'dark'
@@ -279,7 +281,7 @@ export const PublicBrandGuideline: React.FC = () => {
         <Button
           onClick={handleDownloadCSS}
           variant="ghost"
-          aria-label="Download brand variables as CSS"
+          aria-label={t('public.brand.guideline.download_brand_variables_as')}
           className={cn(
             "h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest",
             theme === 'dark'
@@ -322,7 +324,7 @@ export const PublicBrandGuideline: React.FC = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40" size={16} />
                 <Input
-                  placeholder="Search assets, colors, or specs..."
+                  placeholder={t('public.brand.guideline.search_assets_colors_or_spe')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 h-11 bg-transparent border-none focus-visible:ring-0 text-sm placeholder:opacity-40"
@@ -475,8 +477,8 @@ export const PublicBrandGuideline: React.FC = () => {
         <footer className="mt-40 pt-20 border-t border-[var(--brand-text)]/10 text-center space-y-8">
           <div className="flex justify-center gap-12">
             <div className="text-left space-y-2">
-              <span className="text-[10px] font-mono opacity-30 uppercase tracking-widest">Version</span>
-              <p className="text-xs font-bold opacity-40">Visant // Labs®</p>
+              <span className="text-[10px] font-mono opacity-30 uppercase tracking-widest">{t('public.brand.guideline.version')}</span>
+              <p className="text-xs font-bold opacity-40">{t('public.brand.guideline.visant_labs')}</p>
             </div>
           </div>
         </footer>

@@ -64,7 +64,7 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
                   return (
                     <li key={idx}>
                       {item.split('contato@visant.co')[0]}
-                      <strong className="text-brand-cyan">contato@visant.co</strong>
+                      <strong className="text-brand-cyan">{t('refund.policy.contatovisantco')}</strong>
                       {item.split('contato@visant.co')[1]}
                     </li>
                   );

@@ -6,10 +6,12 @@ import { FormInput } from '../components/ui/form-input';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
 
 export const QRCodePage: React.FC = () => {
+  const { t } = useTranslation();
   const { isAuthenticated } = useLayout();
   const [text, setText] = useState<string>('');
   const [size, setSize] = useState<number>(256);
@@ -78,7 +80,7 @@ export const QRCodePage: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <QrCode className="w-8 h-8 text-brand-cyan" />
-            <h1 className="text-3xl md:text-4xl font-bold text-white">QR Code Generator</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-white">{t('q.r.code.qr_code_generator')}</h1>
           </div>
           <p className="text-zinc-400 font-mono text-sm">
             Generate QR codes from text, URLs, or any data
@@ -100,7 +102,7 @@ export const QRCodePage: React.FC = () => {
                   type="text"
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="Enter text, URL, or any data..."
+                  placeholder={t('q.r.code.enter_text_url_or_any_data')}
                   className="w-full"
                 />
               </div>
@@ -135,7 +137,7 @@ export const QRCodePage: React.FC = () => {
                     { value: 'Q', label: 'Q - Quartile (~25%)' },
                     { value: 'H', label: 'H - High (~30%)' },
                   ]}
-                  placeholder="Select error correction level"
+                  placeholder={t('q.r.code.select_error_correction_level')}
                 />
               </div>
 
@@ -203,7 +205,7 @@ export const QRCodePage: React.FC = () => {
                 ) : (
                   <div className="text-center text-zinc-500">
                     <QrCode className="w-24 h-24 mx-auto mb-4 opacity-40" />
-                    <p className="font-mono text-sm">Enter text to generate QR code</p>
+                    <p className="font-mono text-sm">{t('q.r.code.enter_text_to_generate_qr_code')}</p>
                   </div>
                 )}
               </div>

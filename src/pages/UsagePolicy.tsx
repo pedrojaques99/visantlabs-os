@@ -230,7 +230,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
             <p className="text-neutral-400 mb-2" dangerouslySetInnerHTML={{ __html: `<strong class="text-neutral-300">${t('usage.sections.contact.company')}</strong>` }} />
             <p className="text-neutral-400">
               {t('usage.sections.contact.support').split('contato@visant.co')[0]}
-              <a href="mailto:contato@visant.co" className="text-brand-cyan hover:text-brand-cyan/80 underline">contato@visant.co</a>
+              <a href="mailto:contato@visant.co" className="text-brand-cyan hover:text-brand-cyan/80 underline">{t('usage.policy.contatovisantco')}</a>
               {t('usage.sections.contact.support').split('contato@visant.co')[1]}
             </p>
           </section>

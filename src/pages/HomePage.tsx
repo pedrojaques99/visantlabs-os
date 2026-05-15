@@ -215,6 +215,7 @@ interface AppListProps {
 }
 
 const AppList: React.FC<AppListProps> = ({ apps, listRef, focusedIndex, onSelect, onFocus, navigate, isMobile }) => {
+  const { t } = useTranslation();
   const [listHovered, setListHovered] = useState(false);
 
   return (
@@ -222,7 +223,7 @@ const AppList: React.FC<AppListProps> = ({ apps, listRef, focusedIndex, onSelect
       <div
         ref={listRef}
         role="listbox"
-        aria-label="Selecione um app"
+        aria-label={t('home.selecione_um_app')}
         onMouseEnter={() => setListHovered(true)}
         onMouseLeave={() => setListHovered(false)}
         className={`flex flex-col gap-[2px] max-h-[55vh] transition-all duration-200 ${
@@ -257,7 +258,7 @@ const AppList: React.FC<AppListProps> = ({ apps, listRef, focusedIndex, onSelect
         <button
           onClick={() => navigate('/apps')}
           className="font-mono text-[10px] uppercase tracking-widest text-neutral-600 hover:text-neutral-300 transition-colors"
-          aria-label="Ver todos os apps"
+          aria-label={t('home.ver_todos_os_apps')}
         >
           more apps →
         </button>
@@ -422,11 +423,11 @@ export const HomePage: React.FC = () => {
                       className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-[11px] uppercase tracking-widest text-neutral-400 hover:text-white transition-all duration-200"
                     >
                       <LogIn size={12} />
-                      <span>sign in</span>
+                      <span>{t('home.sign_in')}</span>
                     </button>
                     <div className="flex items-center gap-6 mt-2">
-                      <button onClick={() => navigate('/about')} className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">info</button>
-                      <a href="mailto:contact@visantlabs.com" className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">contact</a>
+                      <button onClick={() => navigate('/about')} className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">{t('home.info')}</button>
+                      <a href="mailto:contact@visantlabs.com" className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">{t('home.contact')}</a>
                     </div>
                   </motion.div>
                 )}
@@ -452,11 +453,11 @@ export const HomePage: React.FC = () => {
                         className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-[11px] uppercase tracking-widest text-neutral-400 hover:text-white transition-all duration-200 w-fit"
                       >
                         <LogIn size={12} />
-                        <span>sign in</span>
+                        <span>{t('home.sign_in_2')}</span>
                       </button>
                       <div className="flex items-center gap-6">
-                        <button onClick={() => navigate('/about')} className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">info</button>
-                        <button onClick={() => navigate('/community')} className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">community</button>
+                        <button onClick={() => navigate('/about')} className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">{t('home.info_2')}</button>
+                        <button onClick={() => navigate('/community')} className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">{t('home.community')}</button>
                       </div>
                     </motion.div>
                   )}

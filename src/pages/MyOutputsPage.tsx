@@ -119,9 +119,9 @@ export const MyOutputsPage: React.FC = () => {
       await mockupApi.delete(id);
       setMockups(prev => prev.filter(m => m._id !== id));
       setSelectedMockup(null);
-      toast.success('Output deleted successfully', { duration: 2000 });
+      toast.success(t('my.outputs.output_deleted_successfully'), { duration: 2000 });
     } catch (err: any) {
-      toast.error('Failed to delete output', { duration: 5000 });
+      toast.error(t('my.outputs.failed_to_delete_output'), { duration: 5000 });
     } finally {
       setDeletingId(null);
     }
@@ -149,9 +149,9 @@ export const MyOutputsPage: React.FC = () => {
         if (selectedMockup?._id === mockup._id) {
           setSelectedMockup(null);
         }
-        toast.success('Canvas image removed', { duration: 2000 });
+        toast.success(t('my.outputs.canvas_image_removed'), { duration: 2000 });
       } catch (err: any) {
-        toast.error('Failed to remove canvas image', { duration: 5000 });
+        toast.error(t('my.outputs.failed_to_remove_canvas_image'), { duration: 5000 });
       } finally {
         setDeletingId(null);
       }
@@ -346,7 +346,7 @@ export const MyOutputsPage: React.FC = () => {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-neutral-400 font-mono text-sm">Loading your outputs...</p>
+              <p className="text-neutral-400 font-mono text-sm">{t('my.outputs.loading_your_outputs')}</p>
             </div>
           </div>
         </div>
@@ -480,7 +480,7 @@ export const MyOutputsPage: React.FC = () => {
                           }}
                             disabled={deletingId === mockup._id}
                             className="absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-red-500/30 rounded text-xs font-mono text-red-400 hover:text-red-300 hover:border-red-400/50 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer z-10"
-                            aria-label="Delete output"
+                            aria-label={t('my.outputs.delete_output')}
                           >
                             <Trash2 size={14} />
                           </Button>

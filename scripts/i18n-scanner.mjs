@@ -9,24 +9,36 @@ const LOCALES_DIR = path.join(SRC_DIR, 'locales');
 const REPORTS_DIR = path.join(ROOT_DIR, 'scripts', 'reports');
 
 const EXCLUDE_DIRS = ['node_modules', '.git', '.next', 'dist', 'build', 'locales'];
+// Pages/files where hardcoded English is intentional (docs, legal, static content)
+const HARDCODED_SKIP_FILES = new Set([
+  'DocsPage.tsx', 'PrivacyPolicyPage.tsx', 'TermsOfService.tsx',
+  'UsagePolicyPage.tsx', 'ApiKeyPolicyModal.tsx', 'ThankYouProPage.tsx',
+  'ThankYouProAnualPage.tsx', 'ThankYouVisionPage.tsx', 'ThankYouVisionAnualPage.tsx',
+  'OnboardPage.tsx', 'AppEditDialog.tsx', 'DesignSystemPage.tsx',
+  'PluginPage.tsx', 'SmartAnalyzerPage.tsx',
+]);
 const UI_ATTRIBUTES = ['placeholder', 'title', 'label', 'description', 'subtitle', 'error', 'success', 'message'];
 
 const args = new Set(process.argv.slice(2));
 const STRICT = args.has('--strict');
+const PAGES_ONLY = args.has('--pages');
+const FIX_MODE = args.has('--fix');
 // Strict mode runs only the checks that break runtime UX: missing (cross-locale),
 // unresolved (src→locale), and param mismatches. Exits with code 1 on any finding.
 // Baseline of known-unresolvable dynamic/collision keys lives in scripts/i18n-allowlist.json.
 const FLAGS = STRICT
   ? { missing: true, duplicates: false, orphans: false, untranslated: false, paramsMismatch: true, hardcoded: false, unresolved: true }
-  : {
-      missing: args.has('--missing') || args.size === 0,
-      duplicates: args.has('--duplicates') || args.size === 0,
-      orphans: args.has('--orphans') || args.size === 0,
-      untranslated: args.has('--untranslated') || args.size === 0,
-      paramsMismatch: args.has('--params') || args.size === 0,
-      hardcoded: args.has('--hardcoded') || args.size === 0,
-      unresolved: args.has('--unresolved') || args.size === 0,
-    };
+  : PAGES_ONLY || FIX_MODE
+    ? { missing: false, duplicates: false, orphans: false, untranslated: false, paramsMismatch: false, hardcoded: true, unresolved: false }
+    : {
+        missing: args.has('--missing') || args.size === 0,
+        duplicates: args.has('--duplicates') || args.size === 0,
+        orphans: args.has('--orphans') || args.size === 0,
+        untranslated: args.has('--untranslated') || args.size === 0,
+        paramsMismatch: args.has('--params') || args.size === 0,
+        hardcoded: args.has('--hardcoded') || args.size === 0,
+        unresolved: args.has('--unresolved') || args.size === 0,
+      };
 
 function flattenObject(obj, prefix = '') {
   return Object.keys(obj).reduce((acc, k) => {
@@ -52,26 +64,122 @@ function walkDir(dir, callback) {
   }
 }
 
-function findHardcodedStrings(content) {
+// Noise patterns that are NOT user-visible strings
+const NOISE_PATTERNS = [
+  /^\(/, /^\)/, /^\[/, /^\]/, /^\{/, /^\}/,       // code fragments
+  /^[.,:;!?|&=<>+\-*/\\@#$%^~`]+$/,              // punctuation-only
+  /^[0-9.,%:x×\s\-+*/=]+$/,                        // numbers/math
+  /^(null|undefined|true|false|void|return|const|let|var|if|else|switch|case|break|default|import|export|from|async|await|function|class|new|this|typeof|instanceof)$/, // JS keywords
+  /^(string|number|boolean|object|any|never|unknown|React|Promise|Record|Partial|Omit|Pick|Set|Map|Array)/, // TS types
+  /^[a-z][a-zA-Z0-9]*\(/, /\);\s*$/, /=>\s*{/,    // function calls / arrow funcs
+  /^\$\{/, /\$\{.*\}$/, /^`.*`$/,                  // template literals
+  /^[A-Z_][A-Z0-9_]*$/, // CONSTANT_CASE (likely enum/const)
+  /^(https?:|mailto:|\/[a-z]|#|data:)/, // URLs/paths
+  /^[\w.-]+\.(tsx?|jsx?|json|svg|png|jpg|gif|webp|css|scss|mjs|woff2?|ttf|ico|pdf)$/i, // file refs
+  /^(text-|bg-|border-|rounded-|flex-|grid-|p-|m-|w-|h-|gap-|space-|font-|tracking-|leading-)/, // tailwind
+  /^(sm:|md:|lg:|xl:|2xl:)/, // tailwind breakpoints
+  /^\d+(px|rem|em|vh|vw|%|s|ms)$/, // CSS units
+  /^(useState|useEffect|useCallback|useRef|useMemo|useContext|useReducer|useLayoutEffect)/, // hooks
+  /^(React\.|e\.|ev\.|event\.|props\.|state\.|ref\.|store\.)/, // common prefixes
+  /^\w+\s*[=!<>]+\s*\w+/, // comparisons
+  /^(application\/|image\/|video\/|text\/)/, // MIME types
+  /\bsetState\b|\bset[A-Z]/, // setter calls
+  /^\s*(\/\/|\/\*|\*\/)/, // comment markers
+  /^(Bearer|POST|GET|PUT|DELETE|PATCH|HTTP|JSON|API|SDK|CLI|URL|SSE|REST|MCP|JWT)\b/, // tech terms
+  /^npm\s/, /^npx\s/, /^curl\s/, /^git\s/, // CLI commands
+  /^\w+:\s*\w+$/, // "key: value" patterns
+  /^[a-z_]+\.[a-z_]+/i, // dot-separated identifiers
+];
+
+function isNoise(text) {
+  if (text.length <= 2) return true;
+  if (text.length > 200) return true;
+  for (const pat of NOISE_PATTERNS) { if (pat.test(text)) return true; }
+  // Skip if looks like code: contains =>  or  ; or  { or ) or useState
+  if (/[;{}()=]/.test(text) && !/^[A-Z]/.test(text)) return true;
+  // Skip if more than 30% non-alpha characters (likely code, not prose)
+  const alpha = text.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').length;
+  if (alpha / text.length < 0.6) return true;
+  return false;
+}
+
+function findHardcodedStrings(content, filePath) {
   const matches = [];
-  const jsxTextRegex = />([^<{}>]+)</g;
-  let match;
-  while ((match = jsxTextRegex.exec(content)) !== null) {
-    const text = match[1].trim();
-    if (text && text.length > 1 && !/^[0-9\s\W]+$/.test(text)) {
-      matches.push({ text, type: 'JSX Text' });
+  const lines = content.split('\n');
+  const alreadyUsesT = /\buseTranslation\b/.test(content) || /\bimport.*\bt\b.*from/.test(content);
+
+  // 1. Find JSX text: literal strings between > and < in JSX context
+  //    We check that the line looks like JSX (has < or > or is indented inside a return)
+  let inReturn = false;
+  let braceDepth = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Track return() blocks roughly
+    if (/\breturn\s*\(/.test(trimmed)) { inReturn = true; braceDepth = 0; }
+    if (inReturn) {
+      braceDepth += (trimmed.match(/\(/g) || []).length;
+      braceDepth -= (trimmed.match(/\)/g) || []).length;
+      if (braceDepth <= 0 && i > 0) inReturn = false;
     }
-  }
-  for (const attr of UI_ATTRIBUTES) {
-    const attrRegex = new RegExp(`${attr}=["']([^"']+)["']`, 'g');
-    while ((match = attrRegex.exec(content)) !== null) {
-      const text = match[1].trim();
-      if (text && !text.startsWith('{') && !text.includes('t(')) {
-        matches.push({ text, type: `Attribute: ${attr}` });
+
+    // Only scan lines that look like JSX (contain < or are inside return block)
+    if (!inReturn && !/<\w/.test(line) && !/^\s*['"`]/.test(line)) continue;
+
+    // JSX text: >Some text< patterns on this line
+    const jsxRe = />([^<{}>]+)</g;
+    let m;
+    while ((m = jsxRe.exec(line)) !== null) {
+      const text = m[1].trim();
+      if (!isNoise(text)) {
+        matches.push({ text, type: 'JSX Text', line: i + 1 });
       }
     }
   }
-  return matches;
+
+  // 2. UI attributes: placeholder="...", title="...", etc.
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    for (const attr of UI_ATTRIBUTES) {
+      const attrRe = new RegExp(`${attr}=["']([^"']{3,})["']`, 'g');
+      let m;
+      while ((m = attrRe.exec(line)) !== null) {
+        const text = m[1].trim();
+        if (!text.startsWith('{') && !text.includes('t(') && !isNoise(text)) {
+          matches.push({ text, type: `Attribute: ${attr}`, line: i + 1 });
+        }
+      }
+    }
+  }
+
+  // 3. toast/alert/confirm strings: toast.success('...'), toast.error('...')
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const toastRe = /(?:toast\.\w+|alert|confirm|window\.alert)\(\s*['"`]([^'"`]{3,})['"`]/g;
+    let m;
+    while ((m = toastRe.exec(line)) !== null) {
+      const text = m[1].trim();
+      if (!text.includes('t(') && !isNoise(text)) {
+        matches.push({ text, type: 'Toast/Alert', line: i + 1 });
+      }
+    }
+  }
+
+  // 4. SEO strings: title="...", description="..." in Helmet/SEO components
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const seoRe = /(?:title|description)=["']([^"']{5,})["']/g;
+    let m;
+    while ((m = seoRe.exec(line)) !== null) {
+      const text = m[1].trim();
+      if (!text.includes('t(') && !isNoise(text) && !matches.some(x => x.text === text && x.line === i + 1)) {
+        matches.push({ text, type: 'SEO', line: i + 1 });
+      }
+    }
+  }
+
+  return { matches, alreadyUsesT };
 }
 
 function extractParams(value) {
@@ -251,21 +359,80 @@ function runAudit() {
 
   // 7. HARDCODED STRINGS
   if (FLAGS.hardcoded) {
-    out += section('HARDCODED STRINGS IN SOURCE');
+    const scanDir = PAGES_ONLY ? path.join(SRC_DIR, 'pages') : SRC_DIR;
+    const modeLabel = PAGES_ONLY ? 'PAGES' : 'SOURCE';
+    out += section(`HARDCODED STRINGS IN ${modeLabel}`);
     const enValues = new Set(Object.values(flatEn));
     const report = [];
-    walkDir(SRC_DIR, (filePath) => {
+    let totalStrings = 0;
+    walkDir(scanDir, (filePath) => {
       if (!/\.(tsx?|jsx?)$/.test(filePath)) return;
+      if (HARDCODED_SKIP_FILES.has(path.basename(filePath))) return;
       const content = fs.readFileSync(filePath, 'utf8');
-      const strings = findHardcodedStrings(content);
-      const missing = strings.filter(s => !enValues.has(s.text));
-      if (missing.length) report.push({ file: path.relative(ROOT_DIR, filePath), strings: missing });
+      const { matches, alreadyUsesT } = findHardcodedStrings(content, filePath);
+      const missing = matches.filter(s => !enValues.has(s.text));
+      if (missing.length) {
+        totalStrings += missing.length;
+        report.push({ file: path.relative(ROOT_DIR, filePath), strings: missing, alreadyUsesT });
+      }
     });
-    out += `Found hardcoded strings in ${report.length} files:\n`;
+    // Sort by count descending for priority
+    report.sort((a, b) => b.strings.length - a.strings.length);
+    out += `Found ${totalStrings} hardcoded strings across ${report.length} files:\n`;
     report.forEach(r => {
-      out += `\n${r.file}:\n`;
-      r.strings.forEach(s => out += `  - [${s.type}] "${s.text}"\n`);
+      const badge = r.alreadyUsesT ? '' : ' [NO useTranslation]';
+      out += `\n${r.file}${badge} (${r.strings.length} strings):\n`;
+      r.strings.forEach(s => out += `  L${s.line} [${s.type}] "${s.text.slice(0, 100)}"\n`);
     });
+
+    // --fix mode: generate i18n keys and write a patch plan
+    if (FIX_MODE) {
+      out += section('FIX PLAN');
+      const fixPlan = { generatedAt: new Date().toISOString(), files: [] };
+      for (const r of report) {
+        const fileBase = path.basename(r.file, path.extname(r.file))
+          .replace(/Page$/, '').replace(/([A-Z])/g, (m, c, i) => i ? '.' + c.toLowerCase() : c.toLowerCase());
+        const namespace = fileBase || 'common';
+        const entries = [];
+        const usedSlugs = new Set();
+        for (const s of r.strings) {
+          // Generate a slug from the text
+          let slug = s.text
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '')
+            .trim()
+            .replace(/\s+/g, '_')
+            .slice(0, 40)
+            .replace(/_+$/, '');
+          if (!slug || slug.length < 2) slug = 'label_' + s.line;
+          // Dedupe
+          let finalSlug = slug;
+          let c = 2;
+          while (usedSlugs.has(finalSlug)) { finalSlug = slug + '_' + c++; }
+          usedSlugs.add(finalSlug);
+
+          const key = `${namespace}.${finalSlug}`;
+          entries.push({ key, text: s.text, line: s.line, type: s.type });
+        }
+        fixPlan.files.push({ file: r.file, alreadyUsesT: r.alreadyUsesT, namespace, entries });
+      }
+
+      // Write fix plan JSON
+      const fixPlanPath = path.join(REPORTS_DIR, 'i18n-fix-plan.json');
+      if (!fs.existsSync(REPORTS_DIR)) fs.mkdirSync(REPORTS_DIR, { recursive: true });
+      fs.writeFileSync(fixPlanPath, JSON.stringify(fixPlan, null, 2) + '\n');
+      out += `Fix plan written to: ${path.relative(ROOT_DIR, fixPlanPath)}\n`;
+      out += `Total: ${fixPlan.files.length} files, ${totalStrings} strings to extract.\n\n`;
+
+      // Print summary per file
+      fixPlan.files.forEach(f => {
+        out += `${f.file} → namespace "${f.namespace}" (${f.entries.length} keys)\n`;
+        f.entries.slice(0, 5).forEach(e => {
+          out += `  L${e.line}: "${e.text.slice(0, 50)}" → t('${e.key}')\n`;
+        });
+        if (f.entries.length > 5) out += `  ... +${f.entries.length - 5} more\n`;
+      });
+    }
   }
 
   out += section('DONE');
@@ -285,6 +452,35 @@ function runAudit() {
     }
     console.log('[STRICT] OK');
   }
+}
+
+if (args.has('--help') || args.has('-h')) {
+  console.log(`
+i18n Scanner — Visant Labs
+
+Usage: node scripts/i18n-scanner.mjs [flags]
+
+Flags:
+  (none)          Run all checks (missing, duplicates, orphans, untranslated, params, hardcoded, unresolved)
+  --missing       Only check missing keys across locales
+  --duplicates    Only check duplicate values
+  --orphans       Only check orphan keys (defined but unused)
+  --untranslated  Only check identical EN/PT values
+  --params        Only check param mismatches
+  --hardcoded     Only check hardcoded strings in source
+  --unresolved    Only check unresolved keys (in src but not in locale)
+  --strict        CI mode — missing + unresolved + params. Exits 1 on failure.
+  --pages         Focus hardcoded scan on src/pages/ only (skips docs/legal/design-system)
+  --fix           Generate i18n-fix-plan.json with suggested keys for every hardcoded string
+  --help, -h      Show this help
+
+Examples:
+  node scripts/i18n-scanner.mjs --pages           # Quick scan of pages only
+  node scripts/i18n-scanner.mjs --pages --fix      # Pages scan + generate fix plan JSON
+  node scripts/i18n-scanner.mjs --strict           # CI gate
+  node scripts/i18n-scanner.mjs --hardcoded        # Full hardcoded scan across all src/
+`);
+  process.exit(0);
 }
 
 runAudit();

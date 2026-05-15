@@ -1263,7 +1263,7 @@ export const CanvasPage: React.FC = () => {
           },
         });
         setNodes(nds => nds.map(n => ({ ...n, selected: n.id === nodeId })));
-        toast.success('Brand asset added to canvas');
+        toast.success(t('canvas.brand_asset_added_to_canvas'));
       }
       return;
     }
@@ -1590,7 +1590,7 @@ export const CanvasPage: React.FC = () => {
         navigate(`/canvas/${newProject._id}`);
       } catch (err: any) {
         console.error('[CanvasPage] JSON import failed:', err);
-        toast.error(`Falha ao importar: ${err?.message ?? 'erro desconhecido'}`, {
+        toast.error(t('canvas.import_failed', { error: err?.message ?? t('canvas.unknown_error') }), {
           duration: 5000,
         });
       }

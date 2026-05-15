@@ -429,7 +429,7 @@ export const CommunityPage: React.FC = () => {
                   className="flex items-center gap-2 h-12 px-6 text-sm min-w-[200px]"
                 >
                   <Plus size={18} />
-                  <span>Criar um novo prompt</span>
+                  <span>{t('community.criar_um_novo_prompt')}</span>
                 </PremiumButton>
 
                 <div className="flex gap-2">
@@ -439,7 +439,7 @@ export const CommunityPage: React.FC = () => {
                     className="h-12 px-5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 backdrop-blur-md transition-all flex items-center gap-2"
                   >
                     <Globe size={18} className="text-neutral-400" />
-                    <span className="font-manrope font-semibold">Explorar Galeria</span>
+                    <span className="font-manrope font-semibold">{t('community.explorar_galeria')}</span>
                   </Button>
 
                   <Button
@@ -461,7 +461,7 @@ export const CommunityPage: React.FC = () => {
               >
                 <GlassPanel padding="sm" className="bg-white/[0.02] border-white/[0.05] hover:border-white/10 transition-colors group">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">Membros</span>
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">{t('community.membros')}</span>
                     <TrendingUp size={14} className="text-neutral-700 group-hover:text-neutral-400 transition-colors" />
                   </div>
                   <p className="text-3xl font-bold text-white font-mono tracking-tighter">
@@ -471,7 +471,7 @@ export const CommunityPage: React.FC = () => {
 
                 <GlassPanel padding="sm" className="bg-white/[0.02] border-white/[0.05] hover:border-white/10 transition-colors group">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">Criações</span>
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">{t('community.criaes')}</span>
                     <Diamond size={14} className="text-neutral-700 group-hover:text-neutral-400 transition-colors" />
                   </div>
                   <p className="text-3xl font-bold text-white font-mono tracking-tighter">
@@ -481,7 +481,7 @@ export const CommunityPage: React.FC = () => {
 
                 <GlassPanel padding="sm" className="hidden sm:flex bg-white/[0.02] border-white/[0.05] hover:border-white/10 transition-colors group">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">Publicado</span>
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">{t('community.publicado')}</span>
                     <ImageIcon size={14} className="text-neutral-700 group-hover:text-neutral-400 transition-colors" />
                   </div>
                   <p className="text-3xl font-bold text-white font-mono tracking-tighter">
@@ -505,8 +505,8 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-10">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-1">
-                  <MicroTitle className="text-neutral-500 tracking-[0.1em]">Curadoria</MicroTitle>
-                  <h2 className="text-3xl font-bold text-white font-manrope tracking-tight">Explorar por Categoria</h2>
+                  <MicroTitle className="text-neutral-500 tracking-[0.1em]">{t('community.curadoria')}</MicroTitle>
+                  <h2 className="text-3xl font-bold text-white font-manrope tracking-tight">{t('community.explorar_por_categoria')}</h2>
                 </div>
                 <Link
                   to="/community/presets"
@@ -563,7 +563,7 @@ export const CommunityPage: React.FC = () => {
                           </div>
                         ))
                       ) : (
-                        <p className="text-[10px] font-mono text-neutral-800 uppercase tracking-widest text-left">vazio</p>
+                        <p className="text-[10px] font-mono text-neutral-800 uppercase tracking-widest text-left">{t('community.vazio')}</p>
                       )}
                     </div>
                   </GlassPanel>
@@ -575,7 +575,7 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-white font-manrope">Workflows da Comunidade</h2>
+                  <h2 className="text-2xl font-bold text-white font-manrope">{t('community.workflows_da_comunidade')}</h2>
                   <p className="text-neutral-500 font-mono text-sm max-w-lg mt-2">
                     Workflows completos criados pela comunidade. Salve, compartilhe e reutilize estruturas de canvas inteiras.
                   </p>
@@ -687,7 +687,7 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-bold text-white font-manrope">Galeria da Comunidade</h2>
+                  <h2 className="text-3xl font-bold text-white font-manrope">{t('community.galeria_da_comunidade')}</h2>
                   <p className="text-neutral-500 font-mono text-sm max-w-lg">
                     Inspirado pelas criações enviadas pelos nossos usuários em tempo real.
                   </p>
@@ -731,7 +731,7 @@ export const CommunityPage: React.FC = () => {
                           </p>
                           <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                             <Plus size={10} className="text-neutral-500" />
-                            <span className="text-[10px] text-neutral-400 font-mono uppercase">Usar como referência</span>
+                            <span className="text-[10px] text-neutral-400 font-mono uppercase">{t('community.usar_como_referncia')}</span>
                           </div>
                         </div>
                       </Link>
@@ -797,7 +797,7 @@ export const CommunityPage: React.FC = () => {
                       className="group flex items-center gap-3 px-8 py-4 bg-white text-black font-bold rounded-md transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-white/10"
                     >
                       <Github size={22} className="group-hover:rotate-12 transition-transform" />
-                      <span className="font-mono uppercase tracking-widest">Ver Repositório</span>
+                      <span className="font-mono uppercase tracking-widest">{t('community.ver_repositrio')}</span>
                       <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </a>
                     <MicroTitle as="p">

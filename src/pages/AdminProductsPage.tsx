@@ -144,7 +144,7 @@ export const AdminProductsPage: React.FC = () => {
     };
 
     const handleSeedDefaults = async () => {
-        if (!confirm('Deseja popular a base com os pacotes de créditos e planos padrão?')) return;
+        if (!confirm(t('admin.products.deseja_popular_a_base_com_os_pacote'))) return;
         const token = authService.getToken();
         if (!token) return;
 
@@ -177,10 +177,10 @@ export const AdminProductsPage: React.FC = () => {
                 });
             }
 
-            toast.success('Produtos semeados com sucesso!');
+            toast.success(t('admin.products.produtos_semeados_com_sucesso'));
             handleFetch();
         } catch (err: any) {
-            toast.error('Erro ao semear: ' + err.message);
+            toast.error(t('admin.products.seed_error', { error: err.message }));
         } finally {
             setIsLoading(false);
         }
@@ -237,7 +237,7 @@ export const AdminProductsPage: React.FC = () => {
         if (!token) return;
 
         if (!formData.productId || !formData.name) {
-            toast.error('Preencha os campos obrigatórios (ID do Produto e Nome)');
+            toast.error(t('admin.products.preencha_os_campos_obrigatrios_id_d'));
             return;
         }
 
@@ -276,7 +276,7 @@ export const AdminProductsPage: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Tem certeza que deseja deletar este produto?')) return;
+        if (!confirm(t('admin.products.tem_certeza_que_deseja_deletar_este'))) return;
         const token = authService.getToken();
         if (!token) return;
 
@@ -286,7 +286,7 @@ export const AdminProductsPage: React.FC = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (!resp.ok) throw new Error('Erro ao deletar produto');
-            toast.success('Produto removido');
+            toast.success(t('admin.products.produto_removido'));
             handleFetch();
         } catch (err: any) {
             toast.error(err.message);
@@ -309,7 +309,7 @@ export const AdminProductsPage: React.FC = () => {
 
     return (
         <>
-            <SEO title="Admin | Produtos" noindex={true} />
+            <SEO title={t('admin.products.admin_produtos')} noindex={true} />
             <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative pb-20">
                 <div className="fixed inset-0 z-0">
                 </div>
@@ -323,7 +323,7 @@ export const AdminProductsPage: React.FC = () => {
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage>Produtos</BreadcrumbPage>
+                                    <BreadcrumbPage>{t('admin.products.produtos')}</BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </BreadcrumbWithBack>
@@ -335,7 +335,7 @@ export const AdminProductsPage: React.FC = () => {
                                 <Package className="text-brand-cyan h-8 w-8" />
                                 Gestão de Produtos
                             </h1>
-                            <p className="text-neutral-500 mt-1">Gerencie pacotes de créditos e planos de assinatura.</p>
+                            <p className="text-neutral-500 mt-1">{t('admin.products.gerencie_pacotes_de_crditos_e_plano')}</p>
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -383,7 +383,7 @@ export const AdminProductsPage: React.FC = () => {
                                 <SearchBar
                                     value={searchQuery}
                                     onChange={setSearchQuery}
-                                    placeholder="Buscar produto..."
+                                    placeholder={t('admin.products.buscar_produto')}
                                     iconSize={16}
                                     className="bg-neutral-900 border-neutral-800 focus:border-brand-cyan/50"
                                     containerClassName="w-full"
@@ -406,11 +406,11 @@ export const AdminProductsPage: React.FC = () => {
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="flex items-center justify-between text-sm py-2 border-b border-neutral-800/50">
-                                            <span className="text-neutral-500">Preço BRL</span>
+                                            <span className="text-neutral-500">{t('admin.products.preo_brl')}</span>
                                             <span className="text-neutral-200 font-bold">R$ {product.priceBRL.toFixed(2)}</span>
                                         </div>
                                         <div className="flex items-center justify-between text-sm py-2 border-b border-neutral-800/50">
-                                            <span className="text-neutral-500">Créditos</span>
+                                            <span className="text-neutral-500">{t('admin.products.crditos')}</span>
                                             <span className="text-brand-cyan font-mono">{product.credits}</span>
                                         </div>
 
@@ -419,7 +419,7 @@ export const AdminProductsPage: React.FC = () => {
                                             <div className="flex items-center gap-2 py-2 px-3 bg-brand-cyan/5 border border-brand-cyan/20 rounded-md">
                                                 <span className="text-brand-cyan text-lg">∞</span>
                                                 <div className="flex-1">
-                                                    <span className="text-[10px] text-brand-cyan font-bold uppercase">Unlimited</span>
+                                                    <span className="text-[10px] text-brand-cyan font-bold uppercase">{t('admin.products.unlimited')}</span>
                                                     <p className="text-[10px] text-neutral-400">
                                                         {product.metadata.unlimitedModels?.length > 0 && 'NB2 '}
                                                         até {product.metadata.unlimitedResolutions[product.metadata.unlimitedResolutions.length - 1]}
@@ -430,14 +430,14 @@ export const AdminProductsPage: React.FC = () => {
 
                                         <div className="grid grid-cols-2 gap-2 pt-2">
                                             <div className="flex flex-col gap-1">
-                                                <MicroTitle className="font-bold">Stripe</MicroTitle>
+                                                <MicroTitle className="font-bold">{t('admin.products.stripe')}</MicroTitle>
                                                 <div className="flex items-center gap-1.5 overflow-hidden">
                                                     <CheckCircle2 className={cn("h-3 w-3", product.stripeProductId ? "text-green-500" : "text-neutral-700")} />
                                                     <span className="text-[10px] truncate max-w-full font-mono">{product.stripeProductId || 'N/A'}</span>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col gap-1">
-                                                <MicroTitle className="font-bold">Payments</MicroTitle>
+                                                <MicroTitle className="font-bold">{t('admin.products.payments')}</MicroTitle>
                                                 <div className="flex items-center gap-1.5">
                                                     <Link2 className={cn("h-3 w-3", product.paymentLinkBRL ? "text-brand-cyan" : "text-neutral-700")} />
                                                     <span className="text-[10px]">{product.paymentLinkBRL ? 'Configurado' : 'Aguardando'}</span>
@@ -471,7 +471,7 @@ export const AdminProductsPage: React.FC = () => {
                             {filteredProducts.length === 0 && !isLoading && (
                                 <div className="col-span-full py-12 text-center bg-neutral-900/50 border border-dashed border-neutral-800 rounded-xl">
                                     <Package className="h-12 w-12 text-neutral-700 mx-auto mb-4" />
-                                    <p className="text-neutral-500">Nenhum produto encontrado nesta categoria.</p>
+                                    <p className="text-neutral-500">{t('admin.products.nenhum_produto_encontrado_nesta_cat')}</p>
                                 </div>
                             )}
                         </div>
@@ -488,9 +488,9 @@ export const AdminProductsPage: React.FC = () => {
                                 <h2 className="text-2xl font-bold text-neutral-100">
                                     {isCreating ? 'Novo Produto' : 'Editar Produto'}
                                 </h2>
-                                <p className="text-neutral-500 text-sm">Preencha os detalhes do produto e links de pagamento.</p>
+                                <p className="text-neutral-500 text-sm">{t('admin.products.preencha_os_detalhes_do_produto_e_l')}</p>
                             </div>
-                            <Button variant="ghost" size="icon" aria-label="Fechar" onClick={() => setIsEditModalOpen(false)} className="rounded-full">
+                            <Button variant="ghost" size="icon" aria-label={t('admin.products.fechar')} onClick={() => setIsEditModalOpen(false)} className="rounded-full">
                                 <X className="h-6 w-6" aria-hidden="true" />
                             </Button>
                         </div>
@@ -499,16 +499,16 @@ export const AdminProductsPage: React.FC = () => {
                             {/* Basic Info */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase ">ID do Produto (único)</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">{t('admin.products.id_do_produto_nico')}</label>
                                     <Input
-                                        placeholder="ex: credits_20, plan_pro"
+                                        placeholder={t('admin.products.ex_credits20_planpro')}
                                         value={formData.productId}
                                         onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
                                         className="bg-neutral-900 border-neutral-800 font-mono"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase ">Tipo</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">{t('admin.products.tipo')}</label>
                                     <Select
                                         value={formData.type}
                                         onChange={(val: any) => setFormData({ ...formData, type: val })}
@@ -521,18 +521,18 @@ export const AdminProductsPage: React.FC = () => {
                                     />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase ">Nome Comercial</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">{t('admin.products.nome_comercial')}</label>
                                     <Input
-                                        placeholder="ex: Pacote Gamer"
+                                        placeholder={t('admin.products.ex_pacote_gamer')}
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         className="bg-neutral-900 border-neutral-800"
                                     />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase ">Descrição</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">{t('admin.products.descrio')}</label>
                                     <Textarea
-                                        placeholder="Descrição breve do que este produto oferece..."
+                                        placeholder={t('admin.products.descrio_breve_do_que_este_produto_o')}
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         className="bg-neutral-900 border-neutral-800 min-h-[80px]"
@@ -541,9 +541,9 @@ export const AdminProductsPage: React.FC = () => {
                                 {formData.type === 'subscription_plan' && (
                                     <>
                                         <div className="space-y-2 md:col-span-2">
-                                            <label className="text-xs font-bold text-neutral-500 uppercase ">Benefícios (um por linha para lista em marcadores)</label>
+                                            <label className="text-xs font-bold text-neutral-500 uppercase ">{t('admin.products.benefcios_um_por_linha_para_lista_e')}</label>
                                             <Textarea
-                                                placeholder="Benefício 1&#10;Benefício 2&#10;Benefício 3..."
+                                                placeholder={t('admin.products.benefcio_110benefcio_210benefcio_3')}
                                                 value={formData.metadata?.features ? (Array.isArray(formData.metadata.features) ? formData.metadata.features.join('\n') : '') : ''}
                                                 onChange={(e) => setFormData({
                                                     ...formData,
@@ -567,9 +567,9 @@ export const AdminProductsPage: React.FC = () => {
 
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Tier ID</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.tier_id')}</label>
                                                     <Input
-                                                        placeholder="ex: starter, creator, agency, studio"
+                                                        placeholder={t('admin.products.ex_starter_creator_agency_studio')}
                                                         value={formData.metadata?.tier || ''}
                                                         onChange={(e) => setFormData({
                                                             ...formData,
@@ -579,7 +579,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Storage (GB)</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.storage_gb')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="20"
@@ -594,7 +594,7 @@ export const AdminProductsPage: React.FC = () => {
                                             </div>
 
                                             <div className="space-y-3">
-                                                <label className="text-xs font-bold text-neutral-500 uppercase">Resoluções Unlimited (NB2)</label>
+                                                <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.resolues_unlimited_nb2')}</label>
                                                 <div className="flex flex-wrap gap-2">
                                                     {['512px', '1K', '2K', '4K'].map((res) => {
                                                         const unlimitedRes = formData.metadata?.unlimitedResolutions || [];
@@ -635,7 +635,7 @@ export const AdminProductsPage: React.FC = () => {
                                             </div>
 
                                             <div className="space-y-3">
-                                                <label className="text-xs font-bold text-neutral-500 uppercase">Modelos Unlimited</label>
+                                                <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.modelos_unlimited')}</label>
                                                 <div className="flex flex-wrap gap-2">
                                                     {[
                                                         { id: 'nb2', label: 'NB2 (Flash)', model: 'gemini-3.1-flash-image-preview' },
@@ -677,7 +677,7 @@ export const AdminProductsPage: React.FC = () => {
                                             </div>
 
                                             <div className="space-y-2">
-                                                <label className="text-xs font-bold text-neutral-500 uppercase">Intervalo</label>
+                                                <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.intervalo')}</label>
                                                 <Select
                                                     value={formData.metadata?.interval || 'month'}
                                                     onChange={(val: any) => setFormData({
@@ -704,7 +704,7 @@ export const AdminProductsPage: React.FC = () => {
 
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Gerações/Dia</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.geraesdia')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="∞"
@@ -717,7 +717,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Gerações/Hora</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.geraeshora')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="∞"
@@ -730,7 +730,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Max Projetos</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.max_projetos')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="∞"
@@ -743,7 +743,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Max Guidelines</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.max_guidelines')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="∞"
@@ -759,7 +759,7 @@ export const AdminProductsPage: React.FC = () => {
 
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Max Ref Images</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.max_ref_images')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="13"
@@ -772,7 +772,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Max Vídeo (seg)</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.max_vdeo_seg')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="8"
@@ -785,7 +785,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Resolução Max</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.resoluo_max')}</label>
                                                     <Select
                                                         value={formData.metadata?.maxResolution || '4K'}
                                                         onChange={(val: any) => setFormData({
@@ -802,7 +802,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Prioridade Fila</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.prioridade_fila')}</label>
                                                     <Select
                                                         value={formData.metadata?.queuePriority || 'normal'}
                                                         onChange={(val: any) => setFormData({
@@ -869,7 +869,7 @@ export const AdminProductsPage: React.FC = () => {
 
                                             <div className="grid grid-cols-2 gap-4 pt-2">
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Max Membros Time</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.max_membros_time')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="1 = individual"
@@ -882,7 +882,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Retenção Histórico (dias)</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.reteno_histrico_dias')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="30"
@@ -908,7 +908,7 @@ export const AdminProductsPage: React.FC = () => {
 
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Trial (dias)</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.trial_dias')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="0 = sem trial"
@@ -921,7 +921,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Desconto Anual %</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.desconto_anual')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="20"
@@ -934,7 +934,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Rollover %</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.rollover')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="0 = não rola"
@@ -947,7 +947,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">SLA (horas)</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.sla_horas')}</label>
                                                     <Input
                                                         type="number"
                                                         placeholder="48"
@@ -995,9 +995,9 @@ export const AdminProductsPage: React.FC = () => {
 
                                             <div className="grid grid-cols-2 gap-4 pt-2">
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Badge Customizado</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.badge_customizado')}</label>
                                                     <Input
-                                                        placeholder="ex: 50% OFF"
+                                                        placeholder={t('admin.products.ex_50_off')}
                                                         value={formData.metadata?.badgeText || ''}
                                                         onChange={(e) => setFormData({
                                                             ...formData,
@@ -1007,7 +1007,7 @@ export const AdminProductsPage: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Cor do Badge</label>
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.cor_do_badge')}</label>
                                                     <div className="flex gap-2">
                                                         <Input
                                                             type="color"
@@ -1040,7 +1040,7 @@ export const AdminProductsPage: React.FC = () => {
                             {/* Values & Limits */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase ">Créditos</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">{t('admin.products.crditos_2')}</label>
                                     <Input
                                         type="number"
                                         value={formData.credits}
@@ -1049,7 +1049,7 @@ export const AdminProductsPage: React.FC = () => {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase ">Preço R$ (BRL)</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">{t('admin.products.preo_r_brl')}</label>
                                     <div className="relative">
                                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">R$</span>
                                         <Input
@@ -1062,7 +1062,7 @@ export const AdminProductsPage: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase ">Preço $ (USD) - Opcional</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase ">{t('admin.products.preo_usd_opcional')}</label>
                                     <div className="relative">
                                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">$</span>
                                         <Input
@@ -1087,7 +1087,7 @@ export const AdminProductsPage: React.FC = () => {
                                     </h3>
                                     <div className="space-y-3">
                                         <div className="space-y-1">
-                                            <MicroTitle as="label" className="pl-1 font-bold">Stripe Product ID</MicroTitle>
+                                            <MicroTitle as="label" className="pl-1 font-bold">{t('admin.products.stripe_product_id')}</MicroTitle>
                                             <Input
                                                 placeholder="prod_..."
                                                 value={formData.stripeProductId}
@@ -1096,7 +1096,7 @@ export const AdminProductsPage: React.FC = () => {
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <MicroTitle as="label" className="pl-1 font-bold">Abacate Product ID</MicroTitle>
+                                            <MicroTitle as="label" className="pl-1 font-bold">{t('admin.products.abacate_product_id')}</MicroTitle>
                                             <Input
                                                 placeholder="prod_..."
                                                 value={formData.abacateProductId}
@@ -1105,7 +1105,7 @@ export const AdminProductsPage: React.FC = () => {
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <MicroTitle as="label" className="pl-1 font-bold">Abacate Bill ID (PIX)</MicroTitle>
+                                            <MicroTitle as="label" className="pl-1 font-bold">{t('admin.products.abacate_bill_id_pix')}</MicroTitle>
                                             <Input
                                                 placeholder="bill_..."
                                                 value={formData.abacateBillId}
@@ -1123,7 +1123,7 @@ export const AdminProductsPage: React.FC = () => {
                                     </h3>
                                     <div className="space-y-3">
                                         <div className="space-y-1">
-                                            <MicroTitle as="label" className="pl-1 font-bold">Link de Pagamento BRL (Stripe)</MicroTitle>
+                                            <MicroTitle as="label" className="pl-1 font-bold">{t('admin.products.link_de_pagamento_brl_stripe')}</MicroTitle>
                                             <Input
                                                 placeholder="https://buy.stripe.com/..."
                                                 value={formData.paymentLinkBRL}
@@ -1132,7 +1132,7 @@ export const AdminProductsPage: React.FC = () => {
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <MicroTitle as="label" className="pl-1 font-bold">Link de Pagamento USD (Stripe)</MicroTitle>
+                                            <MicroTitle as="label" className="pl-1 font-bold">{t('admin.products.link_de_pagamento_usd_stripe')}</MicroTitle>
                                             <Input
                                                 placeholder="https://buy.stripe.com/..."
                                                 value={formData.paymentLinkUSD}
@@ -1154,10 +1154,10 @@ export const AdminProductsPage: React.FC = () => {
                                             onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                                             className="w-4 h-4 accent-brand-cyan"
                                         />
-                                        <label htmlFor="isActive" className="text-sm text-neutral-400">Produto Ativo</label>
+                                        <label htmlFor="isActive" className="text-sm text-neutral-400">{t('admin.products.produto_ativo')}</label>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <label className="text-sm text-neutral-400">Ordem:</label>
+                                        <label className="text-sm text-neutral-400">{t('admin.products.ordem')}</label>
                                         <Input
                                             type="number"
                                             value={formData.displayOrder}
@@ -1168,7 +1168,7 @@ export const AdminProductsPage: React.FC = () => {
                                 </div>
 
                                 <div className="flex items-center gap-3">
-                                    <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>Cancelar</Button>
+                                    <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>{t('admin.products.cancelar')}</Button>
                                     <Button variant="brand" className="bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-950 font-bold px-8"
                                         onClick={handleSave}
                                         disabled={isLoading}

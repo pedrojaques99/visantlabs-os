@@ -1,0 +1,2454 @@
+{
+  "generatedAt": "2026-05-15T13:48:33.751Z",
+  "files": [
+    {
+      "file": "src\\pages\\AdminProductsPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "admin.products",
+      "entries": [
+        {
+          "key": "admin.products.produtos",
+          "text": "Produtos",
+          "line": 326,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.gerencie_pacotes_de_crditos_e_planos_de",
+          "text": "Gerencie pacotes de créditos e planos de assinatura.",
+          "line": 338,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.preo_brl",
+          "text": "Preço BRL",
+          "line": 409,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.crditos",
+          "text": "Créditos",
+          "line": 413,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.unlimited",
+          "text": "Unlimited",
+          "line": 422,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.stripe",
+          "text": "Stripe",
+          "line": 433,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.payments",
+          "text": "Payments",
+          "line": 440,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.nenhum_produto_encontrado_nesta_categori",
+          "text": "Nenhum produto encontrado nesta categoria.",
+          "line": 474,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.preencha_os_detalhes_do_produto_e_links",
+          "text": "Preencha os detalhes do produto e links de pagamento.",
+          "line": 491,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.id_do_produto_nico",
+          "text": "ID do Produto (único)",
+          "line": 502,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.tipo",
+          "text": "Tipo",
+          "line": 511,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.nome_comercial",
+          "text": "Nome Comercial",
+          "line": 524,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.descrio",
+          "text": "Descrição",
+          "line": 533,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.benefcios_um_por_linha_para_lista_em_mar",
+          "text": "Benefícios (um por linha para lista em marcadores)",
+          "line": 544,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.tier_id",
+          "text": "Tier ID",
+          "line": 570,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.storage_gb",
+          "text": "Storage (GB)",
+          "line": 582,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.resolues_unlimited_nb2",
+          "text": "Resoluções Unlimited (NB2)",
+          "line": 597,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.modelos_unlimited",
+          "text": "Modelos Unlimited",
+          "line": 638,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.intervalo",
+          "text": "Intervalo",
+          "line": 680,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.geraesdia",
+          "text": "Gerações/Dia",
+          "line": 707,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.geraeshora",
+          "text": "Gerações/Hora",
+          "line": 720,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.max_projetos",
+          "text": "Max Projetos",
+          "line": 733,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.max_guidelines",
+          "text": "Max Guidelines",
+          "line": 746,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.max_ref_images",
+          "text": "Max Ref Images",
+          "line": 762,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.max_vdeo_seg",
+          "text": "Max Vídeo (seg)",
+          "line": 775,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.resoluo_max",
+          "text": "Resolução Max",
+          "line": 788,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.prioridade_fila",
+          "text": "Prioridade Fila",
+          "line": 805,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.max_membros_time",
+          "text": "Max Membros Time",
+          "line": 872,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.reteno_histrico_dias",
+          "text": "Retenção Histórico (dias)",
+          "line": 885,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.trial_dias",
+          "text": "Trial (dias)",
+          "line": 911,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.desconto_anual",
+          "text": "Desconto Anual %",
+          "line": 924,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.rollover",
+          "text": "Rollover %",
+          "line": 937,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.sla_horas",
+          "text": "SLA (horas)",
+          "line": 950,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.badge_customizado",
+          "text": "Badge Customizado",
+          "line": 998,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.cor_do_badge",
+          "text": "Cor do Badge",
+          "line": 1010,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.crditos_2",
+          "text": "Créditos",
+          "line": 1043,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.preo_r_brl",
+          "text": "Preço R$ (BRL)",
+          "line": 1052,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.preo_usd_opcional",
+          "text": "Preço $ (USD) - Opcional",
+          "line": 1065,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.stripe_product_id",
+          "text": "Stripe Product ID",
+          "line": 1090,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.abacate_product_id",
+          "text": "Abacate Product ID",
+          "line": 1099,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.abacate_bill_id_pix",
+          "text": "Abacate Bill ID (PIX)",
+          "line": 1108,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.link_de_pagamento_brl_stripe",
+          "text": "Link de Pagamento BRL (Stripe)",
+          "line": 1126,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.link_de_pagamento_usd_stripe",
+          "text": "Link de Pagamento USD (Stripe)",
+          "line": 1135,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.produto_ativo",
+          "text": "Produto Ativo",
+          "line": 1157,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.ordem",
+          "text": "Ordem:",
+          "line": 1160,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.cancelar",
+          "text": "Cancelar",
+          "line": 1171,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.products.admin_produtos",
+          "text": "Admin | Produtos",
+          "line": 312,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "admin.products.buscar_produto",
+          "text": "Buscar produto...",
+          "line": 386,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "admin.products.fechar",
+          "text": "Fechar",
+          "line": 493,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "admin.products.ex_credits20_planpro",
+          "text": "ex: credits_20, plan_pro",
+          "line": 504,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "admin.products.ex_pacote_gamer",
+          "text": "ex: Pacote Gamer",
+          "line": 526,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "admin.products.descrio_breve_do_que_este_produto_oferec",
+          "text": "Descrição breve do que este produto oferece...",
+          "line": 535,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "admin.products.benefcio_110benefcio_210benefcio_3",
+          "text": "Benefício 1&#10;Benefício 2&#10;Benefício 3...",
+          "line": 546,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "admin.products.ex_starter_creator_agency_studio",
+          "text": "ex: starter, creator, agency, studio",
+          "line": 572,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "admin.products.ex_50_off",
+          "text": "ex: 50% OFF",
+          "line": 1000,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "admin.products.deseja_popular_a_base_com_os_pacotes_de",
+          "text": "Deseja popular a base com os pacotes de créditos e planos padrão?",
+          "line": 147,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "admin.products.produtos_semeados_com_sucesso",
+          "text": "Produtos semeados com sucesso!",
+          "line": 180,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "admin.products.erro_ao_semear",
+          "text": "Erro ao semear:",
+          "line": 183,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "admin.products.preencha_os_campos_obrigatrios_id_do_pro",
+          "text": "Preencha os campos obrigatórios (ID do Produto e Nome)",
+          "line": 240,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "admin.products.tem_certeza_que_deseja_deletar_este_prod",
+          "text": "Tem certeza que deseja deletar este produto?",
+          "line": 279,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "admin.products.produto_removido",
+          "text": "Produto removido",
+          "line": 289,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\AdminPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "admin",
+      "entries": [
+        {
+          "key": "admin.novos_usurios",
+          "text": "Novos Usuários",
+          "line": 1162,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.ltimos_30_dias",
+          "text": "Últimos 30 dias",
+          "line": 1163,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.total_gerado",
+          "text": "Total gerado",
+          "line": 1294,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.total_gerado_2",
+          "text": "Total gerado",
+          "line": 1311,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.passos_de_texto",
+          "text": "Passos de Texto",
+          "line": 1327,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.processamento_de_ia",
+          "text": "Processamento de IA",
+          "line": 1328,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.total_tokens",
+          "text": "Total Tokens",
+          "line": 1344,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.input_output",
+          "text": "Input + Output",
+          "line": 1345,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.resolues",
+          "text": "Resoluções:",
+          "line": 1461,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.carregando_analytics",
+          "text": "Carregando analytics...",
+          "line": 1591,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.ranking_de_nodes",
+          "text": "Ranking de Nodes",
+          "line": 1612,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.eventos_por_dia",
+          "text": "Eventos por Dia",
+          "line": 1638,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.sem_dados_de_canvas_events_ainda",
+          "text": "Sem dados de canvas events ainda",
+          "line": 1667,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.approval_rate",
+          "text": "Approval Rate",
+          "line": 2218,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.vectorizationeligible",
+          "text": "vectorization-eligible",
+          "line": 2227,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.thumbs_down",
+          "text": "Thumbs Down",
+          "line": 2232,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.mongoonly_review_below",
+          "text": "Mongo-only, review below",
+          "line": 2234,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.vectorized_proxy",
+          "text": "Vectorized (proxy)",
+          "line": 2239,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.uprated_docs_in_window",
+          "text": "up-rated docs in window",
+          "line": 2241,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.daily_feedback_30d",
+          "text": "Daily Feedback (30d)",
+          "line": 2250,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.feature_breakdown",
+          "text": "Feature Breakdown",
+          "line": 2272,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.down",
+          "text": "Down",
+          "line": 2280,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.approval",
+          "text": "Approval %",
+          "line": 2282,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.top_models_by_approval",
+          "text": "Top Models by Approval",
+          "line": 2310,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.no_data_yet_min_5_ratings_required",
+          "text": "No data yet (min 5 ratings required)",
+          "line": 2314,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.down_2",
+          "text": "Down",
+          "line": 2321,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.top_design_types",
+          "text": "Top Design Types",
+          "line": 2343,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.no_data_yet_min_5_ratings_required_2",
+          "text": "No data yet (min 5 ratings required)",
+          "line": 2347,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.down_3",
+          "text": "Down",
+          "line": 2354,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.top_vibes",
+          "text": "Top Vibes",
+          "line": 2376,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.no_data_yet_min_5_ratings_required_3",
+          "text": "No data yet (min 5 ratings required)",
+          "line": 2380,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.vibe",
+          "text": "Vibe",
+          "line": 2385,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.down_4",
+          "text": "Down",
+          "line": 2387,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.top_brand_guidelines",
+          "text": "Top Brand Guidelines",
+          "line": 2409,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.no_data_yet",
+          "text": "No data yet",
+          "line": 2413,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.guideline_id",
+          "text": "Guideline ID",
+          "line": 2418,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.down_5",
+          "text": "Down",
+          "line": 2420,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.tags_mais_utilizadas",
+          "text": "Tags mais utilizadas",
+          "line": 2445,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.top_20_by_usage_count",
+          "text": "Top 20 by usage count",
+          "line": 2446,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.no_tag_data_yet",
+          "text": "No tag data yet",
+          "line": 2451,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.tags_mais_votadas",
+          "text": "Tags mais votadas",
+          "line": 2467,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.top_20_by_approval_rate_min_3_ratings",
+          "text": "Top 20 by approval rate (min 3 ratings)",
+          "line": 2468,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.no_data_yet_min_3_ratings_required",
+          "text": "No data yet (min 3 ratings required)",
+          "line": 2473,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.no_downvotes_in_this_window",
+          "text": "No downvotes in this window",
+          "line": 2501,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.click_refresh_to_load_feedback_analytics",
+          "text": "Click refresh to load feedback analytics",
+          "line": 2543,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.carregando_registros",
+          "text": "Carregando registros...",
+          "line": 2584,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.nenhum_registro_encontrado_para_este_usu",
+          "text": "Nenhum registro encontrado para este usuário.",
+          "line": 2588,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.data",
+          "text": "Data",
+          "line": 2595,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.modelo",
+          "text": "Modelo",
+          "line": 2597,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.tipo",
+          "text": "Tipo",
+          "line": 2598,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.stats",
+          "text": "Stats",
+          "line": 2599,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.crditos",
+          "text": "Créditos",
+          "line": 2600,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.todos_os_tipos_de_gerao_includos",
+          "text": "Todos os tipos de geração incluídos",
+          "line": 2677,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.failed_to_load_feedback_stats",
+          "text": "Failed to load feedback stats",
+          "line": 287,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\labs\\WindTunnelPage.tsx",
+      "alreadyUsesT": false,
+      "namespace": "wind.tunnel",
+      "entries": [
+        {
+          "key": "wind.tunnel.obstacle",
+          "text": "Obstacle",
+          "line": 186,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.or_drag_drop_onto_canvas",
+          "text": "or drag & drop onto canvas",
+          "line": 208,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.transform",
+          "text": "Transform",
+          "line": 228,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.render",
+          "text": "Render",
+          "line": 236,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.particle_color",
+          "text": "Particle Color",
+          "line": 255,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.simulation",
+          "text": "Simulation",
+          "line": 262,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.appearance",
+          "text": "Appearance",
+          "line": 281,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.background",
+          "text": "Background",
+          "line": 284,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.show_obstacles",
+          "text": "Show obstacles",
+          "line": 287,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.grid_overlay",
+          "text": "Grid overlay",
+          "line": 291,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.restart_simulation",
+          "text": "Restart Simulation",
+          "line": 298,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.reset_all",
+          "text": "Reset All",
+          "line": 299,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.wind_tunnel",
+          "text": "Wind Tunnel",
+          "line": 475,
+          "type": "JSX Text"
+        },
+        {
+          "key": "wind.tunnel.upload_obstacle_image",
+          "text": "Upload obstacle image",
+          "line": 198,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.clear_image",
+          "text": "Clear image",
+          "line": 202,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.obstacle_text",
+          "text": "Obstacle text",
+          "line": 216,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.toggle_bold",
+          "text": "Toggle bold",
+          "line": 222,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.scale",
+          "text": "Scale",
+          "line": 229,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.wind",
+          "text": "Wind",
+          "line": 263,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.viscosity",
+          "text": "Viscosity",
+          "line": 264,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.particles",
+          "text": "Particles",
+          "line": 265,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.lifetime",
+          "text": "Lifetime",
+          "line": 267,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.trail",
+          "text": "Trail",
+          "line": 268,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.spread",
+          "text": "Spread",
+          "line": 269,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.glow",
+          "text": "Glow",
+          "line": 275,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.perspective",
+          "text": "Perspective",
+          "line": 276,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.toggle_obstacle_visibility",
+          "text": "Toggle obstacle visibility",
+          "line": 288,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.toggle_grid",
+          "text": "Toggle grid",
+          "line": 292,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.drop_image_to_use_as_obstacle",
+          "text": "Drop image to use as obstacle",
+          "line": 463,
+          "type": "Attribute: message"
+        },
+        {
+          "key": "wind.tunnel.back_to_labs",
+          "text": "Back to Labs",
+          "line": 470,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.restart_simulation_2",
+          "text": "Restart simulation",
+          "line": 486,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.export_png",
+          "text": "Export PNG",
+          "line": 492,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "wind.tunnel.unsupported_format_use_png_svg_jpeg_or_w",
+          "text": "Unsupported format. Use PNG, SVG, JPEG, or WebP.",
+          "line": 330,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "wind.tunnel.failed_to_load_image",
+          "text": "Failed to load image.",
+          "line": 338,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "wind.tunnel.png_exported_at_multiplierx",
+          "text": "PNG exported at ${multiplier}x.",
+          "line": 393,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "wind.tunnel.export_failed",
+          "text": "Export failed.",
+          "line": 396,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "wind.tunnel.preset",
+          "text": "Preset",
+          "line": 407,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "wind.tunnel.loaded",
+          "text": "Loaded",
+          "line": 412,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "wind.tunnel.preset_deleted",
+          "text": "Preset deleted.",
+          "line": 419,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\GridPaintPage.tsx",
+      "alreadyUsesT": false,
+      "namespace": "grid.paint",
+      "entries": [
+        {
+          "key": "grid.paint.seeds",
+          "text": "Seeds",
+          "line": 843,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.paint.rand",
+          "text": "Rand",
+          "line": 853,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.paint.dot",
+          "text": "Dot",
+          "line": 869,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.paint.frame",
+          "text": "Frame",
+          "line": 885,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.paint.stroke",
+          "text": "Stroke",
+          "line": 921,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.paint.outline_mode",
+          "text": "Outline mode",
+          "line": 923,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.paint.diagonals",
+          "text": "Diagonals",
+          "line": 936,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.paint.seeds_2",
+          "text": "Seeds",
+          "line": 959,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.paint.rand_2",
+          "text": "Rand",
+          "line": 963,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.paint.stroke_2",
+          "text": "Stroke",
+          "line": 978,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.paint.outline_mode_2",
+          "text": "Outline mode",
+          "line": 980,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.paint.diagonals_2",
+          "text": "Diagonals",
+          "line": 991,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.paint.width",
+          "text": "Width",
+          "line": 898,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "grid.paint.height",
+          "text": "Height",
+          "line": 900,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "grid.paint.dot_radius",
+          "text": "Dot Radius",
+          "line": 909,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "grid.paint.blob",
+          "text": "Blob",
+          "line": 911,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "grid.paint.glow",
+          "text": "Glow",
+          "line": 915,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "grid.paint.width_2",
+          "text": "Width",
+          "line": 927,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "grid.paint.dot_radius_2",
+          "text": "Dot Radius",
+          "line": 971,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "grid.paint.blob_2",
+          "text": "Blob",
+          "line": 972,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "grid.paint.glow_2",
+          "text": "Glow",
+          "line": 974,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "grid.paint.width_3",
+          "text": "Width",
+          "line": 984,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "grid.paint.png_exported",
+          "text": "PNG exported",
+          "line": 675,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "grid.paint.svg_exported",
+          "text": "SVG exported",
+          "line": 702,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\ExtractorPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "extractor",
+      "entries": [
+        {
+          "key": "extractor.content_type",
+          "text": "Content Type",
+          "line": 668,
+          "type": "JSX Text"
+        },
+        {
+          "key": "extractor.format",
+          "text": "Format",
+          "line": 691,
+          "type": "JSX Text"
+        },
+        {
+          "key": "extractor.download_original",
+          "text": "Download Original",
+          "line": 134,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "extractor.copy_as_png",
+          "text": "Copy as PNG",
+          "line": 141,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "extractor.upscale_to_ultra_hd",
+          "text": "Upscale to ULTRA HD",
+          "line": 149,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "extractor.search_with_google_lens",
+          "text": "Search with Google Lens",
+          "line": 159,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "extractor.view_original",
+          "text": "View Original",
+          "line": 169,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "extractor.extrator_de_imagens_inteligente_de_mltip",
+          "text": "Extrator de imagens inteligente de múltiplas fontes.",
+          "line": 569,
+          "type": "Attribute: description"
+        },
+        {
+          "key": "extractor.encontre_qualquer_imagem",
+          "text": "Encontre qualquer imagem...",
+          "line": 581,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "extractor.mais_resultimageslength_imageslength_str",
+          "text": "Mais ${result.images.length - images.length} streams identificados",
+          "line": 323,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "extractor.falha_na_extrao",
+          "text": "Falha na extração",
+          "line": 328,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "extractor.iniciando_download_de_imagestodownloadle",
+          "text": "Iniciando download de ${imagesToDownload.length} imagens...",
+          "line": 358,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "extractor.download_concludo",
+          "text": "Download concluído!",
+          "line": 378,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "extractor.erro_ao_gerar_zip",
+          "text": "Erro ao gerar ZIP",
+          "line": 380,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "extractor.upscaling_asset_to_2x_ultra_hd",
+          "text": "Upscaling asset to 2x ULTRA HD...",
+          "line": 395,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "extractor.asset_upscaled_and_delivered",
+          "text": "Asset upscaled and delivered",
+          "line": 421,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "extractor.failed_to_upscale_image",
+          "text": "Failed to upscale image",
+          "line": 424,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "extractor.processing_for_clipboard",
+          "text": "Processing for clipboard...",
+          "line": 436,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "extractor.asset_copied_to_clipboard",
+          "text": "Asset copied to clipboard",
+          "line": 439,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "extractor.extrao_de_pdf_concluda",
+          "text": "Extração de PDF concluída",
+          "line": 511,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "extractor.erro_ao_processar_pdf",
+          "text": "Erro ao processar PDF",
+          "line": 514,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\ApiKeysPage.tsx",
+      "alreadyUsesT": false,
+      "namespace": "api.keys",
+      "entries": [
+        {
+          "key": "api.keys.please_sign_in_to_manage_api_keys",
+          "text": "Please sign in to manage API keys",
+          "line": 227,
+          "type": "JSX Text"
+        },
+        {
+          "key": "api.keys.save_your_api_key_now",
+          "text": "Save your API key now",
+          "line": 305,
+          "type": "JSX Text"
+        },
+        {
+          "key": "api.keys.this_key_will_not_be_shown_again_copy_it",
+          "text": "This key will not be shown again. Copy it and store it securely.",
+          "line": 306,
+          "type": "JSX Text"
+        },
+        {
+          "key": "api.keys.scopes",
+          "text": "Scopes",
+          "line": 362,
+          "type": "JSX Text"
+        },
+        {
+          "key": "api.keys.no_api_keys_yet",
+          "text": "No API keys yet",
+          "line": 428,
+          "type": "JSX Text"
+        },
+        {
+          "key": "api.keys.key",
+          "text": "Key",
+          "line": 439,
+          "type": "JSX Text"
+        },
+        {
+          "key": "api.keys.scopes_2",
+          "text": "Scopes",
+          "line": 440,
+          "type": "JSX Text"
+        },
+        {
+          "key": "api.keys.last_used",
+          "text": "Last Used",
+          "line": 441,
+          "type": "JSX Text"
+        },
+        {
+          "key": "api.keys.created",
+          "text": "Created",
+          "line": 442,
+          "type": "JSX Text"
+        },
+        {
+          "key": "api.keys.status",
+          "text": "Status",
+          "line": 443,
+          "type": "JSX Text"
+        },
+        {
+          "key": "api.keys.never",
+          "text": "Never",
+          "line": 472,
+          "type": "JSX Text"
+        },
+        {
+          "key": "api.keys.revoke_api_key",
+          "text": "Revoke API Key",
+          "line": 522,
+          "type": "JSX Text"
+        },
+        {
+          "key": "api.keys.manage_your_api_keys_for_agent_and_progr",
+          "text": "Manage your API keys for agent and programmatic access",
+          "line": 236,
+          "type": "Attribute: description"
+        },
+        {
+          "key": "api.keys.copy_to_clipboard",
+          "text": "Copy to clipboard",
+          "line": 323,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "api.keys.revoke_key",
+          "text": "Revoke key",
+          "line": 498,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "api.keys.please_enter_a_name_for_the_key",
+          "text": "Please enter a name for the key",
+          "line": 110,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "api.keys.select_at_least_one_scope",
+          "text": "Select at least one scope",
+          "line": 114,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "api.keys.copied_to_clipboard",
+          "text": "Copied to clipboard",
+          "line": 182,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\AdminPresetsPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "admin.presets",
+      "entries": [
+        {
+          "key": "admin.presets.resultado_da_importao",
+          "text": "Resultado da importação:",
+          "line": 1483,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.presets.erros",
+          "text": "Erros:",
+          "line": 1487,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.presets.resultado",
+          "text": "Resultado:",
+          "line": 1576,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.presets.erros_2",
+          "text": "Erros:",
+          "line": 1580,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.presets.fazendo_upload_da_imagem",
+          "text": "Fazendo upload da imagem...",
+          "line": 1713,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.presets.ou_faa_upload_de_uma_nova_imagem",
+          "text": "Ou faça upload de uma nova imagem:",
+          "line": 1745,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.presets.nenhum",
+          "text": "Nenhum",
+          "line": 1797,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.presets.nenhuma",
+          "text": "Nenhuma",
+          "line": 1816,
+          "type": "JSX Text"
+        },
+        {
+          "key": "admin.presets.editar_preset",
+          "text": "Editar preset",
+          "line": 305,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "admin.presets.ex_mycustompreset",
+          "text": "ex: my-custom-preset",
+          "line": 1660,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "admin.presets.digite_uma_tag_e_pressione_enter",
+          "text": "Digite uma tag e pressione Enter",
+          "line": 1849,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "admin.presets.tem_certeza_que_deseja_deletar_este_pres",
+          "text": "Tem certeza que deseja deletar este preset?",
+          "line": 647,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "admin.presets.falha_failed_itens_no_puderam_ser_criado",
+          "text": "Falha: ${failed} itens não puderam ser criados (podem já existir).",
+          "line": 1236,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\CommunityPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "community",
+      "entries": [
+        {
+          "key": "community.criar_um_novo_prompt",
+          "text": "Criar um novo prompt",
+          "line": 432,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.explorar_galeria",
+          "text": "Explorar Galeria",
+          "line": 442,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.membros",
+          "text": "Membros",
+          "line": 464,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.criaes",
+          "text": "Criações",
+          "line": 474,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.publicado",
+          "text": "Publicado",
+          "line": 484,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.curadoria",
+          "text": "Curadoria",
+          "line": 508,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.explorar_por_categoria",
+          "text": "Explorar por Categoria",
+          "line": 509,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.vazio",
+          "text": "vazio",
+          "line": 566,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.workflows_da_comunidade",
+          "text": "Workflows da Comunidade",
+          "line": 578,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.galeria_da_comunidade",
+          "text": "Galeria da Comunidade",
+          "line": 690,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.usar_como_referncia",
+          "text": "Usar como referência",
+          "line": 734,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.ver_repositrio",
+          "text": "Ver Repositório",
+          "line": 800,
+          "type": "JSX Text"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\GridMachinePage.tsx",
+      "alreadyUsesT": false,
+      "namespace": "grid.machine",
+      "entries": [
+        {
+          "key": "grid.machine.drop_an_svg_file_here",
+          "text": "Drop an SVG file here",
+          "line": 221,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.machine.or_click_ctrlv_to_paste",
+          "text": "or click / Ctrl+V to paste",
+          "line": 222,
+          "type": "JSX Text"
+        },
+        {
+          "key": "grid.machine.drop_svg_here",
+          "text": "Drop SVG here",
+          "line": 208,
+          "type": "Attribute: message"
+        },
+        {
+          "key": "grid.machine.clear_workspace",
+          "text": "Clear workspace",
+          "line": 265,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "grid.machine.this_will_remove_the_current_svg_and_res",
+          "text": "This will remove the current SVG and reset all settings.",
+          "line": 266,
+          "type": "Attribute: message"
+        },
+        {
+          "key": "grid.machine.loaded_name_anchors_anchors_handles_hand",
+          "text": "Loaded ${name} — ${anchors} anchors, ${handles} handles",
+          "line": 49,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "grid.machine.please_upload_an_svg_file",
+          "text": "Please upload an SVG file",
+          "line": 76,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "grid.machine.only_svg_files_are_supported",
+          "text": "Only SVG files are supported",
+          "line": 90,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "grid.machine.png_exported_2x",
+          "text": "PNG exported (2x)",
+          "line": 120,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "grid.machine.export_failed",
+          "text": "Export failed",
+          "line": 122,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "grid.machine.svg_exported",
+          "text": "SVG exported",
+          "line": 138,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "grid.machine.cleared",
+          "text": "Cleared",
+          "line": 144,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\MoodboardStudioPage.tsx",
+      "alreadyUsesT": false,
+      "namespace": "moodboard.studio",
+      "entries": [
+        {
+          "key": "moodboard.studio.upload_or_drop_moodboard",
+          "text": "Upload or Drop Moodboard",
+          "line": 441,
+          "type": "JSX Text"
+        },
+        {
+          "key": "moodboard.studio.single_image_for_ai_grid_detection_multi",
+          "text": "Single image for AI grid detection · Multiple for batch processing",
+          "line": 442,
+          "type": "JSX Text"
+        },
+        {
+          "key": "moodboard.studio.ai_analyzing",
+          "text": "AI Analyzing",
+          "line": 604,
+          "type": "JSX Text"
+        },
+        {
+          "key": "moodboard.studio.extract_upscale_and_animate_images_from",
+          "text": "Extract, upscale and animate images from moodboards",
+          "line": 420,
+          "type": "Attribute: description"
+        },
+        {
+          "key": "moodboard.studio.no_grid_detected_try_a_moodboard_with_cl",
+          "text": "No grid detected. Try a moodboard with clearly separated images.",
+          "line": 216,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "moodboard.studio.detected_newcropslength_images",
+          "text": "Detected ${newCrops.length} images",
+          "line": 239,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "moodboard.studio.ai_regeneration_ready",
+          "text": "AI Regeneration ready",
+          "line": 300,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "moodboard.studio.item_idslice4_errmessage",
+          "text": "Item ${id.slice(-4)}: ${err.message ||",
+          "line": 306,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "moodboard.studio.generating_frame_animation_with_veo_3",
+          "text": "Generating frame animation with Veo 3...",
+          "line": 320,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "moodboard.studio.generating_full_moodboard_video_with_veo",
+          "text": "Generating full moodboard video with Veo 3...",
+          "line": 333,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\PublicBrandGuideline.tsx",
+      "alreadyUsesT": false,
+      "namespace": "public.brand.guideline",
+      "entries": [
+        {
+          "key": "public.brand.guideline.decrypting_brand_assets",
+          "text": "Decrypting Brand Assets",
+          "line": 152,
+          "type": "JSX Text"
+        },
+        {
+          "key": "public.brand.guideline.access_denied",
+          "text": "Access Denied",
+          "line": 163,
+          "type": "JSX Text"
+        },
+        {
+          "key": "public.brand.guideline.version",
+          "text": "Version",
+          "line": 478,
+          "type": "JSX Text"
+        },
+        {
+          "key": "public.brand.guideline.visant_labs",
+          "text": "Visant // Labs®",
+          "line": 479,
+          "type": "JSX Text"
+        },
+        {
+          "key": "public.brand.guideline.brand_sections",
+          "text": "Brand sections",
+          "line": 200,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "public.brand.guideline.download_brand_guidelines_as_json",
+          "text": "Download brand guidelines as JSON",
+          "line": 269,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "public.brand.guideline.download_brand_variables_as_css",
+          "text": "Download brand variables as CSS",
+          "line": 282,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "public.brand.guideline.search_assets_colors_or_specs",
+          "text": "Search assets, colors, or specs...",
+          "line": 325,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "public.brand.guideline.downloaded_as_json",
+          "text": "Downloaded as JSON",
+          "line": 128,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "public.brand.guideline.downloaded_as_css",
+          "text": "Downloaded as CSS",
+          "line": 135,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\BrandGuidelinesPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "brand.guidelines",
+      "entries": [
+        {
+          "key": "brand.guidelines.awaiting_selection",
+          "text": "Awaiting Selection",
+          "line": 76,
+          "type": "JSX Text"
+        },
+        {
+          "key": "brand.guidelines.menu",
+          "text": "Menu",
+          "line": 230,
+          "type": "JSX Text"
+        },
+        {
+          "key": "brand.guidelines.design_system_review_pending",
+          "text": "Design System Review pending",
+          "line": 409,
+          "type": "JSX Text"
+        },
+        {
+          "key": "brand.guidelines.review",
+          "text": "Review →",
+          "line": 414,
+          "type": "JSX Text"
+        },
+        {
+          "key": "brand.guidelines.brand_guidelines_selection",
+          "text": "Brand Guidelines Selection",
+          "line": 190,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "brand.guidelines.brand_guideline_content",
+          "text": "Brand Guideline Content",
+          "line": 206,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "brand.guidelines.open_menu",
+          "text": "Open menu",
+          "line": 225,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "brand.guidelines.toggle_sections",
+          "text": "Toggle sections",
+          "line": 327,
+          "type": "Attribute: label"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\BudgetMachinePage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "budget.machine",
+      "entries": [
+        {
+          "key": "budget.machine.loading_budget",
+          "text": "Loading budget...",
+          "line": 500,
+          "type": "JSX Text"
+        },
+        {
+          "key": "budget.machine.share_link",
+          "text": "Share Link:",
+          "line": 746,
+          "type": "JSX Text"
+        },
+        {
+          "key": "budget.machine.copiar",
+          "text": "Copiar",
+          "line": 762,
+          "type": "JSX Text"
+        },
+        {
+          "key": "budget.machine.duplicate_budget",
+          "text": "Duplicate budget",
+          "line": 543,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "budget.machine.please_sign_in_to_save_budgets",
+          "text": "Please sign in to save budgets",
+          "line": 298,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "budget.machine.please_save_the_budget_first",
+          "text": "Please save the budget first",
+          "line": 332,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "budget.machine.please_save_the_budget_first_2",
+          "text": "Please save the budget first",
+          "line": 355,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "budget.machine.please_sign_in_to_duplicate_budgets",
+          "text": "Please sign in to duplicate budgets",
+          "line": 360,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\HomePage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "home",
+      "entries": [
+        {
+          "key": "home.sign_in",
+          "text": "sign in",
+          "line": 425,
+          "type": "JSX Text"
+        },
+        {
+          "key": "home.info",
+          "text": "info",
+          "line": 428,
+          "type": "JSX Text"
+        },
+        {
+          "key": "home.contact",
+          "text": "contact",
+          "line": 429,
+          "type": "JSX Text"
+        },
+        {
+          "key": "home.sign_in_2",
+          "text": "sign in",
+          "line": 455,
+          "type": "JSX Text"
+        },
+        {
+          "key": "home.info_2",
+          "text": "info",
+          "line": 458,
+          "type": "JSX Text"
+        },
+        {
+          "key": "home.community",
+          "text": "community",
+          "line": 459,
+          "type": "JSX Text"
+        },
+        {
+          "key": "home.selecione_um_app",
+          "text": "Selecione um app",
+          "line": 225,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "home.ver_todos_os_apps",
+          "text": "Ver todos os apps",
+          "line": 260,
+          "type": "Attribute: label"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\CreativeProjectsPage.tsx",
+      "alreadyUsesT": false,
+      "namespace": "creative.projects",
+      "entries": [
+        {
+          "key": "creative.projects.search_project_name",
+          "text": "Search project name…",
+          "line": 149,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "creative.projects.my_creatives",
+          "text": "My Creatives",
+          "line": 173,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "creative.projects.manage_your_aigenerated_creatives",
+          "text": "Manage your AI-generated creatives.",
+          "line": 175,
+          "type": "Attribute: description"
+        },
+        {
+          "key": "creative.projects.my_creatives_2",
+          "text": "My Creatives",
+          "line": 209,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "creative.projects.delete_creative",
+          "text": "Delete Creative",
+          "line": 386,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "creative.projects.are_you_sure_you_want_to_delete_this_cre",
+          "text": "Are you sure you want to delete this creative? This action cannot be undone.",
+          "line": 387,
+          "type": "Attribute: message"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\MyOutputsPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "my.outputs",
+      "entries": [
+        {
+          "key": "my.outputs.loading_your_outputs",
+          "text": "Loading your outputs...",
+          "line": 349,
+          "type": "JSX Text"
+        },
+        {
+          "key": "my.outputs.delete_output",
+          "text": "Delete output",
+          "line": 483,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "my.outputs.output_deleted_successfully",
+          "text": "Output deleted successfully",
+          "line": 122,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "my.outputs.failed_to_delete_output",
+          "text": "Failed to delete output",
+          "line": 124,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "my.outputs.canvas_image_removed",
+          "text": "Canvas image removed",
+          "line": 152,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "my.outputs.failed_to_remove_canvas_image",
+          "text": "Failed to remove canvas image",
+          "line": 154,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\HalftonePage.tsx",
+      "alreadyUsesT": false,
+      "namespace": "halftone",
+      "entries": [
+        {
+          "key": "halftone.drop_image_here",
+          "text": "Drop image here",
+          "line": 155,
+          "type": "Attribute: message"
+        },
+        {
+          "key": "halftone.reset_settings",
+          "text": "Reset settings",
+          "line": 196,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "halftone.all_halftone_settings_will_return_to_def",
+          "text": "All halftone settings will return to defaults. This cannot be undone.",
+          "line": 197,
+          "type": "Attribute: message"
+        },
+        {
+          "key": "halftone.png_exported",
+          "text": "PNG exported",
+          "line": 63,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "halftone.loaded_filename",
+          "text": "Loaded ${file.name ||",
+          "line": 87,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\BrandingMachinePage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "branding.machine",
+      "entries": [
+        {
+          "key": "branding.machine.branding_machine_com_ia",
+          "text": "Branding Machine com IA",
+          "line": 841,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "branding.machine.crie_estratgias_completas_de_branding_co",
+          "text": "Crie estratégias completas de branding com inteligência artificial. Gere identidades visuais profissionais passo a passo.",
+          "line": 842,
+          "type": "Attribute: description"
+        },
+        {
+          "key": "branding.machine.crie_estratgias_completas_de_branding_co_2",
+          "text": "Crie estratégias completas de branding com inteligência artificial. Gere identidades visuais profissionais passo a passo.",
+          "line": 847,
+          "type": "Attribute: description"
+        },
+        {
+          "key": "branding.machine.falar_com_especialista",
+          "text": "Falar com Especialista",
+          "line": 897,
+          "type": "Attribute: title"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\CommunityPresetsPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "community.presets",
+      "entries": [
+        {
+          "key": "community.presets.copied",
+          "text": "Copied",
+          "line": 195,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.presets.search_presets",
+          "text": "Search presets… ( / )",
+          "line": 573,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "community.presets.search_presets_2",
+          "text": "Search presets",
+          "line": 575,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "community.presets.duplicate_this_preset_into_your_collecti",
+          "text": "Duplicate this preset into your collection?",
+          "line": 730,
+          "type": "Attribute: message"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\CommunityProfilePage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "community.profile",
+      "entries": [
+        {
+          "key": "community.profile.loading_profile",
+          "text": "Loading profile...",
+          "line": 325,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.profile.mockups",
+          "text": "Mockups",
+          "line": 473,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.profile.workflows",
+          "text": "Workflows",
+          "line": 480,
+          "type": "JSX Text"
+        },
+        {
+          "key": "community.profile.duplicate_to_my_library",
+          "text": "Duplicate to my library",
+          "line": 618,
+          "type": "Attribute: title"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\PricingPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "pricing",
+      "entries": [
+        {
+          "key": "pricing.google_api_gemini_31",
+          "text": "Google API (Gemini 3.1)",
+          "line": 551,
+          "type": "JSX Text"
+        },
+        {
+          "key": "pricing.visant_processingcdn",
+          "text": "Visant Processing/CDN",
+          "line": 555,
+          "type": "JSX Text"
+        },
+        {
+          "key": "pricing.preos_e_planos",
+          "text": "Preços e Planos",
+          "line": 232,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "pricing.planos_e_pacotes_de_crditos_para_gerar_m",
+          "text": "Planos e pacotes de créditos para gerar mockups profissionais com IA. Escolha o plano ideal para suas necessidades de design.",
+          "line": 233,
+          "type": "Attribute: description"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\QRCodePage.tsx",
+      "alreadyUsesT": false,
+      "namespace": "q.r.code",
+      "entries": [
+        {
+          "key": "q.r.code.qr_code_generator",
+          "text": "QR Code Generator",
+          "line": 81,
+          "type": "JSX Text"
+        },
+        {
+          "key": "q.r.code.enter_text_to_generate_qr_code",
+          "text": "Enter text to generate QR code",
+          "line": 206,
+          "type": "JSX Text"
+        },
+        {
+          "key": "q.r.code.enter_text_url_or_any_data",
+          "text": "Enter text, URL, or any data...",
+          "line": 103,
+          "type": "Attribute: placeholder"
+        },
+        {
+          "key": "q.r.code.select_error_correction_level",
+          "text": "Select error correction level",
+          "line": 138,
+          "type": "Attribute: placeholder"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\AboutPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "about",
+      "entries": [
+        {
+          "key": "about.team",
+          "text": "team",
+          "line": 109,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "about.stack",
+          "text": "stack",
+          "line": 136,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "about.links",
+          "text": "links",
+          "line": 151,
+          "type": "Attribute: label"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\CanvasProjectsPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "canvas.projects",
+      "entries": [
+        {
+          "key": "canvas.projects.manage_your_visual_canvas_projects",
+          "text": "Manage your visual canvas projects.",
+          "line": 361,
+          "type": "Attribute: description"
+        },
+        {
+          "key": "canvas.projects.invalid_file_not_a_visant_canvas_json",
+          "text": "Invalid file — not a Visant canvas JSON.",
+          "line": 171,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "canvas.projects.imported",
+          "text": "Imported",
+          "line": 175,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\CanvasSharedPage.tsx",
+      "alreadyUsesT": false,
+      "namespace": "canvas.shared",
+      "entries": [
+        {
+          "key": "canvas.shared.shared_canvas",
+          "text": "Shared Canvas",
+          "line": 90,
+          "type": "JSX Text"
+        },
+        {
+          "key": "canvas.shared.project_not_found",
+          "text": "Project Not Found",
+          "line": 96,
+          "type": "JSX Text"
+        },
+        {
+          "key": "canvas.shared.failed_to_load_shared_project",
+          "text": "Failed to load shared project",
+          "line": 46,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\PrivacyPolicy.tsx",
+      "alreadyUsesT": true,
+      "namespace": "privacy.policy",
+      "entries": [
+        {
+          "key": "privacy.policy.google_analytics_optout_browser_addon",
+          "text": "Google Analytics Opt-out Browser Add-on",
+          "line": 249,
+          "type": "JSX Text"
+        },
+        {
+          "key": "privacy.policy.contatovisantco",
+          "text": "contato@visant.co",
+          "line": 293,
+          "type": "JSX Text"
+        },
+        {
+          "key": "privacy.policy.contatovisantco_2",
+          "text": "contato@visant.co",
+          "line": 325,
+          "type": "JSX Text"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\AdminChatPage.tsx",
+      "alreadyUsesT": false,
+      "namespace": "admin.chat",
+      "entries": [
+        {
+          "key": "admin.chat.admin_strategic_chat_visant_labs",
+          "text": "Admin Strategic Chat | Visant Labs",
+          "line": 13,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "admin.chat.assistente_estratgico_exclusivo_para_adm",
+          "text": "Assistente estratégico exclusivo para administradores da Visant Labs.",
+          "line": 14,
+          "type": "Attribute: description"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\AppsPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "apps",
+      "entries": [
+        {
+          "key": "apps.edit_app",
+          "text": "Edit App",
+          "line": 399,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "apps.failed_to_load_apps_from_database_using",
+          "text": "Failed to load apps from database, using offline mode",
+          "line": 131,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\BrandingExpertPage.tsx",
+      "alreadyUsesT": false,
+      "namespace": "branding.expert",
+      "entries": [
+        {
+          "key": "branding.expert.especialista_em_branding_visant_labs",
+          "text": "Especialista em Branding | Visant Labs",
+          "line": 16,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "branding.expert.converse_com_nosso_assistente_especialis",
+          "text": "Converse com nosso assistente especialista em estratégia e metodologia de branding.",
+          "line": 17,
+          "type": "Attribute: description"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\CanvasPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "canvas",
+      "entries": [
+        {
+          "key": "canvas.brand_asset_added_to_canvas",
+          "text": "Brand asset added to canvas",
+          "line": 1266,
+          "type": "Toast/Alert"
+        },
+        {
+          "key": "canvas.falha_ao_importar_errmessage",
+          "text": "Falha ao importar: ${err?.message ??",
+          "line": 1593,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\MockupsPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "mockups",
+      "entries": [
+        {
+          "key": "mockups.galeria_da_comunidade",
+          "text": "Galeria da Comunidade",
+          "line": 306,
+          "type": "Attribute: title"
+        },
+        {
+          "key": "mockups.explore_designs_profissionais_e_inspires",
+          "text": "Explore designs profissionais e inspire-se.",
+          "line": 308,
+          "type": "Attribute: description"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\MyBudgetsPage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "my.budgets",
+      "entries": [
+        {
+          "key": "my.budgets.carregando_presets",
+          "text": "Carregando presets...",
+          "line": 260,
+          "type": "JSX Text"
+        },
+        {
+          "key": "my.budgets.invalid_budget_id",
+          "text": "Invalid budget ID",
+          "line": 87,
+          "type": "Toast/Alert"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\WelcomeScreen.tsx",
+      "alreadyUsesT": true,
+      "namespace": "welcome.screen",
+      "entries": [
+        {
+          "key": "welcome.screen.close_tutorial",
+          "text": "Close tutorial",
+          "line": 478,
+          "type": "Attribute: label"
+        },
+        {
+          "key": "welcome.screen.fechar",
+          "text": "Fechar",
+          "line": 536,
+          "type": "Attribute: title"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\labs\\LabsPage.tsx",
+      "alreadyUsesT": false,
+      "namespace": "labs",
+      "entries": [
+        {
+          "key": "labs.labs",
+          "text": "Labs",
+          "line": 35,
+          "type": "JSX Text"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\MockupMachinePage.tsx",
+      "alreadyUsesT": true,
+      "namespace": "mockup.machine",
+      "entries": [
+        {
+          "key": "mockup.machine.gere_mockups_profissionais_com_intelignc",
+          "text": "Gere mockups profissionais com inteligência artificial. Ferramenta integrada de geração rápida de mockups e assets para designers.",
+          "line": 2750,
+          "type": "Attribute: description"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\RefundPolicy.tsx",
+      "alreadyUsesT": true,
+      "namespace": "refund.policy",
+      "entries": [
+        {
+          "key": "refund.policy.contatovisantco",
+          "text": "contato@visant.co",
+          "line": 67,
+          "type": "JSX Text"
+        }
+      ]
+    },
+    {
+      "file": "src\\pages\\UsagePolicy.tsx",
+      "alreadyUsesT": true,
+      "namespace": "usage.policy",
+      "entries": [
+        {
+          "key": "usage.policy.contatovisantco",
+          "text": "contato@visant.co",
+          "line": 233,
+          "type": "JSX Text"
+        }
+      ]
+    }
+  ]
+}

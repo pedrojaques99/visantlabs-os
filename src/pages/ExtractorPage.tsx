@@ -72,7 +72,9 @@ interface ImageCardProps {
 const ImageCard = memo<ImageCardProps>(({
   img, isHD, isSelected, isUpscaling, batchSelecting,
   onSelect, onUpscale, onCopy, onCrashed
-}) => (
+}) => {
+  const { t } = useTranslation();
+  return (
   <motion.div
     key={img.url}
     initial={{ opacity: 0, y: 10 }}
@@ -131,14 +133,14 @@ const ImageCard = memo<ImageCardProps>(({
               download
               onClick={(e) => e.stopPropagation()}
               className="w-9 h-9 border border-white/10 bg-white text-black rounded-lg flex items-center justify-center hover:bg-neutral-200 transition-colors"
-              title="Download Original"
+              title={t('extractor.download_original')}
             >
               <Download size={14} />
             </a>
             <button
               onClick={(e) => onCopy(e, img)}
               className="w-9 h-9 border border-white/10 bg-white/5 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
-              title="Copy as PNG"
+              title={t('extractor.copy_as_png')}
             >
               <Copy size={14} />
             </button>
@@ -146,7 +148,7 @@ const ImageCard = memo<ImageCardProps>(({
               onClick={(e) => onUpscale(e, img)}
               disabled={isUpscaling}
               className="w-9 h-9 border border-white/10 bg-white/5 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
-              title="Upscale to ULTRA HD"
+              title={t('extractor.upscale_to_ultra_hd')}
             >
               {isUpscaling ? <GlitchLoader size={14} /> : <Zap size={14} />}
             </button>
@@ -156,7 +158,7 @@ const ImageCard = memo<ImageCardProps>(({
                 window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(img.url)}`, '_blank');
               }}
               className="w-9 h-9 border border-white/10 bg-white/5 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
-              title="Search with Google Lens"
+              title={t('extractor.search_with_google_lens')}
             >
               <Search size={14} />
             </button>
@@ -166,7 +168,7 @@ const ImageCard = memo<ImageCardProps>(({
                 window.open(img.url, '_blank');
               }}
               className="w-9 h-9 border border-white/10 bg-white/5 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
-              title="View Original"
+              title={t('extractor.view_original')}
             >
               <Maximize2 size={14} />
             </button>
@@ -175,7 +177,8 @@ const ImageCard = memo<ImageCardProps>(({
       )}
     </div>
   </motion.div>
-), (prev, next) =>
+  );
+}, (prev, next) =>
   prev.img.url === next.img.url &&
   prev.isSelected === next.isSelected &&
   prev.isUpscaling === next.isUpscaling &&
@@ -320,12 +323,12 @@ export default function ExtractorPage() {
         if (result.images.length === 0) {
           setError('Nenhuma imagem encontrada.');
         } else if (isLoadMore) {
-          toast.success(`Mais ${result.images.length - images.length} streams identificados`);
+          toast.success(t('extractor.mais_resultimageslength_imageslength_str'));
         }
       }
     } catch (err: any) {
       setError(err.message || 'Erro ao buscar imagens');
-      toast.error('Falha na extração');
+      toast.error(t('extractor.falha_na_extrao'));
     } finally {
       setLoading(false);
     }
@@ -355,7 +358,7 @@ export default function ExtractorPage() {
     const folder = zip.folder("extracted_images");
     
     try {
-      toast.info(`Iniciando download de ${imagesToDownload.length} imagens...`);
+      toast.info(t('extractor.iniciando_download_de_imagestodownloadle'));
       
       const downloadPromises = imagesToDownload.map(async (img, index) => {
         try {
@@ -375,9 +378,9 @@ export default function ExtractorPage() {
       link.href = URL.createObjectURL(content);
       link.download = `extraction-${Date.now()}.zip`;
       link.click();
-      toast.success('Download concluído!');
+      toast.success(t('extractor.download_concludo'));
     } catch (err) {
-      toast.error('Erro ao gerar ZIP');
+      toast.error(t('extractor.erro_ao_gerar_zip'));
     } finally {
       setLoading(false);
     }
@@ -392,7 +395,7 @@ export default function ExtractorPage() {
       next.add(img.url);
       return next;
     });
-    toast.info('Upscaling asset to 2x ULTRA HD...');
+    toast.info(t('extractor.upscaling_asset_to_2x_ultra_hd'));
 
     try {
       // Stream external URLs through server to avoid CORS issues with WebGL
@@ -418,10 +421,10 @@ export default function ExtractorPage() {
         link.click();
       }
 
-      toast.success('Asset upscaled and delivered');
+      toast.success(t('extractor.asset_upscaled_and_delivered'));
     } catch (err) {
       console.error('Upscale failed:', err);
-      toast.error('Failed to upscale image');
+      toast.error(t('extractor.failed_to_upscale_image'));
     } finally {
       setUpscalingUrls(prev => {
         const next = new Set(prev);
@@ -433,10 +436,10 @@ export default function ExtractorPage() {
 
   const handleCopyAsPng = useCallback(async (e: React.MouseEvent, img: SearchImage) => {
     e.stopPropagation();
-    toast.info('Processing for clipboard...');
+    toast.info(t('extractor.processing_for_clipboard'));
     const result = await copyImageAsPng(img.url);
     if (result.success) {
-      toast.success('Asset copied to clipboard');
+      toast.success(t('extractor.asset_copied_to_clipboard'));
     } else {
       toast.error(`Failed to copy: ${result.error}`);
     }
@@ -508,10 +511,10 @@ export default function ExtractorPage() {
         }
         setImages([...extractedImages]);
       }
-      toast.success('Extração de PDF concluída');
+      toast.success(t('extractor.extrao_de_pdf_concluda'));
     } catch (err) {
       console.error(err);
-      toast.error('Erro ao processar PDF');
+      toast.error(t('extractor.erro_ao_processar_pdf'));
     } finally {
       setExtractingPdf(false);
     }
@@ -566,7 +569,7 @@ export default function ExtractorPage() {
     <PageShell
       pageId="extractor"
       title="Universal Extractor"
-      description="Extrator de imagens inteligente de múltiplas fontes."
+      description={t('extractor.extrator_de_imagens_inteligente_de_mltip')}
     >
       <div className={`w-full px-6 flex flex-col transition-all duration-700 ${images.length === 0 ? 'min-h-[60vh] justify-center' : 'pt-2 space-y-8 pb-20'}`}>
         
@@ -578,7 +581,7 @@ export default function ExtractorPage() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Encontre qualquer imagem..."
+                placeholder={t('extractor.encontre_qualquer_imagem')}
                 className="
                   w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-6 pr-32
                   text-base font-medium text-white/90 focus:outline-none focus:border-white/10
@@ -665,7 +668,7 @@ export default function ExtractorPage() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">Content Type</label>
+                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">{t('extractor.content_type')}</label>
                     <div className="flex gap-1 flex-wrap">
                       {([
                         { value: 'all',          label: 'Todos',        hint: 'Qualquer tipo' },
@@ -688,7 +691,7 @@ export default function ExtractorPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">Format</label>
+                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">{t('extractor.format')}</label>
                     <div className="flex gap-1">
                       {(['all', 'square', 'wide', 'tall'] as const).map(a => (
                         <button

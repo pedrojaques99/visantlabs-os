@@ -17,8 +17,10 @@ import { useHalftoneStore } from '@/stores/halftoneStore';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { usePasteImage } from '@/hooks/usePasteImage';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const HalftonePage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isMobile = useIsMobile();
@@ -60,7 +62,7 @@ export const HalftonePage: React.FC = () => {
       a.download = `halftone_${Date.now()}.png`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('PNG exported');
+      toast.success(t('halftone.png_exported'));
     } catch {
       toast.error('Export failed — try again');
     } finally {
@@ -84,7 +86,7 @@ export const HalftonePage: React.FC = () => {
     if (!file || !file.type.startsWith('image/')) return;
     const url = URL.createObjectURL(file);
     useHalftoneStore.getState().setImageUrl(url, file.name || 'pasted-image');
-    toast.success(`Loaded ${file.name || 'pasted image'}`);
+    toast.success(t('halftone.loaded_file', { name: file.name || t('halftone.pasted_image') }));
   }, []));
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -104,7 +106,7 @@ export const HalftonePage: React.FC = () => {
     if (!file || !file.type.startsWith('image/')) return;
     const url = URL.createObjectURL(file);
     useHalftoneStore.getState().setImageUrl(url, file.name);
-    toast.success(`Loaded ${file.name}`);
+    toast.success(t('halftone.loaded_file', { name: file.name }));
   }, []);
 
   return (
@@ -152,7 +154,7 @@ export const HalftonePage: React.FC = () => {
         onDrop={handleDrop}
       >
         <HalftoneCanvas onCanvasReady={handleCanvasReady} />
-        <DropOverlay visible={isDragOver} message="Drop image here" />
+        <DropOverlay visible={isDragOver} message={t('halftone.drop_image_here')} />
       </div>
 
       {!isMobile && (
@@ -193,8 +195,8 @@ export const HalftonePage: React.FC = () => {
         isOpen={confirmReset}
         onClose={() => setConfirmReset(false)}
         onConfirm={handleReset}
-        title="Reset settings"
-        message="All halftone settings will return to defaults. This cannot be undone."
+        title={t('halftone.reset_settings')}
+        message={t('halftone.all_halftone_settings_will_return_to_def')}
         confirmText="Reset"
         variant="warning"
       />

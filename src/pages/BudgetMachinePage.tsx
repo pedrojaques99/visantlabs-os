@@ -295,7 +295,7 @@ export const BudgetMachinePage: React.FC = () => {
     if (!budgetData || !validateData()) return;
 
     if (isAuthenticated !== true) {
-      toast.error('Please sign in to save budgets');
+      toast.error(t('budget.machine.please_sign_in_to_save_budgets'));
       return;
     }
 
@@ -329,7 +329,7 @@ export const BudgetMachinePage: React.FC = () => {
 
   const handleShare = async () => {
     if (!currentProjectId) {
-      toast.error('Please save the budget first');
+      toast.error(t('budget.machine.please_save_the_budget_first'));
       return;
     }
 
@@ -352,12 +352,12 @@ export const BudgetMachinePage: React.FC = () => {
 
   const handleDuplicate = async () => {
     if (!currentProjectId) {
-      toast.error('Please save the budget first');
+      toast.error(t('budget.machine.please_save_the_budget_first_2'));
       return;
     }
 
     if (isAuthenticated !== true) {
-      toast.error('Please sign in to duplicate budgets');
+      toast.error(t('budget.machine.please_sign_in_to_duplicate_budgets'));
       return;
     }
 
@@ -497,7 +497,7 @@ export const BudgetMachinePage: React.FC = () => {
     return (
       <div className="min-h-full w-full flex items-center justify-center bg-neutral-950 text-neutral-300">
         <div className="text-center">
-          <p className="text-sm font-mono text-neutral-400">Loading budget...</p>
+          <p className="text-sm font-mono text-neutral-400">{t('budget.machine.loading_budget')}</p>
         </div>
       </div>
     );
@@ -540,7 +540,7 @@ export const BudgetMachinePage: React.FC = () => {
             onClick={handleDuplicate}
             variant="ghost"
             className="p-2 h-9 w-9 text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5 transition-all"
-            aria-label="Duplicate budget"
+            aria-label={t('budget.machine.duplicate_budget')}
           >
             <Copy size={16} />
           </Button>
@@ -743,7 +743,7 @@ export const BudgetMachinePage: React.FC = () => {
                 <div className="flex-shrink-0 border-t border-neutral-800 p-4 sm:p-6 bg-neutral-900">
                   <div className="max-w-2xl mx-auto">
                     <div className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl">
-                      <p className="text-sm text-neutral-400 mb-2 font-mono">Share Link:</p>
+                      <p className="text-sm text-neutral-400 mb-2 font-mono">{t('budget.machine.share_link')}</p>
                       <div className="flex flex-col sm:flex-row gap-2">
                         <Input
                           type="text"
@@ -759,7 +759,7 @@ export const BudgetMachinePage: React.FC = () => {
                           className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/50 rounded-md text-brand-cyan font-mono text-sm transition-colors flex items-center justify-center gap-2"
                         >
                           <Copy size={16} />
-                          <span className="sm:hidden">Copiar</span>
+                          <span className="sm:hidden">{t('budget.machine.copiar')}</span>
                         </Button>
                       </div>
                     </div>

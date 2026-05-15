@@ -302,7 +302,7 @@ export const AdminPresetsPage: React.FC = () => {
                 <img src={imageUrl} alt={row.getValue("name")} className="w-full h-full object-cover" />
                 <button
                   type="button"
-                  aria-label="Editar preset"
+                  aria-label={t('admin.presets.editar_preset')}
                   className="absolute inset-0 bg-neutral-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
                   onClick={() => handleEdit((row.original.category as PresetType) || 'mockup', row.original as any)}
                 >
@@ -644,7 +644,7 @@ export const AdminPresetsPage: React.FC = () => {
       return;
     }
 
-    if (!confirm('Tem certeza que deseja deletar este preset?')) {
+    if (!confirm(t('admin.presets.tem_certeza_que_deseja_deletar_este_'))) {
       return;
     }
 
@@ -1233,7 +1233,7 @@ export const AdminPresetsPage: React.FC = () => {
       if (created > 0) {
         toast.success(t('adminPresets.importedSuccess', { count: created }));
       } else if (failed > 0) {
-        toast.error(`Falha: ${failed} itens não puderam ser criados (podem já existir).`);
+        toast.error(t('admin.presets.falha_failed_itens_no_puderam_ser_cr'));
       }
     } catch (error: any) {
       setError(error.message || 'Erro ao popular presets.');
@@ -1480,11 +1480,11 @@ export const AdminPresetsPage: React.FC = () => {
                   : 'bg-red-500/10 border-red-500/30 text-red-400'
                   }`}>
                   <div className="mb-2">
-                    <strong>Resultado da importação:</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
+                    <strong>{t('admin.presets.resultado_da_importao')}</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
                   </div>
                   {batchResult.errors && batchResult.errors.length > 0 && (
                     <div className="mt-3 space-y-1">
-                      <strong>Erros:</strong>
+                      <strong>{t('admin.presets.erros')}</strong>
                       {batchResult.errors.map((err, idx) => (
                         <div key={idx} className="text-xs">
                           Preset {err.index} {err.id ? `(${err.id})` : ''}: {err.error}
@@ -1573,11 +1573,11 @@ export const AdminPresetsPage: React.FC = () => {
                           : 'bg-red-500/10 border-red-500/30 text-red-400'
                           }`}>
                           <div className="mb-2">
-                            <strong>Resultado:</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
+                            <strong>{t('admin.presets.resultado')}</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
                           </div>
                           {batchResult.errors && batchResult.errors.length > 0 && (
                             <div className="mt-3 space-y-1">
-                              <strong>Erros:</strong>
+                              <strong>{t('admin.presets.erros_2')}</strong>
                               {batchResult.errors.map((err, idx) => (
                                 <div key={idx} className="text-xs">
                                   Preset {err.index} {err.id ? `(${err.id})` : ''}: {err.error}
@@ -1657,7 +1657,7 @@ export const AdminPresetsPage: React.FC = () => {
                           onChange={(e) => setFormData({ ...formData, id: e.target.value })}
                           disabled={!isCreating}
                           className="font-mono"
-                          placeholder="ex: my-custom-preset"
+                          placeholder={t('admin.presets.ex_mycustompreset')}
                         />
                       </div>
 
@@ -1710,7 +1710,7 @@ export const AdminPresetsPage: React.FC = () => {
                                   disabled={isUploadingImage || !formData.id || formData.id.trim() === ''}
                                 />
                                 {isUploadingImage && (
-                                  <p className="text-sm text-neutral-400 font-mono">Fazendo upload da imagem...</p>
+                                  <p className="text-sm text-neutral-400 font-mono">{t('admin.presets.fazendo_upload_da_imagem')}</p>
                                 )}
                                 {imageUploadError && (
                                   <p className="text-sm text-red-400 font-mono">{imageUploadError}</p>
@@ -1742,7 +1742,7 @@ export const AdminPresetsPage: React.FC = () => {
                                   </Button>
                                 </div>
                                 <div>
-                                  <MicroTitle as="p" className="mb-2 lowercase">Ou faça upload de uma nova imagem:</MicroTitle>
+                                  <MicroTitle as="p" className="mb-2 lowercase">{t('admin.presets.ou_faa_upload_de_uma_nova_imagem')}</MicroTitle>
                                   <AdminImageUploader
                                     onImageUpload={handleImageUpload}
                                     disabled={isUploadingImage || !formData.id || formData.id.trim() === ''}
@@ -1794,7 +1794,7 @@ export const AdminPresetsPage: React.FC = () => {
                           onChange={(e) => setFormData({ ...formData, model: e.target.value as GeminiModel || undefined })}
                           className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                         >
-                          <option value="">Nenhum</option>
+                          <option value="">{t('admin.presets.nenhum')}</option>
                           {AVAILABLE_MODELS.map((model) => (
                             <option key={model} value={model}>
                               {model}
@@ -1813,7 +1813,7 @@ export const AdminPresetsPage: React.FC = () => {
                             onChange={(e) => setFormData({ ...formData, mockupCategoryId: e.target.value })}
                             className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                           >
-                            <option value="">Nenhuma</option>
+                            <option value="">{t('admin.presets.nenhuma')}</option>
                             {mockupCategories.map((c) => (
                               <option key={c.id} value={c.id}>
                                 {c.name}
@@ -1846,7 +1846,7 @@ export const AdminPresetsPage: React.FC = () => {
                                   setTagInput('');
                                 }
                               }}
-                              placeholder="Digite uma tag e pressione Enter"
+                              placeholder={t('admin.presets.digite_uma_tag_e_pressione_enter')}
                               className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                             />
                             <Button variant="ghost" type="button"

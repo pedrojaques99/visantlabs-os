@@ -209,7 +209,7 @@ export const Studio3DPage: React.FC = () => {
         onDragLeave={() => setIsDragOver(false)}
         onDrop={(e) => { setIsDragOver(false); handleViewportDrop(e); }}
       >
-        <DropOverlay visible={isDragOver} message={t('studio3d.input.dropHere') !== 'studio3d.input.dropHere' ? t('studio3d.input.dropHere') : 'Drop file here'} />
+        <DropOverlay visible={isDragOver} message={t('studio3d.dropHere')} />
         <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-neutral-950"><span className="text-[10px] uppercase tracking-widest text-neutral-600 animate-pulse">{t('studio3d.loadingEngine')}</span></div>}>
           <SceneCanvas onCanvasReady={handleCanvasReady} onSceneReady={handleSceneReady} />
         </Suspense>

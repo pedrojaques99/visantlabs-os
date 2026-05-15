@@ -18,8 +18,10 @@ import { useGridMachineStore } from '@/stores/gridMachineStore';
 import { analyzeSvg } from '@/components/grid-machine/SvgAnalyzer';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { usePasteImage } from '@/hooks/usePasteImage';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const GridMachinePage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const gridRef = useRef<GridCanvasHandle>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,7 +48,7 @@ export const GridMachinePage: React.FC = () => {
     setAnalysis(result);
     const anchors = result.points.filter(p => p.type === 'anchor').length;
     const handles = result.points.filter(p => p.type === 'handle').length;
-    toast.success(`Loaded ${name} — ${anchors} anchors, ${handles} handles`);
+    toast.success(t('grid.machine.loaded_name_anchors_anchors_handles_h'));
   }, [setSvg, setAnalysis]);
 
   usePasteImage(useCallback(async ({ file }) => {
@@ -73,7 +75,7 @@ export const GridMachinePage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.name.endsWith('.svg') && file.type !== 'image/svg+xml') {
-      toast.error('Please upload an SVG file');
+      toast.error(t('grid.machine.please_upload_an_svg_file'));
       return;
     }
     const reader = new FileReader();
@@ -87,7 +89,7 @@ export const GridMachinePage: React.FC = () => {
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
     if (!file.name.endsWith('.svg') && file.type !== 'image/svg+xml') {
-      toast.error('Only SVG files are supported');
+      toast.error(t('grid.machine.only_svg_files_are_supported'));
       return;
     }
     const reader = new FileReader();
@@ -117,9 +119,9 @@ export const GridMachinePage: React.FC = () => {
       a.download = `grid-${fileName?.replace(/\.svg$/i, '') || 'export'}_${Date.now()}.png`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('PNG exported (2x)');
+      toast.success(t('grid.machine.png_exported_2x'));
     } catch {
-      toast.error('Export failed');
+      toast.error(t('grid.machine.export_failed'));
     } finally {
       setIsExporting(false);
     }
@@ -135,13 +137,13 @@ export const GridMachinePage: React.FC = () => {
     a.download = `grid-${fileName?.replace(/\.svg$/i, '') || 'export'}_${Date.now()}.svg`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('SVG exported');
+    toast.success(t('grid.machine.svg_exported'));
   }, [fileName]);
 
   const handleReset = useCallback(() => {
     clear();
     setConfirmReset(false);
-    toast.success('Cleared');
+    toast.success(t('grid.machine.cleared'));
   }, [clear]);
 
   useHotkeys('mod+e', (e) => { e.preventDefault(); handleExportPng(); }, { enableOnFormTags: false });
@@ -205,7 +207,7 @@ export const GridMachinePage: React.FC = () => {
         onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
         onDragLeave={() => setIsDragOver(false)}
       >
-        <DropOverlay visible={isDragOver} message="Drop SVG here" />
+        <DropOverlay visible={isDragOver} message={t('grid.machine.drop_svg_here')} />
         {svgContent ? (
           <GridCanvas ref={gridRef} />
         ) : (
@@ -218,8 +220,8 @@ export const GridMachinePage: React.FC = () => {
                 <Upload size={20} className="text-neutral-500 group-hover:text-neutral-300" />
               </div>
               <div className="text-center">
-                <p className="text-[12px] text-neutral-400">Drop an SVG file here</p>
-                <p className="text-[10px] text-neutral-600 mt-1">or click / Ctrl+V to paste</p>
+                <p className="text-[12px] text-neutral-400">{t('grid.machine.drop_an_svg_file_here')}</p>
+                <p className="text-[10px] text-neutral-600 mt-1">{t('grid.machine.or_click_ctrlv_to_paste')}</p>
               </div>
             </button>
           </div>
@@ -262,8 +264,8 @@ export const GridMachinePage: React.FC = () => {
         isOpen={confirmReset}
         onClose={() => setConfirmReset(false)}
         onConfirm={handleReset}
-        title="Clear workspace"
-        message="This will remove the current SVG and reset all settings."
+        title={t('grid.machine.clear_workspace')}
+        message={t('grid.machine.this_will_remove_the_current_svg_and_')}
         confirmText="Clear"
         variant="warning"
       />

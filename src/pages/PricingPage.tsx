@@ -229,8 +229,8 @@ export const PricingPage: React.FC = () => {
   return (
     <>
       <SEO
-        title="Preços e Planos"
-        description="Planos e pacotes de créditos para gerar mockups profissionais com IA. Escolha o plano ideal para suas necessidades de design."
+        title={t('pricing.preos_e_planos')}
+        description={t('pricing.planos_e_pacotes_de_crditos_para_gerar_m')}
         keywords="preços, planos, créditos, assinatura, mockup generator, pricing"
       />
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
@@ -548,11 +548,11 @@ export const PricingPage: React.FC = () => {
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center py-2 border-b border-neutral-800/40 text-sm">
-                  <span className="text-neutral-400">Google API (Gemini 3.1)</span>
+                  <span className="text-neutral-400">{t('pricing.google_api_gemini_31')}</span>
                   <span className="text-neutral-200 font-mono">$0.067</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-neutral-800/40 text-sm">
-                  <span className="text-neutral-400">Visant Processing/CDN</span>
+                  <span className="text-neutral-400">{t('pricing.visant_processingcdn')}</span>
                   <span className="text-neutral-200 font-mono">$0.013</span>
                 </div>
                 <div className="flex justify-between items-center py-2 text-base font-bold text-brand-cyan">

@@ -16,6 +16,7 @@ import { useIsMobile } from '@/hooks/use-media-query';
 import { usePasteImage } from '@/hooks/usePasteImage';
 import { Input } from '@/components/ui/input';
 import { WindTunnelCanvas, type WindTunnelConfig, type WindTunnelHandle } from '@/components/labs/wind-tunnel/WindTunnelCanvas';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const DEFAULT_CONFIG: WindTunnelConfig = {
   obstacleType: 'text',
@@ -141,7 +142,7 @@ const FONT_OPTIONS = [
 
 function ControlsContent({
   config, update, imageName, fileInputRef, handleImageUpload, handleClearImage,
-  handleResetSim, handleReset, userPresets, onSavePreset, onLoadPreset, onDeletePreset,
+  handleResetSim, handleReset, userPresets, onSavePreset, onLoadPreset, onDeletePreset, t,
 }: {
   config: WindTunnelConfig;
   update: <K extends keyof WindTunnelConfig>(key: K, value: WindTunnelConfig[K]) => void;
@@ -151,6 +152,7 @@ function ControlsContent({
   handleClearImage: () => void;
   handleResetSim: () => void;
   handleReset: () => void;
+  t: (key: string, params?: Record<string, string | number>) => string;
   userPresets: SavedPreset[];
   onSavePreset: () => void;
   onLoadPreset: (preset: SavedPreset) => void;
@@ -183,7 +185,7 @@ function ControlsContent({
 
       {/* Obstacle Shape */}
       <div className="p-3 space-y-2 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Obstacle</MicroTitle>
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('wind.tunnel.obstacle')}</MicroTitle>
         <div className="grid grid-cols-3 gap-1">
           {OBSTACLE_SHAPES.map(s => (
             <Button key={s.key} variant="ghost" size="xs" onClick={() => update('obstacleType', s.key)} className={`text-[9px] font-medium ${config.obstacleType === s.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{s.label}</Button>
@@ -195,17 +197,17 @@ function ControlsContent({
       {config.obstacleType === 'image' && (
         <div className="p-3 space-y-2 border-b border-white/[0.06]">
           <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Image</MicroTitle>
-          <input ref={fileInputRef} type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="hidden" aria-label="Upload obstacle image" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleImageUpload(file); }} />
+          <input ref={fileInputRef} type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="hidden" aria-label={t('wind.tunnel.upload_obstacle_image')} onChange={(e) => { const file = e.target.files?.[0]; if (file) handleImageUpload(file); }} />
           {imageName && (
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-neutral-400 truncate flex-1">{imageName}</span>
-              <Button variant="ghost" size="icon-sm" onClick={handleClearImage} className="text-neutral-500 hover:text-white shrink-0" aria-label="Clear image"><X size={10} /></Button>
+              <Button variant="ghost" size="icon-sm" onClick={handleClearImage} className="text-neutral-500 hover:text-white shrink-0" aria-label={t('wind.tunnel.clear_image')}><X size={10} /></Button>
             </div>
           )}
           <Button variant="ghost" size="xs" onClick={() => fileInputRef.current?.click()} className="text-[9px] text-neutral-500 hover:text-white w-full flex items-center justify-center gap-1">
             <Upload size={10} /> {imageName ? 'Replace' : 'Upload SVG / PNG'}
           </Button>
-          <p className="text-[8px] text-neutral-700 text-center">or drag & drop onto canvas</p>
+          <p className="text-[8px] text-neutral-700 text-center">{t('wind.tunnel.or_drag_drop_onto_canvas')}</p>
         </div>
       )}
 
@@ -213,27 +215,27 @@ function ControlsContent({
       {config.obstacleType === 'text' && (
         <div className="p-3 space-y-2 border-b border-white/[0.06]">
           <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Text</MicroTitle>
-          <Input value={config.text} onChange={(e) => update('text', e.target.value)} placeholder="VISANT" maxLength={24} className="h-7 text-xs bg-transparent border-white/10" aria-label="Obstacle text" />
+          <Input value={config.text} onChange={(e) => update('text', e.target.value)} placeholder="VISANT" maxLength={24} className="h-7 text-xs bg-transparent border-white/10" aria-label={t('wind.tunnel.obstacle_text')} />
           <div className="flex items-center gap-1 flex-wrap">
             {FONT_OPTIONS.map(f => (
               <Button key={f} variant="ghost" size="xs" onClick={() => update('fontFamily', f)} className={`text-[8px] px-1.5 ${config.fontFamily === f ? 'text-white bg-white/10' : 'text-neutral-600 hover:text-white'}`} style={{ fontFamily: f }}>{f.split(' ')[0]}</Button>
             ))}
           </div>
-          <Button variant="ghost" size="xs" onClick={() => update('bold', !config.bold)} className={`text-[10px] font-bold ${config.bold ? 'text-white bg-white/10' : 'text-neutral-600'}`} aria-label="Toggle bold">B</Button>
+          <Button variant="ghost" size="xs" onClick={() => update('bold', !config.bold)} className={`text-[10px] font-bold ${config.bold ? 'text-white bg-white/10' : 'text-neutral-600'}`} aria-label={t('wind.tunnel.toggle_bold')}>B</Button>
         </div>
       )}
 
       {/* Transform (universal) */}
       <div className="p-3 space-y-2 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Transform</MicroTitle>
-        <NodeSlider label="Scale" value={config.obstacleScale} min={10} max={250} step={5} onChange={v => update('obstacleScale', v)} formatValue={v => `${Math.round(v)}%`} />
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('wind.tunnel.transform')}</MicroTitle>
+        <NodeSlider label={t('wind.tunnel.scale')} value={config.obstacleScale} min={10} max={250} step={5} onChange={v => update('obstacleScale', v)} formatValue={v => `${Math.round(v)}%`} />
         <NodeSlider label="X" value={config.obstacleOffsetX} min={-50} max={50} step={1} onChange={v => update('obstacleOffsetX', v)} formatValue={v => String(Math.round(v))} />
         <NodeSlider label="Y" value={config.obstacleOffsetY} min={-50} max={50} step={1} onChange={v => update('obstacleOffsetY', v)} formatValue={v => String(Math.round(v))} />
       </div>
 
       {/* Render Mode */}
       <div className="p-3 space-y-2 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Render</MicroTitle>
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('wind.tunnel.render')}</MicroTitle>
         <div className="flex gap-1">
           {RENDER_MODES.map(m => (
             <Button key={m.key} variant="ghost" size="xs" onClick={() => update('renderMode', m.key)} className={`text-[9px] flex-1 ${config.renderMode === m.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{m.label}</Button>
@@ -252,51 +254,51 @@ function ControlsContent({
         {config.colorMode === 'uniform' && (
           <div className="flex items-center gap-2 pt-1">
             <input type="color" value={rgbaToHex(config.baseColor)} onChange={e => update('baseColor', hexToRgba(e.target.value))} className="w-6 h-6 rounded border border-white/10 bg-transparent cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded" />
-            <span className="text-[9px] text-neutral-500">Particle Color</span>
+            <span className="text-[9px] text-neutral-500">{t('wind.tunnel.particle_color')}</span>
           </div>
         )}
       </div>
 
       {/* Simulation Sliders */}
       <div className="p-3 space-y-3 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Simulation</MicroTitle>
-        <NodeSlider label="Wind" value={config.windSpeed} min={1} max={100} step={1} onChange={v => update('windSpeed', v)} formatValue={v => String(Math.round(v))} />
-        <NodeSlider label="Viscosity" value={config.viscosity} min={1} max={100} step={1} onChange={v => update('viscosity', v)} formatValue={v => String(Math.round(v))} />
-        <NodeSlider label="Particles" value={config.particleCount} min={500} max={15000} step={500} onChange={v => update('particleCount', v)} formatValue={v => String(Math.round(v))} />
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('wind.tunnel.simulation')}</MicroTitle>
+        <NodeSlider label={t('wind.tunnel.wind')} value={config.windSpeed} min={1} max={100} step={1} onChange={v => update('windSpeed', v)} formatValue={v => String(Math.round(v))} />
+        <NodeSlider label={t('wind.tunnel.viscosity')} value={config.viscosity} min={1} max={100} step={1} onChange={v => update('viscosity', v)} formatValue={v => String(Math.round(v))} />
+        <NodeSlider label={t('wind.tunnel.particles')} value={config.particleCount} min={500} max={15000} step={500} onChange={v => update('particleCount', v)} formatValue={v => String(Math.round(v))} />
         <NodeSlider label="Size" value={config.particleSize} min={0.5} max={4} step={0.5} onChange={v => update('particleSize', v)} formatValue={v => v.toFixed(1)} />
-        <NodeSlider label="Lifetime" value={config.particleLifetime} min={20} max={300} step={10} onChange={v => update('particleLifetime', v)} formatValue={v => String(Math.round(v))} />
-        <NodeSlider label="Trail" value={config.trailLength} min={2} max={32} step={2} onChange={v => update('trailLength', v)} formatValue={v => String(Math.round(v))} />
-        <NodeSlider label="Spread" value={config.spread} min={0} max={100} step={5} onChange={v => update('spread', v)} formatValue={v => String(Math.round(v))} />
+        <NodeSlider label={t('wind.tunnel.lifetime')} value={config.particleLifetime} min={20} max={300} step={10} onChange={v => update('particleLifetime', v)} formatValue={v => String(Math.round(v))} />
+        <NodeSlider label={t('wind.tunnel.trail')} value={config.trailLength} min={2} max={32} step={2} onChange={v => update('trailLength', v)} formatValue={v => String(Math.round(v))} />
+        <NodeSlider label={t('wind.tunnel.spread')} value={config.spread} min={0} max={100} step={5} onChange={v => update('spread', v)} formatValue={v => String(Math.round(v))} />
       </div>
 
       {/* Effects */}
       <div className="p-3 space-y-3 border-b border-white/[0.06]">
         <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Effects</MicroTitle>
-        <NodeSlider label="Glow" value={config.glowIntensity} min={0} max={30} step={1} onChange={v => update('glowIntensity', v)} formatValue={v => String(Math.round(v))} />
-        <NodeSlider label="Perspective" value={config.perspective} min={0} max={100} step={1} onChange={v => update('perspective', v)} formatValue={v => String(Math.round(v))} />
+        <NodeSlider label={t('wind.tunnel.glow')} value={config.glowIntensity} min={0} max={30} step={1} onChange={v => update('glowIntensity', v)} formatValue={v => String(Math.round(v))} />
+        <NodeSlider label={t('wind.tunnel.perspective')} value={config.perspective} min={0} max={100} step={1} onChange={v => update('perspective', v)} formatValue={v => String(Math.round(v))} />
       </div>
 
       {/* Appearance */}
       <div className="p-3 space-y-2 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Appearance</MicroTitle>
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('wind.tunnel.appearance')}</MicroTitle>
         <div className="flex items-center gap-2">
           <input type="color" value={config.bgColor} onChange={e => update('bgColor', e.target.value)} className="w-6 h-6 rounded border border-white/10 bg-transparent cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded" />
-          <span className="text-[9px] text-neutral-500">Background</span>
+          <span className="text-[9px] text-neutral-500">{t('wind.tunnel.background')}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-neutral-500">Show obstacles</span>
-          <Button variant="ghost" size="xs" onClick={() => update('showObstacles', !config.showObstacles)} className={`text-[9px] ${config.showObstacles ? 'text-white' : 'text-neutral-600'}`} aria-label="Toggle obstacle visibility">{config.showObstacles ? 'ON' : 'OFF'}</Button>
+          <span className="text-[10px] text-neutral-500">{t('wind.tunnel.show_obstacles')}</span>
+          <Button variant="ghost" size="xs" onClick={() => update('showObstacles', !config.showObstacles)} className={`text-[9px] ${config.showObstacles ? 'text-white' : 'text-neutral-600'}`} aria-label={t('wind.tunnel.toggle_obstacle_visibility')}>{config.showObstacles ? 'ON' : 'OFF'}</Button>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-neutral-500">Grid overlay</span>
-          <Button variant="ghost" size="xs" onClick={() => update('showGrid', !config.showGrid)} className={`text-[9px] ${config.showGrid ? 'text-white' : 'text-neutral-600'}`} aria-label="Toggle grid">{config.showGrid ? 'ON' : 'OFF'}</Button>
+          <span className="text-[10px] text-neutral-500">{t('wind.tunnel.grid_overlay')}</span>
+          <Button variant="ghost" size="xs" onClick={() => update('showGrid', !config.showGrid)} className={`text-[9px] ${config.showGrid ? 'text-white' : 'text-neutral-600'}`} aria-label={t('wind.tunnel.toggle_grid')}>{config.showGrid ? 'ON' : 'OFF'}</Button>
         </div>
       </div>
 
       {/* Actions */}
       <div className="p-3 space-y-2">
-        <Button variant="ghost" size="xs" onClick={handleResetSim} className="text-[9px] text-neutral-500 hover:text-white w-full">Restart Simulation</Button>
-        <Button variant="ghost" size="xs" onClick={handleReset} className="text-[9px] text-neutral-500 hover:text-white w-full">Reset All</Button>
+        <Button variant="ghost" size="xs" onClick={handleResetSim} className="text-[9px] text-neutral-500 hover:text-white w-full">{t('wind.tunnel.restart_simulation')}</Button>
+        <Button variant="ghost" size="xs" onClick={handleReset} className="text-[9px] text-neutral-500 hover:text-white w-full">{t('wind.tunnel.reset_all')}</Button>
       </div>
 
       {/* Shortcuts hint */}
@@ -310,6 +312,7 @@ function ControlsContent({
 }
 
 export function WindTunnelPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
@@ -327,7 +330,7 @@ export function WindTunnelPage() {
 
   const handleImageUpload = useCallback(async (file: File) => {
     if (!file.type.match(/^image\/(png|svg\+xml|jpeg|webp)$/)) {
-      toast.error('Unsupported format. Use PNG, SVG, JPEG, or WebP.');
+      toast.error(t('wind.tunnel.unsupported_format_use_png_svg_jpeg_or'));
       return;
     }
     try {
@@ -335,7 +338,7 @@ export function WindTunnelPage() {
       setConfig(prev => ({ ...prev, obstacleType: 'image' as const, obstacleImage: img }));
       setImageName(file.name);
     } catch {
-      toast.error('Failed to load image.');
+      toast.error(t('wind.tunnel.failed_to_load_image'));
     }
   }, []);
 
@@ -390,10 +393,10 @@ export function WindTunnelPage() {
       link.download = `wind-tunnel-${multiplier}x-${Date.now()}.png`;
       link.href = dataUrl;
       link.click();
-      toast.success(`PNG exported at ${multiplier}x.`);
+      toast.success(t('wind.tunnel.png_exported_at_multiplierx'));
       setShowExportMenu(false);
     } catch {
-      toast.error('Export failed.');
+      toast.error(t('wind.tunnel.export_failed'));
     }
   }, []);
 
@@ -404,19 +407,19 @@ export function WindTunnelPage() {
     const updated = [...userPresets, preset];
     setUserPresets(updated);
     saveUserPresets(updated);
-    toast.success(`Preset "${name.trim()}" saved.`);
+    toast.success(t('wind.tunnel.preset_saved', { name: name.trim() }));
   }, [config, userPresets]);
 
   const handleLoadPreset = useCallback((preset: SavedPreset) => {
     setConfig(prev => ({ ...preset.config, obstacleImage: prev.obstacleImage, paused: prev.paused }));
-    toast.success(`Loaded "${preset.name}".`);
+    toast.success(t('wind.tunnel.preset_loaded', { name: preset.name }));
   }, []);
 
   const handleDeletePreset = useCallback((idx: number) => {
     const updated = userPresets.filter((_, i) => i !== idx);
     setUserPresets(updated);
     saveUserPresets(updated);
-    toast.success('Preset deleted.');
+    toast.success(t('wind.tunnel.preset_deleted'));
   }, [userPresets]);
 
   useEffect(() => {
@@ -449,6 +452,7 @@ export function WindTunnelPage() {
     config, update, imageName, fileInputRef, handleImageUpload, handleClearImage,
     handleResetSim, handleReset, userPresets,
     onSavePreset: handleSavePreset, onLoadPreset: handleLoadPreset, onDeletePreset: handleDeletePreset,
+    t,
   };
 
   return (
@@ -460,19 +464,19 @@ export function WindTunnelPage() {
         onDrop={handleDrop}
       >
         <WindTunnelCanvas ref={tunnelRef} config={config} onConfigChange={(partial) => setConfig(prev => ({ ...prev, ...partial }))} />
-        <DropOverlay visible={dragging} message="Drop image to use as obstacle" />
+        <DropOverlay visible={dragging} message={t('wind.tunnel.drop_image_to_use_as_obstacle')} />
       </div>
 
       <AppShellTopBar
         left={
           <>
             <Tooltip content="Back to Labs" position="bottom">
-              <Button variant="ghost" size="icon-sm" onClick={() => navigate('/labs')} aria-label="Back to Labs">
+              <Button variant="ghost" size="icon-sm" onClick={() => navigate('/labs')} aria-label={t('wind.tunnel.back_to_labs')}>
                 <ChevronLeft size={14} />
               </Button>
             </Tooltip>
             <div className="w-px h-4 bg-white/[0.06] mx-1" />
-            <MicroTitle>Wind Tunnel</MicroTitle>
+            <MicroTitle>{t('wind.tunnel.wind_tunnel')}</MicroTitle>
           </>
         }
         right={
@@ -483,13 +487,13 @@ export function WindTunnelPage() {
               </Button>
             </Tooltip>
             <Tooltip content="Restart simulation (R)" position="bottom">
-              <Button variant="ghost" size="icon-sm" onClick={handleResetSim} aria-label="Restart simulation">
+              <Button variant="ghost" size="icon-sm" onClick={handleResetSim} aria-label={t('wind.tunnel.restart_simulation_2')}>
                 <RotateCcw size={12} />
               </Button>
             </Tooltip>
             <div className="relative">
               <Tooltip content="Export PNG (Ctrl+E)" position="bottom">
-                <Button variant="surface" size="xs" onClick={() => setShowExportMenu(p => !p)} aria-label="Export PNG">
+                <Button variant="surface" size="xs" onClick={() => setShowExportMenu(p => !p)} aria-label={t('wind.tunnel.export_png')}>
                   <Download size={12} className="mr-1" /> PNG
                 </Button>
               </Tooltip>

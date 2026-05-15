@@ -284,7 +284,7 @@ export const AdminPage: React.FC = () => {
       setFeedbackStats(await resp.json());
     } catch (err) {
       console.error('[AdminPage] feedback stats error:', err);
-      toast.error('Failed to load feedback stats');
+      toast.error(t('admin.failed_to_load_feedback_stats'));
     } finally {
       setFeedbackLoading(false);
     }
@@ -1047,7 +1047,7 @@ export const AdminPage: React.FC = () => {
                       </TabsTrigger>
                       <TabsTrigger value="products" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        {t('admin.products') || 'Produtos'}
+                        {t('admin.products.title') || 'Produtos'}
                       </TabsTrigger>
                       <TabsTrigger value="admin-chat" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <MessageSquare className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
@@ -1159,8 +1159,8 @@ export const AdminPage: React.FC = () => {
                             return createdAt >= thirtyDaysAgo;
                           }).length}
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">Novos Usuários</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">Últimos 30 dias</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.novos_usurios')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.ltimos_30_dias')}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1291,7 +1291,7 @@ export const AdminPage: React.FC = () => {
                             {Object.values(data.generationStats.imagesByModel).reduce((sum, stats) => sum + stats.total, 0)}
                           </p>
                           <p className="text-sm text-neutral-500 font-mono">{t('admin.images')}</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">Total gerado</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.total_gerado')}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1308,7 +1308,7 @@ export const AdminPage: React.FC = () => {
                             {data.generationStats.videos.total}
                           </p>
                           <p className="text-sm text-neutral-500 font-mono">{t('admin.videos')}</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">Total gerado</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.total_gerado_2')}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1324,8 +1324,8 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {data.generationStats.textTokens.totalSteps}
                           </p>
-                          <p className="text-sm text-neutral-500 font-mono">Passos de Texto</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">Processamento de IA</p>
+                          <p className="text-sm text-neutral-500 font-mono">{t('admin.passos_de_texto')}</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.processamento_de_ia')}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1341,8 +1341,8 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {(data.generationStats.textTokens.inputTokens + data.generationStats.textTokens.outputTokens).toLocaleString()}
                           </p>
-                          <p className="text-sm text-neutral-500 font-mono">Total Tokens</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">Input + Output</p>
+                          <p className="text-sm text-neutral-500 font-mono">{t('admin.total_tokens')}</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.input_output')}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1458,7 +1458,7 @@ export const AdminPage: React.FC = () => {
                                 <p className="text-2xl font-bold text-neutral-300 font-mono mb-3">{stats.total}</p>
                                 {Object.keys(stats.byResolution).length > 0 && (
                                   <div className="mt-3 pt-3 border-t border-neutral-800/50">
-                                    <p className="text-[10px] text-neutral-500 font-mono mb-2 uppercase">Resoluções:</p>
+                                    <p className="text-[10px] text-neutral-500 font-mono mb-2 uppercase">{t('admin.resolues')}</p>
                                     <div className="flex flex-wrap gap-1">
                                       {Object.entries(stats.byResolution).map(([resolution, count]) => (
                                         <Badge key={resolution} variant="outline" className="text-[10px] px-1.5 py-0.5 h-5 bg-neutral-950/70 border-neutral-700/50 text-neutral-400">
@@ -1588,7 +1588,7 @@ export const AdminPage: React.FC = () => {
                       {canvasEventsLoading ? (
                         <div className="flex items-center justify-center py-12">
                           <RefreshCw className="h-5 w-5 animate-spin text-brand-cyan" />
-                          <span className="ml-2 text-neutral-500 font-mono text-sm">Carregando analytics...</span>
+                          <span className="ml-2 text-neutral-500 font-mono text-sm">{t('admin.carregando_analytics')}</span>
                         </div>
                       ) : canvasEventStats ? (
                         <div className="space-y-6">
@@ -1609,7 +1609,7 @@ export const AdminPage: React.FC = () => {
                           {/* Node type ranking */}
                           {canvasEventStats.byNodeType.length > 0 && (
                             <div>
-                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">Ranking de Nodes</p>
+                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">{t('admin.ranking_de_nodes')}</p>
                               <div className="space-y-2">
                                 {canvasEventStats.byNodeType.map((n, i) => {
                                   const maxCount = canvasEventStats.byNodeType[0]?.count || 1;
@@ -1635,7 +1635,7 @@ export const AdminPage: React.FC = () => {
                           {/* Daily timeline */}
                           {canvasEventStats.timeline.length > 0 && (
                             <div>
-                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">Eventos por Dia</p>
+                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">{t('admin.eventos_por_dia')}</p>
                               <div className="h-[200px] w-full">
                                 <ChartContainer config={{ events: { label: 'Eventos', color: '#52ddeb' } }} className="aspect-auto h-full w-full">
                                   <AreaChart data={canvasEventStats.timeline}>
@@ -1664,7 +1664,7 @@ export const AdminPage: React.FC = () => {
                         </div>
                       ) : (
                         <div className="text-center py-8">
-                          <p className="text-neutral-500 font-mono text-sm">Sem dados de canvas events ainda</p>
+                          <p className="text-neutral-500 font-mono text-sm">{t('admin.sem_dados_de_canvas_events_ainda')}</p>
                           <button
                             onClick={() => fetchCanvasEventStats()}
                             className="mt-3 text-brand-cyan hover:underline text-sm font-mono"
@@ -2215,7 +2215,7 @@ export const AdminPage: React.FC = () => {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardContent className="p-5">
-                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">Approval Rate</p>
+                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">{t('admin.approval_rate')}</p>
                           <p className="text-4xl font-bold text-brand-cyan">{feedbackStats.overall.approvalRate.toFixed(1)}%</p>
                           <p className="text-xs text-neutral-500 mt-1">{feedbackStats.overall.total} total ratings (30d)</p>
                         </CardContent>
@@ -2224,21 +2224,21 @@ export const AdminPage: React.FC = () => {
                         <CardContent className="p-5">
                           <p className="text-xs font-mono text-neutral-500 uppercase mb-1">Thumbs Up</p>
                           <p className="text-4xl font-bold text-emerald-400">{feedbackStats.overall.up}</p>
-                          <p className="text-xs text-neutral-500 mt-1">vectorization-eligible</p>
+                          <p className="text-xs text-neutral-500 mt-1">{t('admin.vectorizationeligible')}</p>
                         </CardContent>
                       </Card>
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardContent className="p-5">
-                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">Thumbs Down</p>
+                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">{t('admin.thumbs_down')}</p>
                           <p className="text-4xl font-bold text-red-400">{feedbackStats.overall.down}</p>
-                          <p className="text-xs text-neutral-500 mt-1">Mongo-only, review below</p>
+                          <p className="text-xs text-neutral-500 mt-1">{t('admin.mongoonly_review_below')}</p>
                         </CardContent>
                       </Card>
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardContent className="p-5">
-                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">Vectorized (proxy)</p>
+                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">{t('admin.vectorized_proxy')}</p>
                           <p className="text-4xl font-bold text-purple-400">{feedbackStats.vectorizedCount}</p>
-                          <p className="text-xs text-neutral-500 mt-1">up-rated docs in window</p>
+                          <p className="text-xs text-neutral-500 mt-1">{t('admin.uprated_docs_in_window')}</p>
                         </CardContent>
                       </Card>
                     </div>
@@ -2247,7 +2247,7 @@ export const AdminPage: React.FC = () => {
                     {feedbackStats.timeSeries.length > 0 && (
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">Daily Feedback (30d)</CardTitle>
+                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.daily_feedback_30d')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <ResponsiveContainer width="100%" height={220}>
@@ -2269,7 +2269,7 @@ export const AdminPage: React.FC = () => {
                     {feedbackStats.featureStats.length > 0 && (
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">Feature Breakdown</CardTitle>
+                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.feature_breakdown')}</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                           <Table>
@@ -2277,9 +2277,9 @@ export const AdminPage: React.FC = () => {
                               <TableRow className="border-neutral-800 hover:bg-transparent">
                                 <TableHead><MicroTitle as="span" className="uppercase">Feature</MicroTitle></TableHead>
                                 <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
-                                <TableHead><MicroTitle as="span" className="uppercase">Down</MicroTitle></TableHead>
+                                <TableHead><MicroTitle as="span" className="uppercase">{t('admin.down')}</MicroTitle></TableHead>
                                 <TableHead><MicroTitle as="span" className="uppercase">Total</MicroTitle></TableHead>
-                                <TableHead><MicroTitle as="span" className="uppercase">Approval %</MicroTitle></TableHead>
+                                <TableHead><MicroTitle as="span" className="uppercase">{t('admin.approval')}</MicroTitle></TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -2307,18 +2307,18 @@ export const AdminPage: React.FC = () => {
                       {/* Models */}
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">Top Models by Approval</CardTitle>
+                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.top_models_by_approval')}</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                           {feedbackStats.modelStats.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">No data yet (min 5 ratings required)</p>
+                            <p className="text-xs text-neutral-500 font-mono p-4">{t('admin.no_data_yet_min_5_ratings_required')}</p>
                           ) : (
                             <Table>
                               <TableHeader>
                                 <TableRow className="border-neutral-800 hover:bg-transparent">
                                   <TableHead><MicroTitle as="span" className="uppercase">Model</MicroTitle></TableHead>
                                   <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">Down</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">{t('admin.down_2')}</MicroTitle></TableHead>
                                   <TableHead><MicroTitle as="span" className="uppercase">%</MicroTitle></TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -2340,18 +2340,18 @@ export const AdminPage: React.FC = () => {
                       {/* Design Types */}
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">Top Design Types</CardTitle>
+                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.top_design_types')}</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                           {feedbackStats.designTypeStats.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">No data yet (min 5 ratings required)</p>
+                            <p className="text-xs text-neutral-500 font-mono p-4">{t('admin.no_data_yet_min_5_ratings_required_2')}</p>
                           ) : (
                             <Table>
                               <TableHeader>
                                 <TableRow className="border-neutral-800 hover:bg-transparent">
                                   <TableHead><MicroTitle as="span" className="uppercase">Type</MicroTitle></TableHead>
                                   <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">Down</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">{t('admin.down_3')}</MicroTitle></TableHead>
                                   <TableHead><MicroTitle as="span" className="uppercase">%</MicroTitle></TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -2373,18 +2373,18 @@ export const AdminPage: React.FC = () => {
                       {/* Vibes */}
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">Top Vibes</CardTitle>
+                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.top_vibes')}</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                           {feedbackStats.vibeStats.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">No data yet (min 5 ratings required)</p>
+                            <p className="text-xs text-neutral-500 font-mono p-4">{t('admin.no_data_yet_min_5_ratings_required_3')}</p>
                           ) : (
                             <Table>
                               <TableHeader>
                                 <TableRow className="border-neutral-800 hover:bg-transparent">
-                                  <TableHead><MicroTitle as="span" className="uppercase">Vibe</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">{t('admin.vibe')}</MicroTitle></TableHead>
                                   <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">Down</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">{t('admin.down_4')}</MicroTitle></TableHead>
                                   <TableHead><MicroTitle as="span" className="uppercase">%</MicroTitle></TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -2406,18 +2406,18 @@ export const AdminPage: React.FC = () => {
                       {/* Brand Guidelines */}
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">Top Brand Guidelines</CardTitle>
+                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.top_brand_guidelines')}</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                           {feedbackStats.brandGuidelineStats.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">No data yet</p>
+                            <p className="text-xs text-neutral-500 font-mono p-4">{t('admin.no_data_yet')}</p>
                           ) : (
                             <Table>
                               <TableHeader>
                                 <TableRow className="border-neutral-800 hover:bg-transparent">
-                                  <TableHead><MicroTitle as="span" className="uppercase">Guideline ID</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">{t('admin.guideline_id')}</MicroTitle></TableHead>
                                   <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">Down</MicroTitle></TableHead>
+                                  <TableHead><MicroTitle as="span" className="uppercase">{t('admin.down_5')}</MicroTitle></TableHead>
                                   <TableHead><MicroTitle as="span" className="uppercase">Total</MicroTitle></TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -2442,13 +2442,13 @@ export const AdminPage: React.FC = () => {
                       {/* Tags mais utilizadas */}
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-mono text-neutral-300">Tags mais utilizadas</CardTitle>
-                          <CardDescription className="text-xs text-neutral-500">Top 20 by usage count</CardDescription>
+                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.tags_mais_utilizadas')}</CardTitle>
+                          <CardDescription className="text-xs text-neutral-500">{t('admin.top_20_by_usage_count')}</CardDescription>
                         </CardHeader>
                         <CardContent>
                           <div className="flex flex-wrap gap-2">
                             {feedbackStats.tagsMostUsed.length === 0 ? (
-                              <p className="text-xs text-neutral-500 font-mono">No tag data yet</p>
+                              <p className="text-xs text-neutral-500 font-mono">{t('admin.no_tag_data_yet')}</p>
                             ) : feedbackStats.tagsMostUsed.map((t: any, i: number) => (
                               <div key={i} className="flex items-center gap-1">
                                 <Badge className={`text-xs font-mono gap-1 ${t.category === 'branding' ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30' : t.category === 'category' ? 'bg-purple-900/30 text-purple-300 border-purple-800/50' : 'bg-amber-900/30 text-amber-300 border-amber-800/50'}`}>
@@ -2464,13 +2464,13 @@ export const AdminPage: React.FC = () => {
                       {/* Tags mais votadas */}
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-mono text-neutral-300">Tags mais votadas</CardTitle>
-                          <CardDescription className="text-xs text-neutral-500">Top 20 by approval rate (min 3 ratings)</CardDescription>
+                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.tags_mais_votadas')}</CardTitle>
+                          <CardDescription className="text-xs text-neutral-500">{t('admin.top_20_by_approval_rate_min_3_ratings')}</CardDescription>
                         </CardHeader>
                         <CardContent>
                           <div className="flex flex-wrap gap-2">
                             {feedbackStats.tagsMostUpvoted.length === 0 ? (
-                              <p className="text-xs text-neutral-500 font-mono">No data yet (min 3 ratings required)</p>
+                              <p className="text-xs text-neutral-500 font-mono">{t('admin.no_data_yet_min_3_ratings_required')}</p>
                             ) : feedbackStats.tagsMostUpvoted.map((t: any, i: number) => (
                               <div key={i} className="flex items-center gap-1">
                                 <Badge className={`text-xs font-mono gap-1 ${t.category === 'branding' ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30' : t.category === 'category' ? 'bg-purple-900/30 text-purple-300 border-purple-800/50' : 'bg-amber-900/30 text-amber-300 border-amber-800/50'}`}>
@@ -2498,7 +2498,7 @@ export const AdminPage: React.FC = () => {
                       {downvotesExpanded && (
                         <CardContent className="p-0">
                           {feedbackStats.recentDownvotes.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">No downvotes in this window</p>
+                            <p className="text-xs text-neutral-500 font-mono p-4">{t('admin.no_downvotes_in_this_window')}</p>
                           ) : (
                             <div className="overflow-x-auto">
                               <Table>
@@ -2540,7 +2540,7 @@ export const AdminPage: React.FC = () => {
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 gap-3 text-neutral-500">
                     <BarChart2 className="h-10 w-10" />
-                    <p className="font-mono text-sm">Click refresh to load feedback analytics</p>
+                    <p className="font-mono text-sm">{t('admin.click_refresh_to_load_feedback_analytics')}</p>
                     <Button size="sm" onClick={() => fetchFeedbackStats(feedbackFeatureFilter)} className="bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/20">
                       Load Stats
                     </Button>
@@ -2581,23 +2581,23 @@ export const AdminPage: React.FC = () => {
               {isHistoryLoading && historyRecords.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-4">
                   <RotateCcw className="h-8 w-8 text-brand-cyan animate-spin" />
-                  <p className="text-neutral-500 font-mono text-sm">Carregando registros...</p>
+                  <p className="text-neutral-500 font-mono text-sm">{t('admin.carregando_registros')}</p>
                 </div>
               ) : historyRecords.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-neutral-500">
-                  <p className="font-mono text-sm">Nenhum registro encontrado para este usuário.</p>
+                  <p className="font-mono text-sm">{t('admin.nenhum_registro_encontrado_para_este_usu')}</p>
                 </div>
               ) : (
                 <div className="p-4">
                   <Table>
                     <TableHeader>
                       <TableRow className="border-neutral-800 hover:bg-transparent">
-                        <TableHead><MicroTitle as="span" className="uppercase">Data</MicroTitle></TableHead>
+                        <TableHead><MicroTitle as="span" className="uppercase">{t('admin.data')}</MicroTitle></TableHead>
                         <TableHead><MicroTitle as="span" className="uppercase">Feature</MicroTitle></TableHead>
-                        <TableHead><MicroTitle as="span" className="uppercase">Modelo</MicroTitle></TableHead>
-                        <TableHead><MicroTitle as="span" className="uppercase">Tipo</MicroTitle></TableHead>
-                        <TableHead><MicroTitle as="span" className="uppercase">Stats</MicroTitle></TableHead>
-                        <TableHead className="text-right"><MicroTitle as="span" className="uppercase">Créditos</MicroTitle></TableHead>
+                        <TableHead><MicroTitle as="span" className="uppercase">{t('admin.modelo')}</MicroTitle></TableHead>
+                        <TableHead><MicroTitle as="span" className="uppercase">{t('admin.tipo')}</MicroTitle></TableHead>
+                        <TableHead><MicroTitle as="span" className="uppercase">{t('admin.stats')}</MicroTitle></TableHead>
+                        <TableHead className="text-right"><MicroTitle as="span" className="uppercase">{t('admin.crditos')}</MicroTitle></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -2674,7 +2674,7 @@ export const AdminPage: React.FC = () => {
             </CardContent>
             <CardFooter className="border-t border-neutral-800 py-3 bg-neutral-950/20 flex justify-between text-[10px] font-mono text-neutral-500">
               <span>Total de registros: {historyPagination.total}</span>
-              <span>Todos os tipos de geração incluídos</span>
+              <span>{t('admin.todos_os_tipos_de_gerao_includos')}</span>
             </CardFooter>
           </Card>
         </div>

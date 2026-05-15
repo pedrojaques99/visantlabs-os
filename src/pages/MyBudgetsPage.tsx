@@ -84,7 +84,7 @@ export const MyBudgetsPage: React.FC = () => {
     if (budget._id && budget._id.trim() !== '') {
       navigate(`/budget-machine?projectId=${budget._id}`);
     } else {
-      toast.error('Invalid budget ID');
+      toast.error(t('my.budgets.invalid_budget_id'));
     }
   };
 
@@ -257,7 +257,7 @@ export const MyBudgetsPage: React.FC = () => {
                 <div className="flex items-center justify-center py-8">
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 border-2 border-[brand-cyan] border-t-transparent rounded-md animate-spin" />
-                    <span className="text-sm text-neutral-400 font-mono">Carregando presets...</span>
+                    <span className="text-sm text-neutral-400 font-mono">{t('my.budgets.carregando_presets')}</span>
                   </div>
                 </div>
               ) : presets.length === 0 ? (

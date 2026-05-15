@@ -2747,7 +2747,7 @@ Generate the new mockup image with the requested changes applied.`;
 
       <SoftwareApplicationSchema
         name="Mockup Machine"
-        description="Gere mockups profissionais com inteligência artificial. Ferramenta integrada de geração rápida de mockups e assets para designers."
+        description={t('mockup.machine.gere_mockups_profissionais_com_inte')}
         applicationCategory="DesignApplication"
       />
       <WebSiteSchema />

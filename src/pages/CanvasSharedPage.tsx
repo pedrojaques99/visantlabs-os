@@ -13,8 +13,10 @@ import {
 } from "../components/ui/breadcrumb";
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const CanvasSharedPage: React.FC = () => {
+  const { t } = useTranslation();
   const { shareId } = useParams<{ shareId: string }>();
   const navigate = useNavigate();
   const [project, setProject] = useState<CanvasProject | null>(null);
@@ -43,7 +45,7 @@ export const CanvasSharedPage: React.FC = () => {
     } catch (error: any) {
       console.error('[CanvasShared] Error loading shared project:', error);
       setError(error.message || 'Failed to load project');
-      toast.error('Failed to load shared project');
+      toast.error(t('canvas.shared.failed_to_load_shared_project'));
     } finally {
       setIsLoading(false);
     }
@@ -87,13 +89,13 @@ export const CanvasSharedPage: React.FC = () => {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Shared Canvas</BreadcrumbPage>
+                  <BreadcrumbPage>{t('canvas.shared.shared_canvas')}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <h2 className="text-2xl font-bold text-neutral-200 mb-4">Project Not Found</h2>
+            <h2 className="text-2xl font-bold text-neutral-200 mb-4">{t('canvas.shared.project_not_found')}</h2>
             <p className="text-neutral-400 mb-6">{error || 'The project you are looking for does not exist or is no longer shared.'}</p>
             <Button variant="ghost" 
               onClick={() => navigate('/')}

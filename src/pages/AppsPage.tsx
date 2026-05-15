@@ -128,7 +128,7 @@ export const AppsPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching apps:', error);
       setApps(staticAppsData as any);
-      toast.error('Failed to load apps from database, using offline mode');
+      toast.error(t('apps.failed_to_load_apps_from_database_using'));
     } finally {
       setIsLoading(false);
     }
@@ -396,7 +396,7 @@ export const AppsPage: React.FC = () => {
                               setIsDialogOpen(true);
                             }}
                             className="p-2 rounded-full bg-neutral-950/60 backdrop-blur-md border border-white/10 text-brand-cyan hover:scale-110 active:scale-95 transition-all"
-                            title="Edit App"
+                            title={t('apps.edit_app')}
                           >
                             <Edit3 size={12} />
                           </button>
