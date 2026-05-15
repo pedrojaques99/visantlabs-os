@@ -533,8 +533,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     <LayoutContext.Provider value={contextValue}>
       <div className="h-screen bg-background text-foreground font-sans flex flex-col">
         <Toaster
-          position="top-right"
-          offset={40}
+          position="top-center"
+          offset={48}
           richColors={false}
           closeButton={true}
           duration={1000}

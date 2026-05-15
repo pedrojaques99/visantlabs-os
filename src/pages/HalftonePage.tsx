@@ -135,7 +135,7 @@ export const HalftonePage: React.FC = () => {
         className="absolute inset-0 pt-10 transition-all duration-300"
         style={{
           paddingRight: !isMobile && panelVisible ? 236 : 0,
-          paddingBottom: isMobile ? (mobileSheetOpen ? '55%' : 52) : 40,
+          paddingBottom: isMobile ? (mobileSheetOpen ? '45%' : 48) : 40,
         }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -158,18 +158,18 @@ export const HalftonePage: React.FC = () => {
 
       {isMobile && (
         <div className={cn(
-          'absolute left-0 right-0 bottom-0 z-20 transition-all duration-300 ease-out',
-          mobileSheetOpen ? 'h-[55%]' : 'h-[52px]',
+          'absolute left-0 right-0 bottom-0 z-20 transition-transform duration-300 ease-out',
+          mobileSheetOpen ? 'h-[45%]' : 'h-[48px]',
         )}>
           <button
             onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
-            className="w-full flex items-center justify-center gap-1 py-2 bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400"
+            className="w-full flex items-center justify-center gap-1.5 h-[48px] bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400 active:bg-neutral-800/90"
           >
             {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            <span className="text-[10px] uppercase tracking-widest">Controls</span>
+            <span className="text-[11px] uppercase tracking-widest">Controls</span>
           </button>
           {mobileSheetOpen && (
-            <div className="h-[calc(100%-36px)] bg-neutral-950/95 backdrop-blur-xl overflow-hidden">
+            <div className="h-[calc(100%-48px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
               <HalftoneControls onExport={handleExport} />
             </div>
           )}

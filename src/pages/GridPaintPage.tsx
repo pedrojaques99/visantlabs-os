@@ -777,7 +777,7 @@ export const GridPaintPage: React.FC = () => {
       />
 
       {/* Bottom toolbar */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
+      <div className={cn('fixed left-1/2 -translate-x-1/2 z-30 transition-all duration-300', isMobile ? (mobileSheetOpen ? 'bottom-[calc(45%+8px)]' : 'bottom-[56px]') : 'bottom-4')}>
         <div className="flex items-center gap-0.5 backdrop-blur-xl border border-neutral-800/50 rounded-xl px-1.5 py-1 shadow-lg" style={{ backgroundColor: '#0a0a0add' }}>
 
           <Tooltip content="Zoom Out" position="top">
@@ -940,18 +940,18 @@ export const GridPaintPage: React.FC = () => {
       {/* Mobile bottom sheet */}
       {isMobile && (
         <div className={cn(
-          'absolute left-0 right-0 bottom-0 z-20 transition-all duration-300 ease-out',
-          mobileSheetOpen ? 'h-[55%]' : 'h-[52px]',
+          'absolute left-0 right-0 bottom-0 z-20 transition-transform duration-300 ease-out',
+          mobileSheetOpen ? 'h-[45%]' : 'h-[48px]',
         )}>
           <button
             onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
-            className="w-full flex items-center justify-center gap-1 py-2 bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400"
+            className="w-full flex items-center justify-center gap-1.5 h-[48px] bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400 active:bg-neutral-800/90"
           >
             {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            <span className="text-[10px] uppercase tracking-widest">Controls</span>
+            <span className="text-[11px] uppercase tracking-widest">Controls</span>
           </button>
           {mobileSheetOpen && (
-            <div className="h-[calc(100%-36px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
+            <div className="h-[calc(100%-48px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
               <GlassPanel className="backdrop-blur-xl bg-transparent scrollbar-none">
                 {/* Presets */}
                 <div className="p-3 space-y-2 border-b border-white/[0.06]">

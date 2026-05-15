@@ -521,18 +521,18 @@ export function WindTunnelPage() {
 
       {isMobile && (
         <div className={cn(
-          'absolute left-0 right-0 bottom-0 z-20 transition-all duration-300 ease-out',
-          mobileSheetOpen ? 'h-[65%]' : 'h-[52px]',
+          'absolute left-0 right-0 bottom-0 z-20 transition-transform duration-300 ease-out',
+          mobileSheetOpen ? 'h-[50%]' : 'h-[48px]',
         )}>
           <button
             onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
-            className="w-full flex items-center justify-center gap-1 py-2 bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400"
+            className="w-full flex items-center justify-center gap-1.5 h-[48px] bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400 active:bg-neutral-800/90"
           >
             {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            <span className="text-[10px] uppercase tracking-widest">Controls</span>
+            <span className="text-[11px] uppercase tracking-widest">Controls</span>
           </button>
           {mobileSheetOpen && (
-            <div className="h-[calc(100%-36px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
+            <div className="h-[calc(100%-48px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
               <GlassPanel className="backdrop-blur-xl bg-transparent scrollbar-none">
                 <ControlsContent {...controlsProps} />
               </GlassPanel>
@@ -541,7 +541,7 @@ export function WindTunnelPage() {
         </div>
       )}
 
-      <AppShellStatusBar>
+      {!isMobile && <AppShellStatusBar>
         <span aria-live="polite">{activeCount.toLocaleString()} particles</span>
         <span className="text-neutral-800">|</span>
         <span>{fps} fps</span>
@@ -555,7 +555,7 @@ export function WindTunnelPage() {
             <span className="text-amber-500">PAUSED</span>
           </>
         )}
-      </AppShellStatusBar>
+      </AppShellStatusBar>}
     </AppShell>
   );
 }
