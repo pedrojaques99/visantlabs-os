@@ -8,6 +8,7 @@ import { NodeSlider } from '@/components/reactflow/shared/node-slider';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   useStudio3DStore,
   MATERIAL_PRESETS,
@@ -24,16 +25,13 @@ import { ShaderControls } from '@/components/shared/ShaderControls';
 import { setCameraView, resetCamera } from './CameraBridge';
 
 const MATERIAL_CATEGORIES = ['basic', 'metals', 'surfaces', 'glass', 'special'] as const;
-const MATERIAL_CAT_LABELS: Record<string, string> = {
-  basic: 'Basic', metals: 'Metals', surfaces: 'Surfaces', glass: 'Glass & Gem', special: 'Special',
-};
 
 const TABS = [
-  { id: 'geometry' as const, label: 'Shape', icon: Box },
-  { id: 'material' as const, label: 'Material', icon: Palette },
-  { id: 'scene' as const, label: 'Scene', icon: Sun },
-  { id: 'animation' as const, label: 'Animate', icon: Play },
-  { id: 'shader' as const, label: 'Shader', icon: Diamond },
+  { id: 'geometry' as const, key: 'tabs.shape', icon: Box },
+  { id: 'material' as const, key: 'tabs.material', icon: Palette },
+  { id: 'scene' as const, key: 'tabs.scene', icon: Sun },
+  { id: 'animation' as const, key: 'tabs.animate', icon: Play },
+  { id: 'shader' as const, key: 'tabs.shader', icon: Diamond },
 ] as const;
 
 const FONT_OPTIONS = [
@@ -46,6 +44,7 @@ interface ControlsPanelProps {
 }
 
 export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExport }) => {
+  const { t } = useTranslation();
   const store = useStudio3DStore();
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
@@ -67,16 +66,16 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
     if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
       const text = await file.text();
       store.setSvgData(text, file.name);
-      toast.success(`Loaded ${file.name}`);
+      toast.success(t('studio3d.input.loaded', { fileName: file.name }));
     } else if (file.type.startsWith('image/')) {
       store.setIsLoading(true);
       try {
         const { pngToSvg } = await import('./PngToSvgConverter');
         const svg = await pngToSvg(file);
         store.setSvgData(svg, file.name);
-        toast.success(`Converted ${file.name} to SVG`);
+        toast.success(t('studio3d.input.converted', { fileName: file.name }));
       } catch {
-        toast.error('Failed to process image');
+        toast.error(t('studio3d.input.processFailed'));
       } finally {
         store.setIsLoading(false);
       }
@@ -133,7 +132,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             )}
           >
             <tab.icon size={14} />
-            {tab.label}
+            {t(`studio3d.${tab.key}`)}
           </button>
         ))}
       </div>
@@ -143,7 +142,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         {store.activeTab === 'geometry' && (
           <>
             {/* Input Mode */}
-            <Section title="INPUT">
+            <Section title={t('studio3d.input.title')}>
               <div className="flex gap-1 mb-2">
                 <button
                   onClick={() => store.setInputMode('svg')}
@@ -152,7 +151,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                     store.inputMode === 'svg' ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-500'
                   )}
                 >
-                  <FileText size={12} /> SVG / PNG
+                  <FileText size={12} /> {t('studio3d.input.svgPng')}
                 </button>
                 <button
                   onClick={() => store.setInputMode('text')}
@@ -161,7 +160,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                     store.inputMode === 'text' ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-500'
                   )}
                 >
-                  <Type size={12} /> Text
+                  <Type size={12} /> {t('studio3d.input.text')}
                 </button>
               </div>
 
@@ -181,7 +180,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                 >
                   <Upload size={20} className={cn('transition-colors', isDragging ? 'text-white' : 'text-neutral-500')} />
                   <span className={cn('text-[10px] uppercase tracking-wider transition-colors text-center', isDragging ? 'text-white' : 'text-neutral-500')}>
-                    {store.isLoading ? <GlitchLoader size={12} /> : store.fileName || 'Click or drop SVG / PNG'}
+                    {store.isLoading ? <GlitchLoader size={12} /> : store.fileName || t('studio3d.input.dropZone')}
                   </span>
                   <input
                     ref={fileInputRef}
@@ -197,7 +196,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                     type="text"
                     value={store.text}
                     onChange={(e) => store.setText(e.target.value)}
-                    placeholder="Type your text..."
+                    placeholder={t('studio3d.input.textPlaceholder')}
                     className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/20"
                   />
                   <select
@@ -214,23 +213,23 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             </Section>
 
             {/* Geometry */}
-            <Section title="GEOMETRY">
-              <NodeSlider label="Depth" value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
+            <Section title={t('studio3d.geometry.title')}>
+              <NodeSlider label={t('studio3d.geometry.depth')} value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Bevel</span>
+                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.geometry.bevel')}</span>
                 <Switch checked={store.bevelEnabled} onCheckedChange={store.setBevelEnabled} />
               </div>
               {store.bevelEnabled && (
                 <>
-                  <NodeSlider label="Smoothness" value={smoothness} min={0} max={8} step={0.1} onChange={setSmoothness} />
-                  <NodeSlider label="Thickness" value={bevelThickness} min={0} max={2} step={0.01} onChange={setBevelThickness} />
-                  <NodeSlider label="Size" value={bevelSize} min={0} max={2} step={0.01} onChange={setBevelSize} />
+                  <NodeSlider label={t('studio3d.geometry.smoothness')} value={smoothness} min={0} max={8} step={0.1} onChange={setSmoothness} />
+                  <NodeSlider label={t('studio3d.geometry.thickness')} value={bevelThickness} min={0} max={2} step={0.01} onChange={setBevelThickness} />
+                  <NodeSlider label={t('studio3d.geometry.size')} value={bevelSize} min={0} max={2} step={0.01} onChange={setBevelSize} />
                 </>
               )}
             </Section>
 
             {/* Scene Presets */}
-            <Section title="SCENE PRESETS">
+            <Section title={t('studio3d.scenePresets.title')}>
               <div className="grid grid-cols-2 gap-1.5">
                 {Object.keys(SCENE_PRESETS).map((name) => (
                   <button
@@ -257,20 +256,20 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
 
         {store.activeTab === 'scene' && (
           <>
-            <Section title="LIGHTING">
-              <NodeSlider label="Key Light" value={lightIntensity} min={0} max={3} step={0.05} onChange={setLightIntensity} />
-              <NodeSlider label="Ambient" value={ambientIntensity} min={0} max={2} step={0.05} onChange={setAmbientIntensity} />
+            <Section title={t('studio3d.lighting.title')}>
+              <NodeSlider label={t('studio3d.lighting.keyLight')} value={lightIntensity} min={0} max={3} step={0.05} onChange={setLightIntensity} />
+              <NodeSlider label={t('studio3d.lighting.ambient')} value={ambientIntensity} min={0} max={2} step={0.05} onChange={setAmbientIntensity} />
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Shadows</span>
+                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.lighting.shadows')}</span>
                 <Switch checked={store.shadow} onCheckedChange={store.setShadow} />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Grid</span>
+                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.lighting.grid')}</span>
                 <Switch checked={store.showGrid} onCheckedChange={store.setShowGrid} />
               </div>
             </Section>
 
-            <Section title="CAMERA">
+            <Section title={t('studio3d.camera.title')}>
               <div className="grid grid-cols-3 gap-1.5">
                 {(['front', 'top', 'right', 'back', 'iso'] as const).map((view) => (
                   <button
@@ -283,19 +282,19 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200'
                     )}
                   >
-                    {view}
+                    {t(`studio3d.camera.${view}`)}
                   </button>
                 ))}
                 <button
                   onClick={() => resetCamera()}
                   className="px-2.5 py-2 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors text-center"
                 >
-                  Reset
+                  {t('studio3d.camera.reset')}
                 </button>
               </div>
             </Section>
 
-            <Section title="BACKGROUND">
+            <Section title={t('studio3d.background.title')}>
               <input
                 type="color"
                 value={store.background}
@@ -303,7 +302,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                 className="w-full h-6 rounded cursor-pointer bg-transparent"
               />
               <div className="flex items-center justify-between mt-2">
-                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Transparent</span>
+                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.background.transparent')}</span>
                 <Switch checked={store.transparentBg} onCheckedChange={store.setTransparentBg} />
               </div>
             </Section>
@@ -312,7 +311,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
 
         {store.activeTab === 'animation' && (
           <>
-            <Section title="TYPE">
+            <Section title={t('studio3d.animation.type')}>
               <div className="grid grid-cols-2 gap-1.5">
                 {ANIMATION_PRESETS.map((a) => (
                   <button
@@ -331,10 +330,10 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
               </div>
             </Section>
 
-            <Section title="CONTROLS">
-              <NodeSlider label="Speed" value={animateSpeed} min={0.1} max={5} step={0.1} onChange={setAnimateSpeed} />
+            <Section title={t('studio3d.animation.controls')}>
+              <NodeSlider label={t('studio3d.animation.speed')} value={animateSpeed} min={0.1} max={5} step={0.1} onChange={setAnimateSpeed} />
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Reverse</span>
+                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.animation.reverse')}</span>
                 <Switch checked={store.animateReverse} onCheckedChange={store.setAnimateReverse} />
               </div>
             </Section>
@@ -368,6 +367,7 @@ const ExportPanel: React.FC<{
   setVideoDuration: (v: number) => void;
   onExport: () => void;
 }> = React.memo(({ store, videoDuration, setVideoDuration, onExport }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   return (
@@ -378,7 +378,7 @@ const ExportPanel: React.FC<{
       >
         <div className="flex items-center gap-2">
           <Download size={12} className="text-neutral-500" />
-          <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-medium">Export</span>
+          <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-medium">{t('studio3d.export.title')}</span>
         </div>
         <ChevronRight size={10} className={cn('text-neutral-600 transition-transform', open && 'rotate-90')} />
       </button>
@@ -388,7 +388,7 @@ const ExportPanel: React.FC<{
           {store.shaderEnabled && (
             <div className="flex items-center gap-2 px-2 py-1.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-[9px] text-cyan-400 uppercase tracking-wider">
               <Diamond size={10} />
-              {store.shaderType} shader active
+              {t('studio3d.export.shaderActive', { shader: store.shaderType })}
             </div>
           )}
 
@@ -426,7 +426,7 @@ const ExportPanel: React.FC<{
 
           {(store.exportFormat === 'glb' || store.exportFormat === 'obj') && (
             <div className="px-2 py-1.5 rounded bg-white/5 text-[9px] text-neutral-400 uppercase tracking-wider">
-              {store.exportFormat === 'glb' ? '3D model with materials' : 'Geometry only (no materials)'}
+              {store.exportFormat === 'glb' ? t('studio3d.export.glbDesc') : t('studio3d.export.objDesc')}
             </div>
           )}
 
@@ -449,7 +449,7 @@ const ExportPanel: React.FC<{
 
           {(store.exportFormat === 'mp4' || store.exportFormat === 'gif') && (
             <div className="space-y-2">
-              <NodeSlider label="Duration (s)" value={videoDuration} min={1} max={10} step={0.5} onChange={setVideoDuration} />
+              <NodeSlider label={t('studio3d.export.duration')} value={videoDuration} min={1} max={10} step={0.5} onChange={setVideoDuration} />
               {store.animate !== 'none' && (() => {
                 const loopPeriod = Math.round((2 * Math.PI / store.animateSpeed) * 2) / 2;
                 const clamped = Math.min(Math.max(loopPeriod, 1), 10);
@@ -463,7 +463,7 @@ const ExportPanel: React.FC<{
                         : 'bg-white/5 text-neutral-400 hover:bg-white/10'
                     )}
                   >
-                    Perfect Loop — {clamped}s
+                    {t('studio3d.export.perfectLoop', { duration: String(clamped) })}
                   </button>
                 );
               })()}
@@ -475,7 +475,7 @@ const ExportPanel: React.FC<{
             disabled={store.isExporting}
             className="w-full bg-white hover:bg-neutral-200 text-black font-medium text-xs"
           >
-            {store.isExporting ? 'Exporting...' : `Export ${store.exportFormat.toUpperCase()}`}
+            {store.isExporting ? t('studio3d.export.exporting') : t('studio3d.export.exportFormat', { format: store.exportFormat.toUpperCase() })}
           </Button>
         </div>
       )}
@@ -520,6 +520,7 @@ interface MaterialTabProps {
 const MaterialTab: React.FC<MaterialTabProps> = React.memo(({
   store, metalness, setMetalness, roughness, setRoughness, opacity, setOpacity,
 }) => {
+  const { t } = useTranslation();
   const activeCat = useMemo(
     () => MATERIAL_PRESETS.find((m) => m.id === store.material)?.category ?? 'basic',
     [store.material],
@@ -528,12 +529,12 @@ const MaterialTab: React.FC<MaterialTabProps> = React.memo(({
   return (
     <>
       {/* Category chips + preset grid */}
-      <Section title="MATERIAL">
+      <Section title={t('studio3d.material.title')}>
         <MaterialCategoryTabs activeCat={activeCat} store={store} />
       </Section>
 
       {/* Color — hex input + picker */}
-      <Section title="COLOR">
+      <Section title={t('studio3d.color.title')}>
         <div className="flex items-center gap-2">
           <label className="relative w-8 h-8 rounded cursor-pointer flex-shrink-0 border border-white/10 overflow-hidden">
             <span className="absolute inset-0" style={{ backgroundColor: store.color }} />
@@ -566,17 +567,17 @@ const MaterialTab: React.FC<MaterialTabProps> = React.memo(({
       </Section>
 
       {/* Texture */}
-      <Section title="TEXTURE">
+      <Section title={t('studio3d.texture.title')}>
         <TextureControls store={store} />
       </Section>
 
       {/* Properties — flat, no disclosure */}
-      <Section title="PROPERTIES">
-        <NodeSlider label="Metalness" value={metalness} min={0} max={1} step={0.01} onChange={setMetalness} />
-        <NodeSlider label="Roughness" value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} />
-        <NodeSlider label="Opacity" value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} />
+      <Section title={t('studio3d.properties.title')}>
+        <NodeSlider label={t('studio3d.properties.metalness')} value={metalness} min={0} max={1} step={0.01} onChange={setMetalness} />
+        <NodeSlider label={t('studio3d.properties.roughness')} value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} />
+        <NodeSlider label={t('studio3d.properties.opacity')} value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} />
         <div className="flex items-center justify-between pt-0.5">
-          <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Wireframe</span>
+          <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.properties.wireframe')}</span>
           <Switch checked={store.wireframe} onCheckedChange={store.setWireframe} />
         </div>
       </Section>
@@ -588,6 +589,7 @@ const MaterialCategoryTabs: React.FC<{
   activeCat: string;
   store: StoreState;
 }> = React.memo(({ activeCat, store }) => {
+  const { t } = useTranslation();
   const [openCat, setOpenCat] = useState(activeCat);
 
   const handleCat = useCallback((cat: string) => {
@@ -609,7 +611,7 @@ const MaterialCategoryTabs: React.FC<{
                 : 'bg-white/5 text-neutral-500 hover:text-neutral-300'
             )}
           >
-            {MATERIAL_CAT_LABELS[cat]}
+            {t(`studio3d.material.categories.${cat}`)}
           </button>
         ))}
       </div>
@@ -759,6 +761,7 @@ const PROCEDURAL_TEXTURES = [
 /* ── Texture Controls ─────────────────────────────────────── */
 
 const TextureControls: React.FC<{ store: StoreState }> = React.memo(({ store }) => {
+  const { t } = useTranslation();
   const textureInputRef = useRef<HTMLInputElement>(null);
   const [activeProc, setActiveProc] = useState<string | null>(null);
 
@@ -803,7 +806,7 @@ const TextureControls: React.FC<{ store: StoreState }> = React.memo(({ store }) 
         onClick={() => textureInputRef.current?.click()}
         className="w-full px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
       >
-        Upload Image
+        {t('studio3d.texture.upload')}
       </button>
       <input
         ref={textureInputRef}
@@ -816,20 +819,20 @@ const TextureControls: React.FC<{ store: StoreState }> = React.memo(({ store }) 
       {/* Controls when texture active */}
       {hasTexture && (
         <>
-          <NodeSlider label="Repeat" value={store.textureRepeat} min={0.5} max={10} step={0.5} onChange={store.setTextureRepeat} />
+          <NodeSlider label={t('studio3d.texture.repeat')} value={store.textureRepeat} min={0.5} max={10} step={0.5} onChange={store.setTextureRepeat} />
           {activeProc && (
             <button
               onClick={() => applyProcedural(PROCEDURAL_TEXTURES.find(p => p.id === activeProc)!)}
               className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-500 hover:text-neutral-300 transition-colors"
             >
-              Regenerate
+              {t('studio3d.texture.regenerate')}
             </button>
           )}
           <button
             onClick={() => { store.setTexture(''); setActiveProc(null); }}
             className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-600 hover:text-red-400 transition-colors"
           >
-            Remove
+            {t('studio3d.texture.remove')}
           </button>
         </>
       )}

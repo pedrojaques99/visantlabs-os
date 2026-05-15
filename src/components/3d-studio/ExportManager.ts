@@ -1,7 +1,7 @@
 import { ASPECT_RATIOS, EXPORT_RESOLUTIONS } from '@/stores/studio3dStore';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
-import type { Scene, Camera, WebGLRenderer } from 'three';
+import type { Scene } from 'three';
 
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
 type ExportResolution = 'hd' | '2k' | '4k';
@@ -61,8 +61,8 @@ export async function exportPNG(
   if (shader) {
     offscreen = await applyShaderToCanvas(offscreen, shader);
   }
-  const blob = await new Promise<Blob>((resolve) => {
-    offscreen.toBlob((b) => resolve(b!), 'image/png');
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    offscreen.toBlob((b) => b ? resolve(b) : reject(new Error('Failed to create PNG blob')), 'image/png');
   });
   downloadBlob(blob, `${fileName || '3d-export'}.png`);
 }
@@ -89,7 +89,9 @@ export async function exportVideo(
         const processed = await applyShaderToCanvas(canvas, shader);
         shaderCtx.clearRect(0, 0, shaderCanvas!.width, shaderCanvas!.height);
         shaderCtx.drawImage(processed, 0, 0);
-      } catch { /* skip frame */ }
+      } catch {
+        // skip frame on shader failure — non-fatal for video recording
+      }
       shaderAnimId = requestAnimationFrame(renderLoop);
     };
     renderLoop();
@@ -110,9 +112,18 @@ export async function exportVideo(
     if (e.data.size > 0) chunks.push(e.data);
   };
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    recorder.onerror = () => {
+      if (shaderAnimId) cancelAnimationFrame(shaderAnimId);
+      reject(new Error('Video recording failed'));
+    };
+
     recorder.onstop = () => {
       if (shaderAnimId) cancelAnimationFrame(shaderAnimId);
+      if (chunks.length === 0) {
+        reject(new Error('No video frames captured'));
+        return;
+      }
       const blob = new Blob(chunks, { type: 'video/webm' });
       downloadBlob(blob, `${fileName || '3d-export'}.webm`);
       resolve();
@@ -137,6 +148,7 @@ export async function exportGLB(
   scene: Scene,
   fileName: string,
 ): Promise<void> {
+  if (!scene.children.length) throw new Error('Scene is empty — nothing to export');
   const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
   const exporter = new GLTFExporter();
   const result = await exporter.parseAsync(scene, { binary: true });
@@ -148,9 +160,11 @@ export async function exportOBJ(
   scene: Scene,
   fileName: string,
 ): Promise<void> {
+  if (!scene.children.length) throw new Error('Scene is empty — nothing to export');
   const { OBJExporter } = await import('three/examples/jsm/exporters/OBJExporter.js');
   const exporter = new OBJExporter();
   const result = exporter.parse(scene);
+  if (!result || result.trim().length === 0) throw new Error('OBJ export produced empty output');
   const blob = new Blob([result], { type: 'text/plain' });
   downloadBlob(blob, `${fileName || '3d-export'}.obj`);
 }

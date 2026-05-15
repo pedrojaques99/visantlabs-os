@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as opentype from 'opentype.js';
+import { toast } from 'sonner';
 
 const FONTS = [
   { name: 'DM Sans', url: 'https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwARZthTg.ttf' },
@@ -14,18 +15,27 @@ const FONTS = [
   { name: 'Archivo Black', url: 'https://fonts.gstatic.com/s/archivoblack/v23/HTxqL289NzCGg4MzN6KJ7eW6OYs.ttf' },
 ];
 
+const DEFAULT_FONT = 'DM Sans';
 const fontCache = new Map<string, opentype.Font>();
 
 async function loadFontByName(name: string, url: string): Promise<opentype.Font> {
   if (fontCache.has(name)) return fontCache.get(name)!;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 8000);
-  const response = await fetch(url, { signal: controller.signal });
-  clearTimeout(timeoutId);
-  const buffer = await response.arrayBuffer();
-  const font = opentype.parse(buffer);
-  fontCache.set(name, font);
-  return font;
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    const buffer = await response.arrayBuffer();
+    const font = opentype.parse(buffer);
+    fontCache.set(name, font);
+    return font;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (controller.signal.aborted) {
+      throw new Error('timeout');
+    }
+    throw err;
+  }
 }
 
 export function useFont(fontName: string): opentype.Font | null {
@@ -44,7 +54,19 @@ export function useFont(fontName: string): opentype.Font | null {
     let cancelled = false;
     loadFontByName(fontDef.name, fontDef.url).then((font) => {
       if (!cancelled) setLoadedFont(font);
-    }).catch(() => {});
+    }).catch((err) => {
+      if (cancelled) return;
+      const isTimeout = err instanceof Error && err.message === 'timeout';
+      toast.error(isTimeout ? 'Font load timed out' : 'Font failed to load');
+      if (fontName !== DEFAULT_FONT) {
+        const fallback = FONTS.find((f) => f.name === DEFAULT_FONT);
+        if (fallback) {
+          loadFontByName(fallback.name, fallback.url).then((font) => {
+            if (!cancelled) setLoadedFont(font);
+          }).catch(() => {});
+        }
+      }
+    });
     return () => { cancelled = true; };
   }, [fontName]);
 
@@ -73,6 +95,7 @@ export function textToSvg(text: string, font: opentype.Font): string {
   const glyphs = font.stringToGlyphs(text);
   let x = offsetX;
   const paths: string[] = [];
+  const unitsPerEm = font.unitsPerEm || 1000;
 
   for (let i = 0; i < glyphs.length; i++) {
     const glyph = glyphs[i];
@@ -81,10 +104,10 @@ export function textToSvg(text: string, font: opentype.Font): string {
     if (d) {
       paths.push(`<path d="${d}" fill="black" fill-rule="evenodd"/>`);
     }
-    const advance = (glyph.advanceWidth || 0) * (fontSize / ((font as any).unitsPerEm || 1000));
+    const advance = (glyph.advanceWidth || 0) * (fontSize / unitsPerEm);
     if (i < glyphs.length - 1) {
       const kerning = font.getKerningValue(glyphs[i], glyphs[i + 1]);
-      x += advance + kerning * (fontSize / ((font as any).unitsPerEm || 1000));
+      x += advance + kerning * (fontSize / unitsPerEm);
     } else {
       x += advance;
     }

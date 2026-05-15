@@ -26,7 +26,10 @@
     "mockup.categoryGroups.${group.key}",
     "transactions.status.${transaction.status}",
     "budget.myBudgets.seoDescription",
-    "budget.myBudgets.seoTitle"
+    "budget.myBudgets.seoTitle",
+    "studio3d.${tab.key}",
+    "studio3d.camera.${view}",
+    "studio3d.material.categories.${cat}"
   ],
   "comments": {
     "${...}": "All ${...} entries are dynamic key construction — t('prefix.' + var). Their resolved keys must be defined in the locale (we can't validate that statically).",
