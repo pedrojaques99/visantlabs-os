@@ -10,6 +10,7 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { NodeSlider } from '@/components/reactflow/shared/node-slider';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
+import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { Input } from '@/components/ui/input';
 import { WindTunnelCanvas, type WindTunnelConfig, type WindTunnelHandle } from '@/components/labs/wind-tunnel/WindTunnelCanvas';
@@ -505,6 +506,7 @@ export function WindTunnelPage() {
                 {showPanel ? <PanelRightClose size={14} /> : <PanelRight size={14} />}
               </Button>
             </Tooltip>
+            <AppShellLegalMenu />
           </>
         }
       />

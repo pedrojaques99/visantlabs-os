@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
+import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { GridCanvas, type GridCanvasHandle } from '@/components/grid-machine/GridCanvas';
 import { GridMachineControls } from '@/components/grid-machine/ControlsPanel';
@@ -164,6 +165,7 @@ export const GridMachinePage: React.FC = () => {
                 </Button>
               </Tooltip>
             )}
+            <AppShellLegalMenu />
           </>
         }
       />

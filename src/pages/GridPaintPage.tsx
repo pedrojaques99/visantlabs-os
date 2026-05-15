@@ -13,6 +13,7 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { NodeSlider } from '@/components/reactflow/shared/node-slider';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel } from '@/components/ui/AppShell';
+import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
 import { useIsMobile } from '@/hooks/use-media-query';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -770,6 +771,7 @@ export const GridPaintPage: React.FC = () => {
                 <Copy size={12} />
               </Button>
             </Tooltip>
+            <AppShellLegalMenu />
           </>
         }
       />

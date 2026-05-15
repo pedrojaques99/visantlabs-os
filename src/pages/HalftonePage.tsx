@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
+import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { HalftoneCanvas } from '@/components/halftone/HalftoneCanvas';
 import { HalftoneControls } from '@/components/halftone/HalftoneControls';
@@ -125,6 +126,7 @@ export const HalftonePage: React.FC = () => {
                 </Button>
               </Tooltip>
             )}
+            <AppShellLegalMenu />
           </>
         }
       />

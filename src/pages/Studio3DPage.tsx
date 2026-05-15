@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
+import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 
@@ -166,6 +167,7 @@ export const Studio3DPage: React.FC = () => {
                 </Button>
               </Tooltip>
             )}
+            <AppShellLegalMenu />
           </>
         }
       />
