@@ -14,6 +14,7 @@ import { GridMachineControls } from '@/components/grid-machine/ControlsPanel';
 import { useGridMachineStore } from '@/stores/gridMachineStore';
 import { analyzeSvg } from '@/components/grid-machine/SvgAnalyzer';
 import { useIsMobile } from '@/hooks/use-media-query';
+import { usePasteImage } from '@/hooks/usePasteImage';
 
 export const GridMachinePage: React.FC = () => {
   const navigate = useNavigate();
@@ -43,6 +44,26 @@ export const GridMachinePage: React.FC = () => {
     const handles = result.points.filter(p => p.type === 'handle').length;
     toast.success(`Loaded ${name} — ${anchors} anchors, ${handles} handles`);
   }, [setSvg, setAnalysis]);
+
+  usePasteImage(useCallback(async ({ file }) => {
+    if (!file) return;
+    if (file.type === 'image/svg+xml') {
+      const text = await file.text();
+      loadSvg(text, file.name || 'pasted.svg');
+    }
+  }, [loadSvg]));
+
+  useEffect(() => {
+    const handlePasteText = (e: ClipboardEvent) => {
+      const text = e.clipboardData?.getData('text/plain');
+      if (text && text.trimStart().startsWith('<svg')) {
+        e.preventDefault();
+        loadSvg(text, 'pasted.svg');
+      }
+    };
+    window.addEventListener('paste', handlePasteText);
+    return () => window.removeEventListener('paste', handlePasteText);
+  }, [loadSvg]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

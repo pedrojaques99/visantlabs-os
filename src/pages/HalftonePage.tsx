@@ -14,6 +14,7 @@ import { HalftoneControls } from '@/components/halftone/HalftoneControls';
 import { useHalftoneStore } from '@/stores/halftoneStore';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
 import { useIsMobile } from '@/hooks/use-media-query';
+import { usePasteImage } from '@/hooks/usePasteImage';
 
 export const HalftonePage: React.FC = () => {
   const navigate = useNavigate();
@@ -77,6 +78,13 @@ export const HalftonePage: React.FC = () => {
   useHotkeys('mod+\\', () => setPanelVisible(!panelVisible), { enableOnFormTags: false });
 
   // Drag & drop image upload
+  usePasteImage(useCallback(({ file }) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    const url = URL.createObjectURL(file);
+    useHalftoneStore.getState().setImageUrl(url, file.name || 'pasted-image');
+    toast.success(`Loaded ${file.name || 'pasted image'}`);
+  }, []));
+
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(true);

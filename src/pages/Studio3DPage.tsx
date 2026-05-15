@@ -18,6 +18,7 @@ import type { SceneHandle } from '@/components/3d-studio/engine/useSceneRef';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { setCameraView, resetCamera, dollyCamera, rotateCamera, DEG15 } from '@/components/3d-studio/CameraBridge';
+import { usePasteImage } from '@/hooks/usePasteImage';
 
 export const Studio3DPage: React.FC = () => {
   const { t } = useTranslation();
@@ -111,6 +112,28 @@ export const Studio3DPage: React.FC = () => {
   useHotkeys('right', () => rotateCamera(DEG15, 0), { enableOnFormTags: false });
   useHotkeys('up', () => rotateCamera(0, -DEG15), { enableOnFormTags: false });
   useHotkeys('down', () => rotateCamera(0, DEG15), { enableOnFormTags: false });
+
+  usePasteImage(useCallback(async ({ file }) => {
+    if (!file) return;
+    const store = useStudio3DStore.getState();
+    if (file.type === 'image/svg+xml') {
+      const text = await file.text();
+      store.setSvgData(text, file.name || 'pasted.svg');
+      toast.success(t('studio3d.input.loaded', { fileName: file.name || 'pasted.svg' }));
+    } else if (file.type.startsWith('image/')) {
+      store.setIsLoading(true);
+      try {
+        const { pngToSvg } = await import('@/components/3d-studio/PngToSvgConverter');
+        const svg = await pngToSvg(file);
+        store.setSvgData(svg, file.name || 'pasted.png');
+        toast.success(t('studio3d.input.converted', { fileName: file.name || 'pasted.png' }));
+      } catch {
+        toast.error(t('studio3d.input.processFailed'));
+      } finally {
+        store.setIsLoading(false);
+      }
+    }
+  }, [t]));
 
   // Drag&drop on entire viewport
   const handleViewportDrop = useCallback(async (e: React.DragEvent) => {

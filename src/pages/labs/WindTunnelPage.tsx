@@ -12,6 +12,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
 import { useIsMobile } from '@/hooks/use-media-query';
+import { usePasteImage } from '@/hooks/usePasteImage';
 import { Input } from '@/components/ui/input';
 import { WindTunnelCanvas, type WindTunnelConfig, type WindTunnelHandle } from '@/components/labs/wind-tunnel/WindTunnelCanvas';
 
@@ -336,6 +337,10 @@ export function WindTunnelPage() {
       toast.error('Failed to load image.');
     }
   }, []);
+
+  usePasteImage(useCallback(({ file }) => {
+    if (file) handleImageUpload(file);
+  }, [handleImageUpload]));
 
   const handleClearImage = useCallback(() => {
     setConfig(prev => ({ ...prev, obstacleType: 'text' as const, obstacleImage: undefined }));
