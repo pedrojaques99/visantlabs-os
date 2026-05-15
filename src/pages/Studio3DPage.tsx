@@ -2,12 +2,15 @@ import React, { useRef, useCallback, useState, useEffect, Suspense } from 'react
 import { useNavigate } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
-import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
+import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
+import { DropOverlay } from '@/components/ui/DropOverlay';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 
@@ -28,6 +31,7 @@ export const Studio3DPage: React.FC = () => {
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   useEffect(() => { document.title = '3D Studio — Visant'; }, []);
 
@@ -171,9 +175,9 @@ export const Studio3DPage: React.FC = () => {
                 <ChevronLeft size={16} />
               </Button>
             </Tooltip>
-            <span className="text-[10px] text-neutral-600 uppercase tracking-widest font-mono ml-1">
+            <MicroTitle className="text-[10px] text-neutral-600 uppercase tracking-widest ml-1">
               {t('studio3d.title')}
-            </span>
+            </MicroTitle>
           </>
         }
         right={
@@ -201,9 +205,11 @@ export const Studio3DPage: React.FC = () => {
           right: !isMobile && panelVisible ? 316 : 0,
           paddingBottom: isMobile ? (mobileSheetOpen ? '45%' : 48) : 40,
         }}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleViewportDrop}
+        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+        onDragLeave={() => setIsDragOver(false)}
+        onDrop={(e) => { setIsDragOver(false); handleViewportDrop(e); }}
       >
+        <DropOverlay visible={isDragOver} message={t('studio3d.input.dropHere') !== 'studio3d.input.dropHere' ? t('studio3d.input.dropHere') : 'Drop file here'} />
         <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-neutral-950"><span className="text-[10px] uppercase tracking-widest text-neutral-600 animate-pulse">{t('studio3d.loadingEngine')}</span></div>}>
           <SceneCanvas onCanvasReady={handleCanvasReady} onSceneReady={handleSceneReady} />
         </Suspense>
@@ -216,25 +222,9 @@ export const Studio3DPage: React.FC = () => {
       )}
 
       {isMobile && (
-        <div
-          className={cn(
-            'absolute left-0 right-0 bottom-0 z-20 transition-transform duration-300 ease-out',
-            mobileSheetOpen ? 'h-[45%]' : 'h-[48px]',
-          )}
-        >
-          <button
-            onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
-            className="w-full flex items-center justify-center gap-1.5 h-[48px] bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400 active:bg-neutral-800/90"
-          >
-            {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            <span className="text-[11px] uppercase tracking-widest">{t('studio3d.controls')}</span>
-          </button>
-          {mobileSheetOpen && (
-            <div className="h-[calc(100%-48px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
-              <ControlsPanel onExport={handleExport} />
-            </div>
-          )}
-        </div>
+        <AppShellMobileSheet open={mobileSheetOpen} onToggle={() => setMobileSheetOpen(!mobileSheetOpen)} label={t('studio3d.controls')}>
+          <ControlsPanel onExport={handleExport} />
+        </AppShellMobileSheet>
       )}
 
       {!isMobile && (

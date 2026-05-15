@@ -2,12 +2,14 @@ import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
-import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
+import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
+import { DropOverlay } from '@/components/ui/DropOverlay';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { HalftoneCanvas } from '@/components/halftone/HalftoneCanvas';
 import { HalftoneControls } from '@/components/halftone/HalftoneControls';
@@ -115,9 +117,9 @@ export const HalftonePage: React.FC = () => {
                 <ChevronLeft size={16} />
               </Button>
             </Tooltip>
-            <span className="text-[10px] text-neutral-600 uppercase tracking-widest font-mono ml-1">
+            <MicroTitle className="text-[10px] text-neutral-600 uppercase tracking-widest ml-1">
               CMYK HALFTONE
-            </span>
+            </MicroTitle>
           </>
         }
         right={
@@ -142,7 +144,7 @@ export const HalftonePage: React.FC = () => {
       <div
         className="absolute inset-0 pt-10 transition-all duration-300"
         style={{
-          paddingRight: !isMobile && panelVisible ? 236 : 0,
+          paddingRight: !isMobile && panelVisible ? 316 : 0,
           paddingBottom: isMobile ? (mobileSheetOpen ? '45%' : 48) : 40,
         }}
         onDragOver={handleDragOver}
@@ -150,12 +152,7 @@ export const HalftonePage: React.FC = () => {
         onDrop={handleDrop}
       >
         <HalftoneCanvas onCanvasReady={handleCanvasReady} />
-
-        {isDragOver && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm border-2 border-dashed border-cyan-500/50 rounded-lg">
-            <span className="text-sm text-cyan-400 font-mono uppercase tracking-widest">Drop image here</span>
-          </div>
-        )}
+        <DropOverlay visible={isDragOver} message="Drop image here" />
       </div>
 
       {!isMobile && (
@@ -165,23 +162,9 @@ export const HalftonePage: React.FC = () => {
       )}
 
       {isMobile && (
-        <div className={cn(
-          'absolute left-0 right-0 bottom-0 z-20 transition-transform duration-300 ease-out',
-          mobileSheetOpen ? 'h-[45%]' : 'h-[48px]',
-        )}>
-          <button
-            onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
-            className="w-full flex items-center justify-center gap-1.5 h-[48px] bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400 active:bg-neutral-800/90"
-          >
-            {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            <span className="text-[11px] uppercase tracking-widest">Controls</span>
-          </button>
-          {mobileSheetOpen && (
-            <div className="h-[calc(100%-48px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
-              <HalftoneControls onExport={handleExport} />
-            </div>
-          )}
-        </div>
+        <AppShellMobileSheet open={mobileSheetOpen} onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}>
+          <HalftoneControls onExport={handleExport} />
+        </AppShellMobileSheet>
       )}
 
       {!isMobile && (

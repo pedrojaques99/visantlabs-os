@@ -2,8 +2,8 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Download, Trash2, RotateCcw, Copy,
   ChevronLeft, Maximize2, ZoomIn, ZoomOut, Shuffle, Dices,
-  ChevronUp, ChevronDown,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { NodeSlider } from '@/components/reactflow/shared/node-slider';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel } from '@/components/ui/AppShell';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
+import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { useIsMobile } from '@/hooks/use-media-query';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -671,6 +672,7 @@ export const GridPaintPage: React.FC = () => {
     link.download = 'grid-paint.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
+    toast.success('PNG exported');
   };
 
   const exportSVG = () => {
@@ -697,6 +699,7 @@ export const GridPaintPage: React.FC = () => {
     const a = document.createElement('a');
     a.href = url; a.download = 'grid-paint.svg'; a.click();
     URL.revokeObjectURL(url);
+    toast.success('SVG exported');
   };
 
   // Keyboard shortcuts
@@ -939,71 +942,57 @@ export const GridPaintPage: React.FC = () => {
 
       {/* Mobile bottom sheet */}
       {isMobile && (
-        <div className={cn(
-          'absolute left-0 right-0 bottom-0 z-20 transition-transform duration-300 ease-out',
-          mobileSheetOpen ? 'h-[45%]' : 'h-[48px]',
-        )}>
-          <button
-            onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
-            className="w-full flex items-center justify-center gap-1.5 h-[48px] bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400 active:bg-neutral-800/90"
-          >
-            {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            <span className="text-[11px] uppercase tracking-widest">Controls</span>
-          </button>
-          {mobileSheetOpen && (
-            <div className="h-[calc(100%-48px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
-              <GlassPanel className="backdrop-blur-xl bg-transparent scrollbar-none">
-                {/* Presets */}
-                <div className="p-3 space-y-2 border-b border-white/[0.06]">
-                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Presets</MicroTitle>
-                  <div className="grid grid-cols-3 gap-1">
-                    {Object.entries(PRESETS).map(([name, preset]) => (
-                      <Button key={name} variant="ghost" size="xs" onClick={() => updateConfig(preset)} className="text-[9px] text-neutral-500 hover:text-white font-medium">{name}</Button>
-                    ))}
-                  </div>
-                </div>
-                {/* Seeds */}
-                <div className="p-3 space-y-2 border-b border-white/[0.06]">
-                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Seeds</MicroTitle>
-                  <div className="grid grid-cols-3 gap-1">
-                    {Object.keys(SEEDS).map(name => (
-                      <Button key={name} variant="ghost" size="xs" onClick={() => applySeed(name)} className="text-[9px] text-neutral-500 hover:text-white font-medium">
-                        {name === 'Random' ? <><Dices size={10} className="mr-0.5" /> Rand</> : name}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                {/* Shape */}
-                <div className="p-3 space-y-1 border-b border-white/[0.06]">
-                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Shape</MicroTitle>
-                  <NodeSlider label="Dot Radius" value={config.dotRadius} min={2} max={40} step={1} onChange={v => updateConfig({ dotRadius: v })} formatValue={v => `${v}px`} />
-                  <NodeSlider label="Blob" value={config.blobFactor} min={0.05} max={1} step={0.05} onChange={v => updateConfig({ blobFactor: v })} />
-                  <NodeSlider label="Tension" value={config.curveTension} min={0.05} max={1} step={0.05} onChange={v => updateConfig({ curveTension: v })} />
-                  <NodeSlider label="Glow" value={config.glow} min={0} max={30} step={1} onChange={v => updateConfig({ glow: v })} formatValue={v => `${v}px`} />
-                </div>
-                {/* Stroke */}
-                <div className="p-3 space-y-2.5 border-b border-white/[0.06]">
-                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Stroke</MicroTitle>
-                  <div className="flex items-center justify-between">
-                    <MicroTitle className="text-neutral-500 text-[10px]">Outline mode</MicroTitle>
-                    <Switch checked={config.strokeOnly} onCheckedChange={v => updateConfig({ strokeOnly: v })} />
-                  </div>
-                  {config.strokeOnly && (
-                    <NodeSlider label="Width" value={config.strokeWidth} min={0.5} max={5} step={0.25} onChange={v => updateConfig({ strokeWidth: v })} formatValue={v => `${v}px`} />
-                  )}
-                </div>
-                {/* Connections */}
-                <div className="p-3 space-y-2.5">
-                  <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Connections</MicroTitle>
-                  <div className="flex items-center justify-between">
-                    <MicroTitle className="text-neutral-500 text-[10px]">Diagonals</MicroTitle>
-                    <Switch checked={config.connectDiagonals} onCheckedChange={v => updateConfig({ connectDiagonals: v })} />
-                  </div>
-                </div>
-              </GlassPanel>
+        <AppShellMobileSheet open={mobileSheetOpen} onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}>
+          <GlassPanel className="backdrop-blur-xl bg-transparent scrollbar-none">
+            {/* Presets */}
+            <div className="p-3 space-y-2 border-b border-white/[0.06]">
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Presets</MicroTitle>
+              <div className="grid grid-cols-3 gap-1">
+                {Object.entries(PRESETS).map(([name, preset]) => (
+                  <Button key={name} variant="ghost" size="xs" onClick={() => updateConfig(preset)} className="text-[9px] text-neutral-500 hover:text-white font-medium">{name}</Button>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+            {/* Seeds */}
+            <div className="p-3 space-y-2 border-b border-white/[0.06]">
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Seeds</MicroTitle>
+              <div className="grid grid-cols-3 gap-1">
+                {Object.keys(SEEDS).map(name => (
+                  <Button key={name} variant="ghost" size="xs" onClick={() => applySeed(name)} className="text-[9px] text-neutral-500 hover:text-white font-medium">
+                    {name === 'Random' ? <><Dices size={10} className="mr-0.5" /> Rand</> : name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            {/* Shape */}
+            <div className="p-3 space-y-1 border-b border-white/[0.06]">
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Shape</MicroTitle>
+              <NodeSlider label="Dot Radius" value={config.dotRadius} min={2} max={40} step={1} onChange={v => updateConfig({ dotRadius: v })} formatValue={v => `${v}px`} />
+              <NodeSlider label="Blob" value={config.blobFactor} min={0.05} max={1} step={0.05} onChange={v => updateConfig({ blobFactor: v })} />
+              <NodeSlider label="Tension" value={config.curveTension} min={0.05} max={1} step={0.05} onChange={v => updateConfig({ curveTension: v })} />
+              <NodeSlider label="Glow" value={config.glow} min={0} max={30} step={1} onChange={v => updateConfig({ glow: v })} formatValue={v => `${v}px`} />
+            </div>
+            {/* Stroke */}
+            <div className="p-3 space-y-2.5 border-b border-white/[0.06]">
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Stroke</MicroTitle>
+              <div className="flex items-center justify-between">
+                <MicroTitle className="text-neutral-500 text-[10px]">Outline mode</MicroTitle>
+                <Switch checked={config.strokeOnly} onCheckedChange={v => updateConfig({ strokeOnly: v })} />
+              </div>
+              {config.strokeOnly && (
+                <NodeSlider label="Width" value={config.strokeWidth} min={0.5} max={5} step={0.25} onChange={v => updateConfig({ strokeWidth: v })} formatValue={v => `${v}px`} />
+              )}
+            </div>
+            {/* Connections */}
+            <div className="p-3 space-y-2.5">
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Connections</MicroTitle>
+              <div className="flex items-center justify-between">
+                <MicroTitle className="text-neutral-500 text-[10px]">Diagonals</MicroTitle>
+                <Switch checked={config.connectDiagonals} onCheckedChange={v => updateConfig({ connectDiagonals: v })} />
+              </div>
+            </div>
+          </GlassPanel>
+        </AppShellMobileSheet>
       )}
 
     </AppShell>

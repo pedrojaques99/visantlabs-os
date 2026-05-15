@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, PanelRightClose, PanelRight, Download, Upload, X, Play, Pause, RotateCcw, ChevronUp, ChevronDown, Save, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ChevronLeft, PanelRightClose, PanelRight, Download, Upload, X, Play, Pause, RotateCcw, Save, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { loadImageFromFile } from '@/components/labs/wind-tunnel/ImageObstacles';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,8 @@ import { NodeSlider } from '@/components/reactflow/shared/node-slider';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
+import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
+import { DropOverlay } from '@/components/ui/DropOverlay';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { usePasteImage } from '@/hooks/usePasteImage';
 import { Input } from '@/components/ui/input';
@@ -459,11 +460,7 @@ export function WindTunnelPage() {
         onDrop={handleDrop}
       >
         <WindTunnelCanvas ref={tunnelRef} config={config} onConfigChange={(partial) => setConfig(prev => ({ ...prev, ...partial }))} />
-        {dragging && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 border-2 border-dashed border-[var(--brand-cyan)]/40 pointer-events-none">
-            <span className="text-sm text-neutral-400 font-mono">Drop image to use as obstacle</span>
-          </div>
-        )}
+        <DropOverlay visible={dragging} message="Drop image to use as obstacle" />
       </div>
 
       <AppShellTopBar
@@ -525,25 +522,11 @@ export function WindTunnelPage() {
       )}
 
       {isMobile && (
-        <div className={cn(
-          'absolute left-0 right-0 bottom-0 z-20 transition-transform duration-300 ease-out',
-          mobileSheetOpen ? 'h-[50%]' : 'h-[48px]',
-        )}>
-          <button
-            onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
-            className="w-full flex items-center justify-center gap-1.5 h-[48px] bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400 active:bg-neutral-800/90"
-          >
-            {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            <span className="text-[11px] uppercase tracking-widest">Controls</span>
-          </button>
-          {mobileSheetOpen && (
-            <div className="h-[calc(100%-48px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
-              <GlassPanel className="backdrop-blur-xl bg-transparent scrollbar-none">
-                <ControlsContent {...controlsProps} />
-              </GlassPanel>
-            </div>
-          )}
-        </div>
+        <AppShellMobileSheet open={mobileSheetOpen} onToggle={() => setMobileSheetOpen(!mobileSheetOpen)} height="50%">
+          <GlassPanel className="backdrop-blur-xl bg-transparent scrollbar-none">
+            <ControlsContent {...controlsProps} />
+          </GlassPanel>
+        </AppShellMobileSheet>
       )}
 
       {!isMobile && <AppShellStatusBar>

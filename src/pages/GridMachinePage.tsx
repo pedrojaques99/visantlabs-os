@@ -2,12 +2,15 @@ import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
-import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, ChevronUp, ChevronDown, Upload } from 'lucide-react';
+import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
+import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
+import { DropOverlay } from '@/components/ui/DropOverlay';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { GridCanvas, type GridCanvasHandle } from '@/components/grid-machine/GridCanvas';
 import { GridMachineControls } from '@/components/grid-machine/ControlsPanel';
@@ -23,6 +26,7 @@ export const GridMachinePage: React.FC = () => {
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   useEffect(() => { document.title = 'Grid Machine — Visant'; }, []);
 
@@ -160,9 +164,9 @@ export const GridMachinePage: React.FC = () => {
                 <ChevronLeft size={16} />
               </Button>
             </Tooltip>
-            <span className="text-[10px] text-neutral-600 uppercase tracking-widest font-mono ml-1">
+            <MicroTitle className="text-[10px] text-neutral-600 uppercase tracking-widest ml-1">
               GRID MACHINE
-            </span>
+            </MicroTitle>
           </>
         }
         right={
@@ -194,12 +198,14 @@ export const GridMachinePage: React.FC = () => {
       <div
         className="absolute inset-0 pt-10 transition-all duration-300"
         style={{
-          paddingRight: !isMobile && panelVisible ? 236 : 0,
+          paddingRight: !isMobile && panelVisible ? 316 : 0,
           paddingBottom: isMobile ? (mobileSheetOpen ? '45%' : 48) : 40,
         }}
-        onDrop={handleDrop}
-        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => { setIsDragOver(false); handleDrop(e); }}
+        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+        onDragLeave={() => setIsDragOver(false)}
       >
+        <DropOverlay visible={isDragOver} message="Drop SVG here" />
         {svgContent ? (
           <GridCanvas ref={gridRef} />
         ) : (
@@ -207,15 +213,13 @@ export const GridMachinePage: React.FC = () => {
             <button
               onClick={() => fileInputRef.current?.click()}
               className="flex flex-col items-center gap-3 p-10 rounded-2xl border border-dashed border-white/10 hover:border-white/20 transition-colors cursor-pointer group"
-              onDrop={handleDrop}
-              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
             >
               <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
                 <Upload size={20} className="text-neutral-500 group-hover:text-neutral-300" />
               </div>
               <div className="text-center">
                 <p className="text-[12px] text-neutral-400">Drop an SVG file here</p>
-                <p className="text-[10px] text-neutral-600 mt-1">or click to browse</p>
+                <p className="text-[10px] text-neutral-600 mt-1">or click / Ctrl+V to paste</p>
               </div>
             </button>
           </div>
@@ -229,23 +233,9 @@ export const GridMachinePage: React.FC = () => {
       )}
 
       {svgContent && isMobile && (
-        <div className={cn(
-          'absolute left-0 right-0 bottom-0 z-20 transition-transform duration-300 ease-out',
-          mobileSheetOpen ? 'h-[45%]' : 'h-[48px]',
-        )}>
-          <button
-            onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
-            className="w-full flex items-center justify-center gap-1.5 h-[48px] bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400 active:bg-neutral-800/90"
-          >
-            {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            <span className="text-[11px] uppercase tracking-widest">Controls</span>
-          </button>
-          {mobileSheetOpen && (
-            <div className="h-[calc(100%-48px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
-              <GridMachineControls onExportPng={handleExportPng} onExportSvg={handleExportSvg} />
-            </div>
-          )}
-        </div>
+        <AppShellMobileSheet open={mobileSheetOpen} onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}>
+          <GridMachineControls onExportPng={handleExportPng} onExportSvg={handleExportSvg} />
+        </AppShellMobileSheet>
       )}
 
       {!isMobile && svgContent && (
