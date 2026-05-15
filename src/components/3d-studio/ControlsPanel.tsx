@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { NodeSlider } from '@/components/reactflow/shared/node-slider';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';

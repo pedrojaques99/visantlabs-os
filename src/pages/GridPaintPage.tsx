@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { NodeSlider } from '@/components/reactflow/shared/node-slider';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel } from '@/components/ui/AppShell';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
@@ -706,6 +706,7 @@ export const GridPaintPage: React.FC = () => {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'e') { e.preventDefault(); exportPNG(); }
       if (e.key === 'Tab') { e.preventDefault(); setShowPanel(p => !p); }
       if (e.key === '=' || e.key === '+') setZoom(z => Math.min(z + 0.1, 3));
       if (e.key === '-') setZoom(z => Math.max(z - 0.1, 0.3));

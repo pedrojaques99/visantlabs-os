@@ -146,7 +146,7 @@ export const GridMachinePage: React.FC = () => {
 
   useHotkeys('mod+e', (e) => { e.preventDefault(); handleExportPng(); }, { enableOnFormTags: false });
   useHotkeys('r', () => { if (svgContent) setConfirmReset(true); }, { enableOnFormTags: false });
-  useHotkeys('mod+\\', () => setPanelVisible(!panelVisible), { enableOnFormTags: false });
+  useHotkeys('tab', (e) => { e.preventDefault(); setPanelVisible(!panelVisible); }, { enableOnFormTags: false });
   useHotkeys('mod+o', (e) => { e.preventDefault(); fileInputRef.current?.click(); }, { enableOnFormTags: false });
 
   const anchorCount = analysis?.points.filter(p => p.type === 'anchor').length ?? 0;
@@ -184,7 +184,7 @@ export const GridMachinePage: React.FC = () => {
               </Tooltip>
             )}
             {!isMobile && (
-              <Tooltip content={panelVisible ? 'Hide panel' : 'Show panel'}>
+              <Tooltip content={panelVisible ? 'Hide panel (Tab)' : 'Show panel (Tab)'}>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
                   {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                 </Button>

@@ -77,7 +77,7 @@ export const HalftonePage: React.FC = () => {
   // Keyboard shortcuts
   useHotkeys('mod+e', (e) => { e.preventDefault(); handleExport(); }, { enableOnFormTags: false });
   useHotkeys('r', () => setConfirmReset(true), { enableOnFormTags: false });
-  useHotkeys('mod+\\', () => setPanelVisible(!panelVisible), { enableOnFormTags: false });
+  useHotkeys('tab', (e) => { e.preventDefault(); setPanelVisible(!panelVisible); }, { enableOnFormTags: false });
 
   // Drag & drop image upload
   usePasteImage(useCallback(({ file }) => {
@@ -130,7 +130,7 @@ export const HalftonePage: React.FC = () => {
               </Button>
             </Tooltip>
             {!isMobile && (
-              <Tooltip content={panelVisible ? 'Hide panel (⌘\\)' : 'Show panel (⌘\\)'}>
+              <Tooltip content={panelVisible ? 'Hide panel (Tab)' : 'Show panel (Tab)'}>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
                   {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                 </Button>

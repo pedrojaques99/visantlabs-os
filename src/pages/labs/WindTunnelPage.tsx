@@ -6,7 +6,7 @@ import { loadImageFromFile } from '@/components/labs/wind-tunnel/ImageObstacles'
 import { Button } from '@/components/ui/button';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { NodeSlider } from '@/components/reactflow/shared/node-slider';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
@@ -430,8 +430,8 @@ export function WindTunnelPage() {
     const handler = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).tagName === 'INPUT') return;
       if (e.code === 'Space') { e.preventDefault(); togglePause(); }
-      if (e.code === 'KeyP') setShowPanel(p => !p);
-      if ((e.ctrlKey || e.metaKey) && e.code === 'KeyS') { e.preventDefault(); handleExport(1); }
+      if (e.code === 'Tab') { e.preventDefault(); setShowPanel(p => !p); }
+      if ((e.ctrlKey || e.metaKey) && e.code === 'KeyE') { e.preventDefault(); handleExport(1); }
       if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) handleResetSim();
     };
     window.addEventListener('keydown', handler);
@@ -488,7 +488,7 @@ export function WindTunnelPage() {
               </Button>
             </Tooltip>
             <div className="relative">
-              <Tooltip content="Export PNG (Ctrl+S)" position="bottom">
+              <Tooltip content="Export PNG (Ctrl+E)" position="bottom">
                 <Button variant="surface" size="xs" onClick={() => setShowExportMenu(p => !p)} aria-label="Export PNG">
                   <Download size={12} className="mr-1" /> PNG
                 </Button>
@@ -503,7 +503,7 @@ export function WindTunnelPage() {
                 </div>
               )}
             </div>
-            <Tooltip content={showPanel ? 'Hide panel (P)' : 'Show panel (P)'} position="bottom">
+            <Tooltip content={showPanel ? 'Hide panel (Tab)' : 'Show panel (Tab)'} position="bottom">
               <Button variant="ghost" size="icon-sm" onClick={() => setShowPanel(p => !p)} aria-label={showPanel ? 'Hide panel' : 'Show panel'}>
                 {showPanel ? <PanelRightClose size={14} /> : <PanelRight size={14} />}
               </Button>

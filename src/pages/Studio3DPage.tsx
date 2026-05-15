@@ -101,7 +101,7 @@ export const Studio3DPage: React.FC = () => {
   // Keyboard shortcuts
   useHotkeys('mod+e', (e) => { e.preventDefault(); handleExport(); }, { enableOnFormTags: false });
   useHotkeys('r', () => setConfirmReset(true), { enableOnFormTags: false });
-  useHotkeys('mod+\\', () => setPanelVisible(!panelVisible), { enableOnFormTags: false });
+  useHotkeys('tab', (e) => { e.preventDefault(); setPanelVisible(!panelVisible); }, { enableOnFormTags: false });
 
   // Camera shortcuts
   useHotkeys('1', () => setCameraView('front'), { enableOnFormTags: false });
