@@ -19,7 +19,10 @@ export function rasterizeShapeToObstacles(p: ShapeParams): boolean[] {
   const scale = p.scale ?? 1;
   const cx = N / 2 + (p.offsetX ?? 0) * N;
   const cy = N / 2 + (p.offsetY ?? 0) * N;
-  const r = N * 0.15 * scale;
+  const minDim = Math.min(p.canvasWidth, p.canvasHeight);
+  const rPixels = minDim * 0.15 * scale;
+  const rx = rPixels / p.canvasWidth * N;
+  const ry = rPixels / p.canvasHeight * N;
 
   for (let j = 1; j <= N; j++) {
     for (let i = 1; i <= N; i++) {
@@ -29,17 +32,17 @@ export function rasterizeShapeToObstacles(p: ShapeParams): boolean[] {
 
       switch (p.shape) {
         case 'circle':
-          inside = x * x + y * y <= r * r;
+          inside = (x / rx) * (x / rx) + (y / ry) * (y / ry) <= 1;
           break;
         case 'square':
-          inside = Math.abs(x) <= r && Math.abs(y) <= r;
+          inside = Math.abs(x) <= rx && Math.abs(y) <= ry;
           break;
         case 'diamond':
-          inside = Math.abs(x) + Math.abs(y) <= r * 1.2;
+          inside = Math.abs(x / rx) + Math.abs(y / ry) <= 1.2;
           break;
         case 'triangle': {
-          const h = r * 1.4;
-          const base = r * 1.6;
+          const h = ry * 1.4;
+          const base = rx * 1.6;
           const ty = y + h * 0.4;
           if (ty >= 0 && ty <= h) {
             const halfW = base * (1 - ty / h) / 2;
@@ -48,10 +51,10 @@ export function rasterizeShapeToObstacles(p: ShapeParams): boolean[] {
           break;
         }
         case 'airfoil': {
-          const chord = r * 3;
+          const chord = rx * 3;
           const nx = (x + chord * 0.4) / chord;
           if (nx >= 0 && nx <= 1) {
-            const thickness = 0.12 * chord * (
+            const thickness = 0.12 * ry * 3 * (
               2.98 * Math.sqrt(nx) - 1.32 * nx - 3.286 * nx * nx + 2.441 * nx * nx * nx - 0.815 * nx * nx * nx * nx
             );
             inside = Math.abs(y) <= thickness;

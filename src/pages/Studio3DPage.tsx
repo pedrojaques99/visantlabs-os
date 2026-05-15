@@ -15,9 +15,11 @@ import { useStudio3DStore } from '@/stores/studio3dStore';
 import { exportPNG, exportVideo, exportGLB, exportOBJ } from '@/components/3d-studio/ExportManager';
 import type { SceneHandle } from '@/components/3d-studio/engine/useSceneRef';
 import { useIsMobile } from '@/hooks/use-media-query';
+import { useTranslation } from '@/hooks/useTranslation';
 import { setCameraView, resetCamera, dollyCamera, rotateCamera, DEG15 } from '@/components/3d-studio/CameraBridge';
 
 export const Studio3DPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneHandleRef = useRef<SceneHandle | null>(null);
@@ -76,9 +78,9 @@ export const Studio3DPage: React.FC = () => {
           await exportOBJ(sceneHandleRef.current.scene, name);
           break;
       }
-      toast.success(`${store.exportFormat.toUpperCase()} exported`);
+      toast.success(t('studio3d.export.exported', { format: store.exportFormat.toUpperCase() }));
     } catch (err) {
-      toast.error('Export failed — try again');
+      toast.error(t('studio3d.export.exportFailed'));
     } finally {
       setIsExporting(false);
     }
@@ -87,7 +89,7 @@ export const Studio3DPage: React.FC = () => {
   const handleReset = useCallback(() => {
     resetScene();
     setConfirmReset(false);
-    toast.success('Scene reset');
+    toast.success(t('studio3d.sceneReset'));
   }, [resetScene]);
 
   // Keyboard shortcuts
@@ -118,16 +120,16 @@ export const Studio3DPage: React.FC = () => {
     if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
       const text = await file.text();
       store.setSvgData(text, file.name);
-      toast.success(`Loaded ${file.name}`);
+      toast.success(t('studio3d.input.loaded', { fileName: file.name }));
     } else if (file.type.startsWith('image/')) {
       store.setIsLoading(true);
       try {
         const { pngToSvg } = await import('@/components/3d-studio/PngToSvgConverter');
         const svg = await pngToSvg(file);
         store.setSvgData(svg, file.name);
-        toast.success(`Converted ${file.name} to SVG`);
+        toast.success(t('studio3d.input.converted', { fileName: file.name }));
       } catch {
-        toast.error('Failed to process image');
+        toast.error(t('studio3d.input.processFailed'));
       } finally {
         store.setIsLoading(false);
       }
@@ -140,25 +142,25 @@ export const Studio3DPage: React.FC = () => {
       <AppShellTopBar
         left={
           <>
-            <Tooltip content="Back to apps">
+            <Tooltip content={t('studio3d.backToApps')}>
               <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => navigate('/apps')}>
                 <ChevronLeft size={16} />
               </Button>
             </Tooltip>
             <span className="text-[10px] text-neutral-600 uppercase tracking-widest font-mono ml-1">
-              3D STUDIO
+              {t('studio3d.title')}
             </span>
           </>
         }
         right={
           <>
-            <Tooltip content="Reset scene (R)">
+            <Tooltip content={t('studio3d.resetSceneShortcut')}>
               <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setConfirmReset(true)}>
                 <RotateCcw size={14} />
               </Button>
             </Tooltip>
             {!isMobile && (
-              <Tooltip content={panelVisible ? 'Hide panel (⌘\\)' : 'Show panel (⌘\\)'}>
+              <Tooltip content={panelVisible ? t('studio3d.hidePanel') : t('studio3d.showPanel')}>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
                   {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                 </Button>
@@ -177,7 +179,7 @@ export const Studio3DPage: React.FC = () => {
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleViewportDrop}
       >
-        <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-neutral-950"><span className="text-[10px] uppercase tracking-widest text-neutral-600 animate-pulse">Loading 3D Engine...</span></div>}>
+        <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-neutral-950"><span className="text-[10px] uppercase tracking-widest text-neutral-600 animate-pulse">{t('studio3d.loadingEngine')}</span></div>}>
           <SceneCanvas onCanvasReady={handleCanvasReady} onSceneReady={handleSceneReady} />
         </Suspense>
       </div>
@@ -200,7 +202,7 @@ export const Studio3DPage: React.FC = () => {
             className="w-full flex items-center justify-center gap-1 py-2 bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400"
           >
             {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            <span className="text-[10px] uppercase tracking-widest">Controls</span>
+            <span className="text-[10px] uppercase tracking-widest">{t('studio3d.controls')}</span>
           </button>
           {mobileSheetOpen && (
             <div className="h-[calc(100%-36px)] bg-neutral-950/95 backdrop-blur-xl overflow-hidden">
@@ -244,9 +246,9 @@ export const Studio3DPage: React.FC = () => {
         isOpen={confirmReset}
         onClose={() => setConfirmReset(false)}
         onConfirm={handleReset}
-        title="Reset scene"
-        message="All settings will return to defaults. This cannot be undone."
-        confirmText="Reset"
+        title={t('studio3d.resetScene')}
+        message={t('studio3d.resetConfirmMessage')}
+        confirmText={t('studio3d.resetConfirmButton')}
         variant="warning"
       />
     </AppShell>

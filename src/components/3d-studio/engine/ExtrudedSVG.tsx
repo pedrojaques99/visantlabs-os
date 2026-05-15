@@ -7,6 +7,9 @@ interface ExtrudedSVGProps {
   svgString: string;
   depth: number;
   smoothness: number;
+  bevelEnabled?: boolean;
+  bevelThickness?: number;
+  bevelSize?: number;
   color: string;
   materialSettings: {
     preset: string;
@@ -38,8 +41,8 @@ interface ExtrudedSVGProps {
 }
 
 export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
-  svgString, depth, smoothness, color, materialSettings,
-  rotationX, rotationY, groupRef,
+  svgString, depth, smoothness, bevelEnabled = true, bevelThickness = 0.5, bevelSize = 0.5,
+  color, materialSettings, rotationX, rotationY, groupRef,
   texture: textureUrl, textureRepeat = 1, textureRotation = 0, textureOffset = [0, 0],
   onLoadingChange,
 }) => {
@@ -69,7 +72,7 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     texture.needsUpdate = true;
   }, [texture, textureRepeat, textureRotation, textureOffset]);
 
-  const { geometries, center, baseScale, loading, progress } = useExtrudedGeometry(svgString, depth, smoothness);
+  const { geometries, center, baseScale, loading, progress } = useExtrudedGeometry(svgString, depth, smoothness, { bevelEnabled, bevelThickness, bevelSize });
 
   const onLoadingChangeRef = useRef(onLoadingChange);
   onLoadingChangeRef.current = onLoadingChange;

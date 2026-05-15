@@ -4098,5 +4098,116 @@
   },
   "mockups": {
     "title": "Title"
+  },
+  "studio3d": {
+    "title": "3D STUDIO",
+    "loadingEngine": "Loading 3D Engine...",
+    "backToApps": "Back to apps",
+    "resetScene": "Reset scene",
+    "resetSceneShortcut": "Reset scene (R)",
+    "resetConfirmMessage": "All settings will return to defaults. This cannot be undone.",
+    "resetConfirmButton": "Reset",
+    "sceneReset": "Scene reset",
+    "hidePanel": "Hide panel (⌘\\)",
+    "showPanel": "Show panel (⌘\\)",
+    "controls": "Controls",
+    "tabs": {
+      "shape": "Shape",
+      "material": "Material",
+      "scene": "Scene",
+      "animate": "Animate",
+      "shader": "Shader"
+    },
+    "input": {
+      "title": "INPUT",
+      "svgPng": "SVG / PNG",
+      "text": "Text",
+      "dropZone": "Click or drop SVG / PNG",
+      "textPlaceholder": "Type your text...",
+      "loaded": "Loaded {fileName}",
+      "converted": "Converted {fileName} to SVG",
+      "processFailed": "Failed to process image"
+    },
+    "geometry": {
+      "title": "GEOMETRY",
+      "depth": "Depth",
+      "bevel": "Bevel",
+      "smoothness": "Smoothness",
+      "thickness": "Thickness",
+      "size": "Size"
+    },
+    "scenePresets": {
+      "title": "SCENE PRESETS"
+    },
+    "material": {
+      "title": "MATERIAL",
+      "categories": {
+        "basic": "Basic",
+        "metals": "Metals",
+        "surfaces": "Surfaces",
+        "glass": "Glass & Gem",
+        "special": "Special"
+      }
+    },
+    "color": {
+      "title": "COLOR"
+    },
+    "texture": {
+      "title": "TEXTURE",
+      "upload": "Upload Image",
+      "repeat": "Repeat",
+      "regenerate": "Regenerate",
+      "remove": "Remove"
+    },
+    "properties": {
+      "title": "PROPERTIES",
+      "metalness": "Metalness",
+      "roughness": "Roughness",
+      "opacity": "Opacity",
+      "wireframe": "Wireframe"
+    },
+    "lighting": {
+      "title": "LIGHTING",
+      "keyLight": "Key Light",
+      "ambient": "Ambient",
+      "shadows": "Shadows",
+      "grid": "Grid"
+    },
+    "camera": {
+      "title": "CAMERA",
+      "front": "Front",
+      "top": "Top",
+      "right": "Right",
+      "back": "Back",
+      "iso": "Iso",
+      "reset": "Reset"
+    },
+    "background": {
+      "title": "BACKGROUND",
+      "transparent": "Transparent"
+    },
+    "animation": {
+      "type": "TYPE",
+      "controls": "CONTROLS",
+      "speed": "Speed",
+      "reverse": "Reverse"
+    },
+    "export": {
+      "title": "Export",
+      "shaderActive": "{shader} shader active",
+      "glbDesc": "3D model with materials",
+      "objDesc": "Geometry only (no materials)",
+      "duration": "Duration (s)",
+      "perfectLoop": "Perfect Loop — {duration}s",
+      "exporting": "Exporting...",
+      "exportFormat": "Export {format}",
+      "exported": "{format} exported",
+      "exportFailed": "Export failed — try again",
+      "sceneNotReady": "Scene not ready"
+    },
+    "font": {
+      "loadFailed": "Font failed to load, using default",
+      "loadTimeout": "Font load timed out"
+    }
   }
 }

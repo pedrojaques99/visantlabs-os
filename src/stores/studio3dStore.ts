@@ -188,6 +188,9 @@ interface Studio3DState {
   // Geometry
   depth: number;
   smoothness: number;
+  bevelEnabled: boolean;
+  bevelThickness: number;
+  bevelSize: number;
 
   // Material
   material: MaterialPreset;
@@ -246,6 +249,9 @@ interface Studio3DState {
   setInputMode: (mode: 'svg' | 'text') => void;
   setDepth: (v: number) => void;
   setSmoothness: (v: number) => void;
+  setBevelEnabled: (v: boolean) => void;
+  setBevelThickness: (v: number) => void;
+  setBevelSize: (v: number) => void;
   setMaterial: (m: MaterialPreset) => void;
   setColor: (c: string) => void;
   setMetalness: (v: number) => void;
@@ -289,6 +295,9 @@ const INITIAL_STATE = {
   fileName: '',
   depth: 0.9,
   smoothness: 0.2,
+  bevelEnabled: true,
+  bevelThickness: 0.5,
+  bevelSize: 0.5,
   material: 'default' as MaterialPreset,
   color: '#00e5ff',
   metalness: 0.5,
@@ -335,6 +344,9 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
   setInputMode: (mode) => set({ inputMode: mode }),
   setDepth: (depth) => set({ depth }),
   setSmoothness: (smoothness) => set({ smoothness }),
+  setBevelEnabled: (bevelEnabled) => set({ bevelEnabled }),
+  setBevelThickness: (bevelThickness) => set({ bevelThickness }),
+  setBevelSize: (bevelSize) => set({ bevelSize }),
   setMaterial: (material) => set({ material }),
   setColor: (color) => set({ color }),
   setMetalness: (metalness) => set({ metalness }),

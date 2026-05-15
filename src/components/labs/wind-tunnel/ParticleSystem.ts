@@ -34,15 +34,16 @@ export class ParticleSystem {
     }
   }
 
-  emit(x: number, y: number, count: number, baseVx: number = 0): void {
+  emit(x: number, y: number, count: number, baseVx: number = 0, lifetime: number = 100, spread: number = 50): void {
+    const spreadFactor = spread / 100;
     for (let c = 0; c < count; c++) {
       if (this.active >= this.maxParticles) return;
       const idx = this.active;
       this.x[idx] = x;
       this.y[idx] = y;
-      this.vx[idx] = baseVx + (Math.random() - 0.5) * baseVx * 0.3;
-      this.vy[idx] = (Math.random() - 0.5) * baseVx * 0.1;
-      const ml = 200 + Math.random() * 200;
+      this.vx[idx] = baseVx + (Math.random() - 0.5) * baseVx * 0.3 * spreadFactor;
+      this.vy[idx] = (Math.random() - 0.5) * baseVx * 0.2 * spreadFactor;
+      const ml = lifetime * 2 + Math.random() * lifetime * 2;
       this.life[idx] = ml;
       this.maxLife[idx] = ml;
       this.speed[idx] = 0;
@@ -52,6 +53,19 @@ export class ParticleSystem {
       }
       this.active++;
     }
+  }
+
+  setTrailLength(len: number): void {
+    if (len === this.trailLen) return;
+    while (this.trailX.length < len) {
+      this.trailX.push(new Float64Array(this.maxParticles).fill(-1));
+      this.trailY.push(new Float64Array(this.maxParticles).fill(-1));
+    }
+    while (this.trailX.length > len) {
+      this.trailX.pop();
+      this.trailY.pop();
+    }
+    this.trailLen = len;
   }
 
   update(solver: FluidSolver, dt: number, width: number, height: number): void {
@@ -66,7 +80,8 @@ export class ParticleSystem {
         continue;
       }
 
-      for (let t = this.trailLen - 1; t > 0; t--) {
+      const tLen = Math.min(this.trailLen, this.trailX.length);
+      for (let t = tLen - 1; t > 0; t--) {
         this.trailX[t][i] = this.trailX[t - 1][i];
         this.trailY[t][i] = this.trailY[t - 1][i];
       }

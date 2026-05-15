@@ -35,6 +35,9 @@ const DEFAULT_CONFIG: WindTunnelConfig = {
   bgColor: '#0a0a0a',
   showGrid: false,
   glowIntensity: 0,
+  particleLifetime: 100,
+  trailLength: 16,
+  spread: 50,
 };
 
 type SerializableConfig = Omit<WindTunnelConfig, 'obstacleImage' | 'paused'>;
@@ -258,6 +261,9 @@ function ControlsContent({
         <NodeSlider label="Viscosity" value={config.viscosity} min={1} max={100} step={1} onChange={v => update('viscosity', v)} formatValue={v => String(Math.round(v))} />
         <NodeSlider label="Particles" value={config.particleCount} min={500} max={15000} step={500} onChange={v => update('particleCount', v)} formatValue={v => String(Math.round(v))} />
         <NodeSlider label="Size" value={config.particleSize} min={0.5} max={4} step={0.5} onChange={v => update('particleSize', v)} formatValue={v => v.toFixed(1)} />
+        <NodeSlider label="Lifetime" value={config.particleLifetime} min={20} max={300} step={10} onChange={v => update('particleLifetime', v)} formatValue={v => String(Math.round(v))} />
+        <NodeSlider label="Trail" value={config.trailLength} min={2} max={32} step={2} onChange={v => update('trailLength', v)} formatValue={v => String(Math.round(v))} />
+        <NodeSlider label="Spread" value={config.spread} min={0} max={100} step={5} onChange={v => update('spread', v)} formatValue={v => String(Math.round(v))} />
       </div>
 
       {/* Effects */}
