@@ -29,7 +29,9 @@
     "budget.myBudgets.seoTitle",
     "studio3d.${tab.key}",
     "studio3d.camera.${view}",
-    "studio3d.material.categories.${cat}"
+    "studio3d.material.categories.${cat}",
+    "studio3d.animation.easings.${e}",
+    "studio3d.background.types.${type}"
   ],
   "comments": {
     "${...}": "All ${...} entries are dynamic key construction — t('prefix.' + var). Their resolved keys must be defined in the locale (we can't validate that statically).",
