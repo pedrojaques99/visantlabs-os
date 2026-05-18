@@ -168,11 +168,11 @@ export const CanvasProjectsPage: React.FC = () => {
     try {
       const raw = await readJsonFile(file);
       if (!validateVisantJson(raw)) {
-        toast.error('Invalid file — not a Visant canvas JSON.');
+        toast.error(t('canvas.projects.invalid_file_not_a_visant_canvas_j'));
         return;
       }
       const newProject = await canvasApi.save(raw.name, raw.nodes, raw.edges, undefined, raw.drawings ?? []);
-      toast.success(`Imported "${raw.name}" — opening canvas...`);
+      toast.success(t('canvas.projects.imported_opening', { name: raw.name }));
       navigate(`/canvas/${newProject._id}`);
     } catch (err: any) {
       console.error('JSON import failed:', err);
@@ -356,9 +356,9 @@ export const CanvasProjectsPage: React.FC = () => {
     return (
       <PageShell
         pageId="canvas-projects-loading"
-        title={t('canvas.projects') || 'Projects'}
+        title={t('canvas.projects.title') || 'Projects'}
         microTitle="Canvas // Workspace"
-        description="Manage your visual canvas projects."
+        description={t('canvas.projects.manage_your_visual_canvas_projects')}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -409,13 +409,13 @@ export const CanvasProjectsPage: React.FC = () => {
       pageId="canvas-projects"
       seoTitle={t('canvas.seoTitle') || 'Canvas Editor'}
       seoDescription={t('canvas.seoDescription') || 'Editor visual baseado em fluxos.'}
-      title={t('canvas.projects') || 'Projects'}
+      title={t('canvas.projects.title') || 'Projects'}
       microTitle="Canvas // Workspace"
       description={countStr}
       breadcrumb={[
         { label: t('apps.home') || 'Home', to: '/' },
         { label: t('canvas.title') || 'Canvas', to: '/canvas' },
-        { label: t('canvas.projects') || 'Projects' }
+        { label: t('canvas.projects.title') || 'Projects' }
       ]}
       actions={headerActions}
     >

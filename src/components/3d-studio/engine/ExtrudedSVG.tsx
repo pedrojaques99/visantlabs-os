@@ -36,6 +36,7 @@ interface ExtrudedSVGProps {
   texture?: string;
   textureRepeat?: number;
   textureRotation?: number;
+  textureOpacity?: number;
   textureOffset?: [number, number];
   onLoadingChange?: (loading: boolean, progress: number) => void;
 }
@@ -43,7 +44,7 @@ interface ExtrudedSVGProps {
 export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
   svgString, depth, smoothness, bevelEnabled = true, bevelThickness = 0.5, bevelSize = 0.5,
   color, materialSettings, rotationX, rotationY, groupRef,
-  texture: textureUrl, textureRepeat = 1, textureRotation = 0, textureOffset = [0, 0],
+  texture: textureUrl, textureRepeat = 1, textureRotation = 0, textureOpacity = 1, textureOffset = [0, 0],
   onLoadingChange,
 }) => {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
@@ -80,6 +81,14 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     onLoadingChangeRef.current?.(loading, progress);
   }, [loading, progress]);
 
+  const uniformsRef = useRef<{ uTextureOpacity: { value: number } }>({
+    uTextureOpacity: { value: textureOpacity }
+  });
+
+  useEffect(() => {
+    uniformsRef.current.uTextureOpacity.value = textureOpacity;
+  }, [textureOpacity]);
+
   return (
     <group
       ref={groupRef}
@@ -91,7 +100,8 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
         const isGold = materialSettings.preset === 'gold';
         const isEmissive = materialSettings.preset === 'emissive';
         const wantsTransparency = materialSettings.transparent || materialSettings.opacity < 1;
-        const baseColor = texture ? '#ffffff' : isGold ? '#d4a017' : color;
+        const baseColor = texture ? (isGold ? '#d4a017' : color) : (isGold ? '#d4a017' : color);
+        // We always use the base color, and if texture exists, we blend it in the shader.
         const emissiveColor = isEmissive ? color : '#000000';
         const emissiveIntensity = preset.emissiveIntensity ?? 0;
         const transmissionAmount = wantsTransparency ? 1 - materialSettings.opacity : 0;
@@ -125,6 +135,23 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
               reflectivity={materialSettings.reflectivity !== undefined ? materialSettings.reflectivity : 0.5}
               side={THREE.FrontSide}
               envMapIntensity={1}
+              onBeforeCompile={(shader) => {
+                shader.uniforms.uTextureOpacity = uniformsRef.current.uTextureOpacity;
+                shader.fragmentShader = `
+                  uniform float uTextureOpacity;
+                  ${shader.fragmentShader}
+                `.replace(
+                  '#include <map_fragment>',
+                  `
+                  #ifdef USE_MAP
+                    vec4 texelColor = texture2D( map, vMapUv );
+                    texelColor = mapTexelToLinear( texelColor );
+                    // Mix between 1.0 (no texture effect) and the texel color based on opacity
+                    diffuseColor.rgb *= mix(vec3(1.0), texelColor.rgb, uTextureOpacity);
+                  #endif
+                  `
+                );
+              }}
             />
           </mesh>
         );

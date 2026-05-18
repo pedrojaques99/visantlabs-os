@@ -106,7 +106,7 @@ export const AboutPage: React.FC = () => {
           </div>
 
           {/* ── Team ─────────────────────────────────────────────────────────── */}
-          <Section label="team" delay={0.12}>
+          <Section label={t('about.team')} delay={0.12}>
             {TEAM.map((m, i) => (
               <motion.div key={m.name} {...fade(i)} className="group">
                 <Link
@@ -133,7 +133,7 @@ export const AboutPage: React.FC = () => {
           </Section>
 
           {/* ── What we do ───────────────────────────────────────────────────── */}
-          <Section label="stack" delay={0.24}>
+          <Section label={t('about.stack')} delay={0.24}>
             {[
               ['Brand identity & visual systems',   '01'],
               ['Interactive web experiences',        '02'],
@@ -148,7 +148,7 @@ export const AboutPage: React.FC = () => {
           </Section>
 
           {/* ── Links ────────────────────────────────────────────────────────── */}
-          <Section label="links" delay={0.38}>
+          <Section label={t('about.links.title')} delay={0.38}>
             {LINKS.filter(l => l.href).map((l, i) => (
               <motion.div key={l.label} {...fade(i)}>
                 <a

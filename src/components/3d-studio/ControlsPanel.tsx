@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { NodeSlider } from '@/components/reactflow/shared/node-slider';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
@@ -22,6 +22,7 @@ import {
   Upload, FileText, Type, ChevronRight, Diamond,
 } from 'lucide-react';
 import { ShaderControls } from '@/components/shared/ShaderControls';
+import { HexColorPicker } from 'react-colorful';
 import { setCameraView, resetCamera } from './CameraBridge';
 
 const MATERIAL_CATEGORIES = ['basic', 'metals', 'surfaces', 'glass', 'special'] as const;
@@ -61,6 +62,8 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
   const [ambientIntensity, setAmbientIntensity] = useDebouncedSlider(store.ambientIntensity, store.setAmbientIntensity);
   const [animateSpeed, setAnimateSpeed] = useDebouncedSlider(store.animateSpeed, store.setAnimateSpeed);
   const [videoDuration, setVideoDuration] = useDebouncedSlider(store.videoDuration, store.setVideoDuration);
+  const [textureOpacity, setTextureOpacity] = useDebouncedSlider(store.textureOpacity, store.setTextureOpacity);
+  const [bgAngle, setBgAngle] = useDebouncedSlider(store.bgGradient.angle, (v) => store.setBgGradient({ angle: v }));
 
   const processFile = useCallback(async (file: File) => {
     if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
@@ -295,13 +298,85 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             </Section>
 
             <Section title={t('studio3d.background.title')}>
-              <input
-                type="color"
-                value={store.background}
-                onChange={(e) => store.setBackground(e.target.value)}
-                className="w-full h-6 rounded cursor-pointer bg-transparent"
-              />
-              <div className="flex items-center justify-between mt-2">
+              <div className="flex gap-1 mb-3">
+                {(['solid', 'linear', 'radial'] as const).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => store.setBgType(type)}
+                    className={cn(
+                      'flex-1 py-1 rounded text-[9px] uppercase tracking-wider transition-colors',
+                      store.bgType === type ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-500'
+                    )}
+                  >
+                    {t(`studio3d.background.types.${type}`)}
+                  </button>
+                ))}
+              </div>
+
+              {store.bgType === 'solid' ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded border border-white/10 overflow-hidden shrink-0">
+                      <div className="w-full h-full" style={{ backgroundColor: store.background }} />
+                    </div>
+                    <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-1.5">
+                      <span className="text-[10px] text-neutral-500 mr-1">#</span>
+                      <input
+                        type="text"
+                        value={store.background.replace('#', '').toUpperCase()}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+                          if (v.length === 6) store.setBackground(`#${v}`);
+                        }}
+                        onBlur={(e) => {
+                          const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+                          if (v.length === 6) store.setBackground(`#${v}`);
+                        }}
+                        maxLength={6}
+                        className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+                        placeholder="0A0A0A"
+                      />
+                    </div>
+                  </div>
+                  <div className="custom-color-picker">
+                    <HexColorPicker color={store.background} onChange={store.setBackground} />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] text-neutral-500 uppercase tracking-widest">{t('studio3d.background.color1')}</span>
+                        <div className="w-4 h-4 rounded-full border border-white/10" style={{ backgroundColor: store.bgGradient.color1 }} />
+                      </div>
+                      <div className="custom-color-picker-mini">
+                        <HexColorPicker 
+                          color={store.bgGradient.color1} 
+                          onChange={(c) => store.setBgGradient({ color1: c })} 
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] text-neutral-500 uppercase tracking-widest">{t('studio3d.background.color2')}</span>
+                        <div className="w-4 h-4 rounded-full border border-white/10" style={{ backgroundColor: store.bgGradient.color2 }} />
+                      </div>
+                      <div className="custom-color-picker-mini">
+                        <HexColorPicker 
+                          color={store.bgGradient.color2} 
+                          onChange={(c) => store.setBgGradient({ color2: c })} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  {store.bgType === 'linear' && (
+                    <NodeSlider label={t('studio3d.background.angle')} value={bgAngle} min={0} max={360} step={1} onChange={setBgAngle} />
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/[0.04]">
                 <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.background.transparent')}</span>
                 <Switch checked={store.transparentBg} onCheckedChange={store.setTransparentBg} />
               </div>
@@ -332,7 +407,26 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
 
             <Section title={t('studio3d.animation.controls')}>
               <NodeSlider label={t('studio3d.animation.speed')} value={animateSpeed} min={0.1} max={5} step={0.1} onChange={setAnimateSpeed} />
-              <div className="flex items-center justify-between">
+              
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.animation.easing')}</span>
+                <div className="grid grid-cols-2 gap-1">
+                  {(['linear', 'easeIn', 'easeOut', 'easeInOut'] as const).map((e) => (
+                    <button
+                      key={e}
+                      onClick={() => store.setAnimateEasing(e)}
+                      className={cn(
+                        'px-2 py-1.5 rounded text-[9px] uppercase tracking-wider transition-colors',
+                        store.animateEasing === e ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-500'
+                      )}
+                    >
+                      {t(`studio3d.animation.easings.${e}`)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
                 <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.animation.reverse')}</span>
                 <Switch checked={store.animateReverse} onCheckedChange={store.setAnimateReverse} />
               </div>
@@ -535,40 +629,39 @@ const MaterialTab: React.FC<MaterialTabProps> = React.memo(({
 
       {/* Color — hex input + picker */}
       <Section title={t('studio3d.color.title')}>
-        <div className="flex items-center gap-2">
-          <label className="relative w-8 h-8 rounded cursor-pointer flex-shrink-0 border border-white/10 overflow-hidden">
-            <span className="absolute inset-0" style={{ backgroundColor: store.color }} />
-            <input
-              type="color"
-              value={store.color}
-              onChange={(e) => store.setColor(e.target.value)}
-              className="absolute inset-0 opacity-0 cursor-pointer"
-            />
-          </label>
-          <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-1.5">
-            <span className="text-[10px] text-neutral-500 mr-1">#</span>
-            <input
-              type="text"
-              value={store.color.replace('#', '').toUpperCase()}
-              onChange={(e) => {
-                const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
-                if (v.length === 6) store.setColor(`#${v}`);
-              }}
-              onBlur={(e) => {
-                const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
-                if (v.length === 6) store.setColor(`#${v}`);
-              }}
-              maxLength={6}
-              className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
-              placeholder="00E5FF"
-            />
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded border border-white/10 overflow-hidden shrink-0">
+              <div className="w-full h-full" style={{ backgroundColor: store.color }} />
+            </div>
+            <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-1.5">
+              <span className="text-[10px] text-neutral-500 mr-1">#</span>
+              <input
+                type="text"
+                value={store.color.replace('#', '').toUpperCase()}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+                  if (v.length === 6) store.setColor(`#${v}`);
+                }}
+                onBlur={(e) => {
+                  const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+                  if (v.length === 6) store.setColor(`#${v}`);
+                }}
+                maxLength={6}
+                className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+                placeholder="00E5FF"
+              />
+            </div>
+          </div>
+          <div className="custom-color-picker">
+            <HexColorPicker color={store.color} onChange={store.setColor} />
           </div>
         </div>
       </Section>
 
       {/* Texture */}
       <Section title={t('studio3d.texture.title')}>
-        <TextureControls store={store} />
+        <TextureControls store={store} textureOpacity={textureOpacity} setTextureOpacity={setTextureOpacity} />
       </Section>
 
       {/* Properties — flat, no disclosure */}
@@ -760,7 +853,11 @@ const PROCEDURAL_TEXTURES = [
 
 /* ── Texture Controls ─────────────────────────────────────── */
 
-const TextureControls: React.FC<{ store: StoreState }> = React.memo(({ store }) => {
+const TextureControls: React.FC<{
+  store: StoreState;
+  textureOpacity: number;
+  setTextureOpacity: (v: number) => void;
+}> = React.memo(({ store, textureOpacity, setTextureOpacity }) => {
   const { t } = useTranslation();
   const textureInputRef = useRef<HTMLInputElement>(null);
   const [activeProc, setActiveProc] = useState<string | null>(null);
@@ -818,7 +915,8 @@ const TextureControls: React.FC<{ store: StoreState }> = React.memo(({ store }) 
 
       {/* Controls when texture active */}
       {hasTexture && (
-        <>
+        <div className="pt-2 space-y-3">
+          <NodeSlider label={t('studio3d.texture.opacity')} value={textureOpacity} min={0} max={1} step={0.01} onChange={setTextureOpacity} />
           <NodeSlider label={t('studio3d.texture.repeat')} value={store.textureRepeat} min={0.5} max={10} step={0.5} onChange={store.setTextureRepeat} />
           {activeProc && (
             <button
@@ -834,7 +932,7 @@ const TextureControls: React.FC<{ store: StoreState }> = React.memo(({ store }) 
           >
             {t('studio3d.texture.remove')}
           </button>
-        </>
+        </div>
       )}
     </div>
   );

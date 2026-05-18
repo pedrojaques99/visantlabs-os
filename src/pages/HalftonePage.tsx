@@ -2,19 +2,25 @@ import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
-import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
+import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
+import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
+import { DropOverlay } from '@/components/ui/DropOverlay';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { HalftoneCanvas } from '@/components/halftone/HalftoneCanvas';
 import { HalftoneControls } from '@/components/halftone/HalftoneControls';
 import { useHalftoneStore } from '@/stores/halftoneStore';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
 import { useIsMobile } from '@/hooks/use-media-query';
+import { usePasteImage } from '@/hooks/usePasteImage';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const HalftonePage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isMobile = useIsMobile();
@@ -56,7 +62,7 @@ export const HalftonePage: React.FC = () => {
       a.download = `halftone_${Date.now()}.png`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('PNG exported');
+      toast.success(t('halftone.png_exported'));
     } catch {
       toast.error('Export failed — try again');
     } finally {
@@ -73,9 +79,16 @@ export const HalftonePage: React.FC = () => {
   // Keyboard shortcuts
   useHotkeys('mod+e', (e) => { e.preventDefault(); handleExport(); }, { enableOnFormTags: false });
   useHotkeys('r', () => setConfirmReset(true), { enableOnFormTags: false });
-  useHotkeys('mod+\\', () => setPanelVisible(!panelVisible), { enableOnFormTags: false });
+  useHotkeys('tab', (e) => { e.preventDefault(); setPanelVisible(!panelVisible); }, { enableOnFormTags: false });
 
   // Drag & drop image upload
+  usePasteImage(useCallback(({ file }) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    const url = URL.createObjectURL(file);
+    useHalftoneStore.getState().setImageUrl(url, file.name || 'pasted-image');
+    toast.success(t('halftone.loaded_file', { name: file.name || t('halftone.pasted_image') }));
+  }, []));
+
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(true);
@@ -93,7 +106,7 @@ export const HalftonePage: React.FC = () => {
     if (!file || !file.type.startsWith('image/')) return;
     const url = URL.createObjectURL(file);
     useHalftoneStore.getState().setImageUrl(url, file.name);
-    toast.success(`Loaded ${file.name}`);
+    toast.success(t('halftone.loaded_file', { name: file.name }));
   }, []);
 
   return (
@@ -106,9 +119,9 @@ export const HalftonePage: React.FC = () => {
                 <ChevronLeft size={16} />
               </Button>
             </Tooltip>
-            <span className="text-[10px] text-neutral-600 uppercase tracking-widest font-mono ml-1">
+            <MicroTitle className="text-[10px] text-neutral-600 uppercase tracking-widest ml-1">
               CMYK HALFTONE
-            </span>
+            </MicroTitle>
           </>
         }
         right={
@@ -119,12 +132,13 @@ export const HalftonePage: React.FC = () => {
               </Button>
             </Tooltip>
             {!isMobile && (
-              <Tooltip content={panelVisible ? 'Hide panel (⌘\\)' : 'Show panel (⌘\\)'}>
+              <Tooltip content={panelVisible ? 'Hide panel (Tab)' : 'Show panel (Tab)'}>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
                   {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                 </Button>
               </Tooltip>
             )}
+            <AppShellLegalMenu />
           </>
         }
       />
@@ -132,20 +146,15 @@ export const HalftonePage: React.FC = () => {
       <div
         className="absolute inset-0 pt-10 transition-all duration-300"
         style={{
-          paddingRight: !isMobile && panelVisible ? 236 : 0,
-          paddingBottom: isMobile ? (mobileSheetOpen ? '55%' : 52) : 40,
+          paddingRight: !isMobile && panelVisible ? 316 : 0,
+          paddingBottom: isMobile ? (mobileSheetOpen ? '45%' : 48) : 40,
         }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
         <HalftoneCanvas onCanvasReady={handleCanvasReady} />
-
-        {isDragOver && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm border-2 border-dashed border-cyan-500/50 rounded-lg">
-            <span className="text-sm text-cyan-400 font-mono uppercase tracking-widest">Drop image here</span>
-          </div>
-        )}
+        <DropOverlay visible={isDragOver} message={t('halftone.drop_image_here')} />
       </div>
 
       {!isMobile && (
@@ -155,23 +164,9 @@ export const HalftonePage: React.FC = () => {
       )}
 
       {isMobile && (
-        <div className={cn(
-          'absolute left-0 right-0 bottom-0 z-20 transition-all duration-300 ease-out',
-          mobileSheetOpen ? 'h-[55%]' : 'h-[52px]',
-        )}>
-          <button
-            onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
-            className="w-full flex items-center justify-center gap-1 py-2 bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400"
-          >
-            {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            <span className="text-[10px] uppercase tracking-widest">Controls</span>
-          </button>
-          {mobileSheetOpen && (
-            <div className="h-[calc(100%-36px)] bg-neutral-950/95 backdrop-blur-xl overflow-hidden">
-              <HalftoneControls onExport={handleExport} />
-            </div>
-          )}
-        </div>
+        <AppShellMobileSheet open={mobileSheetOpen} onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}>
+          <HalftoneControls onExport={handleExport} />
+        </AppShellMobileSheet>
       )}
 
       {!isMobile && (
@@ -200,8 +195,8 @@ export const HalftonePage: React.FC = () => {
         isOpen={confirmReset}
         onClose={() => setConfirmReset(false)}
         onConfirm={handleReset}
-        title="Reset settings"
-        message="All halftone settings will return to defaults. This cannot be undone."
+        title={t('halftone.reset_settings')}
+        message={t('halftone.all_halftone_settings_will_return_to_def')}
         confirmText="Reset"
         variant="warning"
       />

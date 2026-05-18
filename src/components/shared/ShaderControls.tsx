@@ -7,7 +7,7 @@
 
 import React, { useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { NodeSlider } from '@/components/reactflow/shared/node-slider';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Switch } from '@/components/ui/switch';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';

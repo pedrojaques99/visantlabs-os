@@ -62,6 +62,7 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
 };
 
 const NoSelectionState = () => {
+    const { t } = useTranslation();
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -73,7 +74,7 @@ const NoSelectionState = () => {
             </div>
 
             <div className="space-y-2">
-                <h3 className="text-neutral-300 font-medium tracking-widest uppercase text-[11px]">Awaiting Selection</h3>
+                <h3 className="text-neutral-300 font-medium tracking-widest uppercase text-[11px]">{t('brand.guidelines.awaiting_selection')}</h3>
                 <p className="text-neutral-500 text-sm max-w-xs mx-auto">
                     Selecione uma marca no menu lateral para visualizar e editar suas diretrizes.
                 </p>
@@ -187,7 +188,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                 {!isLoading && guidelines.length > 0 && (
                     <aside
                         role="navigation"
-                        aria-label="Brand Guidelines Selection"
+                        aria-label={t('brand.guidelines.brand_guidelines_selection')}
                         className="hidden lg:flex flex-col fixed top-10 md:top-14 left-0 bottom-0 w-[260px] xl:w-[280px] border-r border-white/10 bg-neutral-950/80 backdrop-blur-xl z-30"
                         data-vsn-region="sidebar"
                     >
@@ -203,7 +204,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                 {/* Main Content Area */}
                 <main
                     role="main"
-                    aria-label="Brand Guideline Content"
+                    aria-label={t('brand.guidelines.brand_guideline_content')}
                     className={cn(
                         "flex-1 w-full min-h-screen transition-all duration-300",
                         !isLoading && guidelines.length > 0 ? "lg:ml-[260px] xl:ml-[280px]" : ""
@@ -222,12 +223,12 @@ export const BrandGuidelinesPage: React.FC = () => {
                                 <div className="lg:hidden">
                                     <Sheet>
                                         <SheetTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500" aria-label="Open menu">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500" aria-label={t('brand.guidelines.open_menu')}>
                                                 <AlignLeft className="h-4 w-4" />
                                             </Button>
                                         </SheetTrigger>
                                         <SheetContent side="left" className="w-[85vw] max-w-sm p-0 border-r border-white/10 bg-neutral-950/95 backdrop-blur-xl">
-                                            <SheetTitle className="sr-only">Menu</SheetTitle>
+                                            <SheetTitle className="sr-only">{t('brand.guidelines.menu')}</SheetTitle>
                                             <GuidelinesSidebar
                                                 guidelines={guidelines}
                                                 selectedId={selectedId}
@@ -324,7 +325,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                     <div className="ml-auto pl-2 shrink-0">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <button className="flex items-center gap-1 px-2 py-1 text-neutral-700 hover:text-neutral-400 transition-colors mb-[2px]" aria-label="Toggle sections">
+                                                <button className="flex items-center gap-1 px-2 py-1 text-neutral-700 hover:text-neutral-400 transition-colors mb-[2px]" aria-label={t('brand.guidelines.toggle_sections')}>
                                                     <Plus size={13} />
                                                 </button>
                                             </DropdownMenuTrigger>
@@ -406,12 +407,12 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                         >
                                                             <ClipboardCheck size={16} className="text-neutral-500 group-hover:text-neutral-300 shrink-0 transition-colors" />
                                                             <div className="flex-1 text-left">
-                                                                <p className="text-xs font-semibold text-neutral-300">Design System Review pending</p>
+                                                                <p className="text-xs font-semibold text-neutral-300">{t('brand.guidelines.design_system_review_pending')}</p>
                                                                 <p className="text-xs text-neutral-500">
                                                                     {Object.values(selected.validation).filter(v => v === 'approved').length}/{Object.keys(selected.validation).length} sections approved
                                                                 </p>
                                                             </div>
-                                                            <span className="text-xs font-mono text-neutral-600 group-hover:text-neutral-400 transition-colors">Review →</span>
+                                                            <span className="text-xs font-mono text-neutral-600 group-hover:text-neutral-400 transition-colors">{t('brand.guidelines.review')}</span>
                                                         </button>
                                                     )}
                                                     <BrandRoomProvider

@@ -838,13 +838,13 @@ export const BrandingMachinePage: React.FC = () => {
   return (
     <>
       <SEO
-        title="Branding Machine com IA"
-        description="Crie estratégias completas de branding com inteligência artificial. Gere identidades visuais profissionais passo a passo."
+        title={t('branding.machine.branding_machine_com_ia')}
+        description={t('branding.machine.crie_estratgias_completas_de_bran')}
         keywords="branding machine, AI branding, identidade visual, estratégia de marca, design de marca"
       />
       <SoftwareApplicationSchema
         name="Branding Machine"
-        description="Crie estratégias completas de branding com inteligência artificial. Gere identidades visuais profissionais passo a passo."
+        description={t('branding.machine.crie_estratgias_completas_de_bran')}
         applicationCategory="DesignApplication"
       />
       {showDependencyModal && pendingGeneration && (
@@ -894,7 +894,7 @@ export const BrandingMachinePage: React.FC = () => {
         <button
           onClick={() => navigate(`/branding-expert${currentProjectId ? `?projectId=${currentProjectId}` : ''}`)}
           className="fixed bottom-20 right-6 z-40 w-12 h-12 bg-brand-gradient text-white rounded-full shadow-lg hover:shadow-brand-cyan/20 transition-all hover:scale-110 active:scale-95 flex items-center justify-center group"
-          title="Falar com Especialista"
+          title={t('branding.machine.falar_com_especialista')}
         >
           <Diamond size={20} className="group-hover:rotate-12 transition-transform" />
         </button>

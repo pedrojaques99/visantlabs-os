@@ -21,6 +21,7 @@ import { BackButton } from "../components/ui/BackButton";
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { API_BASE } from '@/config/api';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ApiKeyRaw {
   id: string;
@@ -60,6 +61,7 @@ function getAuthHeaders(): Record<string, string> {
 }
 
 export const ApiKeysPage: React.FC = () => {
+  const { t } = useTranslation();
   const { isAuthenticated, isCheckingAuth } = useLayout();
 
   const [keys, setKeys] = useState<ApiKey[]>([]);
@@ -107,11 +109,11 @@ export const ApiKeysPage: React.FC = () => {
   const handleCreateKey = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newKeyName.trim()) {
-      toast.error('Please enter a name for the key');
+      toast.error(t('api.keys.please_enter_a_name_for_the_key'));
       return;
     }
     if (newKeyScopes.length === 0) {
-      toast.error('Select at least one scope');
+      toast.error(t('api.keys.select_at_least_one_scope'));
       return;
     }
 
@@ -179,7 +181,7 @@ export const ApiKeysPage: React.FC = () => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      toast.success('Copied to clipboard');
+      toast.success(t('api.keys.copied_to_clipboard'));
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error('Failed to copy');
@@ -224,7 +226,7 @@ export const ApiKeysPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-400 font-mono mb-4">Please sign in to manage API keys</p>
+          <p className="text-red-400 font-mono mb-4">{t('api.keys.please_sign_in_to_manage_api_keys')}</p>
           <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
         </div>
       </div>
@@ -233,7 +235,7 @@ export const ApiKeysPage: React.FC = () => {
 
   return (
     <>
-      <SEO title="API Keys" description="Manage your API keys for agent and programmatic access" noindex={true} />
+      <SEO title="API Keys" description={t('api.keys.manage_your_api_keys_for_agent_and_progr')} noindex={true} />
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0">
 
@@ -302,8 +304,8 @@ export const ApiKeysPage: React.FC = () => {
                 <div className="flex items-start gap-3 mb-3">
                   <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-amber-400 font-semibold text-sm">Save your API key now</p>
-                    <p className="text-amber-400/70 text-xs mt-1">This key will not be shown again. Copy it and store it securely.</p>
+                    <p className="text-amber-400 font-semibold text-sm">{t('api.keys.save_your_api_key_now')}</p>
+                    <p className="text-amber-400/70 text-xs mt-1">{t('api.keys.this_key_will_not_be_shown_again_copy_it')}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 bg-neutral-900/80 border border-neutral-700/50 rounded-md p-3 font-mono text-sm">
@@ -320,7 +322,7 @@ export const ApiKeysPage: React.FC = () => {
                   <Button variant="ghost"
                     onClick={() => handleCopyKey(createdKeyRaw)}
                     className="p-1.5 hover:bg-neutral-700/50 rounded transition-colors text-neutral-400 hover:text-neutral-200"
-                    title="Copy to clipboard"
+                    title={t('api.keys.copy_to_clipboard')}
                   >
                     {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
                   </Button>
@@ -359,7 +361,7 @@ export const ApiKeysPage: React.FC = () => {
 
                   {/* Scopes */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-400 mb-1.5">Scopes</label>
+                    <label className="block text-sm font-medium text-neutral-400 mb-1.5">{t('api.keys.scopes')}</label>
                     <div className="flex flex-wrap gap-2">
                       {AVAILABLE_SCOPES.map(scope => (
                         <Button variant="ghost"
@@ -425,7 +427,7 @@ export const ApiKeysPage: React.FC = () => {
               ) : keys.length === 0 ? (
                 <div className="p-12 text-center">
                   <Key className="h-12 w-12 text-neutral-700 mx-auto mb-4" />
-                  <p className="text-neutral-400 font-medium mb-1">No API keys yet</p>
+                  <p className="text-neutral-400 font-medium mb-1">{t('api.keys.no_api_keys_yet')}</p>
                   <p className="text-neutral-600 text-sm font-mono">
                     Create your first key to start using the API programmatically.
                   </p>
@@ -436,11 +438,11 @@ export const ApiKeysPage: React.FC = () => {
                     <thead>
                       <tr className="border-b border-neutral-800/50">
                         <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">Name</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">Key</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">Scopes</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase  hidden md:table-cell">Last Used</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase  hidden md:table-cell">Created</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">Status</th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">{t('api.keys.key')}</th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">{t('api.keys.scopes_2')}</th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase  hidden md:table-cell">{t('api.keys.last_used')}</th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase  hidden md:table-cell">{t('api.keys.created')}</th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">{t('api.keys.status')}</th>
                         <th className="text-right p-4 text-neutral-500 font-medium font-mono text-xs uppercase "></th>
                       </tr>
                     </thead>
@@ -469,7 +471,7 @@ export const ApiKeysPage: React.FC = () => {
                                 {formatDate(key.lastUsed)}
                               </span>
                             ) : (
-                              <span className="text-neutral-600">Never</span>
+                              <span className="text-neutral-600">{t('api.keys.never')}</span>
                             )}
                           </td>
                           <td className="p-4 text-neutral-500 text-xs font-mono hidden md:table-cell">
@@ -495,7 +497,7 @@ export const ApiKeysPage: React.FC = () => {
                               <Button variant="ghost"
                                 onClick={() => setRevokeTarget(key)}
                                 className="p-2 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
-                                title="Revoke key"
+                                title={t('api.keys.revoke_key')}
                               >
                                 <Trash2 size={16} />
                               </Button>
@@ -519,7 +521,7 @@ export const ApiKeysPage: React.FC = () => {
                     <div className="p-2 bg-red-500/10 rounded-md">
                       <AlertTriangle className="h-5 w-5 text-red-400" />
                     </div>
-                    <h3 className="text-lg font-semibold text-neutral-200">Revoke API Key</h3>
+                    <h3 className="text-lg font-semibold text-neutral-200">{t('api.keys.revoke_api_key')}</h3>
                   </div>
                   <p className="text-neutral-400 text-sm mb-1">
                     Are you sure you want to revoke <span className="text-neutral-200 font-medium">"{revokeTarget.name}"</span>?

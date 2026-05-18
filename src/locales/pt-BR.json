@@ -32,7 +32,9 @@
     },
     "tagline": "Laboratório de experimentos",
     "title": "VISANT",
-    "visantStudio": "Visant Studio"
+    "visantStudio": "Visant Studio",
+    "stack": "[PT] stack",
+    "team": "[PT] team"
   },
   "admin": {
     "accessDenied": "Acesso negado. Você precisa ser um administrador.",
@@ -90,7 +92,70 @@
     "panelSubtitle": "Visualize usuários, assinaturas e créditos em tempo real",
     "panelTitle": "Painel Administrativo",
     "presetsSubtitle": "Gerencie os presets de mockups.",
-    "products": "Produtos",
+    "products": {
+      "cancelar": "[PT] Cancelar",
+      "ordem": "[PT] Ordem:",
+      "produto_ativo": "[PT] Produto Ativo",
+      "link_de_pagamento_usd_stripe": "Link de Pagamento USD (Stripe)",
+      "link_de_pagamento_brl_stripe": "Link de Pagamento BRL (Stripe)",
+      "abacate_bill_id_pix": "[PT] Abacate Bill ID (PIX)",
+      "abacate_product_id": "[PT] Abacate Product ID",
+      "stripe_product_id": "[PT] Stripe Product ID",
+      "preo_usd_opcional": "Preço $ (USD) - Opcional",
+      "preo_r_brl": "Preço R$ (BRL)",
+      "crditos_2": "Créditos",
+      "cor_do_badge": "Cor do Badge",
+      "ex_50_off": "[PT] ex: 50% OFF",
+      "badge_customizado": "[PT] Badge Customizado",
+      "sla_horas": "[PT] SLA (horas)",
+      "rollover": "[PT] Rollover %",
+      "desconto_anual": "[PT] Desconto Anual %",
+      "trial_dias": "[PT] Trial (dias)",
+      "reteno_histrico_dias": "Retenção Histórico (dias)",
+      "max_membros_time": "[PT] Max Membros Time",
+      "prioridade_fila": "[PT] Prioridade Fila",
+      "resoluo_max": "Resolução Max",
+      "max_vdeo_seg": "Max Vídeo (seg)",
+      "max_ref_images": "[PT] Max Ref Images",
+      "max_guidelines": "[PT] Max Guidelines",
+      "max_projetos": "[PT] Max Projetos",
+      "geraeshora": "Gerações/Hora",
+      "geraesdia": "Gerações/Dia",
+      "intervalo": "[PT] Intervalo",
+      "modelos_unlimited": "[PT] Modelos Unlimited",
+      "resolues_unlimited_nb2": "Resoluções Unlimited (NB2)",
+      "storage_gb": "[PT] Storage (GB)",
+      "ex_starter_creator_agency_studio": "[PT] ex: starter, creator, agency, studio",
+      "tier_id": "[PT] Tier ID",
+      "benefcio_110benefcio_210benefcio_3": "Benefício 1&#10;Benefício 2&#10;Benefício 3...",
+      "benefcios_um_por_linha_para_lista_e": "Benefícios (um por linha para lista em marcadores)",
+      "descrio_breve_do_que_este_produto_o": "Descrição breve do que este produto oferece...",
+      "descrio": "Descrição",
+      "ex_pacote_gamer": "[PT] ex: Pacote Gamer",
+      "nome_comercial": "[PT] Nome Comercial",
+      "tipo": "[PT] Tipo",
+      "ex_credits20_planpro": "[PT] ex: credits_20, plan_pro",
+      "id_do_produto_nico": "ID do Produto (único)",
+      "fechar": "[PT] Fechar",
+      "preencha_os_detalhes_do_produto_e_l": "Preencha os detalhes do produto e links de pagamento.",
+      "nenhum_produto_encontrado_nesta_cat": "[PT] Nenhum produto encontrado nesta categoria.",
+      "payments": "[PT] Payments",
+      "stripe": "[PT] Stripe",
+      "unlimited": "[PT] Unlimited",
+      "crditos": "Créditos",
+      "preo_brl": "Preço BRL",
+      "buscar_produto": "[PT] Buscar produto...",
+      "gerencie_pacotes_de_crditos_e_plano": "Gerencie pacotes de créditos e planos de assinatura.",
+      "produtos": "[PT] Produtos",
+      "admin_produtos": "[PT] Admin | Produtos",
+      "produto_removido": "[PT] Produto removido",
+      "tem_certeza_que_deseja_deletar_este": "Tem certeza que deseja deletar este produto?",
+      "preencha_os_campos_obrigatrios_id_d": "Preencha os campos obrigatórios (ID do Produto e Nome)",
+      "produtos_semeados_com_sucesso": "Produtos semeados com sucesso!",
+      "deseja_popular_a_base_com_os_pacote": "Deseja popular a base com os pacotes de créditos e planos padrão?",
+      "seed_error": "Erro ao semear: {error}",
+      "title": "Produtos"
+    },
     "profit": "Lucro",
     "promptGenTotal": "Total Prompts",
     "promptInput": "Input Prompts",
@@ -136,7 +201,80 @@
     "videos": "Vídeos",
     "videosByModel": "Vídeos por Modelo",
     "saveError": "Save Error",
-    "saveSuccess": "Save Success"
+    "saveSuccess": "Save Success",
+    "todos_os_tipos_de_gerao_includos": "Todos os tipos de geração incluídos",
+    "crditos": "Créditos",
+    "stats": "[PT] Stats",
+    "tipo": "[PT] Tipo",
+    "modelo": "[PT] Modelo",
+    "data": "[PT] Data",
+    "nenhum_registro_encontrado_para_este_usu": "Nenhum registro encontrado para este usuário.",
+    "carregando_registros": "[PT] Carregando registros...",
+    "click_refresh_to_load_feedback_analytics": "[PT] Click refresh to load feedback analytics",
+    "no_downvotes_in_this_window": "[PT] No downvotes in this window",
+    "no_data_yet_min_3_ratings_required": "[PT] No data yet (min 3 ratings required)",
+    "top_20_by_approval_rate_min_3_ratings": "[PT] Top 20 by approval rate (min 3 ratings)",
+    "tags_mais_votadas": "[PT] Tags mais votadas",
+    "no_tag_data_yet": "[PT] No tag data yet",
+    "top_20_by_usage_count": "[PT] Top 20 by usage count",
+    "tags_mais_utilizadas": "[PT] Tags mais utilizadas",
+    "down_5": "[PT] Down",
+    "guideline_id": "[PT] Guideline ID",
+    "no_data_yet": "[PT] No data yet",
+    "top_brand_guidelines": "[PT] Top Brand Guidelines",
+    "down_4": "[PT] Down",
+    "vibe": "[PT] Vibe",
+    "no_data_yet_min_5_ratings_required_3": "[PT] No data yet (min 5 ratings required)",
+    "top_vibes": "[PT] Top Vibes",
+    "down_3": "[PT] Down",
+    "no_data_yet_min_5_ratings_required_2": "[PT] No data yet (min 5 ratings required)",
+    "top_design_types": "[PT] Top Design Types",
+    "down_2": "[PT] Down",
+    "no_data_yet_min_5_ratings_required": "[PT] No data yet (min 5 ratings required)",
+    "top_models_by_approval": "[PT] Top Models by Approval",
+    "approval": "[PT] Approval %",
+    "down": "[PT] Down",
+    "feature_breakdown": "[PT] Feature Breakdown",
+    "daily_feedback_30d": "[PT] Daily Feedback (30d)",
+    "uprated_docs_in_window": "[PT] up-rated docs in window",
+    "vectorized_proxy": "[PT] Vectorized (proxy)",
+    "mongoonly_review_below": "[PT] Mongo-only, review below",
+    "thumbs_down": "[PT] Thumbs Down",
+    "vectorizationeligible": "[PT] vectorization-eligible",
+    "approval_rate": "[PT] Approval Rate",
+    "sem_dados_de_canvas_events_ainda": "Sem dados de canvas events ainda",
+    "eventos_por_dia": "Eventos por Dia",
+    "ranking_de_nodes": "Ranking de Nodes",
+    "carregando_analytics": "[PT] Carregando analytics...",
+    "resolues": "Resoluções:",
+    "input_output": "[PT] Input + Output",
+    "total_tokens": "[PT] Total Tokens",
+    "processamento_de_ia": "Processamento de IA",
+    "passos_de_texto": "Passos de Texto",
+    "total_gerado_2": "[PT] Total gerado",
+    "total_gerado": "[PT] Total gerado",
+    "ltimos_30_dias": "Últimos 30 dias",
+    "novos_usurios": "Novos Usuários",
+    "failed_to_load_feedback_stats": "[PT] Failed to load feedback stats",
+    "presets": {
+      "digite_uma_tag_e_pressione_enter": "Digite uma tag e pressione Enter",
+      "nenhuma": "[PT] Nenhuma",
+      "nenhum": "[PT] Nenhum",
+      "ou_faa_upload_de_uma_nova_imagem": "Ou faça upload de uma nova imagem:",
+      "fazendo_upload_da_imagem": "Fazendo upload da imagem...",
+      "ex_mycustompreset": "[PT] ex: my-custom-preset",
+      "erros_2": "[PT] Erros:",
+      "resultado": "[PT] Resultado:",
+      "erros": "[PT] Erros:",
+      "resultado_da_importao": "Resultado da importação:",
+      "falha_failed_itens_no_puderam_ser_cr": "Falha: ${failed} itens não puderam ser criados (podem já existir).",
+      "tem_certeza_que_deseja_deletar_este_": "Tem certeza que deseja deletar este preset?",
+      "editar_preset": "[PT] Editar preset"
+    },
+    "chat": {
+      "assistente_estratgico_exclusivo_para_ad": "Assistente estratégico exclusivo para administradores da Visant Labs.",
+      "admin_strategic_chat_visant_labs": "[PT] Admin Strategic Chat | Visant Labs"
+    }
   },
   "adminPresets": {
     "batchPasteLabel": "Cole o JSON com os presets (array de objetos)",
@@ -282,7 +420,9 @@
     "youtubeMixer": {
       "description": "Conecte múltiplos vídeos simultaneamente e crie mixes",
       "name": "YouTube Mixer"
-    }
+    },
+    "edit_app": "[PT] Edit App",
+    "failed_to_load_apps_from_database_using": "[PT] Failed to load apps from database, using offline mode"
   },
   "auth": {
     "accountCreatedSuccess": "Conta criada com sucesso!",
@@ -586,7 +726,16 @@
     "whatPersonaDesires": "O que a persona realmente deseja?",
     "aiSuggestions": "Ai Suggestions",
     "feedbackGiven": "Feedback Given",
-    "thumbsUp": "Thumbs Up"
+    "thumbsUp": "Thumbs Up",
+    "machine": {
+      "falar_com_especialista": "Falar com Especialista",
+      "crie_estratgias_completas_de_bran": "Crie estratégias completas de branding com inteligência artificial. Gere identidades visuais profissionais passo a passo.",
+      "branding_machine_com_ia": "Branding Machine com IA"
+    },
+    "expert": {
+      "converse_com_nosso_assistente_espe": "Converse com nosso assistente especialista em estratégia e metodologia de branding.",
+      "especialista_em_branding_visant_la": "[PT] Especialista em Branding | Visant Labs"
+    }
   },
   "budget": {
     "addDeliverable": "Adicionar Entregável",
@@ -756,7 +905,17 @@
     "website": "Site",
     "whatsapp": "WhatsApp",
     "year": "Ano do Orçamento",
-    "duplicated": "Duplicated"
+    "duplicated": "Duplicated",
+    "machine": {
+      "copiar": "[PT] Copiar",
+      "share_link": "[PT] Share Link:",
+      "duplicate_budget": "[PT] Duplicate budget",
+      "loading_budget": "[PT] Loading budget...",
+      "please_sign_in_to_duplicate_budgets": "[PT] Please sign in to duplicate budgets",
+      "please_save_the_budget_first_2": "[PT] Please save the budget first",
+      "please_save_the_budget_first": "[PT] Please save the budget first",
+      "please_sign_in_to_save_budgets": "[PT] Please sign in to save budgets"
+    }
   },
   "canvas": {
     "addedToFavorites": "Adicionado aos favoritos",
@@ -845,7 +1004,12 @@
     "projectNameUpdated": "Nome do projeto atualizado com sucesso",
     "projectTooLargeNoR2": "Seu projeto está muito grande ({size}MB) para salvar. Configure o armazenamento R2 para projetos grandes.",
     "projectTooLargeOnce": "Seu projeto ainda está muito grande ({size}MB) mesmo após otimização. Reduza o número de imagens ou elementos no canvas.",
-    "projects": "Projetos",
+    "projects": {
+      "manage_your_visual_canvas_projects": "[PT] Manage your visual canvas projects.",
+      "invalid_file_not_a_visant_canvas_j": "[PT] Invalid file — not a Visant canvas JSON.",
+      "imported_opening": "[PT] Imported \"{name}\" — opening canvas...",
+      "title": "Projetos"
+    },
     "projectsCount": "{count} {count, plural, =1 {projeto} other {projetos}}",
     "removedFromFavorites": "Removido dos favoritos",
     "saveCanvasProject": "Salvar Projeto?",
@@ -884,7 +1048,15 @@
     "searchProjects": "Search Projects",
     "noProjectsFound": "No Projects Found",
     "noProjectsMatchSearch": "No Projects Match Search",
-    "clearSearch": "Clear Search"
+    "clearSearch": "Clear Search",
+    "shared": {
+      "project_not_found": "[PT] Project Not Found",
+      "shared_canvas": "[PT] Shared Canvas",
+      "failed_to_load_shared_project": "[PT] Failed to load shared project"
+    },
+    "brand_asset_added_to_canvas": "[PT] Brand asset added to canvas",
+    "import_failed": "Falha ao importar: {error}",
+    "unknown_error": "erro desconhecido"
   },
   "canvasBottomToolbar": {
     "color": "Cor",
@@ -1574,7 +1746,31 @@
     "website": "Website",
     "workflowDuplicated": "Workflow duplicado na sua biblioteca",
     "youtube": "YouTube",
-    "title": "Title"
+    "title": "Title",
+    "ver_repositrio": "Ver Repositório",
+    "usar_como_referncia": "Usar como referência",
+    "galeria_da_comunidade": "Galeria da Comunidade",
+    "workflows_da_comunidade": "Workflows da Comunidade",
+    "vazio": "[PT] vazio",
+    "explorar_por_categoria": "Explorar por Categoria",
+    "curadoria": "[PT] Curadoria",
+    "publicado": "[PT] Publicado",
+    "criaes": "Criações",
+    "membros": "[PT] Membros",
+    "explorar_galeria": "[PT] Explorar Galeria",
+    "criar_um_novo_prompt": "Criar um novo prompt",
+    "presets": {
+      "duplicate_this_preset_into_your_": "[PT] Duplicate this preset into your collection?",
+      "search_presets_2": "[PT] Search presets",
+      "search_presets": "[PT] Search presets… ( / )",
+      "copied": "[PT] Copied"
+    },
+    "profile": {
+      "duplicate_to_my_library": "[PT] Duplicate to my library",
+      "workflows": "[PT] Workflows",
+      "mockups": "[PT] Mockups",
+      "loading_profile": "[PT] Loading profile..."
+    }
   },
   "communityPresets": {
     "actions": {
@@ -2585,7 +2781,10 @@
     "generateAll": "Generate All",
     "vibeTitle": "Vibe Title",
     "selectModelToGenerate": "Select Model To Generate",
-    "title": "Title"
+    "title": "Title",
+    "machine": {
+      "gere_mockups_profissionais_com_inte": "Gere mockups profissionais com inteligência artificial. Ferramenta integrada de geração rápida de mockups e assets para designers."
+    }
   },
   "mockupsPage": {
     "cannotConnectServer": "Não foi possível conectar ao servidor. Por favor, verifique sua conexão e tente novamente.",
@@ -2703,7 +2902,11 @@
       "subscriptionNote": "Subscription Note"
     },
     "included": "Included",
-    "selectPlan": "Select Plan"
+    "selectPlan": "Select Plan",
+    "visant_processingcdn": "[PT] Visant Processing/CDN",
+    "google_api_gemini_31": "[PT] Google API (Gemini 3.1)",
+    "planos_e_pacotes_de_crditos_para_gerar_m": "Planos e pacotes de créditos para gerar mockups profissionais com IA. Escolha o plano ideal para suas necessidades de design.",
+    "preos_e_planos": "Preços e Planos"
   },
   "privacy": {
     "backToHome": "Voltar para Início",
@@ -2983,7 +3186,12 @@
         "title": "5. SEUS DIREITOS"
       }
     },
-    "title": "Política de Privacidade — Visant Labs Mockup Machine"
+    "title": "Política de Privacidade — Visant Labs Mockup Machine",
+    "policy": {
+      "contatovisantco_2": "[PT] contato@visant.co",
+      "contatovisantco": "[PT] contato@visant.co",
+      "google_analytics_optout_browser_add": "[PT] Google Analytics Opt-out Browser Add-on"
+    }
   },
   "profile": {
     "backToProfile": "Voltar ao perfil",
@@ -3141,7 +3349,10 @@
         "title": "3. Reembolso de Assinaturas"
       }
     },
-    "title": "Política de Reembolso — Visant Labs Mockup Machine"
+    "title": "Política de Reembolso — Visant Labs Mockup Machine",
+    "policy": {
+      "contatovisantco": "[PT] contato@visant.co"
+    }
   },
   "router": {
     "goHome": "Ir para Início",
@@ -3942,7 +4153,10 @@
         "title": "7. Responsabilidades do Usuário"
       }
     },
-    "title": "Política de Uso — Visant Labs Mockup Machine"
+    "title": "Política de Uso — Visant Labs Mockup Machine",
+    "policy": {
+      "contatovisantco": "[PT] contato@visant.co"
+    }
   },
   "usageHistory": {
     "all": "Todos",
@@ -4004,7 +4218,11 @@
     "uploadImage": "ENVIAR IMAGEM",
     "uploadLogo": "Envie seu logo ou layout",
     "version": "v1.0",
-    "viewAllApps": "Ver Todos os Apps"
+    "viewAllApps": "Ver Todos os Apps",
+    "screen": {
+      "fechar": "[PT] Fechar",
+      "close_tutorial": "[PT] Close tutorial"
+    }
   },
   "workflows": {
     "actions": {
@@ -4098,10 +4316,20 @@
   "creative": {
     "studio": {
       "title": "Title"
+    },
+    "projects": {
+      "are_you_sure_you_want_to_delete_": "[PT] Are you sure you want to delete this creative? This action cannot be undone.",
+      "delete_creative": "[PT] Delete Creative",
+      "my_creatives_2": "[PT] My Creatives",
+      "manage_your_aigenerated_creative": "[PT] Manage your AI-generated creatives.",
+      "my_creatives": "[PT] My Creatives",
+      "search_project_name": "[PT] Search project name…"
     }
   },
   "mockups": {
-    "title": "Title"
+    "title": "Title",
+    "explore_designs_profissionais_e_inspires": "[PT] Explore designs profissionais e inspire-se.",
+    "galeria_da_comunidade": "Galeria da Comunidade"
   },
   "studio3d": {
     "title": "3D STUDIO",
@@ -4159,6 +4387,7 @@
     "texture": {
       "title": "TEXTURA",
       "upload": "Enviar Imagem",
+      "opacity": "Opacidade",
       "repeat": "Repetir",
       "regenerate": "Regenerar",
       "remove": "Remover"
@@ -4188,12 +4417,27 @@
     },
     "background": {
       "title": "FUNDO",
-      "transparent": "Transparente"
+      "transparent": "Transparente",
+      "types": {
+        "solid": "Sólido",
+        "linear": "Linear",
+        "radial": "Radial"
+      },
+      "angle": "Ângulo",
+      "color1": "Cor 1",
+      "color2": "Cor 2"
     },
     "animation": {
       "type": "TIPO",
       "controls": "CONTROLES",
       "speed": "Velocidade",
+      "easing": "Interpolação",
+      "easings": {
+        "linear": "Linear",
+        "easeIn": "Easy In",
+        "easeOut": "Easy Out",
+        "easeInOut": "Easy In Out"
+      },
       "reverse": "Inverter"
     },
     "export": {
@@ -4212,6 +4456,225 @@
     "font": {
       "loadFailed": "Falha ao carregar fonte, usando padrão",
       "loadTimeout": "Tempo esgotado ao carregar fonte"
+    },
+    "dropHere": "Solte o arquivo aqui"
+  },
+  "wind": {
+    "tunnel": {
+      "export_png": "[PT] Export PNG",
+      "restart_simulation_2": "[PT] Restart simulation",
+      "wind_tunnel": "[PT] Wind Tunnel",
+      "back_to_labs": "[PT] Back to Labs",
+      "drop_image_to_use_as_obstacle": "[PT] Drop image to use as obstacle",
+      "preset_deleted": "[PT] Preset deleted.",
+      "export_failed": "[PT] Export failed.",
+      "png_exported_at_multiplierx": "[PT] PNG exported at ${multiplier}x.",
+      "failed_to_load_image": "[PT] Failed to load image.",
+      "unsupported_format_use_png_svg_jpeg_or": "[PT] Unsupported format. Use PNG, SVG, JPEG, or WebP.",
+      "reset_all": "[PT] Reset All",
+      "restart_simulation": "[PT] Restart Simulation",
+      "toggle_grid": "[PT] Toggle grid",
+      "grid_overlay": "[PT] Grid overlay",
+      "toggle_obstacle_visibility": "[PT] Toggle obstacle visibility",
+      "show_obstacles": "[PT] Show obstacles",
+      "background": "[PT] Background",
+      "appearance": "[PT] Appearance",
+      "perspective": "[PT] Perspective",
+      "glow": "[PT] Glow",
+      "spread": "[PT] Spread",
+      "trail": "[PT] Trail",
+      "lifetime": "[PT] Lifetime",
+      "particles": "[PT] Particles",
+      "viscosity": "[PT] Viscosity",
+      "wind": "[PT] Wind",
+      "simulation": "[PT] Simulation",
+      "particle_color": "[PT] Particle Color",
+      "render": "[PT] Render",
+      "scale": "[PT] Scale",
+      "transform": "[PT] Transform",
+      "toggle_bold": "[PT] Toggle bold",
+      "obstacle_text": "[PT] Obstacle text",
+      "or_drag_drop_onto_canvas": "[PT] or drag & drop onto canvas",
+      "clear_image": "[PT] Clear image",
+      "upload_obstacle_image": "[PT] Upload obstacle image",
+      "obstacle": "[PT] Obstacle",
+      "preset_saved": "[PT] Preset \"{name}\" saved.",
+      "preset_loaded": "[PT] Loaded \"{name}\"."
     }
+  },
+  "grid": {
+    "paint": {
+      "diagonals_2": "[PT] Diagonals",
+      "width_3": "[PT] Width",
+      "outline_mode_2": "[PT] Outline mode",
+      "stroke_2": "[PT] Stroke",
+      "glow_2": "[PT] Glow",
+      "blob_2": "[PT] Blob",
+      "dot_radius_2": "[PT] Dot Radius",
+      "rand_2": "[PT] Rand",
+      "seeds_2": "[PT] Seeds",
+      "diagonals": "[PT] Diagonals",
+      "width_2": "[PT] Width",
+      "outline_mode": "[PT] Outline mode",
+      "stroke": "[PT] Stroke",
+      "glow": "[PT] Glow",
+      "blob": "[PT] Blob",
+      "dot_radius": "[PT] Dot Radius",
+      "height": "[PT] Height",
+      "width": "[PT] Width",
+      "frame": "[PT] Frame",
+      "dot": "[PT] Dot",
+      "rand": "[PT] Rand",
+      "seeds": "[PT] Seeds",
+      "svg_exported": "[PT] SVG exported",
+      "png_exported": "[PT] PNG exported"
+    },
+    "machine": {
+      "this_will_remove_the_current_svg_and_": "[PT] This will remove the current SVG and reset all settings.",
+      "clear_workspace": "[PT] Clear workspace",
+      "or_click_ctrlv_to_paste": "[PT] or click / Ctrl+V to paste",
+      "drop_an_svg_file_here": "[PT] Drop an SVG file here",
+      "drop_svg_here": "[PT] Drop SVG here",
+      "cleared": "[PT] Cleared",
+      "svg_exported": "[PT] SVG exported",
+      "export_failed": "[PT] Export failed",
+      "png_exported_2x": "[PT] PNG exported (2x)",
+      "only_svg_files_are_supported": "[PT] Only SVG files are supported",
+      "please_upload_an_svg_file": "[PT] Please upload an SVG file",
+      "loaded_name_anchors_anchors_handles_h": "[PT] Loaded ${name} — ${anchors} anchors, ${handles} handles"
+    }
+  },
+  "extractor": {
+    "format": "[PT] Format",
+    "content_type": "[PT] Content Type",
+    "encontre_qualquer_imagem": "[PT] Encontre qualquer imagem...",
+    "extrator_de_imagens_inteligente_de_mltip": "Extrator de imagens inteligente de múltiplas fontes.",
+    "erro_ao_processar_pdf": "[PT] Erro ao processar PDF",
+    "extrao_de_pdf_concluda": "Extração de PDF concluída",
+    "asset_copied_to_clipboard": "[PT] Asset copied to clipboard",
+    "processing_for_clipboard": "[PT] Processing for clipboard...",
+    "failed_to_upscale_image": "[PT] Failed to upscale image",
+    "asset_upscaled_and_delivered": "[PT] Asset upscaled and delivered",
+    "upscaling_asset_to_2x_ultra_hd": "[PT] Upscaling asset to 2x ULTRA HD...",
+    "erro_ao_gerar_zip": "[PT] Erro ao gerar ZIP",
+    "download_concludo": "Download concluído!",
+    "iniciando_download_de_imagestodownloadle": "Iniciando download de ${imagesToDownload.length} imagens...",
+    "falha_na_extrao": "Falha na extração",
+    "mais_resultimageslength_imageslength_str": "[PT] Mais ${result.images.length - images.length} streams identificados",
+    "view_original": "[PT] View Original",
+    "search_with_google_lens": "[PT] Search with Google Lens",
+    "upscale_to_ultra_hd": "[PT] Upscale to ULTRA HD",
+    "copy_as_png": "[PT] Copy as PNG",
+    "download_original": "[PT] Download Original"
+  },
+  "api": {
+    "keys": {
+      "revoke_api_key": "[PT] Revoke API Key",
+      "revoke_key": "[PT] Revoke key",
+      "never": "[PT] Never",
+      "status": "[PT] Status",
+      "created": "[PT] Created",
+      "last_used": "[PT] Last Used",
+      "scopes_2": "[PT] Scopes",
+      "key": "[PT] Key",
+      "no_api_keys_yet": "[PT] No API keys yet",
+      "scopes": "[PT] Scopes",
+      "copy_to_clipboard": "[PT] Copy to clipboard",
+      "this_key_will_not_be_shown_again_copy_it": "[PT] This key will not be shown again. Copy it and store it securely.",
+      "save_your_api_key_now": "[PT] Save your API key now",
+      "manage_your_api_keys_for_agent_and_progr": "[PT] Manage your API keys for agent and programmatic access",
+      "please_sign_in_to_manage_api_keys": "[PT] Please sign in to manage API keys",
+      "copied_to_clipboard": "[PT] Copied to clipboard",
+      "select_at_least_one_scope": "[PT] Select at least one scope",
+      "please_enter_a_name_for_the_key": "[PT] Please enter a name for the key"
+    }
+  },
+  "moodboard": {
+    "studio": {
+      "ai_analyzing": "[PT] AI Analyzing",
+      "single_image_for_ai_grid_detectio": "[PT] Single image for AI grid detection · Multiple for batch processing",
+      "upload_or_drop_moodboard": "[PT] Upload or Drop Moodboard",
+      "extract_upscale_and_animate_image": "[PT] Extract, upscale and animate images from moodboards",
+      "generating_full_moodboard_video_w": "[PT] Generating full moodboard video with Veo 3...",
+      "generating_frame_animation_with_v": "[PT] Generating frame animation with Veo 3...",
+      "ai_regeneration_ready": "[PT] AI Regeneration ready",
+      "detected_newcropslength_images": "[PT] Detected ${newCrops.length} images",
+      "no_grid_detected_try_a_moodboard_": "[PT] No grid detected. Try a moodboard with clearly separated images.",
+      "regen_failed": "[PT] Item {id}: {error}",
+      "regeneration_failed": "[PT] Regeneration failed"
+    }
+  },
+  "public": {
+    "brand": {
+      "guideline": {
+        "visant_labs": "[PT] Visant // Labs®",
+        "version": "[PT] Version",
+        "search_assets_colors_or_spe": "[PT] Search assets, colors, or specs...",
+        "download_brand_variables_as": "[PT] Download brand variables as CSS",
+        "download_brand_guidelines_a": "[PT] Download brand guidelines as JSON",
+        "brand_sections": "[PT] Brand sections",
+        "access_denied": "[PT] Access Denied",
+        "decrypting_brand_assets": "[PT] Decrypting Brand Assets",
+        "downloaded_as_css": "[PT] Downloaded as CSS",
+        "downloaded_as_json": "[PT] Downloaded as JSON"
+      }
+    }
+  },
+  "brand": {
+    "guidelines": {
+      "review": "[PT] Review →",
+      "design_system_review_pending": "[PT] Design System Review pending",
+      "toggle_sections": "[PT] Toggle sections",
+      "menu": "[PT] Menu",
+      "open_menu": "[PT] Open menu",
+      "brand_guideline_content": "[PT] Brand Guideline Content",
+      "brand_guidelines_selection": "[PT] Brand Guidelines Selection",
+      "awaiting_selection": "[PT] Awaiting Selection"
+    }
+  },
+  "home": {
+    "community": "[PT] community",
+    "info_2": "[PT] info",
+    "sign_in_2": "[PT] sign in",
+    "contact": "[PT] contact",
+    "info": "[PT] info",
+    "sign_in": "[PT] sign in",
+    "ver_todos_os_apps": "[PT] Ver todos os apps",
+    "selecione_um_app": "Selecione um app"
+  },
+  "my": {
+    "outputs": {
+      "delete_output": "[PT] Delete output",
+      "loading_your_outputs": "[PT] Loading your outputs...",
+      "failed_to_remove_canvas_image": "[PT] Failed to remove canvas image",
+      "canvas_image_removed": "[PT] Canvas image removed",
+      "failed_to_delete_output": "[PT] Failed to delete output",
+      "output_deleted_successfully": "[PT] Output deleted successfully"
+    },
+    "budgets": {
+      "carregando_presets": "[PT] Carregando presets...",
+      "invalid_budget_id": "[PT] Invalid budget ID"
+    }
+  },
+  "halftone": {
+    "all_halftone_settings_will_return_to_def": "[PT] All halftone settings will return to defaults. This cannot be undone.",
+    "reset_settings": "[PT] Reset settings",
+    "drop_image_here": "[PT] Drop image here",
+    "png_exported": "[PT] PNG exported",
+    "loaded_file": "[PT] Loaded {name}",
+    "pasted_image": "[PT] pasted image"
+  },
+  "q": {
+    "r": {
+      "code": {
+        "enter_text_to_generate_qr_code": "[PT] Enter text to generate QR code",
+        "select_error_correction_level": "[PT] Select error correction level",
+        "enter_text_url_or_any_data": "[PT] Enter text, URL, or any data...",
+        "qr_code_generator": "[PT] QR Code Generator"
+      }
+    }
+  },
+  "labs": {
+    "labs": "[PT] Labs"
   }
 }

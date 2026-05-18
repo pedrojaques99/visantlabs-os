@@ -322,7 +322,7 @@ export const CommunityProfilePage: React.FC = () => {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-neutral-400 font-mono text-sm">Loading profile...</p>
+              <p className="text-neutral-400 font-mono text-sm">{t('community.profile.loading_profile')}</p>
             </div>
           </div>
         </div>
@@ -470,14 +470,14 @@ export const CommunityProfilePage: React.FC = () => {
                       <div className="text-xl md:text-2xl font-bold font-manrope text-white">
                         {profile.stats.mockups}
                       </div>
-                      <MicroTitle>Mockups</MicroTitle>
+                      <MicroTitle>{t('community.profile.mockups')}</MicroTitle>
                     </div>
                     <div className="w-px bg-neutral-800/50" />
                     <div className="text-center">
                       <div className="text-xl md:text-2xl font-bold font-manrope text-white">
                         {workflows.length}
                       </div>
-                      <MicroTitle>Workflows</MicroTitle>
+                      <MicroTitle>{t('community.profile.workflows')}</MicroTitle>
                     </div>
                     <div className="w-px bg-neutral-800/50" />
                     <div className="text-center">
@@ -615,7 +615,7 @@ export const CommunityProfilePage: React.FC = () => {
                               size="icon"
                               variant="secondary"
                               onClick={(e) => handleDuplicateWorkflow(e, workflow)}
-                              title="Duplicate to my library"
+                              title={t('community.profile.duplicate_to_my_library')}
                             >
                               <Share2 size={14} />
                             </Button>

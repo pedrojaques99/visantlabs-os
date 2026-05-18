@@ -192,7 +192,7 @@ const PresetDetailModal: React.FC<{
                 <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">Prompt</span>
                 <button onClick={copyPrompt}
                   className="flex items-center gap-1.5 text-[10px] font-mono text-neutral-600 hover:text-neutral-300 transition-colors">
-                  {copied ? <><span className="text-green-500">Copied</span></> : 'Copy'}
+                  {copied ? <><span className="text-green-500">{t('community.presets.copied')}</span></> : 'Copy'}
                 </button>
               </div>
               <p className="text-xs text-neutral-400 font-mono leading-relaxed max-h-36 overflow-y-auto whitespace-pre-wrap">
@@ -570,9 +570,9 @@ export const CommunityPresetsPage: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search presets… ( / )"
+              placeholder={t('community.presets.search_presets')}
               className="w-48 focus:w-64 pl-8 pr-8 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-xs font-mono text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-all duration-200"
-              aria-label="Search presets"
+              aria-label={t('community.presets.search_presets_2')}
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')}
@@ -727,7 +727,7 @@ export const CommunityPresetsPage: React.FC = () => {
         onClose={() => { setDuplicateOpen(false); setPresetToDuplicate(null); }}
         onConfirm={handleConfirmDuplicate}
         title="Duplicate Preset"
-        message="Duplicate this preset into your collection?"
+        message={t('community.presets.duplicate_this_preset_into_your_')}
         confirmText="Duplicate"
         cancelText={t('common.cancel')}
         variant="info"

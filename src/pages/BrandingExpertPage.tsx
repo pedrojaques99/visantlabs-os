@@ -4,8 +4,10 @@ import { BrandingExpertChat } from '@/components/branding/BrandingExpertChat';
 import { SEO } from '@/components/SEO';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const BrandingExpertPage: React.FC = () => {
+    const { t } = useTranslation();
     const { theme } = useTheme();
     const [searchParams] = useSearchParams();
     const projectId = searchParams.get('projectId') || undefined;
@@ -13,8 +15,8 @@ export const BrandingExpertPage: React.FC = () => {
     return (
         <div className={cn("h-screen w-full flex flex-col overflow-hidden", theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-50')}>
             <SEO 
-                title="Especialista em Branding | Visant Labs"
-                description="Converse com nosso assistente especialista em estratégia e metodologia de branding."
+                title={t('branding.expert.especialista_em_branding_visant_la')}
+                description={t('branding.expert.converse_com_nosso_assistente_espe')}
             />
             
             <div className="flex-1 w-full h-full flex flex-col pt-16 md:p-8 md:pt-20 lg:p-12 lg:pt-24 overflow-hidden">

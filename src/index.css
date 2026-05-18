@@ -98,6 +98,49 @@
    */
   --node-border-width: 1px;
   --node-padding: 2rem;
+}
+
+/* React Colorful Custom Styles */
+.custom-color-picker .react-colorful {
+  width: 100%;
+  height: 120px;
+}
+
+.custom-color-picker .react-colorful__saturation {
+  border-radius: 4px 4px 0 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-color-picker .react-colorful__hue {
+  height: 12px;
+  border-radius: 0 0 4px 4px;
+}
+
+.custom-color-picker .react-colorful__pointer {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+}
+
+.custom-color-picker-mini .react-colorful {
+  width: 100%;
+  height: 80px;
+}
+
+.custom-color-picker-mini .react-colorful__saturation {
+  border-radius: 4px 4px 0 0;
+}
+
+.custom-color-picker-mini .react-colorful__hue {
+  height: 8px;
+  border-radius: 0 0 4px 4px;
+}
+
+.custom-color-picker-mini .react-colorful__pointer {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+}
   /* p-8 = 32px - default padding for all nodes */
   --node-gap: 1rem;
   /* gap-4 = 16px - default gap between elements */

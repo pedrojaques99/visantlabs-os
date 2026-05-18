@@ -105,7 +105,7 @@ export const PageShell: React.FC<PageShellProps> = ({
         <main role="main" aria-label={ariaLabel} data-vsn-region="content">
           <div
             className={cn(
-              'mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16',
+              'mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-20 pb-10 sm:pb-16',
               WIDTH_MAP[width],
               contentClassName,
             )}
@@ -122,14 +122,14 @@ export const PageShell: React.FC<PageShellProps> = ({
                         <React.Fragment key={`${seg.label}-${i}`}>
                           <BreadcrumbItem>
                             {isLast || !seg.to ? (
-                              <BreadcrumbPage className="text-brand-cyan text-[10px] font-mono tracking-widest uppercase">
+                              <BreadcrumbPage className="text-brand-cyan text-[11px] sm:text-[10px] font-mono tracking-widest uppercase">
                                 {seg.label}
                               </BreadcrumbPage>
                             ) : (
                               <BreadcrumbLink asChild>
                                 <Link
                                   to={seg.to}
-                                  className="text-neutral-500 hover:text-neutral-200 transition-colors text-[10px] font-mono tracking-widest uppercase"
+                                  className="text-neutral-500 hover:text-neutral-200 transition-colors text-[11px] sm:text-[10px] font-mono tracking-widest uppercase"
                                 >
                                   {seg.label}
                                 </Link>
@@ -148,7 +148,7 @@ export const PageShell: React.FC<PageShellProps> = ({
             )}
 
             {!hideHeader && (
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-10 mb-12">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 border-b border-white/10 pb-6 sm:pb-10 mb-8 sm:mb-12">
                 <div className="space-y-3">
                   {microTitle && (
                     <MicroTitle className="text-neutral-500">{microTitle}</MicroTitle>

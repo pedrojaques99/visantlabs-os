@@ -303,9 +303,9 @@ export const MockupsPage: React.FC = () => {
       pageId="mockups"
       seoTitle="Mockups da Comunidade"
       seoDescription="Explore mockups criados pela comunidade. Descubra designs profissionais e inspire-se para seus próprios projetos."
-      title="Galeria da Comunidade"
+      title={t('mockups.galeria_da_comunidade')}
       microTitle="Systems // Gallery"
-      description="Explore designs profissionais e inspire-se."
+      description={t('mockups.explore_designs_profissionais_e_inspires')}
       breadcrumb={[
         { label: t('apps.home') || 'Home', to: '/' },
         { label: t('community.title') || 'Community', to: '/community' },

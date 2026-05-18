@@ -475,7 +475,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
                   ? 'hover:bg-neutral-700 text-neutral-500 hover:text-red-400'
                   : 'hover:bg-neutral-200 text-neutral-400 hover:text-red-500'
                   }`}
-                aria-label="Close tutorial"
+                aria-label={t('welcome.screen.close_tutorial')}
               >
                 <X size={12} />
               </div>
@@ -533,7 +533,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
                 ? 'bg-neutral-950/80 hover:bg-red-500/90 text-neutral-300 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
                 : 'bg-white/80 hover:bg-red-500/90 text-neutral-600 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
                 }`}
-              title="Fechar"
+              title={t('welcome.screen.fechar')}
             >
               <X size={14} />
             </Button>

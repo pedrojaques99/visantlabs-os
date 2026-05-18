@@ -12,6 +12,7 @@ import { ConfirmationModal } from '../components/ConfirmationModal';
 import { useLayout } from '@/hooks/useLayout';
 import { useCreativeProjects, useDeleteCreativeProject, useUpdateCreativeProject } from '@/hooks/queries/useCreativeProjects';
 import { useCreativeStore } from '@/components/creative/store/creativeStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /**
  * Grid of the user's Creative Studio projects.
@@ -19,6 +20,7 @@ import { useCreativeStore } from '@/components/creative/store/creativeStore';
  * Route: /create/projects
  */
 export const CreativeProjectsPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useLayout();
   const reset = useCreativeStore((s) => s.reset);
@@ -146,7 +148,7 @@ export const CreativeProjectsPage: React.FC = () => {
             <SearchBar
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search project name…"
+              placeholder={t('creative.projects.search_project_name')}
               iconSize={14}
               className="bg-transparent border-neutral-800/20 text-xs font-mono"
               containerClassName="w-full"
@@ -170,9 +172,9 @@ export const CreativeProjectsPage: React.FC = () => {
     return (
       <PageShell
         pageId="creative-projects-loading"
-        title="My Creatives"
+        title={t('creative.projects.my_creatives')}
         microTitle="Creative Studio // Projects"
-        description="Manage your AI-generated creatives."
+        description={t('creative.projects.manage_your_aigenerated_creative')}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -206,7 +208,7 @@ export const CreativeProjectsPage: React.FC = () => {
       pageId="creative-projects"
       seoTitle="My Creatives"
       seoDescription="Manage, edit and revisit your AI-generated creatives."
-      title="My Creatives"
+      title={t('creative.projects.my_creatives_2')}
       microTitle="Creative Studio // Projects"
       description={
         projects.length === 0
@@ -383,8 +385,8 @@ export const CreativeProjectsPage: React.FC = () => {
             setProjectToDelete(null);
           }}
           onConfirm={handleDeleteConfirm}
-          title="Delete Creative"
-          message="Are you sure you want to delete this creative? This action cannot be undone."
+          title={t('creative.projects.delete_creative')}
+          message={t('creative.projects.are_you_sure_you_want_to_delete_')}
           confirmText="Delete"
           cancelText="Cancel"
           variant="danger"

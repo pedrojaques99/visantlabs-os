@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Brush, Play, Pause, RotateCcw } from 'lucide-react';
 import type { ShaderNodeData } from '@/types/reactFlow';
 import type { TimerRef } from '@/types/types';
-import { NodeSlider } from '../reactflow/shared/node-slider';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';

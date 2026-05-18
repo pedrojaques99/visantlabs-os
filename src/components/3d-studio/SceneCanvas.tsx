@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { ContactShadows, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStudio3DStore } from '@/stores/studio3dStore';
@@ -35,6 +35,7 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   texture: s.texture,
   textureRepeat: s.textureRepeat,
   textureRotation: s.textureRotation,
+  textureOpacity: s.textureOpacity,
   rotationX: s.rotationX,
   rotationY: s.rotationY,
   zoom: s.zoom,
@@ -46,14 +47,63 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   animate: s.animate,
   animateSpeed: s.animateSpeed,
   animateReverse: s.animateReverse,
+  animateEasing: s.animateEasing,
   transparentBg: s.transparentBg,
   background: s.background,
+  bgType: s.bgType,
+  bgGradient: s.bgGradient,
   resetKey: s.resetKey,
   shaderEnabled: s.shaderEnabled,
   shaderType: s.shaderType,
   shaderValues: s.shaderValues,
   getShaderSettings: s.getShaderSettings,
 });
+
+function GradientBackground({ type, gradient }: { type: 'linear' | 'radial'; gradient: any }) {
+  const { viewport } = useThree();
+  const uniforms = useMemo(() => ({
+    uColor1: { value: new THREE.Color(gradient.color1) },
+    uColor2: { value: new THREE.Color(gradient.color2) },
+    uAngle: { value: (gradient.angle * Math.PI) / 180 },
+    uType: { value: type === 'linear' ? 0 : 1 },
+  }), [gradient.color1, gradient.color2, gradient.angle, type]);
+
+  return (
+    <mesh scale={[viewport.width * 2, viewport.height * 2, 1]} position={[0, 0, -10]}>
+      <planeGeometry />
+      <shaderMaterial
+        transparent
+        depthWrite={false}
+        uniforms={uniforms}
+        vertexShader={`
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `}
+        fragmentShader={`
+          uniform vec3 uColor1;
+          uniform vec3 uColor2;
+          uniform float uAngle;
+          uniform int uType;
+          varying vec2 vUv;
+
+          void main() {
+            float t = 0.0;
+            if (uType == 0) {
+              vec2 dir = vec2(cos(uAngle), sin(uAngle));
+              t = dot(vUv - 0.5, dir) + 0.5;
+            } else {
+              t = distance(vUv, vec2(0.5)) * 2.0;
+            }
+            gl_FragColor = vec4(mix(uColor1, uColor2, clamp(t, 0.0, 1.0)), 1.0);
+          }
+        `}
+      />
+    </mesh>
+  );
+}
 
 function SceneContent() {
   const s = useStudio3DStore(useShallow(sceneSelector));
@@ -110,6 +160,7 @@ function SceneContent() {
         type={s.animate}
         speed={s.animateSpeed}
         reverse={s.animateReverse}
+        easing={s.animateEasing}
         meshRef={animGroupRef}
       />
 
@@ -136,6 +187,7 @@ function SceneContent() {
             texture={s.texture || undefined}
             textureRepeat={s.textureRepeat}
             textureRotation={s.textureRotation}
+            textureOpacity={s.textureOpacity}
           />
         )}
       </group>
@@ -146,11 +198,18 @@ function SceneContent() {
 
       <hemisphereLight args={['#b1e1ff', '#b97a20', 0.5]} />
 
+      {!s.transparentBg && (
+        s.bgType === 'solid' ? (
+          <mesh scale={100}>
+            <sphereGeometry args={[1, 64, 64]} />
+            <meshBasicMaterial color={s.background} side={THREE.BackSide} toneMapped={false} />
+          </mesh>
+        ) : (
+          <GradientBackground type={s.bgType as any} gradient={s.bgGradient} />
+        )
+      )}
+
       <Environment background={false} environmentIntensity={1.5} frames={1}>
-        <mesh scale={50}>
-          <sphereGeometry args={[1, 32, 32]} />
-          <meshBasicMaterial color="#0a0a12" side={THREE.BackSide} />
-        </mesh>
         <mesh position={[0, 25, 0]}>
           <sphereGeometry args={[20, 32, 32]} />
           <meshBasicMaterial color="#ffffff" />
@@ -210,9 +269,6 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
           toneMappingExposure: 1.2,
         }}
         onCreated={({ gl, scene, camera }) => {
-          if (bg && bg !== 'transparent') {
-            scene.background = new THREE.Color(bg);
-          }
           onCanvasReady(gl.domElement);
           const handle: SceneHandle = { scene, gl, camera };
           setSceneHandle(handle);

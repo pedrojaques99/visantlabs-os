@@ -13,10 +13,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children, className }) => (
 );
 
 export const AppShellTopBar: React.FC<{ left?: React.ReactNode; center?: React.ReactNode; right?: React.ReactNode; className?: string }> = ({ left, center, right, className }) => (
-  <div className={cn('absolute top-0 left-0 right-0 flex items-center justify-between px-3 py-2 z-10', className)}>
-    <div className="flex items-center gap-1">{left}</div>
-    <div className="flex items-center gap-1">{center}</div>
-    <div className="flex items-center gap-1">{right}</div>
+  <div className={cn('absolute top-0 left-0 right-0 flex items-center justify-between px-2 sm:px-3 py-2 z-10', className)}>
+    <div className="flex items-center gap-0.5 sm:gap-1">{left}</div>
+    <div className="flex items-center gap-0.5 sm:gap-1">{center}</div>
+    <div className="flex items-center gap-0.5 sm:gap-1">{right}</div>
   </div>
 );
 

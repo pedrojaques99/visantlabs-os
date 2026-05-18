@@ -128,7 +128,7 @@ export const AppsPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching apps:', error);
       setApps(staticAppsData as any);
-      toast.error('Failed to load apps from database, using offline mode');
+      toast.error(t('apps.failed_to_load_apps_from_database_using'));
     } finally {
       setIsLoading(false);
     }
@@ -247,7 +247,7 @@ export const AppsPage: React.FC = () => {
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
-              'px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest rounded-md border transition-all',
+              'px-3 py-1.5 text-[11px] sm:text-[10px] font-mono uppercase tracking-widest rounded-md border transition-all',
               !activeCategory
                 ? 'border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5'
                 : 'border-white/10 text-neutral-500 hover:text-neutral-300 hover:border-white/20'
@@ -260,7 +260,7 @@ export const AppsPage: React.FC = () => {
               key={cat.key}
               onClick={() => setActiveCategory(activeCategory === cat.key ? null : cat.key)}
               className={cn(
-                'px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest rounded-md border transition-all',
+                'px-3 py-1.5 text-[11px] sm:text-[10px] font-mono uppercase tracking-widest rounded-md border transition-all',
                 activeCategory === cat.key
                   ? 'border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5'
                   : 'border-white/10 text-neutral-500 hover:text-neutral-300 hover:border-white/20'
@@ -273,7 +273,7 @@ export const AppsPage: React.FC = () => {
 
         <button
           onClick={() => setSortBy(prev => prev === 'default' ? 'name' : prev === 'name' ? 'free' : 'default')}
-          className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest rounded-md border border-white/10 text-neutral-500 hover:text-neutral-300 hover:border-white/20 transition-all shrink-0"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-[10px] font-mono uppercase tracking-widest rounded-md border border-white/10 text-neutral-500 hover:text-neutral-300 hover:border-white/20 transition-all shrink-0"
         >
           <ArrowUpDown size={10} />
           {sortBy === 'default' ? 'Default' : sortBy === 'name' ? 'A–Z' : 'Free first'}
@@ -396,7 +396,7 @@ export const AppsPage: React.FC = () => {
                               setIsDialogOpen(true);
                             }}
                             className="p-2 rounded-full bg-neutral-950/60 backdrop-blur-md border border-white/10 text-brand-cyan hover:scale-110 active:scale-95 transition-all"
-                            title="Edit App"
+                            title={t('apps.edit_app')}
                           >
                             <Edit3 size={12} />
                           </button>

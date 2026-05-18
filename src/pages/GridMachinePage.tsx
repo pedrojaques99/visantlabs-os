@@ -2,25 +2,33 @@ import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
-import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, ChevronUp, ChevronDown, Upload } from 'lucide-react';
+import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
+import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
+import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
+import { DropOverlay } from '@/components/ui/DropOverlay';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { GridCanvas, type GridCanvasHandle } from '@/components/grid-machine/GridCanvas';
 import { GridMachineControls } from '@/components/grid-machine/ControlsPanel';
 import { useGridMachineStore } from '@/stores/gridMachineStore';
 import { analyzeSvg } from '@/components/grid-machine/SvgAnalyzer';
 import { useIsMobile } from '@/hooks/use-media-query';
+import { usePasteImage } from '@/hooks/usePasteImage';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const GridMachinePage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const gridRef = useRef<GridCanvasHandle>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   useEffect(() => { document.title = 'Grid Machine — Visant'; }, []);
 
@@ -40,14 +48,34 @@ export const GridMachinePage: React.FC = () => {
     setAnalysis(result);
     const anchors = result.points.filter(p => p.type === 'anchor').length;
     const handles = result.points.filter(p => p.type === 'handle').length;
-    toast.success(`Loaded ${name} — ${anchors} anchors, ${handles} handles`);
+    toast.success(t('grid.machine.loaded_name_anchors_anchors_handles_h'));
   }, [setSvg, setAnalysis]);
+
+  usePasteImage(useCallback(async ({ file }) => {
+    if (!file) return;
+    if (file.type === 'image/svg+xml') {
+      const text = await file.text();
+      loadSvg(text, file.name || 'pasted.svg');
+    }
+  }, [loadSvg]));
+
+  useEffect(() => {
+    const handlePasteText = (e: ClipboardEvent) => {
+      const text = e.clipboardData?.getData('text/plain');
+      if (text && text.trimStart().startsWith('<svg')) {
+        e.preventDefault();
+        loadSvg(text, 'pasted.svg');
+      }
+    };
+    window.addEventListener('paste', handlePasteText);
+    return () => window.removeEventListener('paste', handlePasteText);
+  }, [loadSvg]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.name.endsWith('.svg') && file.type !== 'image/svg+xml') {
-      toast.error('Please upload an SVG file');
+      toast.error(t('grid.machine.please_upload_an_svg_file'));
       return;
     }
     const reader = new FileReader();
@@ -61,7 +89,7 @@ export const GridMachinePage: React.FC = () => {
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
     if (!file.name.endsWith('.svg') && file.type !== 'image/svg+xml') {
-      toast.error('Only SVG files are supported');
+      toast.error(t('grid.machine.only_svg_files_are_supported'));
       return;
     }
     const reader = new FileReader();
@@ -91,9 +119,9 @@ export const GridMachinePage: React.FC = () => {
       a.download = `grid-${fileName?.replace(/\.svg$/i, '') || 'export'}_${Date.now()}.png`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('PNG exported (2x)');
+      toast.success(t('grid.machine.png_exported_2x'));
     } catch {
-      toast.error('Export failed');
+      toast.error(t('grid.machine.export_failed'));
     } finally {
       setIsExporting(false);
     }
@@ -109,18 +137,18 @@ export const GridMachinePage: React.FC = () => {
     a.download = `grid-${fileName?.replace(/\.svg$/i, '') || 'export'}_${Date.now()}.svg`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('SVG exported');
+    toast.success(t('grid.machine.svg_exported'));
   }, [fileName]);
 
   const handleReset = useCallback(() => {
     clear();
     setConfirmReset(false);
-    toast.success('Cleared');
+    toast.success(t('grid.machine.cleared'));
   }, [clear]);
 
   useHotkeys('mod+e', (e) => { e.preventDefault(); handleExportPng(); }, { enableOnFormTags: false });
   useHotkeys('r', () => { if (svgContent) setConfirmReset(true); }, { enableOnFormTags: false });
-  useHotkeys('mod+\\', () => setPanelVisible(!panelVisible), { enableOnFormTags: false });
+  useHotkeys('tab', (e) => { e.preventDefault(); setPanelVisible(!panelVisible); }, { enableOnFormTags: false });
   useHotkeys('mod+o', (e) => { e.preventDefault(); fileInputRef.current?.click(); }, { enableOnFormTags: false });
 
   const anchorCount = analysis?.points.filter(p => p.type === 'anchor').length ?? 0;
@@ -138,9 +166,9 @@ export const GridMachinePage: React.FC = () => {
                 <ChevronLeft size={16} />
               </Button>
             </Tooltip>
-            <span className="text-[10px] text-neutral-600 uppercase tracking-widest font-mono ml-1">
+            <MicroTitle className="text-[10px] text-neutral-600 uppercase tracking-widest ml-1">
               GRID MACHINE
-            </span>
+            </MicroTitle>
           </>
         }
         right={
@@ -158,12 +186,13 @@ export const GridMachinePage: React.FC = () => {
               </Tooltip>
             )}
             {!isMobile && (
-              <Tooltip content={panelVisible ? 'Hide panel' : 'Show panel'}>
+              <Tooltip content={panelVisible ? 'Hide panel (Tab)' : 'Show panel (Tab)'}>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
                   {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                 </Button>
               </Tooltip>
             )}
+            <AppShellLegalMenu />
           </>
         }
       />
@@ -171,12 +200,14 @@ export const GridMachinePage: React.FC = () => {
       <div
         className="absolute inset-0 pt-10 transition-all duration-300"
         style={{
-          paddingRight: !isMobile && panelVisible ? 236 : 0,
-          paddingBottom: isMobile ? (mobileSheetOpen ? '55%' : 52) : 40,
+          paddingRight: !isMobile && panelVisible ? 316 : 0,
+          paddingBottom: isMobile ? (mobileSheetOpen ? '45%' : 48) : 40,
         }}
-        onDrop={handleDrop}
-        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => { setIsDragOver(false); handleDrop(e); }}
+        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+        onDragLeave={() => setIsDragOver(false)}
       >
+        <DropOverlay visible={isDragOver} message={t('grid.machine.drop_svg_here')} />
         {svgContent ? (
           <GridCanvas ref={gridRef} />
         ) : (
@@ -184,15 +215,13 @@ export const GridMachinePage: React.FC = () => {
             <button
               onClick={() => fileInputRef.current?.click()}
               className="flex flex-col items-center gap-3 p-10 rounded-2xl border border-dashed border-white/10 hover:border-white/20 transition-colors cursor-pointer group"
-              onDrop={handleDrop}
-              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
             >
               <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
                 <Upload size={20} className="text-neutral-500 group-hover:text-neutral-300" />
               </div>
               <div className="text-center">
-                <p className="text-[12px] text-neutral-400">Drop an SVG file here</p>
-                <p className="text-[10px] text-neutral-600 mt-1">or click to browse</p>
+                <p className="text-[12px] text-neutral-400">{t('grid.machine.drop_an_svg_file_here')}</p>
+                <p className="text-[10px] text-neutral-600 mt-1">{t('grid.machine.or_click_ctrlv_to_paste')}</p>
               </div>
             </button>
           </div>
@@ -206,23 +235,9 @@ export const GridMachinePage: React.FC = () => {
       )}
 
       {svgContent && isMobile && (
-        <div className={cn(
-          'absolute left-0 right-0 bottom-0 z-20 transition-all duration-300 ease-out',
-          mobileSheetOpen ? 'h-[55%]' : 'h-[52px]',
-        )}>
-          <button
-            onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
-            className="w-full flex items-center justify-center gap-1 py-2 bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400"
-          >
-            {mobileSheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            <span className="text-[10px] uppercase tracking-widest">Controls</span>
-          </button>
-          {mobileSheetOpen && (
-            <div className="h-[calc(100%-36px)] bg-neutral-950/95 backdrop-blur-xl overflow-hidden">
-              <GridMachineControls onExportPng={handleExportPng} onExportSvg={handleExportSvg} />
-            </div>
-          )}
-        </div>
+        <AppShellMobileSheet open={mobileSheetOpen} onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}>
+          <GridMachineControls onExportPng={handleExportPng} onExportSvg={handleExportSvg} />
+        </AppShellMobileSheet>
       )}
 
       {!isMobile && svgContent && (
@@ -249,8 +264,8 @@ export const GridMachinePage: React.FC = () => {
         isOpen={confirmReset}
         onClose={() => setConfirmReset(false)}
         onConfirm={handleReset}
-        title="Clear workspace"
-        message="This will remove the current SVG and reset all settings."
+        title={t('grid.machine.clear_workspace')}
+        message={t('grid.machine.this_will_remove_the_current_svg_and_')}
         confirmText="Clear"
         variant="warning"
       />

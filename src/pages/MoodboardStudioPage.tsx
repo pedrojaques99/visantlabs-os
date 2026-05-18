@@ -22,6 +22,7 @@ import { ModelSelector } from '../components/shared/ModelSelector';
 import { API_BASE } from '@/config/api';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { useTranslation } from '@/hooks/useTranslation';
 async function callVideoApi(body: object): Promise<string> {
   const token = authService.getToken();
   const res = await fetch(`${API_BASE}/video/generate`, {
@@ -106,6 +107,7 @@ function saveSession(sourceImage: string | null, croppedImages: CroppedImage[]) 
 }
 
 function MoodboardStudio() {
+  const { t } = useTranslation();
   const saved = loadSession();
   const [sourceImage, setSourceImage] = useState<string | null>(saved.sourceImage);
   const [croppedImages, setCroppedImages] = useState<CroppedImage[]>(saved.croppedImages);
@@ -213,7 +215,7 @@ function MoodboardStudio() {
     setIsAnalyzing(true);
     try {
       const { boxes } = await moodboardApi.detectGrid(sourceImage);
-      if (boxes.length === 0) { toast.error('No grid detected. Try a moodboard with clearly separated images.'); return; }
+      if (boxes.length === 0) { toast.error(t('moodboard.studio.no_grid_detected_try_a_moodboard_')); return; }
 
       const img = new Image();
       img.src = sourceImage;
@@ -236,7 +238,7 @@ function MoodboardStudio() {
 
       setCroppedImages(newCrops);
       setSelectedIds(new Set());
-      toast.success(`Detected ${newCrops.length} images`);
+      toast.success(t('moodboard.studio.detected_newcropslength_images'));
       handleAISuggest(newCrops);
     } catch (err: any) {
       toast.error(err.message || 'Failed to detect grid');
@@ -297,13 +299,13 @@ function MoodboardStudio() {
       if (!imageBase64 && !imageUrl) throw new Error('No image returned');
       const regeneratedUrl = imageUrl || `data:image/png;base64,${imageBase64}`;
       setCroppedImages(prev => prev.map(c => c.id === id ? { ...c, regeneratedUrl } : c));
-      toast.success('AI Regeneration ready', {
+      toast.success(t('moodboard.studio.ai_regeneration_ready'), {
         description: 'Accept or discard on the image card.',
         action: { label: 'Download', onClick: () => downloadImage(regeneratedUrl, `regen-${id}-${Date.now()}.png`) },
         duration: 10000,
       });
     } catch (err: any) {
-      toast.error(`Item ${id.slice(-4)}: ${err.message || 'Regeneration failed'}`);
+      toast.error(t('moodboard.studio.regen_failed', { id: id.slice(-4), error: err.message || t('moodboard.studio.regeneration_failed') }));
     } finally {
       setRegeneratingIds(prev => { const n = new Set(prev); n.delete(id); return n; });
     }
@@ -317,7 +319,7 @@ function MoodboardStudio() {
 
   const handleFrameAnimate = async (start: string, end: string, prompt: string) => {
     setShowFrameModal(false);
-    toast.info('Generating frame animation with Veo 3...');
+    toast.info(t('moodboard.studio.generating_frame_animation_with_v'));
     try {
       const videoUrl = await generateVideoFromFrames(start, end, prompt, allowSound);
       setVideoModalUrl(videoUrl);
@@ -330,7 +332,7 @@ function MoodboardStudio() {
     const targets = selectedIds.size > 0 ? croppedImages.filter(c => selectedIds.has(c.id)) : croppedImages;
     if (targets.length === 0 || isCreatingFullVideo) return;
     setIsCreatingFullVideo(true);
-    toast.info('Generating full moodboard video with Veo 3...');
+    toast.info(t('moodboard.studio.generating_full_moodboard_video_w'));
     try {
       const referenceImages = targets.map(c => c.upscaledUrl || c.url);
       const prompt = 'A professional cinematic video showcasing these images with smooth transitions, professional lighting, and high aesthetic quality.';
@@ -417,7 +419,7 @@ function MoodboardStudio() {
     <PageShell
       pageId="moodboard-studio"
       title="Moodboard Studio"
-      description="Extract, upscale and animate images from moodboards"
+      description={t('moodboard.studio.extract_upscale_and_animate_image')}
       breadcrumb={[
         { label: 'Apps', to: '/apps' },
         { label: 'Moodboard Studio' },
@@ -438,8 +440,8 @@ function MoodboardStudio() {
             >
               <Upload size={28} className="text-neutral-600" strokeWidth={1} />
               <div className="text-center">
-                <p className="text-[10px] uppercase tracking-[0.4em] font-medium text-neutral-500">Upload or Drop Moodboard</p>
-                <p className="text-[9px] text-neutral-700 uppercase tracking-[0.2em] mt-2">Single image for AI grid detection · Multiple for batch processing</p>
+                <p className="text-[10px] uppercase tracking-[0.4em] font-medium text-neutral-500">{t('moodboard.studio.upload_or_drop_moodboard')}</p>
+                <p className="text-[9px] text-neutral-700 uppercase tracking-[0.2em] mt-2">{t('moodboard.studio.single_image_for_ai_grid_detectio')}</p>
               </div>
             </motion.div>
           </motion.div>
@@ -601,7 +603,7 @@ function MoodboardStudio() {
             className="fixed bottom-24 right-6 z-40 bg-neutral-950/90 backdrop-blur-xl border border-border px-4 py-3 rounded-2xl flex items-center gap-3 shadow-2xl"
           >
             <GlitchLoader size={14} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">AI Analyzing</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">{t('moodboard.studio.ai_analyzing')}</span>
           </motion.div>
         )}
       </AnimatePresence>

@@ -3,15 +3,17 @@ import { AdminChat } from '@/components/admin/AdminChat';
 import { SEO } from '@/components/SEO';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const AdminChatPage: React.FC = () => {
+    const { t } = useTranslation();
     const { theme } = useTheme();
 
     return (
         <div className={cn("h-[100dvh] w-full flex flex-col overflow-hidden", theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-50')}>
             <SEO
-                title="Admin Strategic Chat | Visant Labs"
-                description="Assistente estratégico exclusivo para administradores da Visant Labs."
+                title={t('admin.chat.admin_strategic_chat_visant_labs')}
+                description={t('admin.chat.assistente_estratgico_exclusivo_para_ad')}
                 noindex={true}
             />
 
