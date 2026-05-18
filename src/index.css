@@ -98,6 +98,28 @@
    */
   --node-border-width: 1px;
   --node-padding: 2rem;
+  /* p-8 = 32px - default padding for all nodes */
+  --node-gap: 1rem;
+  /* gap-4 = 16px - default gap between elements */
+  --node-gap-sm: 0.75rem;
+  /* gap-3 = 12px - small gap */
+  --node-gap-lg: 1.25rem;
+  /* gap-5 = 20px - large gap */
+  --node-margin: 1rem;
+  /* mb-4 = 16px - default margin-bottom */
+  --node-margin-sm: 0.75rem;
+  /* mb-3 = 12px - small margin */
+  --node-margin-lg: 1.25rem;
+  /* mb-5 = 20px - large margin */
+  --node-space-y: 1rem;
+  /* space-y-4 = 16px - default vertical spacing */
+  --node-space-y-sm: 0.75rem;
+  /* space-y-3 = 12px - small vertical spacing */
+  --node-space-y-lg: 1.25rem;
+  /* space-y-5 = 20px - large vertical spacing */
+
+  /* Brand specific colors (Cyan accent) */
+  --brand-cyan: oklch(0.81 0.156 198.6);
 }
 
 /* React Colorful Custom Styles */
@@ -140,29 +162,6 @@
   width: 12px;
   height: 12px;
   border: 2px solid #fff;
-}
-  /* p-8 = 32px - default padding for all nodes */
-  --node-gap: 1rem;
-  /* gap-4 = 16px - default gap between elements */
-  --node-gap-sm: 0.75rem;
-  /* gap-3 = 12px - small gap */
-  --node-gap-lg: 1.25rem;
-  /* gap-5 = 20px - large gap */
-  --node-margin: 1rem;
-  /* mb-4 = 16px - default margin-bottom */
-  --node-margin-sm: 0.75rem;
-  /* mb-3 = 12px - small margin */
-  --node-margin-lg: 1.25rem;
-  /* mb-5 = 20px - large margin */
-  --node-space-y: 1rem;
-  /* space-y-4 = 16px - default vertical spacing */
-  --node-space-y-sm: 0.75rem;
-  /* space-y-3 = 12px - small vertical spacing */
-  --node-space-y-lg: 1.25rem;
-  /* space-y-5 = 20px - large vertical spacing */
-
-  /* Brand specific colors (Cyan accent) */
-  --brand-cyan: oklch(0.81 0.156 198.6);
 }
 
 .dark {
