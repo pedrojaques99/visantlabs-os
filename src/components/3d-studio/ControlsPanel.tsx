@@ -254,6 +254,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             metalness={metalness} setMetalness={setMetalness}
             roughness={roughness} setRoughness={setRoughness}
             opacity={opacity} setOpacity={setOpacity}
+            textureOpacity={textureOpacity} setTextureOpacity={setTextureOpacity}
           />
         )}
 
@@ -609,10 +610,12 @@ interface MaterialTabProps {
   metalness: number; setMetalness: (v: number) => void;
   roughness: number; setRoughness: (v: number) => void;
   opacity: number; setOpacity: (v: number) => void;
+  textureOpacity: number; setTextureOpacity: (v: number) => void;
 }
 
 const MaterialTab: React.FC<MaterialTabProps> = React.memo(({
   store, metalness, setMetalness, roughness, setRoughness, opacity, setOpacity,
+  textureOpacity, setTextureOpacity,
 }) => {
   const { t } = useTranslation();
   const activeCat = useMemo(
