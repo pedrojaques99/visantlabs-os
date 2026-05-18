@@ -4383,6 +4383,7 @@
     "texture": {
       "title": "TEXTURE",
       "upload": "Upload Image",
+      "opacity": "Opacity",
       "repeat": "Repeat",
       "regenerate": "Regenerate",
       "remove": "Remove"
@@ -4412,12 +4413,27 @@
     },
     "background": {
       "title": "BACKGROUND",
-      "transparent": "Transparent"
+      "transparent": "Transparent",
+      "types": {
+        "solid": "Solid",
+        "linear": "Linear",
+        "radial": "Radial"
+      },
+      "angle": "Angle",
+      "color1": "Color 1",
+      "color2": "Color 2"
     },
     "animation": {
       "type": "TYPE",
       "controls": "CONTROLS",
       "speed": "Speed",
+      "easing": "Easing",
+      "easings": {
+        "linear": "Linear",
+        "easeIn": "Ease In",
+        "easeOut": "Ease Out",
+        "easeInOut": "Ease In Out"
+      },
       "reverse": "Reverse"
     },
     "export": {

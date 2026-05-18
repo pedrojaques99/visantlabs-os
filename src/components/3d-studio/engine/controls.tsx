@@ -63,15 +63,24 @@ export function IntroAnimation({ type, duration, from, to, onComplete }: IntroAn
 }
 
 type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'swing' | 'spinFloat';
+type EasingType = 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
 
 interface LoopAnimationProps {
   type: AnimationType;
   speed: number;
   reverse: boolean;
+  easing: EasingType;
   meshRef: React.RefObject<Group | null>;
 }
 
-export function LoopAnimation({ type, speed, reverse, meshRef }: LoopAnimationProps) {
+const easings = {
+  linear: (t: number) => t,
+  easeIn: (t: number) => t * t,
+  easeOut: (t: number) => t * (2 - t),
+  easeInOut: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+};
+
+export function LoopAnimation({ type, speed, reverse, easing, meshRef }: LoopAnimationProps) {
   const elapsed = useRef(0);
   const initialY = useRef<number | null>(null);
   const dir = reverse ? -1 : 1;
@@ -79,7 +88,19 @@ export function LoopAnimation({ type, speed, reverse, meshRef }: LoopAnimationPr
   useFrame((_, delta) => {
     if (type === 'none' || !meshRef.current) return;
     elapsed.current += delta * speed;
-    const t = elapsed.current;
+    
+    // Period is usually 2*PI for sin-based, or we can just use 1.0 as a cycle for ease
+    const cycle = 2 * Math.PI;
+    const rawT = elapsed.current;
+    const normalizedT = (rawT % cycle) / cycle;
+    const easedT = easings[easing](normalizedT) * cycle;
+    
+    // For cumulative animations like spin, we need to handle the jumps at cycle boundaries
+    // or just apply easing to the delta? No, easing the phase is better for loops.
+    // However, for 'spin', normalizedT jumping from 1.0 to 0.0 will cause a backward jump.
+    // To avoid this, we can add the number of full cycles back.
+    const fullCycles = Math.floor(rawT / cycle);
+    const t = (fullCycles * cycle) + easedT;
 
     if (initialY.current === null) {
       initialY.current = meshRef.current.position.y;
@@ -87,21 +108,15 @@ export function LoopAnimation({ type, speed, reverse, meshRef }: LoopAnimationPr
 
     switch (type) {
       case 'spin':
-        meshRef.current.rotation.y += delta * 0.5 * speed * dir;
+        // For spin, we use the eased t directly for rotation
+        meshRef.current.rotation.y = t * 0.5 * dir;
         break;
       case 'float':
         meshRef.current.position.y = initialY.current + Math.sin(t * 1.5) * 0.3;
         break;
       case 'pulse': {
         const pulse = 1 + Math.sin(t * 2) * 0.05;
-        const sx = meshRef.current.scale.x;
-        const sy = meshRef.current.scale.y;
-        const sz = meshRef.current.scale.z;
-        meshRef.current.scale.set(
-          Math.sign(sx) * Math.abs(sx / (1 + Math.sin((t - delta * speed) * 2) * 0.05)) * pulse,
-          Math.sign(sy) * Math.abs(sy / (1 + Math.sin((t - delta * speed) * 2) * 0.05)) * pulse,
-          Math.sign(sz) * Math.abs(sz / (1 + Math.sin((t - delta * speed) * 2) * 0.05)) * pulse,
-        );
+        meshRef.current.scale.set(pulse, pulse, pulse);
         break;
       }
       case 'wobble':
@@ -111,7 +126,7 @@ export function LoopAnimation({ type, speed, reverse, meshRef }: LoopAnimationPr
         meshRef.current.rotation.y = Math.sin(t * 1.5) * 0.26 * dir;
         break;
       case 'spinFloat':
-        meshRef.current.rotation.y += delta * 0.4 * speed * dir;
+        meshRef.current.rotation.y = t * 0.4 * dir;
         meshRef.current.position.y = initialY.current + Math.sin(t * 1.2) * 0.25;
         break;
     }

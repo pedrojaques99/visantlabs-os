@@ -204,6 +204,7 @@ interface Studio3DState {
   texture: string;
   textureRepeat: number;
   textureRotation: number;
+  textureOpacity: number;
 
   // Lighting
   lightPosition: [number, number, number];
@@ -215,12 +216,15 @@ interface Studio3DState {
   // Environment
   environment: string;
   background: string;
+  bgType: 'solid' | 'linear' | 'radial';
+  bgGradient: { color1: string; color2: string; angle: number };
   transparentBg: boolean;
 
   // Animation
   animate: AnimationType;
   animateSpeed: number;
   animateReverse: boolean;
+  animateEasing: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
 
   // Camera
   rotationX: number;
@@ -261,6 +265,7 @@ interface Studio3DState {
   setTexture: (url: string) => void;
   setTextureRepeat: (v: number) => void;
   setTextureRotation: (v: number) => void;
+  setTextureOpacity: (v: number) => void;
   setLightPosition: (p: [number, number, number]) => void;
   setLightIntensity: (v: number) => void;
   setAmbientIntensity: (v: number) => void;
@@ -268,10 +273,13 @@ interface Studio3DState {
   setShowGrid: (v: boolean) => void;
   setEnvironment: (e: string) => void;
   setBackground: (c: string) => void;
+  setBgType: (type: 'solid' | 'linear' | 'radial') => void;
+  setBgGradient: (g: Partial<{ color1: string; color2: string; angle: number }>) => void;
   setTransparentBg: (v: boolean) => void;
   setAnimate: (a: AnimationType) => void;
   setAnimateSpeed: (v: number) => void;
   setAnimateReverse: (v: boolean) => void;
+  setAnimateEasing: (v: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut') => void;
   setRotationX: (v: number) => void;
   setRotationY: (v: number) => void;
   setZoom: (v: number) => void;
@@ -307,6 +315,7 @@ const INITIAL_STATE = {
   texture: '',
   textureRepeat: 1,
   textureRotation: 0,
+  textureOpacity: 1,
   lightPosition: [5, 5, 5] as [number, number, number],
   lightIntensity: 1,
   ambientIntensity: 0.4,
@@ -314,10 +323,13 @@ const INITIAL_STATE = {
   showGrid: false,
   environment: 'studio',
   background: '#0a0a0a',
+  bgType: 'solid' as const,
+  bgGradient: { color1: '#0a0a0a', color2: '#1a1a2e', angle: 45 },
   transparentBg: false,
   animate: 'spin' as AnimationType,
   animateSpeed: 0.3,
   animateReverse: false,
+  animateEasing: 'linear' as const,
   rotationX: 0,
   rotationY: 0,
   zoom: 8,
@@ -356,6 +368,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
   setTexture: (texture) => set({ texture }),
   setTextureRepeat: (textureRepeat) => set({ textureRepeat }),
   setTextureRotation: (textureRotation) => set({ textureRotation }),
+  setTextureOpacity: (textureOpacity) => set({ textureOpacity }),
   setLightPosition: (lightPosition) => set({ lightPosition }),
   setLightIntensity: (lightIntensity) => set({ lightIntensity }),
   setAmbientIntensity: (ambientIntensity) => set({ ambientIntensity }),
@@ -363,10 +376,13 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
   setShowGrid: (showGrid) => set({ showGrid }),
   setEnvironment: (environment) => set({ environment }),
   setBackground: (background) => set({ background }),
+  setBgType: (bgType) => set({ bgType }),
+  setBgGradient: (g) => set((s) => ({ bgGradient: { ...s.bgGradient, ...g } })),
   setTransparentBg: (transparentBg) => set({ transparentBg }),
   setAnimate: (animate) => set({ animate }),
   setAnimateSpeed: (animateSpeed) => set({ animateSpeed }),
   setAnimateReverse: (animateReverse) => set({ animateReverse }),
+  setAnimateEasing: (animateEasing) => set({ animateEasing }),
   setRotationX: (rotationX) => set({ rotationX }),
   setRotationY: (rotationY) => set({ rotationY }),
   setZoom: (zoom) => set({ zoom }),

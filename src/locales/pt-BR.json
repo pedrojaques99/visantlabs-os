@@ -4387,6 +4387,7 @@
     "texture": {
       "title": "TEXTURA",
       "upload": "Enviar Imagem",
+      "opacity": "Opacidade",
       "repeat": "Repetir",
       "regenerate": "Regenerar",
       "remove": "Remover"
@@ -4416,12 +4417,27 @@
     },
     "background": {
       "title": "FUNDO",
-      "transparent": "Transparente"
+      "transparent": "Transparente",
+      "types": {
+        "solid": "Sólido",
+        "linear": "Linear",
+        "radial": "Radial"
+      },
+      "angle": "Ângulo",
+      "color1": "Cor 1",
+      "color2": "Cor 2"
     },
     "animation": {
       "type": "TIPO",
       "controls": "CONTROLES",
       "speed": "Velocidade",
+      "easing": "Interpolação",
+      "easings": {
+        "linear": "Linear",
+        "easeIn": "Easy In",
+        "easeOut": "Easy Out",
+        "easeInOut": "Easy In Out"
+      },
       "reverse": "Inverter"
     },
     "export": {

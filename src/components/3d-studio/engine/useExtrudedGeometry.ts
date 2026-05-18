@@ -185,19 +185,20 @@ export function useExtrudedGeometry(
 
       const { bevelEnabled = true, bevelThickness: userThickness = 0.5, bevelSize: userSize = 0.5 } = bevelOpts;
       const complexity = allShapes.length;
-      const budget = 800_000;
-      const vertsBudgetPerShape = Math.max(Math.floor(budget / Math.max(complexity, 1)), 200);
+      const budget = 1_200_000; // Increased budget for smoother shapes
+      const vertsBudgetPerShape = Math.max(Math.floor(budget / Math.max(complexity, 1)), 500);
       const scaledDepth = (depth / 10) * maxFlatDim;
-      const bevelScale = Math.min(maxFlatDim * 0.02, 1);
+      const bevelScale = Math.min(maxFlatDim * 0.05, 1); // Increased bevel scale for more pronounced rounding
 
-      const idealBevel = Math.round(3 + smoothness * 4);
-      const idealCurve = Math.round(12 + smoothness * 36);
+      const idealBevel = Math.round(4 + smoothness * 8); // More segments for smoothness
+      const idealCurve = Math.round(16 + smoothness * 48);
       const estimatedVerts = idealBevel * idealCurve * 6;
       const reductionFactor = estimatedVerts > vertsBudgetPerShape
         ? Math.sqrt(vertsBudgetPerShape / estimatedVerts)
         : 1;
-      const bevelSegments = Math.max(2, Math.min(Math.round(idealBevel * reductionFactor), 16));
-      const curveSegments = Math.max(6, Math.min(Math.round(idealCurve * reductionFactor), 64));
+      
+      const bevelSegments = Math.max(2, Math.min(Math.round(idealBevel * reductionFactor), 64));
+      const curveSegments = Math.max(8, Math.min(Math.round(idealCurve * reductionFactor), 128));
 
       const bevelThickness = bevelScale * userThickness;
       const bevelSize = bevelScale * userSize;
