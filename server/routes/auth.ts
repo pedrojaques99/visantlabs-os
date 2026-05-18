@@ -16,6 +16,13 @@ import { bruteForceGuard } from '../middleware/bruteForceGuard.js';
 import crypto from 'crypto';
 
 const router = express.Router();
+// Helper to get the primary frontend URL (handles comma-separated lists)
+const getFrontendUrl = () => {
+  const url = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const primaryUrl = url.split(',')[0].trim();
+  return primaryUrl.replace(/\/+$/, '');
+};
+
 
 // In-memory store for plugin OAuth sessions (sessionId → { token, createdAt })
 const pluginOAuthSessions = new Map<string, { token?: string; error?: string; createdAt: number }>();
@@ -370,7 +377,7 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
     const { code, state } = req.query;
 
     if (!code) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth?error=no_code`);
+      return res.redirect(`${getFrontendUrl()}/auth?error=no_code`);
     }
 
     const { tokens } = await client.getToken(code as string);
@@ -383,7 +390,7 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
 
     const payload = ticket.getPayload();
     if (!payload || !payload.email) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth?error=invalid_token`);
+      return res.redirect(`${getFrontendUrl()}/auth?error=invalid_token`);
     }
 
     // Extract referral code from state parameter (if provided)
@@ -466,7 +473,7 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
     }
 
     // Redirect to frontend with token
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth?token=${token}`);
+    res.redirect(`${getFrontendUrl()}/auth?token=${token}`);
   } catch (error) {
     console.error('OAuth callback error:', error);
 
@@ -480,7 +487,7 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
 <body><div class="card"><h2>Erro no login</h2><p>Tente novamente pelo plugin.</p></div></body></html>`);
     }
 
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth?error=oauth_failed`);
+    res.redirect(`${getFrontendUrl()}/auth?error=oauth_failed`);
   }
 });
 
@@ -507,12 +514,12 @@ router.get('/google/link-callback', oauthRateLimiter, authenticate, async (req: 
     const userId = req.userId!;
 
     if (!code) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/profile?error=no_code`);
+      return res.redirect(`${getFrontendUrl()}/profile?error=no_code`);
     }
 
     // Verify state matches current user
     if (!state || !(state as string).startsWith('link:') || (state as string).substring(5) !== userId) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/profile?error=invalid_state`);
+      return res.redirect(`${getFrontendUrl()}/profile?error=invalid_state`);
     }
 
     const { tokens } = await client.getToken(code as string);
@@ -525,7 +532,7 @@ router.get('/google/link-callback', oauthRateLimiter, authenticate, async (req: 
 
     const payload = ticket.getPayload();
     if (!payload || !payload.email || !payload.sub) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/profile?error=invalid_token`);
+      return res.redirect(`${getFrontendUrl()}/profile?error=invalid_token`);
     }
 
     // Check if this Google account is already linked to another user
@@ -534,7 +541,7 @@ router.get('/google/link-callback', oauthRateLimiter, authenticate, async (req: 
     });
 
     if (existingUserWithGoogle && existingUserWithGoogle.id !== userId) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/profile?error=google_already_linked`);
+      return res.redirect(`${getFrontendUrl()}/profile?error=google_already_linked`);
     }
 
     // Get current user
@@ -543,12 +550,12 @@ router.get('/google/link-callback', oauthRateLimiter, authenticate, async (req: 
     });
 
     if (!currentUser) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/profile?error=user_not_found`);
+      return res.redirect(`${getFrontendUrl()}/profile?error=user_not_found`);
     }
 
     // Check if email matches (security: ensure Google email matches user email)
     if (payload.email.toLowerCase() !== currentUser.email.toLowerCase()) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/profile?error=email_mismatch`);
+      return res.redirect(`${getFrontendUrl()}/profile?error=email_mismatch`);
     }
 
     // Link Google account to user
@@ -563,10 +570,10 @@ router.get('/google/link-callback', oauthRateLimiter, authenticate, async (req: 
     });
 
     // Redirect back to profile with success
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/profile?google_linked=true`);
+    res.redirect(`${getFrontendUrl()}/profile?google_linked=true`);
   } catch (error) {
     console.error('OAuth link callback error:', error);
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/profile?error=link_failed`);
+    res.redirect(`${getFrontendUrl()}/profile?error=link_failed`);
   }
 });
 
@@ -934,7 +941,7 @@ router.post('/forgot-password', passwordResetRateLimiter, forgotBackoff, async (
           // In development, log the token for testing
           if (process.env.NODE_ENV === 'development') {
             console.log('🔑 Password reset token (dev only):', resetToken);
-            console.log('🔗 Reset URL:', `${process.env.FRONTEND_URL || 'http://localhost:3000'}/forgot-password?token=${resetToken}`);
+            console.log('🔗 Reset URL:', `${getFrontendUrl()}/forgot-password?token=${resetToken}`);
           }
         } else {
           await sendPasswordResetEmail({
