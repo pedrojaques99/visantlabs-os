@@ -71,15 +71,27 @@ export interface ResolvedMaterial {
   reflectivity?: number;
 }
 
+export interface MaterialOverrides {
+  metalness?: number;
+  roughness?: number;
+  opacity?: number;
+  wireframe?: boolean;
+  clearcoat?: number;
+  clearcoatRoughness?: number;
+  sheen?: number;
+  sheenRoughness?: number;
+  sheenColor?: string;
+  transmission?: number;
+  thickness?: number;
+  ior?: number;
+  iridescence?: number;
+  iridescenceIOR?: number;
+  reflectivity?: number;
+}
+
 export function resolveMaterial(
   preset: string,
-  overrides: {
-    metalness?: number;
-    roughness?: number;
-    opacity?: number;
-    wireframe?: boolean;
-    [key: string]: number | boolean | string | undefined;
-  },
+  overrides: MaterialOverrides,
 ): ResolvedMaterial {
   const base = materialPresets[preset] ?? materialPresets.default;
   const opacity = overrides.opacity ?? base.opacity;
