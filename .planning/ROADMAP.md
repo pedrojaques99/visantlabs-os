@@ -37,11 +37,11 @@ Plans:
   2. Developer can revoke an API key and confirm it is immediately rejected by the API
   3. Developer can view a usage dashboard showing API call counts, credits consumed, and a historical graph
   4. Developer can follow a getting-started guide with copy-paste code examples for at least three tool categories
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 Plans:
 - [ ] 02-01-PLAN.md — Usage analytics dashboard with daily chart endpoint
 - [ ] 02-02-PLAN.md — Getting-started guide with copy-paste code examples
-- [ ] 02-03-PLAN.md — Developer portal hub page and API keys polish
+- [x] 02-03-PLAN.md — Developer portal hub page and API keys polish
 **UI hint**: yes
 
 ### Phase 3: TypeScript & Python SDKs
@@ -53,7 +53,10 @@ Plans:
   2. Developer can run `pip install visant-sdk` and call any of the 93 tools with Python type hints
   3. Both SDKs are generated from the OpenAPI spec via a single command; updating the spec regenerates both SDKs
   4. SDK README includes an authenticated hello-world example that runs end-to-end against the live API
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 03-01-PLAN.md — TypeScript SDK generation from OpenAPI spec
+- [ ] 03-02-PLAN.md — Python SDK generation and unified regeneration script
 
 ### Phase 4: Billing Endpoints & Webhooks
 **Goal**: Developers can programmatically monitor consumption, understand pricing, and receive async event notifications
@@ -71,7 +74,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. OpenAPI Spec & Interactive Docs | 2/2 | Complete |  |
-| 2. Developer Portal | 0/3 | Planned | - |
+| 2. Developer Portal | 1/3 | In Progress|  |
 | 3. TypeScript & Python SDKs | 0/? | Not started | - |
 | 4. Billing Endpoints & Webhooks | 0/? | Not started | - |
 

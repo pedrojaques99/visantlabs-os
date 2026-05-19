@@ -14,7 +14,7 @@ Requirements for public beta. Each maps to roadmap phases.
 
 ### Developer Portal
 
-- [ ] **PORTAL-01**: Developer can create, revoke, and manage API keys with scope selection via dashboard
+- [x] **PORTAL-01**: Developer can create, revoke, and manage API keys with scope selection via dashboard
 - [ ] **PORTAL-02**: Developer can view real-time usage analytics (API calls, credits consumed, historical graphs)
 - [ ] **PORTAL-03**: Developer can follow a getting-started guide with copy-paste code examples per tool category
 
@@ -64,7 +64,7 @@ Deferred to future release. Tracked but not in current roadmap.
 |-------------|-------|--------|
 | DOCS-01 | Phase 1 | Complete |
 | DOCS-02 | Phase 1 | Complete |
-| PORTAL-01 | Phase 2 | Pending |
+| PORTAL-01 | Phase 2 | Complete |
 | PORTAL-02 | Phase 2 | Pending |
 | PORTAL-03 | Phase 2 | Pending |
 | SDK-01 | Phase 3 | Pending |
