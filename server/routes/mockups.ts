@@ -20,6 +20,7 @@ import { rateLimit } from 'express-rate-limit';
 import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
 import { redisClient } from '../lib/redis.js';
 import { CACHE_TTL, CacheKey, hashQuery } from '../lib/cache-utils.js';
+import { dispatchWebhookEvent } from '../utils/webhookDispatch.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
