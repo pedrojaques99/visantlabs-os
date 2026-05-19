@@ -9,7 +9,7 @@
 - [ ] **Phase 1: OpenAPI Spec & Interactive Docs** - Expose all 93 MCP tools as a machine-readable OpenAPI 3.1 spec with browsable Swagger UI
 - [ ] **Phase 2: Developer Portal** - Give developers a dashboard to manage API keys, view usage analytics, and follow a getting-started guide
 - [ ] **Phase 3: TypeScript & Python SDKs** - Ship auto-generated, typed SDKs to npm and pip from the OpenAPI spec
-- [ ] **Phase 4: Billing Endpoints & Webhooks** - Expose credit balance/quota via API, publish a pricing page, and deliver async webhook events
+- [x] **Phase 4: Billing Endpoints & Webhooks** - Expose credit balance/quota via API, publish a pricing page, and deliver async webhook events (completed 2026-05-19)
 
 ## Phase Details
 
@@ -67,10 +67,10 @@ Plans:
   2. Developer can view a public pricing page listing API tiers, per-call costs, and rate limits
   3. Developer can register a webhook URL and receive a `generation.complete` event payload within 5 seconds of a generation finishing
   4. Developer can register for `credits.depleted` and `brand.updated` events and receive correctly structured payloads
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [x] 04-01-PLAN.md — Billing balance endpoint + webhook model and CRUD
-- [ ] 04-02-PLAN.md — Webhook dispatch mechanism + event emission
+- [x] 04-02-PLAN.md — Webhook dispatch mechanism + event emission
 - [x] 04-03-PLAN.md — Public API pricing page
 
 ## Progress
@@ -80,7 +80,7 @@ Plans:
 | 1. OpenAPI Spec & Interactive Docs | 2/2 | Complete |  |
 | 2. Developer Portal | 1/3 | In Progress|  |
 | 3. TypeScript & Python SDKs | 2/2 | Complete | - |
-| 4. Billing Endpoints & Webhooks | 2/3 | In Progress|  |
+| 4. Billing Endpoints & Webhooks | 3/3 | Complete   | 2026-05-19 |
 
 ---
 *Created: 2026-05-19*
