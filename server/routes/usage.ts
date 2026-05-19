@@ -184,6 +184,66 @@ router.get('/history', usageHistoryLimiter, authenticate, async (req: AuthReques
   }
 });
 
+// Get daily aggregated usage data for chart rendering
+router.get('/daily', usageHistoryLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    const userId = req.userId!;
+
+    // Validate and parse days param (1-90)
+    const rawDays = parseInt(req.query.days as string) || 30;
+    const days = Math.min(Math.max(rawDays, 1), 90);
+
+    // Validate feature filter using whitelist
+    const feature = req.query.feature as string | undefined;
+    const allowedFeatures = ['brandingmachine', 'mockupmachine', 'canvas'];
+
+    // Build match filter
+    const fromDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const matchFilter: Record<string, any> = {
+      userId: String(userId),
+      timestamp: { $gte: fromDate },
+    };
+
+    if (feature && allowedFeatures.includes(feature)) {
+      matchFilter.feature = feature;
+    }
+
+    const dailyData = await db.collection('usage_records').aggregate([
+      { $match: matchFilter },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+          calls: { $sum: 1 },
+          credits: { $sum: { $ifNull: ['$creditsDeducted', 0] } },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]).toArray();
+
+    const daily = dailyData.map((d: any) => ({
+      date: d._id,
+      calls: d.calls,
+      credits: d.credits,
+    }));
+
+    const toDateStr = (d: Date) => d.toISOString().split('T')[0];
+
+    res.json({
+      daily,
+      period: {
+        from: toDateStr(fromDate),
+        to: toDateStr(new Date()),
+        days,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error fetching daily usage:', error);
+    res.status(500).json({ error: 'Failed to fetch daily usage data' });
+  }
+});
+
 export default router;
 
 
