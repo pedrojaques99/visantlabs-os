@@ -22,9 +22,9 @@
   2. Developer can visit `/api/docs` in a browser and see Swagger UI with all tools grouped by category
   3. Developer can use the try-it-out button in Swagger UI to execute a real API call with their API key
   4. Adding or renaming a tool in `mcp-server/shared.ts` is automatically reflected in the spec without manual edits
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
-- [ ] 01-01-PLAN.md — Auto-generate OpenAPI 3.1 spec from MCP tool registry
+- [x] 01-01-PLAN.md — Auto-generate OpenAPI 3.1 spec from MCP tool registry
 - [ ] 01-02-PLAN.md — Serve Swagger UI at /api/docs with try-it-out
 **UI hint**: yes
 
@@ -66,7 +66,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. OpenAPI Spec & Interactive Docs | 0/2 | Planned | - |
+| 1. OpenAPI Spec & Interactive Docs | 1/2 | In Progress|  |
 | 2. Developer Portal | 0/? | Not started | - |
 | 3. TypeScript & Python SDKs | 0/? | Not started | - |
 | 4. Billing Endpoints & Webhooks | 0/? | Not started | - |
