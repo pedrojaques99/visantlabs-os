@@ -48,6 +48,8 @@ const ForgotPasswordPage = lazyWithRetry(() => import('./pages/ForgotPasswordPag
 const DesignSystemPage = lazyWithRetry(() => import('./pages/DesignSystemPage').then(m => ({ default: m.DesignSystemPage })));
 const DocsPage = lazyWithRetry(() => import('./pages/DocsPage').then(m => ({ default: m.DocsPage })));
 const ApiKeysPage = lazyWithRetry(() => import('./pages/ApiKeysPage').then(m => ({ default: m.ApiKeysPage })));
+const UsageDashboardPage = lazyWithRetry(() => import('./pages/UsageDashboardPage').then(m => ({ default: m.UsageDashboardPage })));
+const GettingStartedPage = lazyWithRetry(() => import('./pages/GettingStartedPage').then(m => ({ default: m.GettingStartedPage })));
 const BrandGuidelinesPage = lazyWithRetry(() => import('./pages/BrandGuidelinesPage').then(m => ({ default: m.BrandGuidelinesPage })));
 const PublicBrandGuideline = lazyWithRetry(() => import('./pages/PublicBrandGuideline').then(m => ({ default: m.PublicBrandGuideline })));
 const BrandingExpertPage = lazyWithRetry(() => import('./pages/BrandingExpertPage').then(m => ({ default: m.BrandingExpertPage })));
@@ -120,6 +122,8 @@ const App: React.FC = () => {
                 <Route path="/design-system" element={<DesignSystemPage />} />
                 <Route path="/docs" element={<DocsPage />} />
                 <Route path="/settings/api-keys" element={<ApiKeysPage />} />
+                <Route path="/developer/usage" element={<UsageDashboardPage />} />
+                <Route path="/developer/getting-started" element={<GettingStartedPage />} />
                 <Route path="/auth" element={<AuthCallbackPage />} />
                 <Route path="/waitlist" element={<WaitlistPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
