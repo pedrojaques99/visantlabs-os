@@ -26,9 +26,9 @@ Requirements for public beta. Each maps to roadmap phases.
 
 ### Billing & Webhooks
 
-- [ ] **BILL-01**: Developer can query current credit balance and quota via `GET /api/billing/balance`
-- [ ] **BILL-02**: Developer can view API pricing tiers and rate card on a public pricing page
-- [ ] **BILL-03**: Developer can register webhook URLs to receive async events (generation.complete, credits.depleted, brand.updated)
+- [x] **BILL-01**: Developer can query current credit balance and quota via `GET /api/billing/balance`
+- [x] **BILL-02**: Developer can view API pricing tiers and rate card on a public pricing page
+- [x] **BILL-03**: Developer can register webhook URLs to receive async events (generation.complete, credits.depleted, brand.updated)
 
 ## v2 Requirements
 
@@ -70,9 +70,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | SDK-01 | Phase 3 | Complete |
 | SDK-02 | Phase 3 | Complete |
 | SDK-03 | Phase 3 | Complete |
-| BILL-01 | Phase 4 | Pending |
-| BILL-02 | Phase 4 | Pending |
-| BILL-03 | Phase 4 | Pending |
+| BILL-01 | Phase 4 | Complete |
+| BILL-02 | Phase 4 | Complete |
+| BILL-03 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 11 total

@@ -67,11 +67,11 @@ Plans:
   2. Developer can view a public pricing page listing API tiers, per-call costs, and rate limits
   3. Developer can register a webhook URL and receive a `generation.complete` event payload within 5 seconds of a generation finishing
   4. Developer can register for `credits.depleted` and `brand.updated` events and receive correctly structured payloads
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 Plans:
-- [ ] 04-01-PLAN.md — Billing balance endpoint + webhook model and CRUD
+- [x] 04-01-PLAN.md — Billing balance endpoint + webhook model and CRUD
 - [ ] 04-02-PLAN.md — Webhook dispatch mechanism + event emission
-- [ ] 04-03-PLAN.md — Public API pricing page
+- [x] 04-03-PLAN.md — Public API pricing page
 
 ## Progress
 
@@ -80,7 +80,7 @@ Plans:
 | 1. OpenAPI Spec & Interactive Docs | 2/2 | Complete |  |
 | 2. Developer Portal | 1/3 | In Progress|  |
 | 3. TypeScript & Python SDKs | 2/2 | Complete | - |
-| 4. Billing Endpoints & Webhooks | 0/3 | Not started | - |
+| 4. Billing Endpoints & Webhooks | 2/3 | In Progress|  |
 
 ---
 *Created: 2026-05-19*
