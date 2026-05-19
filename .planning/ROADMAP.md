@@ -22,7 +22,7 @@
   2. Developer can visit `/api/docs` in a browser and see Swagger UI with all tools grouped by category
   3. Developer can use the try-it-out button in Swagger UI to execute a real API call with their API key
   4. Adding or renaming a tool in `mcp-server/shared.ts` is automatically reflected in the spec without manual edits
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans executed
 Plans:
 - [x] 01-01-PLAN.md — Auto-generate OpenAPI 3.1 spec from MCP tool registry
 - [x] 01-02-PLAN.md — Serve Swagger UI at /api/docs with try-it-out
@@ -37,7 +37,11 @@ Plans:
   2. Developer can revoke an API key and confirm it is immediately rejected by the API
   3. Developer can view a usage dashboard showing API call counts, credits consumed, and a historical graph
   4. Developer can follow a getting-started guide with copy-paste code examples for at least three tool categories
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 02-01-PLAN.md — Usage analytics dashboard with daily chart endpoint
+- [ ] 02-02-PLAN.md — Getting-started guide with copy-paste code examples
+- [ ] 02-03-PLAN.md — Developer portal hub page and API keys polish
 **UI hint**: yes
 
 ### Phase 3: TypeScript & Python SDKs
@@ -66,11 +70,11 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. OpenAPI Spec & Interactive Docs | 1/2 | In Progress|  |
-| 2. Developer Portal | 0/? | Not started | - |
+| 1. OpenAPI Spec & Interactive Docs | 2/2 | Complete |  |
+| 2. Developer Portal | 0/3 | Planned | - |
 | 3. TypeScript & Python SDKs | 0/? | Not started | - |
 | 4. Billing Endpoints & Webhooks | 0/? | Not started | - |
 
 ---
 *Created: 2026-05-19*
-*Last updated: 2026-05-19 — Phase 1 planned (2 plans)*
+*Last updated: 2026-05-19 — Phase 2 planned (3 plans)*
