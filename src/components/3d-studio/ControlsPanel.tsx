@@ -413,12 +413,12 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             </Section>
 
             {store.animate === 'physicsFall' ? (
-              <Section title="Physics Settings">
-                <NodeSlider label="Logo Count" value={physicsCount} min={5} max={50} step={1} onChange={setPhysicsCount} />
-                <NodeSlider label="Gravity" value={physicsGravity} min={0} max={30} step={0.5} onChange={setPhysicsGravity} />
-                <NodeSlider label="Bounciness" value={physicsBounciness} min={0} max={1} step={0.05} onChange={setPhysicsBounciness} />
-                <NodeSlider label="Friction" value={physicsFriction} min={0} max={1} step={0.05} onChange={setPhysicsFriction} />
-                <NodeSlider label="Logo Size" value={physicsSize} min={0.2} max={2} step={0.05} onChange={setPhysicsSize} />
+              <Section title={t('studio3d.animation.physics.title')}>
+                <NodeSlider label={t('studio3d.animation.physics.count')} value={physicsCount} min={5} max={50} step={1} onChange={setPhysicsCount} />
+                <NodeSlider label={t('studio3d.animation.physics.gravity')} value={physicsGravity} min={0} max={30} step={0.5} onChange={setPhysicsGravity} />
+                <NodeSlider label={t('studio3d.animation.physics.bounciness')} value={physicsBounciness} min={0} max={1} step={0.05} onChange={setPhysicsBounciness} />
+                <NodeSlider label={t('studio3d.animation.physics.friction')} value={physicsFriction} min={0} max={1} step={0.05} onChange={setPhysicsFriction} />
+                <NodeSlider label={t('studio3d.animation.physics.size')} value={physicsSize} min={0.2} max={2} step={0.05} onChange={setPhysicsSize} />
                 
                 <Button
                   variant="outline"
@@ -426,7 +426,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                   className="w-full mt-3 text-[10px] uppercase tracking-wider h-8"
                   onClick={() => useStudio3DStore.setState({ resetKey: Date.now() })}
                 >
-                  Reset / Trigger Fall
+                  {t('studio3d.animation.physics.reset')}
                 </Button>
               </Section>
             ) : (

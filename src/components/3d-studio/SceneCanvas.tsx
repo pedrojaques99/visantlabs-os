@@ -180,6 +180,7 @@ function SceneContent() {
         {svgString && (
           s.animate === 'physicsFall' ? (
             <PhysicsFallSimulation
+              key="physics-fall-sim"
               svgString={svgString}
               depth={s.depth}
               smoothness={s.smoothness}
@@ -201,6 +202,7 @@ function SceneContent() {
             />
           ) : (
             <ExtrudedSVG
+              key="standard-extruded-svg"
               svgString={svgString}
               depth={s.depth}
               smoothness={s.smoothness}

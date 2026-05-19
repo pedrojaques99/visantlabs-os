@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useExtrudedGeometry } from './useExtrudedGeometry';
@@ -134,54 +134,115 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
     uniformsRef.current.uTextureOpacity.value = textureOpacity;
   }, [textureOpacity]);
 
+  // Memoize onBeforeCompile to prevent frequent shader recompilation stutters
+  const handleBeforeCompile = useCallback((shader: any) => {
+    shader.uniforms.uTextureOpacity = uniformsRef.current.uTextureOpacity;
+    shader.fragmentShader = `
+      uniform float uTextureOpacity;
+      ${shader.fragmentShader}
+    `.replace(
+      '#include <map_fragment>',
+      `
+      #ifdef USE_MAP
+        vec4 texelColor = texture2D( map, vMapUv );
+        texelColor = mapTexelToLinear( texelColor );
+        diffuseColor.rgb *= mix(vec3(1.0), texelColor.rgb, uTextureOpacity);
+      #endif
+      `
+    );
+  }, []);
+
   // Physics state
   const bodiesRef = useRef<PhysicsBody[]>([]);
 
   // Initialize/reset bodies
   useEffect(() => {
     const bodies: PhysicsBody[] = [];
-    const radius = physicsSize * baseScale * 1.5;
     
-    // Grid-like layout for spawning from top to avoid massive overlap immediately
-    const cols = 5;
+    // Calculate visual shape dimensions to prevent initial spawn overlap
+    let scaledWidth = 4.0;
+    let scaledHeight = 4.0;
+    if (geometries.length > 0 && geometries[0].boundingBox) {
+      const bb = geometries[0].boundingBox;
+      const size = new THREE.Vector3();
+      bb.getSize(size);
+      scaledWidth = size.x * baseScale;
+      scaledHeight = size.y * baseScale;
+    }
+    
+    const initialSpacingX = Math.max(2.5, scaledWidth * physicsSize * 1.1);
+    const initialSpacingY = Math.max(2.5, scaledHeight * physicsSize * 1.3);
+    
+    // Grid spawning
+    const cols = Math.max(2, Math.floor(viewport.width / initialSpacingX));
     for (let i = 0; i < physicsCount; i++) {
       const col = i % cols;
       const row = Math.floor(i / cols);
       
-      const xRange = viewport.width * 0.7;
-      const xOffset = -xRange / 2 + (col / (cols - 1 || 1)) * xRange + (Math.random() - 0.5) * 0.5;
-      const yOffset = viewport.height / 2 + 2 + row * (radius * 2.2) + Math.random() * 0.5;
-      const zOffset = (Math.random() - 0.5) * 0.3;
+      const xRange = viewport.width * 0.8;
+      const xOffset = -xRange / 2 + (col / (cols - 1 || 1)) * xRange + (Math.random() - 0.5) * 0.3;
+      const yOffset = viewport.height / 2 + 2 + row * initialSpacingY + Math.random() * 0.3;
+      const zOffset = (Math.random() - 0.5) * 0.2;
 
       bodies.push({
         id: i,
         x: xOffset,
         y: yOffset,
         z: zOffset,
-        vx: (Math.random() - 0.5) * 1.5,
+        vx: (Math.random() - 0.5) * 1.2,
         vy: -1 - Math.random() * 2,
-        vz: (Math.random() - 0.5) * 0.5,
-        rx: Math.random() * Math.PI * 2,
-        ry: Math.random() * Math.PI * 2,
-        rz: Math.random() * Math.PI * 2,
-        vrx: (Math.random() - 0.5) * 3,
-        vry: (Math.random() - 0.5) * 3,
+        vz: (Math.random() - 0.5) * 0.2,
+        rx: 0,
+        ry: 0,
+        rz: (Math.random() - 0.5) * 0.5,
+        vrx: 0,
+        vry: 0,
         vrz: (Math.random() - 0.5) * 3,
       });
     }
     bodiesRef.current = bodies;
-  }, [physicsCount, physicsSize, baseScale, viewport.width, viewport.height, resetKey]);
+  }, [physicsCount, physicsSize, baseScale, geometries, viewport.width, viewport.height, resetKey]);
 
   // Keep references to group meshes to update their positions imperatively for 60fps performance!
   const groupsRef = useRef<(THREE.Group | null)[]>([]);
 
+  useEffect(() => {
+    groupsRef.current = groupsRef.current.slice(0, physicsCount);
+  }, [physicsCount]);
+
   useFrame((_, delta) => {
     if (bodiesRef.current.length === 0) return;
+
+    // Calculate dimensions & compound sphere count based on SVG bounding box
+    let scaledWidth = 4.0;
+    let scaledHeight = 4.0;
+    if (geometries.length > 0 && geometries[0].boundingBox) {
+      const bb = geometries[0].boundingBox;
+      const size = new THREE.Vector3();
+      bb.getSize(size);
+      scaledWidth = size.x * baseScale;
+      scaledHeight = size.y * baseScale;
+    }
+
+    const aspect = scaledWidth / (scaledHeight || 1.0);
+    // Determine how many overlapping spheres to use to represent visual shape boundary
+    const numSpheres = Math.max(1, Math.min(5, Math.round(aspect * 1.5)));
+    const sphereRadius = (scaledHeight * physicsSize) / 2.0;
+    const halfLen = Math.max(0, (scaledWidth * physicsSize) / 2.0 - sphereRadius);
+
+    // Compute local offsets for all spheres
+    const localXOffsets: number[] = [];
+    if (numSpheres === 1) {
+      localXOffsets.push(0);
+    } else {
+      for (let k = 0; k < numSpheres; k++) {
+        localXOffsets.push(-halfLen + (k / (numSpheres - 1)) * halfLen * 2);
+      }
+    }
 
     // Standard substeps for highly stable physics simulation
     const substeps = 4;
     const dt = Math.min(delta, 0.05) / substeps;
-    const radius = physicsSize * baseScale * 1.2;
 
     const left = -viewport.width / 2;
     const right = viewport.width / 2;
@@ -211,86 +272,125 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
 
       // 2. Collision with composition borders (floor, left/right walls, ceiling)
       for (const b of bodiesRef.current) {
-        // Floor
-        if (b.y - radius < bottom) {
-          b.y = bottom + radius;
-          b.vy = -b.vy * physicsBounciness;
-          b.vx *= 1 - physicsFriction;
-          b.vz *= 1 - physicsFriction;
-          // Friction torque translation: roll when hitting the floor
-          b.vrz += b.vx * 0.15;
-          b.vrx += b.vz * 0.15;
-        }
-        // Left wall
-        if (b.x - radius < left) {
-          b.x = left + radius;
-          b.vx = -b.vx * physicsBounciness;
-          b.vy *= 1 - physicsFriction;
-          b.vry += b.vy * 0.1;
-        }
-        // Right wall
-        if (b.x + radius > right) {
-          b.x = right - radius;
-          b.vx = -b.vx * physicsBounciness;
-          b.vy *= 1 - physicsFriction;
-          b.vry -= b.vy * 0.1;
+        const cos = Math.cos(b.rz);
+        const sin = Math.sin(b.rz);
+
+        for (let k = 0; k < numSpheres; k++) {
+          const lX = localXOffsets[k];
+          const sx = b.x + lX * cos;
+          const sy = b.y + lX * sin;
+
+          // Floor
+          if (sy - sphereRadius < bottom) {
+            const overlap = bottom - (sy - sphereRadius);
+            b.y += overlap;
+            b.vy = Math.max(b.vy, -b.vy * physicsBounciness);
+            // Translate slide friction to rotation torque
+            b.vrz += -b.vx * physicsFriction * 0.08 * (lX || 1.0);
+            b.vx *= (1.0 - physicsFriction);
+            b.vz *= (1.0 - physicsFriction);
+          }
+
+          // Ceiling
+          if (sy + sphereRadius > top) {
+            const overlap = (sy + sphereRadius) - top;
+            b.y -= overlap;
+            b.vy = Math.min(b.vy, -b.vy * physicsBounciness);
+          }
+
+          // Left wall
+          if (sx - sphereRadius < left) {
+            const overlap = left - (sx - sphereRadius);
+            b.x += overlap;
+            b.vx = Math.max(b.vx, -b.vx * physicsBounciness);
+            b.vrz -= b.vy * physicsFriction * 0.08;
+          }
+
+          // Right wall
+          if (sx + sphereRadius > right) {
+            const overlap = (sx + sphereRadius) - right;
+            b.x -= overlap;
+            b.vx = Math.min(b.vx, -b.vx * physicsBounciness);
+            b.vrz += b.vy * physicsFriction * 0.08;
+          }
         }
       }
 
-      // 3. Logo-to-Logo collisions
+      // 3. Dynamic Compound Shape Logo-to-Logo Collisions
       const count = bodiesRef.current.length;
       for (let i = 0; i < count; i++) {
         for (let j = i + 1; j < count; j++) {
           const b1 = bodiesRef.current[i];
           const b2 = bodiesRef.current[j];
 
-          const dx = b2.x - b1.x;
-          const dy = b2.y - b1.y;
-          const dz = b2.z - b1.z;
-          const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-          const minDist = radius * 2.1; // slightly larger collision envelope for stability
+          const cos1 = Math.cos(b1.rz);
+          const sin1 = Math.sin(b1.rz);
+          const cos2 = Math.cos(b2.rz);
+          const sin2 = Math.sin(b2.rz);
 
-          if (dist < minDist && dist > 0.001) {
-            const overlap = minDist - dist;
-            const nx = dx / dist;
-            const ny = dy / dist;
-            const nz = dz / dist;
+          // Check all pairs of sub-spheres for true visual shape boundary collision
+          for (let k1 = 0; k1 < numSpheres; k1++) {
+            const lX1 = localXOffsets[k1];
+            const s1x = b1.x + lX1 * cos1;
+            const s1y = b1.y + lX1 * sin1;
 
-            // Push apart proportional to overlap (equal mass)
-            const push = overlap * 0.5;
-            b1.x -= nx * push;
-            b1.y -= ny * push;
-            b1.z -= nz * push;
-            b2.x += nx * push;
-            b2.y += ny * push;
-            b2.z += nz * push;
+            for (let k2 = 0; k2 < numSpheres; k2++) {
+              const lX2 = localXOffsets[k2];
+              const s2x = b2.x + lX2 * cos2;
+              const s2y = b2.y + lX2 * sin2;
 
-            // Relative velocity along collision normal
-            const rvx = b2.vx - b1.vx;
-            const rvy = b2.vy - b1.vy;
-            const rvz = b2.vz - b1.vz;
-            const velAlongNormal = rvx * nx + rvy * ny + rvz * nz;
+              const dx = s2x - s1x;
+              const dy = s2y - s1y;
+              const distSq = dx * dx + dy * dy;
+              const minDist = sphereRadius * 2.05; // slightly scaled envelope to feel visual contact
 
-            // Only bounce if they are moving towards each other
-            if (velAlongNormal < 0) {
-              const impulse = -(1 + physicsBounciness) * velAlongNormal;
-              
-              // Apply impulse forces to change velocities
-              b1.vx -= nx * impulse * 0.5;
-              b1.vy -= ny * impulse * 0.5;
-              b1.vz -= nz * impulse * 0.5;
-              b2.vx += nx * impulse * 0.5;
-              b2.vy += ny * impulse * 0.5;
-              b2.vz += nz * impulse * 0.5;
+              if (distSq < minDist * minDist) {
+                const dist = Math.sqrt(distSq) || 0.001;
+                const overlap = minDist - dist;
 
-              // Introduce spin transfer on collision to look real
-              const torqueScale = 0.2;
-              b1.vrx += (Math.random() - 0.5) * torqueScale;
-              b1.vry += (Math.random() - 0.5) * torqueScale;
-              b1.vrz += (Math.random() - 0.5) * torqueScale;
-              b2.vrx -= (Math.random() - 0.5) * torqueScale;
-              b2.vry -= (Math.random() - 0.5) * torqueScale;
-              b2.vrz -= (Math.random() - 0.5) * torqueScale;
+                const nx = dx / dist;
+                const ny = dy / dist;
+
+                // Shift bodies to resolve overlaps
+                const pushX = nx * overlap * 0.5;
+                const pushY = ny * overlap * 0.5;
+
+                b1.x -= pushX * 0.5;
+                b1.y -= pushY * 0.5;
+                b2.x += pushX * 0.5;
+                b2.y += pushY * 0.5;
+
+                // Rotational torque: offset from center creates rotation
+                // Torque is the cross product of the local offset vector and push force
+                const torque1 = (lX1 * (cos1 * ny - sin1 * nx)) * overlap * 0.2;
+                const torque2 = (lX2 * (cos2 * ny - sin2 * nx)) * overlap * 0.2;
+
+                b1.rz -= torque1 * (1.0 - physicsFriction);
+                b2.rz += torque2 * (1.0 - physicsFriction);
+
+                // Relative velocity at contact point (linear + angular v)
+                const v1cx = b1.vx - b1.vrz * (lX1 * sin1);
+                const v1cy = b1.vy + b1.vrz * (lX1 * cos1);
+                const v2cx = b2.vx - b2.vrz * (lX2 * sin2);
+                const v2cy = b2.vy + b2.vrz * (lX2 * cos2);
+
+                const rvx = v2cx - v1cx;
+                const rvy = v2cy - v1cy;
+                const velAlongNormal = rvx * nx + rvy * ny;
+
+                // Elastic collision response
+                if (velAlongNormal < 0) {
+                  const impulse = -(1.0 + physicsBounciness) * velAlongNormal;
+                  
+                  b1.vx -= nx * impulse * 0.5;
+                  b1.vy -= ny * impulse * 0.5;
+                  b2.vx += nx * impulse * 0.5;
+                  b2.vy += ny * impulse * 0.5;
+
+                  b1.vrz -= torque1 * 0.4;
+                  b2.vrz += torque2 * 0.4;
+                }
+              }
             }
           }
         }
@@ -356,22 +456,7 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
                   reflectivity={materialSettings.reflectivity !== undefined ? materialSettings.reflectivity : 0.5}
                   side={THREE.FrontSide}
                   envMapIntensity={1.0}
-                  onBeforeCompile={(shader) => {
-                    shader.uniforms.uTextureOpacity = uniformsRef.current.uTextureOpacity;
-                    shader.fragmentShader = `
-                      uniform float uTextureOpacity;
-                      ${shader.fragmentShader}
-                    `.replace(
-                      '#include <map_fragment>',
-                      `
-                      #ifdef USE_MAP
-                        vec4 texelColor = texture2D( map, vMapUv );
-                        texelColor = mapTexelToLinear( texelColor );
-                        diffuseColor.rgb *= mix(vec3(1.0), texelColor.rgb, uTextureOpacity);
-                      #endif
-                      `
-                    );
-                  }}
+                  onBeforeCompile={handleBeforeCompile}
                 />
               </mesh>
             );

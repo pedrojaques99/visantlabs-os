@@ -4438,7 +4438,16 @@
         "easeOut": "Easy Out",
         "easeInOut": "Easy In Out"
       },
-      "reverse": "Inverter"
+      "reverse": "Inverter",
+      "physics": {
+        "title": "Ajustes de Física",
+        "count": "Qtd. de Logos",
+        "gravity": "Gravidade",
+        "bounciness": "Elasticidade",
+        "friction": "Atrito",
+        "size": "Tamanho do Logo",
+        "reset": "Resetar / Jogar Logos"
+      }
     },
     "export": {
       "title": "Exportar",
