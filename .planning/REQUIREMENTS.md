@@ -10,7 +10,7 @@ Requirements for public beta. Each maps to roadmap phases.
 ### API Documentation
 
 - [x] **DOCS-01**: Developer can access auto-generated OpenAPI 3.1 spec covering all 93 MCP tools
-- [ ] **DOCS-02**: Developer can browse interactive Swagger UI at `/api/docs` with try-it-out capability
+- [x] **DOCS-02**: Developer can browse interactive Swagger UI at `/api/docs` with try-it-out capability
 
 ### Developer Portal
 
@@ -63,7 +63,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DOCS-01 | Phase 1 | Complete |
-| DOCS-02 | Phase 1 | Pending |
+| DOCS-02 | Phase 1 | Complete |
 | PORTAL-01 | Phase 2 | Pending |
 | PORTAL-02 | Phase 2 | Pending |
 | PORTAL-03 | Phase 2 | Pending |

@@ -34,6 +34,7 @@ swagger-ui-express mounted at `/api/docs` serving interactive Swagger UI with tr
 | Task | Name | Commit | Files |
 |------|------|--------|-------|
 | 1 | Install swagger-ui-express and serve Swagger UI | 7a4a56c | server/routes/openapi.ts, package.json |
+| 2 | Human verify: Swagger UI approved | (checkpoint) | — |
 
 ## What Was Built
 
@@ -49,7 +50,14 @@ swagger-ui-express mounted at `/api/docs` serving interactive Swagger UI with tr
   - Custom title: "Visant API Docs"
 - `/openapi.json` route kept alongside, still generates spec per-request (serverUrl from live host)
 
-**Checkpoint pending:** human verification that UI loads at http://localhost:3001/api/docs
+**UI result at /api/docs:**
+- 59 paths visible (37 MCP tools + 22 legacy REST)
+- Tools grouped by tags: Brand, AI Generation, Mockups, Canvas, Creative, Campaigns, Tools
+- Human-verified: approved
+
+## Verification Result
+
+Human-verified: approved. Swagger UI loads with all 59 paths, tools grouped by category, try-it-out executes real API calls with `visant_sk_*` API key.
 
 ## Deviations from Plan
 

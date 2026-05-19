@@ -25,7 +25,7 @@
 **Plans:** 1/2 plans executed
 Plans:
 - [x] 01-01-PLAN.md — Auto-generate OpenAPI 3.1 spec from MCP tool registry
-- [ ] 01-02-PLAN.md — Serve Swagger UI at /api/docs with try-it-out
+- [x] 01-02-PLAN.md — Serve Swagger UI at /api/docs with try-it-out
 **UI hint**: yes
 
 ### Phase 2: Developer Portal
