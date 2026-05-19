@@ -217,9 +217,30 @@ Use listPrompts() to discover available prompt templates pulled from real user d
 - **prompt-library** — full searchable library across community, feedback, and auto-promoted patterns
 When unsure what prompt to write, query these first — they contain battle-tested prompts with real results.
 
+### Brand design system workflow
+1. brand-guidelines-create (or brand-guidelines-ingest from URL/text)
+2. brand-guidelines-health-check — see what's missing
+3. brand-guidelines-figma-link + brand-guidelines-figma-sync — import tokens from Figma
+4. brand-guidelines-compile — export CSS/Tailwind/JSON tokens for code
+5. brand-guidelines-compliance-check — AI audit for consistency
+
+### Edit an existing mockup
+1. ai-change-object — replace/modify objects in a mockup image
+2. ai-apply-theme — apply visual themes (christmas, cyberpunk, etc.)
+
+### Batch ad campaign
+1. campaign-generate — fire async batch (returns jobId)
+2. campaign-status — poll until status="done", collect image URLs
+
+### Smart analysis (auto-detect + auto-prompt)
+1. smart-analyze — pass any image, get category detection + ready-to-use mockup prompt
+2. mockup-generate — use the returned prompt directly
+
 ## Key Rules
 - upload-image is FREE (no credits) — always use it to convert base64 to URLs before generation
-- mockup-generate and ai-generate-image COST credits — check _meta.credits_remaining in responses
+- smart-analyze, ai-extract-colors, ai-suggest-prompt-variations, ai-improve-prompt are FREE
+- mockup-generate, ai-generate-image, ai-change-object, ai-apply-theme COST credits
+- Check payments-subscription-status or settings-byok-status before suggesting paid operations
 - When passing string values, send content directly without escape sequences
 - All generation tools return imageUrl in the response — use it directly, no need to download`,
     }
@@ -817,7 +838,7 @@ When unsure what prompt to write, query these first — they contain battle-test
         'full', 'market-research', 'swot', 'persona', 'archetype', 'concept-ideas', 'color-palettes', 'moodboard',
         'visant-full', 'visant-central-message', 'visant-market-research', 'visant-persona', 'visant-archetypes-tone',
         'visant-manifesto', 'visant-swot', 'visant-color-palette', 'visant-typography', 'visant-graphic-system', 'visant-logo-concept',
-      ]).default('full').describe('Generation step. "full" runs the legacy pipeline. "visant-full" runs the complete Metodologia Visant pipeline (10 steps). Use "visant-*" steps for the new methodology.'),
+      ]).default('full').describe('Generation step. RECOMMENDED: use "visant-full" for the complete Metodologia Visant pipeline (10 steps, higher quality). Legacy: "full" runs the older single-pass pipeline. For iterative refinement, use individual "visant-*" steps in order and pass previousData between calls.'),
       previousData: z.record(z.string(), z.unknown()).optional().describe('Output from a previous step to use as context for the next step. Pass the result of the previous branding-generate call here.'),
       brandGuidelineId: z.string().optional().describe('Existing brand guideline ID to use as context/reference.'),
     },
@@ -2398,7 +2419,7 @@ When unsure what prompt to write, query these first — they contain battle-test
 
   server.tool(
     'creative-projects-delete',
-    'Permanently delete a creative project by ID.',
+    'Permanently delete a creative project by ID. Cannot be undone — confirm with the user first.',
     {
       id: z.string().describe('Creative project ID to delete.'),
     },
@@ -2455,7 +2476,7 @@ When unsure what prompt to write, query these first — they contain battle-test
 
   server.tool(
     'mockup-delete',
-    'Permanently delete a mockup by ID.',
+    'Permanently delete a mockup by ID. Cannot be undone — confirm with the user first.',
     {
       id: z.string().describe('Mockup MongoDB ObjectId to delete.'),
     },
@@ -2510,7 +2531,7 @@ When unsure what prompt to write, query these first — they contain battle-test
 
   server.tool(
     'branding-delete',
-    'Permanently delete a branding project by ID.',
+    'Permanently delete a branding project by ID. Cannot be undone — confirm with the user first.',
     {
       id: z.string().describe('Branding project ID to delete.'),
     },
@@ -2567,7 +2588,7 @@ When unsure what prompt to write, query these first — they contain battle-test
 
   server.tool(
     'canvas-delete',
-    'Permanently delete a canvas project by ID.',
+    'Permanently delete a canvas project by ID. Cannot be undone — confirm with the user first.',
     {
       id: z.string().describe('Canvas project ID to delete.'),
     },
@@ -2653,7 +2674,7 @@ When unsure what prompt to write, query these first — they contain battle-test
 
   server.tool(
     'budget-delete',
-    'Permanently delete a budget project by ID.',
+    'Permanently delete a budget project by ID. Cannot be undone — confirm with the user first.',
     {
       id: z.string().describe('Budget project ID to delete.'),
     },
@@ -2886,6 +2907,445 @@ When unsure what prompt to write, query these first — they contain battle-test
     }
   );
 
+  // ═══════════════════════════════════════════
+  // NEW TOOLS — AI, Brand, Payments, Settings
+  // ═══════════════════════════════════════════
+
+  // ─── AI: Suggest prompt variations ──────────────────────────────────────────
+  server.tool(
+    'ai-suggest-prompt-variations',
+    'Generate multiple creative variations of a prompt. Free (cached). Use to give users options before spending credits on generation.',
+    {
+      prompt: z.string().min(1).describe('Original prompt to create variations of.'),
+    },
+    async ({ prompt }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/ai/suggest-prompt-variations`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ prompt }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── AI: Extract colors from image ─────────────────────────────────────────
+  server.tool(
+    'ai-extract-colors',
+    'Extract a color palette from any image. Returns hex values, names, roles, and frequency. Free (no credits).',
+    {
+      imageUrl: z.string().optional().describe('Public image URL.'),
+      base64: z.string().optional().describe('Base64-encoded image data.'),
+      mimeType: z.string().optional().describe('MIME type if using base64 (e.g. image/png).'),
+    },
+    async ({ imageUrl, base64, mimeType }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      if (!imageUrl && !base64) return ERR.validation('Provide imageUrl or base64.');
+      try {
+        const image: any = imageUrl ? { url: imageUrl } : { base64, mimeType };
+        const res = await fetch(`${INTERNAL_API_BASE}/api/ai/extract-colors`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ image }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── AI: Generate naming ideas ─────────────────────────────────────────────
+  server.tool(
+    'ai-generate-naming',
+    'Generate brand/product name ideas from a brief. Optionally uses brand guideline for tone consistency. Costs credits.',
+    {
+      brief: z.string().min(1).describe('Description of what needs naming (e.g. "eco-friendly water bottle brand targeting millennials").'),
+      count: z.number().int().min(1).max(20).default(10).describe('Number of name suggestions.'),
+      style: z.string().optional().describe('Naming style: minimal, playful, corporate, abstract, etc.'),
+      brandGuidelineId: z.string().optional().describe('Brand guideline ID for tone/voice consistency.'),
+    },
+    async ({ brief, count, style, brandGuidelineId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/ai/generate-naming`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ brief, count, style, brandGuidelineId }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── AI: Change object in mockup ───────────────────────────────────────────
+  server.tool(
+    'ai-change-object',
+    'Replace or modify an object in an existing mockup image. Costs credits. Pass the image and describe what to change.',
+    {
+      imageUrl: z.string().optional().describe('Public URL of the image to modify.'),
+      base64: z.string().optional().describe('Base64 of the image to modify.'),
+      mimeType: z.string().optional().describe('MIME type if using base64.'),
+      newObject: z.string().describe('Description of what to replace/change (e.g. "replace the coffee cup with a wine glass").'),
+      model: z.string().optional().describe('AI model override.'),
+      resolution: z.string().optional().describe('Output resolution: hd, 1k, 2k, 4k.'),
+    },
+    async ({ imageUrl, base64, mimeType, newObject, model, resolution }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      if (!imageUrl && !base64) return ERR.validation('Provide imageUrl or base64.');
+      try {
+        const baseImage: any = imageUrl ? { url: imageUrl } : { base64, mimeType };
+        const res = await fetch(`${INTERNAL_API_BASE}/api/ai/change-object`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ baseImage, newObject, model, resolution }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── AI: Apply theme to mockup ─────────────────────────────────────────────
+  server.tool(
+    'ai-apply-theme',
+    'Apply visual themes to an existing mockup (e.g. "christmas", "cyberpunk", "minimalist"). Costs credits.',
+    {
+      imageUrl: z.string().optional().describe('Public URL of the image.'),
+      base64: z.string().optional().describe('Base64 of the image.'),
+      mimeType: z.string().optional().describe('MIME type if using base64.'),
+      themes: z.array(z.string()).min(1).describe('Theme keywords to apply (e.g. ["christmas", "warm lighting"]).'),
+      model: z.string().optional().describe('AI model override.'),
+      resolution: z.string().optional().describe('Output resolution: hd, 1k, 2k, 4k.'),
+    },
+    async ({ imageUrl, base64, mimeType, themes, model, resolution }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      if (!imageUrl && !base64) return ERR.validation('Provide imageUrl or base64.');
+      try {
+        const baseImage: any = imageUrl ? { url: imageUrl } : { base64, mimeType };
+        const res = await fetch(`${INTERNAL_API_BASE}/api/ai/apply-theme`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ baseImage, themes, model, resolution }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Export guideline ───────────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-export',
+    'Export a brand guideline as a complete JSON document for backup, migration, or sharing.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const guideline = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!guideline) return ERR.notFound('Brand guideline');
+        return jsonResponse(guideline);
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Compile design tokens ──────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-compile',
+    'Compile a brand guideline into design tokens (CSS custom properties, Tailwind config values, JSON tokens). Use for design-to-code workflows.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/compile`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Health check ───────────────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-health-check',
+    'Audit a brand guideline for completeness. Returns which sections are filled, which are missing, and suggestions for improvement.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/health-check`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Compare versions ───────────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-compare-versions',
+    'Compare two versions of a brand guideline to see what changed (colors added, typography modified, strategy updated, etc.).',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      v1: z.number().int().describe('First version number.'),
+      v2: z.number().int().describe('Second version number.'),
+    },
+    async ({ id, v1, v2 }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/versions/${v1}/compare/${v2}`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Figma sync ─────────────────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-figma-sync',
+    'Sync brand guideline with a Figma file. Imports colors, typography, and design tokens from Figma variables and styles. Requires Figma token configured in user settings.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      fileId: z.string().describe('Figma file ID (from URL: figma.com/design/:fileId/...).'),
+      includeVariables: z.boolean().default(true).describe('Import Figma variables as design tokens.'),
+      includeComponents: z.boolean().default(false).describe('Import component names and structure.'),
+    },
+    async ({ id, fileId, includeVariables, includeComponents }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/figma-sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ fileId, includeVariables, includeComponents }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Figma link ─────────────────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-figma-link',
+    'Link or unlink a Figma file to a brand guideline. Once linked, figma-sync can pull design tokens automatically.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      fileId: z.string().optional().describe('Figma file ID to link. Omit to unlink.'),
+      fileName: z.string().optional().describe('Figma file name for display.'),
+    },
+    async ({ id, fileId, fileName }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        if (fileId) {
+          const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/figma-link`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+            body: JSON.stringify({ fileId, fileName }),
+          });
+          if (!res.ok) return ERR.internal(await res.text());
+          return jsonResponse(await res.json());
+        } else {
+          const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/figma-link`, {
+            method: 'DELETE',
+            headers: { 'x-mcp-user-id': currentUserId },
+          });
+          if (!res.ok) return ERR.internal(await res.text());
+          return jsonResponse({ success: true, message: 'Figma file unlinked.' });
+        }
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Knowledge base ─────────────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-knowledge-list',
+    'List all knowledge documents (PDFs, brand docs) attached to a brand guideline.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/knowledge`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Payments: Subscription status ─────────────────────────────────────────
+  server.tool(
+    'payments-subscription-status',
+    'Get the current user subscription tier, credit balance, usage, and whether they can generate. Use this to check before suggesting paid operations.',
+    {},
+    async () => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/payments/subscription-status`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Payments: Usage details ───────────────────────────────────────────────
+  server.tool(
+    'payments-usage',
+    'Get detailed credit usage: free generations used, subscription credits remaining, reset date. More granular than account-usage.',
+    {},
+    async () => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/payments/usage`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Payments: Available plans ─────────────────────────────────────────────
+  server.tool(
+    'payments-plans',
+    'List available subscription plans with pricing. No auth required.',
+    {
+      currency: z.enum(['USD', 'BRL']).default('USD').describe('Currency for prices.'),
+    },
+    async ({ currency }) => {
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/payments/plans?currency=${currency}`);
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Settings: BYOK status ─────────────────────────────────────────────────
+  server.tool(
+    'settings-byok-status',
+    'Check which API keys the user has configured (Gemini, OpenAI, Seedream) and storage tier. Use to know which models are available.',
+    {},
+    async () => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/users/settings/byok-status`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Campaign: Batch generation ────────────────────────────────────────────
+  server.tool(
+    'campaign-generate',
+    'Start a batch ad campaign generation. Returns a jobId for polling. Creates multiple mockup variations across formats (square, story, banner, portrait). Costs credits per image.',
+    {
+      productImageUrl: z.string().describe('Public URL of the product/design image.'),
+      brandGuidelineId: z.string().optional().describe('Brand guideline ID for brand-consistent ad copy and styling.'),
+      brief: z.string().optional().describe('Campaign brief: target audience, goal, tone (e.g. "launch campaign for Gen Z, playful tone").'),
+      count: z.number().int().min(1).max(20).default(10).describe('Number of ad variations to generate.'),
+      formats: z.array(z.enum(['square', 'story', 'banner', 'portrait'])).default(['square']).describe('Output formats to generate.'),
+      model: z.string().optional().describe('AI model override (e.g. gpt-image-1).'),
+    },
+    async ({ productImageUrl, brandGuidelineId, brief, count, formats, model }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/canvas/generate-campaign`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ productImageUrl, brandGuidelineId, brief, count, formats, model }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Campaign: Poll status ─────────────────────────────────────────────────
+  server.tool(
+    'campaign-status',
+    'Poll a batch campaign job for progress. Returns status (planning/generating/done/error) and completed results with image URLs.',
+    {
+      jobId: z.string().describe('Job ID returned by campaign-generate.'),
+    },
+    async ({ jobId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/canvas/generate-campaign/${jobId}`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Smart Analyze ─────────────────────────────────────────────────────────
+  server.tool(
+    'smart-analyze',
+    'AI-powered image analysis. Detects design type (logo, UI, photo, illustration), suggests mockup category and prompt, and returns a ready-to-use prompt for mockup-generate. Free (no credits).',
+    {
+      base64: z.string().describe('Base64-encoded image to analyze.'),
+      mimeType: z.string().default('image/png').describe('Image MIME type.'),
+      brandGuideline: z.string().optional().describe('Brand guideline ID for brand-aware analysis.'),
+    },
+    async ({ base64, mimeType, brandGuideline }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/plugin/smart-analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({
+            image: { base64, mimeType },
+            mode: 'image-gen',
+            brandGuideline,
+          }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
   // Restore original tool method and persist collected names
   (server as any).tool = originalTool;
   _registeredToolNames = collectedNames;
@@ -2899,10 +3359,10 @@ When unsure what prompt to write, query these first — they contain battle-test
     {
       title: 'Mockup Scene Prompt',
       description: 'Get a proven, high-quality scene description for mockup-generate. Pulls from community presets and user-validated examples (thumbs-up feedback). Returns a ready-to-use prompt — just pass your design as referenceImages.',
-      argsSchema: z.object({
+      argsSchema: {
         category: z.enum(['sticker', 'business-card', 'packaging', 'apparel', 'signage', 'social-media', 'device', 'print', 'any']).default('any').describe('Design category to find scene prompts for.'),
         style: z.string().optional().describe('Optional style keywords to match (e.g. "minimal", "realistic", "vintage", "industrial").'),
-      }),
+      },
     },
     async ({ category, style }) => {
       try {
@@ -3004,12 +3464,12 @@ When unsure what prompt to write, query these first — they contain battle-test
     {
       title: 'Prompt Library',
       description: 'Browse the full prompt library — community presets, user-validated examples, and official patterns. Filter by category, tags, or search keywords. Use these as starting points for any generation tool.',
-      argsSchema: z.object({
+      argsSchema: {
         search: z.string().optional().describe('Keyword search across prompt text, name, and tags.'),
         category: z.string().optional().describe('Filter by category: mockup, 3d, presets, aesthetics, themes, angle, texture, ambience, luminance.'),
         source: z.enum(['community', 'feedback', 'patterns', 'all']).default('all').describe('Which database to query.'),
         limit: z.number().int().min(1).max(20).default(10).describe('Max results to return.'),
-      }),
+      },
     },
     async ({ search, category, source, limit }) => {
       try {
