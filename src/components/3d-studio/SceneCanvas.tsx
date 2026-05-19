@@ -7,6 +7,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { ShaderPostProcess } from '@/effects/ShaderPostProcess';
 import { CameraBridge } from './CameraBridge';
 import { ExtrudedSVG } from './engine/ExtrudedSVG';
+import { PhysicsFallSimulation } from './engine/PhysicsFallSimulation';
 import { IntroAnimation, LoopAnimation, SmoothControls } from './engine/controls';
 import { resolveMaterial } from './engine/materials';
 import { useFont, textToSvg } from './engine/useFont';
@@ -48,6 +49,11 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   animateSpeed: s.animateSpeed,
   animateReverse: s.animateReverse,
   animateEasing: s.animateEasing,
+  physicsCount: s.physicsCount,
+  physicsGravity: s.physicsGravity,
+  physicsBounciness: s.physicsBounciness,
+  physicsFriction: s.physicsFriction,
+  physicsSize: s.physicsSize,
   transparentBg: s.transparentBg,
   background: s.background,
   bgType: s.bgType,
@@ -172,23 +178,46 @@ function SceneContent() {
 
       <group ref={animGroupRef}>
         {svgString && (
-          <ExtrudedSVG
-            svgString={svgString}
-            depth={s.depth}
-            smoothness={s.smoothness}
-            bevelEnabled={s.bevelEnabled}
-            bevelThickness={s.bevelThickness}
-            bevelSize={s.bevelSize}
-            color={s.color}
-            materialSettings={materialSettings}
-            rotationX={s.rotationX}
-            rotationY={s.rotationY}
-            groupRef={meshGroupRef}
-            texture={s.texture || undefined}
-            textureRepeat={s.textureRepeat}
-            textureRotation={s.textureRotation}
-            textureOpacity={s.textureOpacity}
-          />
+          s.animate === 'physicsFall' ? (
+            <PhysicsFallSimulation
+              svgString={svgString}
+              depth={s.depth}
+              smoothness={s.smoothness}
+              bevelEnabled={s.bevelEnabled}
+              bevelThickness={s.bevelThickness}
+              bevelSize={s.bevelSize}
+              color={s.color}
+              materialSettings={materialSettings}
+              texture={s.texture || undefined}
+              textureRepeat={s.textureRepeat}
+              textureRotation={s.textureRotation}
+              textureOpacity={s.textureOpacity}
+              physicsCount={s.physicsCount}
+              physicsGravity={s.physicsGravity}
+              physicsBounciness={s.physicsBounciness}
+              physicsFriction={s.physicsFriction}
+              physicsSize={s.physicsSize}
+              resetKey={s.resetKey}
+            />
+          ) : (
+            <ExtrudedSVG
+              svgString={svgString}
+              depth={s.depth}
+              smoothness={s.smoothness}
+              bevelEnabled={s.bevelEnabled}
+              bevelThickness={s.bevelThickness}
+              bevelSize={s.bevelSize}
+              color={s.color}
+              materialSettings={materialSettings}
+              rotationX={s.rotationX}
+              rotationY={s.rotationY}
+              groupRef={meshGroupRef}
+              texture={s.texture || undefined}
+              textureRepeat={s.textureRepeat}
+              textureRotation={s.textureRotation}
+              textureOpacity={s.textureOpacity}
+            />
+          )
         )}
       </group>
 

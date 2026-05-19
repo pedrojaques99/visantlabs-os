@@ -3,7 +3,7 @@ import { createShaderSlice, type ShaderSlice } from './shaderSlice';
 
 type MaterialPreset = 'default' | 'plastic' | 'metal' | 'glass' | 'rubber' | 'chrome' | 'gold' | 'clay' | 'emissive' | 'holographic' | 'brushedSteel' | 'aluminum' | 'copper' | 'roseGold' | 'platinum' | 'ceramic' | 'marble' | 'concrete' | 'wood' | 'velvet' | 'leather' | 'frostedGlass' | 'diamond' | 'pearl' | 'carbonFiber' | 'carPaint' | 'ice' | 'obsidian' | 'wax' | 'mattePaint';
 
-type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'spinFloat' | 'swing';
+type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'spinFloat' | 'swing' | 'physicsFall';
 type ExportFormat = 'png' | 'mp4' | 'gif' | 'glb' | 'obj';
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
 
@@ -158,6 +158,7 @@ export const ANIMATION_PRESETS: { id: AnimationType; label: string }[] = [
   { id: 'wobble', label: 'Wobble' },
   { id: 'swing', label: 'Swing' },
   { id: 'spinFloat', label: 'Spin + Float' },
+  { id: 'physicsFall', label: 'Physics Fall' },
 ];
 
 export const ASPECT_RATIOS: Record<AspectRatio, { w: number; h: number; label: string }> = {
@@ -226,6 +227,13 @@ interface Studio3DState {
   animateReverse: boolean;
   animateEasing: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
 
+  // Physics falling simulation settings
+  physicsCount: number;
+  physicsGravity: number;
+  physicsBounciness: number;
+  physicsFriction: number;
+  physicsSize: number;
+
   // Camera
   rotationX: number;
   rotationY: number;
@@ -280,6 +288,11 @@ interface Studio3DState {
   setAnimateSpeed: (v: number) => void;
   setAnimateReverse: (v: boolean) => void;
   setAnimateEasing: (v: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut') => void;
+  setPhysicsCount: (v: number) => void;
+  setPhysicsGravity: (v: number) => void;
+  setPhysicsBounciness: (v: number) => void;
+  setPhysicsFriction: (v: number) => void;
+  setPhysicsSize: (v: number) => void;
   setRotationX: (v: number) => void;
   setRotationY: (v: number) => void;
   setZoom: (v: number) => void;
@@ -330,6 +343,11 @@ const INITIAL_STATE = {
   animateSpeed: 0.3,
   animateReverse: false,
   animateEasing: 'linear' as const,
+  physicsCount: 25,
+  physicsGravity: 9.8,
+  physicsBounciness: 0.6,
+  physicsFriction: 0.1,
+  physicsSize: 0.8,
   rotationX: 0,
   rotationY: 0,
   zoom: 8,
@@ -383,6 +401,11 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
   setAnimateSpeed: (animateSpeed) => set({ animateSpeed }),
   setAnimateReverse: (animateReverse) => set({ animateReverse }),
   setAnimateEasing: (animateEasing) => set({ animateEasing }),
+  setPhysicsCount: (physicsCount) => set({ physicsCount }),
+  setPhysicsGravity: (physicsGravity) => set({ physicsGravity }),
+  setPhysicsBounciness: (physicsBounciness) => set({ physicsBounciness }),
+  setPhysicsFriction: (physicsFriction) => set({ physicsFriction }),
+  setPhysicsSize: (physicsSize) => set({ physicsSize }),
   setRotationX: (rotationX) => set({ rotationX }),
   setRotationY: (rotationY) => set({ rotationY }),
   setZoom: (zoom) => set({ zoom }),

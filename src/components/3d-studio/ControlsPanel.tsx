@@ -64,6 +64,12 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
   const [videoDuration, setVideoDuration] = useDebouncedSlider(store.videoDuration, store.setVideoDuration);
   const [textureOpacity, setTextureOpacity] = useDebouncedSlider(store.textureOpacity, store.setTextureOpacity);
   const [bgAngle, setBgAngle] = useDebouncedSlider(store.bgGradient.angle, (v) => store.setBgGradient({ angle: v }));
+  
+  const [physicsCount, setPhysicsCount] = useDebouncedSlider(store.physicsCount, store.setPhysicsCount);
+  const [physicsGravity, setPhysicsGravity] = useDebouncedSlider(store.physicsGravity, store.setPhysicsGravity);
+  const [physicsBounciness, setPhysicsBounciness] = useDebouncedSlider(store.physicsBounciness, store.setPhysicsBounciness);
+  const [physicsFriction, setPhysicsFriction] = useDebouncedSlider(store.physicsFriction, store.setPhysicsFriction);
+  const [physicsSize, setPhysicsSize] = useDebouncedSlider(store.physicsSize, store.setPhysicsSize);
 
   const processFile = useCallback(async (file: File) => {
     if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
@@ -406,32 +412,51 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
               </div>
             </Section>
 
-            <Section title={t('studio3d.animation.controls')}>
-              <NodeSlider label={t('studio3d.animation.speed')} value={animateSpeed} min={0.1} max={5} step={0.1} onChange={setAnimateSpeed} />
-              
-              <div className="space-y-1.5">
-                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.animation.easing')}</span>
-                <div className="grid grid-cols-2 gap-1">
-                  {(['linear', 'easeIn', 'easeOut', 'easeInOut'] as const).map((e) => (
-                    <button
-                      key={e}
-                      onClick={() => store.setAnimateEasing(e)}
-                      className={cn(
-                        'px-2 py-1.5 rounded text-[9px] uppercase tracking-wider transition-colors',
-                        store.animateEasing === e ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-500'
-                      )}
-                    >
-                      {t(`studio3d.animation.easings.${e}`)}
-                    </button>
-                  ))}
+            {store.animate === 'physicsFall' ? (
+              <Section title="Physics Settings">
+                <NodeSlider label="Logo Count" value={physicsCount} min={5} max={50} step={1} onChange={setPhysicsCount} />
+                <NodeSlider label="Gravity" value={physicsGravity} min={0} max={30} step={0.5} onChange={setPhysicsGravity} />
+                <NodeSlider label="Bounciness" value={physicsBounciness} min={0} max={1} step={0.05} onChange={setPhysicsBounciness} />
+                <NodeSlider label="Friction" value={physicsFriction} min={0} max={1} step={0.05} onChange={setPhysicsFriction} />
+                <NodeSlider label="Logo Size" value={physicsSize} min={0.2} max={2} step={0.05} onChange={setPhysicsSize} />
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-3 text-[10px] uppercase tracking-wider h-8"
+                  onClick={() => useStudio3DStore.setState({ resetKey: Date.now() })}
+                >
+                  Reset / Trigger Fall
+                </Button>
+              </Section>
+            ) : (
+              <Section title={t('studio3d.animation.controls')}>
+                <NodeSlider label={t('studio3d.animation.speed')} value={animateSpeed} min={0.1} max={5} step={0.1} onChange={setAnimateSpeed} />
+                
+                <div className="space-y-1.5">
+                  <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.animation.easing')}</span>
+                  <div className="grid grid-cols-2 gap-1">
+                    {(['linear', 'easeIn', 'easeOut', 'easeInOut'] as const).map((e) => (
+                      <button
+                        key={e}
+                        onClick={() => store.setAnimateEasing(e)}
+                        className={cn(
+                          'px-2 py-1.5 rounded text-[9px] uppercase tracking-wider transition-colors',
+                          store.animateEasing === e ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-500'
+                        )}
+                      >
+                        {t(`studio3d.animation.easings.${e}`)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.animation.reverse')}</span>
-                <Switch checked={store.animateReverse} onCheckedChange={store.setAnimateReverse} />
-              </div>
-            </Section>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.animation.reverse')}</span>
+                  <Switch checked={store.animateReverse} onCheckedChange={store.setAnimateReverse} />
+                </div>
+              </Section>
+            )}
           </>
         )}
 

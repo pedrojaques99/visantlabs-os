@@ -62,7 +62,7 @@ export function IntroAnimation({ type, duration, from, to, onComplete }: IntroAn
   return null;
 }
 
-type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'swing' | 'spinFloat';
+type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'swing' | 'spinFloat' | 'physicsFall';
 type EasingType = 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
 
 interface LoopAnimationProps {
