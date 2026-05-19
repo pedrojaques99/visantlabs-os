@@ -64,6 +64,7 @@ const Studio3DPage = lazyWithRetry(() => import('./pages/Studio3DPage').then(m =
 const HalftonePage = lazyWithRetry(() => import('./pages/HalftonePage').then(m => ({ default: m.HalftonePage })));
 const GridMachinePage = lazyWithRetry(() => import('./pages/GridMachinePage').then(m => ({ default: m.GridMachinePage })));
 const RisoMachinePage = lazyWithRetry(() => import('./pages/RisoMachinePage').then(m => ({ default: m.RisoMachinePage })));
+const DeveloperPortalPage = lazyWithRetry(() => import('./pages/DeveloperPortalPage').then(m => ({ default: m.DeveloperPortalPage })));
 
 
 const LoadingFallback = () => (
@@ -121,6 +122,7 @@ const App: React.FC = () => {
                 <Route path="/brand/:slug" element={<PublicBrandGuideline />} />
                 <Route path="/design-system" element={<DesignSystemPage />} />
                 <Route path="/docs" element={<DocsPage />} />
+                <Route path="/developer" element={<DeveloperPortalPage />} />
                 <Route path="/settings/api-keys" element={<ApiKeysPage />} />
                 <Route path="/developer/usage" element={<UsageDashboardPage />} />
                 <Route path="/developer/getting-started" element={<GettingStartedPage />} />

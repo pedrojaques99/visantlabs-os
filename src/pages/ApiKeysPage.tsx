@@ -246,7 +246,7 @@ export const ApiKeysPage: React.FC = () => {
           <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
             <CardContent className="p-4 md:p-6">
               <div className="mb-4">
-                <BreadcrumbWithBack to="/profile">
+                <BreadcrumbWithBack to="/developer">
                   <BreadcrumbList>
                     <BreadcrumbItem>
                       <BreadcrumbLink asChild>
@@ -256,7 +256,7 @@ export const ApiKeysPage: React.FC = () => {
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
                       <BreadcrumbLink asChild>
-                        <Link to="/profile">Profile</Link>
+                        <Link to="/developer">Developer Portal</Link>
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
