@@ -12,5 +12,20 @@ echo "Generating TypeScript SDK..."
 cd "$ROOT/sdks/typescript"
 npx openapi-typescript-codegen --input openapi.json --output src --client fetch --exportSchemas true
 
-# Python SDK placeholder — filled in Plan 02
-echo "Done. SDKs generated."
+# --- Python SDK ---
+echo "Generating Python SDK..."
+PYTHON_SDK_DIR="$ROOT/sdks/python"
+
+# Copy spec for Python generator
+cp "$ROOT/sdks/typescript/openapi.json" "$PYTHON_SDK_DIR/openapi.json"
+
+# Generate or update Python client
+if [ -d "$PYTHON_SDK_DIR/visant_sdk" ]; then
+  cd "$PYTHON_SDK_DIR"
+  openapi-python-client update --path openapi.json --config config.yml
+else
+  cd "$ROOT/sdks"
+  openapi-python-client generate --path "$PYTHON_SDK_DIR/openapi.json" --config "$PYTHON_SDK_DIR/config.yml" --output-path "$PYTHON_SDK_DIR" --overwrite
+fi
+
+echo "Done. TypeScript + Python SDKs generated."
