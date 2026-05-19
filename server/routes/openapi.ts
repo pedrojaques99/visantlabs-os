@@ -1,14 +1,15 @@
 /**
- * GET /api/openapi.json
+ * GET  /api/openapi.json  — raw OpenAPI 3.1 spec (public, cacheable)
+ * GET  /api/docs          — interactive Swagger UI (try-it-out, API key auth)
  *
- * Serves the auto-generated OpenAPI 3.1 spec for all MCP tools and legacy REST routes.
- * Public endpoint — no authentication required.
+ * Public endpoints — no authentication required.
  */
 
 import { Router } from 'express';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import swaggerUi from 'swagger-ui-express';
 import { generateMCPOpenAPISpec } from '../lib/mcp-to-openapi.js';
 
 const router = Router();
@@ -25,6 +26,7 @@ function getVersion(): string {
   }
 }
 
+// ── /api/openapi.json — raw spec ─────────────────────────────────────────────
 router.get('/openapi.json', (req, res) => {
   const version = getVersion();
   const serverUrl = `${req.protocol}://${req.get('host')}`;
@@ -34,5 +36,24 @@ router.get('/openapi.json', (req, res) => {
   res.setHeader('Cache-Control', 'public, max-age=300');
   res.json(spec);
 });
+
+// ── /api/docs — Swagger UI ────────────────────────────────────────────────────
+const version = getVersion();
+const serverUrl = process.env.API_URL ?? 'https://api.visantlabs.com';
+const spec = generateMCPOpenAPISpec(version, serverUrl);
+
+const swaggerOptions: swaggerUi.SwaggerUiOptions = {
+  explorer: true,
+  customSiteTitle: 'Visant API Docs',
+  customCss: '.swagger-ui .topbar { display: none }',
+  swaggerOptions: {
+    persistAuthorization: true,
+    tryItOutEnabled: true,
+    filter: true,
+    displayRequestDuration: true,
+  },
+};
+
+router.use('/docs', swaggerUi.serve, swaggerUi.setup(spec, swaggerOptions));
 
 export default router;
