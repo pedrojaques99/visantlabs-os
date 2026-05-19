@@ -4362,6 +4362,9 @@
     },
     "geometry": {
       "title": "GEOMETRIA",
+      "shapeType": "Formato do Logo",
+      "shapeStandard": "Padrão Extrudado",
+      "shapeCoin": "Moeda Cunhada",
       "depth": "Profundidade",
       "bevel": "Bevel",
       "smoothness": "Suavidade",

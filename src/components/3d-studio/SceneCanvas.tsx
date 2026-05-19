@@ -22,6 +22,7 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   svgData: s.svgData,
   text: s.text,
   font: s.font,
+  shapeType: s.shapeType,
   depth: s.depth,
   smoothness: s.smoothness,
   bevelEnabled: s.bevelEnabled,
@@ -179,7 +180,7 @@ function SceneContent() {
       <group ref={animGroupRef}>
         {svgString && (
           s.animate === 'physicsFall' ? (
-            <PhysicsFallSimulation
+             <PhysicsFallSimulation
               key="physics-fall-sim"
               svgString={svgString}
               depth={s.depth}
@@ -199,6 +200,7 @@ function SceneContent() {
               physicsFriction={s.physicsFriction}
               physicsSize={s.physicsSize}
               resetKey={s.resetKey}
+              shapeType={s.shapeType}
             />
           ) : (
             <ExtrudedSVG
@@ -218,6 +220,7 @@ function SceneContent() {
               textureRepeat={s.textureRepeat}
               textureRotation={s.textureRotation}
               textureOpacity={s.textureOpacity}
+              shapeType={s.shapeType}
             />
           )
         )}

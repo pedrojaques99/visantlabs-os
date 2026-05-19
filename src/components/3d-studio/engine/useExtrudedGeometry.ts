@@ -9,6 +9,81 @@ function yieldToMain() {
   return new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
+function smoothCreaseNormals(geometry: THREE.BufferGeometry, creaseAngleRad: number): THREE.BufferGeometry {
+  const tempGeo = geometry.index ? geometry.toNonIndexed() : geometry.clone();
+  const posAttr = tempGeo.attributes.position;
+  if (!posAttr) return geometry;
+
+  const count = posAttr.count;
+  const flatNormals: THREE.Vector3[] = [];
+
+  for (let i = 0; i < count; i += 3) {
+    const vA = new THREE.Vector3(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i));
+    const vB = new THREE.Vector3(posAttr.getX(i + 1), posAttr.getY(i + 1), posAttr.getZ(i + 1));
+    const vC = new THREE.Vector3(posAttr.getX(i + 2), posAttr.getY(i + 2), posAttr.getZ(i + 2));
+
+    const cb = new THREE.Vector3().subVectors(vC, vB);
+    const ab = new THREE.Vector3().subVectors(vA, vB);
+    cb.cross(ab).normalize();
+
+    flatNormals.push(cb.clone(), cb.clone(), cb.clone());
+  }
+
+  const posToIndices = new Map<string, number[]>();
+  const precision = 100000;
+  for (let i = 0; i < count; i++) {
+    const px = Math.round(posAttr.getX(i) * precision);
+    const py = Math.round(posAttr.getY(i) * precision);
+    const pz = Math.round(posAttr.getZ(i) * precision);
+    const hash = `${px},${py},${pz}`;
+
+    if (!posToIndices.has(hash)) {
+      posToIndices.set(hash, []);
+    }
+    posToIndices.get(hash)!.push(i);
+  }
+
+  const cosThreshold = Math.cos(creaseAngleRad);
+  const newNormals = new Float32Array(count * 3);
+
+  for (const indices of posToIndices.values()) {
+    const visited = new Set<number>();
+
+    for (const idx of indices) {
+      if (visited.has(idx)) continue;
+
+      const n1 = flatNormals[idx];
+      const smoothGroup = [idx];
+      visited.add(idx);
+
+      for (const otherIdx of indices) {
+        if (visited.has(otherIdx)) continue;
+        const n2 = flatNormals[otherIdx];
+
+        if (n1.dot(n2) >= cosThreshold) {
+          smoothGroup.push(otherIdx);
+          visited.add(otherIdx);
+        }
+      }
+
+      const avgNormal = new THREE.Vector3();
+      for (const i of smoothGroup) {
+        avgNormal.add(flatNormals[i]);
+      }
+      avgNormal.normalize();
+
+      for (const i of smoothGroup) {
+        newNormals[i * 3] = avgNormal.x;
+        newNormals[i * 3 + 1] = avgNormal.y;
+        newNormals[i * 3 + 2] = avgNormal.z;
+      }
+    }
+  }
+
+  tempGeo.setAttribute('normal', new THREE.BufferAttribute(newNormals, 3));
+  return tempGeo;
+}
+
 function recomputeTriplanarUVs(geo: THREE.BufferGeometry, bb: THREE.Box3) {
   const bbSize = new THREE.Vector3();
   bb.getSize(bbSize);
@@ -191,12 +266,12 @@ export function useExtrudedGeometry(
       const bevelScale = Math.min(maxFlatDim * 0.05, 1); // Increased bevel scale for more pronounced rounding
 
       const idealBevel = Math.round(4 + smoothness * 8); // More segments for smoothness
-      const idealCurve = Math.round(16 + smoothness * 48);
+      const idealCurve = Math.round(32 + smoothness * 64); // Increased curve subdivisions
       const estimatedVerts = idealBevel * idealCurve * 6;
       const reductionFactor = estimatedVerts > vertsBudgetPerShape
         ? Math.sqrt(vertsBudgetPerShape / estimatedVerts)
         : 1;
-      
+
       const bevelSegments = Math.max(2, Math.min(Math.round(idealBevel * reductionFactor), 64));
       const curveSegments = Math.max(8, Math.min(Math.round(idealCurve * reductionFactor), 128));
 
@@ -235,7 +310,7 @@ export function useExtrudedGeometry(
       setProgress(92);
       await yieldToMain();
 
-      const merged = BufferGeometryUtils.mergeGeometries(individualGeos, false);
+      let merged = BufferGeometryUtils.mergeGeometries(individualGeos, false);
       individualGeos.forEach((g) => g.dispose());
 
       if (!merged || cancelRef.current || version !== versionRef.current) {
@@ -247,8 +322,12 @@ export function useExtrudedGeometry(
       setProgress(96);
       await yieldToMain();
 
+      // Smooth curved side walls while keeping sharp edges crisp (30 degree crease threshold)
+      const smoothed = smoothCreaseNormals(merged, Math.PI / 6);
+      merged.dispose();
+      merged = smoothed;
+
       merged.computeBoundingBox();
-      merged.computeVertexNormals();
       recomputeTriplanarUVs(merged, merged.boundingBox!);
 
       const bb = merged.boundingBox!;

@@ -223,6 +223,34 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
 
             {/* Geometry */}
             <Section title={t('studio3d.geometry.title')}>
+              <div className="flex flex-col gap-1.5 mb-3">
+                <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.geometry.shapeType')}</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    onClick={() => store.setShapeType('standard')}
+                    className={cn(
+                      "px-2.5 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center border",
+                      store.shapeType === 'standard'
+                        ? "bg-white text-black border-white"
+                        : "bg-white/5 text-neutral-400 border-white/5 hover:bg-white/10 hover:text-neutral-200"
+                    )}
+                  >
+                    {t('studio3d.geometry.shapeStandard')}
+                  </button>
+                  <button
+                    onClick={() => store.setShapeType('coin')}
+                    className={cn(
+                      "px-2.5 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center border",
+                      store.shapeType === 'coin'
+                        ? "bg-white text-black border-white"
+                        : "bg-white/5 text-neutral-400 border-white/5 hover:bg-white/10 hover:text-neutral-200"
+                    )}
+                  >
+                    {t('studio3d.geometry.shapeCoin')}
+                  </button>
+                </div>
+              </div>
+
               <NodeSlider label={t('studio3d.geometry.depth')} value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('studio3d.geometry.bevel')}</span>

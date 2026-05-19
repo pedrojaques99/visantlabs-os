@@ -4358,6 +4358,9 @@
     },
     "geometry": {
       "title": "GEOMETRY",
+      "shapeType": "Logo Shape Mode",
+      "shapeStandard": "Standard Extruded",
+      "shapeCoin": "Minted Coin",
       "depth": "Depth",
       "bevel": "Bevel",
       "smoothness": "Smoothness",

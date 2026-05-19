@@ -187,6 +187,7 @@ interface Studio3DState {
   fileName: string;
 
   // Geometry
+  shapeType: 'standard' | 'coin';
   depth: number;
   smoothness: number;
   bevelEnabled: boolean;
@@ -259,6 +260,7 @@ interface Studio3DState {
   setText: (text: string) => void;
   setFont: (font: string) => void;
   setInputMode: (mode: 'svg' | 'text') => void;
+  setShapeType: (v: 'standard' | 'coin') => void;
   setDepth: (v: number) => void;
   setSmoothness: (v: number) => void;
   setBevelEnabled: (v: boolean) => void;
@@ -314,6 +316,7 @@ const INITIAL_STATE = {
   text: '',
   font: 'DM Sans',
   fileName: '',
+  shapeType: 'standard' as const,
   depth: 0.9,
   smoothness: 0.2,
   bevelEnabled: true,
@@ -372,6 +375,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
   setText: (text) => set({ text }),
   setFont: (font) => set({ font }),
   setInputMode: (mode) => set({ inputMode: mode }),
+  setShapeType: (shapeType) => set({ shapeType }),
   setDepth: (depth) => set({ depth }),
   setSmoothness: (smoothness) => set({ smoothness }),
   setBevelEnabled: (bevelEnabled) => set({ bevelEnabled }),
