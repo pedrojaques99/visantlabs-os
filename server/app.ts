@@ -54,6 +54,8 @@ import pipelineRoutes from './routes/pipeline.js';
 import campaignRoutes from './routes/campaign.js';
 import oauthRoutes from './routes/oauth.js';
 import liveblocksRoutes from './routes/liveblocks.js';
+import studio3dRoutes from './routes/studio3d.js';
+import openapiRoutes from './routes/openapi.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
@@ -231,7 +233,11 @@ export function createApp() {
     ['/pipeline', pipelineRoutes],
     ['/canvas/generate-campaign', campaignRoutes],
     ['/liveblocks', liveblocksRoutes],
+    ['/studio3d', studio3dRoutes],
   ];
+
+  // OpenAPI spec — public, no auth required
+  app.use(`${routePrefix}`, openapiRoutes);
 
   for (const [path, router] of mounts) {
     app.use(`${routePrefix}${path}`, router);
