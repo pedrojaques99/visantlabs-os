@@ -132,7 +132,7 @@ export function generateMCPOpenAPISpec(
     info: {
       title: 'Visant Labs Brand Infrastructure API',
       description:
-        'Public API exposing 93+ MCP tools for AI-powered brand generation, mockups, creative studio, and compliance. ' +
+        `Public API exposing ${TOOLS.length} MCP tools for AI-powered brand generation, mockups, creative studio, and compliance. ` +
         'Authenticate via API key (`visant_sk_*`) or JWT. MCP tools are available under `/api/mcp/tools/*`. ' +
         'Legacy REST endpoints are also included for compatibility.',
       version,
