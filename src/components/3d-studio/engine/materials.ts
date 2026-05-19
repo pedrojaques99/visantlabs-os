@@ -58,6 +58,7 @@ export interface ResolvedMaterial {
   opacity: number;
   transparent: boolean;
   wireframe: boolean;
+  emissiveIntensity?: number;
   clearcoat?: number;
   clearcoatRoughness?: number;
   sheen?: number;
@@ -75,6 +76,7 @@ export interface MaterialOverrides {
   metalness?: number;
   roughness?: number;
   opacity?: number;
+  emissiveIntensity?: number;
   wireframe?: boolean;
   clearcoat?: number;
   clearcoatRoughness?: number;
@@ -102,6 +104,7 @@ export function resolveMaterial(
     opacity,
     transparent: base.transparent || opacity < 1,
     wireframe: overrides.wireframe ?? false,
+    emissiveIntensity: overrides.emissiveIntensity ?? base.emissiveIntensity,
     clearcoat: overrides.clearcoat ?? base.clearcoat,
     clearcoatRoughness: overrides.clearcoatRoughness ?? base.clearcoatRoughness,
     sheen: overrides.sheen ?? base.sheen,
