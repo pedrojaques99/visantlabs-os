@@ -183,6 +183,7 @@ export function createPlatformMcpServer(): McpServer {
     {
       capabilities: {
         tools: {},
+        prompts: {},
       },
       instructions: `Visant Labs MCP — AI design platform for mockups, branding, creative studio, and image generation.
 
@@ -209,6 +210,12 @@ export function createPlatformMcpServer(): McpServer {
 ### Batch mockups (multiple designs)
 For each design file: upload-image → collect URL → mockup-generate with referenceImages
 Run upload-image calls in parallel, then mockup-generate calls in parallel.
+
+## Prompt Templates (MCP Prompts)
+Use listPrompts() to discover available prompt templates pulled from real user data:
+- **mockup-scene** — proven scene descriptions for mockup-generate, from community presets + user feedback (thumbs-up only)
+- **prompt-library** — full searchable library across community, feedback, and auto-promoted patterns
+When unsure what prompt to write, query these first — they contain battle-tested prompts with real results.
 
 ## Key Rules
 - upload-image is FREE (no credits) — always use it to convert base64 to URLs before generation
@@ -2882,6 +2889,210 @@ Run upload-image calls in parallel, then mockup-generate calls in parallel.
   // Restore original tool method and persist collected names
   (server as any).tool = originalTool;
   _registeredToolNames = collectedNames;
+
+  // ═══════════════════════════════════════════
+  // MCP Prompts — reusable templates from community + feedback databases
+  // ═══════════════════════════════════════════
+
+  server.registerPrompt(
+    'mockup-scene',
+    {
+      title: 'Mockup Scene Prompt',
+      description: 'Get a proven, high-quality scene description for mockup-generate. Pulls from community presets and user-validated examples (thumbs-up feedback). Returns a ready-to-use prompt — just pass your design as referenceImages.',
+      argsSchema: z.object({
+        category: z.enum(['sticker', 'business-card', 'packaging', 'apparel', 'signage', 'social-media', 'device', 'print', 'any']).default('any').describe('Design category to find scene prompts for.'),
+        style: z.string().optional().describe('Optional style keywords to match (e.g. "minimal", "realistic", "vintage", "industrial").'),
+      }),
+    },
+    async ({ category, style }) => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+
+        // 1. Community presets (admin-approved, high engagement)
+        const communityFilter: any = { isApproved: true };
+        if (category !== 'any') {
+          communityFilter.$or = [
+            { category: { $regex: category, $options: 'i' } },
+            { presetType: { $regex: category, $options: 'i' } },
+            { tags: { $regex: category, $options: 'i' } },
+          ];
+        }
+        if (style) {
+          const styleFilter = { $regex: style, $options: 'i' };
+          communityFilter.prompt = styleFilter;
+        }
+
+        const communityPresets = await db.collection('community_presets')
+          .find(communityFilter)
+          .sort({ likesCount: -1, createdAt: -1 })
+          .limit(5)
+          .toArray();
+
+        // 2. Prisma MockupExamples (user-validated via thumbs-up)
+        const prismaFilter: any = { rating: 1 };
+        if (category !== 'any') prismaFilter.designType = { contains: category, mode: 'insensitive' };
+        if (style) prismaFilter.prompt = { contains: style, mode: 'insensitive' };
+
+        const mockupExamples = await prisma.mockupExample.findMany({
+          where: prismaFilter,
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+          select: { prompt: true, designType: true, tags: true, aspectRatio: true, imageUrl: true },
+        });
+
+        // 3. Official MockupPatterns (auto-promoted from feedback loop)
+        const patternFilter: any = { isOfficial: true };
+        if (category !== 'any') patternFilter.designType = { contains: category, mode: 'insensitive' };
+
+        const patterns = await prisma.mockupPattern.findMany({
+          where: patternFilter,
+          orderBy: { rating: 'desc' },
+          take: 3,
+          select: { prompt: true, designType: true, tags: true, rating: true },
+        });
+
+        // Build response
+        const sections: string[] = [];
+
+        if (patterns.length > 0) {
+          sections.push('## Top Proven Patterns (auto-promoted from 5+ positive feedback)\n');
+          for (const p of patterns) {
+            sections.push(`**[${p.designType}]** (${p.rating} thumbs-up)\n\`\`\`\n${p.prompt}\n\`\`\`\nTags: ${p.tags.join(', ')}\n`);
+          }
+        }
+
+        if (communityPresets.length > 0) {
+          sections.push('## Community Presets (curated & approved)\n');
+          for (const c of communityPresets) {
+            sections.push(`**${c.name}** — ${c.description || ''}\n\`\`\`\n${c.prompt}\n\`\`\`\nCategory: ${c.category} | Tags: ${(c.tags || []).join(', ')} | Use case: ${c.useCase || 'general'}\n`);
+          }
+        }
+
+        if (mockupExamples.length > 0) {
+          sections.push('## User-Validated Examples (thumbs-up feedback)\n');
+          for (const e of mockupExamples) {
+            sections.push(`**[${e.designType}]** ${e.aspectRatio}\n\`\`\`\n${e.prompt}\n\`\`\`\nTags: ${e.tags.join(', ')}${e.imageUrl ? `\nResult: ${e.imageUrl}` : ''}\n`);
+          }
+        }
+
+        if (sections.length === 0) {
+          sections.push(`No matching prompts found for category="${category}"${style ? ` style="${style}"` : ''}. Try category="any" or different style keywords.`);
+        }
+
+        const intro = `# Mockup Scene Prompts\nCategory: ${category}${style ? ` | Style: ${style}` : ''}\n\nThese are proven prompts. Pick one and use it as the \`prompt\` parameter in mockup-generate. Pass your design as \`referenceImages\`.\n\n`;
+
+        return {
+          messages: [{
+            role: 'user' as const,
+            content: { type: 'text' as const, text: intro + sections.join('\n') },
+          }],
+        };
+      } catch (err: any) {
+        return {
+          messages: [{
+            role: 'user' as const,
+            content: { type: 'text' as const, text: `Error fetching prompts: ${err.message}` },
+          }],
+        };
+      }
+    }
+  );
+
+  server.registerPrompt(
+    'prompt-library',
+    {
+      title: 'Prompt Library',
+      description: 'Browse the full prompt library — community presets, user-validated examples, and official patterns. Filter by category, tags, or search keywords. Use these as starting points for any generation tool.',
+      argsSchema: z.object({
+        search: z.string().optional().describe('Keyword search across prompt text, name, and tags.'),
+        category: z.string().optional().describe('Filter by category: mockup, 3d, presets, aesthetics, themes, angle, texture, ambience, luminance.'),
+        source: z.enum(['community', 'feedback', 'patterns', 'all']).default('all').describe('Which database to query.'),
+        limit: z.number().int().min(1).max(20).default(10).describe('Max results to return.'),
+      }),
+    },
+    async ({ search, category, source, limit }) => {
+      try {
+        const results: string[] = [];
+
+        // Community presets
+        if (source === 'all' || source === 'community') {
+          await connectToMongoDB();
+          const db = getDb();
+          const filter: any = { isApproved: true };
+          if (category) filter.category = { $regex: category, $options: 'i' };
+          if (search) {
+            filter.$or = [
+              { prompt: { $regex: search, $options: 'i' } },
+              { name: { $regex: search, $options: 'i' } },
+              { tags: { $regex: search, $options: 'i' } },
+            ];
+          }
+          const presets = await db.collection('community_presets')
+            .find(filter).sort({ likesCount: -1, createdAt: -1 }).limit(limit).toArray();
+
+          if (presets.length > 0) {
+            results.push('## Community Presets\n');
+            for (const p of presets) {
+              results.push(`### ${p.name}\n${p.description || ''}\n\`\`\`\n${(p.prompt || '').substring(0, 2000)}\n\`\`\`\nCategory: ${p.category} | Tags: ${(p.tags || []).join(', ')}${p.examples?.length ? `\nExamples: ${p.examples.slice(0, 3).join(' | ')}` : ''}\n`);
+            }
+          }
+        }
+
+        // Feedback examples
+        if (source === 'all' || source === 'feedback') {
+          const where: any = { rating: 1 };
+          if (category) where.designType = { contains: category, mode: 'insensitive' };
+          if (search) where.prompt = { contains: search, mode: 'insensitive' };
+          const examples = await prisma.mockupExample.findMany({
+            where, orderBy: { createdAt: 'desc' }, take: limit,
+            select: { prompt: true, designType: true, tags: true, aspectRatio: true, imageUrl: true },
+          });
+
+          if (examples.length > 0) {
+            results.push('## User-Validated Examples\n');
+            for (const e of examples) {
+              results.push(`**[${e.designType}]** ${e.aspectRatio}\n\`\`\`\n${e.prompt.substring(0, 2000)}\n\`\`\`\nTags: ${e.tags.join(', ')}${e.imageUrl ? `\nResult: ${e.imageUrl}` : ''}\n`);
+            }
+          }
+        }
+
+        // Official patterns
+        if (source === 'all' || source === 'patterns') {
+          const where: any = { isOfficial: true };
+          if (category) where.designType = { contains: category, mode: 'insensitive' };
+          if (search) where.prompt = { contains: search, mode: 'insensitive' };
+          const patterns = await prisma.mockupPattern.findMany({
+            where, orderBy: { rating: 'desc' }, take: limit,
+            select: { prompt: true, designType: true, tags: true, rating: true },
+          });
+
+          if (patterns.length > 0) {
+            results.push('## Official Patterns (auto-promoted)\n');
+            for (const p of patterns) {
+              results.push(`**[${p.designType}]** (${p.rating} thumbs-up)\n\`\`\`\n${p.prompt.substring(0, 2000)}\n\`\`\`\nTags: ${p.tags.join(', ')}\n`);
+            }
+          }
+        }
+
+        const header = `# Prompt Library\n${search ? `Search: "${search}" | ` : ''}${category ? `Category: ${category} | ` : ''}Source: ${source} | Limit: ${limit}\n\n`;
+
+        return {
+          messages: [{
+            role: 'user' as const,
+            content: { type: 'text' as const, text: results.length > 0 ? header + results.join('\n') : header + 'No matching prompts found. Try broader search terms or category="mockup".' },
+          }],
+        };
+      } catch (err: any) {
+        return {
+          messages: [{
+            role: 'user' as const,
+            content: { type: 'text' as const, text: `Error: ${err.message}` },
+          }],
+        };
+      }
+    }
+  );
 
   return server;
 }
