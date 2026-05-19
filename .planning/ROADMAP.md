@@ -55,7 +55,7 @@ Plans:
   4. SDK README includes an authenticated hello-world example that runs end-to-end against the live API
 **Plans:** 2 plans
 Plans:
-- [ ] 03-01-PLAN.md — TypeScript SDK generation from OpenAPI spec
+- [x] 03-01-PLAN.md — TypeScript SDK generation from OpenAPI spec
 - [ ] 03-02-PLAN.md — Python SDK generation and unified regeneration script
 
 ### Phase 4: Billing Endpoints & Webhooks
