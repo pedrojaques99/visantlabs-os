@@ -997,6 +997,57 @@ router.get('/session', authenticate, sessionReadLimiter, async (req: Request, re
   }
 });
 
+/**
+ * Upload a base64 image to R2 and return a public URL.
+ * Decoupled from brand guidelines — useful for MCP agents that need
+ * a public URL to pass as referenceImages in mockup/image generation.
+ * POST /api/images/upload
+ * Body: { data: string (base64), contentType?: string, label?: string }
+ */
+router.post('/upload', authenticate, apiRateLimiter, async (req: Request, res: ExpressResponse) => {
+  try {
+    const userId = (req as any).userId;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    const { data, contentType = 'image/png', label } = req.body;
+    if (!data || typeof data !== 'string') {
+      return res.status(400).json({ error: 'Base64 image data is required in the "data" field.' });
+    }
+
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(contentType)) {
+      return res.status(400).json({ error: `Unsupported content type. Allowed: ${allowedTypes.join(', ')}` });
+    }
+
+    const base64Data = data.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (buffer.length > maxSize) {
+      return res.status(400).json({ error: 'Image exceeds 20MB limit.' });
+    }
+
+    if (!isR2Configured()) {
+      return res.status(500).json({ error: 'Storage not configured.' });
+    }
+
+    const imageId = `upload-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+    const url = await uploadImage(base64Data, userId, imageId);
+
+    return res.json({
+      success: true,
+      url,
+      id: imageId,
+      contentType,
+      size: buffer.length,
+      label: label || null,
+    });
+  } catch (error: any) {
+    console.error('Image upload error:', error);
+    res.status(500).json({ error: 'Failed to upload image', message: getErrorMessage(error) });
+  }
+});
+
 export default router;
 
 /**

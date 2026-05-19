@@ -184,6 +184,37 @@ export function createPlatformMcpServer(): McpServer {
       capabilities: {
         tools: {},
       },
+      instructions: `Visant Labs MCP — AI design platform for mockups, branding, creative studio, and image generation.
+
+## Tool Workflows (follow these sequences)
+
+### Mockup from existing design (logo, sticker, poster, card)
+1. upload-image — convert the design file (base64) into a public URL
+2. mockup-generate — pass the URL in referenceImages, describe ONLY the scene in the prompt
+   - prompt = physical context: surface material, lighting, camera angle, wear/texture, background color
+   - referenceImages = the actual design artwork (the URL from step 1)
+   - NEVER describe the design's text, layout, fonts, or graphics in the prompt — the AI will hallucinate them. The reference image IS the design.
+   - Example prompt: "vinyl sticker on brushed steel surface, flat neutral gray background, slight edge peeling, soft even studio lighting, top-down flat lay"
+   - Example BAD prompt: "a sticker that says CLUBE with a speedometer showing 312 km/h" ← this will hallucinate
+
+### Mockup with brand identity (no design file)
+1. mockup-generate with brandGuidelineId — logos, colors, typography auto-injected
+   - prompt = scene description + what kind of design (e.g. "business card on marble desk, warm lighting")
+   - Do NOT describe the logo — it's injected from the brand guideline
+
+### Quick image generation (no existing design, no brand)
+1. ai-generate-image — full creative control via prompt, no brand injection
+   - For mockups of existing designs, use mockup-generate instead
+
+### Batch mockups (multiple designs)
+For each design file: upload-image → collect URL → mockup-generate with referenceImages
+Run upload-image calls in parallel, then mockup-generate calls in parallel.
+
+## Key Rules
+- upload-image is FREE (no credits) — always use it to convert base64 to URLs before generation
+- mockup-generate and ai-generate-image COST credits — check _meta.credits_remaining in responses
+- When passing string values, send content directly without escape sequences
+- All generation tools return imageUrl in the response — use it directly, no need to download`,
     }
   );
 
@@ -554,14 +585,14 @@ export function createPlatformMcpServer(): McpServer {
   // ═══════════════════════════════════════════
   server.tool(
     'ai-generate-image',
-    'Generate an AI image from a text prompt. Simple and direct — no brand injection, no layout plans, no project saving. Just prompt → image. Ideal for concept exploration, moodboards, visual references, and creative brainstorming. Costs credits based on model and resolution.',
+    'Generate an image from a text prompt. No brand injection, no project saving — just prompt → image. For placing existing designs in scenes, use mockup-generate instead. Costs credits.',
     {
-      prompt: z.string().min(1).describe('Image description. Be specific about style, composition, colors, lighting, and mood.'),
-      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('Image model. gpt-image-2=best quality, gemini=fast/creative, seedream=photorealistic.'),
+      prompt: z.string().min(1).describe('Full image description — style, composition, colors, lighting, mood.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('gpt-image-2=best, gemini=fast, seedream=photorealistic.'),
       aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('Output aspect ratio.'),
-      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Output resolution. Higher = more credits.'),
-      referenceImages: z.array(z.string()).optional().describe('Reference image URLs to guide style/composition.'),
-      seed: z.number().int().optional().describe('Random seed for reproducible generation (model-dependent).'),
+      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Higher = more credits.'),
+      referenceImages: z.array(z.string()).optional().describe('Reference URLs or base64 to guide style. Use upload-image for local files.'),
+      seed: z.number().int().optional().describe('Random seed for reproducible results.'),
     },
     async ({ prompt, model, aspectRatio, resolution, referenceImages, seed }) => {
       const currentUserId = getMcpUserId();
@@ -601,18 +632,18 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'mockup-generate',
-    'Generate a mockup image using AI. Brand context (colors, typography, logos, voice) is auto-injected when brandGuidelineId is provided — never describe the logo in the prompt. Costs credits based on model and resolution.',
+    'Generate a mockup image placing a design into a realistic scene. Pass the design as referenceImages URL; describe only the scene in the prompt. See server instructions for the full workflow.',
     {
-      prompt: z.string().min(1).describe('Scene description. Do NOT describe the logo or font — they are injected automatically from brandGuidelineId.'),
-      brandGuidelineId: z.string().optional().describe('Brand guideline ID. Injects logo (as reference image), colors, typography, voice, and strategy into the generation automatically.'),
-      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('Image model. gpt-image-2=best quality+brand fidelity, gemini=fast/creative, seedream=photorealistic lifestyle.'),
-      provider: z.enum(['openai', 'gemini', 'seedream']).optional().describe('Provider override. Inferred from model by default. Use to force a specific provider when model name is ambiguous.'),
-      aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('Output aspect ratio. 1:1=square/Instagram, 9:16=story/Reels, 16:9=landscape/cover, 4:5=portrait feed.'),
-      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Output resolution. 1K=standard, 2K=high quality, 4K=print/large format. Higher = more credits.'),
-      designType: z.string().optional().describe('Design type hint: business-card, social-media, packaging, apparel, signage, etc.'),
-      baseImageUrl: z.string().optional().describe('Base image URL for image-to-image generation (optional).'),
-      referenceImages: z.array(z.string()).optional().describe('Additional reference image URLs to guide style/composition. Brand logos are injected automatically via brandGuidelineId — use this for extra style references only.'),
-      seed: z.number().int().optional().describe('Random seed for deterministic/reproducible generation. Same seed + same prompt = same image (model-dependent).'),
+      prompt: z.string().min(1).describe('Scene/environment ONLY — surface, lighting, camera angle, wear, background. Never describe the design content here; pass it via referenceImages instead.'),
+      brandGuidelineId: z.string().optional().describe('Brand guideline ID. Auto-injects logo, colors, typography, voice into generation.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic.'),
+      provider: z.enum(['openai', 'gemini', 'seedream']).optional().describe('Provider override. Inferred from model by default.'),
+      aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('1:1=square, 9:16=story, 16:9=landscape, 4:5=portrait.'),
+      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Higher = more credits.'),
+      designType: z.string().optional().describe('Hint: business-card, social-media, packaging, apparel, signage, sticker, etc.'),
+      baseImageUrl: z.string().optional().describe('Base image URL for image-to-image generation.'),
+      referenceImages: z.array(z.string()).optional().describe('URLs of the design/artwork to place in the scene. Get URLs via upload-image. Also accepts base64 strings.'),
+      seed: z.number().int().optional().describe('Random seed for reproducible results.'),
     },
     async ({ prompt, brandGuidelineId, model, provider, aspectRatio, resolution, designType, baseImageUrl, referenceImages, seed }) => {
       const currentUserId = getMcpUserId();
@@ -1014,6 +1045,39 @@ export function createPlatformMcpServer(): McpServer {
         const result = await improvePrompt(prompt, userApiKey);
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ improvedPrompt: result.improvedPrompt, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Image Upload (generic, decoupled from brand guidelines)
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'upload-image',
+    'Upload a base64 image and get a permanent public URL. Required before mockup-generate/ai-generate-image when you have a local file. Free, no credits, max 20MB.',
+    {
+      data: z.string().min(1).describe('Base64-encoded image data. With or without data URI prefix — both work.'),
+      contentType: z.enum(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']).default('image/png').describe('MIME type. Default: image/png.'),
+      label: z.string().optional().describe('Optional label for organization (e.g. "sticker-v1").'),
+    },
+    async ({ data, contentType, label }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      const scopeErr = requireScope('write');
+      if (scopeErr) return mcpError('FORBIDDEN', scopeErr);
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/images/upload`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ data, contentType, label }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ url: result.url, id: result.id, size: result.size, _meta: quota });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
