@@ -20,9 +20,9 @@ Requirements for public beta. Each maps to roadmap phases.
 
 ### SDKs
 
-- [ ] **SDK-01**: Developer can install TypeScript SDK from npm with typed methods for all 93 tools
-- [ ] **SDK-02**: Developer can install Python SDK from pip with typed methods for all 93 tools
-- [ ] **SDK-03**: SDKs are auto-generated from the OpenAPI spec (single source of truth)
+- [x] **SDK-01**: Developer can install TypeScript SDK from npm with typed methods for all 93 tools
+- [x] **SDK-02**: Developer can install Python SDK from pip with typed methods for all 93 tools
+- [x] **SDK-03**: SDKs are auto-generated from the OpenAPI spec (single source of truth)
 
 ### Billing & Webhooks
 
@@ -67,9 +67,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | PORTAL-01 | Phase 2 | Complete |
 | PORTAL-02 | Phase 2 | Pending |
 | PORTAL-03 | Phase 2 | Pending |
-| SDK-01 | Phase 3 | Pending |
-| SDK-02 | Phase 3 | Pending |
-| SDK-03 | Phase 3 | Pending |
+| SDK-01 | Phase 3 | Complete |
+| SDK-02 | Phase 3 | Complete |
+| SDK-03 | Phase 3 | Complete |
 | BILL-01 | Phase 4 | Pending |
 | BILL-02 | Phase 4 | Pending |
 | BILL-03 | Phase 4 | Pending |

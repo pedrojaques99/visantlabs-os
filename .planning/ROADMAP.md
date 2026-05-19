@@ -56,7 +56,7 @@ Plans:
 **Plans:** 2 plans
 Plans:
 - [x] 03-01-PLAN.md — TypeScript SDK generation from OpenAPI spec
-- [ ] 03-02-PLAN.md — Python SDK generation and unified regeneration script
+- [x] 03-02-PLAN.md — Python SDK generation and unified regeneration script
 
 ### Phase 4: Billing Endpoints & Webhooks
 **Goal**: Developers can programmatically monitor consumption, understand pricing, and receive async event notifications
