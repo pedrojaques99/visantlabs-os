@@ -232,6 +232,13 @@ When unsure what prompt to write, query these first — they contain battle-test
 1. campaign-generate — fire async batch (returns jobId)
 2. campaign-status — poll until status="done", collect image URLs
 
+### 3D Studio (scene orchestration)
+1. studio3d-list-presets — discover available materials, animations, environments
+2. studio3d-create-scene — configure and save a 3D scene, get a deep-link URL
+3. studio3d-list-scenes / studio3d-get-scene — manage saved scenes
+4. update-studio3d-scene / delete-studio3d-scene — edit or remove scenes
+The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then add their SVG/logo, export to PNG/MP4/GLB.
+
 ### Smart analysis (auto-detect + auto-prompt)
 1. smart-analyze — pass any image, get category detection + ready-to-use mockup prompt
 2. mockup-generate — use the returned prompt directly
@@ -239,6 +246,7 @@ When unsure what prompt to write, query these first — they contain battle-test
 ## Key Rules
 - upload-image is FREE (no credits) — always use it to convert base64 to URLs before generation
 - smart-analyze, ai-extract-colors, ai-suggest-prompt-variations, ai-improve-prompt are FREE
+- studio3d-* tools are FREE (no credits) — scene config, save, list, get
 - mockup-generate, ai-generate-image, ai-change-object, ai-apply-theme COST credits
 - Check payments-subscription-status or settings-byok-status before suggesting paid operations
 - When passing string values, send content directly without escape sequences
@@ -3339,6 +3347,192 @@ When unsure what prompt to write, query these first — they contain battle-test
             mode: 'image-gen',
             brandGuideline,
           }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // 3D Studio — Scene orchestration via LLM
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'studio3d-list-presets',
+    'List all built-in 3D Studio scene presets (Product Shot, Hero Banner, Neon, etc.) with their full configurations. Free.',
+    {},
+    async () => {
+      // Import presets inline to avoid circular deps — these are static constants
+      const presets: Record<string, any> = {
+        'Product Shot': { material: 'plastic', color: '#ffffff', depth: 3, roughness: 0.3, metalness: 0.1, animate: 'spin', background: '#0a0a0a', lightIntensity: 1.2, ambientIntensity: 0.5, environment: 'studio' },
+        'Hero Banner': { material: 'chrome', color: '#00e5ff', depth: 4, roughness: 0.1, metalness: 0.9, animate: 'float', background: '#050510', lightIntensity: 1.5, ambientIntensity: 0.3, environment: 'city' },
+        'Social Media': { material: 'gold', color: '#ffd700', depth: 2.5, roughness: 0.2, metalness: 0.8, animate: 'spinFloat', background: '#0d0d0d', lightIntensity: 1.3, ambientIntensity: 0.4, environment: 'sunset' },
+        'Dark Studio': { material: 'glass', color: '#8b5cf6', depth: 3, roughness: 0.05, metalness: 0.1, animate: 'wobble', background: '#000000', lightIntensity: 0.8, ambientIntensity: 0.2, environment: 'night' },
+        'Neon': { material: 'emissive', color: '#ff00ff', depth: 2, roughness: 0.1, metalness: 0.3, animate: 'pulse', background: '#050005', lightIntensity: 0.6, ambientIntensity: 0.15, environment: 'night' },
+        'Clay Render': { material: 'clay', color: '#e8ddd3', depth: 3.5, roughness: 0.9, metalness: 0, animate: 'spin', background: '#f5f0eb', lightIntensity: 1.4, ambientIntensity: 0.6, environment: 'studio' },
+      };
+
+      const materials = [
+        'default', 'plastic', 'clay', 'emissive', 'chrome', 'brushedSteel', 'gold', 'roseGold', 'copper',
+        'marble', 'wood', 'leather', 'carbonFiber', 'carPaint', 'glass', 'frostedGlass', 'diamond',
+        'pearl', 'obsidian', 'holographic',
+      ];
+      const animations = ['none', 'spin', 'float', 'pulse', 'wobble', 'swing', 'spinFloat', 'physicsFall'];
+      const environments = ['studio', 'city', 'sunset', 'dawn', 'night', 'forest', 'apartment', 'warehouse', 'park', 'lobby'];
+
+      return jsonResponse({ presets, materials, animations, environments });
+    }
+  );
+
+  server.tool(
+    'studio3d-create-scene',
+    'Create and save a 3D Studio scene configuration. Returns a deep-link URL that opens the scene directly in the app. The config controls material, color, lighting, animation, camera, and more. Costs 0 credits.',
+    {
+      name: z.string().min(1).max(200).describe('Scene name.'),
+      description: z.string().max(1000).optional().describe('Scene description.'),
+      config: z.object({
+        material: z.enum(['default', 'plastic', 'metal', 'glass', 'rubber', 'chrome', 'gold', 'clay', 'emissive', 'holographic', 'brushedSteel', 'aluminum', 'copper', 'roseGold', 'platinum', 'ceramic', 'marble', 'concrete', 'wood', 'velvet', 'leather', 'frostedGlass', 'diamond', 'pearl', 'carbonFiber', 'carPaint', 'ice', 'obsidian', 'wax', 'mattePaint']).optional().describe('Material preset.'),
+        color: z.string().regex(/^#[0-9A-Fa-f]{3,8}$/).optional().describe('Object color (hex).'),
+        depth: z.number().min(0.1).max(20).optional().describe('Extrusion depth.'),
+        roughness: z.number().min(0).max(1).optional().describe('Surface roughness.'),
+        metalness: z.number().min(0).max(1).optional().describe('Metalness.'),
+        opacity: z.number().min(0).max(1).optional().describe('Opacity.'),
+        animate: z.enum(['none', 'spin', 'float', 'pulse', 'wobble', 'spinFloat', 'swing', 'physicsFall']).optional().describe('Animation type.'),
+        animateSpeed: z.number().min(0.01).max(5).optional().describe('Animation speed.'),
+        animateEasing: z.enum(['linear', 'easeIn', 'easeOut', 'easeInOut']).optional().describe('Animation easing.'),
+        background: z.string().regex(/^#[0-9A-Fa-f]{3,8}$/).optional().describe('Background color (hex).'),
+        bgType: z.enum(['solid', 'linear', 'radial']).optional().describe('Background type.'),
+        environment: z.enum(['studio', 'city', 'sunset', 'dawn', 'night', 'forest', 'apartment', 'warehouse', 'park', 'lobby']).optional().describe('HDRI environment.'),
+        lightIntensity: z.number().min(0).max(10).optional().describe('Key light intensity.'),
+        ambientIntensity: z.number().min(0).max(5).optional().describe('Ambient light intensity.'),
+        shadow: z.boolean().optional().describe('Enable shadows.'),
+        showGrid: z.boolean().optional().describe('Show floor grid.'),
+        shapeType: z.enum(['standard', 'coin']).optional().describe('Geometry shape.'),
+        smoothness: z.number().min(0).max(1).optional().describe('Curve smoothness.'),
+        bevelEnabled: z.boolean().optional().describe('Enable edge bevel.'),
+        bevelThickness: z.number().min(0).max(5).optional().describe('Bevel thickness.'),
+        bevelSize: z.number().min(0).max(5).optional().describe('Bevel size.'),
+        wireframe: z.boolean().optional().describe('Wireframe mode.'),
+        physicsCount: z.number().int().min(1).max(200).optional().describe('Physics sim instance count.'),
+        physicsGravity: z.number().min(0).max(50).optional().describe('Gravity strength.'),
+        physicsBounciness: z.number().min(0).max(1).optional().describe('Bounce factor.'),
+      }).describe('Scene configuration object — all fields optional, unset fields use defaults.'),
+      svgData: z.string().optional().describe('SVG markup to extrude into 3D.'),
+      inputMode: z.enum(['svg', 'text']).optional().describe('Input mode.'),
+      text: z.string().optional().describe('Text to render in 3D (when inputMode="text").'),
+      font: z.string().optional().describe('Font family for text mode.'),
+      tags: z.array(z.string()).max(20).optional().describe('Scene tags.'),
+      isPublic: z.boolean().optional().describe('Make scene publicly accessible.'),
+    },
+    async ({ name, description, config, svgData, inputMode, text, font, tags, isPublic }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ name, description, config, svgData, inputMode, text, font, tags, isPublic }),
+        });
+
+        if (!res.ok) return ERR.internal(await res.text());
+        const data = await res.json();
+        const sceneId = data.scene?._id || data.scene?.id;
+
+        const frontendBase = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+        const deepLink = `${frontendBase}/3d-studio?sceneId=${sceneId}`;
+
+        return jsonResponse({
+          ...data,
+          deepLink,
+          message: `Scene "${name}" saved. Open in app: ${deepLink}`,
+        });
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'studio3d-list-scenes',
+    'List saved 3D Studio scenes for the current user. Free.',
+    {
+      limit: z.number().int().min(1).max(200).optional().describe('Max results (default 60).'),
+    },
+    async ({ limit }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d?limit=${limit || 60}`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'studio3d-get-scene',
+    'Get a saved 3D Studio scene by ID. Returns full config that can be applied. Free.',
+    {
+      sceneId: z.string().describe('Scene ID to retrieve.'),
+    },
+    async ({ sceneId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d/${sceneId}`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        const data = await res.json();
+
+        const frontendBase = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+        const deepLink = `${frontendBase}/3d-studio?sceneId=${sceneId}`;
+
+        return jsonResponse({ ...data, deepLink });
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'update-studio3d-scene',
+    'Update an existing 3D Studio scene. Partial updates supported — only pass fields to change.',
+    {
+      sceneId: z.string().describe('Scene ID to update.'),
+      name: z.string().max(200).optional().describe('New scene name.'),
+      description: z.string().max(1000).optional().describe('New description.'),
+      config: z.record(z.unknown()).optional().describe('Partial config to merge (same schema as studio3d-create-scene).'),
+      tags: z.array(z.string()).max(20).optional().describe('New tags.'),
+      isPublic: z.boolean().optional().describe('Update public visibility.'),
+    },
+    async ({ sceneId, ...updates }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d/${sceneId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify(updates),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'delete-studio3d-scene',
+    'Delete a saved 3D Studio scene.',
+    {
+      sceneId: z.string().describe('Scene ID to delete.'),
+    },
+    async ({ sceneId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d/${sceneId}`, {
+          method: 'DELETE',
+          headers: { 'x-mcp-user-id': currentUserId },
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());

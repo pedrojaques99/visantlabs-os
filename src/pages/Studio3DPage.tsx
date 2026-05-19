@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw } from 'lucide-react';
@@ -33,7 +33,33 @@ export const Studio3DPage: React.FC = () => {
   const [confirmReset, setConfirmReset] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const applyConfig = useStudio3DStore((s) => s.applyConfig);
+  const setSvgData = useStudio3DStore((s) => s.setSvgData);
+
   useEffect(() => { document.title = '3D Studio — Visant'; }, []);
+
+  useEffect(() => {
+    const sceneId = searchParams.get('sceneId');
+    if (!sceneId) return;
+
+    const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+    fetch(`${API_BASE}/studio3d/${sceneId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data?.scene) return;
+        const { config, svgData, inputMode, text, font } = data.scene;
+        if (config) applyConfig(config);
+        if (svgData) setSvgData(svgData, data.scene.name || '');
+        if (inputMode) applyConfig({ inputMode });
+        if (text) applyConfig({ text });
+        if (font) applyConfig({ font });
+        toast.success(`Scene "${data.scene.name}" loaded`);
+      })
+      .catch(() => toast.error('Failed to load scene'));
+
+    setSearchParams({}, { replace: true });
+  }, []);
 
   const panelVisible = useStudio3DStore((s) => s.panelVisible);
   const setPanelVisible = useStudio3DStore((s) => s.setPanelVisible);

@@ -70,6 +70,7 @@ model User {
   customPdfPresets CustomPdfPreset[]
   surpriseMePresets SurpriseMePreset[]
   brandGuidelines BrandGuideline[]
+  studio3dScenes  Studio3DScene[]
 
   // Indexes for better query performance
   // Note: @unique on email and username already creates indexes
@@ -562,6 +563,29 @@ model BrandGuidelineVersion {
 
   @@index([guidelineId, versionNumber])
   @@map("brand_guideline_versions")
+}
+
+model Studio3DScene {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  name        String
+  description String?
+  config      Json     // Full scene config (material, color, depth, animation, lighting, etc.)
+  svgData     String?  // SVG source (optional, can be large)
+  inputMode   String   @default("svg") // "svg" | "text"
+  text        String?  // Text input when inputMode="text"
+  font        String?  // Font for text mode
+  thumbnailUrl String? // Preview thumbnail (R2 URL)
+  tags        String[]
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([isPublic, createdAt])
+  @@map("studio3d_scenes")
 }
 
 model OAuthClient {

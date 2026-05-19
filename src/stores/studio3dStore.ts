@@ -307,6 +307,7 @@ interface Studio3DState {
   setActiveTab: (t: Studio3DState['activeTab']) => void;
   setIsLoading: (v: boolean) => void;
   applyScenePreset: (name: string) => void;
+  applyConfig: (config: Partial<typeof INITIAL_STATE>) => void;
   resetScene: () => void;
 }
 
@@ -437,6 +438,15 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
       environment: preset.environment,
       resetKey: Date.now(),
     });
+  },
+
+  applyConfig: (config) => {
+    const allowed = new Set(Object.keys(INITIAL_STATE));
+    const patch: Record<string, any> = { resetKey: Date.now() };
+    for (const [k, v] of Object.entries(config)) {
+      if (allowed.has(k) && v !== undefined) patch[k] = v;
+    }
+    set(patch as any);
   },
 
   resetScene: () => {
