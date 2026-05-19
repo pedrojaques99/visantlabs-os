@@ -12,6 +12,7 @@
  */
 
 import type { Resolution } from '../types/types';
+import { getModelDisplayName } from '../constants/geminiModels';
 
 export interface PlanMetadata {
   tier?: string;
@@ -83,15 +84,8 @@ export function getUnlimitedDescription(planMetadata?: PlanMetadata | null): str
 
   if (unlimitedModels.length === 0) return null;
 
-  const modelNames: Record<string, string> = {
-    'gemini-3.1-flash-image-preview': 'NB2',
-    'gemini-3-pro-image-preview': '4K Pro',
-    'veo-3.1-fast-generate-preview': 'Veo Fast',
-    'veo-3.1-generate-preview': 'Veo Standard',
-  };
-
   const models = unlimitedModels
-    .map(m => modelNames[m] || m)
+    .map(m => getModelDisplayName(m))
     .join(', ');
 
   if (unlimitedResolutions.length > 0) {

@@ -6,6 +6,7 @@ import {
     RefreshCw, Settings, CheckCircle2,
     AlertCircle, ChevronRight, Layout
 } from 'lucide-react';
+import { AVAILABLE_IMAGE_MODELS, getModelDisplayName } from '../constants/geminiModels';
 import { SearchBar } from '../components/ui/SearchBar';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
@@ -638,9 +639,8 @@ export const AdminProductsPage: React.FC = () => {
                                                 <label className="text-xs font-bold text-neutral-500 uppercase">{t('admin.products.modelos_unlimited')}</label>
                                                 <div className="flex flex-wrap gap-2">
                                                     {[
-                                                        { id: 'nb2', label: 'NB2 (Flash)', model: 'gemini-3.1-flash-image-preview' },
-                                                        { id: 'pro', label: '4K Pro', model: 'gemini-3-pro-image-preview' },
-                                                        { id: 'veo-fast', label: 'Veo Fast', model: 'veo-3.1-fast-generate-preview' },
+                                                        ...AVAILABLE_IMAGE_MODELS.map(m => ({ id: m, label: getModelDisplayName(m), model: m })),
+                                                        { id: 'veo-fast', label: getModelDisplayName('veo-3.1-fast-generate-preview'), model: 'veo-3.1-fast-generate-preview' },
                                                     ].map(({ id, label, model }) => {
                                                         const unlimitedModels = formData.metadata?.unlimitedModels || [];
                                                         const isChecked = unlimitedModels.includes(model);

@@ -13,6 +13,7 @@ import { improvePrompt, describeImage } from '../services/geminiService.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { getCurrentUserId, runWithContext } from '../lib/request-context.js';
 import { buildBrandContext, BRAND_SECTION_PRESETS, type BrandContextSection } from '../lib/brandContextBuilder.js';
+import { GEMINI_MODELS, AVAILABLE_IMAGE_MODELS } from '../../src/constants/geminiModels.js';
 
 // ─── Structured error codes ───────────────────────────────────────────────────
 function mcpError(code: string, message: string, extra?: Record<string, any>) {
@@ -624,7 +625,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Generate an image from a text prompt. No brand injection, no project saving — just prompt → image. For placing existing designs in scenes, use mockup-generate instead. Costs credits.',
     {
       prompt: z.string().min(1).describe('Full image description — style, composition, colors, lighting, mood.'),
-      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('gpt-image-2=best, gemini=fast, seedream=photorealistic.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', GEMINI_MODELS.IMAGE_FLASH, GEMINI_MODELS.IMAGE_NB2, GEMINI_MODELS.IMAGE_PRO, 'seedream-3-0']).default('gpt-image-2').describe('gpt-image-2=best, gemini=fast, seedream=photorealistic.'),
       aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('Output aspect ratio.'),
       resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Higher = more credits.'),
       referenceImages: z.array(z.string()).optional().describe('Reference URLs or base64 to guide style. Use upload-image for local files.'),
@@ -672,7 +673,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       prompt: z.string().min(1).describe('Scene/environment ONLY — surface, lighting, camera angle, wear, background. Never describe the design content here; pass it via referenceImages instead.'),
       brandGuidelineId: z.string().optional().describe('Brand guideline ID. Auto-injects logo, colors, typography, voice into generation.'),
-      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', GEMINI_MODELS.IMAGE_FLASH, GEMINI_MODELS.IMAGE_NB2, GEMINI_MODELS.IMAGE_PRO, 'seedream-3-0']).default('gpt-image-2').describe('gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic.'),
       provider: z.enum(['openai', 'gemini', 'seedream']).optional().describe('Provider override. Inferred from model by default.'),
       aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('1:1=square, 9:16=story, 16:9=landscape, 4:5=portrait.'),
       resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Higher = more credits.'),
@@ -2281,7 +2282,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       prompt: z.string().min(1).describe('Creative brief describing the desired visual.'),
       brandGuidelineId: z.string().optional().describe('Brand guideline ID to inject brand context.'),
       format: z.enum(['1:1', '16:9', '9:16', '4:5']).default('1:1').describe('Output aspect ratio.'),
-      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('Model for background image generation.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', GEMINI_MODELS.IMAGE_FLASH, GEMINI_MODELS.IMAGE_NB2, GEMINI_MODELS.IMAGE_PRO, 'seedream-3-0']).default('gpt-image-2').describe('Model for background image generation.'),
       resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Resolution for background image generation.'),
       autoSave: z.boolean().default(true).describe('Persist result as a creative project.'),
     },
@@ -3501,7 +3502,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       sceneId: z.string().describe('Scene ID to update.'),
       name: z.string().max(200).optional().describe('New scene name.'),
       description: z.string().max(1000).optional().describe('New description.'),
-      config: z.record(z.unknown()).optional().describe('Partial config to merge (same schema as studio3d-create-scene).'),
+      config: z.record(z.string(), z.unknown()).optional().describe('Partial config to merge (same schema as studio3d-create-scene).'),
       tags: z.array(z.string()).max(20).optional().describe('New tags.'),
       isPublic: z.boolean().optional().describe('Update public visibility.'),
     },

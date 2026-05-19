@@ -1,6 +1,10 @@
 import type { GeminiModel, Resolution, AspectRatio } from '../types/types';
 
 // ── Model IDs (single source of truth) ─────────────────────────────────────
+// Official names: https://ai.google.dev/gemini-api/docs/image-generation
+//   Nano Banana    = gemini-2.5-flash-image         (speed, no resolution control, up to 3 ref images)
+//   Nano Banana 2  = gemini-3.1-flash-image-preview (2K default, up to 10 ref images, 512px–4K)
+//   Nano Banana Pro = gemini-3-pro-image-preview    (reasoning, text rendering, up to 14 ref images, 1K–4K)
 export const GEMINI_MODELS = {
   /** Gemini 3.1 Pro - Flagship intelligence (1M tokens) */
   PRO_3_1: 'gemini-3.1-pro-preview' as const,
@@ -10,12 +14,13 @@ export const GEMINI_MODELS = {
   FLASH_3_LITE: 'gemini-3.1-flash-lite-preview' as const,
   /** High-end intelligence for branding strategy & complex reasoning */
   PRO_2_0: 'gemini-3.1-pro-preview' as const,
-  /** Nano Banana 1 — Fast, multimodal, and reliable for most tasks */
+  /** Gemini 2.5 Flash — Fast text/chat model */
   FLASH_2_5: 'gemini-2.5-flash' as const,
-  /** Image generation models */
+  /** Nano Banana — Fast image gen, no resolution control, up to 3 ref images */
   IMAGE_FLASH: 'gemini-2.5-flash-image' as const,
-  /** Nano Banana 2 — High performance 2K multimodal generation */
+  /** Nano Banana 2 — High-perf 2K multimodal generation, up to 10 ref images, 512px–4K */
   IMAGE_NB2: 'gemini-3.1-flash-image-preview' as const,
+  /** Nano Banana Pro — Reasoning + text rendering, up to 14 ref images, 1K–4K */
   IMAGE_PRO: 'gemini-3-pro-image-preview' as const,
   // Backward-compatible aliases (deprecated, use IMAGE_* variants)
   FLASH: 'gemini-2.5-flash-image' as const,
@@ -101,11 +106,11 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_FLASH]: {
-    label: 'Flash',
+    label: 'Nano Banana',
     badge: 'fast',
     emoji: '🎨',
     maxHandles: 2,
-    maxRefImages: 1,
+    maxRefImages: 3,
     defaultResolution: undefined,
     supportsImageConfig: false,
     supportsThinking: false,
@@ -114,7 +119,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_NB2]: {
-    label: 'NB2',
+    label: 'Nano Banana 2',
     badge: 'popular',
     emoji: '🍌',
     maxHandles: 4,
@@ -127,14 +132,14 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     providerDomain: 'google.com',
   },
   [GEMINI_MODELS.IMAGE_PRO]: {
-    label: 'Pro',
+    label: 'Nano Banana Pro',
     badge: 'latest',
     emoji: '💎',
     maxHandles: 4,
-    maxRefImages: 5,
+    maxRefImages: 14,
     defaultResolution: '1K',
     supportsImageConfig: true,
-    supportsThinking: false,
+    supportsThinking: true,
     supportsSearchGrounding: false,
     inputTokenLimit: 65_536,
     providerDomain: 'google.com',
@@ -184,6 +189,14 @@ export function getDefaultResolution(model: string): Resolution | undefined {
 /** Get model config, falling back to FLASH config */
 export function getModelConfig(model: string): ModelConfig {
   return MODEL_CONFIG[model] ?? MODEL_CONFIG[GEMINI_MODELS.FLASH_2_5];
+}
+
+/** Resolve any model ID to a human-readable display name */
+export function getModelDisplayName(modelId: string): string {
+  if (MODEL_CONFIG[modelId]) return MODEL_CONFIG[modelId].label;
+  if (modelId.includes('veo') && modelId.includes('fast')) return 'Veo Fast';
+  if (modelId.includes('veo')) return 'Veo Standard';
+  return modelId;
 }
 
 /** All image generation model IDs (excludes text-only) */
