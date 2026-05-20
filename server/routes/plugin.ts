@@ -401,7 +401,7 @@ router.get('/debug/sessions', authenticate, async (req: AuthRequest, res: Respon
  * GET /api/plugin/session/:id/messages
  * Restore chat history for a plugin session (used on plugin reopen)
  */
-router.get('/session/:id/messages', optionalAuth, async (req: AuthRequest, res: Response) => {
+router.get('/session/:id/messages', rateLimit({ windowMs: 15 * 60 * 1000, max: 120, standardHeaders: true, legacyHeaders: false }), optionalAuth, async (req: AuthRequest, res: Response) => {
   const sessionId = req.params.id;
   if (!sessionId || !isSafeId(sessionId)) {
     return res.status(400).json({ error: 'Invalid session ID' });

@@ -7,6 +7,7 @@
  */
 
 import express, { Request, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { readFileSync } from 'fs';
 import { promises as fsAsync } from 'fs';
 import { resolve, join } from 'path';
@@ -25,6 +26,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const router = express.Router();
+
+router.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false }));
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

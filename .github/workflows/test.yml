@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main, dev]
 
+permissions:
+  contents: read
+
 env:
   MONGODB_URI: mongodb://localhost:27017/test
 
