@@ -103,17 +103,19 @@ export const SCENE_PRESETS: Record<string, ScenePreset> = {
   },
 };
 
+const R2_HDRI_BASE = 'https://pub-0acbd500af3b4beaa8b93b07f6490d58.r2.dev/hdri';
+
 export const ENVIRONMENT_PRESETS = [
-  { id: 'studio', label: 'Studio' },
-  { id: 'city', label: 'City' },
-  { id: 'sunset', label: 'Sunset' },
-  { id: 'dawn', label: 'Dawn' },
-  { id: 'night', label: 'Night' },
-  { id: 'forest', label: 'Forest' },
-  { id: 'apartment', label: 'Apartment' },
-  { id: 'warehouse', label: 'Warehouse' },
-  { id: 'park', label: 'Park' },
-  { id: 'lobby', label: 'Lobby' },
+  { id: 'studio', label: 'Studio', file: `${R2_HDRI_BASE}/studio_small_03_1k.hdr` },
+  { id: 'city', label: 'City', file: `${R2_HDRI_BASE}/potsdamer_platz_1k.hdr` },
+  { id: 'sunset', label: 'Sunset', file: `${R2_HDRI_BASE}/venice_sunset_1k.hdr` },
+  { id: 'dawn', label: 'Dawn', file: `${R2_HDRI_BASE}/kiara_1_dawn_1k.hdr` },
+  { id: 'night', label: 'Night', file: `${R2_HDRI_BASE}/dikhololo_night_1k.hdr` },
+  { id: 'forest', label: 'Forest', file: `${R2_HDRI_BASE}/forest_slope_1k.hdr` },
+  { id: 'apartment', label: 'Apartment', file: `${R2_HDRI_BASE}/lebombo_1k.hdr` },
+  { id: 'warehouse', label: 'Warehouse', file: `${R2_HDRI_BASE}/empty_warehouse_01_1k.hdr` },
+  { id: 'park', label: 'Park', file: `${R2_HDRI_BASE}/rooitou_park_1k.hdr` },
+  { id: 'lobby', label: 'Lobby', file: `${R2_HDRI_BASE}/st_fagans_interior_1k.hdr` },
 ] as const;
 
 export interface MaterialPresetDef {

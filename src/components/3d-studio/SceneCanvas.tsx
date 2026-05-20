@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { ContactShadows, Environment } from '@react-three/drei';
 import * as THREE from 'three';
-import { useStudio3DStore } from '@/stores/studio3dStore';
+import { useStudio3DStore, ENVIRONMENT_PRESETS } from '@/stores/studio3dStore';
 import { useShallow } from 'zustand/react/shallow';
 import { EffectComposer, Bloom, DepthOfField, Vignette } from '@react-three/postprocessing';
 import { ShaderPostProcess } from '@/effects/ShaderPostProcess';
@@ -257,18 +257,19 @@ function SceneContent() {
         )
       )}
 
-      {s.customHdriUrl ? (
-        <Environment background={false} files={s.customHdriUrl} />
-      ) : s.environment ? (
-        <Environment background={false} preset={s.environment as any} />
-      ) : (
-        <Environment background={false} environmentIntensity={1.5} frames={1}>
-          <mesh position={[0, 25, 0]}>
-            <sphereGeometry args={[20, 32, 32]} />
-            <meshBasicMaterial color="#ffffff" />
-          </mesh>
-        </Environment>
-      )}
+      {(() => {
+        const hdriUrl = s.customHdriUrl || ENVIRONMENT_PRESETS.find(p => p.id === s.environment)?.file;
+        return hdriUrl ? (
+          <Environment background={false} files={hdriUrl} />
+        ) : (
+          <Environment background={false} environmentIntensity={1.5} frames={1}>
+            <mesh position={[0, 25, 0]}>
+              <sphereGeometry args={[20, 32, 32]} />
+              <meshBasicMaterial color="#ffffff" />
+            </mesh>
+          </Environment>
+        );
+      })()}
 
       <CameraBridge />
 

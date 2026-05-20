@@ -23,7 +23,9 @@ export const ToolPanelContent: React.FC<{ children: React.ReactNode }> = ({ chil
 
 export const ToolPanelSection: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className }) => (
   <div className={cn('space-y-3', className)}>
-    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{title}</span>
+    <div className="sticky top-0 z-10 backdrop-blur-xl bg-neutral-950/80 -mx-4 px-4 py-1.5">
+      <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{title}</span>
+    </div>
     {children}
   </div>
 );
@@ -41,7 +43,7 @@ export const ToolPanelDisclosure: React.FC<{
         onClick={() => setOpen(!open)}
         className={cn(
           'w-full flex items-center justify-between text-left px-3 py-2.5 transition-all duration-200 rounded-md',
-          'hover:bg-neutral-800/10',
+          'hover:bg-neutral-800/10 sticky top-0 z-10 backdrop-blur-xl bg-neutral-950/80',
           open && 'bg-neutral-800/20'
         )}
       >
