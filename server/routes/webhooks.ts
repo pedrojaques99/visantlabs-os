@@ -1,9 +1,19 @@
 import { Router, Response } from 'express';
 import crypto from 'crypto';
+import rateLimit from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 
 const router = Router();
+
+const webhookLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.use(webhookLimiter);
 
 const VALID_EVENTS = ['generation.complete', 'credits.depleted', 'brand.updated'];
 const MAX_WEBHOOKS_PER_USER = 5;

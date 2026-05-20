@@ -1,11 +1,19 @@
 import { Router, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 
 const router = Router();
 
+const balanceLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // GET /balance — Returns credit balance and quota for the authenticated user
-router.get('/balance', authenticate, async (req: AuthRequest, res: Response) => {
+router.get('/balance', balanceLimiter, authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
 
