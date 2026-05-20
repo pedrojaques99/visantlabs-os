@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid'
 import { authenticate, AuthRequest } from '../middleware/auth.js'
 import { prisma } from '../db/prisma.js'
 import { rateLimit } from 'express-rate-limit'
+import { dispatchWebhookEvent } from '../utils/webhookDispatch.js'
 import { Liveblocks } from '@liveblocks/node'
 import { BrandGuideline, BrandGuidelineMedia, BrandGuidelineLogo, calculateCompleteness } from '../types/brandGuideline.js'
 import { parseUrl, parsePdf, parseImage, parseJson } from '../lib/brand-parse.js'
@@ -184,6 +185,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     })
 
 
+    dispatchWebhookEvent(existing.userId, 'brand.updated', { id: guideline.id })
     res.json({ guideline: { ...guideline, _id: guideline.id } })
   } catch (error: any) {
     console.error('Error updating brand guideline:', error?.message || error)

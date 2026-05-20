@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import { Sentry } from './lib/sentry.js';
 import compression from 'compression';
 import { rateLimit } from 'express-rate-limit';
 import path from 'path';
@@ -120,7 +121,6 @@ export function createApp() {
             return callback(null, origin);
           }
         }
-        if (process.env.NODE_ENV === 'production') return callback(null, origin);
         console.warn(`⚠️  CORS blocked origin: ${origin}`);
         return callback(new Error('Not allowed by CORS'));
       },
@@ -245,6 +245,12 @@ export function createApp() {
 
   for (const [path, router] of mounts) {
     app.use(`${routePrefix}${path}`, router);
+  }
+
+  // ── API v1 alias — /api/v1/* mirrors /api/* for versioned access ────────
+  app.use(`${routePrefix}/v1`, openapiRoutes);
+  for (const [path, router] of mounts) {
+    app.use(`${routePrefix}/v1${path}`, router);
   }
 
   app.use('/', oauthRoutes);

@@ -1859,6 +1859,8 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, nex
       );
     }
 
+    dispatchWebhookEvent(userId, 'generation.complete', { type: 'mockup', id: result.insertedId.toString() });
+
     res.status(201).json(formattedMockup);
   } catch (error: any) {
     console.error('Error saving mockup:', {

@@ -123,6 +123,7 @@
     "@remotion/transitions": "^4.0.451",
     "@scena/event-emitter": "^1.0.5",
     "@scena/matrix": "^1.1.1",
+    "@sentry/node": "^10.53.1",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-table": "^8.21.3",

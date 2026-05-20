@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import { dispatchWebhookEvent } from '../utils/webhookDispatch.js';
 import {
   appendEvents,
   readEvents,
@@ -68,6 +69,7 @@ router.post('/plan', async (req, res) => {
       // pickedMedia carries the brand-media URL the engine selected for this
       // format; the client uses it as the background and only falls back to
       // AI image gen when it's null.
+      dispatchWebhookEvent((req as any).userId, 'generation.complete', { type: 'creative', format: req.body.format });
       return res.json({ ...plan, pickedMedia });
     } catch (err) {
       if (err instanceof PlanValidationError) {
