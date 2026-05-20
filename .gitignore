@@ -16,6 +16,9 @@ dist-ssr
 /generated/prisma
 /coverage
 
+# Auto-generated SDKs (rebuild via scripts/generate-sdks.sh)
+/sdks/
+
 # Environment
 .env
 .env.local

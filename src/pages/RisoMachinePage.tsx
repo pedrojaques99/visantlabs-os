@@ -1,5 +1,6 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '@/config/api';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw } from 'lucide-react';
@@ -92,7 +93,7 @@ export const RisoMachinePage: React.FC = () => {
       const dataUrl = canvasRef.current.toDataURL('image/png');
       const base64 = dataUrl.split(',')[1];
 
-      const res = await fetch('/api/ai/riso-enhance', {
+      const res = await fetch(`${API_BASE}/ai/riso-enhance`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
