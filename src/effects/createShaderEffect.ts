@@ -97,6 +97,10 @@ function adaptFragmentShader(originalSource: string): string {
 
   src = src.replace(/precision\s+(lowp|mediump|highp)\s+float\s*;/g, '');
   src = src.replace(/varying\s+vec2\s+v_texCoord\s*;/g, '');
+  
+  // Remove vertical Y-coordinate flip redundant for Three.js FBO postprocessing
+  src = src.replace(/uv\.y\s*=\s*1\.0\s*-\s*uv\.y\s*;(\s*\/\/.*)?/g, '');
+  
   // Three.js <common> chunk already defines PI — strip redefinitions to avoid macro collision
   src = src.replace(/^\s*#define\s+PI\s+[\d.]+\s*$/gm, '');
   src = src.replace(/^\s*#ifndef\s+PI[\s\S]*?#endif\s*$/gm, '');

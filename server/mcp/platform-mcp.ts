@@ -13,6 +13,7 @@ import { improvePrompt, describeImage } from '../services/geminiService.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { getCurrentUserId, runWithContext } from '../lib/request-context.js';
 import { buildBrandContext, BRAND_SECTION_PRESETS, type BrandContextSection } from '../lib/brandContextBuilder.js';
+import { GEMINI_MODELS, AVAILABLE_IMAGE_MODELS } from '../../src/constants/geminiModels.js';
 
 // ─── Structured error codes ───────────────────────────────────────────────────
 function mcpError(code: string, message: string, extra?: Record<string, any>) {
@@ -183,7 +184,74 @@ export function createPlatformMcpServer(): McpServer {
     {
       capabilities: {
         tools: {},
+        prompts: {},
       },
+      instructions: `Visant Labs MCP — AI design platform for mockups, branding, creative studio, and image generation.
+
+## Tool Workflows (follow these sequences)
+
+### Mockup from existing design (logo, sticker, poster, card)
+1. upload-image — convert the design file (base64) into a public URL
+2. mockup-generate — pass the URL in referenceImages, describe ONLY the scene in the prompt
+   - prompt = physical context: surface material, lighting, camera angle, wear/texture, background color
+   - referenceImages = the actual design artwork (the URL from step 1)
+   - NEVER describe the design's text, layout, fonts, or graphics in the prompt — the AI will hallucinate them. The reference image IS the design.
+   - Example prompt: "vinyl sticker on brushed steel surface, flat neutral gray background, slight edge peeling, soft even studio lighting, top-down flat lay"
+   - Example BAD prompt: "a sticker that says CLUBE with a speedometer showing 312 km/h" ← this will hallucinate
+
+### Mockup with brand identity (no design file)
+1. mockup-generate with brandGuidelineId — logos, colors, typography auto-injected
+   - prompt = scene description + what kind of design (e.g. "business card on marble desk, warm lighting")
+   - Do NOT describe the logo — it's injected from the brand guideline
+
+### Quick image generation (no existing design, no brand)
+1. ai-generate-image — full creative control via prompt, no brand injection
+   - For mockups of existing designs, use mockup-generate instead
+
+### Batch mockups (multiple designs)
+For each design file: upload-image → collect URL → mockup-generate with referenceImages
+Run upload-image calls in parallel, then mockup-generate calls in parallel.
+
+## Prompt Templates (MCP Prompts)
+Use listPrompts() to discover available prompt templates pulled from real user data:
+- **mockup-scene** — proven scene descriptions for mockup-generate, from community presets + user feedback (thumbs-up only)
+- **prompt-library** — full searchable library across community, feedback, and auto-promoted patterns
+When unsure what prompt to write, query these first — they contain battle-tested prompts with real results.
+
+### Brand design system workflow
+1. brand-guidelines-create (or brand-guidelines-ingest from URL/text)
+2. brand-guidelines-health-check — see what's missing
+3. brand-guidelines-figma-link + brand-guidelines-figma-sync — import tokens from Figma
+4. brand-guidelines-compile — export CSS/Tailwind/JSON tokens for code
+5. brand-guidelines-compliance-check — AI audit for consistency
+
+### Edit an existing mockup
+1. ai-change-object — replace/modify objects in a mockup image
+2. ai-apply-theme — apply visual themes (christmas, cyberpunk, etc.)
+
+### Batch ad campaign
+1. campaign-generate — fire async batch (returns jobId)
+2. campaign-status — poll until status="done", collect image URLs
+
+### 3D Studio (scene orchestration)
+1. studio3d-list-presets — discover available materials, animations, environments
+2. studio3d-create-scene — configure and save a 3D scene, get a deep-link URL
+3. studio3d-list-scenes / studio3d-get-scene — manage saved scenes
+4. update-studio3d-scene / delete-studio3d-scene — edit or remove scenes
+The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then add their SVG/logo, export to PNG/MP4/GLB.
+
+### Smart analysis (auto-detect + auto-prompt)
+1. smart-analyze — pass any image, get category detection + ready-to-use mockup prompt
+2. mockup-generate — use the returned prompt directly
+
+## Key Rules
+- upload-image is FREE (no credits) — always use it to convert base64 to URLs before generation
+- smart-analyze, ai-extract-colors, ai-suggest-prompt-variations, ai-improve-prompt are FREE
+- studio3d-* tools are FREE (no credits) — scene config, save, list, get
+- mockup-generate, ai-generate-image, ai-change-object, ai-apply-theme COST credits
+- Check payments-subscription-status or settings-byok-status before suggesting paid operations
+- When passing string values, send content directly without escape sequences
+- All generation tools return imageUrl in the response — use it directly, no need to download`,
     }
   );
 
@@ -554,14 +622,14 @@ export function createPlatformMcpServer(): McpServer {
   // ═══════════════════════════════════════════
   server.tool(
     'ai-generate-image',
-    'Generate an AI image from a text prompt. Simple and direct — no brand injection, no layout plans, no project saving. Just prompt → image. Ideal for concept exploration, moodboards, visual references, and creative brainstorming. Costs credits based on model and resolution.',
+    'Generate an image from a text prompt. No brand injection, no project saving — just prompt → image. For placing existing designs in scenes, use mockup-generate instead. Costs credits.',
     {
-      prompt: z.string().min(1).describe('Image description. Be specific about style, composition, colors, lighting, and mood.'),
-      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('Image model. gpt-image-2=best quality, gemini=fast/creative, seedream=photorealistic.'),
+      prompt: z.string().min(1).describe('Full image description — style, composition, colors, lighting, mood.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', GEMINI_MODELS.IMAGE_FLASH, GEMINI_MODELS.IMAGE_NB2, GEMINI_MODELS.IMAGE_PRO, 'seedream-3-0']).default('gpt-image-2').describe('gpt-image-2=best, gemini=fast, seedream=photorealistic.'),
       aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('Output aspect ratio.'),
-      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Output resolution. Higher = more credits.'),
-      referenceImages: z.array(z.string()).optional().describe('Reference image URLs to guide style/composition.'),
-      seed: z.number().int().optional().describe('Random seed for reproducible generation (model-dependent).'),
+      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Higher = more credits.'),
+      referenceImages: z.array(z.string()).optional().describe('Reference URLs or base64 to guide style. Use upload-image for local files.'),
+      seed: z.number().int().optional().describe('Random seed for reproducible results.'),
     },
     async ({ prompt, model, aspectRatio, resolution, referenceImages, seed }) => {
       const currentUserId = getMcpUserId();
@@ -601,18 +669,18 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'mockup-generate',
-    'Generate a mockup image using AI. Brand context (colors, typography, logos, voice) is auto-injected when brandGuidelineId is provided — never describe the logo in the prompt. Costs credits based on model and resolution.',
+    'Generate a mockup image placing a design into a realistic scene. Pass the design as referenceImages URL; describe only the scene in the prompt. See server instructions for the full workflow.',
     {
-      prompt: z.string().min(1).describe('Scene description. Do NOT describe the logo or font — they are injected automatically from brandGuidelineId.'),
-      brandGuidelineId: z.string().optional().describe('Brand guideline ID. Injects logo (as reference image), colors, typography, voice, and strategy into the generation automatically.'),
-      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('Image model. gpt-image-2=best quality+brand fidelity, gemini=fast/creative, seedream=photorealistic lifestyle.'),
-      provider: z.enum(['openai', 'gemini', 'seedream']).optional().describe('Provider override. Inferred from model by default. Use to force a specific provider when model name is ambiguous.'),
-      aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('Output aspect ratio. 1:1=square/Instagram, 9:16=story/Reels, 16:9=landscape/cover, 4:5=portrait feed.'),
-      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Output resolution. 1K=standard, 2K=high quality, 4K=print/large format. Higher = more credits.'),
-      designType: z.string().optional().describe('Design type hint: business-card, social-media, packaging, apparel, signage, etc.'),
-      baseImageUrl: z.string().optional().describe('Base image URL for image-to-image generation (optional).'),
-      referenceImages: z.array(z.string()).optional().describe('Additional reference image URLs to guide style/composition. Brand logos are injected automatically via brandGuidelineId — use this for extra style references only.'),
-      seed: z.number().int().optional().describe('Random seed for deterministic/reproducible generation. Same seed + same prompt = same image (model-dependent).'),
+      prompt: z.string().min(1).describe('Scene/environment ONLY — surface, lighting, camera angle, wear, background. Never describe the design content here; pass it via referenceImages instead.'),
+      brandGuidelineId: z.string().optional().describe('Brand guideline ID. Auto-injects logo, colors, typography, voice into generation.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', GEMINI_MODELS.IMAGE_FLASH, GEMINI_MODELS.IMAGE_NB2, GEMINI_MODELS.IMAGE_PRO, 'seedream-3-0']).default('gpt-image-2').describe('gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic.'),
+      provider: z.enum(['openai', 'gemini', 'seedream']).optional().describe('Provider override. Inferred from model by default.'),
+      aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('1:1=square, 9:16=story, 16:9=landscape, 4:5=portrait.'),
+      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Higher = more credits.'),
+      designType: z.string().optional().describe('Hint: business-card, social-media, packaging, apparel, signage, sticker, etc.'),
+      baseImageUrl: z.string().optional().describe('Base image URL for image-to-image generation.'),
+      referenceImages: z.array(z.string()).optional().describe('URLs of the design/artwork to place in the scene. Get URLs via upload-image. Also accepts base64 strings.'),
+      seed: z.number().int().optional().describe('Random seed for reproducible results.'),
     },
     async ({ prompt, brandGuidelineId, model, provider, aspectRatio, resolution, designType, baseImageUrl, referenceImages, seed }) => {
       const currentUserId = getMcpUserId();
@@ -779,7 +847,7 @@ export function createPlatformMcpServer(): McpServer {
         'full', 'market-research', 'swot', 'persona', 'archetype', 'concept-ideas', 'color-palettes', 'moodboard',
         'visant-full', 'visant-central-message', 'visant-market-research', 'visant-persona', 'visant-archetypes-tone',
         'visant-manifesto', 'visant-swot', 'visant-color-palette', 'visant-typography', 'visant-graphic-system', 'visant-logo-concept',
-      ]).default('full').describe('Generation step. "full" runs the legacy pipeline. "visant-full" runs the complete Metodologia Visant pipeline (10 steps). Use "visant-*" steps for the new methodology.'),
+      ]).default('full').describe('Generation step. RECOMMENDED: use "visant-full" for the complete Metodologia Visant pipeline (10 steps, higher quality). Legacy: "full" runs the older single-pass pipeline. For iterative refinement, use individual "visant-*" steps in order and pass previousData between calls.'),
       previousData: z.record(z.string(), z.unknown()).optional().describe('Output from a previous step to use as context for the next step. Pass the result of the previous branding-generate call here.'),
       brandGuidelineId: z.string().optional().describe('Existing brand guideline ID to use as context/reference.'),
     },
@@ -1014,6 +1082,39 @@ export function createPlatformMcpServer(): McpServer {
         const result = await improvePrompt(prompt, userApiKey);
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ improvedPrompt: result.improvedPrompt, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Image Upload (generic, decoupled from brand guidelines)
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'upload-image',
+    'Upload a base64 image and get a permanent public URL. Required before mockup-generate/ai-generate-image when you have a local file. Free, no credits, max 20MB.',
+    {
+      data: z.string().min(1).describe('Base64-encoded image data. With or without data URI prefix — both work.'),
+      contentType: z.enum(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']).default('image/png').describe('MIME type. Default: image/png.'),
+      label: z.string().optional().describe('Optional label for organization (e.g. "sticker-v1").'),
+    },
+    async ({ data, contentType, label }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      const scopeErr = requireScope('write');
+      if (scopeErr) return mcpError('FORBIDDEN', scopeErr);
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/images/upload`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ data, contentType, label }),
+        });
+        const result = await resp.json() as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({ url: result.url, id: result.id, size: result.size, _meta: quota });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2181,7 +2282,7 @@ export function createPlatformMcpServer(): McpServer {
       prompt: z.string().min(1).describe('Creative brief describing the desired visual.'),
       brandGuidelineId: z.string().optional().describe('Brand guideline ID to inject brand context.'),
       format: z.enum(['1:1', '16:9', '9:16', '4:5']).default('1:1').describe('Output aspect ratio.'),
-      model: z.enum(['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0']).default('gpt-image-2').describe('Model for background image generation.'),
+      model: z.enum(['gpt-image-2', 'gpt-image-1', GEMINI_MODELS.IMAGE_FLASH, GEMINI_MODELS.IMAGE_NB2, GEMINI_MODELS.IMAGE_PRO, 'seedream-3-0']).default('gpt-image-2').describe('Model for background image generation.'),
       resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Resolution for background image generation.'),
       autoSave: z.boolean().default(true).describe('Persist result as a creative project.'),
     },
@@ -2327,7 +2428,7 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'creative-projects-delete',
-    'Permanently delete a creative project by ID.',
+    'Permanently delete a creative project by ID. Cannot be undone — confirm with the user first.',
     {
       id: z.string().describe('Creative project ID to delete.'),
     },
@@ -2384,7 +2485,7 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'mockup-delete',
-    'Permanently delete a mockup by ID.',
+    'Permanently delete a mockup by ID. Cannot be undone — confirm with the user first.',
     {
       id: z.string().describe('Mockup MongoDB ObjectId to delete.'),
     },
@@ -2439,7 +2540,7 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'branding-delete',
-    'Permanently delete a branding project by ID.',
+    'Permanently delete a branding project by ID. Cannot be undone — confirm with the user first.',
     {
       id: z.string().describe('Branding project ID to delete.'),
     },
@@ -2496,7 +2597,7 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'canvas-delete',
-    'Permanently delete a canvas project by ID.',
+    'Permanently delete a canvas project by ID. Cannot be undone — confirm with the user first.',
     {
       id: z.string().describe('Canvas project ID to delete.'),
     },
@@ -2582,7 +2683,7 @@ export function createPlatformMcpServer(): McpServer {
 
   server.tool(
     'budget-delete',
-    'Permanently delete a budget project by ID.',
+    'Permanently delete a budget project by ID. Cannot be undone — confirm with the user first.',
     {
       id: z.string().describe('Budget project ID to delete.'),
     },
@@ -2815,9 +2916,838 @@ export function createPlatformMcpServer(): McpServer {
     }
   );
 
+  // ═══════════════════════════════════════════
+  // NEW TOOLS — AI, Brand, Payments, Settings
+  // ═══════════════════════════════════════════
+
+  // ─── AI: Suggest prompt variations ──────────────────────────────────────────
+  server.tool(
+    'ai-suggest-prompt-variations',
+    'Generate multiple creative variations of a prompt. Free (cached). Use to give users options before spending credits on generation.',
+    {
+      prompt: z.string().min(1).describe('Original prompt to create variations of.'),
+    },
+    async ({ prompt }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/ai/suggest-prompt-variations`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ prompt }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── AI: Extract colors from image ─────────────────────────────────────────
+  server.tool(
+    'ai-extract-colors',
+    'Extract a color palette from any image. Returns hex values, names, roles, and frequency. Free (no credits).',
+    {
+      imageUrl: z.string().optional().describe('Public image URL.'),
+      base64: z.string().optional().describe('Base64-encoded image data.'),
+      mimeType: z.string().optional().describe('MIME type if using base64 (e.g. image/png).'),
+    },
+    async ({ imageUrl, base64, mimeType }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      if (!imageUrl && !base64) return ERR.validation('Provide imageUrl or base64.');
+      try {
+        const image: any = imageUrl ? { url: imageUrl } : { base64, mimeType };
+        const res = await fetch(`${INTERNAL_API_BASE}/api/ai/extract-colors`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ image }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── AI: Generate naming ideas ─────────────────────────────────────────────
+  server.tool(
+    'ai-generate-naming',
+    'Generate brand/product name ideas from a brief. Optionally uses brand guideline for tone consistency. Costs credits.',
+    {
+      brief: z.string().min(1).describe('Description of what needs naming (e.g. "eco-friendly water bottle brand targeting millennials").'),
+      count: z.number().int().min(1).max(20).default(10).describe('Number of name suggestions.'),
+      style: z.string().optional().describe('Naming style: minimal, playful, corporate, abstract, etc.'),
+      brandGuidelineId: z.string().optional().describe('Brand guideline ID for tone/voice consistency.'),
+    },
+    async ({ brief, count, style, brandGuidelineId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/ai/generate-naming`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ brief, count, style, brandGuidelineId }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── AI: Change object in mockup ───────────────────────────────────────────
+  server.tool(
+    'ai-change-object',
+    'Replace or modify an object in an existing mockup image. Costs credits. Pass the image and describe what to change.',
+    {
+      imageUrl: z.string().optional().describe('Public URL of the image to modify.'),
+      base64: z.string().optional().describe('Base64 of the image to modify.'),
+      mimeType: z.string().optional().describe('MIME type if using base64.'),
+      newObject: z.string().describe('Description of what to replace/change (e.g. "replace the coffee cup with a wine glass").'),
+      model: z.string().optional().describe('AI model override.'),
+      resolution: z.string().optional().describe('Output resolution: hd, 1k, 2k, 4k.'),
+    },
+    async ({ imageUrl, base64, mimeType, newObject, model, resolution }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      if (!imageUrl && !base64) return ERR.validation('Provide imageUrl or base64.');
+      try {
+        const baseImage: any = imageUrl ? { url: imageUrl } : { base64, mimeType };
+        const res = await fetch(`${INTERNAL_API_BASE}/api/ai/change-object`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ baseImage, newObject, model, resolution }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── AI: Apply theme to mockup ─────────────────────────────────────────────
+  server.tool(
+    'ai-apply-theme',
+    'Apply visual themes to an existing mockup (e.g. "christmas", "cyberpunk", "minimalist"). Costs credits.',
+    {
+      imageUrl: z.string().optional().describe('Public URL of the image.'),
+      base64: z.string().optional().describe('Base64 of the image.'),
+      mimeType: z.string().optional().describe('MIME type if using base64.'),
+      themes: z.array(z.string()).min(1).describe('Theme keywords to apply (e.g. ["christmas", "warm lighting"]).'),
+      model: z.string().optional().describe('AI model override.'),
+      resolution: z.string().optional().describe('Output resolution: hd, 1k, 2k, 4k.'),
+    },
+    async ({ imageUrl, base64, mimeType, themes, model, resolution }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      if (!imageUrl && !base64) return ERR.validation('Provide imageUrl or base64.');
+      try {
+        const baseImage: any = imageUrl ? { url: imageUrl } : { base64, mimeType };
+        const res = await fetch(`${INTERNAL_API_BASE}/api/ai/apply-theme`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ baseImage, themes, model, resolution }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Export guideline ───────────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-export',
+    'Export a brand guideline as a complete JSON document for backup, migration, or sharing.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const guideline = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        if (!guideline) return ERR.notFound('Brand guideline');
+        return jsonResponse(guideline);
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Compile design tokens ──────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-compile',
+    'Compile a brand guideline into design tokens (CSS custom properties, Tailwind config values, JSON tokens). Use for design-to-code workflows.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/compile`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Health check ───────────────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-health-check',
+    'Audit a brand guideline for completeness. Returns which sections are filled, which are missing, and suggestions for improvement.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/health-check`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Compare versions ───────────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-compare-versions',
+    'Compare two versions of a brand guideline to see what changed (colors added, typography modified, strategy updated, etc.).',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      v1: z.number().int().describe('First version number.'),
+      v2: z.number().int().describe('Second version number.'),
+    },
+    async ({ id, v1, v2 }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/versions/${v1}/compare/${v2}`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Figma sync ─────────────────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-figma-sync',
+    'Sync brand guideline with a Figma file. Imports colors, typography, and design tokens from Figma variables and styles. Requires Figma token configured in user settings.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      fileId: z.string().describe('Figma file ID (from URL: figma.com/design/:fileId/...).'),
+      includeVariables: z.boolean().default(true).describe('Import Figma variables as design tokens.'),
+      includeComponents: z.boolean().default(false).describe('Import component names and structure.'),
+    },
+    async ({ id, fileId, includeVariables, includeComponents }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/figma-sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ fileId, includeVariables, includeComponents }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Figma link ─────────────────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-figma-link',
+    'Link or unlink a Figma file to a brand guideline. Once linked, figma-sync can pull design tokens automatically.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      fileId: z.string().optional().describe('Figma file ID to link. Omit to unlink.'),
+      fileName: z.string().optional().describe('Figma file name for display.'),
+    },
+    async ({ id, fileId, fileName }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        if (fileId) {
+          const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/figma-link`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+            body: JSON.stringify({ fileId, fileName }),
+          });
+          if (!res.ok) return ERR.internal(await res.text());
+          return jsonResponse(await res.json());
+        } else {
+          const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/figma-link`, {
+            method: 'DELETE',
+            headers: { 'x-mcp-user-id': currentUserId },
+          });
+          if (!res.ok) return ERR.internal(await res.text());
+          return jsonResponse({ success: true, message: 'Figma file unlinked.' });
+        }
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Brand: Knowledge base ─────────────────────────────────────────────────
+  server.tool(
+    'brand-guidelines-knowledge-list',
+    'List all knowledge documents (PDFs, brand docs) attached to a brand guideline.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/knowledge`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Payments: Subscription status ─────────────────────────────────────────
+  server.tool(
+    'payments-subscription-status',
+    'Get the current user subscription tier, credit balance, usage, and whether they can generate. Use this to check before suggesting paid operations.',
+    {},
+    async () => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/payments/subscription-status`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Payments: Usage details ───────────────────────────────────────────────
+  server.tool(
+    'payments-usage',
+    'Get detailed credit usage: free generations used, subscription credits remaining, reset date. More granular than account-usage.',
+    {},
+    async () => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/payments/usage`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Payments: Available plans ─────────────────────────────────────────────
+  server.tool(
+    'payments-plans',
+    'List available subscription plans with pricing. No auth required.',
+    {
+      currency: z.enum(['USD', 'BRL']).default('USD').describe('Currency for prices.'),
+    },
+    async ({ currency }) => {
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/payments/plans?currency=${currency}`);
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Settings: BYOK status ─────────────────────────────────────────────────
+  server.tool(
+    'settings-byok-status',
+    'Check which API keys the user has configured (Gemini, OpenAI, Seedream) and storage tier. Use to know which models are available.',
+    {},
+    async () => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/users/settings/byok-status`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Campaign: Batch generation ────────────────────────────────────────────
+  server.tool(
+    'campaign-generate',
+    'Start a batch ad campaign generation. Returns a jobId for polling. Creates multiple mockup variations across formats (square, story, banner, portrait). Costs credits per image.',
+    {
+      productImageUrl: z.string().describe('Public URL of the product/design image.'),
+      brandGuidelineId: z.string().optional().describe('Brand guideline ID for brand-consistent ad copy and styling.'),
+      brief: z.string().optional().describe('Campaign brief: target audience, goal, tone (e.g. "launch campaign for Gen Z, playful tone").'),
+      count: z.number().int().min(1).max(20).default(10).describe('Number of ad variations to generate.'),
+      formats: z.array(z.enum(['square', 'story', 'banner', 'portrait'])).default(['square']).describe('Output formats to generate.'),
+      model: z.string().optional().describe('AI model override (e.g. gpt-image-1).'),
+    },
+    async ({ productImageUrl, brandGuidelineId, brief, count, formats, model }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/canvas/generate-campaign`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ productImageUrl, brandGuidelineId, brief, count, formats, model }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Campaign: Poll status ─────────────────────────────────────────────────
+  server.tool(
+    'campaign-status',
+    'Poll a batch campaign job for progress. Returns status (planning/generating/done/error) and completed results with image URLs.',
+    {
+      jobId: z.string().describe('Job ID returned by campaign-generate.'),
+    },
+    async ({ jobId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/canvas/generate-campaign/${jobId}`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ─── Smart Analyze ─────────────────────────────────────────────────────────
+  server.tool(
+    'smart-analyze',
+    'AI-powered image analysis. Detects design type (logo, UI, photo, illustration), suggests mockup category and prompt, and returns a ready-to-use prompt for mockup-generate. Free (no credits).',
+    {
+      base64: z.string().describe('Base64-encoded image to analyze.'),
+      mimeType: z.string().default('image/png').describe('Image MIME type.'),
+      brandGuideline: z.string().optional().describe('Brand guideline ID for brand-aware analysis.'),
+    },
+    async ({ base64, mimeType, brandGuideline }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/plugin/smart-analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({
+            image: { base64, mimeType },
+            mode: 'image-gen',
+            brandGuideline,
+          }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // 3D Studio — Scene orchestration via LLM
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'studio3d-list-presets',
+    'List all built-in 3D Studio scene presets (Product Shot, Hero Banner, Neon, etc.) with their full configurations. Free.',
+    {},
+    async () => {
+      // Import presets inline to avoid circular deps — these are static constants
+      const presets: Record<string, any> = {
+        'Product Shot': { material: 'plastic', color: '#ffffff', depth: 3, roughness: 0.3, metalness: 0.1, animate: 'spin', background: '#0a0a0a', lightIntensity: 1.2, ambientIntensity: 0.5, environment: 'studio' },
+        'Hero Banner': { material: 'chrome', color: '#00e5ff', depth: 4, roughness: 0.1, metalness: 0.9, animate: 'float', background: '#050510', lightIntensity: 1.5, ambientIntensity: 0.3, environment: 'city' },
+        'Social Media': { material: 'gold', color: '#ffd700', depth: 2.5, roughness: 0.2, metalness: 0.8, animate: 'spinFloat', background: '#0d0d0d', lightIntensity: 1.3, ambientIntensity: 0.4, environment: 'sunset' },
+        'Dark Studio': { material: 'glass', color: '#8b5cf6', depth: 3, roughness: 0.05, metalness: 0.1, animate: 'wobble', background: '#000000', lightIntensity: 0.8, ambientIntensity: 0.2, environment: 'night' },
+        'Neon': { material: 'emissive', color: '#ff00ff', depth: 2, roughness: 0.1, metalness: 0.3, animate: 'pulse', background: '#050005', lightIntensity: 0.6, ambientIntensity: 0.15, environment: 'night' },
+        'Clay Render': { material: 'clay', color: '#e8ddd3', depth: 3.5, roughness: 0.9, metalness: 0, animate: 'spin', background: '#f5f0eb', lightIntensity: 1.4, ambientIntensity: 0.6, environment: 'studio' },
+      };
+
+      const materials = [
+        'default', 'plastic', 'clay', 'emissive', 'chrome', 'brushedSteel', 'gold', 'roseGold', 'copper',
+        'marble', 'wood', 'leather', 'carbonFiber', 'carPaint', 'glass', 'frostedGlass', 'diamond',
+        'pearl', 'obsidian', 'holographic',
+      ];
+      const animations = ['none', 'spin', 'float', 'pulse', 'wobble', 'swing', 'spinFloat', 'physicsFall'];
+      const environments = ['studio', 'city', 'sunset', 'dawn', 'night', 'forest', 'apartment', 'warehouse', 'park', 'lobby'];
+
+      return jsonResponse({ presets, materials, animations, environments });
+    }
+  );
+
+  server.tool(
+    'studio3d-create-scene',
+    'Create and save a 3D Studio scene configuration. Returns a deep-link URL that opens the scene directly in the app. The config controls material, color, lighting, animation, camera, and more. Costs 0 credits.',
+    {
+      name: z.string().min(1).max(200).describe('Scene name.'),
+      description: z.string().max(1000).optional().describe('Scene description.'),
+      config: z.object({
+        material: z.enum(['default', 'plastic', 'metal', 'glass', 'rubber', 'chrome', 'gold', 'clay', 'emissive', 'holographic', 'brushedSteel', 'aluminum', 'copper', 'roseGold', 'platinum', 'ceramic', 'marble', 'concrete', 'wood', 'velvet', 'leather', 'frostedGlass', 'diamond', 'pearl', 'carbonFiber', 'carPaint', 'ice', 'obsidian', 'wax', 'mattePaint']).optional().describe('Material preset.'),
+        color: z.string().regex(/^#[0-9A-Fa-f]{3,8}$/).optional().describe('Object color (hex).'),
+        depth: z.number().min(0.1).max(20).optional().describe('Extrusion depth.'),
+        roughness: z.number().min(0).max(1).optional().describe('Surface roughness.'),
+        metalness: z.number().min(0).max(1).optional().describe('Metalness.'),
+        opacity: z.number().min(0).max(1).optional().describe('Opacity.'),
+        animate: z.enum(['none', 'spin', 'float', 'pulse', 'wobble', 'spinFloat', 'swing', 'physicsFall']).optional().describe('Animation type.'),
+        animateSpeed: z.number().min(0.01).max(5).optional().describe('Animation speed.'),
+        animateEasing: z.enum(['linear', 'easeIn', 'easeOut', 'easeInOut']).optional().describe('Animation easing.'),
+        background: z.string().regex(/^#[0-9A-Fa-f]{3,8}$/).optional().describe('Background color (hex).'),
+        bgType: z.enum(['solid', 'linear', 'radial']).optional().describe('Background type.'),
+        environment: z.enum(['studio', 'city', 'sunset', 'dawn', 'night', 'forest', 'apartment', 'warehouse', 'park', 'lobby']).optional().describe('HDRI environment.'),
+        lightIntensity: z.number().min(0).max(10).optional().describe('Key light intensity.'),
+        ambientIntensity: z.number().min(0).max(5).optional().describe('Ambient light intensity.'),
+        shadow: z.boolean().optional().describe('Enable shadows.'),
+        showGrid: z.boolean().optional().describe('Show floor grid.'),
+        shapeType: z.enum(['standard', 'coin']).optional().describe('Geometry shape.'),
+        smoothness: z.number().min(0).max(1).optional().describe('Curve smoothness.'),
+        bevelEnabled: z.boolean().optional().describe('Enable edge bevel.'),
+        bevelThickness: z.number().min(0).max(5).optional().describe('Bevel thickness.'),
+        bevelSize: z.number().min(0).max(5).optional().describe('Bevel size.'),
+        wireframe: z.boolean().optional().describe('Wireframe mode.'),
+        physicsCount: z.number().int().min(1).max(200).optional().describe('Physics sim instance count.'),
+        physicsGravity: z.number().min(0).max(50).optional().describe('Gravity strength.'),
+        physicsBounciness: z.number().min(0).max(1).optional().describe('Bounce factor.'),
+      }).describe('Scene configuration object — all fields optional, unset fields use defaults.'),
+      svgData: z.string().optional().describe('SVG markup to extrude into 3D.'),
+      inputMode: z.enum(['svg', 'text']).optional().describe('Input mode.'),
+      text: z.string().optional().describe('Text to render in 3D (when inputMode="text").'),
+      font: z.string().optional().describe('Font family for text mode.'),
+      tags: z.array(z.string()).max(20).optional().describe('Scene tags.'),
+      isPublic: z.boolean().optional().describe('Make scene publicly accessible.'),
+    },
+    async ({ name, description, config, svgData, inputMode, text, font, tags, isPublic }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ name, description, config, svgData, inputMode, text, font, tags, isPublic }),
+        });
+
+        if (!res.ok) return ERR.internal(await res.text());
+        const data = await res.json();
+        const sceneId = data.scene?._id || data.scene?.id;
+
+        const frontendBase = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+        const deepLink = `${frontendBase}/3d-studio?sceneId=${sceneId}`;
+
+        return jsonResponse({
+          ...data,
+          deepLink,
+          message: `Scene "${name}" saved. Open in app: ${deepLink}`,
+        });
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'studio3d-list-scenes',
+    'List saved 3D Studio scenes for the current user. Free.',
+    {
+      limit: z.number().int().min(1).max(200).optional().describe('Max results (default 60).'),
+    },
+    async ({ limit }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d?limit=${limit || 60}`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'studio3d-get-scene',
+    'Get a saved 3D Studio scene by ID. Returns full config that can be applied. Free.',
+    {
+      sceneId: z.string().describe('Scene ID to retrieve.'),
+    },
+    async ({ sceneId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d/${sceneId}`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        const data = await res.json();
+
+        const frontendBase = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+        const deepLink = `${frontendBase}/3d-studio?sceneId=${sceneId}`;
+
+        return jsonResponse({ ...data, deepLink });
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'update-studio3d-scene',
+    'Update an existing 3D Studio scene. Partial updates supported — only pass fields to change.',
+    {
+      sceneId: z.string().describe('Scene ID to update.'),
+      name: z.string().max(200).optional().describe('New scene name.'),
+      description: z.string().max(1000).optional().describe('New description.'),
+      config: z.record(z.string(), z.unknown()).optional().describe('Partial config to merge (same schema as studio3d-create-scene).'),
+      tags: z.array(z.string()).max(20).optional().describe('New tags.'),
+      isPublic: z.boolean().optional().describe('Update public visibility.'),
+    },
+    async ({ sceneId, ...updates }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d/${sceneId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify(updates),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'delete-studio3d-scene',
+    'Delete a saved 3D Studio scene.',
+    {
+      sceneId: z.string().describe('Scene ID to delete.'),
+    },
+    async ({ sceneId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d/${sceneId}`, {
+          method: 'DELETE',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
   // Restore original tool method and persist collected names
   (server as any).tool = originalTool;
   _registeredToolNames = collectedNames;
+
+  // ═══════════════════════════════════════════
+  // MCP Prompts — reusable templates from community + feedback databases
+  // ═══════════════════════════════════════════
+
+  server.registerPrompt(
+    'mockup-scene',
+    {
+      title: 'Mockup Scene Prompt',
+      description: 'Get a proven, high-quality scene description for mockup-generate. Pulls from community presets and user-validated examples (thumbs-up feedback). Returns a ready-to-use prompt — just pass your design as referenceImages.',
+      argsSchema: {
+        category: z.enum(['sticker', 'business-card', 'packaging', 'apparel', 'signage', 'social-media', 'device', 'print', 'any']).default('any').describe('Design category to find scene prompts for.'),
+        style: z.string().optional().describe('Optional style keywords to match (e.g. "minimal", "realistic", "vintage", "industrial").'),
+      },
+    },
+    async ({ category, style }) => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+
+        // 1. Community presets (admin-approved, high engagement)
+        const communityFilter: any = { isApproved: true };
+        if (category !== 'any') {
+          communityFilter.$or = [
+            { category: { $regex: category, $options: 'i' } },
+            { presetType: { $regex: category, $options: 'i' } },
+            { tags: { $regex: category, $options: 'i' } },
+          ];
+        }
+        if (style) {
+          const styleFilter = { $regex: style, $options: 'i' };
+          communityFilter.prompt = styleFilter;
+        }
+
+        const communityPresets = await db.collection('community_presets')
+          .find(communityFilter)
+          .sort({ likesCount: -1, createdAt: -1 })
+          .limit(5)
+          .toArray();
+
+        // 2. Prisma MockupExamples (user-validated via thumbs-up)
+        const prismaFilter: any = { rating: 1 };
+        if (category !== 'any') prismaFilter.designType = { contains: category, mode: 'insensitive' };
+        if (style) prismaFilter.prompt = { contains: style, mode: 'insensitive' };
+
+        const mockupExamples = await prisma.mockupExample.findMany({
+          where: prismaFilter,
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+          select: { prompt: true, designType: true, tags: true, aspectRatio: true, imageUrl: true },
+        });
+
+        // 3. Official MockupPatterns (auto-promoted from feedback loop)
+        const patternFilter: any = { isOfficial: true };
+        if (category !== 'any') patternFilter.designType = { contains: category, mode: 'insensitive' };
+
+        const patterns = await prisma.mockupPattern.findMany({
+          where: patternFilter,
+          orderBy: { rating: 'desc' },
+          take: 3,
+          select: { prompt: true, designType: true, tags: true, rating: true },
+        });
+
+        // Build response
+        const sections: string[] = [];
+
+        if (patterns.length > 0) {
+          sections.push('## Top Proven Patterns (auto-promoted from 5+ positive feedback)\n');
+          for (const p of patterns) {
+            sections.push(`**[${p.designType}]** (${p.rating} thumbs-up)\n\`\`\`\n${p.prompt}\n\`\`\`\nTags: ${p.tags.join(', ')}\n`);
+          }
+        }
+
+        if (communityPresets.length > 0) {
+          sections.push('## Community Presets (curated & approved)\n');
+          for (const c of communityPresets) {
+            sections.push(`**${c.name}** — ${c.description || ''}\n\`\`\`\n${c.prompt}\n\`\`\`\nCategory: ${c.category} | Tags: ${(c.tags || []).join(', ')} | Use case: ${c.useCase || 'general'}\n`);
+          }
+        }
+
+        if (mockupExamples.length > 0) {
+          sections.push('## User-Validated Examples (thumbs-up feedback)\n');
+          for (const e of mockupExamples) {
+            sections.push(`**[${e.designType}]** ${e.aspectRatio}\n\`\`\`\n${e.prompt}\n\`\`\`\nTags: ${e.tags.join(', ')}${e.imageUrl ? `\nResult: ${e.imageUrl}` : ''}\n`);
+          }
+        }
+
+        if (sections.length === 0) {
+          sections.push(`No matching prompts found for category="${category}"${style ? ` style="${style}"` : ''}. Try category="any" or different style keywords.`);
+        }
+
+        const intro = `# Mockup Scene Prompts\nCategory: ${category}${style ? ` | Style: ${style}` : ''}\n\nThese are proven prompts. Pick one and use it as the \`prompt\` parameter in mockup-generate. Pass your design as \`referenceImages\`.\n\n`;
+
+        return {
+          messages: [{
+            role: 'user' as const,
+            content: { type: 'text' as const, text: intro + sections.join('\n') },
+          }],
+        };
+      } catch (err: any) {
+        return {
+          messages: [{
+            role: 'user' as const,
+            content: { type: 'text' as const, text: `Error fetching prompts: ${err.message}` },
+          }],
+        };
+      }
+    }
+  );
+
+  server.registerPrompt(
+    'prompt-library',
+    {
+      title: 'Prompt Library',
+      description: 'Browse the full prompt library — community presets, user-validated examples, and official patterns. Filter by category, tags, or search keywords. Use these as starting points for any generation tool.',
+      argsSchema: {
+        search: z.string().optional().describe('Keyword search across prompt text, name, and tags.'),
+        category: z.string().optional().describe('Filter by category: mockup, 3d, presets, aesthetics, themes, angle, texture, ambience, luminance.'),
+        source: z.enum(['community', 'feedback', 'patterns', 'all']).default('all').describe('Which database to query.'),
+        limit: z.number().int().min(1).max(20).default(10).describe('Max results to return.'),
+      },
+    },
+    async ({ search, category, source, limit }) => {
+      try {
+        const results: string[] = [];
+
+        // Community presets
+        if (source === 'all' || source === 'community') {
+          await connectToMongoDB();
+          const db = getDb();
+          const filter: any = { isApproved: true };
+          if (category) filter.category = { $regex: category, $options: 'i' };
+          if (search) {
+            filter.$or = [
+              { prompt: { $regex: search, $options: 'i' } },
+              { name: { $regex: search, $options: 'i' } },
+              { tags: { $regex: search, $options: 'i' } },
+            ];
+          }
+          const presets = await db.collection('community_presets')
+            .find(filter).sort({ likesCount: -1, createdAt: -1 }).limit(limit).toArray();
+
+          if (presets.length > 0) {
+            results.push('## Community Presets\n');
+            for (const p of presets) {
+              results.push(`### ${p.name}\n${p.description || ''}\n\`\`\`\n${(p.prompt || '').substring(0, 2000)}\n\`\`\`\nCategory: ${p.category} | Tags: ${(p.tags || []).join(', ')}${p.examples?.length ? `\nExamples: ${p.examples.slice(0, 3).join(' | ')}` : ''}\n`);
+            }
+          }
+        }
+
+        // Feedback examples
+        if (source === 'all' || source === 'feedback') {
+          const where: any = { rating: 1 };
+          if (category) where.designType = { contains: category, mode: 'insensitive' };
+          if (search) where.prompt = { contains: search, mode: 'insensitive' };
+          const examples = await prisma.mockupExample.findMany({
+            where, orderBy: { createdAt: 'desc' }, take: limit,
+            select: { prompt: true, designType: true, tags: true, aspectRatio: true, imageUrl: true },
+          });
+
+          if (examples.length > 0) {
+            results.push('## User-Validated Examples\n');
+            for (const e of examples) {
+              results.push(`**[${e.designType}]** ${e.aspectRatio}\n\`\`\`\n${e.prompt.substring(0, 2000)}\n\`\`\`\nTags: ${e.tags.join(', ')}${e.imageUrl ? `\nResult: ${e.imageUrl}` : ''}\n`);
+            }
+          }
+        }
+
+        // Official patterns
+        if (source === 'all' || source === 'patterns') {
+          const where: any = { isOfficial: true };
+          if (category) where.designType = { contains: category, mode: 'insensitive' };
+          if (search) where.prompt = { contains: search, mode: 'insensitive' };
+          const patterns = await prisma.mockupPattern.findMany({
+            where, orderBy: { rating: 'desc' }, take: limit,
+            select: { prompt: true, designType: true, tags: true, rating: true },
+          });
+
+          if (patterns.length > 0) {
+            results.push('## Official Patterns (auto-promoted)\n');
+            for (const p of patterns) {
+              results.push(`**[${p.designType}]** (${p.rating} thumbs-up)\n\`\`\`\n${p.prompt.substring(0, 2000)}\n\`\`\`\nTags: ${p.tags.join(', ')}\n`);
+            }
+          }
+        }
+
+        const header = `# Prompt Library\n${search ? `Search: "${search}" | ` : ''}${category ? `Category: ${category} | ` : ''}Source: ${source} | Limit: ${limit}\n\n`;
+
+        return {
+          messages: [{
+            role: 'user' as const,
+            content: { type: 'text' as const, text: results.length > 0 ? header + results.join('\n') : header + 'No matching prompts found. Try broader search terms or category="mockup".' },
+          }],
+        };
+      } catch (err: any) {
+        return {
+          messages: [{
+            role: 'user' as const,
+            content: { type: 'text' as const, text: `Error: ${err.message}` },
+          }],
+        };
+      }
+    }
+  );
 
   return server;
 }

@@ -1,9 +1,10 @@
 import { create } from 'zustand';
+import { temporal } from 'zundo';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
 
 type MaterialPreset = 'default' | 'plastic' | 'metal' | 'glass' | 'rubber' | 'chrome' | 'gold' | 'clay' | 'emissive' | 'holographic' | 'brushedSteel' | 'aluminum' | 'copper' | 'roseGold' | 'platinum' | 'ceramic' | 'marble' | 'concrete' | 'wood' | 'velvet' | 'leather' | 'frostedGlass' | 'diamond' | 'pearl' | 'carbonFiber' | 'carPaint' | 'ice' | 'obsidian' | 'wax' | 'mattePaint';
 
-type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'spinFloat' | 'swing';
+type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'spinFloat' | 'swing' | 'physicsFall';
 type ExportFormat = 'png' | 'mp4' | 'gif' | 'glb' | 'obj';
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
 
@@ -158,6 +159,7 @@ export const ANIMATION_PRESETS: { id: AnimationType; label: string }[] = [
   { id: 'wobble', label: 'Wobble' },
   { id: 'swing', label: 'Swing' },
   { id: 'spinFloat', label: 'Spin + Float' },
+  { id: 'physicsFall', label: 'Physics Fall' },
 ];
 
 export const ASPECT_RATIOS: Record<AspectRatio, { w: number; h: number; label: string }> = {
@@ -186,6 +188,7 @@ interface Studio3DState {
   fileName: string;
 
   // Geometry
+  shapeType: 'standard' | 'coin';
   depth: number;
   smoothness: number;
   bevelEnabled: boolean;
@@ -210,21 +213,42 @@ interface Studio3DState {
   lightPosition: [number, number, number];
   lightIntensity: number;
   ambientIntensity: number;
+  fillLightIntensity: number;
+  bounceLightIntensity: number;
+  pointLightIntensity: number;
   shadow: boolean;
   showGrid: boolean;
 
   // Environment
   environment: string;
+  customHdriUrl: string;
   background: string;
   bgType: 'solid' | 'linear' | 'radial';
   bgGradient: { color1: string; color2: string; angle: number };
   transparentBg: boolean;
+
+  // Post-processing effects
+  bloomEnabled: boolean;
+  bloomIntensity: number;
+  bloomThreshold: number;
+  dofEnabled: boolean;
+  dofFocusDistance: number;
+  dofBokehScale: number;
+  vignetteEnabled: boolean;
+  vignetteIntensity: number;
 
   // Animation
   animate: AnimationType;
   animateSpeed: number;
   animateReverse: boolean;
   animateEasing: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
+
+  // Physics falling simulation settings
+  physicsCount: number;
+  physicsGravity: number;
+  physicsBounciness: number;
+  physicsFriction: number;
+  physicsSize: number;
 
   // Camera
   rotationX: number;
@@ -251,6 +275,7 @@ interface Studio3DState {
   setText: (text: string) => void;
   setFont: (font: string) => void;
   setInputMode: (mode: 'svg' | 'text') => void;
+  setShapeType: (v: 'standard' | 'coin') => void;
   setDepth: (v: number) => void;
   setSmoothness: (v: number) => void;
   setBevelEnabled: (v: boolean) => void;
@@ -269,17 +294,34 @@ interface Studio3DState {
   setLightPosition: (p: [number, number, number]) => void;
   setLightIntensity: (v: number) => void;
   setAmbientIntensity: (v: number) => void;
+  setFillLightIntensity: (v: number) => void;
+  setBounceLightIntensity: (v: number) => void;
+  setPointLightIntensity: (v: number) => void;
   setShadow: (v: boolean) => void;
   setShowGrid: (v: boolean) => void;
   setEnvironment: (e: string) => void;
+  setCustomHdriUrl: (url: string) => void;
   setBackground: (c: string) => void;
   setBgType: (type: 'solid' | 'linear' | 'radial') => void;
   setBgGradient: (g: Partial<{ color1: string; color2: string; angle: number }>) => void;
   setTransparentBg: (v: boolean) => void;
+  setBloomEnabled: (v: boolean) => void;
+  setBloomIntensity: (v: number) => void;
+  setBloomThreshold: (v: number) => void;
+  setDofEnabled: (v: boolean) => void;
+  setDofFocusDistance: (v: number) => void;
+  setDofBokehScale: (v: number) => void;
+  setVignetteEnabled: (v: boolean) => void;
+  setVignetteIntensity: (v: number) => void;
   setAnimate: (a: AnimationType) => void;
   setAnimateSpeed: (v: number) => void;
   setAnimateReverse: (v: boolean) => void;
   setAnimateEasing: (v: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut') => void;
+  setPhysicsCount: (v: number) => void;
+  setPhysicsGravity: (v: number) => void;
+  setPhysicsBounciness: (v: number) => void;
+  setPhysicsFriction: (v: number) => void;
+  setPhysicsSize: (v: number) => void;
   setRotationX: (v: number) => void;
   setRotationY: (v: number) => void;
   setZoom: (v: number) => void;
@@ -292,6 +334,7 @@ interface Studio3DState {
   setActiveTab: (t: Studio3DState['activeTab']) => void;
   setIsLoading: (v: boolean) => void;
   applyScenePreset: (name: string) => void;
+  applyConfig: (config: Partial<typeof INITIAL_STATE>) => void;
   resetScene: () => void;
 }
 
@@ -301,6 +344,7 @@ const INITIAL_STATE = {
   text: '',
   font: 'DM Sans',
   fileName: '',
+  shapeType: 'standard' as const,
   depth: 0.9,
   smoothness: 0.2,
   bevelEnabled: true,
@@ -319,17 +363,34 @@ const INITIAL_STATE = {
   lightPosition: [5, 5, 5] as [number, number, number],
   lightIntensity: 1,
   ambientIntensity: 0.4,
+  fillLightIntensity: 0.4,
+  bounceLightIntensity: 0.2,
+  pointLightIntensity: 0.3,
   shadow: true,
   showGrid: false,
   environment: 'studio',
+  customHdriUrl: '',
   background: '#0a0a0a',
   bgType: 'solid' as const,
   bgGradient: { color1: '#0a0a0a', color2: '#1a1a2e', angle: 45 },
   transparentBg: false,
+  bloomEnabled: false,
+  bloomIntensity: 1,
+  bloomThreshold: 0.9,
+  dofEnabled: false,
+  dofFocusDistance: 0.02,
+  dofBokehScale: 3,
+  vignetteEnabled: false,
+  vignetteIntensity: 0.5,
   animate: 'spin' as AnimationType,
   animateSpeed: 0.3,
   animateReverse: false,
   animateEasing: 'linear' as const,
+  physicsCount: 25,
+  physicsGravity: 9.8,
+  physicsBounciness: 0.6,
+  physicsFriction: 0.1,
+  physicsSize: 0.8,
   rotationX: 0,
   rotationY: 0,
   zoom: 8,
@@ -346,7 +407,9 @@ const INITIAL_STATE = {
   resetKey: 0,
 };
 
-export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get, api) => ({
+export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
+  temporal(
+  (set, get, api) => ({
   ...createShaderSlice(set as any, get as any, api as any),
   ...INITIAL_STATE,
 
@@ -354,6 +417,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
   setText: (text) => set({ text }),
   setFont: (font) => set({ font }),
   setInputMode: (mode) => set({ inputMode: mode }),
+  setShapeType: (shapeType) => set({ shapeType }),
   setDepth: (depth) => set({ depth }),
   setSmoothness: (smoothness) => set({ smoothness }),
   setBevelEnabled: (bevelEnabled) => set({ bevelEnabled }),
@@ -372,17 +436,34 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
   setLightPosition: (lightPosition) => set({ lightPosition }),
   setLightIntensity: (lightIntensity) => set({ lightIntensity }),
   setAmbientIntensity: (ambientIntensity) => set({ ambientIntensity }),
+  setFillLightIntensity: (fillLightIntensity) => set({ fillLightIntensity }),
+  setBounceLightIntensity: (bounceLightIntensity) => set({ bounceLightIntensity }),
+  setPointLightIntensity: (pointLightIntensity) => set({ pointLightIntensity }),
   setShadow: (shadow) => set({ shadow }),
   setShowGrid: (showGrid) => set({ showGrid }),
-  setEnvironment: (environment) => set({ environment }),
+  setEnvironment: (environment) => set({ environment, customHdriUrl: '' }),
+  setCustomHdriUrl: (customHdriUrl) => set({ customHdriUrl, environment: '' }),
   setBackground: (background) => set({ background }),
   setBgType: (bgType) => set({ bgType }),
   setBgGradient: (g) => set((s) => ({ bgGradient: { ...s.bgGradient, ...g } })),
   setTransparentBg: (transparentBg) => set({ transparentBg }),
+  setBloomEnabled: (bloomEnabled) => set({ bloomEnabled }),
+  setBloomIntensity: (bloomIntensity) => set({ bloomIntensity }),
+  setBloomThreshold: (bloomThreshold) => set({ bloomThreshold }),
+  setDofEnabled: (dofEnabled) => set({ dofEnabled }),
+  setDofFocusDistance: (dofFocusDistance) => set({ dofFocusDistance }),
+  setDofBokehScale: (dofBokehScale) => set({ dofBokehScale }),
+  setVignetteEnabled: (vignetteEnabled) => set({ vignetteEnabled }),
+  setVignetteIntensity: (vignetteIntensity) => set({ vignetteIntensity }),
   setAnimate: (animate) => set({ animate }),
   setAnimateSpeed: (animateSpeed) => set({ animateSpeed }),
   setAnimateReverse: (animateReverse) => set({ animateReverse }),
   setAnimateEasing: (animateEasing) => set({ animateEasing }),
+  setPhysicsCount: (physicsCount) => set({ physicsCount }),
+  setPhysicsGravity: (physicsGravity) => set({ physicsGravity }),
+  setPhysicsBounciness: (physicsBounciness) => set({ physicsBounciness }),
+  setPhysicsFriction: (physicsFriction) => set({ physicsFriction }),
+  setPhysicsSize: (physicsSize) => set({ physicsSize }),
   setRotationX: (rotationX) => set({ rotationX }),
   setRotationY: (rotationY) => set({ rotationY }),
   setZoom: (zoom) => set({ zoom }),
@@ -412,8 +493,79 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()((set, get,
     });
   },
 
+  applyConfig: (config) => {
+    const allowed = new Set(Object.keys(INITIAL_STATE));
+    const patch: Record<string, any> = { resetKey: Date.now() };
+    for (const [k, v] of Object.entries(config)) {
+      if (allowed.has(k) && v !== undefined) patch[k] = v;
+    }
+    set(patch as any);
+  },
+
   resetScene: () => {
     const { _cameraControlsRef } = get();
     set({ ...INITIAL_STATE, _cameraControlsRef, resetKey: Date.now(), shaderEnabled: false, shaderType: 'halftone' as any, shaderValues: {} });
   },
-}));
+}),
+  {
+    partialize: (state) => {
+      const { _cameraControlsRef, _cameraInfo, panelVisible, activeTab, isLoading, isExporting, resetKey, ...tracked } = state;
+      return tracked;
+    },
+    limit: 50,
+  },
+));
+
+// Scene save/load (localStorage)
+const SCENES_KEY = 'visant-3d-scenes';
+
+export interface SavedScene {
+  id: string;
+  name: string;
+  savedAt: number;
+  config: Record<string, any>;
+}
+
+export function getSavedScenes(): SavedScene[] {
+  try {
+    return JSON.parse(localStorage.getItem(SCENES_KEY) || '[]');
+  } catch { return []; }
+}
+
+export function saveScene(name: string): SavedScene {
+  const state = useStudio3DStore.getState();
+  const exclude = new Set(['_cameraControlsRef', '_cameraInfo', 'panelVisible', 'activeTab', 'isLoading', 'isExporting', 'resetKey']);
+  const config: Record<string, any> = {};
+  for (const [k, v] of Object.entries(INITIAL_STATE)) {
+    if (!exclude.has(k)) config[k] = (state as any)[k] ?? v;
+  }
+  config.shaderEnabled = state.shaderEnabled;
+  config.shaderType = state.shaderType;
+  config.shaderValues = state.shaderValues;
+
+  const scene: SavedScene = { id: crypto.randomUUID(), name, savedAt: Date.now(), config };
+  const scenes = getSavedScenes();
+  scenes.unshift(scene);
+  if (scenes.length > 50) scenes.length = 50;
+  localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
+  return scene;
+}
+
+export function loadScene(id: string) {
+  const scene = getSavedScenes().find(s => s.id === id);
+  if (!scene) return false;
+  useStudio3DStore.getState().applyConfig(scene.config as any);
+  if (scene.config.shaderEnabled !== undefined) {
+    useStudio3DStore.setState({
+      shaderEnabled: scene.config.shaderEnabled,
+      shaderType: scene.config.shaderType,
+      shaderValues: scene.config.shaderValues || {},
+    });
+  }
+  return true;
+}
+
+export function deleteScene(id: string) {
+  const scenes = getSavedScenes().filter(s => s.id !== id);
+  localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
+}

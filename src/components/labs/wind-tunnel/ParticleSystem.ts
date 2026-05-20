@@ -94,20 +94,42 @@ export class ParticleSystem {
       const gj0 = Math.max(1, Math.min(N, Math.floor(gy)));
       const gi1 = Math.min(N, gi0 + 1);
       const gj1 = Math.min(N, gj0 + 1);
+
+      if (solver.isObstacle(gi0, gj0)) {
+        continue;
+      }
+
       const fx = gx - gi0;
       const fy = gy - gj0;
-      const [u00, v00] = solver.getVelocity(gi0, gj0);
-      const [u10, v10] = solver.getVelocity(gi1, gj0);
-      const [u01, v01] = solver.getVelocity(gi0, gj1);
-      const [u11, v11] = solver.getVelocity(gi1, gj1);
+
+      const u00 = solver.getU(gi0, gj0);
+      const v00 = solver.getV(gi0, gj0);
+      const u10 = solver.getU(gi1, gj0);
+      const v10 = solver.getV(gi1, gj0);
+      const u01 = solver.getU(gi0, gj1);
+      const v01 = solver.getV(gi0, gj1);
+      const u11 = solver.getU(gi1, gj1);
+      const v11 = solver.getV(gi1, gj1);
       const fu = u00 * (1 - fx) * (1 - fy) + u10 * fx * (1 - fy) + u01 * (1 - fx) * fy + u11 * fx * fy;
       const fv = v00 * (1 - fx) * (1 - fy) + v10 * fx * (1 - fy) + v01 * (1 - fx) * fy + v11 * fx * fy;
 
       this.vx[i] = this.vx[i] * 0.92 + fu * scaleX * 0.8;
       this.vy[i] = this.vy[i] * 0.92 + fv * scaleX * 0.8;
 
-      this.x[i] += this.vx[i] * dt;
-      this.y[i] += this.vy[i] * dt;
+      const newX = this.x[i] + this.vx[i] * dt;
+      const newY = this.y[i] + this.vy[i] * dt;
+
+      const ngi = Math.max(1, Math.min(N, Math.floor((newX / width) * N + 0.5)));
+      const ngj = Math.max(1, Math.min(N, Math.floor((newY / height) * N + 0.5)));
+      if (solver.isObstacle(ngi, ngj)) {
+        this.vx[i] *= -0.3;
+        this.vy[i] += (Math.random() - 0.5) * Math.abs(this.vx[i]) * 2;
+        this.x[i] += this.vx[i] * dt;
+        this.y[i] += this.vy[i] * dt;
+      } else {
+        this.x[i] = newX;
+        this.y[i] = newY;
+      }
 
       this.speed[i] = Math.sqrt(this.vx[i] * this.vx[i] + this.vy[i] * this.vy[i]);
 
@@ -136,7 +158,7 @@ export class ParticleSystem {
     colorMode: 'velocity' | 'uniform' | 'density' | 'rainbow',
     baseColor: string,
     particleSize: number,
-    solver?: FluidSolver,
+    _solver?: FluidSolver,
     renderMode: 'particles' | 'streamlines' = 'particles'
   ): void {
     if (this.active === 0) return;
@@ -168,24 +190,46 @@ export class ParticleSystem {
   ): void {
     ctx.lineWidth = Math.max(0.5, lineWidth * 0.6);
     ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
     for (let i = 0; i < this.active; i++) {
       const baseAlpha = this.getAlpha(i);
       if (baseAlpha < 0.02) continue;
 
-      let hasSegment = false;
-      ctx.beginPath();
-      ctx.moveTo(this.x[i], this.y[i]);
-
+      const pts: number[] = [this.x[i], this.y[i]];
       for (let t = 0; t < this.trailLen; t++) {
         const tx = this.trailX[t][i];
-        const ty = this.trailY[t][i];
         if (tx < 0) break;
-        ctx.lineTo(tx, ty);
-        hasSegment = true;
+        pts.push(tx, this.trailY[t][i]);
       }
 
-      if (!hasSegment) continue;
+      const numPts = pts.length >> 1;
+      if (numPts < 2) continue;
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0], pts[1]);
+
+      if (numPts === 2) {
+        ctx.lineTo(pts[2], pts[3]);
+      } else {
+        for (let k = 0; k < numPts - 1; k++) {
+          const p0x = k > 0 ? pts[(k - 1) * 2] : pts[0];
+          const p0y = k > 0 ? pts[(k - 1) * 2 + 1] : pts[1];
+          const p1x = pts[k * 2];
+          const p1y = pts[k * 2 + 1];
+          const p2x = pts[(k + 1) * 2];
+          const p2y = pts[(k + 1) * 2 + 1];
+          const p3x = k + 2 < numPts ? pts[(k + 2) * 2] : p2x;
+          const p3y = k + 2 < numPts ? pts[(k + 2) * 2 + 1] : p2y;
+
+          const cp1x = p1x + (p2x - p0x) / 6;
+          const cp1y = p1y + (p2y - p0y) / 6;
+          const cp2x = p2x - (p3x - p1x) / 6;
+          const cp2y = p2y - (p3y - p1y) / 6;
+
+          ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2x, p2y);
+        }
+      }
 
       ctx.strokeStyle = this.getColor(i, baseAlpha * 0.6, colorMode, '');
       ctx.stroke();

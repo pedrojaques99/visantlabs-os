@@ -1,8 +1,8 @@
 import React, { useRef, useCallback, useState, useEffect, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
-import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw } from 'lucide-react';
+import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, Undo2, Redo2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -33,7 +33,33 @@ export const Studio3DPage: React.FC = () => {
   const [confirmReset, setConfirmReset] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const applyConfig = useStudio3DStore((s) => s.applyConfig);
+  const setSvgData = useStudio3DStore((s) => s.setSvgData);
+
   useEffect(() => { document.title = '3D Studio — Visant'; }, []);
+
+  useEffect(() => {
+    const sceneId = searchParams.get('sceneId');
+    if (!sceneId) return;
+
+    const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+    fetch(`${API_BASE}/studio3d/${sceneId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data?.scene) return;
+        const { config, svgData, inputMode, text, font } = data.scene;
+        if (config) applyConfig(config);
+        if (svgData) setSvgData(svgData, data.scene.name || '');
+        if (inputMode) applyConfig({ inputMode });
+        if (text) applyConfig({ text });
+        if (font) applyConfig({ font });
+        toast.success(`Scene "${data.scene.name}" loaded`);
+      })
+      .catch(() => toast.error('Failed to load scene'));
+
+    setSearchParams({}, { replace: true });
+  }, []);
 
   const panelVisible = useStudio3DStore((s) => s.panelVisible);
   const setPanelVisible = useStudio3DStore((s) => s.setPanelVisible);
@@ -98,7 +124,11 @@ export const Studio3DPage: React.FC = () => {
     toast.success(t('studio3d.sceneReset'));
   }, [resetScene]);
 
+  const { undo, redo, pastStates, futureStates } = useStudio3DStore.temporal.getState();
+
   // Keyboard shortcuts
+  useHotkeys('mod+z', (e) => { e.preventDefault(); undo(); }, { enableOnFormTags: false });
+  useHotkeys('mod+shift+z', (e) => { e.preventDefault(); redo(); }, { enableOnFormTags: false });
   useHotkeys('mod+e', (e) => { e.preventDefault(); handleExport(); }, { enableOnFormTags: false });
   useHotkeys('r', () => setConfirmReset(true), { enableOnFormTags: false });
   useHotkeys('tab', (e) => { e.preventDefault(); setPanelVisible(!panelVisible); }, { enableOnFormTags: false });
@@ -171,7 +201,7 @@ export const Studio3DPage: React.FC = () => {
         left={
           <>
             <Tooltip content={t('studio3d.backToApps')}>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => navigate('/apps')}>
+              <Button variant="ghost" size="icon" aria-label="Back to apps" className="h-7 w-7 text-neutral-500" onClick={() => navigate('/apps')}>
                 <ChevronLeft size={16} />
               </Button>
             </Tooltip>
@@ -182,14 +212,24 @@ export const Studio3DPage: React.FC = () => {
         }
         right={
           <>
+            <Tooltip content="Undo (Ctrl+Z)">
+              <Button variant="ghost" size="icon" aria-label="Undo" className="h-7 w-7 text-neutral-500 disabled:opacity-30" disabled={pastStates.length === 0} onClick={() => undo()}>
+                <Undo2 size={14} />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Redo (Ctrl+Shift+Z)">
+              <Button variant="ghost" size="icon" aria-label="Redo" className="h-7 w-7 text-neutral-500 disabled:opacity-30" disabled={futureStates.length === 0} onClick={() => redo()}>
+                <Redo2 size={14} />
+              </Button>
+            </Tooltip>
             <Tooltip content={t('studio3d.resetSceneShortcut')}>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setConfirmReset(true)}>
+              <Button variant="ghost" size="icon" aria-label="Reset scene" className="h-7 w-7 text-neutral-500" onClick={() => setConfirmReset(true)}>
                 <RotateCcw size={14} />
               </Button>
             </Tooltip>
             {!isMobile && (
               <Tooltip content={panelVisible ? t('studio3d.hidePanel') : t('studio3d.showPanel')}>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
+                <Button variant="ghost" size="icon" aria-label={panelVisible ? 'Hide panel' : 'Show panel'} className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
                   {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                 </Button>
               </Tooltip>

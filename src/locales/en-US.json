@@ -4358,6 +4358,9 @@
     },
     "geometry": {
       "title": "GEOMETRY",
+      "shapeType": "Logo Shape Mode",
+      "shapeStandard": "Standard Extruded",
+      "shapeCoin": "Minted Coin",
       "depth": "Depth",
       "bevel": "Bevel",
       "smoothness": "Smoothness",
@@ -4434,7 +4437,16 @@
         "easeOut": "Ease Out",
         "easeInOut": "Ease In Out"
       },
-      "reverse": "Reverse"
+      "reverse": "Reverse",
+      "physics": {
+        "title": "Physics Settings",
+        "count": "Logo Count",
+        "gravity": "Gravity",
+        "bounciness": "Bounciness",
+        "friction": "Friction",
+        "size": "Logo Size",
+        "reset": "Reset / Trigger Fall"
+      }
     },
     "export": {
       "title": "Export",

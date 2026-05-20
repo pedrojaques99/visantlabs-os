@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, CreditCard, Plus, Minus, Pickaxe, QrCode, Info, FileText, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 import { getUserLocale, formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
 import { CREDIT_PACKAGES, getCreditPackageLink, getCreditPackagePrice } from '@/utils/creditPackages';
+import { getCreditYieldRows } from '@/utils/creditCalculator';
 import { useTranslation } from '@/hooks/useTranslation';
 import { LinearGradientBackground } from './ui/LinearGradientBackground';
 import type { SubscriptionStatus } from '../services/subscriptionService';
@@ -361,16 +362,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 <span>Modelo / Resolução</span>
                                 <span>Imagens</span>
                               </div>
-                              {[
-                                { label: '2.5 Flash / NB2 1K', cost: 1 },
-                                { label: 'Gemini Pro 1K (HD)', cost: 2 },
-                                { label: 'Gemini Pro 2K', cost: 3 },
-                                { label: 'Gemini Pro 3K', cost: 4 },
-                                { label: 'Gemini Pro 4K', cost: 5 },
-                                { label: 'Nano Banana 2 2K', cost: 3 },
-                                { label: 'Nano Banana 2 3K', cost: 4 },
-                                { label: 'Nano Banana 2 4K', cost: 5 },
-                              ].map((item, idx) => (
+                              {getCreditYieldRows().map((item, idx) => (
                                 <div key={idx} className="flex justify-between text-[10px] font-mono items-center">
                                   <span className="text-neutral-300">{item.label}</span>
                                   <span className="text-brand-cyan font-bold tabular-nums">{Math.floor(currentPackage.credits / item.cost)}</span>
@@ -605,16 +597,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               <span>Modelo / Resolução</span>
                               <span>Imagens</span>
                             </div>
-                            {[
-                              { label: '2.5 Flash / NB2 1K', cost: 1 },
-                              { label: 'Gemini Pro 1K (HD)', cost: 2 },
-                              { label: 'Gemini Pro 2K', cost: 3 },
-                              { label: 'Gemini Pro 3K', cost: 4 },
-                              { label: 'Gemini Pro 4K', cost: 5 },
-                              { label: 'Nano Banana 2 2K', cost: 3 },
-                              { label: 'Nano Banana 2 3K', cost: 4 },
-                              { label: 'Nano Banana 2 4K', cost: 5 },
-                            ].map((item, idx) => (
+                            {getCreditYieldRows().map((item, idx) => (
                               <div key={idx} className="flex justify-between text-[10px] font-mono items-center">
                                 <span className="text-neutral-300">{item.label}</span>
                                 <span className="text-brand-cyan font-bold tabular-nums">{Math.floor(totalCreditsAvailable / item.cost)}</span>

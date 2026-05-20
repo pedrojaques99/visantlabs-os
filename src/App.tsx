@@ -48,6 +48,8 @@ const ForgotPasswordPage = lazyWithRetry(() => import('./pages/ForgotPasswordPag
 const DesignSystemPage = lazyWithRetry(() => import('./pages/DesignSystemPage').then(m => ({ default: m.DesignSystemPage })));
 const DocsPage = lazyWithRetry(() => import('./pages/DocsPage').then(m => ({ default: m.DocsPage })));
 const ApiKeysPage = lazyWithRetry(() => import('./pages/ApiKeysPage').then(m => ({ default: m.ApiKeysPage })));
+const UsageDashboardPage = lazyWithRetry(() => import('./pages/UsageDashboardPage').then(m => ({ default: m.UsageDashboardPage })));
+const GettingStartedPage = lazyWithRetry(() => import('./pages/GettingStartedPage').then(m => ({ default: m.GettingStartedPage })));
 const BrandGuidelinesPage = lazyWithRetry(() => import('./pages/BrandGuidelinesPage').then(m => ({ default: m.BrandGuidelinesPage })));
 const PublicBrandGuideline = lazyWithRetry(() => import('./pages/PublicBrandGuideline').then(m => ({ default: m.PublicBrandGuideline })));
 const BrandingExpertPage = lazyWithRetry(() => import('./pages/BrandingExpertPage').then(m => ({ default: m.BrandingExpertPage })));
@@ -61,6 +63,8 @@ const WindTunnelPage = lazyWithRetry(() => import('./pages/labs/WindTunnelPage')
 const Studio3DPage = lazyWithRetry(() => import('./pages/Studio3DPage').then(m => ({ default: m.Studio3DPage })));
 const HalftonePage = lazyWithRetry(() => import('./pages/HalftonePage').then(m => ({ default: m.HalftonePage })));
 const GridMachinePage = lazyWithRetry(() => import('./pages/GridMachinePage').then(m => ({ default: m.GridMachinePage })));
+const RisoMachinePage = lazyWithRetry(() => import('./pages/RisoMachinePage').then(m => ({ default: m.RisoMachinePage })));
+const DeveloperPortalPage = lazyWithRetry(() => import('./pages/DeveloperPortalPage').then(m => ({ default: m.DeveloperPortalPage })));
 
 
 const LoadingFallback = () => (
@@ -108,6 +112,7 @@ const App: React.FC = () => {
                 <Route path="/3d-studio" element={<Studio3DPage />} />
                 <Route path="/cmyk-halftone" element={<HalftonePage />} />
                 <Route path="/grid-machine" element={<GridMachinePage />} />
+                <Route path="/riso-machine" element={<RisoMachinePage />} />
                 <Route path="/labs" element={<LabsPage />} />
                 <Route path="/labs/wind-tunnel" element={<WindTunnelPage />} />
                 <Route path="/about" element={<AboutPage />} />
@@ -117,7 +122,10 @@ const App: React.FC = () => {
                 <Route path="/brand/:slug" element={<PublicBrandGuideline />} />
                 <Route path="/design-system" element={<DesignSystemPage />} />
                 <Route path="/docs" element={<DocsPage />} />
+                <Route path="/developer" element={<DeveloperPortalPage />} />
                 <Route path="/settings/api-keys" element={<ApiKeysPage />} />
+                <Route path="/developer/usage" element={<UsageDashboardPage />} />
+                <Route path="/developer/getting-started" element={<GettingStartedPage />} />
                 <Route path="/auth" element={<AuthCallbackPage />} />
                 <Route path="/waitlist" element={<WaitlistPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />

@@ -12,6 +12,9 @@ export class FluidSolver {
   private obstacle: Uint8Array;
   private visc: number = 0.0001;
   private diff: number = 0.0001;
+  private pressure: Float64Array;
+
+  private readonly velOut: [number, number] = [0, 0];
 
   constructor(N: number) {
     this.N = N;
@@ -23,6 +26,11 @@ export class FluidSolver {
     this.dens = new Float64Array(this.size);
     this.dens0 = new Float64Array(this.size);
     this.obstacle = new Uint8Array(this.size);
+    this.pressure = new Float64Array(this.size);
+  }
+
+  getGridSize(): number {
+    return this.N;
   }
 
   private IX(i: number, j: number): number {
@@ -58,15 +66,52 @@ export class FluidSolver {
     this.obstacle.fill(0);
   }
 
+  isObstacle(i: number, j: number): boolean {
+    if (i < 1 || i > this.N || j < 1 || j > this.N) return false;
+    return this.obstacle[this.IX(i, j)] === 1;
+  }
+
   getVelocity(x: number, y: number): [number, number] {
-    if (x < 1 || x > this.N || y < 1 || y > this.N) return [0, 0];
+    if (x < 1 || x > this.N || y < 1 || y > this.N) {
+      this.velOut[0] = 0;
+      this.velOut[1] = 0;
+      return this.velOut;
+    }
     const idx = this.IX(x, y);
-    return [this.u[idx], this.v[idx]];
+    this.velOut[0] = this.u[idx];
+    this.velOut[1] = this.v[idx];
+    return this.velOut;
+  }
+
+  getU(i: number, j: number): number {
+    return this.u[this.IX(i, j)];
+  }
+
+  getV(i: number, j: number): number {
+    return this.v[this.IX(i, j)];
+  }
+
+  getSpeed(i: number, j: number): number {
+    const idx = this.IX(i, j);
+    const uu = this.u[idx];
+    const vv = this.v[idx];
+    return Math.sqrt(uu * uu + vv * vv);
+  }
+
+  getPressure(i: number, j: number): number {
+    if (i < 1 || i > this.N || j < 1 || j > this.N) return 0;
+    return this.pressure[this.IX(i, j)];
   }
 
   getDensity(x: number, y: number): number {
     if (x < 1 || x > this.N || y < 1 || y > this.N) return 0;
     return this.dens[this.IX(x, y)];
+  }
+
+  getVorticity(i: number, j: number): number {
+    if (i < 2 || i >= this.N || j < 2 || j >= this.N) return 0;
+    return (this.v[this.IX(i + 1, j)] - this.v[this.IX(i - 1, j)]
+          - this.u[this.IX(i, j + 1)] + this.u[this.IX(i, j - 1)]) * 0.5;
   }
 
   reset(): void {
@@ -76,6 +121,7 @@ export class FluidSolver {
     this.v0.fill(0);
     this.dens.fill(0);
     this.dens0.fill(0);
+    this.pressure.fill(0);
   }
 
   step(dt: number): void {
@@ -86,24 +132,24 @@ export class FluidSolver {
       if (this.obstacle[i]) { this.u[i] = 0; this.v[i] = 0; }
     }
 
-    this.swap(this.u, this.u0);
+    this.swap('u', 'u0');
     this.diffuse(1, this.u, this.u0, this.visc, dt);
-    this.swap(this.v, this.v0);
+    this.swap('v', 'v0');
     this.diffuse(2, this.v, this.v0, this.visc, dt);
 
     this.project(this.u, this.v, this.u0, this.v0);
 
-    this.swap(this.u, this.u0);
-    this.swap(this.v, this.v0);
+    this.swap('u', 'u0');
+    this.swap('v', 'v0');
     this.advect(1, this.u, this.u0, this.u0, this.v0, dt);
     this.advect(2, this.v, this.v0, this.u0, this.v0, dt);
 
     this.project(this.u, this.v, this.u0, this.v0);
 
     this.addSource(this.dens, this.dens0, dt);
-    this.swap(this.dens, this.dens0);
+    this.swap('dens', 'dens0');
     this.diffuse(0, this.dens, this.dens0, this.diff, dt);
-    this.swap(this.dens, this.dens0);
+    this.swap('dens', 'dens0');
     this.advect(0, this.dens, this.dens0, this.u, this.v, dt);
 
     this.u0.fill(0);
@@ -117,15 +163,10 @@ export class FluidSolver {
     }
   }
 
-  private temp: Float64Array;
-
-  private swap(a: Float64Array, b: Float64Array): void {
-    if (!this.temp || this.temp.length !== a.length) {
-      this.temp = new Float64Array(a.length);
-    }
-    this.temp.set(a);
-    a.set(b);
-    b.set(this.temp);
+  private swap(a: 'u' | 'v' | 'u0' | 'v0' | 'dens' | 'dens0', b: 'u' | 'v' | 'u0' | 'v0' | 'dens' | 'dens0'): void {
+    const tmp = this[a];
+    (this as any)[a] = this[b];
+    (this as any)[b] = tmp;
   }
 
   private setBnd(b: number, x: Float64Array): void {
@@ -161,7 +202,7 @@ export class FluidSolver {
     const a = dt * diff * N * N;
     const denom = 1 + 4 * a;
 
-    for (let k = 0; k < 20; k++) {
+    for (let k = 0; k < 6; k++) {
       for (let i = 1; i <= N; i++) {
         for (let j = 1; j <= N; j++) {
           if (this.obstacle[this.IX(i, j)]) {
@@ -239,7 +280,7 @@ export class FluidSolver {
     this.setBnd(0, div);
     this.setBnd(0, p);
 
-    for (let k = 0; k < 20; k++) {
+    for (let k = 0; k < 6; k++) {
       for (let i = 1; i <= N; i++) {
         for (let j = 1; j <= N; j++) {
           if (this.obstacle[this.IX(i, j)]) continue;
@@ -254,6 +295,8 @@ export class FluidSolver {
       }
       this.setBnd(0, p);
     }
+
+    this.pressure.set(p);
 
     for (let i = 1; i <= N; i++) {
       for (let j = 1; j <= N; j++) {

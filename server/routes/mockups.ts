@@ -20,6 +20,7 @@ import { rateLimit } from 'express-rate-limit';
 import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
 import { redisClient } from '../lib/redis.js';
 import { CACHE_TTL, CacheKey, hashQuery } from '../lib/cache-utils.js';
+import { dispatchWebhookEvent } from '../utils/webhookDispatch.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -740,6 +741,14 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     // Helper to download image from URL if base64 is not provided
     const processImageInput = async (img: any) => {
       if (!img) return null;
+      // Handle plain string inputs (URL or base64) from MCP tools
+      if (typeof img === 'string') {
+        if (img.startsWith('data:') || (!img.startsWith('http') && img.length > 200)) {
+          const base64Data = img.startsWith('data:') ? img.split(',')[1] || img : img;
+          return { base64: base64Data, mimeType: 'image/png' };
+        }
+        img = { url: img };
+      }
       if (img.base64) return img;
       if (img.url) {
         try {
@@ -1849,6 +1858,8 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, nex
         result.insertedId.toString()
       );
     }
+
+    dispatchWebhookEvent(userId, 'generation.complete', { type: 'mockup', id: result.insertedId.toString() });
 
     res.status(201).json(formattedMockup);
   } catch (error: any) {

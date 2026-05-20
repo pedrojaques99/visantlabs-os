@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import { Sentry } from './lib/sentry.js';
 import compression from 'compression';
 import { rateLimit } from 'express-rate-limit';
 import path from 'path';
@@ -54,6 +55,10 @@ import pipelineRoutes from './routes/pipeline.js';
 import campaignRoutes from './routes/campaign.js';
 import oauthRoutes from './routes/oauth.js';
 import liveblocksRoutes from './routes/liveblocks.js';
+import studio3dRoutes from './routes/studio3d.js';
+import openapiRoutes from './routes/openapi.js';
+import billingRoutes from './routes/billing.js';
+import webhookRoutes from './routes/webhooks.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
@@ -116,7 +121,6 @@ export function createApp() {
             return callback(null, origin);
           }
         }
-        if (process.env.NODE_ENV === 'production') return callback(null, origin);
         console.warn(`⚠️  CORS blocked origin: ${origin}`);
         return callback(new Error('Not allowed by CORS'));
       },
@@ -231,10 +235,22 @@ export function createApp() {
     ['/pipeline', pipelineRoutes],
     ['/canvas/generate-campaign', campaignRoutes],
     ['/liveblocks', liveblocksRoutes],
+    ['/studio3d', studio3dRoutes],
+    ['/billing', billingRoutes],
+    ['/webhooks', webhookRoutes],
   ];
+
+  // OpenAPI spec — public, no auth required
+  app.use(`${routePrefix}`, openapiRoutes);
 
   for (const [path, router] of mounts) {
     app.use(`${routePrefix}${path}`, router);
+  }
+
+  // ── API v1 alias — /api/v1/* mirrors /api/* for versioned access ────────
+  app.use(`${routePrefix}/v1`, openapiRoutes);
+  for (const [path, router] of mounts) {
+    app.use(`${routePrefix}/v1${path}`, router);
   }
 
   app.use('/', oauthRoutes);

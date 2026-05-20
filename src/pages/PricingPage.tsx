@@ -22,6 +22,45 @@ import { GlassPanel } from '../components/ui/GlassPanel';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import { STORAGE_PLANS, getCreditsEstimate } from './docs/data/pricingData';
 
+// API tier data for developer pricing tab
+const API_TIERS = [
+  {
+    id: 'free',
+    name: 'Free',
+    credits: 20,
+    rateLimit: 100,
+    highlighted: false,
+    features: ['20 credits/month', '100 req / 15 min', 'Read scopes only', 'Community support'],
+  },
+  {
+    id: 'creator',
+    name: 'Creator',
+    credits: 200,
+    rateLimit: 500,
+    highlighted: true,
+    features: ['200 credits/month', '500 req / 15 min', 'All scopes', 'Email support'],
+  },
+  {
+    id: 'studio',
+    name: 'Studio',
+    credits: 1000,
+    rateLimit: 2000,
+    highlighted: false,
+    features: ['1000 credits/month', '2000 req / 15 min', 'All scopes + priority queue', 'Priority support'],
+  },
+];
+
+// Per-call credit costs — mirrors server/utils/usageTracking.ts getCreditsRequired()
+const CREDIT_COSTS = [
+  { operation: 'Image generation (512px)', credits: '1' },
+  { operation: 'Image generation (1K / HD)', credits: '2' },
+  { operation: 'Image generation (2K)', credits: '3' },
+  { operation: 'Image generation (4K)', credits: '4–7' },
+  { operation: 'Video generation (fast)', credits: '15' },
+  { operation: 'Video generation (standard)', credits: '40' },
+  { operation: 'Text / analysis call', credits: '0 (token-based)' },
+];
+
 // Hook para animação de contador
 const useAnimatedCounter = (targetValue: number, duration: number = 500) => {
   const [displayValue, setDisplayValue] = useState(targetValue);
@@ -88,7 +127,7 @@ export const PricingPage: React.FC = () => {
   const [creditPackages, setCreditPackages] = useState<Product[]>([]);
   const [selectedCreditIndex, setSelectedCreditIndex] = useState(0);
   const [isPixModalOpen, setIsPixModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'subscriptions' | 'credits' | 'storage'>('subscriptions');
+  const [activeTab, setActiveTab] = useState<'subscriptions' | 'credits' | 'storage' | 'api'>('subscriptions');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -273,10 +312,10 @@ export const PricingPage: React.FC = () => {
             <Tabs
               value={activeTab}
               onValueChange={(v: any) => setActiveTab(v)}
-              className="w-full max-w-[400px]"
+              className="w-full max-w-[520px]"
             >
               <TabsList asChild>
-                <GlassPanel padding="none" className="grid w-full grid-cols-3 p-1 rounded-xl">
+                <GlassPanel padding="none" className="grid w-full grid-cols-4 p-1 rounded-xl">
                   <TabsTrigger
                     value="subscriptions"
                     className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan text-sm"
@@ -294,6 +333,12 @@ export const PricingPage: React.FC = () => {
                     className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan text-sm"
                   >
                     {t('pricing.tabs.storage') || 'Storage'}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="api"
+                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan text-sm"
+                  >
+                    API
                   </TabsTrigger>
                 </GlassPanel>
               </TabsList>
@@ -523,6 +568,113 @@ export const PricingPage: React.FC = () => {
                   <p className="text-center text-sm text-neutral-500 mt-8 max-w-xl mx-auto">
                     {t('pricing.storage.subscriptionNote') || 'Assinaturas Pro e Vision já incluem storage. Planos de storage são para quem usa BYOK ou precisa de storage adicional.'}
                   </p>
+                </div>
+              </TabsContent>
+
+              {/* API Pricing View */}
+              <TabsContent value="api" className="mt-0 outline-none">
+                <div className="animate-fade-in-fast space-y-10">
+                  {/* Header */}
+                  <div className="text-center">
+                    <MicroTitle className="text-brand-cyan/70 uppercase mb-2">Developer API</MicroTitle>
+                    <p className="text-neutral-400 text-sm font-mono">Pay-as-you-go credits. No minimum commitment.</p>
+                  </div>
+
+                  {/* API Tier Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    {API_TIERS.map((tier, index) => (
+                      <Card
+                        key={tier.id}
+                        className={cn(
+                          "relative overflow-hidden transition-all duration-300 hover:border-brand-cyan/50",
+                          tier.highlighted
+                            ? "bg-gradient-to-b from-brand-cyan/5 to-transparent border-brand-cyan/30"
+                            : "bg-neutral-900/50 border-neutral-800"
+                        )}
+                      >
+                        {tier.highlighted && (
+                          <div className="absolute top-0 right-0 px-3 py-1 bg-brand-cyan text-black text-xs font-bold rounded-bl-lg">
+                            Popular
+                          </div>
+                        )}
+                        <CardHeader className="pb-2">
+                          <CardTitle className={cn("text-lg font-bold", tier.highlighted ? "text-brand-cyan" : "text-neutral-200")}>
+                            {tier.name}
+                          </CardTitle>
+                          <div className="flex items-baseline gap-1 mt-1">
+                            <span className="text-3xl font-bold text-neutral-100 font-mono">{tier.credits}</span>
+                            <span className="text-sm text-neutral-500">credits/mo</span>
+                          </div>
+                          <p className="text-xs text-neutral-500 font-mono mt-1">{tier.rateLimit} req/15min</p>
+                        </CardHeader>
+                        <CardContent className="pt-4 border-t border-neutral-800/50">
+                          <ul className="space-y-2 mb-6">
+                            {tier.features.map((feature, i) => (
+                              <li key={i} className="flex items-center gap-2 text-sm text-neutral-400">
+                                <CheckCircle2 size={14} className="text-green-500 shrink-0" />
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <Button
+                            variant={tier.highlighted ? "brand" : "outline"}
+                            className="w-full"
+                            asChild
+                          >
+                            <Link to="/developer">Get Started</Link>
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Per-call credit costs table */}
+                  <div className="max-w-2xl mx-auto">
+                    <h3 className="text-base font-semibold text-neutral-200 mb-4 text-center">Per-call Credit Costs</h3>
+                    <GlassPanel padding="sm" className="overflow-hidden rounded-xl">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-neutral-800">
+                            <th className="text-left py-2 px-3 text-neutral-400 font-mono text-xs uppercase">Operation</th>
+                            <th className="text-right py-2 px-3 text-neutral-400 font-mono text-xs uppercase">Credits</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {CREDIT_COSTS.map((row, i) => (
+                            <tr key={i} className="border-b border-neutral-800/50 last:border-0">
+                              <td className="py-2 px-3 text-neutral-300">{row.operation}</td>
+                              <td className="py-2 px-3 text-right font-mono text-brand-cyan">{row.credits}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </GlassPanel>
+                  </div>
+
+                  {/* Rate limits table */}
+                  <div className="max-w-2xl mx-auto">
+                    <h3 className="text-base font-semibold text-neutral-200 mb-4 text-center">Rate Limits by Tier</h3>
+                    <GlassPanel padding="sm" className="overflow-hidden rounded-xl">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-neutral-800">
+                            <th className="text-left py-2 px-3 text-neutral-400 font-mono text-xs uppercase">Tier</th>
+                            <th className="text-right py-2 px-3 text-neutral-400 font-mono text-xs uppercase">Requests / 15 min</th>
+                            <th className="text-right py-2 px-3 text-neutral-400 font-mono text-xs uppercase">Credits / month</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {API_TIERS.map((tier) => (
+                            <tr key={tier.id} className="border-b border-neutral-800/50 last:border-0">
+                              <td className={cn("py-2 px-3", tier.highlighted ? "text-brand-cyan font-semibold" : "text-neutral-300")}>{tier.name}</td>
+                              <td className="py-2 px-3 text-right font-mono text-neutral-300">{tier.rateLimit.toLocaleString()}</td>
+                              <td className="py-2 px-3 text-right font-mono text-neutral-300">{tier.credits.toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </GlassPanel>
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>

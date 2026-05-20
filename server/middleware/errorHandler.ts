@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { Sentry } from '../lib/sentry.js';
 
 export const errorHandler = (
   err: any,
@@ -6,6 +7,7 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
+  Sentry.captureException(err, { extra: { path: req.path, method: req.method } });
   // Only log full stack in development
   if (process.env.NODE_ENV === 'development') {
     console.error('❌ Error:', {

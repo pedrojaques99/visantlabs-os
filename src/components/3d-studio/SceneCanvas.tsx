@@ -4,9 +4,11 @@ import { ContactShadows, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStudio3DStore } from '@/stores/studio3dStore';
 import { useShallow } from 'zustand/react/shallow';
+import { EffectComposer, Bloom, DepthOfField, Vignette } from '@react-three/postprocessing';
 import { ShaderPostProcess } from '@/effects/ShaderPostProcess';
 import { CameraBridge } from './CameraBridge';
 import { ExtrudedSVG } from './engine/ExtrudedSVG';
+import { PhysicsFallSimulation } from './engine/PhysicsFallSimulation';
 import { IntroAnimation, LoopAnimation, SmoothControls } from './engine/controls';
 import { resolveMaterial } from './engine/materials';
 import { useFont, textToSvg } from './engine/useFont';
@@ -21,6 +23,7 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   svgData: s.svgData,
   text: s.text,
   font: s.font,
+  shapeType: s.shapeType,
   depth: s.depth,
   smoothness: s.smoothness,
   bevelEnabled: s.bevelEnabled,
@@ -42,12 +45,30 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   lightPosition: s.lightPosition,
   lightIntensity: s.lightIntensity,
   ambientIntensity: s.ambientIntensity,
+  fillLightIntensity: s.fillLightIntensity,
+  bounceLightIntensity: s.bounceLightIntensity,
+  pointLightIntensity: s.pointLightIntensity,
   shadow: s.shadow,
   showGrid: s.showGrid,
+  environment: s.environment,
+  customHdriUrl: s.customHdriUrl,
+  bloomEnabled: s.bloomEnabled,
+  bloomIntensity: s.bloomIntensity,
+  bloomThreshold: s.bloomThreshold,
+  dofEnabled: s.dofEnabled,
+  dofFocusDistance: s.dofFocusDistance,
+  dofBokehScale: s.dofBokehScale,
+  vignetteEnabled: s.vignetteEnabled,
+  vignetteIntensity: s.vignetteIntensity,
   animate: s.animate,
   animateSpeed: s.animateSpeed,
   animateReverse: s.animateReverse,
   animateEasing: s.animateEasing,
+  physicsCount: s.physicsCount,
+  physicsGravity: s.physicsGravity,
+  physicsBounciness: s.physicsBounciness,
+  physicsFriction: s.physicsFriction,
+  physicsSize: s.physicsSize,
   transparentBg: s.transparentBg,
   background: s.background,
   bgType: s.bgType,
@@ -166,29 +187,56 @@ function SceneContent() {
 
       <ambientLight intensity={s.ambientIntensity} />
       <directionalLight position={s.lightPosition} intensity={s.lightIntensity} castShadow />
-      <directionalLight position={[-5, 3, -3]} intensity={0.4} />
-      <directionalLight position={[0, -4, 6]} intensity={0.2} />
-      <pointLight position={[0, 5, 0]} intensity={0.3} />
+      <directionalLight position={[-5, 3, -3]} intensity={s.fillLightIntensity} />
+      <directionalLight position={[0, -4, 6]} intensity={s.bounceLightIntensity} />
+      <pointLight position={[0, 5, 0]} intensity={s.pointLightIntensity} />
 
       <group ref={animGroupRef}>
         {svgString && (
-          <ExtrudedSVG
-            svgString={svgString}
-            depth={s.depth}
-            smoothness={s.smoothness}
-            bevelEnabled={s.bevelEnabled}
-            bevelThickness={s.bevelThickness}
-            bevelSize={s.bevelSize}
-            color={s.color}
-            materialSettings={materialSettings}
-            rotationX={s.rotationX}
-            rotationY={s.rotationY}
-            groupRef={meshGroupRef}
-            texture={s.texture || undefined}
-            textureRepeat={s.textureRepeat}
-            textureRotation={s.textureRotation}
-            textureOpacity={s.textureOpacity}
-          />
+          s.animate === 'physicsFall' ? (
+             <PhysicsFallSimulation
+              key="physics-fall-sim"
+              svgString={svgString}
+              depth={s.depth}
+              smoothness={s.smoothness}
+              bevelEnabled={s.bevelEnabled}
+              bevelThickness={s.bevelThickness}
+              bevelSize={s.bevelSize}
+              color={s.color}
+              materialSettings={materialSettings}
+              texture={s.texture || undefined}
+              textureRepeat={s.textureRepeat}
+              textureRotation={s.textureRotation}
+              textureOpacity={s.textureOpacity}
+              physicsCount={s.physicsCount}
+              physicsGravity={s.physicsGravity}
+              physicsBounciness={s.physicsBounciness}
+              physicsFriction={s.physicsFriction}
+              physicsSize={s.physicsSize}
+              resetKey={s.resetKey}
+              shapeType={s.shapeType}
+            />
+          ) : (
+            <ExtrudedSVG
+              key="standard-extruded-svg"
+              svgString={svgString}
+              depth={s.depth}
+              smoothness={s.smoothness}
+              bevelEnabled={s.bevelEnabled}
+              bevelThickness={s.bevelThickness}
+              bevelSize={s.bevelSize}
+              color={s.color}
+              materialSettings={materialSettings}
+              rotationX={s.rotationX}
+              rotationY={s.rotationY}
+              groupRef={meshGroupRef}
+              texture={s.texture || undefined}
+              textureRepeat={s.textureRepeat}
+              textureRotation={s.textureRotation}
+              textureOpacity={s.textureOpacity}
+              shapeType={s.shapeType}
+            />
+          )
         )}
       </group>
 
@@ -209,20 +257,18 @@ function SceneContent() {
         )
       )}
 
-      <Environment background={false} environmentIntensity={1.5} frames={1}>
-        <mesh position={[0, 25, 0]}>
-          <sphereGeometry args={[20, 32, 32]} />
-          <meshBasicMaterial color="#ffffff" />
-        </mesh>
-        <mesh position={[0, 0, 30]}>
-          <sphereGeometry args={[15, 32, 32]} />
-          <meshBasicMaterial color="#444444" />
-        </mesh>
-        <mesh position={[-20, 5, 10]}>
-          <sphereGeometry args={[10, 32, 32]} />
-          <meshBasicMaterial color="#333333" />
-        </mesh>
-      </Environment>
+      {s.customHdriUrl ? (
+        <Environment background={false} files={s.customHdriUrl} />
+      ) : s.environment ? (
+        <Environment background={false} preset={s.environment as any} />
+      ) : (
+        <Environment background={false} environmentIntensity={1.5} frames={1}>
+          <mesh position={[0, 25, 0]}>
+            <sphereGeometry args={[20, 32, 32]} />
+            <meshBasicMaterial color="#ffffff" />
+          </mesh>
+        </Environment>
+      )}
 
       <CameraBridge />
 
@@ -230,13 +276,19 @@ function SceneContent() {
         <gridHelper args={[10, 10, '#333333', '#1a1a1a']} position={[0, -1.5, 0]} />
       )}
 
-      {shaderSettings && (
+      {shaderSettings ? (
         <ShaderPostProcess
           shaderType={s.shaderType}
           settings={shaderSettings}
           halftoneVariant={halftoneVariant}
         />
-      )}
+      ) : (s.bloomEnabled || s.dofEnabled || s.vignetteEnabled) ? (
+        <EffectComposer multisampling={4}>
+          {s.bloomEnabled && <Bloom intensity={s.bloomIntensity} luminanceThreshold={s.bloomThreshold} luminanceSmoothing={0.9} />}
+          {s.dofEnabled && <DepthOfField focusDistance={s.dofFocusDistance} focalLength={0.05} bokehScale={s.dofBokehScale} />}
+          {s.vignetteEnabled && <Vignette darkness={s.vignetteIntensity} offset={0.3} />}
+        </EffectComposer>
+      ) : null}
     </>
   );
 }

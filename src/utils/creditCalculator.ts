@@ -1,5 +1,5 @@
 import type { GeminiModel, Resolution, SeedreamModel, ImageProvider } from '../types/types';
-import { GEMINI_MODELS } from '../constants/geminiModels';
+import { GEMINI_MODELS, MODEL_CONFIG, AVAILABLE_IMAGE_MODELS } from '../constants/geminiModels';
 import { isSeedreamModel } from '../constants/seedreamModels';
 import { isOpenAIImageModel } from '../constants/openaiModels';
 
@@ -92,6 +92,35 @@ export function getCreditsRequired(
 
   // Fallback
   return 1;
+}
+
+/**
+ * Generate credit yield table rows from single source of truth.
+ * Used by CreditPackagesModal to show "images per model/resolution".
+ */
+const IMAGE_RESOLUTIONS: Record<string, Resolution[]> = {
+  [GEMINI_MODELS.IMAGE_PRO]: ['1K', '2K', '4K'],
+  [GEMINI_MODELS.IMAGE_NB2]: ['512px', '1K', '2K', '4K'],
+};
+
+export function getCreditYieldRows(): { label: string; cost: number }[] {
+  const rows: { label: string; cost: number }[] = [];
+
+  for (const modelId of AVAILABLE_IMAGE_MODELS) {
+    const config = MODEL_CONFIG[modelId];
+    if (!config) continue;
+
+    const resolutions = IMAGE_RESOLUTIONS[modelId];
+    if (!resolutions) {
+      rows.push({ label: config.label, cost: getCreditsRequired(modelId, undefined, 'gemini') });
+    } else {
+      for (const res of resolutions) {
+        rows.push({ label: `${config.label} ${res}`, cost: getCreditsRequired(modelId, res, 'gemini') });
+      }
+    }
+  }
+
+  return rows;
 }
 
 /**
