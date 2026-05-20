@@ -1068,5 +1068,73 @@ Order colors from most dominant to least dominant. Extract between 4 and 10 colo
   }
 });
 
+/**
+ * POST /api/ai/riso-enhance
+ * Apply AI risograph enhancement to an image using Gemini image generation.
+ */
+router.post('/riso-enhance', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const { image, prompt } = req.body;
+
+    if (!image || (!image.base64 && !image.url) || !image.mimeType) {
+      return res.status(400).json({ error: 'Image is required (base64 or url + mimeType)' });
+    }
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    let userApiKey: string | undefined;
+    try {
+      userApiKey = await getGeminiApiKey(req.userId!);
+    } catch {
+      // Will use system key
+    }
+
+    const { resolveImageBase64 } = await import('../services/geminiService.js');
+    const { GoogleGenAI, Modality } = await import('@google/genai');
+
+    const apiKey = userApiKey || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
+    const genAI = new GoogleGenAI({ apiKey: apiKey.trim() });
+
+    const base64Data = await resolveImageBase64(image as UploadedImage);
+
+    const response = await genAI.models.generateContent({
+      model: GEMINI_MODELS.IMAGE_FLASH,
+      contents: [{
+        parts: [
+          { inlineData: { data: base64Data, mimeType: image.mimeType } },
+          { text: prompt },
+        ],
+      }],
+      config: {
+        responseModalities: [Modality.TEXT, Modality.IMAGE],
+      },
+    });
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        const imageBase64 = part.inlineData.data as string;
+        const mimeType = part.inlineData.mimeType || 'image/png';
+        const dataUrl = `data:${mimeType};base64,${imageBase64}`;
+
+        (async () => {
+          try {
+            await incrementUserGenerations(req.userId!, 1, 0);
+          } catch (err) {
+            console.error('Error tracking generation for riso-enhance:', err);
+          }
+        })();
+
+        return res.json({ imageUrl: dataUrl });
+      }
+    }
+
+    res.status(500).json({ error: 'No image was generated' });
+  } catch (error: any) {
+    console.error('Error in riso-enhance:', error);
+    next(error);
+  }
+});
+
 export default router;
 

@@ -48,6 +48,12 @@ export const RisoMachinePage: React.FC = () => {
   const fileName = useRisoStore((s) => s.fileName);
   const shaderEnabled = useRisoStore((s) => s.shaderEnabled);
   const shaderType = useRisoStore((s) => s.shaderType);
+  const zoom = useRisoStore((s) => s.zoom);
+  const soloLayer = useRisoStore((s) => s.soloLayer);
+  const undo = useRisoStore((s) => s.undo);
+  const redo = useRisoStore((s) => s.redo);
+  const setZoom = useRisoStore((s) => s.setZoom);
+  const setPan = useRisoStore((s) => s.setPan);
 
   const handleCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
     canvasRef.current = canvas;
@@ -83,31 +89,35 @@ export const RisoMachinePage: React.FC = () => {
     if (!canvasRef.current) return;
     setIsAiProcessing(true);
     try {
-      const blob = await new Promise<Blob>((resolve) => {
-        canvasRef.current!.toBlob((b) => resolve(b!), 'image/png');
-      });
-      const formData = new FormData();
-      formData.append('image', blob, 'riso-input.png');
-      formData.append('prompt', RISO_AI_PROMPT);
+      const dataUrl = canvasRef.current.toDataURL('image/png');
+      const base64 = dataUrl.split(',')[1];
 
-      const res = await fetch('/api/ai/riso-enhance', { method: 'POST', body: formData });
-      if (!res.ok) throw new Error('AI enhancement failed');
+      const res = await fetch('/api/ai/riso-enhance', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: { base64, mimeType: 'image/png' },
+          prompt: RISO_AI_PROMPT,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `AI enhancement failed (${res.status})`);
+      }
 
       const data = await res.json();
       if (data.imageUrl) {
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
-          const ctx = canvasRef.current!.getContext('2d')!;
-          canvasRef.current!.width = img.naturalWidth;
-          canvasRef.current!.height = img.naturalHeight;
-          ctx.drawImage(img, 0, 0);
+          useRisoStore.getState().setImageUrl(data.imageUrl, 'ai-enhanced.png');
           toast.success('AI Riso enhancement applied');
         };
         img.src = data.imageUrl;
       }
-    } catch {
-      toast.error('AI enhancement unavailable — export the local result instead');
+    } catch (err: any) {
+      toast.error(err?.message || 'AI enhancement unavailable');
     } finally {
       setIsAiProcessing(false);
     }
@@ -123,6 +133,11 @@ export const RisoMachinePage: React.FC = () => {
   useHotkeys('mod+e', (e) => { e.preventDefault(); handleExport(); }, { enableOnFormTags: false });
   useHotkeys('r', () => setConfirmReset(true), { enableOnFormTags: false });
   useHotkeys('tab', (e) => { e.preventDefault(); setPanelVisible(!panelVisible); }, { enableOnFormTags: false });
+  useHotkeys('mod+z', (e) => { e.preventDefault(); undo(); }, { enableOnFormTags: false });
+  useHotkeys('mod+shift+z', (e) => { e.preventDefault(); redo(); }, { enableOnFormTags: false });
+  useHotkeys('mod+=', (e) => { e.preventDefault(); setZoom(zoom * 1.2); }, { enableOnFormTags: false });
+  useHotkeys('mod+-', (e) => { e.preventDefault(); setZoom(zoom / 1.2); }, { enableOnFormTags: false });
+  useHotkeys('mod+0', (e) => { e.preventDefault(); setZoom(1); setPan(0, 0); }, { enableOnFormTags: false });
 
   usePasteImage(useCallback(({ file }) => {
     if (!file || !file.type.startsWith('image/')) return;
@@ -213,6 +228,8 @@ export const RisoMachinePage: React.FC = () => {
 
       {!isMobile && (
         <AppShellStatusBar>
+          <span>{Math.round(zoom * 100)}%</span>
+          <span>•</span>
           <span>freq {frequency}</span>
           <span>•</span>
           <span>dot {dotSize.toFixed(2)}</span>
@@ -220,6 +237,12 @@ export const RisoMachinePage: React.FC = () => {
           <span>misreg {misregistration}px</span>
           <span>•</span>
           <span>{layers.filter(l => l.visible).length} layers</span>
+          {soloLayer >= 0 && (
+            <>
+              <span>•</span>
+              <span className="text-amber-400">solo L{soloLayer + 1}</span>
+            </>
+          )}
           {shaderEnabled && (
             <>
               <span>•</span>

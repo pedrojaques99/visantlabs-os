@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
 import { RISO_DEFAULTS, type RisoSettings, type InkLayer } from '@/components/riso/RisoRenderer';
+import { hexToRgb } from '@/utils/colorUtils';
 
-interface RisoState extends Omit<RisoSettings, 'layers'> {
+interface RisoState extends Omit<RisoSettings, 'layers' | 'soloLayer'> {
   layers: InkLayer[];
   imageUrl: string;
   fileName: string;
@@ -10,6 +11,14 @@ interface RisoState extends Omit<RisoSettings, 'layers'> {
   activeTab: 'riso' | 'layers' | 'texture' | 'shader' | 'export';
   isExporting: boolean;
   isAnalyzing: boolean;
+
+  zoom: number;
+  panX: number;
+  panY: number;
+  soloLayer: number;
+
+  settingsHistory: RisoSettings[];
+  historyIndex: number;
 
   setImageUrl: (url: string, fileName: string) => void;
   setPanelVisible: (v: boolean) => void;
@@ -21,14 +30,50 @@ interface RisoState extends Omit<RisoSettings, 'layers'> {
   updateSetting: <K extends keyof RisoSettings>(key: K, value: RisoSettings[K]) => void;
   resetSettings: () => void;
   getSettings: () => RisoSettings;
+
+  setZoom: (z: number) => void;
+  setPan: (x: number, y: number) => void;
+  setSoloLayer: (i: number) => void;
+
+  pushHistory: () => void;
+  undo: () => void;
+  redo: () => void;
 }
 
-function hexToRgb(hex: string): [number, number, number] {
-  return [
-    parseInt(hex.slice(1, 3), 16),
-    parseInt(hex.slice(3, 5), 16),
-    parseInt(hex.slice(5, 7), 16),
-  ];
+const MAX_HISTORY = 30;
+
+function snapshotSettings(s: RisoState): RisoSettings {
+  return {
+    layers: s.layers.map(l => ({ ...l })),
+    frequency: s.frequency,
+    dotSize: s.dotSize,
+    contrast: s.contrast,
+    lightness: s.lightness,
+    paperColor: s.paperColor,
+    paperNoise: s.paperNoise,
+    inkNoise: s.inkNoise,
+    inkDropout: s.inkDropout,
+    misregistration: s.misregistration,
+    edgeBleed: s.edgeBleed,
+    colorCount: s.colorCount,
+  };
+}
+
+function applySnapshot(snap: RisoSettings): Partial<RisoState> {
+  return {
+    layers: snap.layers.map(l => ({ ...l })),
+    frequency: snap.frequency,
+    dotSize: snap.dotSize,
+    contrast: snap.contrast,
+    lightness: snap.lightness,
+    paperColor: snap.paperColor,
+    paperNoise: snap.paperNoise,
+    inkNoise: snap.inkNoise,
+    inkDropout: snap.inkDropout,
+    misregistration: snap.misregistration,
+    edgeBleed: snap.edgeBleed,
+    colorCount: snap.colorCount,
+  };
 }
 
 export const useRisoStore = create<RisoState & ShaderSlice>()((set, get, api) => ({
@@ -41,26 +86,43 @@ export const useRisoStore = create<RisoState & ShaderSlice>()((set, get, api) =>
   isExporting: false,
   isAnalyzing: false,
 
+  zoom: 1,
+  panX: 0,
+  panY: 0,
+  soloLayer: -1,
+
+  settingsHistory: [],
+  historyIndex: -1,
+
   setImageUrl: (imageUrl, fileName) => set({ imageUrl, fileName }),
   setPanelVisible: (panelVisible) => set({ panelVisible }),
   setActiveTab: (activeTab) => set({ activeTab }),
   setIsExporting: (isExporting) => set({ isExporting }),
   setIsAnalyzing: (isAnalyzing) => set({ isAnalyzing }),
 
-  setLayers: (layers) => set({ layers }),
+  setLayers: (layers) => {
+    get().pushHistory();
+    set({ layers });
+  },
 
-  updateLayer: (index, partial) => set((s) => {
-    const layers = [...s.layers];
-    if (partial.hex !== undefined) {
-      partial.color = hexToRgb(partial.hex);
-    }
-    layers[index] = { ...layers[index], ...partial };
-    return { layers };
-  }),
+  updateLayer: (index, partial) => {
+    get().pushHistory();
+    set((s) => {
+      const layers = [...s.layers];
+      if (partial.hex !== undefined) {
+        partial.color = hexToRgb(partial.hex);
+      }
+      layers[index] = { ...layers[index], ...partial };
+      return { layers };
+    });
+  },
 
-  updateSetting: (key, value) => set({ [key]: value } as any),
+  updateSetting: (key, value) => {
+    get().pushHistory();
+    set({ [key]: value } as any);
+  },
 
-  resetSettings: () => set({ ...RISO_DEFAULTS }),
+  resetSettings: () => set({ ...RISO_DEFAULTS, settingsHistory: [], historyIndex: -1 }),
 
   getSettings: () => {
     const s = get();
@@ -77,6 +139,31 @@ export const useRisoStore = create<RisoState & ShaderSlice>()((set, get, api) =>
       misregistration: s.misregistration,
       edgeBleed: s.edgeBleed,
       colorCount: s.colorCount,
+      soloLayer: s.soloLayer,
     };
   },
+
+  setZoom: (z) => set({ zoom: Math.max(0.1, Math.min(10, z)) }),
+  setPan: (panX, panY) => set({ panX, panY }),
+  setSoloLayer: (i) => set((s) => ({ soloLayer: s.soloLayer === i ? -1 : i })),
+
+  pushHistory: () => set((s) => {
+    const snap = snapshotSettings(s as any);
+    const trimmed = s.settingsHistory.slice(0, s.historyIndex + 1);
+    const history = [...trimmed, snap].slice(-MAX_HISTORY);
+    return { settingsHistory: history, historyIndex: history.length - 1 };
+  }),
+
+  undo: () => set((s) => {
+    if (s.historyIndex < 0) return {};
+    const snap = s.settingsHistory[s.historyIndex];
+    return { ...applySnapshot(snap), historyIndex: s.historyIndex - 1 };
+  }),
+
+  redo: () => set((s) => {
+    if (s.historyIndex >= s.settingsHistory.length - 1) return {};
+    const nextIndex = s.historyIndex + 1;
+    const snap = s.settingsHistory[nextIndex];
+    return { ...applySnapshot(snap), historyIndex: nextIndex };
+  }),
 }));

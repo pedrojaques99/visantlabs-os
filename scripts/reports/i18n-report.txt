@@ -1,7 +1,7 @@
-i18n Audit — 2026-05-18T23:51:33.045Z
+i18n Audit — 2026-05-20T00:37:22.549Z
 Flags: missing, paramsMismatch, unresolved [STRICT]
 
-en-US: 3548 keys | pt-BR: 3548 keys
+en-US: 3558 keys | pt-BR: 3558 keys
 
 ============================================================
  MISSING KEYS
@@ -23,7 +23,7 @@ Found 0 keys with param mismatch:
 
 Blocking (not in allowlist): 0
 
-Allowlisted (dynamic / known-collisions): 28
+Allowlisted (dynamic / known-collisions): 27
   - ${translationKeyPrefix}.addToFavorites
   - ${translationKeyPrefix}.analyzingImage
   - ${translationKeyPrefix}.brandKit
@@ -46,7 +46,6 @@ Allowlisted (dynamic / known-collisions): 28
   - communityPresets.tabs.${type}
   - mockup.categoryGroups.${c.name}
   - mockup.categoryGroups.${group.key}
-  - studio3d.${tab.key}
   - studio3d.animation.easings.${e}
   - studio3d.background.types.${type}
   - studio3d.camera.${view}

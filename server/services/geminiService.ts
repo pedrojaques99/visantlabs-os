@@ -113,7 +113,7 @@ const DEFAULT_RETRIES: Record<string, number> = {
 };
 
 // Resolves to base64 only for this request (URL→base64 when needed); no persistent cache.
-const resolveImageBase64 = async (image: UploadedImage): Promise<string> => {
+export const resolveImageBase64 = async (image: UploadedImage): Promise<string> => {
   if (image.base64 && image.base64.length > 0) {
     if (process.env.NODE_ENV === 'development') console.log('[dev] resolveImageBase64: using base64, len=', image.base64.length);
     return image.base64;

@@ -3,7 +3,7 @@
  * @param hex - Hex color string (e.g., "#FF0000" or "FF0000")
  * @returns RGB values as [r, g, b]
  */
-function hexToRgb(hex: string): [number, number, number] {
+export function hexToRgb(hex: string): [number, number, number] {
   // Remove # if present
   const cleanHex = hex.replace('#', '');
   
@@ -20,6 +20,10 @@ function hexToRgb(hex: string): [number, number, number] {
   const g = parseInt(cleanHex.substring(2, 4), 16);
   const b = parseInt(cleanHex.substring(4, 6), 16);
   return [r, g, b];
+}
+
+export function rgbToHex(r: number, g: number, b: number): string {
+  return '#' + [r, g, b].map(c => Math.round(c).toString(16).padStart(2, '0')).join('');
 }
 
 /**
