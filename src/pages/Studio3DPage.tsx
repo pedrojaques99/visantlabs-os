@@ -2,7 +2,7 @@ import React, { useRef, useCallback, useState, useEffect, Suspense } from 'react
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
-import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw } from 'lucide-react';
+import { ChevronLeft, PanelRightOpen, PanelRightClose, RotateCcw, Undo2, Redo2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -124,7 +124,11 @@ export const Studio3DPage: React.FC = () => {
     toast.success(t('studio3d.sceneReset'));
   }, [resetScene]);
 
+  const { undo, redo, pastStates, futureStates } = useStudio3DStore.temporal.getState();
+
   // Keyboard shortcuts
+  useHotkeys('mod+z', (e) => { e.preventDefault(); undo(); }, { enableOnFormTags: false });
+  useHotkeys('mod+shift+z', (e) => { e.preventDefault(); redo(); }, { enableOnFormTags: false });
   useHotkeys('mod+e', (e) => { e.preventDefault(); handleExport(); }, { enableOnFormTags: false });
   useHotkeys('r', () => setConfirmReset(true), { enableOnFormTags: false });
   useHotkeys('tab', (e) => { e.preventDefault(); setPanelVisible(!panelVisible); }, { enableOnFormTags: false });
@@ -208,6 +212,16 @@ export const Studio3DPage: React.FC = () => {
         }
         right={
           <>
+            <Tooltip content="Undo (Ctrl+Z)">
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500 disabled:opacity-30" disabled={pastStates.length === 0} onClick={() => undo()}>
+                <Undo2 size={14} />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Redo (Ctrl+Shift+Z)">
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500 disabled:opacity-30" disabled={futureStates.length === 0} onClick={() => redo()}>
+                <Redo2 size={14} />
+              </Button>
+            </Tooltip>
             <Tooltip content={t('studio3d.resetSceneShortcut')}>
               <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setConfirmReset(true)}>
                 <RotateCcw size={14} />

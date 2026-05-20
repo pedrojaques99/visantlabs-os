@@ -155,7 +155,6 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
       `
       #ifdef USE_MAP
         vec4 texelColor = texture2D( map, vMapUv );
-        texelColor = mapTexelToLinear( texelColor );
         diffuseColor.rgb *= mix(vec3(1.0), texelColor.rgb, uTextureOpacity);
       #endif
       `

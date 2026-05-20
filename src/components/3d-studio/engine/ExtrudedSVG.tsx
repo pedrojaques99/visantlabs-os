@@ -253,7 +253,6 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
                   `
                   #ifdef USE_MAP
                     vec4 texelColor = texture2D( map, vMapUv );
-                    texelColor = mapTexelToLinear( texelColor );
                     // Mix between 1.0 (no texture effect) and the texel color based on opacity
                     diffuseColor.rgb *= mix(vec3(1.0), texelColor.rgb, uTextureOpacity);
                   #endif
