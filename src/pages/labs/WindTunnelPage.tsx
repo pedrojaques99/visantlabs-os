@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, PanelRightClose, PanelRight, Download, Upload, X, Play, Pause, RotateCcw, Save, Trash2 } from 'lucide-react';
+import { ChevronLeft, PanelRightClose, PanelRight, Download, Upload, X, Play, Pause, RotateCcw, Save, Trash2, Video, Square, Share2, ClipboardCopy, ClipboardPaste } from 'lucide-react';
 import { toast } from 'sonner';
 import { loadImageFromFile } from '@/components/labs/wind-tunnel/ImageObstacles';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import { DropOverlay } from '@/components/ui/DropOverlay';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { usePasteImage } from '@/hooks/usePasteImage';
 import { Input } from '@/components/ui/input';
-import { WindTunnelCanvas, type WindTunnelConfig, type WindTunnelHandle } from '@/components/labs/wind-tunnel/WindTunnelCanvas';
+import { WindTunnelCanvas, type WindTunnelConfig, type WindTunnelHandle, type FieldOverlay } from '@/components/labs/wind-tunnel/WindTunnelCanvas';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const DEFAULT_CONFIG: WindTunnelConfig = {
@@ -42,9 +42,20 @@ const DEFAULT_CONFIG: WindTunnelConfig = {
   particleLifetime: 100,
   trailLength: 16,
   spread: 50,
+  fieldOverlay: 'none' as FieldOverlay,
+  fieldOpacity: 0.4,
+  showArrows: false,
+  exportMetadata: false,
 };
 
 type SerializableConfig = Omit<WindTunnelConfig, 'obstacleImage' | 'paused'>;
+
+const FIELD_OVERLAYS: { key: FieldOverlay; label: string }[] = [
+  { key: 'none', label: 'None' },
+  { key: 'velocity', label: 'Velocity' },
+  { key: 'pressure', label: 'Pressure' },
+  { key: 'vorticity', label: 'Vorticity' },
+];
 
 interface SavedPreset {
   name: string;
@@ -98,6 +109,37 @@ function serializeConfig(cfg: WindTunnelConfig): SerializableConfig {
   return rest;
 }
 
+function encodeConfigToUrl(cfg: WindTunnelConfig): string {
+  const serialized = serializeConfig(cfg);
+  const json = JSON.stringify(serialized);
+  const encoded = btoa(encodeURIComponent(json));
+  const url = new URL(window.location.href);
+  url.searchParams.set('preset', encoded);
+  return url.toString();
+}
+
+function decodeConfigFromUrl(): SerializableConfig | null {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('preset');
+    if (!encoded) return null;
+    const json = decodeURIComponent(atob(encoded));
+    return JSON.parse(json);
+  } catch { return null; }
+}
+
+function configToJson(cfg: WindTunnelConfig): string {
+  return JSON.stringify(serializeConfig(cfg), null, 2);
+}
+
+function parseConfigJson(json: string): SerializableConfig | null {
+  try {
+    const parsed = JSON.parse(json);
+    if (typeof parsed === 'object' && parsed !== null && 'windSpeed' in parsed) return parsed;
+    return null;
+  } catch { return null; }
+}
+
 function rgbaToHex(rgba: string): string {
   const m = rgba.match(/[\d.]+/g);
   if (!m || m.length < 3) return '#64b4ff';
@@ -142,7 +184,8 @@ const FONT_OPTIONS = [
 
 function ControlsContent({
   config, update, imageName, fileInputRef, handleImageUpload, handleClearImage,
-  handleResetSim, handleReset, userPresets, onSavePreset, onLoadPreset, onDeletePreset, t,
+  handleResetSim, handleReset, userPresets, onSavePreset, onLoadPreset, onDeletePreset,
+  onCopyJson, onPasteJson, onShareUrl, t,
 }: {
   config: WindTunnelConfig;
   update: <K extends keyof WindTunnelConfig>(key: K, value: WindTunnelConfig[K]) => void;
@@ -157,6 +200,9 @@ function ControlsContent({
   onSavePreset: () => void;
   onLoadPreset: (preset: SavedPreset) => void;
   onDeletePreset: (idx: number) => void;
+  onCopyJson: () => void;
+  onPasteJson: () => void;
+  onShareUrl: () => void;
 }) {
   return (
     <>
@@ -278,6 +324,23 @@ function ControlsContent({
         <NodeSlider label={t('wind.tunnel.perspective')} value={config.perspective} min={0} max={100} step={1} onChange={v => update('perspective', v)} formatValue={v => String(Math.round(v))} />
       </div>
 
+      {/* Field Overlay (CFD Visualization) */}
+      <div className="p-3 space-y-2 border-b border-white/[0.06]">
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Field Overlay</MicroTitle>
+        <div className="grid grid-cols-2 gap-1">
+          {FIELD_OVERLAYS.map(f => (
+            <Button key={f.key} variant="ghost" size="xs" onClick={() => update('fieldOverlay', f.key)} className={`text-[9px] ${config.fieldOverlay === f.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{f.label}</Button>
+          ))}
+        </div>
+        {config.fieldOverlay !== 'none' && (
+          <NodeSlider label="Opacity" value={config.fieldOpacity} min={0.1} max={1} step={0.05} onChange={v => update('fieldOpacity', v)} formatValue={v => `${Math.round(v * 100)}%`} />
+        )}
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] text-neutral-500">Vector Arrows</span>
+          <Button variant="ghost" size="xs" onClick={() => update('showArrows', !config.showArrows)} className={`text-[9px] ${config.showArrows ? 'text-white' : 'text-neutral-600'}`}>{config.showArrows ? 'ON' : 'OFF'}</Button>
+        </div>
+      </div>
+
       {/* Appearance */}
       <div className="p-3 space-y-2 border-b border-white/[0.06]">
         <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('wind.tunnel.appearance')}</MicroTitle>
@@ -293,18 +356,33 @@ function ControlsContent({
           <span className="text-[10px] text-neutral-500">{t('wind.tunnel.grid_overlay')}</span>
           <Button variant="ghost" size="xs" onClick={() => update('showGrid', !config.showGrid)} className={`text-[9px] ${config.showGrid ? 'text-white' : 'text-neutral-600'}`} aria-label={t('wind.tunnel.toggle_grid')}>{config.showGrid ? 'ON' : 'OFF'}</Button>
         </div>
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] text-neutral-500">Export Metadata</span>
+          <Button variant="ghost" size="xs" onClick={() => update('exportMetadata', !config.exportMetadata)} className={`text-[9px] ${config.exportMetadata ? 'text-white' : 'text-neutral-600'}`}>{config.exportMetadata ? 'ON' : 'OFF'}</Button>
+        </div>
       </div>
 
       {/* Actions */}
       <div className="p-3 space-y-2">
         <Button variant="ghost" size="xs" onClick={handleResetSim} className="text-[9px] text-neutral-500 hover:text-white w-full">{t('wind.tunnel.restart_simulation')}</Button>
         <Button variant="ghost" size="xs" onClick={handleReset} className="text-[9px] text-neutral-500 hover:text-white w-full">{t('wind.tunnel.reset_all')}</Button>
+        <div className="flex gap-1 pt-1">
+          <Button variant="ghost" size="xs" onClick={onCopyJson} className="text-[9px] text-neutral-500 hover:text-white flex-1 flex items-center justify-center gap-1">
+            <ClipboardCopy size={9} /> Copy JSON
+          </Button>
+          <Button variant="ghost" size="xs" onClick={onPasteJson} className="text-[9px] text-neutral-500 hover:text-white flex-1 flex items-center justify-center gap-1">
+            <ClipboardPaste size={9} /> Import JSON
+          </Button>
+        </div>
+        <Button variant="ghost" size="xs" onClick={onShareUrl} className="text-[9px] text-neutral-500 hover:text-white w-full flex items-center justify-center gap-1">
+          <Share2 size={9} /> Share URL
+        </Button>
       </div>
 
       {/* Shortcuts hint */}
       <div className="p-3 pt-0">
         <p className="text-[8px] text-neutral-700 leading-relaxed">
-          Space: pause &middot; P: panel &middot; R: restart &middot; Ctrl+S: export
+          Space: pause &middot; Tab: panel &middot; R: restart &middot; Ctrl+E: export &middot; Drag: inject &middot; Right-drag: walls &middot; Scroll: wind
         </p>
       </div>
     </>
@@ -422,6 +500,73 @@ export function WindTunnelPage() {
     toast.success(t('wind.tunnel.preset_deleted'));
   }, [userPresets]);
 
+  const [isRecording, setIsRecording] = useState(false);
+
+  const handleStartRecording = useCallback((duration: number) => {
+    tunnelRef.current?.startRecording(duration);
+    setIsRecording(true);
+    if (duration > 0) {
+      setTimeout(() => setIsRecording(false), duration * 1000 + 500);
+    }
+  }, []);
+
+  const handleStopRecording = useCallback(() => {
+    tunnelRef.current?.stopRecording();
+    setIsRecording(false);
+  }, []);
+
+  const handleShareUrl = useCallback(() => {
+    const url = encodeConfigToUrl(config);
+    navigator.clipboard.writeText(url).then(() => {
+      toast.success('Share URL copied to clipboard');
+    }).catch(() => {
+      prompt('Copy this URL:', url);
+    });
+  }, [config]);
+
+  const handleCopyJson = useCallback(() => {
+    const json = configToJson(config);
+    navigator.clipboard.writeText(json).then(() => {
+      toast.success('Config JSON copied');
+    }).catch(() => {
+      prompt('Copy this JSON:', json);
+    });
+  }, [config]);
+
+  const handlePasteJson = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      const parsed = parseConfigJson(text);
+      if (parsed) {
+        setConfig(prev => ({ ...parsed, obstacleImage: prev.obstacleImage, paused: prev.paused }));
+        toast.success('Config imported from clipboard');
+      } else {
+        toast.error('Invalid wind tunnel config JSON');
+      }
+    } catch {
+      const text = prompt('Paste config JSON:');
+      if (text) {
+        const parsed = parseConfigJson(text);
+        if (parsed) {
+          setConfig(prev => ({ ...parsed, obstacleImage: prev.obstacleImage, paused: prev.paused }));
+          toast.success('Config imported');
+        } else {
+          toast.error('Invalid JSON');
+        }
+      }
+    }
+  }, []);
+
+  // Load config from URL on mount
+  useEffect(() => {
+    const urlConfig = decodeConfigFromUrl();
+    if (urlConfig) {
+      setConfig(prev => ({ ...urlConfig, obstacleImage: prev.obstacleImage, paused: prev.paused }));
+      toast.success('Preset loaded from shared URL');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
   useEffect(() => {
     if (!showExportMenu) return;
     const close = () => setShowExportMenu(false);
@@ -452,6 +597,7 @@ export function WindTunnelPage() {
     config, update, imageName, fileInputRef, handleImageUpload, handleClearImage,
     handleResetSim, handleReset, userPresets,
     onSavePreset: handleSavePreset, onLoadPreset: handleLoadPreset, onDeletePreset: handleDeletePreset,
+    onCopyJson: handleCopyJson, onPasteJson: handlePasteJson, onShareUrl: handleShareUrl,
     t,
   };
 
@@ -507,6 +653,24 @@ export function WindTunnelPage() {
                 </div>
               )}
             </div>
+            {isRecording ? (
+              <Tooltip content="Stop recording" position="bottom">
+                <Button variant="surface" size="xs" onClick={handleStopRecording} className="text-red-400 border-red-500/30">
+                  <Square size={10} className="mr-1" /> Stop
+                </Button>
+              </Tooltip>
+            ) : (
+              <Tooltip content="Record WebM video" position="bottom">
+                <Button variant="ghost" size="icon-sm" onClick={() => handleStartRecording(10)} aria-label="Record 10s video">
+                  <Video size={12} />
+                </Button>
+              </Tooltip>
+            )}
+            <Tooltip content="Share URL" position="bottom">
+              <Button variant="ghost" size="icon-sm" onClick={handleShareUrl} aria-label="Copy share URL">
+                <Share2 size={12} />
+              </Button>
+            </Tooltip>
             <Tooltip content={showPanel ? 'Hide panel (Tab)' : 'Show panel (Tab)'} position="bottom">
               <Button variant="ghost" size="icon-sm" onClick={() => setShowPanel(p => !p)} aria-label={showPanel ? 'Hide panel' : 'Show panel'}>
                 {showPanel ? <PanelRightClose size={14} /> : <PanelRight size={14} />}
@@ -541,6 +705,18 @@ export function WindTunnelPage() {
         <span>{config.renderMode}</span>
         <span className="text-neutral-800">|</span>
         <span>{config.colorMode}</span>
+        {config.fieldOverlay !== 'none' && (
+          <>
+            <span className="text-neutral-800">|</span>
+            <span className="text-cyan-400">{config.fieldOverlay}</span>
+          </>
+        )}
+        {isRecording && (
+          <>
+            <span className="text-neutral-800">|</span>
+            <span className="text-red-400 animate-pulse">REC</span>
+          </>
+        )}
         {config.paused && (
           <>
             <span className="text-neutral-800">|</span>
