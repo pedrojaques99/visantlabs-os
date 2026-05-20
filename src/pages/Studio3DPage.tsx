@@ -201,7 +201,7 @@ export const Studio3DPage: React.FC = () => {
         left={
           <>
             <Tooltip content={t('studio3d.backToApps')}>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => navigate('/apps')}>
+              <Button variant="ghost" size="icon" aria-label="Back to apps" className="h-7 w-7 text-neutral-500" onClick={() => navigate('/apps')}>
                 <ChevronLeft size={16} />
               </Button>
             </Tooltip>
@@ -213,23 +213,23 @@ export const Studio3DPage: React.FC = () => {
         right={
           <>
             <Tooltip content="Undo (Ctrl+Z)">
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500 disabled:opacity-30" disabled={pastStates.length === 0} onClick={() => undo()}>
+              <Button variant="ghost" size="icon" aria-label="Undo" className="h-7 w-7 text-neutral-500 disabled:opacity-30" disabled={pastStates.length === 0} onClick={() => undo()}>
                 <Undo2 size={14} />
               </Button>
             </Tooltip>
             <Tooltip content="Redo (Ctrl+Shift+Z)">
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500 disabled:opacity-30" disabled={futureStates.length === 0} onClick={() => redo()}>
+              <Button variant="ghost" size="icon" aria-label="Redo" className="h-7 w-7 text-neutral-500 disabled:opacity-30" disabled={futureStates.length === 0} onClick={() => redo()}>
                 <Redo2 size={14} />
               </Button>
             </Tooltip>
             <Tooltip content={t('studio3d.resetSceneShortcut')}>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setConfirmReset(true)}>
+              <Button variant="ghost" size="icon" aria-label="Reset scene" className="h-7 w-7 text-neutral-500" onClick={() => setConfirmReset(true)}>
                 <RotateCcw size={14} />
               </Button>
             </Tooltip>
             {!isMobile && (
               <Tooltip content={panelVisible ? t('studio3d.hidePanel') : t('studio3d.showPanel')}>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
+                <Button variant="ghost" size="icon" aria-label={panelVisible ? 'Hide panel' : 'Show panel'} className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
                   {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                 </Button>
               </Tooltip>

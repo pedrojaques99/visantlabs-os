@@ -115,7 +115,7 @@ export const HalftonePage: React.FC = () => {
         left={
           <>
             <Tooltip content="Back to apps">
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => navigate('/apps')}>
+              <Button variant="ghost" size="icon" aria-label="Back to apps" className="h-7 w-7 text-neutral-500" onClick={() => navigate('/apps')}>
                 <ChevronLeft size={16} />
               </Button>
             </Tooltip>
@@ -127,13 +127,13 @@ export const HalftonePage: React.FC = () => {
         right={
           <>
             <Tooltip content="Reset settings (R)">
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setConfirmReset(true)}>
+              <Button variant="ghost" size="icon" aria-label="Reset settings" className="h-7 w-7 text-neutral-500" onClick={() => setConfirmReset(true)}>
                 <RotateCcw size={14} />
               </Button>
             </Tooltip>
             {!isMobile && (
               <Tooltip content={panelVisible ? 'Hide panel (Tab)' : 'Show panel (Tab)'}>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
+                <Button variant="ghost" size="icon" aria-label={panelVisible ? 'Hide panel' : 'Show panel'} className="h-7 w-7 text-neutral-500" onClick={() => setPanelVisible(!panelVisible)}>
                   {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                 </Button>
               </Tooltip>
