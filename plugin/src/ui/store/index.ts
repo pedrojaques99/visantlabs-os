@@ -29,7 +29,7 @@ export const usePluginStore = create<PluginStore>()(
 
     // Chat
     chatHistory: [],
-    sessionId: crypto.randomUUID(),
+    sessionId: (crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`),
     sessionContext: null,
     pendingAttachments: [],
     thinkMode: false,
@@ -105,7 +105,7 @@ export const usePluginStore = create<PluginStore>()(
     clearChatHistory: () => {
       set((state) => {
         state.chatHistory = [];
-        state.sessionId = crypto.randomUUID();
+        state.sessionId = (crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`);
         state.sessionContext = null;
       });
       scheduleChatPersist();

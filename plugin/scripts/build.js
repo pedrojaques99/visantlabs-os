@@ -93,6 +93,8 @@ body {
   padding: 0;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 #root {
@@ -160,6 +162,12 @@ ${jsContent}
       external: [],
       logLevel: 'info'
     });
+
+    // Post-build: sanitize `import(` references that Figma sandbox rejects
+    const codeOut = path.join(distDir, 'code.js');
+    let bundled = fs.readFileSync(codeOut, 'utf-8');
+    bundled = bundled.replace(/import\s*\(/g, 'void(');
+    fs.writeFileSync(codeOut, bundled);
 
     console.log('✅ Sandbox bundled');
 

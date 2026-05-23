@@ -819,7 +819,7 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       if (ctxMatch) generatedImageUrl = ctxMatch[1];
     }
 
-    // If mockup was generated, skip Phase 2 LLM and build ops directly
+    // If mockup was generated, skip Phase 2 LLM and return result directly
     if (generatedImageUrl) {
       const aspectMap: Record<string, { w: number; h: number }> = {
         '1:1': { w: 1024, h: 1024 }, '16:9': { w: 1280, h: 720 },
@@ -828,11 +828,17 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       const detectedAspect = mockupRecord?.args?.aspectRatio || '1:1';
       const dims = aspectMap[detectedAspect] || aspectMap['1:1'];
 
-      const mockupOps = [
-        { type: 'CREATE_FRAME', ref: 'mockup_frame', props: { name: `Mockup — ${command.slice(0, 40)}`, width: dims.w, height: dims.h, fills: [{ type: 'SOLID', color: '#000000', opacity: 0 }] } },
-        { type: 'SET_IMAGE_FILL', ref: 'mockup_frame', imageUrl: generatedImageUrl, scaleMode: 'FILL' },
-        { type: 'MESSAGE', content: `Mockup gerado e aplicado no canvas.` },
-      ];
+      // When generateImage flag is on, return image in chat only (no canvas frame)
+      // When generate_mockup was called by LLM decision (not generateImage flag), apply to canvas
+      const mockupOps = generateImage
+        ? [
+            { type: 'MESSAGE', content: `Imagem gerada com sucesso!`, imageUrl: generatedImageUrl },
+          ]
+        : [
+            { type: 'CREATE_FRAME', ref: 'mockup_frame', props: { name: `Mockup — ${command.slice(0, 40)}`, width: dims.w, height: dims.h, fills: [{ type: 'SOLID', color: '#000000', opacity: 0 }] } },
+            { type: 'SET_IMAGE_FILL', ref: 'mockup_frame', imageUrl: generatedImageUrl, scaleMode: 'FILL' },
+            { type: 'MESSAGE', content: `Mockup gerado e aplicado no canvas.` },
+          ];
 
       send('operations', mockupOps);
 
@@ -868,7 +874,7 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
 
       send('done', {
         operations: mockupOps,
-        message: 'Mockup gerado e aplicado no canvas.',
+        message: generateImage ? 'Imagem gerada com sucesso!' : 'Mockup gerado e aplicado no canvas.',
         provider: 'pre-pass',
         durationMs: Date.now() - streamStartMs,
         toolCalls: toolCallRecords,

@@ -519,7 +519,8 @@ export function useFigmaMessages() {
                                   }
                                 }
                                 if (data.name === 'generate_mockup' && !data.error) {
-                                  storeState.showToast('Mockup generated! Applying to canvas...', 'success');
+                                  const isImageMode = usePluginStore.getState().generateImage;
+                                  storeState.showToast(isImageMode ? 'Image generated!' : 'Mockup generated! Applying to canvas...', 'success');
                                 }
                               }
                               updateAssistantMessage('', undefined, streamToolCalls);
