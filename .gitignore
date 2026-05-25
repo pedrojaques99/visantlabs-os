@@ -128,6 +128,7 @@ scripts/output/sports248/
 secrets-to-remove.txt
 /scripts/output
 /scripts
+!/scripts/i18n-fix-placeholders.mjs
 
 .vercel
 /.claude
