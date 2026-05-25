@@ -5,7 +5,8 @@ import { createShaderSlice, type ShaderSlice } from './shaderSlice';
 type MaterialPreset = 'default' | 'plastic' | 'metal' | 'glass' | 'rubber' | 'chrome' | 'gold' | 'clay' | 'emissive' | 'holographic' | 'brushedSteel' | 'aluminum' | 'copper' | 'roseGold' | 'platinum' | 'ceramic' | 'marble' | 'concrete' | 'wood' | 'velvet' | 'leather' | 'frostedGlass' | 'diamond' | 'pearl' | 'carbonFiber' | 'carPaint' | 'ice' | 'obsidian' | 'wax' | 'mattePaint';
 
 type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'spinFloat' | 'swing' | 'physicsFall';
-type ExportFormat = 'png' | 'mp4' | 'gif' | 'glb' | 'obj';
+type ToneMappingType = 'ACES' | 'AgX' | 'Neutral' | 'Reinhard' | 'Cineon' | 'Linear';
+type ExportFormat = 'png' | 'webm' | 'glb' | 'obj';
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
 
 interface ScenePreset {
@@ -103,7 +104,70 @@ export const SCENE_PRESETS: Record<string, ScenePreset> = {
   },
 };
 
+export const LIGHTING_PRESETS: Record<string, { label: string; values: Record<string, any> }> = {
+  '3-Point Studio': {
+    label: '3-Point Studio',
+    values: {
+      lightIntensity: 1.2, lightPosition: [5, 5, 5] as [number, number, number],
+      fillLightIntensity: 0.5, fillLightPosition: [-5, 3, -3] as [number, number, number],
+      bounceLightIntensity: 0.2, bounceLightPosition: [0, -4, 6] as [number, number, number],
+      pointLightIntensity: 0.3, pointLightPosition: [0, 5, 0] as [number, number, number],
+      ambientIntensity: 0.4,
+    },
+  },
+  'Rim Light': {
+    label: 'Rim Light',
+    values: {
+      lightIntensity: 0.3, lightPosition: [0, 2, -5] as [number, number, number],
+      fillLightIntensity: 0.1, fillLightPosition: [-4, 1, -4] as [number, number, number],
+      bounceLightIntensity: 1.2, bounceLightPosition: [0, 0, -6] as [number, number, number],
+      pointLightIntensity: 0.8, pointLightPosition: [4, 1, -4] as [number, number, number],
+      ambientIntensity: 0.15,
+    },
+  },
+  'Dramatic': {
+    label: 'Dramatic',
+    values: {
+      lightIntensity: 2.0, lightPosition: [8, 8, 2] as [number, number, number],
+      fillLightIntensity: 0.05, fillLightPosition: [-5, 0, -3] as [number, number, number],
+      bounceLightIntensity: 0.0, bounceLightPosition: [0, -4, 6] as [number, number, number],
+      pointLightIntensity: 0.0, pointLightPosition: [0, 5, 0] as [number, number, number],
+      ambientIntensity: 0.05,
+    },
+  },
+  'Flat': {
+    label: 'Flat',
+    values: {
+      lightIntensity: 0.6, lightPosition: [0, 5, 5] as [number, number, number],
+      fillLightIntensity: 0.6, fillLightPosition: [-5, 3, -3] as [number, number, number],
+      bounceLightIntensity: 0.6, bounceLightPosition: [5, -2, 3] as [number, number, number],
+      pointLightIntensity: 0.4, pointLightPosition: [0, 5, 0] as [number, number, number],
+      ambientIntensity: 0.8,
+    },
+  },
+  'Cinematic': {
+    label: 'Cinematic',
+    values: {
+      lightIntensity: 1.5, lightPosition: [6, 4, 3] as [number, number, number],
+      fillLightIntensity: 0.3, fillLightPosition: [-6, 2, -2] as [number, number, number],
+      bounceLightIntensity: 0.1, bounceLightPosition: [0, -3, 5] as [number, number, number],
+      pointLightIntensity: 0.6, pointLightPosition: [-2, 6, -1] as [number, number, number],
+      ambientIntensity: 0.2,
+    },
+  },
+};
+
 const R2_HDRI_BASE = 'https://pub-0acbd500af3b4beaa8b93b07f6490d58.r2.dev/hdri';
+
+export type { ToneMappingType };
+export const TONE_MAPPING_OPTIONS: { id: ToneMappingType; label: string }[] = [
+  { id: 'ACES', label: 'ACES Filmic' },
+  { id: 'AgX', label: 'AgX' },
+  { id: 'Neutral', label: 'Neutral' },
+  { id: 'Reinhard', label: 'Reinhard' },
+  { id: 'Cineon', label: 'Cineon' },
+  { id: 'Linear', label: 'Linear' },
+];
 
 export const ENVIRONMENT_PRESETS = [
   { id: 'studio', label: 'Studio', file: `${R2_HDRI_BASE}/studio_small_03_1k.hdr` },
@@ -216,10 +280,16 @@ interface Studio3DState {
   lightIntensity: number;
   ambientIntensity: number;
   fillLightIntensity: number;
+  fillLightPosition: [number, number, number];
   bounceLightIntensity: number;
+  bounceLightPosition: [number, number, number];
   pointLightIntensity: number;
+  pointLightPosition: [number, number, number];
   shadow: boolean;
+  shadowQuality: 'low' | 'medium' | 'high';
   showGrid: boolean;
+  groundPlane: boolean;
+  groundReflection: number;
 
   // Environment
   environment: string;
@@ -228,6 +298,10 @@ interface Studio3DState {
   bgType: 'solid' | 'linear' | 'radial';
   bgGradient: { color1: string; color2: string; angle: number };
   transparentBg: boolean;
+
+  // Tone mapping
+  toneMapping: ToneMappingType;
+  toneMappingExposure: number;
 
   // Post-processing effects
   bloomEnabled: boolean;
@@ -265,10 +339,12 @@ interface Studio3DState {
   exportResolution: 'hd' | '2k' | '4k';
   videoDuration: number;
   isExporting: boolean;
+  exportProgress: number;
 
   // UI
   panelVisible: boolean;
   activeTab: 'geometry' | 'material' | 'scene' | 'animation' | 'shader' | 'export';
+  showStats: boolean;
   isLoading: boolean;
   resetKey: number;
 
@@ -297,16 +373,25 @@ interface Studio3DState {
   setLightIntensity: (v: number) => void;
   setAmbientIntensity: (v: number) => void;
   setFillLightIntensity: (v: number) => void;
+  setFillLightPosition: (p: [number, number, number]) => void;
   setBounceLightIntensity: (v: number) => void;
+  setBounceLightPosition: (p: [number, number, number]) => void;
   setPointLightIntensity: (v: number) => void;
+  setPointLightPosition: (p: [number, number, number]) => void;
   setShadow: (v: boolean) => void;
+  setShadowQuality: (v: 'low' | 'medium' | 'high') => void;
   setShowGrid: (v: boolean) => void;
+  setGroundPlane: (v: boolean) => void;
+  setGroundReflection: (v: number) => void;
+  applyLightingPreset: (name: string) => void;
   setEnvironment: (e: string) => void;
   setCustomHdriUrl: (url: string) => void;
   setBackground: (c: string) => void;
   setBgType: (type: 'solid' | 'linear' | 'radial') => void;
   setBgGradient: (g: Partial<{ color1: string; color2: string; angle: number }>) => void;
   setTransparentBg: (v: boolean) => void;
+  setToneMapping: (v: ToneMappingType) => void;
+  setToneMappingExposure: (v: number) => void;
   setBloomEnabled: (v: boolean) => void;
   setBloomIntensity: (v: number) => void;
   setBloomThreshold: (v: number) => void;
@@ -332,12 +417,15 @@ interface Studio3DState {
   setExportResolution: (r: 'hd' | '2k' | '4k') => void;
   setVideoDuration: (d: number) => void;
   setIsExporting: (v: boolean) => void;
+  setExportProgress: (v: number) => void;
   setPanelVisible: (v: boolean) => void;
   setActiveTab: (t: Studio3DState['activeTab']) => void;
+  setShowStats: (v: boolean) => void;
   setIsLoading: (v: boolean) => void;
   applyScenePreset: (name: string) => void;
   applyConfig: (config: Partial<typeof INITIAL_STATE>) => void;
   resetScene: () => void;
+  randomize: () => void;
 }
 
 const INITIAL_STATE = {
@@ -366,16 +454,24 @@ const INITIAL_STATE = {
   lightIntensity: 1,
   ambientIntensity: 0.4,
   fillLightIntensity: 0.4,
+  fillLightPosition: [-5, 3, -3] as [number, number, number],
   bounceLightIntensity: 0.2,
+  bounceLightPosition: [0, -4, 6] as [number, number, number],
   pointLightIntensity: 0.3,
+  pointLightPosition: [0, 5, 0] as [number, number, number],
   shadow: true,
+  shadowQuality: 'medium' as const,
   showGrid: false,
+  groundPlane: false,
+  groundReflection: 0.5,
   environment: 'studio',
   customHdriUrl: '',
   background: '#0a0a0a',
   bgType: 'solid' as const,
   bgGradient: { color1: '#0a0a0a', color2: '#1a1a2e', angle: 45 },
   transparentBg: false,
+  toneMapping: 'ACES' as ToneMappingType,
+  toneMappingExposure: 1.2,
   bloomEnabled: false,
   bloomIntensity: 1,
   bloomThreshold: 0.9,
@@ -403,8 +499,10 @@ const INITIAL_STATE = {
   exportResolution: '2k' as const,
   videoDuration: 3,
   isExporting: false,
+  exportProgress: 0,
   panelVisible: true,
   activeTab: 'geometry' as const,
+  showStats: false,
   isLoading: false,
   resetKey: 0,
 };
@@ -439,16 +537,29 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setLightIntensity: (lightIntensity) => set({ lightIntensity }),
   setAmbientIntensity: (ambientIntensity) => set({ ambientIntensity }),
   setFillLightIntensity: (fillLightIntensity) => set({ fillLightIntensity }),
+  setFillLightPosition: (fillLightPosition) => set({ fillLightPosition }),
   setBounceLightIntensity: (bounceLightIntensity) => set({ bounceLightIntensity }),
+  setBounceLightPosition: (bounceLightPosition) => set({ bounceLightPosition }),
   setPointLightIntensity: (pointLightIntensity) => set({ pointLightIntensity }),
+  setPointLightPosition: (pointLightPosition) => set({ pointLightPosition }),
   setShadow: (shadow) => set({ shadow }),
+  setShadowQuality: (shadowQuality) => set({ shadowQuality }),
   setShowGrid: (showGrid) => set({ showGrid }),
+  setGroundPlane: (groundPlane) => set({ groundPlane }),
+  setGroundReflection: (groundReflection) => set({ groundReflection }),
+  applyLightingPreset: (name) => {
+    const preset = LIGHTING_PRESETS[name];
+    if (!preset) return;
+    set(preset.values);
+  },
   setEnvironment: (environment) => set({ environment, customHdriUrl: '' }),
   setCustomHdriUrl: (customHdriUrl) => set({ customHdriUrl, environment: '' }),
   setBackground: (background) => set({ background }),
   setBgType: (bgType) => set({ bgType }),
   setBgGradient: (g) => set((s) => ({ bgGradient: { ...s.bgGradient, ...g } })),
   setTransparentBg: (transparentBg) => set({ transparentBg }),
+  setToneMapping: (toneMapping) => set({ toneMapping }),
+  setToneMappingExposure: (toneMappingExposure) => set({ toneMappingExposure }),
   setBloomEnabled: (bloomEnabled) => set({ bloomEnabled }),
   setBloomIntensity: (bloomIntensity) => set({ bloomIntensity }),
   setBloomThreshold: (bloomThreshold) => set({ bloomThreshold }),
@@ -473,9 +584,11 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setAspectRatio: (aspectRatio) => set({ aspectRatio }),
   setExportResolution: (exportResolution) => set({ exportResolution }),
   setVideoDuration: (videoDuration) => set({ videoDuration }),
-  setIsExporting: (isExporting) => set({ isExporting }),
+  setIsExporting: (isExporting) => set({ isExporting, exportProgress: isExporting ? 0 : 0 }),
+  setExportProgress: (exportProgress) => set({ exportProgress }),
   setPanelVisible: (panelVisible) => set({ panelVisible }),
   setActiveTab: (activeTab) => set({ activeTab }),
+  setShowStats: (showStats) => set({ showStats }),
   setIsLoading: (isLoading) => set({ isLoading }),
 
   applyScenePreset: (name) => {
@@ -508,13 +621,64 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
     const { _cameraControlsRef } = get();
     set({ ...INITIAL_STATE, _cameraControlsRef, resetKey: Date.now(), shaderEnabled: false, shaderType: 'halftone' as any, shaderValues: {} });
   },
+
+  randomize: () => {
+    const r = (min: number, max: number, step = 0.01) => {
+      const steps = Math.round((max - min) / step);
+      return Math.round((min + Math.random() * steps * step) * 100) / 100;
+    };
+    const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+    const randHex = () => '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0');
+    const materials: MaterialPreset[] = ['default','plastic','metal','glass','rubber','chrome','gold','clay','emissive','holographic','brushedSteel','aluminum','copper','roseGold','platinum','ceramic','marble','concrete','wood','velvet','leather','frostedGlass','diamond','pearl','carbonFiber','carPaint','ice','obsidian','wax','mattePaint'];
+    const animations: AnimationType[] = ['none','spin','float','pulse','wobble','spinFloat','swing'];
+    const envIds = ENVIRONMENT_PRESETS.map(e => e.id);
+    const toneMaps = TONE_MAPPING_OPTIONS.map(t => t.id) as ToneMappingType[];
+    const bgTypes = ['solid','linear','radial'] as const;
+
+    set({
+      material: pick(materials),
+      color: randHex(),
+      depth: r(0.1, 3, 0.1),
+      smoothness: r(0, 1, 0.1),
+      bevelEnabled: Math.random() > 0.3,
+      bevelThickness: r(0.1, 2, 0.1),
+      bevelSize: r(0.1, 2, 0.1),
+      metalness: r(0, 1, 0.05),
+      roughness: r(0, 1, 0.05),
+      opacity: r(0.5, 1, 0.05),
+      lightIntensity: r(0.5, 3, 0.1),
+      ambientIntensity: r(0.1, 2, 0.1),
+      environment: pick(envIds),
+      background: randHex(),
+      bgType: pick([...bgTypes]),
+      bgGradient: { color1: randHex(), color2: randHex(), angle: r(0, 360, 15) },
+      animate: pick(animations),
+      animateSpeed: r(0.3, 3, 0.1),
+      toneMapping: pick(toneMaps),
+      toneMappingExposure: r(0.5, 2.5, 0.1),
+      bloomEnabled: Math.random() > 0.6,
+      bloomIntensity: r(0.5, 3, 0.1),
+      bloomThreshold: r(0.3, 1, 0.05),
+      vignetteEnabled: Math.random() > 0.7,
+      vignetteIntensity: r(0.2, 0.8, 0.05),
+      shadow: Math.random() > 0.4,
+      groundPlane: Math.random() > 0.5,
+    });
+  },
 }),
   {
     partialize: (state) => {
-      const { _cameraControlsRef, _cameraInfo, panelVisible, activeTab, isLoading, isExporting, resetKey, ...tracked } = state;
+      const { _cameraControlsRef, _cameraInfo, panelVisible, activeTab, isLoading, isExporting, exportProgress, resetKey, showStats, ...tracked } = state;
       return tracked;
     },
     limit: 50,
+    handleSet: (handleSet) => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      return (state) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => handleSet(state), 300);
+      };
+    },
   },
 ));
 

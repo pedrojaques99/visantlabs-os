@@ -16,6 +16,7 @@ uniform float u_contrast;
 uniform float u_offset;
 uniform float u_bit_depth;
 uniform float u_palette;
+uniform vec3 u_custom_color;
 
 varying vec2 v_texCoord;
 
@@ -102,7 +103,7 @@ float getBayer8x8(float row, float col) {
 // Get color from palette based on palette index and luminosity band
 vec3 getPaletteColor(float paletteIdx, float lum) {
   // Clamp palette index to valid range
-  float pal = floor(clamp(paletteIdx, 0.0, 4.0));
+  float pal = floor(clamp(paletteIdx, 0.0, 5.0));
   
   // Quantize luminosity to palette steps (typically 2-4 colors per palette)
   float steps = 4.0;
@@ -132,10 +133,17 @@ vec3 getPaletteColor(float paletteIdx, float lum) {
     else return vec3(0.2, 0.7, 0.2);
   }
   // Sepia (4)
-  else {
+  else if (pal < 4.5) {
     if (band < 0.33) return vec3(0.4, 0.3, 0.2);
     else if (band < 0.66) return vec3(0.6, 0.5, 0.35);
     else return vec3(0.8, 0.7, 0.55);
+  }
+  // Custom (5) — user-picked color mapped to luminance bands
+  else {
+    if (band < 0.25) return u_custom_color * 0.15;
+    else if (band < 0.5) return u_custom_color * 0.4;
+    else if (band < 0.75) return u_custom_color * 0.7;
+    else return u_custom_color;
   }
 }
 
@@ -201,6 +209,7 @@ const ditherShaderDefinition: ShaderDefinition = {
     { name: 'u_offset', type: 'float' },
     { name: 'u_bit_depth', type: 'float' },
     { name: 'u_palette', type: 'float' },
+    { name: 'u_custom_color', type: 'vec3' },
   ],
   defaults: {
     u_dither_size: 4.0,
@@ -208,6 +217,7 @@ const ditherShaderDefinition: ShaderDefinition = {
     u_offset: 0.0,
     u_bit_depth: 4.0,
     u_palette: 0.0,
+    u_custom_color: [0.0, 0.8, 1.0],
   },
   requiresTexture: false,
 };

@@ -3,6 +3,7 @@ import * as opentype from 'opentype.js';
 import { toast } from 'sonner';
 
 const FONTS = [
+  // Original 10
   { name: 'DM Sans', url: 'https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwARZthTg.ttf' },
   { name: 'Bebas Neue', url: 'https://fonts.gstatic.com/s/bebasneue/v16/JTUSjIg69CK48gW7PXooxW4.ttf' },
   { name: 'Playfair Display', url: 'https://fonts.gstatic.com/s/playfairdisplay/v40/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKfsukDQ.ttf' },
@@ -13,6 +14,27 @@ const FONTS = [
   { name: 'Pacifico', url: 'https://fonts.gstatic.com/s/pacifico/v23/FwZY7-Qmy14u9lezJ96A.ttf' },
   { name: 'Oswald', url: 'https://fonts.gstatic.com/s/oswald/v57/TK3_WkUHHAIjg75cFRf3bXL8LICs1xZogUE.ttf' },
   { name: 'Archivo Black', url: 'https://fonts.gstatic.com/s/archivoblack/v23/HTxqL289NzCGg4MzN6KJ7eW6OYs.ttf' },
+  // Expanded — display/headline fonts
+  { name: 'Montserrat', url: 'https://fonts.gstatic.com/s/montserrat/v29/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXo.ttf' },
+  { name: 'Poppins', url: 'https://fonts.gstatic.com/s/poppins/v22/pxiEyp8kv8JHgFVrJJfecg.ttf' },
+  { name: 'Raleway', url: 'https://fonts.gstatic.com/s/raleway/v34/1Ptxg8zYS_SKggPN4iEgvnHyvveLxVvaorCIPrE.ttf' },
+  { name: 'Abril Fatface', url: 'https://fonts.gstatic.com/s/abrilfatface/v23/zOL64pLDlL1D99S8HAFadkCFTtpvow.ttf' },
+  { name: 'Bangers', url: 'https://fonts.gstatic.com/s/bangers/v24/FeVQS0BTqb0h60ACH5lg.ttf' },
+  { name: 'Lobster', url: 'https://fonts.gstatic.com/s/lobster/v30/neILzCirqoswsqX9_oWsMw.ttf' },
+  { name: 'Anton', url: 'https://fonts.gstatic.com/s/anton/v25/1Ptgg87GJOYhpA3kLkBA.ttf' },
+  { name: 'Alfa Slab One', url: 'https://fonts.gstatic.com/s/alfaslabone/v20/6NUQ8FmMKwSEKjnm5-4v-4Jh6dVr.ttf' },
+  { name: 'Fredoka One', url: 'https://fonts.gstatic.com/s/fredokaone/v14/k3kUo8kEI-tA1RRcTZGmTmHBA6aF8Bf_.ttf' },
+  { name: 'Press Start 2P', url: 'https://fonts.gstatic.com/s/pressstart2p/v15/e3t4euO8T-267oIAQAu6jDQyK0nSgPJE4580w_o.ttf' },
+  { name: 'Russo One', url: 'https://fonts.gstatic.com/s/russoone/v17/Z9XUDmZRWg6M1LvRYsHOz8mJ.ttf' },
+  { name: 'Bungee', url: 'https://fonts.gstatic.com/s/bungee/v14/N0bU2SZBIuF2PU_ECn50Kd_PmA.ttf' },
+  { name: 'Protest Riot', url: 'https://fonts.gstatic.com/s/protestriot/v7/d6lPkaOxWMKm7QjPHOC47SQ4VXakAw.ttf' },
+  { name: 'Silkscreen', url: 'https://fonts.gstatic.com/s/silkscreen/v4/m8JXjfVPf62XiF7kO-i9ULRvamODxdI.ttf' },
+  { name: 'Monoton', url: 'https://fonts.gstatic.com/s/monoton/v19/5h1aiZUrOngCibe4TkHLRA.ttf' },
+  { name: 'Orbitron', url: 'https://fonts.gstatic.com/s/orbitron/v31/yMJMMIlzdpvBhQQL_SC3X9yhF25-T1nyGy6xpmIyXjU1pg.ttf' },
+  { name: 'Cinzel', url: 'https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnTYrvDE5ZdqU.ttf' },
+  { name: 'Syne', url: 'https://fonts.gstatic.com/s/syne/v22/8vIS7w4qzmVxsWxjBZRjr0FKM_04uT6kR47NCV5Z.ttf' },
+  { name: 'Space Grotesk', url: 'https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7oUXskPMBBSSJLm2E.ttf' },
+  { name: 'Unbounded', url: 'https://fonts.gstatic.com/s/unbounded/v7/Yq6F-LOTXCb04q32xlpat-6uR42XTqtG65jEsY7UbceRhIAakJt7lQ.ttf' },
 ];
 
 const DEFAULT_FONT = 'DM Sans';
@@ -26,7 +48,18 @@ async function loadFontByName(name: string, url: string): Promise<opentype.Font>
     const response = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
     const buffer = await response.arrayBuffer();
-    const font = opentype.parse(buffer);
+    const origWarn = console.warn;
+    console.warn = (...args: any[]) => {
+      const msg = String(args[0]);
+      if (msg.includes('substitutionType') || msg.includes('substFormat') || msg.includes('lookupType')) return;
+      origWarn.apply(console, args);
+    };
+    let font: opentype.Font;
+    try {
+      font = opentype.parse(buffer, { lowMemory: true });
+    } finally {
+      console.warn = origWarn;
+    }
     fontCache.set(name, font);
     return font;
   } catch (err) {
@@ -74,6 +107,15 @@ export function useFont(fontName: string): opentype.Font | null {
 }
 
 export function textToSvg(text: string, font: opentype.Font): string {
+  try {
+    return _textToSvg(text, font);
+  } catch (err) {
+    console.warn('textToSvg failed:', err);
+    return '';
+  }
+}
+
+function _textToSvg(text: string, font: opentype.Font): string {
   const size = 200;
   const available = size - 20;
   let fontSize = 180;

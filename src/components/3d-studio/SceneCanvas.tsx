@@ -1,8 +1,8 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { ContactShadows, Environment } from '@react-three/drei';
+import { ContactShadows, Environment, Stats, MeshReflectorMaterial } from '@react-three/drei';
 import * as THREE from 'three';
-import { useStudio3DStore, ENVIRONMENT_PRESETS } from '@/stores/studio3dStore';
+import { useStudio3DStore, ENVIRONMENT_PRESETS, type ToneMappingType } from '@/stores/studio3dStore';
 import { useShallow } from 'zustand/react/shallow';
 import { EffectComposer, Bloom, DepthOfField, Vignette } from '@react-three/postprocessing';
 import { ShaderPostProcess } from '@/effects/ShaderPostProcess';
@@ -46,10 +46,16 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   lightIntensity: s.lightIntensity,
   ambientIntensity: s.ambientIntensity,
   fillLightIntensity: s.fillLightIntensity,
+  fillLightPosition: s.fillLightPosition,
   bounceLightIntensity: s.bounceLightIntensity,
+  bounceLightPosition: s.bounceLightPosition,
   pointLightIntensity: s.pointLightIntensity,
+  pointLightPosition: s.pointLightPosition,
   shadow: s.shadow,
+  shadowQuality: s.shadowQuality,
   showGrid: s.showGrid,
+  groundPlane: s.groundPlane,
+  groundReflection: s.groundReflection,
   environment: s.environment,
   customHdriUrl: s.customHdriUrl,
   bloomEnabled: s.bloomEnabled,
@@ -187,9 +193,9 @@ function SceneContent() {
 
       <ambientLight intensity={s.ambientIntensity} />
       <directionalLight position={s.lightPosition} intensity={s.lightIntensity} castShadow />
-      <directionalLight position={[-5, 3, -3]} intensity={s.fillLightIntensity} />
-      <directionalLight position={[0, -4, 6]} intensity={s.bounceLightIntensity} />
-      <pointLight position={[0, 5, 0]} intensity={s.pointLightIntensity} />
+      <directionalLight position={s.fillLightPosition} intensity={s.fillLightIntensity} />
+      <directionalLight position={s.bounceLightPosition} intensity={s.bounceLightIntensity} />
+      <pointLight position={s.pointLightPosition} intensity={s.pointLightIntensity} />
 
       <group ref={animGroupRef}>
         {svgString && (
@@ -241,7 +247,33 @@ function SceneContent() {
       </group>
 
       {s.shadow && (
-        <ContactShadows position={[0, -3, 0]} opacity={0.4} scale={10} blur={2} far={4} />
+        <ContactShadows
+          position={[0, -3, 0]}
+          opacity={0.4}
+          scale={10}
+          blur={2}
+          far={4}
+          resolution={s.shadowQuality === 'low' ? 256 : s.shadowQuality === 'high' ? 1024 : 512}
+        />
+      )}
+
+      {s.groundPlane && (
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3, 0]}>
+          <planeGeometry args={[20, 20]} />
+          <MeshReflectorMaterial
+            mirror={s.groundReflection}
+            blur={[300, 100]}
+            resolution={512}
+            mixBlur={1}
+            mixStrength={40}
+            roughness={1}
+            depthScale={1.2}
+            minDepthThreshold={0.4}
+            maxDepthThreshold={1.4}
+            color="#101010"
+            metalness={0.5}
+          />
+        </mesh>
       )}
 
       <hemisphereLight args={['#b1e1ff', '#b97a20', 0.5]} />
@@ -294,12 +326,24 @@ function SceneContent() {
   );
 }
 
+const TONE_MAP: Record<ToneMappingType, THREE.ToneMapping> = {
+  ACES: THREE.ACESFilmicToneMapping,
+  AgX: THREE.AgXToneMapping,
+  Neutral: THREE.NeutralToneMapping,
+  Reinhard: THREE.ReinhardToneMapping,
+  Cineon: THREE.CineonToneMapping,
+  Linear: THREE.LinearToneMapping,
+};
+
 export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasReady, onSceneReady }) => {
   const s = useStudio3DStore(useShallow((st) => ({
     background: st.background,
     transparentBg: st.transparentBg,
     zoom: st.zoom,
     resetKey: st.resetKey,
+    toneMapping: st.toneMapping,
+    toneMappingExposure: st.toneMappingExposure,
+    showStats: st.showStats,
   })));
 
   const [sceneHandle, setSceneHandle] = useState<SceneHandle | null>(null);
@@ -318,8 +362,8 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
           preserveDrawingBuffer: true,
           powerPreference: 'default',
           failIfMajorPerformanceCaveat: false,
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.2,
+          toneMapping: TONE_MAP[s.toneMapping],
+          toneMappingExposure: s.toneMappingExposure,
         }}
         onCreated={({ gl, scene, camera }) => {
           onCanvasReady(gl.domElement);
@@ -329,16 +373,16 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
 
           gl.domElement.addEventListener('webglcontextlost', (e) => {
             e.preventDefault();
-            const wrapper = gl.domElement.parentElement;
-            if (wrapper) wrapper.style.visibility = 'hidden';
+            import('sonner').then(({ toast }) => toast.error('WebGL context lost — attempting recovery...', { id: 'webgl-context' }));
           });
           gl.domElement.addEventListener('webglcontextrestored', () => {
-            const wrapper = gl.domElement.parentElement;
-            if (wrapper) wrapper.style.visibility = 'visible';
+            import('sonner').then(({ toast }) => toast.success('WebGL context restored', { id: 'webgl-context' }));
+            useStudio3DStore.setState({ resetKey: Date.now() });
           });
         }}
       >
         <SceneContent />
+        {s.showStats && <Stats className="!absolute !left-2 !top-2" />}
       </Canvas>
     </SceneRefContext.Provider>
   );
