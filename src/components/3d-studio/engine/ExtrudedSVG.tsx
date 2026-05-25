@@ -62,7 +62,10 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
       tex.needsUpdate = true;
       setTexture((prev) => { prev?.dispose(); return tex; });
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      setTexture((prev) => { prev?.dispose(); return null; });
+    };
   }, [textureUrl]);
 
   useEffect(() => {

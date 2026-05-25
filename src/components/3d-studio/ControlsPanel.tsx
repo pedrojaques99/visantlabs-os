@@ -6,6 +6,7 @@ import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
+import { SendToButton } from '@/components/shared/SendToButton';
 import { useTranslation } from '@/hooks/useTranslation';
 import {
   useStudio3DStore,
@@ -15,6 +16,8 @@ import {
   ENVIRONMENT_PRESETS,
   ASPECT_RATIOS,
   EXPORT_RESOLUTIONS,
+  TONE_MAPPING_OPTIONS,
+  LIGHTING_PRESETS,
   getSavedScenes,
   saveScene,
   loadScene,
@@ -23,6 +26,7 @@ import {
 } from '@/stores/studio3dStore';
 import {
   Upload, FileText, Type, ChevronRight, Diamond, Download, Save, FolderOpen, Trash2,
+  Sun, Globe, Camera, Palette, Play, Sparkles, Zap, Film, Shuffle,
 } from 'lucide-react';
 import { ShaderControls } from '@/components/shared/ShaderControls';
 import {
@@ -31,22 +35,30 @@ import {
 } from '@/components/shared/ToolPanel';
 import { HexColorPicker } from 'react-colorful';
 import { setCameraView, resetCamera } from './CameraBridge';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
 
 const MATERIAL_CATEGORIES = ['basic', 'metals', 'surfaces', 'glass', 'special'] as const;
 
 const FONT_OPTIONS = [
   'DM Sans', 'Bebas Neue', 'Playfair Display', 'Righteous', 'Black Ops One',
   'Permanent Marker', 'Rubik Mono One', 'Pacifico', 'Oswald', 'Archivo Black',
+  'Montserrat', 'Poppins', 'Raleway', 'Abril Fatface', 'Bangers',
+  'Lobster', 'Anton', 'Alfa Slab One', 'Fredoka One', 'Press Start 2P',
+  'Russo One', 'Bungee', 'Protest Riot', 'Silkscreen', 'Monoton',
+  'Orbitron', 'Cinzel', 'Syne', 'Space Grotesk', 'Unbounded',
 ];
 
 interface ControlsPanelProps {
   onExport: () => void;
+  onBatchExport?: () => void;
 }
 
-export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExport }) => {
+export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExport, onBatchExport }) => {
   const { t } = useTranslation();
   const store = useStudio3DStore();
   const [isDragging, setIsDragging] = useState(false);
+  const [hasRandomizedOnce, setHasRandomizedOnce] = useState(false);
+  const [showRandomizeConfirm, setShowRandomizeConfirm] = useState(false);
   const dragCounter = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -67,7 +79,11 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
   const [physicsGravity, setPhysicsGravity] = useDebouncedSlider(store.physicsGravity, store.setPhysicsGravity);
   const [physicsBounciness, setPhysicsBounciness] = useDebouncedSlider(store.physicsBounciness, store.setPhysicsBounciness);
   const [physicsFriction, setPhysicsFriction] = useDebouncedSlider(store.physicsFriction, store.setPhysicsFriction);
-  const [physicsSize, setPhysicsSize] = useDebouncedSlider(store.physicsSize, store.setPhysicsSize);
+  const [physicsSize, setPhysicsSize] = useDebouncedSlider(store.physicsSize, (v: number) => {
+    store.setPhysicsSize(v);
+    const maxCount = Math.max(1, Math.round(100 - (v - 0.2) * (92 / 1.5)));
+    if (store.physicsCount > maxCount) store.setPhysicsCount(maxCount);
+  });
   const [fillLightIntensity, setFillLightIntensity] = useDebouncedSlider(store.fillLightIntensity, store.setFillLightIntensity);
   const [bounceLightIntensity, setBounceLightIntensity] = useDebouncedSlider(store.bounceLightIntensity, store.setBounceLightIntensity);
   const [pointLightIntensity, setPointLightIntensity] = useDebouncedSlider(store.pointLightIntensity, store.setPointLightIntensity);
@@ -76,6 +92,9 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
   const [dofFocusDistance, setDofFocusDistance] = useDebouncedSlider(store.dofFocusDistance, store.setDofFocusDistance);
   const [dofBokehScale, setDofBokehScale] = useDebouncedSlider(store.dofBokehScale, store.setDofBokehScale);
   const [vignetteIntensity, setVignetteIntensity] = useDebouncedSlider(store.vignetteIntensity, store.setVignetteIntensity);
+  const [toneMappingExposure, setToneMappingExposure] = useDebouncedSlider(store.toneMappingExposure, store.setToneMappingExposure);
+  const [textureRotation, setTextureRotation] = useDebouncedSlider(store.textureRotation, store.setTextureRotation);
+  const [groundReflection, setGroundReflection] = useDebouncedSlider(store.groundReflection, store.setGroundReflection);
   const hdriInputRef = useRef<HTMLInputElement>(null);
   const [savedScenes, setSavedScenes] = useState<SavedScene[]>(() => getSavedScenes());
   const [sceneName, setSceneName] = useState('');
@@ -92,7 +111,8 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         const svg = await pngToSvg(file);
         store.setSvgData(svg, file.name);
         toast.success(t('studio3d.input.converted', { fileName: file.name }));
-      } catch {
+      } catch (err) {
+        console.error('PNG→SVG conversion failed:', err);
         toast.error(t('studio3d.input.processFailed'));
       } finally {
         store.setIsLoading(false);
@@ -130,9 +150,45 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
     if (file) await processFile(file);
   }, [processFile]);
 
+  const scrollToSection = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const btn = el.querySelector('button');
+      if (btn && el.querySelector('[data-state]') === null) btn.click();
+    }
+  }, []);
+
+  const SECTION_NAV = [
+    { id: 'sec-scenes', icon: <Film size={14} />, label: 'Scenes' },
+    { id: 'sec-material', icon: <Diamond size={14} />, label: 'Material' },
+    { id: 'sec-lighting', icon: <Sun size={14} />, label: 'Lighting' },
+    { id: 'sec-environment', icon: <Globe size={14} />, label: 'Environment' },
+    { id: 'sec-camera', icon: <Camera size={14} />, label: 'Camera' },
+    { id: 'sec-background', icon: <Palette size={14} />, label: 'Background' },
+    { id: 'sec-animation', icon: <Play size={14} />, label: 'Animation' },
+    { id: 'sec-effects', icon: <Sparkles size={14} />, label: 'Effects' },
+    { id: 'sec-shader', icon: <Zap size={14} />, label: 'Shader FX' },
+  ];
+
   return (
-    <ToolPanel>
+    <ToolPanel className="flex-row">
+      {/* Section quick-nav sidebar */}
+      <div className="shrink-0 flex flex-col items-center gap-1 py-3 px-1 border-r border-white/[0.06] bg-neutral-950/50">
+        {SECTION_NAV.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => scrollToSection(s.id)}
+            title={s.label}
+            className="w-7 h-7 flex items-center justify-center rounded text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors"
+          >
+            {s.icon}
+          </button>
+        ))}
+      </div>
+
       {/* Scrollable content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
       <ToolPanelContent>
 
         {/* Input — always visible */}
@@ -162,7 +218,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
               <span className={cn('text-[10px] uppercase tracking-wider transition-colors text-center', isDragging ? 'text-white' : 'text-neutral-500')}>
                 {store.isLoading ? <GlitchLoader size={12} /> : store.fileName || t('studio3d.input.dropZone')}
               </span>
-              <input ref={fileInputRef} type="file" accept=".svg,.png,.jpg,.jpeg,.webp" onChange={handleFileUpload} className="hidden" />
+              <input ref={fileInputRef} type="file" accept=".svg,.png,.jpg,.jpeg,.webp" onChange={handleFileUpload} className="hidden" aria-label="Upload SVG or image" />
             </div>
           ) : (
             <div className="space-y-2">
@@ -171,11 +227,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                 value={store.text}
                 onChange={(e) => store.setText(e.target.value)}
                 placeholder={t('studio3d.input.textPlaceholder')}
+                aria-label="Text input"
                 className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/20"
               />
               <select
                 value={store.font}
                 onChange={(e) => store.setFont(e.target.value)}
+                aria-label="Font selection"
                 className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-neutral-300 focus:outline-none focus:border-white/20 appearance-none cursor-pointer"
               >
                 {FONT_OPTIONS.map((f) => <option key={f} value={f} className="bg-neutral-900">{f}</option>)}
@@ -185,7 +243,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         </ToolPanelSection>
 
         {/* Scene Save/Load */}
-        <ToolPanelDisclosure label="Scenes">
+        <ToolPanelDisclosure label="Scenes" icon={<Film size={13} />} id="sec-scenes">
           <div className="space-y-2">
             <div className="flex gap-1.5">
               <input
@@ -193,6 +251,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                 value={sceneName}
                 onChange={(e) => setSceneName(e.target.value)}
                 placeholder="Scene name..."
+                aria-label="Scene name"
                 className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/20"
               />
               <Button
@@ -200,6 +259,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                 size="sm"
                 className="h-7 px-2 text-[10px]"
                 disabled={!sceneName.trim()}
+                aria-label="Save scene"
                 onClick={() => {
                   saveScene(sceneName.trim());
                   setSavedScenes(getSavedScenes());
@@ -219,6 +279,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                         loadScene(scene.id);
                         toast.success(`Loaded "${scene.name}"`);
                       }}
+                      aria-label="Load scene"
                       className="flex-1 text-left px-2 py-1 rounded text-[10px] text-neutral-400 hover:bg-white/5 hover:text-white transition-colors truncate"
                     >
                       <FolderOpen size={10} className="inline mr-1.5 opacity-50" />
@@ -230,6 +291,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                         setSavedScenes(getSavedScenes());
                         toast.success('Scene deleted');
                       }}
+                      aria-label="Delete scene"
                       className="opacity-0 group-hover:opacity-100 p-1 text-neutral-600 hover:text-red-400 transition-all"
                     >
                       <Trash2 size={10} />
@@ -252,13 +314,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
           </ToolPanelGrid>
           <NodeSlider label={t('studio3d.geometry.depth')} value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
           <ToolPanelRow label={t('studio3d.geometry.bevel')}>
-            <Switch checked={store.bevelEnabled} onCheckedChange={store.setBevelEnabled} />
+            <Switch checked={store.bevelEnabled} onCheckedChange={store.setBevelEnabled} aria-label="Bevel" />
           </ToolPanelRow>
           {store.bevelEnabled && (
             <>
-              <NodeSlider label={t('studio3d.geometry.smoothness')} value={smoothness} min={0} max={8} step={0.1} onChange={setSmoothness} />
               <NodeSlider label={t('studio3d.geometry.thickness')} value={bevelThickness} min={0} max={2} step={0.01} onChange={setBevelThickness} />
               <NodeSlider label={t('studio3d.geometry.size')} value={bevelSize} min={0} max={2} step={0.01} onChange={setBevelSize} />
+              <NodeSlider label={t('studio3d.geometry.smoothness')} value={smoothness} min={0} max={8} step={1} onChange={setSmoothness} />
             </>
           )}
         </ToolPanelSection>
@@ -272,36 +334,85 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
               </ToolPanelChip>
             ))}
           </ToolPanelGrid>
+          <button
+            onClick={() => {
+              if (!hasRandomizedOnce) {
+                setShowRandomizeConfirm(true);
+              } else {
+                store.randomize();
+                toast.success('Surprise!');
+              }
+            }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-dashed border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all text-[10px] uppercase tracking-widest font-mono"
+          >
+            <Shuffle size={13} />
+            Surprise me
+          </button>
         </ToolPanelSection>
 
         {/* Material — collapsed */}
-        <ToolPanelDisclosure label={t('studio3d.material.title')} defaultOpen>
+        <ToolPanelDisclosure label={t('studio3d.material.title')} icon={<Diamond size={13} />} id="sec-material" defaultOpen>
           <MaterialContent
             store={store}
             metalness={metalness} setMetalness={setMetalness}
             roughness={roughness} setRoughness={setRoughness}
             opacity={opacity} setOpacity={setOpacity}
             textureOpacity={textureOpacity} setTextureOpacity={setTextureOpacity}
+            textureRotation={textureRotation} setTextureRotation={setTextureRotation}
           />
         </ToolPanelDisclosure>
 
         {/* Lighting — collapsed */}
-        <ToolPanelDisclosure label={t('studio3d.lighting.title')}>
+        <ToolPanelDisclosure label={t('studio3d.lighting.title')} icon={<Sun size={13} />} id="sec-lighting">
+          <ToolPanelSection title="Lighting Presets">
+            <ToolPanelGrid cols={3}>
+              {Object.keys(LIGHTING_PRESETS).map((name) => (
+                <ToolPanelChip key={name} onClick={() => store.applyLightingPreset(name)}>
+                  {LIGHTING_PRESETS[name].label}
+                </ToolPanelChip>
+              ))}
+            </ToolPanelGrid>
+          </ToolPanelSection>
           <NodeSlider label={t('studio3d.lighting.keyLight')} value={lightIntensity} min={0} max={3} step={0.05} onChange={setLightIntensity} />
           <NodeSlider label={t('studio3d.lighting.ambient')} value={ambientIntensity} min={0} max={2} step={0.05} onChange={setAmbientIntensity} />
           <NodeSlider label="Fill Light" value={fillLightIntensity} min={0} max={2} step={0.05} onChange={setFillLightIntensity} />
           <NodeSlider label="Bounce Light" value={bounceLightIntensity} min={0} max={2} step={0.05} onChange={setBounceLightIntensity} />
           <NodeSlider label="Top Light" value={pointLightIntensity} min={0} max={2} step={0.05} onChange={setPointLightIntensity} />
           <ToolPanelRow label={t('studio3d.lighting.shadows')}>
-            <Switch checked={store.shadow} onCheckedChange={store.setShadow} />
+            <Switch checked={store.shadow} onCheckedChange={store.setShadow} aria-label="Shadow" />
           </ToolPanelRow>
+          {store.shadow && (
+            <ToolPanelGrid cols={3}>
+              {(['low', 'medium', 'high'] as const).map((q) => (
+                <ToolPanelChip key={q} active={store.shadowQuality === q} onClick={() => store.setShadowQuality(q)}>
+                  {q.charAt(0).toUpperCase() + q.slice(1)}
+                </ToolPanelChip>
+              ))}
+            </ToolPanelGrid>
+          )}
+          <ToolPanelRow label="Ground Plane">
+            <Switch checked={store.groundPlane} onCheckedChange={store.setGroundPlane} aria-label="Ground plane" />
+          </ToolPanelRow>
+          {store.groundPlane && (
+            <NodeSlider label="Reflection" value={groundReflection} min={0} max={1} step={0.05} onChange={setGroundReflection} />
+          )}
           <ToolPanelRow label={t('studio3d.lighting.grid')}>
-            <Switch checked={store.showGrid} onCheckedChange={store.setShowGrid} />
+            <Switch checked={store.showGrid} onCheckedChange={store.setShowGrid} aria-label="Grid" />
           </ToolPanelRow>
+          <ToolPanelSection title="Tone Mapping">
+            <ToolPanelGrid cols={3}>
+              {TONE_MAPPING_OPTIONS.map((tm) => (
+                <ToolPanelChip key={tm.id} active={store.toneMapping === tm.id} onClick={() => store.setToneMapping(tm.id)}>
+                  {tm.label}
+                </ToolPanelChip>
+              ))}
+            </ToolPanelGrid>
+            <NodeSlider label="Exposure" value={toneMappingExposure} min={0.1} max={3} step={0.05} onChange={setToneMappingExposure} />
+          </ToolPanelSection>
         </ToolPanelDisclosure>
 
         {/* Environment / HDRI */}
-        <ToolPanelDisclosure label="Environment">
+        <ToolPanelDisclosure label="Environment" icon={<Globe size={13} />} id="sec-environment">
           <ToolPanelGrid cols={3}>
             {ENVIRONMENT_PRESETS.map((env) => (
               <ToolPanelChip key={env.id} active={store.environment === env.id && !store.customHdriUrl} onClick={() => store.setEnvironment(env.id)}>
@@ -319,6 +430,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             ref={hdriInputRef}
             type="file"
             accept=".hdr,.exr"
+            aria-label="Upload custom HDRI"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) {
@@ -338,7 +450,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         </ToolPanelDisclosure>
 
         {/* Camera — collapsed */}
-        <ToolPanelDisclosure label={t('studio3d.camera.title')}>
+        <ToolPanelDisclosure label={t('studio3d.camera.title')} icon={<Camera size={13} />} id="sec-camera">
           <ToolPanelGrid cols={3}>
             {(['front', 'top', 'right', 'back', 'iso'] as const).map((view) => (
               <ToolPanelChip key={view} active={store._cameraInfo?.view === view} onClick={() => setCameraView(view)}>
@@ -352,7 +464,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         </ToolPanelDisclosure>
 
         {/* Background — collapsed */}
-        <ToolPanelDisclosure label={t('studio3d.background.title')}>
+        <ToolPanelDisclosure label={t('studio3d.background.title')} icon={<Palette size={13} />} id="sec-background">
           <div className="space-y-3">
             <ToolPanelGrid cols={3}>
               {(['solid', 'linear', 'radial'] as const).map((type) => (
@@ -374,6 +486,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                       onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setBackground(`#${v}`); }}
                       onBlur={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setBackground(`#${v}`); }}
                       maxLength={6}
+                      aria-label="Background color 1"
                       className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
                       placeholder="0A0A0A"
                     />
@@ -406,13 +519,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             )}
 
             <ToolPanelRow label={t('studio3d.background.transparent')}>
-              <Switch checked={store.transparentBg} onCheckedChange={store.setTransparentBg} />
+              <Switch checked={store.transparentBg} onCheckedChange={store.setTransparentBg} aria-label="Transparent background" />
             </ToolPanelRow>
           </div>
         </ToolPanelDisclosure>
 
         {/* Animation — collapsed */}
-        <ToolPanelDisclosure label={t('studio3d.animation.type')}>
+        <ToolPanelDisclosure label={t('studio3d.animation.type')} icon={<Play size={13} />} id="sec-animation">
           <div className="space-y-3">
             <ToolPanelGrid>
               {ANIMATION_PRESETS.map((a) => (
@@ -424,7 +537,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
 
             {store.animate === 'physicsFall' ? (
               <div className="space-y-3 pt-2">
-                <NodeSlider label={t('studio3d.animation.physics.count')} value={physicsCount} min={5} max={50} step={1} onChange={setPhysicsCount} />
+                <NodeSlider label={t('studio3d.animation.physics.count')} value={physicsCount} min={1} max={Math.max(1, Math.round(100 - (store.physicsSize - 0.2) * (92 / 1.5)))} step={1} onChange={setPhysicsCount} />
                 <NodeSlider label={t('studio3d.animation.physics.gravity')} value={physicsGravity} min={0} max={30} step={0.5} onChange={setPhysicsGravity} />
                 <NodeSlider label={t('studio3d.animation.physics.bounciness')} value={physicsBounciness} min={0} max={1} step={0.05} onChange={setPhysicsBounciness} />
                 <NodeSlider label={t('studio3d.animation.physics.friction')} value={physicsFriction} min={0} max={1} step={0.05} onChange={setPhysicsFriction} />
@@ -446,7 +559,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                   </ToolPanelGrid>
                 </ToolPanelSection>
                 <ToolPanelRow label={t('studio3d.animation.reverse')}>
-                  <Switch checked={store.animateReverse} onCheckedChange={store.setAnimateReverse} />
+                  <Switch checked={store.animateReverse} onCheckedChange={store.setAnimateReverse} aria-label="Reverse animation" />
                 </ToolPanelRow>
               </div>
             ) : null}
@@ -454,10 +567,10 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         </ToolPanelDisclosure>
 
         {/* Effects — collapsed */}
-        <ToolPanelDisclosure label="Effects">
+        <ToolPanelDisclosure label="Effects" icon={<Sparkles size={13} />} id="sec-effects">
           <div className="space-y-3">
             <ToolPanelRow label="Bloom">
-              <Switch checked={store.bloomEnabled} onCheckedChange={store.setBloomEnabled} />
+              <Switch checked={store.bloomEnabled} onCheckedChange={store.setBloomEnabled} aria-label="Bloom" />
             </ToolPanelRow>
             {store.bloomEnabled && (
               <>
@@ -466,7 +579,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
               </>
             )}
             <ToolPanelRow label="Depth of Field">
-              <Switch checked={store.dofEnabled} onCheckedChange={store.setDofEnabled} />
+              <Switch checked={store.dofEnabled} onCheckedChange={store.setDofEnabled} aria-label="Depth of field" />
             </ToolPanelRow>
             {store.dofEnabled && (
               <>
@@ -475,7 +588,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
               </>
             )}
             <ToolPanelRow label="Vignette">
-              <Switch checked={store.vignetteEnabled} onCheckedChange={store.setVignetteEnabled} />
+              <Switch checked={store.vignetteEnabled} onCheckedChange={store.setVignetteEnabled} aria-label="Vignette" />
             </ToolPanelRow>
             {store.vignetteEnabled && (
               <NodeSlider label="Darkness" value={vignetteIntensity} min={0} max={1} step={0.01} onChange={setVignetteIntensity} />
@@ -484,7 +597,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         </ToolPanelDisclosure>
 
         {/* Shader Post-Processing — collapsed */}
-        <ToolPanelDisclosure label="Shader FX">
+        <ToolPanelDisclosure label="Shader FX" icon={<Zap size={13} />} id="sec-shader">
           <ShaderControls
             enabled={store.shaderEnabled}
             shaderType={store.shaderType}
@@ -497,7 +610,22 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
       </ToolPanelContent>
 
       {/* Sticky bottom — Export */}
-      <ExportPanel store={store} videoDuration={videoDuration} setVideoDuration={setVideoDuration} onExport={onExport} />
+      <ExportPanel store={store} videoDuration={videoDuration} setVideoDuration={setVideoDuration} onExport={onExport} onBatchExport={onBatchExport} />
+      </div>
+      <ConfirmationModal
+        isOpen={showRandomizeConfirm}
+        onClose={() => setShowRandomizeConfirm(false)}
+        onConfirm={() => {
+          setHasRandomizedOnce(true);
+          setShowRandomizeConfirm(false);
+          store.randomize();
+          toast.success('Surprise!');
+        }}
+        title="Surprise Me"
+        message="This will randomize all scene parameters (material, color, lighting, animation, etc). Your current settings will be lost."
+        confirmText="Let's go!"
+        variant="warning"
+      />
     </ToolPanel>
   );
 });
@@ -511,7 +639,8 @@ const ExportPanel: React.FC<{
   videoDuration: number;
   setVideoDuration: (v: number) => void;
   onExport: () => void;
-}> = React.memo(({ store, videoDuration, setVideoDuration, onExport }) => {
+  onBatchExport?: () => void;
+}> = React.memo(({ store, videoDuration, setVideoDuration, onExport, onBatchExport }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
@@ -537,8 +666,8 @@ const ExportPanel: React.FC<{
             </div>
           )}
 
-          <ToolPanelGrid cols={5}>
-            {(['png', 'mp4', 'gif', 'glb', 'obj'] as const).map((f) => (
+          <ToolPanelGrid cols={4}>
+            {(['png', 'webm', 'glb', 'obj'] as const).map((f) => (
               <ToolPanelChip key={f} active={store.exportFormat === f} onClick={() => store.setExportFormat(f)}>
                 {f}
               </ToolPanelChip>
@@ -571,7 +700,7 @@ const ExportPanel: React.FC<{
             </ToolPanelGrid>
           )}
 
-          {(store.exportFormat === 'mp4' || store.exportFormat === 'gif') && (
+          {store.exportFormat === 'webm' && (
             <div className="space-y-2">
               <NodeSlider label={t('studio3d.export.duration')} value={videoDuration} min={1} max={10} step={0.5} onChange={setVideoDuration} />
               {store.animate !== 'none' && (() => {
@@ -586,9 +715,29 @@ const ExportPanel: React.FC<{
             </div>
           )}
 
-          <Button onClick={onExport} disabled={store.isExporting} className="w-full bg-white hover:bg-neutral-200 text-black font-medium text-xs h-8">
-            {store.isExporting ? t('studio3d.export.exporting') : t('studio3d.export.exportFormat', { format: store.exportFormat.toUpperCase() })}
-          </Button>
+          {store.isExporting && store.exportProgress > 0 && (
+            <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+              <div className="h-full bg-white rounded-full transition-all duration-200" style={{ width: `${Math.round(store.exportProgress * 100)}%` }} />
+            </div>
+          )}
+
+          <div className="flex gap-2 w-full">
+            <Button onClick={onExport} disabled={store.isExporting} aria-label="Export" className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium text-xs h-8">
+              {store.isExporting
+                ? (store.exportProgress > 0 ? `${Math.round(store.exportProgress * 100)}%` : t('studio3d.export.exporting'))
+                : t('studio3d.export.exportFormat', { format: store.exportFormat.toUpperCase() })}
+            </Button>
+            <SendToButton source="3d-studio" />
+          </div>
+          {store.exportFormat === 'png' && onBatchExport && (
+            <button
+              onClick={onBatchExport}
+              disabled={store.isExporting}
+              className="w-full py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors disabled:opacity-40"
+            >
+              Export All Views (ZIP)
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -603,11 +752,12 @@ interface MaterialContentProps {
   roughness: number; setRoughness: (v: number) => void;
   opacity: number; setOpacity: (v: number) => void;
   textureOpacity: number; setTextureOpacity: (v: number) => void;
+  textureRotation: number; setTextureRotation: (v: number) => void;
 }
 
 const MaterialContent: React.FC<MaterialContentProps> = React.memo(({
   store, metalness, setMetalness, roughness, setRoughness, opacity, setOpacity,
-  textureOpacity, setTextureOpacity,
+  textureOpacity, setTextureOpacity, textureRotation, setTextureRotation,
 }) => {
   const { t } = useTranslation();
   const activeCat = useMemo(
@@ -631,6 +781,7 @@ const MaterialContent: React.FC<MaterialContentProps> = React.memo(({
               onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setColor(`#${v}`); }}
               onBlur={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setColor(`#${v}`); }}
               maxLength={6}
+              aria-label="Material color"
               className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
               placeholder="00E5FF"
             />
@@ -640,7 +791,7 @@ const MaterialContent: React.FC<MaterialContentProps> = React.memo(({
       </div>
 
       {/* Texture */}
-      <TextureControls store={store} textureOpacity={textureOpacity} setTextureOpacity={setTextureOpacity} />
+      <TextureControls store={store} textureOpacity={textureOpacity} setTextureOpacity={setTextureOpacity} textureRotation={textureRotation} setTextureRotation={setTextureRotation} />
 
       {/* Properties */}
       <div className="space-y-3">
@@ -648,7 +799,7 @@ const MaterialContent: React.FC<MaterialContentProps> = React.memo(({
         <NodeSlider label={t('studio3d.properties.roughness')} value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} />
         <NodeSlider label={t('studio3d.properties.opacity')} value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} />
         <ToolPanelRow label={t('studio3d.properties.wireframe')}>
-          <Switch checked={store.wireframe} onCheckedChange={store.setWireframe} />
+          <Switch checked={store.wireframe} onCheckedChange={store.setWireframe} aria-label="Wireframe" />
         </ToolPanelRow>
       </div>
     </div>
@@ -804,7 +955,9 @@ const TextureControls: React.FC<{
   store: StoreState;
   textureOpacity: number;
   setTextureOpacity: (v: number) => void;
-}> = React.memo(({ store, textureOpacity, setTextureOpacity }) => {
+  textureRotation: number;
+  setTextureRotation: (v: number) => void;
+}> = React.memo(({ store, textureOpacity, setTextureOpacity, textureRotation, setTextureRotation }) => {
   const { t } = useTranslation();
   const textureInputRef = useRef<HTMLInputElement>(null);
   const [activeProc, setActiveProc] = useState<string | null>(null);
@@ -837,11 +990,12 @@ const TextureControls: React.FC<{
       <button onClick={() => textureInputRef.current?.click()} className="w-full px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10">
         {t('studio3d.texture.upload')}
       </button>
-      <input ref={textureInputRef} type="file" accept="image/*" onChange={handleTextureUpload} className="hidden" />
+      <input ref={textureInputRef} type="file" accept="image/*" onChange={handleTextureUpload} className="hidden" aria-label="Upload texture" />
       {hasTexture && (
         <div className="pt-2 space-y-3">
           <NodeSlider label={t('studio3d.texture.opacity')} value={textureOpacity} min={0} max={1} step={0.01} onChange={setTextureOpacity} />
           <NodeSlider label={t('studio3d.texture.repeat')} value={store.textureRepeat} min={0.5} max={10} step={0.5} onChange={store.setTextureRepeat} />
+          <NodeSlider label="Rotation" value={textureRotation} min={0} max={6.28} step={0.1} onChange={setTextureRotation} />
           {activeProc && (
             <button onClick={() => applyProcedural(PROCEDURAL_TEXTURES.find(p => p.id === activeProc)!)} className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-500 hover:text-neutral-300 transition-colors">
               {t('studio3d.texture.regenerate')}

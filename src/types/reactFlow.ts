@@ -830,11 +830,66 @@ export interface VariablesNodeData extends BaseNodeData {
   onUpdateData?: (nodeId: string, newData: Partial<VariablesNodeData>) => void;
 }
 
+// TextureFilter Node - composites texture overlay onto images (blend/mask modes)
+export interface TextureFilterNodeData extends BaseNodeData {
+  type: 'textureFilter';
+  isLoading?: boolean;
+  resultImageBase64?: string;
+  resultImageUrl?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  connectedImage?: string;
+  // Texture source
+  textureSrc?: string;
+  textureName?: string;
+  // Settings (mirrors TextureFilterSettings)
+  opacity?: number;
+  scale?: number;
+  blendMode?: 'multiply' | 'screen' | 'overlay' | 'soft-light' | 'hard-light' | 'color-burn' | 'color-dodge';
+  textureColor?: string;
+  useOriginalColor?: boolean;
+  rotation?: number;
+  offsetX?: number;
+  offsetY?: number;
+  tileMode?: boolean;
+  tileGapX?: number;
+  tileGapY?: number;
+  maskMode?: boolean;
+  maskInvert?: boolean;
+  onApply?: (nodeId: string, imageBase64: string) => Promise<void>;
+  onUpdateData?: (nodeId: string, newData: Partial<TextureFilterNodeData>) => void;
+  onViewFullscreen?: (imageUrl: string | null, imageBase64?: string | null) => void;
+}
+
+// Studio3D Node - 3D rendering with snapshot preview (no live Three.js in node)
+export interface Studio3DNodeData extends BaseNodeData {
+  type: 'studio3d';
+  isLoading?: boolean;
+  resultImageBase64?: string;
+  resultImageUrl?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  connectedImage?: string;
+  // 3D scene config (subset for node — full editing in modal)
+  svgData?: string;
+  material?: string;
+  depth?: number;
+  color?: string;
+  animate?: string;
+  background?: string;
+  environment?: string;
+  sceneConfig?: Record<string, unknown>;
+  onApply?: (nodeId: string) => Promise<void>;
+  onUpdateData?: (nodeId: string, newData: Partial<Studio3DNodeData>) => void;
+  onViewFullscreen?: (imageUrl: string | null, imageBase64?: string | null) => void;
+  onOpenEditor?: (nodeId: string) => void;
+}
+
 // Union type for all node data
-export type FlowNodeData = ImageNodeData | MergeNodeData | EditNodeData | UpscaleNodeData | UpscaleBicubicNodeData | MockupNodeData | OutputNodeData | PromptNodeData | BrandNodeData | AngleNodeData | LogoNodeData | PDFNodeData | StrategyNodeData | BrandCoreData | VideoNodeData | VideoInputNodeData | TextureNodeData | AmbienceNodeData | LuminanceNodeData | ShaderNodeData | ColorExtractorNodeData | TextNodeData | DirectorNodeData | ChatNodeData | NodeBuilderData | CustomNodeData | VariablesNodeData | DataNodeData | BatchRunnerNodeData;
+export type FlowNodeData = ImageNodeData | MergeNodeData | EditNodeData | UpscaleNodeData | UpscaleBicubicNodeData | MockupNodeData | OutputNodeData | PromptNodeData | BrandNodeData | AngleNodeData | LogoNodeData | PDFNodeData | StrategyNodeData | BrandCoreData | VideoNodeData | VideoInputNodeData | TextureNodeData | AmbienceNodeData | LuminanceNodeData | ShaderNodeData | ColorExtractorNodeData | TextNodeData | DirectorNodeData | ChatNodeData | NodeBuilderData | CustomNodeData | VariablesNodeData | DataNodeData | BatchRunnerNodeData | TextureFilterNodeData | Studio3DNodeData;
 
 // Custom node types
-export type FlowNodeType = 'image' | 'merge' | 'edit' | 'upscale' | 'mockup' | 'output' | 'prompt' | 'brand' | 'angle' | 'logo' | 'pdf' | 'strategy' | 'brandCore' | 'video' | 'videoInput' | 'texture' | 'ambience' | 'luminance' | 'shader' | 'colorExtractor' | 'text' | 'director' | 'chat' | 'nodeBuilder' | 'custom' | 'variables' | 'data' | 'batchRunner';
+export type FlowNodeType = 'image' | 'merge' | 'edit' | 'upscale' | 'mockup' | 'output' | 'prompt' | 'brand' | 'angle' | 'logo' | 'pdf' | 'strategy' | 'brandCore' | 'video' | 'videoInput' | 'texture' | 'ambience' | 'luminance' | 'shader' | 'colorExtractor' | 'text' | 'director' | 'chat' | 'nodeBuilder' | 'custom' | 'variables' | 'data' | 'batchRunner' | 'textureFilter' | 'studio3d';
 
 // Extended Node type with our custom data
 export type FlowNode = Node<FlowNodeData>;

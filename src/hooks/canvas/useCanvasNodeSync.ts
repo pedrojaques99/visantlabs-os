@@ -7,7 +7,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, EditNodeData, MockupNodeData, PromptNodeData, AngleNodeData, VideoNodeData, VideoInputNodeData, BrandCoreData, ImageNodeData, OutputNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, ShaderNodeData, UpscaleBicubicNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, BrandNodeData } from '@/types/reactFlow';
+import type { FlowNodeData, EditNodeData, MockupNodeData, PromptNodeData, AngleNodeData, VideoNodeData, VideoInputNodeData, BrandCoreData, ImageNodeData, OutputNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, ShaderNodeData, UpscaleBicubicNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, BrandNodeData, TextureFilterNodeData, Studio3DNodeData } from '@/types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
 import { getImageBase64FromNode, getImageUrlFromNode } from './utils/imageSyncUtils';
 
@@ -26,6 +26,13 @@ export const useCanvasNodeSync = ({
 
   useEffect(() => {
     if (isUpdatingNodesRef.current) return;
+
+    const syncConnectedImage = (nodeId: string, edgeList: Edge[], nodeList: Node<FlowNodeData>[]): string | undefined => {
+      const inEdge = edgeList.find(e => e.target === nodeId);
+      if (!inEdge) return undefined;
+      const src = nodeList.find(n => n.id === inEdge.source);
+      return src ? getImageUrlFromNode(src) : undefined;
+    };
 
     setNodes((nds: Node<FlowNodeData>[]) => {
       let hasChanges = false;
@@ -603,6 +610,32 @@ export const useCanvasNodeSync = ({
                 ...shaderData,
                 connectedImage: newConnectedImage,
               } as ShaderNodeData,
+            } as Node<FlowNodeData>;
+          }
+        }
+
+        // Sync TextureFilterNode
+        if (n.type === 'textureFilter') {
+          const tfData = n.data as TextureFilterNodeData;
+          const newConnectedImage = syncConnectedImage(n.id, edges, nds);
+          if (tfData.connectedImage !== newConnectedImage) {
+            hasChanges = true;
+            return {
+              ...n,
+              data: { ...tfData, connectedImage: newConnectedImage } as TextureFilterNodeData,
+            } as Node<FlowNodeData>;
+          }
+        }
+
+        // Sync Studio3DNode
+        if (n.type === 'studio3d') {
+          const s3dData = n.data as Studio3DNodeData;
+          const newConnectedImage = syncConnectedImage(n.id, edges, nds);
+          if (s3dData.connectedImage !== newConnectedImage) {
+            hasChanges = true;
+            return {
+              ...n,
+              data: { ...s3dData, connectedImage: newConnectedImage } as Studio3DNodeData,
             } as Node<FlowNodeData>;
           }
         }

@@ -259,7 +259,7 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
   // For other node types that produce images
   if (sourceNode.type === 'merge' || sourceNode.type === 'edit' || sourceNode.type === 'upscale' ||
     sourceNode.type === 'mockup' || sourceNode.type === 'angle' || sourceNode.type === 'prompt' ||
-    sourceNode.type === 'output' || sourceNode.type === 'shader') {
+    sourceNode.type === 'output' || sourceNode.type === 'shader' || sourceNode.type === 'textureFilter' || sourceNode.type === 'studio3d') {
     const nodeData = sourceNode.data as MergeNodeData | EditNodeData | UpscaleNodeData |
       PromptNodeData | MockupNodeData | AngleNodeData | OutputNodeData | any;
 
@@ -399,7 +399,9 @@ export const syncConnectedImage = (
     sourceNode.type === 'mockup' ||
     sourceNode.type === 'angle' ||
     sourceNode.type === 'prompt' ||
-    sourceNode.type === 'shader';
+    sourceNode.type === 'shader' ||
+    sourceNode.type === 'textureFilter' ||
+    sourceNode.type === 'studio3d';
 
   if (!hasConnectedImage) return undefined;
 

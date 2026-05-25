@@ -15,17 +15,46 @@ export interface NodeSliderProps
 const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
   ({ label, value, min, max, step = 0.01, onChange, formatValue, className, onMouseDown, ...props }, ref) => {
     const percentage = ((value - min) / (max - min)) * 100
+    const scrubRef = React.useRef<{ startX: number; startValue: number } | null>(null)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = parseFloat(e.target.value)
-      onChange(newValue)
+      onChange(parseFloat(e.target.value))
     }
 
     const handleMouseDown = (e: React.MouseEvent<HTMLInputElement>) => {
       e.stopPropagation()
-      if (onMouseDown) {
-        onMouseDown(e)
+      if (onMouseDown) onMouseDown(e)
+    }
+
+    const clamp = (v: number) => {
+      const clamped = Math.max(min, Math.min(max, v))
+      return parseFloat((Math.round(clamped / step) * step).toFixed(10))
+    }
+
+    const handleScrubDown = (e: React.MouseEvent) => {
+      e.preventDefault()
+      scrubRef.current = { startX: e.clientX, startValue: value }
+      const sensitivity = (max - min) / 400
+
+      const onMove = (me: MouseEvent) => {
+        if (!scrubRef.current) return
+        const dx = me.clientX - scrubRef.current.startX
+        const mult = me.shiftKey ? 0.1 : 1
+        onChange(clamp(scrubRef.current.startValue + dx * sensitivity * mult))
       }
+
+      const onUp = () => {
+        scrubRef.current = null
+        document.removeEventListener('mousemove', onMove)
+        document.removeEventListener('mouseup', onUp)
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+      }
+
+      document.addEventListener('mousemove', onMove)
+      document.addEventListener('mouseup', onUp)
+      document.body.style.cursor = 'ew-resize'
+      document.body.style.userSelect = 'none'
     }
 
     const displayValue = formatValue ? formatValue(value) : value.toFixed(2)
@@ -34,7 +63,13 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
           <label className="text-xs font-mono text-neutral-400">{label}</label>
-          <span className="text-xs font-mono text-neutral-500">{displayValue}</span>
+          <span
+            className="text-xs font-mono text-neutral-500 cursor-ew-resize select-none hover:text-neutral-300 transition-colors"
+            onMouseDown={handleScrubDown}
+            title="Drag to adjust"
+          >
+            {displayValue}
+          </span>
         </div>
         <input
           ref={ref}
@@ -46,12 +81,12 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
           onChange={handleChange}
           onMouseDown={handleMouseDown}
           className={cn(
-            "w-full h-1.5 bg-neutral-800 rounded-md appearance-none cursor-pointer accent-[brand-cyan]",
+            "w-full h-1.5 bg-neutral-800 rounded-md appearance-none cursor-pointer",
             "transition-all duration-150",
             className
           )}
           style={{
-            background: `linear-gradient(to right, brand-cyan 0%, brand-cyan ${percentage}%, #3f3f46 ${percentage}%, #3f3f46 100%)`
+            background: `linear-gradient(to right, #a3a3a3 0%, #a3a3a3 ${percentage}%, #3f3f46 ${percentage}%, #3f3f46 100%)`
           }}
           {...props}
         />
@@ -62,4 +97,3 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
 NodeSlider.displayName = "NodeSlider"
 
 export { NodeSlider }
-

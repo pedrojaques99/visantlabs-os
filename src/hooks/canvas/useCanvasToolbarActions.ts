@@ -25,6 +25,8 @@ interface UseCanvasToolbarActionsProps {
         addChatNode: (pos?: { x: number; y: number }) => void;
         addColorExtractorNode: (pos?: { x: number; y: number }) => void;
         addDirectorNode: (pos?: { x: number; y: number }) => string | undefined;
+        addTextureFilterNode: (pos?: { x: number; y: number }) => string | undefined;
+        addStudio3DNode: (pos?: { x: number; y: number }) => string | undefined;
     };
 }
 
@@ -81,6 +83,8 @@ export const useCanvasToolbarActions = ({
         onAddLuminance: () => handleNodeAction(() => creators.addLuminanceNode(getCenterPos())),
         onAddBrandKit: () => handleNodeAction(() => creators.addBrandKitNodes(getCenterPos())),
         onAddShader: () => handleNodeAction(() => creators.addShaderNode(getCenterPos())),
+        onAddTextureFilter: () => handleNodeAction(() => creators.addTextureFilterNode(getCenterPos())),
+        onAddStudio3D: () => handleNodeAction(() => creators.addStudio3DNode(getCenterPos())),
         onAddPrompt: () => handleNodeAction(() => creators.addPromptNode(getCenterPos())),
 
         // Actions that do NOT auto-connect

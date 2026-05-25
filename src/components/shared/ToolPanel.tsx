@@ -32,13 +32,15 @@ export const ToolPanelSection: React.FC<{ title: string; children: React.ReactNo
 
 export const ToolPanelDisclosure: React.FC<{
   label: string;
+  icon?: React.ReactNode;
+  id?: string;
   children: React.ReactNode;
   defaultOpen?: boolean;
   badge?: React.ReactNode;
-}> = ({ label, children, defaultOpen = false, badge }) => {
+}> = ({ label, icon, id, children, defaultOpen = false, badge }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-md border border-neutral-800/50 transition-all duration-200">
+    <div id={id} className="rounded-md border border-neutral-800/50 transition-all duration-200 scroll-mt-2">
       <button
         onClick={() => setOpen(!open)}
         className={cn(
@@ -48,6 +50,7 @@ export const ToolPanelDisclosure: React.FC<{
         )}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
+          {icon && <span className="text-neutral-500">{icon}</span>}
           <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{label}</span>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">

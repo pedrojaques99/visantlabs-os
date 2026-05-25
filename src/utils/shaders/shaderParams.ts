@@ -62,7 +62,7 @@ const fmt2 = (v: number) => v.toFixed(2);
 const fmt0 = (v: number) => v.toFixed(0);
 const fmtMatrix = (v: number) => `${v.toFixed(0)}x${v.toFixed(0)}`;
 
-const PALETTE_NAMES = ['Monochrome', 'Gameboy', 'CRT Amber', 'CRT Green', 'Sepia'];
+const PALETTE_NAMES = ['Monochrome', 'Gameboy', 'CRT Amber', 'CRT Green', 'Sepia', 'Custom'];
 const fmtPalette = (v: number) => PALETTE_NAMES[Math.floor(v)] || 'Monochrome';
 
 // --- Shader definitions ---
@@ -147,8 +147,10 @@ export const SHADER_DEFINITIONS: ShaderTypeDefinition[] = [
           { value: 2, label: 'CRT Amber' },
           { value: 3, label: 'CRT Green' },
           { value: 4, label: 'Sepia' },
+          { value: 5, label: 'Custom' },
         ],
       },
+      { kind: 'color', key: 'ditherCustomColor', label: 'Custom Color', defaultValue: [0.0, 0.8, 1.0] },
     ],
   },
   {

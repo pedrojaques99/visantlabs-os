@@ -141,7 +141,7 @@ export const RisoCanvas: React.FC<RisoCanvasProps> = ({ onCanvasReady }) => {
       onMouseLeave={handleMouseUp}
     >
       {!store.imageUrl && (
-        <label className="absolute inset-0 flex flex-col items-center justify-center gap-3 cursor-pointer text-neutral-600 hover:text-neutral-300 transition-colors z-10 group">
+        <label className="flex flex-col items-center justify-center gap-3 cursor-pointer text-neutral-600 hover:text-neutral-300 transition-colors group">
           <div className="w-16 h-16 rounded-2xl border border-dashed border-neutral-700 group-hover:border-neutral-500 flex items-center justify-center transition-colors">
             <Upload size={24} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
           </div>

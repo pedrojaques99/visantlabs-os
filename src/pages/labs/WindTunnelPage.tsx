@@ -219,7 +219,7 @@ function ControlsContent({
             {userPresets.map((p, i) => (
               <div key={i} className="flex items-center gap-0.5">
                 <Button variant="ghost" size="xs" onClick={() => onLoadPreset(p)} className="text-[8px] text-[var(--brand-cyan)] hover:text-white">{p.name}</Button>
-                <button onClick={() => onDeletePreset(i)} className="text-neutral-700 hover:text-red-400 p-0.5"><Trash2 size={8} /></button>
+                <button onClick={() => onDeletePreset(i)} className="text-neutral-700 hover:text-red-400 p-0.5" aria-label={`Delete preset ${p.name}`}><Trash2 size={8} /></button>
               </div>
             ))}
           </div>

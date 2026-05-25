@@ -62,6 +62,7 @@ const LabsPage = lazyWithRetry(() => import('./pages/labs/LabsPage').then(m => (
 const WindTunnelPage = lazyWithRetry(() => import('./pages/labs/WindTunnelPage').then(m => ({ default: m.WindTunnelPage })));
 const Studio3DPage = lazyWithRetry(() => import('./pages/Studio3DPage').then(m => ({ default: m.Studio3DPage })));
 const HalftonePage = lazyWithRetry(() => import('./pages/HalftonePage').then(m => ({ default: m.HalftonePage })));
+const TextureFilterPage = lazyWithRetry(() => import('./pages/TextureFilterPage').then(m => ({ default: m.TextureFilterPage })));
 const GridMachinePage = lazyWithRetry(() => import('./pages/GridMachinePage').then(m => ({ default: m.GridMachinePage })));
 const RisoMachinePage = lazyWithRetry(() => import('./pages/RisoMachinePage').then(m => ({ default: m.RisoMachinePage })));
 const DeveloperPortalPage = lazyWithRetry(() => import('./pages/DeveloperPortalPage').then(m => ({ default: m.DeveloperPortalPage })));
@@ -111,6 +112,7 @@ const App: React.FC = () => {
                 <Route path="/grid-paint" element={<GridPaintPage />} />
                 <Route path="/3d-studio" element={<Studio3DPage />} />
                 <Route path="/cmyk-halftone" element={<HalftonePage />} />
+                <Route path="/texture-filter" element={<TextureFilterPage />} />
                 <Route path="/grid-machine" element={<GridMachinePage />} />
                 <Route path="/riso-machine" element={<RisoMachinePage />} />
                 <Route path="/labs" element={<LabsPage />} />

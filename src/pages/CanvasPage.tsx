@@ -36,6 +36,8 @@ import { CustomNode } from '../components/reactflow/CustomNode';
 import { VariablesNode } from '../components/reactflow/VariablesNode';
 import { DataNode } from '../components/reactflow/DataNode';
 import { BatchRunnerNode } from '../components/reactflow/BatchRunnerNode';
+import { TextureFilterNode } from '../components/reactflow/TextureFilterNode';
+import { Studio3DNode } from '../components/reactflow/Studio3DNode';
 import { BrandingProjectSelectModal } from '../components/reactflow/BrandingProjectSelectModal';
 import { CanvasBottomToolbar, type CanvasTool } from '../components/canvas/CanvasBottomToolbar';
 import { ContextMenu } from '../components/reactflow/contextmenu/ContextMenu';
@@ -136,6 +138,8 @@ const nodeTypes = {
   variables: VariablesNode,
   data: DataNode,
   batchRunner: BatchRunnerNode,
+  textureFilter: TextureFilterNode,
+  studio3d: Studio3DNode,
 } as const;
 
 export const CanvasPage: React.FC = () => {
@@ -1221,6 +1225,8 @@ export const CanvasPage: React.FC = () => {
     addAmbienceNode,
     addLuminanceNode,
     addShaderNode,
+    addTextureFilterNode,
+    addStudio3DNode,
     addColorExtractorNode,
     addImageNode,
     addOutputNode,
@@ -1421,6 +1427,8 @@ export const CanvasPage: React.FC = () => {
       addChatNode,
       addColorExtractorNode,
       addDirectorNode,
+      addTextureFilterNode,
+      addStudio3DNode,
     }
   });
 
@@ -4158,6 +4166,8 @@ export const CanvasPage: React.FC = () => {
             onAddAmbience={() => handleAddNode(addAmbienceNode)}
             onAddLuminance={() => handleAddNode(addLuminanceNode)}
             onAddShader={() => handleAddNode(addShaderNode)}
+            onAddTextureFilter={() => handleAddNode(addTextureFilterNode)}
+            onAddStudio3D={() => handleAddNode(addStudio3DNode)}
             onAddColorExtractor={() => handleAddNode(addColorExtractorNode, { targetHandle: 'image-input' })}
             onAddBrandKit={() => handleAddNode((pos) => addBrandKitNodes(pos)[0])}
             onAddLogo={() => handleAddNode(addLogoNode)}
@@ -4533,6 +4543,8 @@ export const CanvasPage: React.FC = () => {
           onAddPrompt={toolbarActions.onAddPrompt}
           onAddColorExtractor={toolbarActions.onAddColorExtractor}
           onAddShader={toolbarActions.onAddShader}
+          onAddTextureFilter={toolbarActions.onAddTextureFilter}
+          onAddStudio3D={toolbarActions.onAddStudio3D}
           onAddDirector={toolbarActions.onAddDirector}
           onToggleDrawing={() => {
             drawing.setIsDrawingMode(!drawing.drawingState.isDrawingMode);

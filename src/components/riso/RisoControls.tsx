@@ -8,6 +8,7 @@ import { useRisoStore } from '@/stores/risoStore';
 import { RISO_INK_PRESETS, RISO_FULL_PRESETS } from '@/components/riso/RisoRenderer';
 import { hexToRgb } from '@/utils/colorUtils';
 import { ShaderControls } from '@/components/shared/ShaderControls';
+import { SendToButton } from '@/components/shared/SendToButton';
 import {
   ToolPanel, ToolPanelHeader, ToolPanelContent, ToolPanelSection,
   ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
@@ -64,7 +65,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
           <div className="flex items-center gap-3">
             <img src={store.imageUrl} alt={store.fileName} className="w-10 h-10 rounded-md object-cover bg-neutral-800 shrink-0" />
             <span className="text-[11px] text-neutral-400 font-mono truncate flex-1">{store.fileName}</span>
-            <button onClick={() => { store.setImageUrl('', ''); store.setLayers([]); }} className="text-neutral-600 hover:text-neutral-300 transition-colors shrink-0 p-1">
+            <button aria-label="Clear image" onClick={() => { store.setImageUrl('', ''); store.setLayers([]); }} className="text-neutral-600 hover:text-neutral-300 transition-colors shrink-0 p-1">
               <X size={14} />
             </button>
           </div>
@@ -72,7 +73,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
           <label className="flex items-center gap-3 cursor-pointer text-neutral-500 hover:text-neutral-300 transition-colors">
             <ImageIcon size={16} />
             <span className="text-[11px] uppercase tracking-widest">Upload image</span>
-            <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+            <input type="file" accept="image/*" className="hidden" aria-label="Upload image" onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) { store.setImageUrl(URL.createObjectURL(file), file.name); toast.success(`Loaded ${file.name}`); }
               if (e.target) e.target.value = '';
@@ -104,6 +105,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
             {[2, 3, 4].map((n) => (
               <button
                 key={n}
+                aria-label={`Set ink layer count to ${n}`}
                 onClick={() => store.updateSetting('colorCount', n)}
                 className={cn(
                   'w-8 h-8 rounded-md text-[11px] font-mono transition-all duration-200 border',
@@ -131,12 +133,12 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
             <div className="space-y-2">
               {store.layers.map((layer, i) => (
                 <div key={i} className="flex items-center gap-3 py-1.5">
-                  <input type="color" value={layer.hex} onChange={(e) => store.updateLayer(i, { hex: e.target.value })} className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 shrink-0" />
+                  <input type="color" value={layer.hex} aria-label={`Layer ${i + 1} color`} onChange={(e) => store.updateLayer(i, { hex: e.target.value })} className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 shrink-0" />
                   <span className="text-[11px] text-neutral-500 font-mono uppercase flex-1">{layer.hex}</span>
-                  <button onClick={() => store.setSoloLayer(i)} className={cn('transition-colors p-1 rounded-md', store.soloLayer === i ? 'text-cyan-400 bg-cyan-400/10' : 'text-neutral-600 hover:text-neutral-300')}>
+                  <button aria-label={`Solo layer ${i + 1}`} onClick={() => store.setSoloLayer(i)} className={cn('transition-colors p-1 rounded-md', store.soloLayer === i ? 'text-cyan-400 bg-cyan-400/10' : 'text-neutral-600 hover:text-neutral-300')}>
                     <Focus size={14} />
                   </button>
-                  <button onClick={() => store.updateLayer(i, { visible: !layer.visible })} className="text-neutral-500 hover:text-white transition-colors p-1">
+                  <button aria-label={`Toggle layer ${i + 1} visibility`} onClick={() => store.updateLayer(i, { visible: !layer.visible })} className="text-neutral-500 hover:text-white transition-colors p-1">
                     {layer.visible ? <Eye size={14} /> : <EyeOff size={14} />}
                   </button>
                 </div>
@@ -174,7 +176,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
           <div className="h-px bg-neutral-800/50 my-1" />
           <ToolPanelRow label="Paper">
             <div className="flex items-center gap-2">
-              <input type="color" value={store.paperColor} onChange={(e) => store.updateSetting('paperColor', e.target.value)} className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0" />
+              <input type="color" value={store.paperColor} aria-label="Paper color" onChange={(e) => store.updateSetting('paperColor', e.target.value)} className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0" />
               <span className="text-[10px] text-neutral-500 font-mono uppercase">{store.paperColor}</span>
             </div>
           </ToolPanelRow>
@@ -219,12 +221,15 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
 
       {/* Actions */}
       <ToolPanelActions>
-        <Button onClick={onExport} disabled={store.isExporting || !store.imageUrl} className="w-full bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2">
-          <Download size={14} />
-          {store.isExporting ? 'Exporting...' : 'Export PNG'}
-        </Button>
+        <div className="flex gap-2 w-full">
+          <Button aria-label="Export PNG" onClick={onExport} disabled={store.isExporting || !store.imageUrl} className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2">
+            <Download size={14} />
+            {store.isExporting ? 'Exporting...' : 'Export PNG'}
+          </Button>
+          {store.imageUrl && <SendToButton source="riso" imageUrl={store.imageUrl} />}
+        </div>
         {onAiEnhance && (
-          <Button onClick={onAiEnhance} disabled={isAiProcessing || !store.imageUrl} variant="ghost" className="w-full text-neutral-400 hover:text-white h-9 text-xs gap-2">
+          <Button aria-label="AI Enhance" onClick={onAiEnhance} disabled={isAiProcessing || !store.imageUrl} variant="ghost" className="w-full text-neutral-400 hover:text-white h-9 text-xs gap-2">
             {isAiProcessing ? <><Loader2 size={14} className="animate-spin" /> Processing...</> : <><Zap size={14} /> AI Enhance</>}
           </Button>
         )}

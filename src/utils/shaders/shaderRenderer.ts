@@ -463,6 +463,12 @@ export class PersistentShaderRenderer {
       if (paletteLocation !== null) {
         gl.uniform1f(paletteLocation, palette);
       }
+
+      const customColor = settings.ditherCustomColor ?? [0.0, 0.8, 1.0];
+      const customColorLocation = gl.getUniformLocation(program, 'u_custom_color');
+      if (customColorLocation !== null) {
+        gl.uniform3f(customColorLocation, customColor[0], customColor[1], customColor[2]);
+      }
     } else if (shaderType === 'duotone') {
       // Duotone shader uniforms
       // Default colors: Deep purple shadows, bright cyan highlights
@@ -732,7 +738,8 @@ export interface ShaderSettings {
   ditherContrast?: number; // 0.5 to 3.0, default 1.5 (luminosity contrast)
   ditherOffset?: number; // -0.5 to 0.5, default 0.0 (luminosity offset)
   ditherBitDepth?: number; // 1.0 to 8.0, default 4.0 (color depth bands)
-  ditherPalette?: number; // 0.0 to 4.0, default 0.0 (color palette preset: 0=Monochrome, 1=Gameboy, 2=CRT Amber, 3=CRT Green, 4=Sepia)
+  ditherPalette?: number; // 0.0 to 5.0, default 0.0 (color palette preset: 0=Monochrome, 1=Gameboy, 2=CRT Amber, 3=CRT Green, 4=Sepia, 5=Custom)
+  ditherCustomColor?: [number, number, number]; // RGB 0-1, default [0.0, 0.8, 1.0] — used when ditherPalette=5
 
   // Film Grain shader parameters
   filmGrainStrength?: number; // 0 to 40, default 16

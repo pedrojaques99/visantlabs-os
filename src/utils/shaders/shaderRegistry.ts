@@ -12,7 +12,7 @@ export interface ShaderUniform {
 }
 
 export interface ShaderDefaults {
-  [key: string]: number;
+  [key: string]: number | number[];
 }
 
 export interface ShaderDefinition {

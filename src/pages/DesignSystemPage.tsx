@@ -807,8 +807,8 @@ export const DesignSystemPage: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="flex gap-1 group">
-                            <Button variant="action"><Copy className="h-4 w-4" /></Button>
-                            <Button variant="danger"><Users className="h-4 w-4" /></Button>
+                            <Button variant="action" aria-label="Copy"><Copy className="h-4 w-4" /></Button>
+                            <Button variant="danger" aria-label="Users"><Users className="h-4 w-4" /></Button>
                           </div>
                           <p className="text-xs font-mono text-neutral-500">action + danger — hover-reveal icon buttons</p>
                         </div>
@@ -821,8 +821,8 @@ export const DesignSystemPage: React.FC = () => {
                           <Button variant="surface" size="default">default</Button>
                           <Button variant="surface" size="lg">lg</Button>
                           <Button variant="ghost" size="icon" aria-label="Color palette"><Palette className="w-4 h-4" /></Button>
-                          <Button variant="action" size="icon-sm"><Copy className="w-3 h-3" /></Button>
-                          <Button variant="action" size="icon-md"><Search className="w-4 h-4" /></Button>
+                          <Button variant="action" size="icon-sm" aria-label="Copy"><Copy className="w-3 h-3" /></Button>
+                          <Button variant="action" size="icon-md" aria-label="Search"><Search className="w-4 h-4" /></Button>
                         </div>
                         <Separator />
                         {/* Usage guide */}
