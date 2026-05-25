@@ -1049,7 +1049,7 @@ router.post('/upload', authenticate, apiRateLimiter, async (req: Request, res: E
 });
 
 // --- PNG → SVG vectorization (server-side potrace) ---
-router.post('/png-to-svg', authenticate, apiRateLimiter, async (req: Request, res: ExpressResponse) => {
+router.post('/png-to-svg', apiRateLimiter, async (req: Request, res: ExpressResponse) => {
   try {
     const { image } = req.body;
     if (!image || typeof image !== 'string') {
