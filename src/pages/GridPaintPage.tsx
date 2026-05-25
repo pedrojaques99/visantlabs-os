@@ -12,11 +12,14 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { AppShell, AppShellTopBar, AppShellPanel } from '@/components/ui/AppShell';
+import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/components/ui/AppShell';
+import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
+import { SendToButton } from '@/components/shared/SendToButton';
 import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -705,18 +708,13 @@ export const GridPaintPage: React.FC = () => {
   };
 
   // Keyboard shortcuts
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'e') { e.preventDefault(); exportPNG(); }
-      if (e.key === 'Tab') { e.preventDefault(); setShowPanel(p => !p); }
-      if (e.key === '=' || e.key === '+') setZoom(z => Math.min(z + 0.1, 3));
-      if (e.key === '-') setZoom(z => Math.max(z - 0.1, 0.3));
-      if (e.key === '0') setZoom(1);
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [undo]);
+  useToolEditorHotkeys({
+    onExport: exportPNG,
+    panelVisible: showPanel,
+    setPanelVisible: setShowPanel,
+    undo,
+    zoom: { current: zoom, set: (z) => setZoom(Math.min(3, Math.max(0.3, z))), resetPan: () => {} },
+  });
 
   // Ctrl+Scroll zoom
   useEffect(() => {
@@ -733,6 +731,7 @@ export const GridPaintPage: React.FC = () => {
   return (
     <AppShell>
       {/* Full-screen canvas */}
+      <CanvasErrorBoundary>
       <canvas
         ref={canvasRef}
         className="absolute inset-0 cursor-crosshair"
@@ -745,13 +744,14 @@ export const GridPaintPage: React.FC = () => {
         onTouchMove={onTouchMove}
         onTouchEnd={onPointerUp}
       />
+      </CanvasErrorBoundary>
 
       {/* Top bar */}
       <AppShellTopBar
         left={
           <>
             <Tooltip content="Back to Apps" position="bottom">
-              <Button variant="ghost" size="icon-sm" onClick={() => navigate('/apps')}>
+              <Button variant="ghost" size="icon-sm" onClick={() => navigate('/apps')} aria-label="Back to Apps">
                 <ChevronLeft size={14} />
               </Button>
             </Tooltip>
@@ -773,10 +773,11 @@ export const GridPaintPage: React.FC = () => {
               </Button>
             </Tooltip>
             <Tooltip content="Copy state to clipboard" position="bottom">
-              <Button variant="ghost" size="icon-sm" onClick={() => navigator.clipboard.writeText(JSON.stringify({ grid: grid.cells, config }))}>
+              <Button variant="ghost" size="icon-sm" onClick={() => navigator.clipboard.writeText(JSON.stringify({ grid: grid.cells, config }))} aria-label="Copy state to clipboard">
                 <Copy size={12} />
               </Button>
             </Tooltip>
+            <SendToButton source="grid-paint" />
             <AppShellLegalMenu />
           </>
         }
@@ -996,6 +997,26 @@ export const GridPaintPage: React.FC = () => {
             </div>
           </GlassPanel>
         </AppShellMobileSheet>
+      )}
+
+      {!isMobile && (
+        <AppShellStatusBar>
+          <span>{Math.round(zoom * 100)}%</span>
+          <span>•</span>
+          <span>{activeCount} dots</span>
+          <span>•</span>
+          <span>{config.frameW}×{config.frameH}</span>
+          <span>•</span>
+          <span>spacing {config.spacing}px</span>
+          <span>•</span>
+          <span>r {config.dotRadius}px</span>
+          {config.strokeOnly && (
+            <>
+              <span>•</span>
+              <span className="text-cyan-400">stroke</span>
+            </>
+          )}
+        </AppShellStatusBar>
       )}
 
     </AppShell>

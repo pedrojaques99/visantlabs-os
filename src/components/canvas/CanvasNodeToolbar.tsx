@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Image as ImageIcon, Camera, Palette, FileText, Target, Dna, Upload, FileText as FileTextIcon, MessageSquare, ChevronLeft, ChevronRight, Layers, Diamond, Building2, Plus, Grid3x3, Pickaxe, X, Compass, Blocks, Brush } from 'lucide-react';
+import { Image as ImageIcon, Camera, Palette, FileText, Target, Dna, Upload, FileText as FileTextIcon, MessageSquare, ChevronLeft, ChevronRight, Layers, Diamond, Building2, Plus, Grid3x3, Pickaxe, X, Compass, Blocks, Brush, Box } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,8 @@ interface CanvasToolbarProps {
   onAddChat?: () => void;
   onAddNodeBuilder?: () => void;
   onAddShader?: () => void;
+  onAddTextureFilter?: () => void;
+  onAddStudio3D?: () => void;
   onAddColorExtractor?: () => void;
   onAddDirector?: () => void;
   onToggleDrawing?: () => void;
@@ -68,6 +70,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   onAddChat,
   onAddNodeBuilder,
   onAddShader,
+  onAddTextureFilter,
+  onAddStudio3D,
   onAddColorExtractor,
   onAddDirector,
   onToggleDrawing,
@@ -269,6 +273,22 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       label: 'Shader',
       tooltip: 'Add Shader Node',
       onClick: onAddShader,
+      category: 'composition' as const,
+    }] : []),
+    ...(onAddTextureFilter ? [{
+      id: 'textureFilter',
+      icon: <Layers className="w-4 h-4" />,
+      label: 'Texture',
+      tooltip: 'Add Texture Filter Node',
+      onClick: onAddTextureFilter,
+      category: 'composition' as const,
+    }] : []),
+    ...(onAddStudio3D ? [{
+      id: 'studio3d',
+      icon: <Box className="w-4 h-4" />,
+      label: '3D',
+      tooltip: 'Add 3D Studio Node',
+      onClick: onAddStudio3D,
       category: 'composition' as const,
     }] : []),
     ...(onAddChat && !experimentalMode ? [{

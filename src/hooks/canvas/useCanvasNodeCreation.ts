@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, TextNodeData, ChatNodeData, VariablesNodeData, DataNodeData, BatchRunnerNodeData } from '@/types/reactFlow';
+import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, TextNodeData, ChatNodeData, VariablesNodeData, DataNodeData, BatchRunnerNodeData, TextureFilterNodeData, Studio3DNodeData } from '@/types/reactFlow';
 import type { UploadedImage } from '@/types/types';
 import type { Mockup } from '@/services/mockupApi';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
@@ -780,6 +780,90 @@ export const useCanvasNodeCreation = (
       setTimeout(() => {
         addToHistory(newNodes, edges);
       }, 0);
+      return newNodes;
+    });
+
+    trackCanvasEvent('node_created', newNode.type, canvasId);
+    return newNode.id;
+  }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
+
+  const addTextureFilterNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
+    if (!reactFlowInstance) return;
+
+    const screenPos = customPosition || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let position;
+    try {
+      position = reactFlowInstance.screenToFlowPosition(screenPos);
+    } catch {
+      position = { x: 0, y: 0 };
+    }
+
+    addToHistory(nodes, edges);
+
+    const newNode: Node<FlowNodeData> = {
+      id: generateNodeId('textureFilter'),
+      type: 'textureFilter',
+      position,
+      draggable: true,
+      connectable: true,
+      selectable: true,
+      data: {
+        type: 'textureFilter',
+        textureSrc: '/textures/visant-grid.svg',
+        textureName: 'Visant Grid',
+        onApply: handlersRef.current?.handleTextureFilterApply || (() => Promise.resolve()),
+        onUpdateData: handlersRef.current?.handleTextureFilterNodeDataUpdate || (() => {}),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
+      } as TextureFilterNodeData,
+    };
+
+    setNodes((nds: Node<FlowNodeData>[]) => {
+      const newNodes = [...nds, newNode];
+      setTimeout(() => {
+        reactFlowInstance?.fitView({ padding: 0.3, maxZoom: 1, nodes: [newNode] });
+      }, 100);
+      return newNodes;
+    });
+
+    trackCanvasEvent('node_created', newNode.type, canvasId);
+    return newNode.id;
+  }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
+
+  const addStudio3DNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
+    if (!reactFlowInstance) return;
+
+    const screenPos = customPosition || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let position;
+    try {
+      position = reactFlowInstance.screenToFlowPosition(screenPos);
+    } catch {
+      position = { x: 0, y: 0 };
+    }
+
+    addToHistory(nodes, edges);
+
+    const newNode: Node<FlowNodeData> = {
+      id: generateNodeId('studio3d'),
+      type: 'studio3d',
+      position,
+      draggable: true,
+      connectable: true,
+      selectable: true,
+      data: {
+        type: 'studio3d',
+        onApply: handlersRef.current?.handleStudio3DApply || (() => Promise.resolve()),
+        onUpdateData: handlersRef.current?.handleStudio3DNodeDataUpdate || (() => {}),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
+      } as Studio3DNodeData,
+    };
+
+    setNodes((nds: Node<FlowNodeData>[]) => {
+      const newNodes = [...nds, newNode];
+      setTimeout(() => {
+        reactFlowInstance?.fitView({ padding: 0.3, maxZoom: 1, nodes: [newNode] });
+      }, 100);
       return newNodes;
     });
 
@@ -2091,6 +2175,8 @@ export const useCanvasNodeCreation = (
     addAmbienceNode,
     addLuminanceNode,
     addShaderNode,
+    addTextureFilterNode,
+    addStudio3DNode,
     addUpscaleBicubicNode,
     addImageNode,
     addOutputNode,

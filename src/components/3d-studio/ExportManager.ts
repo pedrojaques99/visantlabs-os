@@ -169,6 +169,35 @@ export async function exportOBJ(
   downloadBlob(blob, `${fileName || '3d-export'}.obj`);
 }
 
+export async function exportBatchViews(
+  canvas: HTMLCanvasElement,
+  aspectRatio: AspectRatio,
+  resolution: ExportResolution,
+  transparentBg: boolean,
+  bgColor: string,
+  fileName: string,
+  setCameraView: (view: string) => void,
+  shader?: ShaderSettings,
+): Promise<void> {
+  const JSZip = (await import('jszip')).default;
+  const zip = new JSZip();
+  const views = ['front', 'right', 'top', 'back', 'iso'];
+
+  for (const view of views) {
+    await setCameraView(view);
+    await new Promise((r) => setTimeout(r, 300));
+    let offscreen = getExportCanvas(canvas, aspectRatio, resolution, transparentBg, bgColor);
+    if (shader) offscreen = await applyShaderToCanvas(offscreen, shader);
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      offscreen.toBlob((b) => b ? resolve(b) : reject(new Error('Failed')), 'image/png');
+    });
+    zip.file(`${fileName || '3d-export'}-${view}.png`, blob);
+  }
+
+  const content = await zip.generateAsync({ type: 'blob' });
+  downloadBlob(content, `${fileName || '3d-export'}-views.zip`);
+}
+
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

@@ -4,6 +4,7 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Download, FileCode, Trash2 } from 'lucide-react';
+import { SendToButton } from '@/components/shared/SendToButton';
 import { useGridMachineStore } from '@/stores/gridMachineStore';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import {
@@ -18,7 +19,7 @@ interface Props {
 
 const Toggle: React.FC<{ label: string; checked: boolean; onChange: (v: boolean) => void }> = ({ label, checked, onChange }) => (
   <ToolPanelRow label={label}>
-    <Switch checked={checked} onCheckedChange={onChange} />
+    <Switch checked={checked} onCheckedChange={onChange} aria-label={label} />
   </ToolPanelRow>
 );
 
@@ -48,6 +49,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
   const diagonalSpacing = useGridMachineStore((s) => s.diagonalSpacing);
   const hiddenLines = useGridMachineStore((s) => s.hiddenLines);
   const isExporting = useGridMachineStore((s) => s.isExporting);
+  const svgContent = useGridMachineStore((s) => s.svgContent);
   const updateSetting = useGridMachineStore((s) => s.updateSetting);
   const clear = useGridMachineStore((s) => s.clear);
 
@@ -107,9 +109,12 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
 
       {/* Actions */}
       <ToolPanelActions>
-        <Button onClick={onExportPng} disabled={isExporting} className="w-full bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2">
-          <Download size={14} /> Export PNG
-        </Button>
+        <div className="flex gap-2 w-full">
+          <Button onClick={onExportPng} disabled={isExporting} className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2">
+            <Download size={14} /> Export PNG
+          </Button>
+          {svgContent && <SendToButton source="grid-machine" />}
+        </div>
         <Button onClick={onExportSvg} disabled={isExporting} variant="ghost" className="w-full text-neutral-400 hover:text-white h-9 text-xs gap-2">
           <FileCode size={14} /> Export SVG
         </Button>
@@ -125,6 +130,6 @@ GridMachineControls.displayName = 'GridMachineControls';
 
 const ColorInput: React.FC<{ label: string; value: string; onChange: (v: string) => void }> = ({ label, value, onChange }) => (
   <ToolPanelRow label={label}>
-    <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="w-6 h-6 rounded-md border border-neutral-800/50 bg-transparent cursor-pointer" />
+    <input type="color" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} className="w-6 h-6 rounded-md border border-neutral-800/50 bg-transparent cursor-pointer" />
   </ToolPanelRow>
 );

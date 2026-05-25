@@ -10,7 +10,7 @@ const getHeaders = () => {
   };
 };
 
-export type AssetSource = 'canvas' | 'mockupmachine' | 'extractor' | 'creative';
+export type AssetSource = 'canvas' | 'mockupmachine' | 'extractor' | 'creative' | 'riso' | 'halftone' | 'texture-filter' | 'grid-machine' | '3d-studio' | 'grid-paint';
 
 export interface PipelineAsset {
   id: string;

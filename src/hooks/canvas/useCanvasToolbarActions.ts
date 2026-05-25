@@ -81,6 +81,8 @@ export const useCanvasToolbarActions = ({
         onAddLuminance: () => handleNodeAction(() => creators.addLuminanceNode(getCenterPos())),
         onAddBrandKit: () => handleNodeAction(() => creators.addBrandKitNodes(getCenterPos())),
         onAddShader: () => handleNodeAction(() => creators.addShaderNode(getCenterPos())),
+        onAddTextureFilter: () => handleNodeAction(() => creators.addTextureFilterNode(getCenterPos())),
+        onAddStudio3D: () => handleNodeAction(() => creators.addStudio3DNode(getCenterPos())),
         onAddPrompt: () => handleNodeAction(() => creators.addPromptNode(getCenterPos())),
 
         // Actions that do NOT auto-connect

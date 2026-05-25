@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useBlocker, useLocation, useSearchParams } from 'react-router-dom';
 import { Menu, PanelLeftOpen, Pickaxe, X } from 'lucide-react';
+import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { cn } from '@/lib/utils';
 import { ImageUploader } from '../components/ui/ImageUploader';
 import { normalizeImageToBase64, detectMimeType } from '../services/reactFlowService';
@@ -70,9 +71,11 @@ import { API_BASE } from '@/config/api';
 
 export const MockupMachinePage: React.FC = () => {
   return (
-    <MockupProvider>
-      <MockupMachinePageContent />
-    </MockupProvider>
+    <CanvasErrorBoundary fallbackMessage="Mockup Machine crashed — your credits are safe">
+      <MockupProvider>
+        <MockupMachinePageContent />
+      </MockupProvider>
+    </CanvasErrorBoundary>
   );
 };
 
@@ -2816,6 +2819,7 @@ Generate the new mockup image with the requested changes applied.`;
                     size="icon"
                     className="w-10 h-10 rounded-full bg-neutral-900 border border-white/5 hover:bg-neutral-800 text-neutral-500 hover:text-white shadow-2xl transition-all group"
                     title={isSidebarCollapsed ? (t('mockup.openSidebar') || 'Abrir barra lateral') : (t('mockup.closeSidebar') || 'Fechar barra lateral')}
+                    aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
                   >
                     {isSidebarCollapsed ? (
                       <PanelLeftOpen className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
@@ -2831,6 +2835,7 @@ Generate the new mockup image with the requested changes applied.`;
                     <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(false)}
                       size="icon"
                       className="w-10 h-10 rounded-full bg-neutral-900 shadow-xl border-white/10"
+                      aria-label="Close sidebar"
                     >
                       <Menu className="h-5 w-5 rotate-180" />
                     </Button>

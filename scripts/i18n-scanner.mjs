@@ -443,9 +443,25 @@ function runAudit() {
   console.log(out);
   console.log(`\nReport saved to: ${path.relative(ROOT_DIR, reportPath)}`);
 
+  // Check for [PT] placeholder values in pt-BR (always runs in strict mode)
   if (STRICT) {
-    const total = failures.missing + failures.unresolved + failures.paramsMismatch;
-    console.log(`\n[STRICT] missing=${failures.missing} unresolved=${failures.unresolved} paramsMismatch=${failures.paramsMismatch}`);
+    const placeholderRe = /^\[PT\]\s*/;
+    const placeholders = ptKeys.filter(k => typeof flatPt[k] === 'string' && placeholderRe.test(flatPt[k]));
+    if (placeholders.length > 0) {
+      out += section('PLACEHOLDER VALUES ([PT] prefix in pt-BR)');
+      out += `Found ${placeholders.length} values with [PT] prefix:\n`;
+      placeholders.forEach(k => out += `  - ${k} = "${flatPt[k]}"\n`);
+      failures.placeholders = placeholders.length;
+    }
+  }
+
+  if (!fs.existsSync(REPORTS_DIR)) fs.mkdirSync(REPORTS_DIR, { recursive: true });
+  const reportPathFinal = path.join(REPORTS_DIR, 'i18n-report.txt');
+  fs.writeFileSync(reportPathFinal, out);
+
+  if (STRICT) {
+    const total = failures.missing + failures.unresolved + failures.paramsMismatch + (failures.placeholders || 0);
+    console.log(`\n[STRICT] missing=${failures.missing} unresolved=${failures.unresolved} paramsMismatch=${failures.paramsMismatch} placeholders=${failures.placeholders || 0}`);
     if (total > 0) {
       console.error(`\n[STRICT] FAIL — ${total} blocking i18n issue(s). To allowlist a dynamic key, edit scripts/i18n-allowlist.json`);
       process.exit(1);

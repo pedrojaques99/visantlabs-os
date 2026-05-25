@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { Command } from 'cmdk';
-import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Diamond, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, MessageSquare, Clipboard, LayoutTemplate, Blocks, Brush, Pipette, Cpu, Lightbulb } from 'lucide-react';
+import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Diamond, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, MessageSquare, Clipboard, LayoutTemplate, Blocks, Brush, Pipette, Cpu, Lightbulb, Box } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
@@ -25,6 +25,8 @@ interface ContextMenuProps {
   onAddAmbience?: () => void;
   onAddLuminance?: () => void;
   onAddShader?: () => void;
+  onAddTextureFilter?: () => void;
+  onAddStudio3D?: () => void;
   onAddColorExtractor?: () => void;
   onAddBrandKit: () => void;
   onAddLogo?: () => void;
@@ -71,6 +73,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onAddAmbience,
   onAddLuminance,
   onAddShader,
+  onAddTextureFilter,
+  onAddStudio3D,
   onAddColorExtractor,
   onAddBrandKit,
   onAddLogo,
@@ -336,6 +340,22 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       label: 'Shader Node',
       icon: <Brush size={16} />,
       onClick: () => { onAddShader!(); onClose(); },
+      section: 'processing' as const,
+      category: 'Effects',
+    }] : []),
+    ...(onAddTextureFilter ? [{
+      id: 'textureFilter',
+      label: 'Texture Filter',
+      icon: <Layers size={16} />,
+      onClick: () => { onAddTextureFilter!(); onClose(); },
+      section: 'processing' as const,
+      category: 'Effects',
+    }] : []),
+    ...(onAddStudio3D ? [{
+      id: 'studio3d',
+      label: '3D Studio',
+      icon: <Box size={16} />,
+      onClick: () => { onAddStudio3D!(); onClose(); },
       section: 'processing' as const,
       category: 'Effects',
     }] : []),

@@ -3,7 +3,7 @@ import { useCallback, useRef, useEffect } from 'react';
 
 // ========== IMPORTS - Tipos ReactFlow ==========
 import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, GenerateVideoParams, NodeBuilderData, CustomNodeData, VariablesNodeData, DataNodeData, BatchRunnerNodeData } from '@/types/reactFlow';
+import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, GenerateVideoParams, NodeBuilderData, CustomNodeData, VariablesNodeData, DataNodeData, BatchRunnerNodeData, TextureFilterNodeData, Studio3DNodeData } from '@/types/reactFlow';
 import { useBatchRunnerHandlers } from './handlers/useBatchRunnerHandlers';
 import type { CustomNodeDefinition, MultiOutputConfig } from '@/types/customNode';
 import { DEFAULT_MODEL } from '@/constants/geminiModels';
@@ -37,6 +37,8 @@ import { toast } from 'sonner';
 
 // ========== IMPORTS - Hooks ==========
 import { useShaderNodeHandlers } from './handlers/useShaderNodeHandlers';
+import { useTextureFilterNodeHandlers } from './handlers/useTextureFilterNodeHandlers';
+import { useStudio3DNodeHandlers } from './handlers/useStudio3DNodeHandlers';
 import { useUpscaleBicubicNodeHandlers } from './handlers/useUpscaleBicubicNodeHandlers';
 import { useLogoNodeHandlers } from './handlers/useLogoNodeHandlers';
 import { usePDFNodeHandlers } from './handlers/usePDFNodeHandlers';
@@ -353,6 +355,28 @@ export const useCanvasNodeHandlers = (
   const handleShaderApply = shaderHandlers.handleShaderApply;
   const handleShaderNodeDataUpdate = shaderHandlers.handleShaderNodeDataUpdate;
 
+  // ========== TEXTURE FILTER NODE HANDLERS ==========
+  const textureFilterHandlers = useTextureFilterNodeHandlers({
+    nodesRef,
+    updateNodeData,
+    updateNodeLoadingState,
+    canvasId,
+    setNodes,
+  });
+  const handleTextureFilterApply = textureFilterHandlers.handleTextureFilterApply;
+  const handleTextureFilterNodeDataUpdate = textureFilterHandlers.handleTextureFilterNodeDataUpdate;
+
+  // ========== STUDIO 3D NODE HANDLERS ==========
+  const studio3dHandlers = useStudio3DNodeHandlers({
+    nodesRef,
+    updateNodeData,
+    updateNodeLoadingState,
+    canvasId,
+    setNodes,
+  });
+  const handleStudio3DApply = studio3dHandlers.handleStudio3DApply;
+  const handleStudio3DNodeDataUpdate = studio3dHandlers.handleStudio3DNodeDataUpdate;
+
   // ========== UPSCALE BICUBIC NODE HANDLERS ==========
   // Handlers para aplicar upscale bicúbico usando shader GLSL
   const upscaleBicubicHandlers = useUpscaleBicubicNodeHandlers({
@@ -605,6 +629,10 @@ export const useCanvasNodeHandlers = (
       handleLuminanceNodeDataUpdate,
       handleShaderApply,
       handleShaderNodeDataUpdate,
+      handleTextureFilterApply,
+      handleTextureFilterNodeDataUpdate,
+      handleStudio3DApply,
+      handleStudio3DNodeDataUpdate,
       handleUpscaleBicubicApply,
       handleUpscaleBicubicNodeDataUpdate,
       handleSavePrompt,
@@ -643,6 +671,10 @@ export const useCanvasNodeHandlers = (
     handleLuminanceNodeDataUpdate,
     handleShaderApply,
     handleShaderNodeDataUpdate,
+    handleTextureFilterApply,
+    handleTextureFilterNodeDataUpdate,
+    handleStudio3DApply,
+    handleStudio3DNodeDataUpdate,
     handleUpscaleBicubicApply,
     handleUpscaleBicubicNodeDataUpdate,
     handleSavePrompt,
@@ -1012,6 +1044,10 @@ export const useCanvasNodeHandlers = (
     handleAngleNodeDataUpdate,
     handleShaderApply,
     handleShaderNodeDataUpdate,
+    handleTextureFilterApply,
+    handleTextureFilterNodeDataUpdate,
+    handleStudio3DApply,
+    handleStudio3DNodeDataUpdate,
     handleImageNodeResize,
     handleLogoNodeUpload,
     handleLogoNodeDataUpdate,

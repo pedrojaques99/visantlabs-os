@@ -13,6 +13,20 @@ env:
   MONGODB_URI: mongodb://localhost:27017/test
 
 jobs:
+  quality:
+    name: Type-check, lint & format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run type-check
+      - run: npm run lint
+      - run: npm run format:check
+
   lint-api-urls:
     name: No hardcoded /api/ fetch calls
     runs-on: ubuntu-latest

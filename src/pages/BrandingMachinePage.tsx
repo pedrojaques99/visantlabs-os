@@ -18,6 +18,7 @@ import type { BrandingData } from '../types/types';
 import { isVisantV2 } from '../types/branding';
 import { SEO } from '../components/SEO';
 import { SoftwareApplicationSchema } from '../components/StructuredData';
+import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 
 const API_BASE_URL = '/api';
 
@@ -836,7 +837,7 @@ export const BrandingMachinePage: React.FC = () => {
   }
 
   return (
-    <>
+    <CanvasErrorBoundary fallbackMessage="Branding Machine crashed">
       <SEO
         title={t('branding.machine.branding_machine_com_ia')}
         description={t('branding.machine.crie_estratgias_completas_de_bran')}
@@ -899,7 +900,7 @@ export const BrandingMachinePage: React.FC = () => {
           <Diamond size={20} className="group-hover:rotate-12 transition-transform" />
         </button>
       )}
-    </>
+    </CanvasErrorBoundary>
   );
 };
 

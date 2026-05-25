@@ -7,6 +7,7 @@ import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useHalftoneStore, BLEND_MODES, HALFTONE_PRESETS } from '@/stores/halftoneStore';
 import { Eye, EyeOff, ImageIcon, X, Download } from 'lucide-react';
 import { ShaderControls } from '@/components/shared/ShaderControls';
+import { SendToButton } from '@/components/shared/SendToButton';
 import {
   ToolPanel, ToolPanelHeader, ToolPanelContent, ToolPanelSection,
   ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
@@ -52,7 +53,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
           <div className="flex items-center gap-3">
             <img src={store.imageUrl} alt={store.fileName} className="w-10 h-10 rounded-md object-cover bg-neutral-800 shrink-0" />
             <span className="text-[11px] text-neutral-400 font-mono truncate flex-1">{store.fileName}</span>
-            <button onClick={() => store.setImageUrl('', '')} className="text-neutral-600 hover:text-neutral-300 transition-colors shrink-0 p-1">
+            <button onClick={() => store.setImageUrl('', '')} aria-label="Clear image" className="text-neutral-600 hover:text-neutral-300 transition-colors shrink-0 p-1">
               <X size={14} />
             </button>
           </div>
@@ -60,7 +61,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
           <label className="flex items-center gap-3 cursor-pointer text-neutral-500 hover:text-neutral-300 transition-colors">
             <ImageIcon size={16} />
             <span className="text-[11px] uppercase tracking-widest">Upload image</span>
-            <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+            <input type="file" accept="image/*" className="hidden" aria-label="Upload image" onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) { store.setImageUrl(URL.createObjectURL(file), file.name); toast.success(`Loaded ${file.name}`); }
               if (e.target) e.target.value = '';
@@ -134,7 +135,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
             <div className="space-y-3">
               <ToolPanelRow label="Paper">
                 <div className="flex items-center gap-2">
-                  <input type="color" value={store.paperColor} onChange={(e) => store.updateSetting('paperColor', e.target.value)} className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0" />
+                  <input type="color" value={store.paperColor} onChange={(e) => store.updateSetting('paperColor', e.target.value)} aria-label="Paper color" className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0" />
                   <span className="text-[10px] text-neutral-500 font-mono uppercase">{store.paperColor}</span>
                 </div>
               </ToolPanelRow>
@@ -158,10 +159,13 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
 
       {/* Actions */}
       <ToolPanelActions>
-        <Button onClick={onExport} disabled={store.isExporting || !store.imageUrl} className="w-full bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2">
-          <Download size={14} />
-          {store.isExporting ? 'Exporting...' : 'Export PNG'}
-        </Button>
+        <div className="flex gap-2 w-full">
+          <Button onClick={onExport} disabled={store.isExporting || !store.imageUrl} aria-label="Export PNG" className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2">
+            <Download size={14} />
+            {store.isExporting ? 'Exporting...' : 'Export PNG'}
+          </Button>
+          {store.imageUrl && <SendToButton source="halftone" imageUrl={store.imageUrl} />}
+        </div>
       </ToolPanelActions>
     </ToolPanel>
   );
@@ -173,7 +177,7 @@ const InkSection: React.FC<{
 }> = ({ title, color, alpha, angle, onColor, onAlpha, onAngle }) => (
   <div className="space-y-3">
     <div className="flex items-center gap-3">
-      <input type="color" value={color} onChange={(e) => onColor(e.target.value)} className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 shrink-0" />
+      <input type="color" value={color} onChange={(e) => onColor(e.target.value)} aria-label={`${title} ink color`} className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 shrink-0" />
       <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest flex-1">{title}</span>
       <span className="text-[10px] text-neutral-500 font-mono uppercase">{color}</span>
     </div>
@@ -190,7 +194,7 @@ const ChannelToggle: React.FC<{
       <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: color, opacity: visible ? 1 : 0.2 }} />
       <span className="text-[11px] text-neutral-400 uppercase tracking-wider">{label}</span>
     </div>
-    <button onClick={() => onToggle(!visible)} className="text-neutral-500 hover:text-white transition-colors p-1">
+    <button onClick={() => onToggle(!visible)} aria-label={`Toggle ${label.toLowerCase()} channel`} className="text-neutral-500 hover:text-white transition-colors p-1">
       {visible ? <Eye size={14} /> : <EyeOff size={14} />}
     </button>
   </div>

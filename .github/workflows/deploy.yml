@@ -1,7 +1,9 @@
 name: Deploy to VPS
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Test Suite"]
+    types: [completed]
     branches: [main]
 
 permissions:
@@ -11,6 +13,7 @@ jobs:
   deploy:
     name: Deploy backend to Hostinger VPS
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: SSH deploy

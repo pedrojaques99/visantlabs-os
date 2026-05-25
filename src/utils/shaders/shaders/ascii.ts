@@ -249,17 +249,14 @@ void main() {
     pixelValue = getBrailleChar(gray, charX, charY);
   }
   
-  // Output color
-  vec3 outputColor;
+  vec3 finalCol;
   if (u_colored > 0.5) {
-    // Colored mode - use original color tinted by brightness
-    outputColor = sampleColor * pixelValue;
+    finalCol = sampleColor * pixelValue;
   } else {
-    // Grayscale mode
-    outputColor = vec3(pixelValue);
+    finalCol = vec3(pixelValue);
   }
-  
-  gl_FragColor = vec4(outputColor, 1.0);
+
+  gl_FragColor = vec4(finalCol, 1.0);
 }
 `;
 
