@@ -27,6 +27,13 @@ export const useCanvasNodeSync = ({
   useEffect(() => {
     if (isUpdatingNodesRef.current) return;
 
+    const syncConnectedImage = (nodeId: string, edgeList: Edge[], nodeList: Node<FlowNodeData>[]): string | undefined => {
+      const inEdge = edgeList.find(e => e.target === nodeId);
+      if (!inEdge) return undefined;
+      const src = nodeList.find(n => n.id === inEdge.source);
+      return src ? getImageUrlFromNode(src) : undefined;
+    };
+
     setNodes((nds: Node<FlowNodeData>[]) => {
       let hasChanges = false;
       const updatedNodes = nds.map((n: Node<FlowNodeData>) => {

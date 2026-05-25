@@ -73,10 +73,8 @@ export const useTextureFilterNodeHandlers = ({
       if (canvasId) {
         try {
           const blob = await new Promise<Blob>((res) => resultCanvas.toBlob(b => res(b!), 'image/png'));
-          const formData = new FormData();
-          formData.append('image', blob, 'texture-filter-result.png');
-          const uploadResult = await canvasApi.uploadImage(canvasId, formData);
-          resultImageUrl = uploadResult.url;
+          const file = new File([blob], 'texture-filter-result.png', { type: 'image/png' });
+          resultImageUrl = await canvasApi.uploadImageToR2Direct(file, canvasId);
         } catch {
           // R2 upload failed — fall back to base64 only
         }

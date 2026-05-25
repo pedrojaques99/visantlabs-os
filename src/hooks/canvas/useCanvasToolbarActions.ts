@@ -25,6 +25,8 @@ interface UseCanvasToolbarActionsProps {
         addChatNode: (pos?: { x: number; y: number }) => void;
         addColorExtractorNode: (pos?: { x: number; y: number }) => void;
         addDirectorNode: (pos?: { x: number; y: number }) => string | undefined;
+        addTextureFilterNode: (pos?: { x: number; y: number }) => string | undefined;
+        addStudio3DNode: (pos?: { x: number; y: number }) => string | undefined;
     };
 }
 

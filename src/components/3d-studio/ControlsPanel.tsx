@@ -111,7 +111,8 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         const svg = await pngToSvg(file);
         store.setSvgData(svg, file.name);
         toast.success(t('studio3d.input.converted', { fileName: file.name }));
-      } catch {
+      } catch (err) {
+        console.error('PNG→SVG conversion failed:', err);
         toast.error(t('studio3d.input.processFailed'));
       } finally {
         store.setIsLoading(false);

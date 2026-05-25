@@ -1427,6 +1427,8 @@ export const CanvasPage: React.FC = () => {
       addChatNode,
       addColorExtractorNode,
       addDirectorNode,
+      addTextureFilterNode,
+      addStudio3DNode,
     }
   });
 
