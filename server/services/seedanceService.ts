@@ -7,7 +7,7 @@ import type { SeedanceVideoModelId } from '../../src/constants/seedanceModels.js
 import { safeFetch } from '../utils/securityValidation.js';
 
 // ── BytePlus API endpoints ────────────────────────────────────────────────────
-const BYTEPLUS_BASE = 'https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations';
+const BYTEPLUS_BASE = 'https://ark.ap-southeast-1.byteplusapi.com/api/v3/contents/generations';
 const SUBMIT_ENDPOINT = `${BYTEPLUS_BASE}/tasks`;
 const RESULT_ENDPOINT = (taskId: string) => `${BYTEPLUS_BASE}/tasks/${taskId}`;
 

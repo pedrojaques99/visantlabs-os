@@ -7,7 +7,7 @@ import {
 import { safeFetch } from '../utils/securityValidation.js';
 
 // BytePlus official endpoint (synchronous API — no polling)
-const BYTEPLUS_ENDPOINT = 'https://ark.ap-southeast.bytepluses.com/api/v3/images/generations';
+const BYTEPLUS_ENDPOINT = 'https://ark.ap-southeast-1.byteplusapi.com/api/v3/images/generations';
 
 interface SeedreamGenerateOptions {
     prompt: string;
