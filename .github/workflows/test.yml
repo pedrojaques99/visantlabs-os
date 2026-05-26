@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  checks: write
 
 env:
   MONGODB_URI: mongodb://localhost:27017/test

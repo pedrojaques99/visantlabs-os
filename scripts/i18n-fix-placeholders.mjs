@@ -35,10 +35,13 @@ function setNested(obj, dotKey, value) {
   const parts = dotKey.split('.');
   let cur = obj;
   for (let i = 0; i < parts.length - 1; i++) {
+    if (parts[i] === '__proto__' || parts[i] === 'constructor' || parts[i] === 'prototype') return;
     if (!(parts[i] in cur) || typeof cur[parts[i]] !== 'object') cur[parts[i]] = {};
     cur = cur[parts[i]];
   }
-  cur[parts[parts.length - 1]] = value;
+  const last = parts[parts.length - 1];
+  if (last === '__proto__' || last === 'constructor' || last === 'prototype') return;
+  cur[last] = value;
 }
 
 const ptRaw = fs.readFileSync(PT_PATH, 'utf8');
