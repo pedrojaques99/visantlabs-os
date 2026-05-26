@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { AiFieldButton } from '../AiFieldButton';
 import { MessageSquare } from 'lucide-react';
 import type { BrandGuideline, BrandCoreMessage } from '@/lib/figma-types';
 
@@ -37,8 +38,16 @@ export const MensagemCentralSection: React.FC<MensagemCentralSectionProps> = ({ 
 
   const hasMessage = cm.product || cm.differential || cm.emotionalBond;
 
+  const handleAiResult = useCallback((patch: Record<string, any>) => {
+    const c = patch.strategy?.coreMessage;
+    if (!c) return;
+    persist({ ...cm, ...c });
+  }, [persist, cm]);
+
   return (
-    <SectionBlock id="mensagem_central" icon={<MessageSquare size={14} />} title="Mensagem Central" span={span as any}>
+    <SectionBlock id="mensagem_central" icon={<MessageSquare size={14} />} title="Mensagem Central" span={span as any}
+      actions={!hasMessage ? <AiFieldButton guideline={guideline} section="strategy.coreMessage" onResult={handleAiResult} /> : undefined}
+    >
       <div className="space-y-4 py-1">
         <div className="space-y-2">
           <div className="space-y-1">

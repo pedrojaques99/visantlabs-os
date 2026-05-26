@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { AiFieldButton } from '../AiFieldButton';
 import { FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -62,8 +63,21 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
     persist(next);
   };
 
+  const isEmpty = !local.voice && local.dos.length === 0;
+
+  const handleAiResult = useCallback((patch: Record<string, any>) => {
+    const gl = patch.guidelines;
+    if (!gl) return;
+    const next = { ...local };
+    if (gl.voice) next.voice = gl.voice;
+    if (Array.isArray(gl.dos)) next.dos = gl.dos;
+    persist(next);
+  }, [persist, local]);
+
   return (
-    <SectionBlock id="editorial" icon={<FileText size={14} />} title="Editorial" span={span as any}>
+    <SectionBlock id="editorial" icon={<FileText size={14} />} title="Editorial" span={span as any}
+      actions={isEmpty ? <AiFieldButton guideline={guideline} section="guidelines" onResult={handleAiResult} /> : undefined}
+    >
       <div className="space-y-3 py-1">
         {/* Voice */}
         <div className="space-y-1">

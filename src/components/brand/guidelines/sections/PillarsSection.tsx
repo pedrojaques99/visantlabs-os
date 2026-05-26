@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { AiFieldButton } from '../AiFieldButton';
 import { Button } from '@/components/ui/button';
 import { Shield, Plus, Trash2 } from 'lucide-react';
 import type { BrandGuideline, BrandPillar } from '@/lib/figma-types';
@@ -24,14 +25,22 @@ export const PillarsSection: React.FC<PillarsSectionProps> = ({ guideline, onUpd
   const add = () => persist([...pillars, { value: '', description: '' }]);
   const remove = (i: number) => persist(pillars.filter((_, idx) => idx !== i));
 
+  const handleAiResult = useCallback((patch: Record<string, any>) => {
+    const p = patch.strategy?.pillars;
+    if (Array.isArray(p)) persist(p);
+  }, [persist]);
+
   return (
     <SectionBlock id="pillars" icon={<Shield size={14} />} title="Pilares" span={span as any}
       actions={
-        pillars.length < 5 ? (
-          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={add} aria-label="Add pillar">
-            <Plus size={11} />
-          </Button>
-        ) : undefined
+        <div className="flex items-center gap-1">
+          {pillars.length === 0 && <AiFieldButton guideline={guideline} section="strategy.pillars" onResult={handleAiResult} />}
+          {pillars.length < 5 && (
+            <Button variant="ghost" size="icon" className="h-5 w-5" onClick={add} aria-label="Add pillar">
+              <Plus size={11} />
+            </Button>
+          )}
+        </div>
       }
     >
       <div className="space-y-3 py-1">

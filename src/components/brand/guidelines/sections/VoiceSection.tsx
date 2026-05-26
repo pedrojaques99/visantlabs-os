@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
+import { AiFieldButton } from '../AiFieldButton';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Plus, Trash2 } from 'lucide-react';
 import type { BrandGuideline, BrandToneOfVoiceValue } from '@/lib/figma-types';
@@ -25,6 +26,11 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
 
   const remove = (i: number) => persist(values.filter((_, idx) => idx !== i));
 
+  const handleAiResult = useCallback((patch: Record<string, any>) => {
+    const v = patch.strategy?.voiceValues;
+    if (Array.isArray(v)) persist(v);
+  }, [persist]);
+
   return (
     <SectionBlock
       id="voice"
@@ -32,9 +38,12 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
       title="Tone of Voice"
       span={span as any}
       actions={
-        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={add} aria-label="Add tone">
-          <Plus size={11} />
-        </Button>
+        <div className="flex items-center gap-1">
+          {values.length === 0 && <AiFieldButton guideline={guideline} section="strategy.voiceValues" onResult={handleAiResult} />}
+          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={add} aria-label="Add tone">
+            <Plus size={11} />
+          </Button>
+        </div>
       }
     >
       <div className="space-y-0 py-1">

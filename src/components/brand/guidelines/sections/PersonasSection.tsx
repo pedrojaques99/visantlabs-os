@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { AiFieldButton } from '../AiFieldButton';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -80,12 +81,20 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
   const add = () => persist([...personas, { name: '', age: undefined, occupation: '', bio: '', desires: [], painPoints: [], traits: [] }]);
   const remove = (i: number) => persist(personas.filter((_, idx) => idx !== i));
 
+  const handleAiResult = useCallback((patch: Record<string, any>) => {
+    const p = patch.strategy?.personas;
+    if (Array.isArray(p)) persist(p);
+  }, [persist]);
+
   return (
     <SectionBlock id="personas" icon={<User size={14} />} title="Personas" span={span as any}
       actions={
-        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={add} aria-label="Add persona">
-          <Plus size={11} />
-        </Button>
+        <div className="flex items-center gap-1">
+          {personas.length === 0 && <AiFieldButton guideline={guideline} section="strategy.personas" onResult={handleAiResult} />}
+          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={add} aria-label="Add persona">
+            <Plus size={11} />
+          </Button>
+        </div>
       }
     >
       <div className="space-y-0 py-1">

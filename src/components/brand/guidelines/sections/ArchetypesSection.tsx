@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { AiFieldButton } from '../AiFieldButton';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -34,6 +35,11 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({ guideline,
   const addBlank = () =>
     persist([...local, { name: '', description: '', role: 'primary' } as any]);
 
+  const handleAiResult = useCallback((patch: Record<string, any>) => {
+    const a = patch.strategy?.archetypes;
+    if (Array.isArray(a)) persist(a);
+  }, [persist]);
+
   return (
     <SectionBlock
       id="archetypes"
@@ -41,7 +47,9 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({ guideline,
       title="Archetypes"
       span={span as any}
       actions={
-        <DropdownMenu>
+        <div className="flex items-center gap-1">
+          {local.length === 0 && <AiFieldButton guideline={guideline} section="strategy.archetypes" onResult={handleAiResult} />}
+          <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-5 w-5" aria-label="Add archetype">
               <Plus size={11} />
@@ -62,6 +70,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({ guideline,
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       }
     >
       <div className="space-y-0 py-1">

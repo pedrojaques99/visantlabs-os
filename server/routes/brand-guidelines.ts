@@ -16,6 +16,8 @@ import { brandSharedService } from '../services/brandSharedService.js'
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js'
 import { runBrandHealth } from '../lib/brandHealth.js'
 import { compileBrandTokens, type CompileFormat } from '../lib/brand-token-compiler.js'
+import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js'
 import { v4 as uuidv4 } from 'uuid'
 import { vectorService } from '../services/vectorService.js'
 import { knowledgeService } from '../services/knowledgeService.js'
@@ -998,6 +1000,116 @@ router.get('/public/:slug', publicRateLimiter, async (req, res) => {
   } catch (error: any) {
     console.error('[Brand Public] Error:', error)
     res.status(500).json({ error: 'Failed to fetch public guideline' })
+  }
+})
+
+// POST /api/brand-guidelines/:id/ai-populate — generate content for empty brand fields
+router.post('/:id/ai-populate', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const apiKey = await getGeminiApiKey(req.userId)
+    if (!apiKey) return res.status(400).json({ error: 'Gemini API key not configured' })
+
+    const bg = guideline as unknown as BrandGuideline
+    const requestedSections: string[] | undefined = req.body.sections
+
+    // Define all populatable fields and their empty checks (nested JSON structure)
+    const fieldChecks: Record<string, () => boolean> = {
+      'strategy.coreMessage': () => !bg.strategy?.coreMessage?.product,
+      'strategy.pillars': () => !bg.strategy?.pillars?.length,
+      'strategy.manifesto': () => !bg.strategy?.manifesto,
+      'strategy.archetypes': () => !bg.strategy?.archetypes?.length,
+      'strategy.personas': () => !bg.strategy?.personas?.length,
+      'strategy.voiceValues': () => !bg.strategy?.voiceValues?.length,
+      'strategy.positioning': () => !bg.strategy?.positioning?.length,
+      'guidelines.voice': () => !bg.guidelines?.voice,
+      'guidelines.dos': () => !bg.guidelines?.dos?.length,
+      'guidelines.donts': () => !bg.guidelines?.donts?.length,
+      'guidelines.imagery': () => !bg.guidelines?.imagery,
+      'tags': () => !bg.tags || Object.keys(bg.tags).length === 0,
+      'identity.description': () => !bg.identity?.description,
+      'identity.tagline': () => !bg.identity?.tagline,
+    }
+
+    // Filter to requested sections (if provided) and empty fields only
+    const emptyFields = Object.entries(fieldChecks)
+      .filter(([key, isEmpty]) => {
+        if (requestedSections && requestedSections.length > 0) {
+          if (!requestedSections.some(s => key.startsWith(s) || key === s)) return false
+        }
+        return isEmpty()
+      })
+      .map(([key]) => key)
+
+    if (emptyFields.length === 0) {
+      return res.json({ patch: {}, generated: [] })
+    }
+
+    // Build existing brand context for LLM
+    const brandContext = buildBrandContext(bg)
+
+    const systemPrompt = `You are a brand strategist using the Metodologia Visant.
+Given an existing brand's context, generate content for the missing fields listed below.
+Follow the strategic flow: core message → pillars → manifesto → archetypes → voice → personas.
+Use what already exists to inform what you generate — maintain consistency.
+Respond in the same language as the brand's existing content (default: Portuguese BR).
+
+Return ONLY valid JSON matching this nested structure (include only the sections you're generating):
+{
+  "strategy": {
+    "coreMessage": { "product": "...", "differential": "...", "emotionalBond": "..." },
+    "pillars": [{ "value": "Pilar name", "description": "Why it matters" }],
+    "manifesto": { "provocation": "...", "tension": "...", "promise": "...", "full": "..." },
+    "archetypes": [{ "name": "...", "role": "primary|secondary", "description": "...", "examples": ["Brand A"] }],
+    "personas": [{ "name": "...", "age": 28, "occupation": "...", "traits": ["..."], "bio": "...", "desires": ["..."], "painPoints": ["..."] }],
+    "voiceValues": [{ "title": "...", "description": "...", "example": "example phrase" }],
+    "positioning": ["positioning statement"]
+  },
+  "guidelines": {
+    "voice": "overall tone description",
+    "dos": ["do this"],
+    "donts": ["avoid this"],
+    "imagery": "visual style description"
+  },
+  "tags": { "brand_values": ["..."], "tone": ["..."], "aesthetic": ["..."] },
+  "identity": { "description": "...", "tagline": "..." }
+}
+
+Only generate these missing items: ${emptyFields.join(', ')}
+Do NOT include fields that already exist.`
+
+    const genAI = new GoogleGenerativeAI(apiKey)
+    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT })
+
+    const result = await model.generateContent([
+      { text: systemPrompt },
+      { text: `Existing brand context:\n${brandContext}\n\nGenerate the missing fields as JSON.` },
+    ])
+
+    const responseText = result.response.text()
+
+    const codeBlock = responseText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/)
+    let jsonStr = codeBlock ? codeBlock[1].trim() : undefined
+    if (!jsonStr) {
+      const raw = responseText.match(/\{[\s\S]*\}/)
+      jsonStr = raw ? raw[0] : undefined
+    }
+    if (!jsonStr) {
+      return res.status(500).json({ error: 'Failed to parse AI response' })
+    }
+
+    const patch = JSON.parse(jsonStr)
+
+    res.json({ patch, generated: emptyFields })
+  } catch (error: any) {
+    console.error('[Brand AI Populate] Error:', error)
+    res.status(500).json({ error: 'Failed to generate brand content', message: error?.message })
   }
 })
 

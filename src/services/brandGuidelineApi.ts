@@ -150,6 +150,19 @@ export const brandGuidelineApi = {
     return result;
   },
 
+  async aiPopulate(id: string, sections?: string[]): Promise<{ patch: Record<string, any>; generated: string[] }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/ai-populate`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ sections }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || err.error || 'Failed to generate brand content');
+    }
+    return response.json();
+  },
+
   // ── Media Kit ──
 
   async uploadMedia(guidelineId: string, base64Data: string, label?: string, contentType?: string): Promise<{ media: any; allMedia: any[] }> {

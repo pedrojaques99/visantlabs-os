@@ -19,6 +19,7 @@ import { DesignSystemValidation } from '@/components/brand/guidelines/DesignSyst
 import { ShareGuidelineDialog } from '@/components/brand/guidelines/ShareGuidelineDialog';
 import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButton';
 import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandCompletenessPill';
+import { BrandAiPopulateDialog } from '@/components/brand/guidelines/BrandAiPopulateDialog';
 import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck, Zap, Figma, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -98,6 +99,7 @@ export const BrandGuidelinesPage: React.FC = () => {
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [figmaCopied, setFigmaCopied] = useState(false);
     const [activeTabId, setActiveTabId] = useState(SECTION_TABS[0].id);
+    const [isAiPopulateOpen, setIsAiPopulateOpen] = useState(false);
     const updateMutation = useUpdateGuideline();
     const queryClient = useQueryClient();
 
@@ -253,12 +255,13 @@ export const BrandGuidelinesPage: React.FC = () => {
                                     <BrandCompletenessPill guideline={selected} />
                                 )}
                                 {selected && (
-                                    <Link to={`/create?brandId=${selected.id}`}>
-                                        <Button className="h-8 px-3 gap-1.5 text-xs bg-white/[0.06] border border-white/15 text-neutral-200 hover:bg-white/[0.10]">
-                                            <Zap size={13} />
-                                            <span className="hidden sm:inline">Generate</span>
-                                        </Button>
-                                    </Link>
+                                    <Button
+                                        onClick={() => setIsAiPopulateOpen(true)}
+                                        className="h-8 px-3 gap-1.5 text-xs bg-white/[0.06] border border-white/15 text-neutral-200 hover:bg-white/[0.10]"
+                                    >
+                                        <Zap size={13} />
+                                        <span className="hidden sm:inline">Generate</span>
+                                    </Button>
                                 )}
                                 {selected && (
                                     <BrandIngestButton
@@ -464,6 +467,15 @@ export const BrandGuidelinesPage: React.FC = () => {
                     onUpdate={(updated) => {
                         updateMutation.mutate({ id: updated.id!, data: updated });
                     }}
+                />
+            )}
+
+            {selected && (
+                <BrandAiPopulateDialog
+                    open={isAiPopulateOpen}
+                    onOpenChange={setIsAiPopulateOpen}
+                    guideline={selected}
+                    onSuccess={() => queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] })}
                 />
             )}
         </div>

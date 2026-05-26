@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { AiFieldButton } from '../AiFieldButton';
 import { BookOpen } from 'lucide-react';
 import type { BrandGuideline, BrandManifesto } from '@/lib/figma-types';
 
@@ -35,9 +36,19 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, o
   };
 
   const hasStructured = manifesto.provocation || manifesto.tension || manifesto.promise;
+  const isEmpty = !manifesto.provocation && !manifesto.tension && !manifesto.promise && !manifesto.full;
+
+  const handleAiResult = useCallback((patch: Record<string, any>) => {
+    const m = patch.strategy?.manifesto;
+    if (!m) return;
+    if (typeof m === 'string') persist({ ...manifesto, full: m });
+    else persist({ ...manifesto, ...m });
+  }, [persist, manifesto]);
 
   return (
-    <SectionBlock id="manifesto" icon={<BookOpen size={14} />} title="Manifesto" span={span as any}>
+    <SectionBlock id="manifesto" icon={<BookOpen size={14} />} title="Manifesto" span={span as any}
+      actions={isEmpty ? <AiFieldButton guideline={guideline} section="strategy.manifesto" onResult={handleAiResult} /> : undefined}
+    >
       <div className="space-y-4 py-1">
         <div className="space-y-3">
           <div className="space-y-1">
