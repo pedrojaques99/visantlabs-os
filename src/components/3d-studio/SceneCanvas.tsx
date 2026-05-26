@@ -4,7 +4,7 @@ import { ContactShadows, Environment, Stats, MeshReflectorMaterial, AdaptiveDpr,
 import * as THREE from 'three';
 import { useStudio3DStore, ENVIRONMENT_PRESETS, RENDER_QUALITY_CONFIG, type ToneMappingType } from '@/stores/studio3dStore';
 import { useShallow } from 'zustand/react/shallow';
-import { EffectComposer, Bloom, DepthOfField, Vignette, ChromaticAberration, Noise, N8AO } from '@react-three/postprocessing';
+import { EffectComposer, Bloom, DepthOfField, Vignette, ChromaticAberration, Noise, N8AO, HueSaturation, BrightnessContrast } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
 import { ShaderPostProcess } from '@/effects/ShaderPostProcess';
 import { CameraBridge } from './CameraBridge';
@@ -77,6 +77,15 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   chromaticAberrationOffset: s.chromaticAberrationOffset,
   noiseEnabled: s.noiseEnabled,
   noiseOpacity: s.noiseOpacity,
+  colorGradingEnabled: s.colorGradingEnabled,
+  cgBrightness: s.cgBrightness,
+  cgContrast: s.cgContrast,
+  cgHue: s.cgHue,
+  cgSaturation: s.cgSaturation,
+  normalMapUrl: s.normalMapUrl,
+  roughnessMapUrl: s.roughnessMapUrl,
+  metalnessMapUrl: s.metalnessMapUrl,
+  orthographic: s.orthographic,
   animate: s.animate,
   animateSpeed: s.animateSpeed,
   animateReverse: s.animateReverse,
@@ -255,6 +264,9 @@ function SceneContent() {
               textureRepeat={s.textureRepeat}
               textureRotation={s.textureRotation}
               textureOpacity={s.textureOpacity}
+              normalMapUrl={s.normalMapUrl || undefined}
+              roughnessMapUrl={s.roughnessMapUrl || undefined}
+              metalnessMapUrl={s.metalnessMapUrl || undefined}
               shapeType={s.shapeType}
             />
           )
@@ -330,13 +342,15 @@ function SceneContent() {
           settings={shaderSettings}
           halftoneVariant={halftoneVariant}
         />
-      ) : (s.bloomEnabled || s.dofEnabled || s.vignetteEnabled || s.ssaoEnabled || s.chromaticAberrationEnabled || s.noiseEnabled) ? (
+      ) : (s.bloomEnabled || s.dofEnabled || s.vignetteEnabled || s.ssaoEnabled || s.chromaticAberrationEnabled || s.noiseEnabled || s.colorGradingEnabled) ? (
         <EffectComposer multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}>
           {s.ssaoEnabled && <N8AO intensity={s.ssaoIntensity} aoRadius={0.5} distanceFalloff={1} />}
           {s.bloomEnabled && <Bloom intensity={s.bloomIntensity} luminanceThreshold={s.bloomThreshold} luminanceSmoothing={0.9} />}
           {s.dofEnabled && <DepthOfField focusDistance={s.dofFocusDistance} focalLength={0.05} bokehScale={s.dofBokehScale} />}
           {s.chromaticAberrationEnabled && <ChromaticAberration offset={[s.chromaticAberrationOffset, s.chromaticAberrationOffset] as any} />}
           {s.noiseEnabled && <Noise blendFunction={BlendFunction.SOFT_LIGHT} opacity={s.noiseOpacity} />}
+          {s.colorGradingEnabled && <BrightnessContrast brightness={s.cgBrightness} contrast={s.cgContrast} />}
+          {s.colorGradingEnabled && <HueSaturation hue={s.cgHue} saturation={s.cgSaturation} />}
           {s.vignetteEnabled && <Vignette darkness={s.vignetteIntensity} offset={0.3} />}
         </EffectComposer>
       ) : null}
@@ -364,6 +378,7 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
     showStats: st.showStats,
     renderQuality: st.renderQuality,
     fov: st.fov,
+    orthographic: st.orthographic,
   })));
 
   const [sceneHandle, setSceneHandle] = useState<SceneHandle | null>(null);
@@ -373,8 +388,12 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
   return (
     <SceneRefContext.Provider value={sceneHandle}>
       <Canvas
-        key={s.resetKey}
-        camera={{ position: [0, 0, s.zoom], fov: s.fov }}
+        key={`${s.resetKey}-${s.orthographic}`}
+        orthographic={s.orthographic}
+        camera={s.orthographic
+          ? { position: [0, 0, s.zoom], zoom: 80 }
+          : { position: [0, 0, s.zoom], fov: s.fov }
+        }
         dpr={RENDER_QUALITY_CONFIG[s.renderQuality].dpr}
         style={{ background: bg, width: '100%', height: '100%' }}
         gl={{

@@ -101,6 +101,10 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
   const [ssaoIntensity, setSsaoIntensity] = useDebouncedSlider(store.ssaoIntensity, store.setSsaoIntensity);
   const [chromaticAberrationOffset, setChromaticAberrationOffset] = useDebouncedSlider(store.chromaticAberrationOffset, store.setChromaticAberrationOffset);
   const [noiseOpacity, setNoiseOpacity] = useDebouncedSlider(store.noiseOpacity, store.setNoiseOpacity);
+  const [cgBrightness, setCgBrightness] = useDebouncedSlider(store.cgBrightness, store.setCgBrightness);
+  const [cgContrast, setCgContrast] = useDebouncedSlider(store.cgContrast, store.setCgContrast);
+  const [cgHue, setCgHue] = useDebouncedSlider(store.cgHue, store.setCgHue);
+  const [cgSaturation, setCgSaturation] = useDebouncedSlider(store.cgSaturation, store.setCgSaturation);
   const hdriInputRef = useRef<HTMLInputElement>(null);
   const [savedScenes, setSavedScenes] = useState<SavedScene[]>(() => getSavedScenes());
   const [sceneName, setSceneName] = useState('');
@@ -371,6 +375,9 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             </ToolPanelRow>
           </div>
           <TextureControls store={store} textureOpacity={textureOpacity} setTextureOpacity={setTextureOpacity} textureRotation={textureRotation} setTextureRotation={setTextureRotation} />
+          <PbrMapUpload label="Normal Map" value={store.normalMapUrl} onChange={store.setNormalMapUrl} />
+          <PbrMapUpload label="Roughness Map" value={store.roughnessMapUrl} onChange={store.setRoughnessMapUrl} />
+          <PbrMapUpload label="Metalness Map" value={store.metalnessMapUrl} onChange={store.setMetalnessMapUrl} />
         </ToolPanelDisclosure>
 
         {/* ── Lighting — presets + intensities only ── */}
@@ -504,7 +511,15 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
               {t('studio3d.camera.reset')}
             </ToolPanelChip>
           </ToolPanelGrid>
-          <NodeSlider label={t('studio3d.camera.fov')} value={fov} min={15} max={120} step={1} onChange={setFov} />
+          <ToolPanelRow label="Projection">
+            <ToolPanelGrid cols={2}>
+              <ToolPanelChip active={!store.orthographic} onClick={() => store.setOrthographic(false)}>Perspective</ToolPanelChip>
+              <ToolPanelChip active={store.orthographic} onClick={() => store.setOrthographic(true)}>Orthographic</ToolPanelChip>
+            </ToolPanelGrid>
+          </ToolPanelRow>
+          {!store.orthographic && (
+            <NodeSlider label={t('studio3d.camera.fov')} value={fov} min={15} max={120} step={1} onChange={setFov} />
+          )}
         </ToolPanelDisclosure>
 
         {/* ── Rendering — tone mapping, quality, shadows, ground (technical) ── */}
@@ -638,6 +653,17 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             {store.vignetteEnabled && (
               <NodeSlider label="Darkness" value={vignetteIntensity} min={0} max={1} step={0.01} onChange={setVignetteIntensity} />
             )}
+            <ToolPanelRow label="Color Grading">
+              <Switch checked={store.colorGradingEnabled} onCheckedChange={store.setColorGradingEnabled} aria-label="Color grading" />
+            </ToolPanelRow>
+            {store.colorGradingEnabled && (
+              <>
+                <NodeSlider label="Brightness" value={cgBrightness} min={-0.5} max={0.5} step={0.01} onChange={setCgBrightness} />
+                <NodeSlider label="Contrast" value={cgContrast} min={-0.5} max={0.5} step={0.01} onChange={setCgContrast} />
+                <NodeSlider label="Hue" value={cgHue} min={-Math.PI} max={Math.PI} step={0.01} onChange={setCgHue} />
+                <NodeSlider label="Saturation" value={cgSaturation} min={-1} max={1} step={0.01} onChange={setCgSaturation} />
+              </>
+            )}
           </div>
           <ToolPanelSection title="Shader FX">
             <ShaderControls
@@ -672,6 +698,43 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
     </ToolPanel>
   );
 });
+
+/* ── PBR Map Upload ─────────── */
+
+const PbrMapUpload: React.FC<{
+  label: string;
+  value: string;
+  onChange: (url: string) => void;
+}> = ({ label, value, onChange }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <span className="text-[9px] text-neutral-500 uppercase tracking-widest">{label}</span>
+        {value && (
+          <button onClick={() => onChange('')} className="text-[9px] text-neutral-600 hover:text-red-400 transition-colors">Remove</button>
+        )}
+      </div>
+      <button
+        onClick={() => inputRef.current?.click()}
+        className="w-full px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+      >
+        {value ? 'Map loaded' : `Upload ${label}`}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onChange(URL.createObjectURL(file));
+          e.target.value = '';
+        }}
+      />
+    </div>
+  );
+};
 
 /* ── Light Position XYZ Sliders ─────────── */
 

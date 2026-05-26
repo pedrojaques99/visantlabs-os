@@ -329,6 +329,19 @@ interface Studio3DState {
   chromaticAberrationOffset: number;
   noiseEnabled: boolean;
   noiseOpacity: number;
+  colorGradingEnabled: boolean;
+  cgBrightness: number;
+  cgContrast: number;
+  cgHue: number;
+  cgSaturation: number;
+
+  // PBR texture maps
+  normalMapUrl: string;
+  roughnessMapUrl: string;
+  metalnessMapUrl: string;
+
+  // Camera mode
+  orthographic: boolean;
 
   // Animation
   animate: AnimationType;
@@ -428,6 +441,15 @@ interface Studio3DState {
   setChromaticAberrationOffset: (v: number) => void;
   setNoiseEnabled: (v: boolean) => void;
   setNoiseOpacity: (v: number) => void;
+  setColorGradingEnabled: (v: boolean) => void;
+  setCgBrightness: (v: number) => void;
+  setCgContrast: (v: number) => void;
+  setCgHue: (v: number) => void;
+  setCgSaturation: (v: number) => void;
+  setNormalMapUrl: (v: string) => void;
+  setRoughnessMapUrl: (v: string) => void;
+  setMetalnessMapUrl: (v: string) => void;
+  setOrthographic: (v: boolean) => void;
   setAnimate: (a: AnimationType) => void;
   setAnimateSpeed: (v: number) => void;
   setAnimateReverse: (v: boolean) => void;
@@ -517,6 +539,15 @@ const INITIAL_STATE = {
   chromaticAberrationOffset: 0.002,
   noiseEnabled: false,
   noiseOpacity: 0.15,
+  colorGradingEnabled: false,
+  cgBrightness: 0,
+  cgContrast: 0,
+  cgHue: 0,
+  cgSaturation: 0,
+  normalMapUrl: '',
+  roughnessMapUrl: '',
+  metalnessMapUrl: '',
+  orthographic: false,
   animate: 'spin' as AnimationType,
   animateSpeed: 0.3,
   animateReverse: false,
@@ -616,6 +647,15 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setChromaticAberrationOffset: (chromaticAberrationOffset) => set({ chromaticAberrationOffset }),
   setNoiseEnabled: (noiseEnabled) => set({ noiseEnabled }),
   setNoiseOpacity: (noiseOpacity) => set({ noiseOpacity }),
+  setColorGradingEnabled: (colorGradingEnabled) => set({ colorGradingEnabled }),
+  setCgBrightness: (cgBrightness) => set({ cgBrightness }),
+  setCgContrast: (cgContrast) => set({ cgContrast }),
+  setCgHue: (cgHue) => set({ cgHue }),
+  setCgSaturation: (cgSaturation) => set({ cgSaturation }),
+  setNormalMapUrl: (normalMapUrl) => set({ normalMapUrl }),
+  setRoughnessMapUrl: (roughnessMapUrl) => set({ roughnessMapUrl }),
+  setMetalnessMapUrl: (metalnessMapUrl) => set({ metalnessMapUrl }),
+  setOrthographic: (orthographic) => set({ orthographic }),
   setAnimate: (animate) => set({ animate }),
   setAnimateSpeed: (animateSpeed) => set({ animateSpeed }),
   setAnimateReverse: (animateReverse) => set({ animateReverse }),
