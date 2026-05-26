@@ -4,6 +4,7 @@ import type { ParsedChunk } from './brand-parse.js'
 import { BrandGuideline } from '../types/brandGuideline.js'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js'
+import { sanitizeForPrompt } from '../utils/promptSanitize.js'
 
 const EXTRACTION_PROMPT = `You are a brand identity extraction expert. Analyze the content and extract ALL brand guideline information you can find.
 
@@ -80,7 +81,7 @@ export async function extractBrandData(
   // GEMINI_MODELS.TEXT is gemini-3-flash which is multimodal
   const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT })
 
-  const parts: any[] = [{ text: EXTRACTION_PROMPT + '\n\nContent:\n' + combinedText }]
+  const parts: any[] = [{ text: EXTRACTION_PROMPT + '\n\nContent:\n' + sanitizeForPrompt(combinedText, 20000) }]
   
   if (images && images.length > 0) {
     for (const imgBase64 of images) {
