@@ -33,6 +33,7 @@ import {
   ToolPanel, ToolPanelContent, ToolPanelSection,
   ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
+import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
 import { HexColorPicker } from 'react-colorful';
 import { setCameraView, resetCamera } from './CameraBridge';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
@@ -150,16 +151,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
     if (file) await processFile(file);
   }, [processFile]);
 
-  const scrollToSection = useCallback((id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      const btn = el.querySelector('button');
-      if (btn && el.querySelector('[data-state]') === null) btn.click();
-    }
-  }, []);
-
-  const SECTION_NAV = [
+  const SECTION_NAV: SectionNavItem[] = [
     { id: 'sec-scenes', icon: <Film size={14} />, label: 'Scenes' },
     { id: 'sec-material', icon: <Diamond size={14} />, label: 'Material' },
     { id: 'sec-lighting', icon: <Sun size={14} />, label: 'Lighting' },
@@ -173,19 +165,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
 
   return (
     <ToolPanel className="flex-row">
-      {/* Section quick-nav sidebar */}
-      <div className="shrink-0 flex flex-col items-center gap-1 py-3 px-1 border-r border-white/[0.06] bg-neutral-950/50">
-        {SECTION_NAV.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => scrollToSection(s.id)}
-            title={s.label}
-            className="w-7 h-7 flex items-center justify-center rounded text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors"
-          >
-            {s.icon}
-          </button>
-        ))}
-      </div>
+      <SectionNavSidebar items={SECTION_NAV} />
 
       {/* Scrollable content */}
       <div className="flex-1 flex flex-col overflow-hidden">

@@ -3,7 +3,15 @@ import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { NodeSlider } from '@/components/ui/NodeSlider';
-import { Download, FileCode, Trash2 } from 'lucide-react';
+import { Download, FileCode, Trash2, Eye, SlidersHorizontal, Palette as PaletteIcon, Square } from 'lucide-react';
+import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
+
+const SECTION_NAV: SectionNavItem[] = [
+  { id: 'sec-display', icon: <Eye size={14} />, label: 'Display' },
+  { id: 'sec-style', icon: <SlidersHorizontal size={14} />, label: 'Style' },
+  { id: 'sec-bg', icon: <Square size={14} />, label: 'Background' },
+  { id: 'sec-colors', icon: <PaletteIcon size={14} />, label: 'Colors' },
+];
 import { SendToButton } from '@/components/shared/SendToButton';
 import { useGridMachineStore } from '@/stores/gridMachineStore';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
@@ -54,10 +62,12 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
   const clear = useGridMachineStore((s) => s.clear);
 
   return (
-    <ToolPanel>
+    <ToolPanel className="flex-row">
+      <SectionNavSidebar items={SECTION_NAV} />
+      <div className="flex-1 flex flex-col overflow-hidden">
       <ToolPanelContent>
         {/* Display */}
-        <ToolPanelSection title="Display">
+        <ToolPanelSection title="Display" id="sec-display">
           <Toggle label="Outline" checked={showOutline} onChange={(v) => updateSetting('showOutline', v)} />
           <Toggle label="Anchors" checked={showAnchors} onChange={(v) => updateSetting('showAnchors', v)} />
           <Toggle label="Handles" checked={showHandles} onChange={(v) => updateSetting('showHandles', v)} />
@@ -76,7 +86,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
         </ToolPanelSection>
 
         {/* Style */}
-        <ToolPanelSection title="Style">
+        <ToolPanelSection title="Style" id="sec-style">
           <Slider label="Line Opacity" value={lineOpacity} min={0.05} max={1} step={0.05} onChange={(v) => updateSetting('lineOpacity', v)} format={(v) => `${Math.round(v * 100)}%`} />
           <Slider label="Point Size" value={pointSize} min={1} max={12} step={0.5} onChange={(v) => updateSetting('pointSize', v)} />
           <Slider label="Logo Opacity" value={logoOpacity} min={0} max={1} step={0.05} onChange={(v) => updateSetting('logoOpacity', v)} format={(v) => `${Math.round(v * 100)}%`} />
@@ -84,7 +94,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
         </ToolPanelSection>
 
         {/* Background */}
-        <ToolPanelSection title="Background">
+        <ToolPanelSection title="Background" id="sec-bg">
           <div className="flex gap-1.5">
             {(['dark', 'light'] as const).map((mode) => (
               <button key={mode} onClick={() => updateSetting('bgMode', mode)} className={cn(
@@ -100,7 +110,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
         </ToolPanelSection>
 
         {/* Colors */}
-        <ToolPanelDisclosure label="Colors">
+        <ToolPanelDisclosure label="Colors" id="sec-colors">
           <ColorInput label="Lines" value={lineColor} onChange={(v) => updateSetting('lineColor', v)} />
           <ColorInput label="Anchors" value={anchorColor} onChange={(v) => updateSetting('anchorColor', v)} />
           <ColorInput label="Handles" value={handleColor} onChange={(v) => updateSetting('handleColor', v)} />
@@ -122,6 +132,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
           <Trash2 size={13} /> Clear
         </Button>
       </ToolPanelActions>
+      </div>
     </ToolPanel>
   );
 });

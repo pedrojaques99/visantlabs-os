@@ -5,13 +5,25 @@ import { Button } from '@/components/ui/button';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useHalftoneStore, BLEND_MODES, HALFTONE_PRESETS } from '@/stores/halftoneStore';
-import { Eye, EyeOff, ImageIcon, X, Download } from 'lucide-react';
+import { Eye, EyeOff, ImageIcon, X, Download, Grid3X3, Layers, Droplets, Blend, Circle, Image, Palette, SlidersHorizontal } from 'lucide-react';
 import { ShaderControls } from '@/components/shared/ShaderControls';
 import { SendToButton } from '@/components/shared/SendToButton';
 import {
   ToolPanel, ToolPanelHeader, ToolPanelContent, ToolPanelSection,
   ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
+import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
+
+const SECTION_NAV: SectionNavItem[] = [
+  { id: 'sec-presets', icon: <Grid3X3 size={14} />, label: 'Presets' },
+  { id: 'sec-halftone', icon: <Circle size={14} />, label: 'Halftone' },
+  { id: 'sec-channels', icon: <Layers size={14} />, label: 'Channels' },
+  { id: 'sec-blend', icon: <Blend size={14} />, label: 'Blend' },
+  { id: 'sec-dot', icon: <Droplets size={14} />, label: 'Dot Advanced' },
+  { id: 'sec-image', icon: <Image size={14} />, label: 'Image & Texture' },
+  { id: 'sec-ink', icon: <Palette size={14} />, label: 'Ink Colors' },
+  { id: 'sec-post', icon: <SlidersHorizontal size={14} />, label: 'Post-Processing' },
+];
 
 interface HalftoneControlsProps {
   onExport: () => void;
@@ -46,7 +58,9 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
   const [paperAlpha, setPaperAlpha] = useDebouncedSlider(store.paperAlpha, (v) => update('paperAlpha', v));
 
   return (
-    <ToolPanel>
+    <ToolPanel className="flex-row">
+      <SectionNavSidebar items={SECTION_NAV} />
+      <div className="flex-1 flex flex-col overflow-hidden">
       {/* Image header */}
       <ToolPanelHeader>
         {store.imageUrl ? (
@@ -72,7 +86,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
 
       <ToolPanelContent>
         {/* Presets */}
-        <ToolPanelSection title="PRESETS">
+        <ToolPanelSection title="PRESETS" id="sec-presets">
           <ToolPanelGrid>
             {Object.keys(HALFTONE_PRESETS).map((name) => (
               <ToolPanelChip key={name} onClick={() => store.applyPreset(name)}>{name}</ToolPanelChip>
@@ -81,13 +95,13 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
         </ToolPanelSection>
 
         {/* Halftone */}
-        <ToolPanelSection title="HALFTONE">
+        <ToolPanelSection title="HALFTONE" id="sec-halftone">
           <NodeSlider label="Frequency" value={frequency} min={20} max={500} step={1} onChange={setFrequency} />
           <NodeSlider label="Dot Size" value={dotSize} min={0.1} max={1} step={0.01} onChange={setDotSize} />
         </ToolPanelSection>
 
         {/* Channels */}
-        <ToolPanelSection title="CHANNELS">
+        <ToolPanelSection title="CHANNELS" id="sec-channels">
           <div className="space-y-2">
             <ChannelToggle label="Cyan" color="#00FFFF" visible={store.showCyan} onToggle={(v) => store.updateSetting('showCyan', v)} />
             <ChannelToggle label="Magenta" color="#FF00FF" visible={store.showMagenta} onToggle={(v) => store.updateSetting('showMagenta', v)} />
@@ -97,7 +111,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
         </ToolPanelSection>
 
         {/* Blend Mode */}
-        <ToolPanelSection title="BLEND">
+        <ToolPanelSection title="BLEND" id="sec-blend">
           <ToolPanelGrid>
             {BLEND_MODES.map((m) => (
               <ToolPanelChip key={m.id} active={store.blendMode === m.id} onClick={() => store.updateSetting('blendMode', m.id)}>
@@ -108,7 +122,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
         </ToolPanelSection>
 
         {/* Dot Advanced */}
-        <ToolPanelDisclosure label="Dot Advanced">
+        <ToolPanelDisclosure label="Dot Advanced" id="sec-dot">
           <NodeSlider label="Roughness" value={roughness} min={0} max={2} step={0.05} onChange={setRoughness} />
           <NodeSlider label="Edge Fuzz" value={fuzz} min={0} max={0.5} step={0.01} onChange={setFuzz} />
           <NodeSlider label="Randomness" value={randomness} min={0} max={0.4} step={0.01} onChange={setRandomness} />
@@ -116,7 +130,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
         </ToolPanelDisclosure>
 
         {/* Image & Texture */}
-        <ToolPanelDisclosure label="Image & Texture">
+        <ToolPanelDisclosure label="Image & Texture" id="sec-image">
           <NodeSlider label="Contrast" value={contrast} min={0.3} max={2} step={0.01} onChange={setContrast} />
           <NodeSlider label="Lightness" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
           <NodeSlider label="Blur" value={blur} min={0} max={30} step={0.5} onChange={setBlur} />
@@ -126,7 +140,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
         </ToolPanelDisclosure>
 
         {/* Ink Colors */}
-        <ToolPanelDisclosure label="Ink Colors">
+        <ToolPanelDisclosure label="Ink Colors" id="sec-ink">
           <div className="space-y-5">
             <InkSection title="Cyan" color={store.cyanInk} alpha={cyanAlpha} angle={cyanAngle} onColor={(v) => store.updateSetting('cyanInk', v)} onAlpha={setCyanAlpha} onAngle={setCyanAngle} />
             <InkSection title="Magenta" color={store.magentaInk} alpha={magentaAlpha} angle={magentaAngle} onColor={(v) => store.updateSetting('magentaInk', v)} onAlpha={setMagentaAlpha} onAngle={setMagentaAngle} />
@@ -145,7 +159,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
         </ToolPanelDisclosure>
 
         {/* Post-Processing */}
-        <ToolPanelDisclosure label="Post-Processing">
+        <ToolPanelDisclosure label="Post-Processing" id="sec-post">
           <ShaderControls
             enabled={store.shaderEnabled}
             shaderType={store.shaderType}
@@ -167,6 +181,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
           {store.imageUrl && <SendToButton source="halftone" imageUrl={store.imageUrl} />}
         </div>
       </ToolPanelActions>
+      </div>
     </ToolPanel>
   );
 });

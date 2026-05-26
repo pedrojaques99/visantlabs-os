@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { RisoRenderer, extractDominantColors } from './RisoRenderer';
 import { useRisoStore } from '@/stores/risoStore';
 import { rgbToHex } from '@/utils/colorUtils';
+import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
 
 interface RisoCanvasProps {
   onCanvasReady: (canvas: HTMLCanvasElement) => void;
@@ -19,8 +20,6 @@ export const RisoCanvas: React.FC<RisoCanvasProps> = ({ onCanvasReady }) => {
   const rendererRef = useRef<RisoRenderer | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [webglFailed, setWebglFailed] = useState(false);
-  const [isPanning, setIsPanning] = useState(false);
-  const panStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
 
   const store = useRisoStore();
   const settingsJson = useRisoStore((s) => JSON.stringify(s.getSettings()));
@@ -28,6 +27,10 @@ export const RisoCanvas: React.FC<RisoCanvasProps> = ({ onCanvasReady }) => {
   const panX = useRisoStore((s) => s.panX);
   const panY = useRisoStore((s) => s.panY);
   const isAnalyzing = useRisoStore((s) => s.isAnalyzing);
+
+  const { isPanning, handleMouseDown, handleMouseMove, handleMouseUp, bindWheelToRef } = useCanvasZoomPan({
+    getState: useRisoStore.getState,
+  });
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -81,32 +84,9 @@ export const RisoCanvas: React.FC<RisoCanvasProps> = ({ onCanvasReady }) => {
     rendererRef.current.render(store.getSettings());
   }, [settingsJson]);
 
-  // Zoom with wheel
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const factor = e.deltaY > 0 ? 0.9 : 1.1;
-    store.setZoom(store.zoom * factor);
-  }, [store, store.zoom]);
-
-  // Pan with middle-click or space+click
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button === 1 || (e.button === 0 && e.altKey)) {
-      e.preventDefault();
-      setIsPanning(true);
-      panStart.current = { x: e.clientX, y: e.clientY, panX: store.panX, panY: store.panY };
-    }
-  }, [store.panX, store.panY]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isPanning) return;
-    const dx = e.clientX - panStart.current.x;
-    const dy = e.clientY - panStart.current.y;
-    store.setPan(panStart.current.panX + dx, panStart.current.panY + dy);
-  }, [isPanning, store]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsPanning(false);
-  }, []);
+  useEffect(() => {
+    return bindWheelToRef(containerRef.current);
+  }, [bindWheelToRef]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -134,7 +114,6 @@ export const RisoCanvas: React.FC<RisoCanvasProps> = ({ onCanvasReady }) => {
       className={cn('w-full h-full flex items-center justify-center overflow-hidden bg-neutral-950', isPanning && 'cursor-grabbing')}
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
-      onWheel={handleWheel}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}

@@ -21,8 +21,8 @@ export const ToolPanelContent: React.FC<{ children: React.ReactNode }> = ({ chil
   </div>
 );
 
-export const ToolPanelSection: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className }) => (
-  <div className={cn('space-y-3', className)}>
+export const ToolPanelSection: React.FC<{ title: string; children: React.ReactNode; className?: string; id?: string }> = ({ title, children, className, id }) => (
+  <div id={id} className={cn('space-y-3 scroll-mt-2', className)}>
     <div className="sticky top-0 z-10 backdrop-blur-xl bg-neutral-950/80 -mx-4 px-4 py-1.5">
       <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{title}</span>
     </div>

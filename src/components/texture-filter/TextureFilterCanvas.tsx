@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTextureFilterStore } from '@/stores/textureFilterStore';
+import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
 
 interface TextureFilterCanvasProps {
   onCanvasReady: (canvas: HTMLCanvasElement) => void;
@@ -14,15 +15,18 @@ export const TextureFilterCanvas: React.FC<TextureFilterCanvasProps> = ({ onCanv
   const textureImgRef = useRef<HTMLImageElement | null>(null);
   const sourceImgRef = useRef<HTMLImageElement | null>(null);
   const animFrameRef = useRef<number>(0);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [textureLoaded, setTextureLoaded] = useState(false);
-  const [isPanning, setIsPanning] = useState(false);
-  const panStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
 
   const store = useTextureFilterStore();
   const settingsJson = JSON.stringify(store.getSettings());
   const zoom = useTextureFilterStore((s) => s.zoom);
   const panX = useTextureFilterStore((s) => s.panX);
   const panY = useTextureFilterStore((s) => s.panY);
+
+  const { isPanning, handleMouseDown, handleMouseMove, handleMouseUp, bindWheelToRef } = useCanvasZoomPan({
+    getState: useTextureFilterStore.getState,
+  });
 
   const loadTexture = useCallback((src: string) => {
     setTextureLoaded(false);
@@ -186,39 +190,12 @@ export const TextureFilterCanvas: React.FC<TextureFilterCanvasProps> = ({ onCanv
   }, []);
 
   useEffect(() => {
-    const container = canvasRef.current?.parentElement;
-    if (!container) return;
-    const handler = (e: WheelEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const factor = e.deltaY > 0 ? 0.9 : 1.1;
-      const s = useTextureFilterStore.getState();
-      s.setZoom(s.zoom * factor);
-    };
-    container.addEventListener('wheel', handler, { passive: false });
-    return () => container.removeEventListener('wheel', handler);
-  }, [store.imageUrl]);
-
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button === 1 || (e.button === 0 && e.altKey)) {
-      e.preventDefault();
-      setIsPanning(true);
-      const s = useTextureFilterStore.getState();
-      panStart.current = { x: e.clientX, y: e.clientY, panX: s.panX, panY: s.panY };
-    }
-  }, []);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isPanning) return;
-    const dx = e.clientX - panStart.current.x;
-    const dy = e.clientY - panStart.current.y;
-    useTextureFilterStore.getState().setPan(panStart.current.panX + dx, panStart.current.panY + dy);
-  }, [isPanning]);
-
-  const handleMouseUp = useCallback(() => setIsPanning(false), []);
+    return bindWheelToRef(containerRef.current);
+  }, [bindWheelToRef, store.imageUrl]);
 
   return (
     <div
+      ref={containerRef}
       className={cn('w-full h-full flex items-center justify-center overflow-hidden bg-neutral-950', isPanning && 'cursor-grabbing')}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
