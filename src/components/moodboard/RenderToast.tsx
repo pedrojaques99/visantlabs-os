@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Download, X, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 import { useRenderQueue } from '../../hooks/moodboard/useRenderQueue';
 import { RenderJob } from '../../types/moodboard';
+import { downloadBlob } from '../../utils/clipboard';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader'
 const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () => void }> = ({ job, onCancel, onDismiss }) => {
@@ -13,10 +14,7 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
 
   const handleDownload = () => {
     if (!job.blob) return;
-    const url = URL.createObjectURL(job.blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `${job.composition.name || 'render'}.mp4`; a.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(job.blob, `${job.composition.name || 'render'}.mp4`);
   };
 
   return (

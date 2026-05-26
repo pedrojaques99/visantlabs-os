@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
-import { copyToClipboard } from '@/utils/clipboard';
+import { copyToClipboard, downloadBlob } from '@/utils/clipboard';
 
 type OutputFormat = 'css' | 'tailwind' | 'react' | 'scss';
 
@@ -83,12 +83,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
   const handleDownload = () => {
     if (!currentOutput) return;
     const blob = new Blob([currentOutput.content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = currentOutput.filename;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(blob, currentOutput.filename);
     toast.success(`Downloaded ${currentOutput.filename}`);
   };
 
@@ -98,12 +93,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
       const result = await brandGuidelineApi.compile(guideline.id, 'all');
       for (const o of result.outputs) {
         const blob = new Blob([o.content], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = o.filename;
-        a.click();
-        URL.revokeObjectURL(url);
+        downloadBlob(blob, o.filename);
       }
       toast.success('All formats downloaded');
     } catch {

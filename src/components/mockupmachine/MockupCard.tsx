@@ -7,7 +7,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { GlitchPickaxe } from '@/components/ui/GlitchPickaxe';
 import { ReImaginePanel } from '../ReImaginePanel';
 import { useMockupLike } from '@/hooks/useMockupLike';
-import { isSafeUrl } from '@/utils/imageUtils';
+import { isSafeUrl, downloadImage } from '@/utils/imageUtils';
 import type { AspectRatio } from '@/types/types';
 import { GlassPanel } from '../ui/GlassPanel';
 import { cn } from '@/lib/utils';
@@ -242,22 +242,9 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                                         e.stopPropagation();
                                         e.preventDefault();
                                         try {
-                                            const response = await fetch(imageUrl);
-                                            const blob = await response.blob();
-                                            const url = window.URL.createObjectURL(blob);
-                                            const link = document.createElement('a');
-                                            link.href = url;
-                                            link.download = `mockup-${Date.now()}.png`;
-                                            document.body.appendChild(link);
-                                            link.click();
-                                            document.body.removeChild(link);
-                                            window.URL.revokeObjectURL(url);
+                                            await downloadImage(imageUrl, 'mockup');
                                         } catch (error) {
-                                            const link = document.createElement('a');
-                                            link.href = imageUrl;
-                                            link.download = `mockup-${Date.now()}.png`;
-                                            link.target = '_blank';
-                                            link.click();
+                                            console.error('Download failed:', error);
                                         }
                                     }}
                                 >

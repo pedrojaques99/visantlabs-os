@@ -3,6 +3,7 @@ import { X, FileText, ChevronDown, ChevronUp, Edit, Pickaxe, ChevronLeft, Chevro
 import type { Mockup } from '../services/mockupApi';
 import { getImageUrl, isSafeUrl } from '@/utils/imageUtils';
 import { translateTag, formatDateShort } from '@/utils/localeUtils';
+import { downloadBlob } from '@/utils/clipboard';
 import { SkeletonLoader } from './ui/SkeletonLoader';
 import { AngleSelector } from './mockupmachine/AngleSelector';
 import { BackgroundSelector } from './mockupmachine/BackgroundSelector';
@@ -165,14 +166,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
     try {
       const response = await fetch(safeImageUrl);
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `visant-image-${Date.now()}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(blob, `visant-image-${Date.now()}.png`);
     } catch (error) {
       console.error('Download failed:', error);
       // Fallback

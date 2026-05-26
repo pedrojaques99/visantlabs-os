@@ -1,5 +1,6 @@
 import { RenderComposition, RenderJob } from '../../types/moodboard';
 import { renderComposition } from './canvasRenderer';
+import { downloadBlob } from '../../utils/clipboard';
 
 type Listener = () => void;
 
@@ -84,11 +85,8 @@ class RenderQueue {
       this.notify();
 
       try {
-        const url = URL.createObjectURL(blob);
         const name = job.composition.name || `render-${job.id}`;
-        const a = document.createElement('a');
-        a.href = url; a.download = `${name}.mp4`; a.click();
-        URL.revokeObjectURL(url);
+        downloadBlob(blob, `${name}.mp4`);
         job.status = 'downloaded';
         this.notify();
       } catch (e) { console.error('Auto-download failed', e); }

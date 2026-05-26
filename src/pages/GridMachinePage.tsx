@@ -8,6 +8,7 @@ import { GridCanvas, type GridCanvasHandle } from '@/components/grid-machine/Gri
 import { GridMachineControls } from '@/components/grid-machine/ControlsPanel';
 import { useGridMachineStore } from '@/stores/gridMachineStore';
 import { analyzeSvg } from '@/components/grid-machine/SvgAnalyzer';
+import { downloadBlob } from '@/utils/clipboard';
 import { useExportCanvas } from '@/hooks/useExportCanvas';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { usePasteImage } from '@/hooks/usePasteImage';
@@ -51,12 +52,7 @@ export const GridMachinePage: React.FC = () => {
     const svg = gridRef.current?.exportSvg();
     if (!svg) return;
     const blob = new Blob([svg], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `grid-${fileName?.replace(/\.svg$/i, '') || 'export'}_${Date.now()}.svg`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(blob, `grid-${fileName?.replace(/\.svg$/i, '') || 'export'}_${Date.now()}.svg`);
     toast.success(t('grid.machine.svg_exported'));
   }, [fileName]);
 

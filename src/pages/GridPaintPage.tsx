@@ -20,7 +20,7 @@ import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
-import { copyToClipboard } from '@/utils/clipboard';
+import { copyToClipboard, downloadBlob } from '@/utils/clipboard';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -701,10 +701,7 @@ export const GridPaintPage: React.FC = () => {
       }
     svg += '</g></svg>';
     const blob = new Blob([svg], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'grid-paint.svg'; a.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(blob, 'grid-paint.svg');
     toast.success(t('grid.paint.svg_exported'));
   };
 

@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Download, QrCode } from 'lucide-react';
 import { useLayout } from '@/hooks/useLayout';
 import { loadImage } from '@/utils/imageUtils';
+import { downloadBlob } from '@/utils/clipboard';
 import { FormInput } from '../components/ui/form-input';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
@@ -46,14 +47,7 @@ export const QRCodePage: React.FC = () => {
 
         canvas.toBlob((blob) => {
           if (blob) {
-            const blobUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = `qrcode-${Date.now()}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(blobUrl);
+            downloadBlob(blob, `qrcode-${Date.now()}.png`);
           }
         }, 'image/png');
       }

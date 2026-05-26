@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
+import { downloadBlob } from '@/utils/clipboard';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 
@@ -30,12 +31,7 @@ export function useExportCanvas(options: UseExportCanvasOptions) {
       const blob = await new Promise<Blob>((resolve) => {
         exportCanvas.toBlob((b) => resolve(b!), 'image/png');
       });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${options.filenamePrefix}_${Date.now()}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadBlob(blob, `${options.filenamePrefix}_${Date.now()}.png`);
       toast.success(options.successMessage || 'PNG exported');
     } catch {
       toast.error('Export failed — try again');
@@ -57,12 +53,7 @@ export function useExportCanvas(options: UseExportCanvasOptions) {
       const blob = await new Promise<Blob>((resolve) => {
         offscreen.toBlob((b) => resolve(b!), 'image/png');
       });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${options.filenamePrefix}_${Date.now()}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadBlob(blob, `${options.filenamePrefix}_${Date.now()}.png`);
       toast.success(options.successMessage || 'PNG exported');
     } catch {
       toast.error('Export failed — try again');
