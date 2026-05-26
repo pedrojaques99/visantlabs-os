@@ -39,6 +39,8 @@
     "dist",
     "build",
     "tmp",
-    "**/*.example.ts"
+    "**/*.example.ts",
+    "plugin",
+    "cli"
   ]
 }

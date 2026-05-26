@@ -293,7 +293,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({ da
 
       {/* Fullscreen 3D Editor Modal */}
       {isEditorOpen && (
-        <div className="fixed inset-0 z-[9999] bg-neutral-950 flex flex-col" style={{ position: 'fixed' }}>
+        <div className="fixed inset-0 z-[9999] bg-neutral-950 flex flex-col">
           {/* Modal header */}
           <div className="h-10 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 shrink-0">
             <span className="text-[11px] font-mono text-neutral-400 uppercase tracking-widest">3D Studio — Node Editor</span>

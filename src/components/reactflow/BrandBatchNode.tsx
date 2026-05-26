@@ -158,7 +158,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
             selectedModel={model}
             onModelChange={(m) => handleModelChange(m as any)}
             type="image"
-            compact
+            variant="node"
           />
         </div>
       )}
