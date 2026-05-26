@@ -1,3 +1,5 @@
+import { loadImage } from '@/utils/imageUtils';
+
 const THUMB_MAX_SIZE = 400;
 const cache = new Map<string, string>();
 
@@ -9,12 +11,7 @@ export async function generateThumbnail(dataUrl: string, cacheKey: string): Prom
   const cached = cache.get(cacheKey);
   if (cached) return cached;
 
-  const img = new Image();
-  img.src = dataUrl;
-  await new Promise<void>((resolve, reject) => {
-    img.onload = () => resolve();
-    img.onerror = reject;
-  });
+  const img = await loadImage(dataUrl, null);
 
   const ratio = Math.min(THUMB_MAX_SIZE / img.width, THUMB_MAX_SIZE / img.height, 1);
   const w = Math.round(img.width * ratio);

@@ -19,6 +19,7 @@ import './shaders/edgeDetect';
 import './shaders/glitch';
 import { getHalftoneShaderSource } from './shaders/halftone';
 import { getShaderDefinition, type ShaderType, type HalftoneVariant } from './shaderRegistry';
+import { loadImage } from '@/utils/imageUtils';
 
 /**
  * Get API base URL
@@ -810,8 +811,6 @@ export async function applyShaderEffect(
       imageWidth = cachedImage.naturalWidth;
       imageHeight = cachedImage.naturalHeight;
     } else {
-      image = new Image();
-
       // Use proxy for R2 URLs to bypass CORS restrictions
       let imageSrc = imageInput;
       if (!imageInput.startsWith('data:') && isR2Url(imageInput)) {
@@ -849,23 +848,16 @@ export async function applyShaderEffect(
             throw error;
           }
         }
-      } else if (!imageInput.startsWith('data:')) {
-        // Only set crossOrigin for external URLs, not for data URLs
-        (image as HTMLImageElement).crossOrigin = 'anonymous';
       }
 
-      await new Promise<void>((resolve, reject) => {
-        const img = image as HTMLImageElement;
-        img.onload = () => {
-          imageWidth = img.naturalWidth;
-          imageHeight = img.naturalHeight;
-          // Cache the loaded image
-          imageCache.set(imageInput, img);
-          resolve();
-        };
-        img.onerror = () => reject(new Error('Failed to load image'));
-        img.src = imageSrc;
-      });
+      // Use null crossOrigin for data URLs, 'anonymous' for external URLs
+      const crossOrigin = imageSrc.startsWith('data:') ? null : 'anonymous';
+      const img = await loadImage(imageSrc, crossOrigin);
+      image = img;
+      imageWidth = img.naturalWidth;
+      imageHeight = img.naturalHeight;
+      // Cache the loaded image
+      imageCache.set(imageInput, img);
     }
   } else {
     image = imageInput;
@@ -1056,16 +1048,9 @@ export async function applyShaderEffectToVideo(
           const processedFrame = processedFrames[i];
 
           // Load processed frame as image
-          const img = new Image();
-          await new Promise<void>((resolve, reject) => {
-            img.onload = () => {
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-              ctx.drawImage(img, 0, 0);
-              resolve();
-            };
-            img.onerror = () => reject(new Error('Failed to load processed frame'));
-            img.src = processedFrame;
-          });
+          const img = await loadImage(processedFrame, null);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
 
           // Wait for frame to be recorded
           await new Promise(resolve => setTimeout(resolve, 1000 / fps));

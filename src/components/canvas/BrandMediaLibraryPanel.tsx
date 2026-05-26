@@ -4,6 +4,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { MockupContext } from '@/components/mockupmachine/MockupContext';
 import { ImageIcon, Plus, Search, LayoutGrid, List, Paintbrush, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { loadImage } from '@/utils/imageUtils';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -181,9 +182,7 @@ function useNeedsLightBg(url: string) {
   urlRef.current = url;
 
   useEffect(() => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
+    loadImage(url).then((img) => {
       if (urlRef.current !== url) return;
       try {
         const size = 32;
@@ -203,8 +202,7 @@ function useNeedsLightBg(url: string) {
         }
         setNeedsLight(darkOrTransparent / total > 0.7);
       } catch { /* CORS or canvas error — keep dark bg */ }
-    };
-    img.src = url;
+    });
   }, [url]);
 
   return needsLight;

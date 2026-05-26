@@ -1,3 +1,5 @@
+import { loadImage } from '@/utils/imageUtils';
+
 export interface ImageTransform {
   scale: number;
   offsetX: number;
@@ -77,18 +79,14 @@ export function rasterizeImageToObstacles(
   return dilated;
 }
 
-export function loadImageFromFile(file: File): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve(img);
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Failed to load image'));
-    };
-    img.src = url;
-  });
+export async function loadImageFromFile(file: File): Promise<HTMLImageElement> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await loadImage(url, null);
+    return img;
+  } catch {
+    throw new Error('Failed to load image');
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }

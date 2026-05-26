@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 import { PersistentShaderRenderer } from '@/utils/shaders/shaderRenderer';
+import { loadImage } from '@/utils/imageUtils';
 
 interface RealtimeShaderVideoProps {
   videoSrc: string;
@@ -95,16 +96,9 @@ export const RealtimeShaderVideo: React.FC<RealtimeShaderVideoProps> = ({
       // Draw result to canvas
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        const img = new Image();
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0);
-            resolve();
-          };
-          img.onerror = reject;
-          img.src = resultDataUrl;
-        });
+        const img = await loadImage(resultDataUrl, null);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
       }
 
       // Continue rendering

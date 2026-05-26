@@ -1,5 +1,6 @@
 import { getProxiedUrl } from './proxyUtils';
 import { downloadBlob } from './clipboard';
+import { loadImage } from '@/utils/imageUtils';
 
 export async function exportImageWithScale(
   imageUrl: string,
@@ -7,62 +8,39 @@ export async function exportImageWithScale(
   scale: number,
   fileName: string
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
+  const img = await loadImage(getProxiedUrl(imageUrl));
 
-    img.onload = () => {
-      try {
-        // Create canvas with scaled dimensions
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+  // Create canvas with scaled dimensions
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
 
-        if (!ctx) {
-          reject(new Error('Failed to get canvas context'));
-          return;
-        }
+  if (!ctx) {
+    throw new Error('Failed to get canvas context');
+  }
 
-        // Calculate scaled dimensions
-        const scaledWidth = img.width * scale;
-        const scaledHeight = img.height * scale;
+  // Calculate scaled dimensions
+  const scaledWidth = img.width * scale;
+  const scaledHeight = img.height * scale;
 
-        // Set canvas size to scaled dimensions
-        canvas.width = scaledWidth;
-        canvas.height = scaledHeight;
+  // Set canvas size to scaled dimensions
+  canvas.width = scaledWidth;
+  canvas.height = scaledHeight;
 
-        // Draw image scaled to canvas (maintains original resolution)
-        ctx.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+  // Draw image scaled to canvas (maintains original resolution)
+  ctx.drawImage(img, 0, 0, scaledWidth, scaledHeight);
 
-        // Export based on format
-        if (format === 'svg') {
-          // For SVG, we'll convert to SVG format or fallback to PNG
-          // SVG export is complex, so we'll export as PNG with SVG extension
-          // or create a simple SVG wrapper
-          exportAsSVG(canvas, fileName, scaledWidth, scaledHeight)
-            .then(resolve)
-            .catch((err) => {
-              // Fallback to PNG if SVG fails
-              console.warn('SVG export failed, falling back to PNG:', err);
-              exportAsImage(canvas, 'png', fileName, scale)
-                .then(resolve)
-                .catch(reject);
-            });
-        } else {
-          exportAsImage(canvas, format, fileName, scale)
-            .then(resolve)
-            .catch(reject);
-        }
-      } catch (error: any) {
-        reject(new Error(`Export failed: ${error.message}`));
-      }
-    };
-
-    img.onerror = () => {
-      reject(new Error('Failed to load image for export'));
-    };
-
-    img.src = getProxiedUrl(imageUrl);
-  });
+  // Export based on format
+  if (format === 'svg') {
+    try {
+      await exportAsSVG(canvas, fileName, scaledWidth, scaledHeight);
+    } catch (err) {
+      // Fallback to PNG if SVG fails
+      console.warn('SVG export failed, falling back to PNG:', err);
+      await exportAsImage(canvas, 'png', fileName, scale);
+    }
+  } else {
+    await exportAsImage(canvas, format, fileName, scale);
+  }
 }
 
 function exportAsImage(

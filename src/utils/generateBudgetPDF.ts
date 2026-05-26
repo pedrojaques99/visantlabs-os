@@ -90,11 +90,7 @@ export const generateBudgetPDF = async (data: BudgetData, t: (key: string) => st
   // Header with Logo
   if (data.brandLogo) {
     try {
-      // Try to add logo (base64 image)
-      const img = new Image();
-      img.src = data.brandLogo;
-
-      // Wait for image to load (synchronous approach for jsPDF)
+      // Add logo (base64 image) directly to jsPDF
       const imgData = data.brandLogo;
       const imgWidth = 40;
       const imgHeight = 40;

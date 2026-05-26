@@ -43,6 +43,7 @@ import { useCreditValidation } from '@/hooks/useCreditValidation';
 import { useAnalysisOverlay } from '@/hooks/useAnalysisOverlay';
 import { formatMockupError } from '@/utils/mockupErrorHandling';
 import { compressImage } from '@/utils/imageCompression';
+import { loadImage } from '@/utils/imageUtils';
 
 const MOCKUP_COUNT = 1;
 
@@ -1605,17 +1606,11 @@ const MockupMachinePageContent: React.FC = () => {
     // Preload the URL before swapping to prevent image flicker
     if (image.base64 && !image.url) {
       mockupApi.uploadTempImage(image.base64, image.mimeType)
-        .then(url => {
-          const img = new Image();
-          img.onload = () => {
-            setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
-          };
-          img.onerror = () => {
-            // Keep base64 if URL fails to load
-            setUploadedImage(prev => prev ? ({ ...prev, url }) : null);
-          };
-          img.src = url;
-        })
+        .then(url =>
+          loadImage(url, null)
+            .then(() => setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null))
+            .catch(() => setUploadedImage(prev => prev ? ({ ...prev, url }) : null))
+        )
         .catch(err => {
           if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
         });
@@ -1672,16 +1667,11 @@ const MockupMachinePageContent: React.FC = () => {
     // Preload the URL before swapping to prevent image flicker
     if (base64String && !image.url) {
       mockupApi.uploadTempImage(base64String, mimeType)
-        .then(url => {
-          const img = new Image();
-          img.onload = () => {
-            setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
-          };
-          img.onerror = () => {
-            setUploadedImage(prev => prev ? ({ ...prev, url }) : null);
-          };
-          img.src = url;
-        })
+        .then(url =>
+          loadImage(url, null)
+            .then(() => setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null))
+            .catch(() => setUploadedImage(prev => prev ? ({ ...prev, url }) : null))
+        )
         .catch(err => {
           if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
         });

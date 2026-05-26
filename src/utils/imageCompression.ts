@@ -2,6 +2,7 @@
  * Image compression utilities for client-side image optimization
  * Compresses and resizes images to reduce payload size before uploading to R2
  */
+import { loadImage } from '@/utils/imageUtils';
 
 export interface CompressionOptions {
   maxWidth?: number;
@@ -33,117 +34,99 @@ export async function compressImage(
     quality = DEFAULT_QUALITY,
   } = options;
 
-  return new Promise((resolve, reject) => {
-    const img = new Image();
+  const dataUrl = base64Image.startsWith('data:')
+    ? base64Image
+    : `data:image/jpeg;base64,${base64Image}`;
+  const img = await loadImage(dataUrl, null);
 
-    img.onload = () => {
-      try {
-        // Calculate new dimensions while maintaining aspect ratio
-        let width = img.width;
-        let height = img.height;
-        const originalSize = (width * height * 4) / 1024 / 1024; // Approximate size in MB (RGBA)
+  // Calculate new dimensions while maintaining aspect ratio
+  let width = img.width;
+  let height = img.height;
+  const originalSize = (width * height * 4) / 1024 / 1024; // Approximate size in MB (RGBA)
 
-        // If image is very large, reduce dimensions more aggressively
-        if (originalSize > 10) {
-          // For very large images, reduce max dimensions further
-          const adjustedMaxWidth = Math.min(maxWidth, 1280);
-          const adjustedMaxHeight = Math.min(maxHeight, 1280);
+  // If image is very large, reduce dimensions more aggressively
+  if (originalSize > 10) {
+    // For very large images, reduce max dimensions further
+    const adjustedMaxWidth = Math.min(maxWidth, 1280);
+    const adjustedMaxHeight = Math.min(maxHeight, 1280);
 
-          if (width > adjustedMaxWidth || height > adjustedMaxHeight) {
-            const aspectRatio = width / height;
-            if (width > height) {
-              width = adjustedMaxWidth;
-              height = width / aspectRatio;
-            } else {
-              height = adjustedMaxHeight;
-              width = height * aspectRatio;
-            }
-          }
-        } else if (width > maxWidth || height > maxHeight) {
-          const aspectRatio = width / height;
-
-          if (width > height) {
-            width = Math.min(width, maxWidth);
-            height = width / aspectRatio;
-          } else {
-            height = Math.min(height, maxHeight);
-            width = height * aspectRatio;
-          }
-        }
-
-        // Create canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-
-        if (!ctx) {
-          reject(new Error('Failed to get canvas context'));
-          return;
-        }
-
-        // Draw image to canvas
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Determine output format
-        const inputMimeType = options.mimeType || getMimeTypeFromBase64(base64Image) || 'image/jpeg';
-        const outputMimeType = inputMimeType === 'image/png' ? 'image/png' : 'image/jpeg';
-
-        // Try different quality levels if image is still too large
-        let currentQuality = quality;
-        let compressedBase64 = '';
-        let attempts = 0;
-        const maxAttempts = 5;
-
-        while (attempts < maxAttempts) {
-          // Convert to base64
-          compressedBase64 = canvas.toDataURL(outputMimeType, currentQuality);
-
-          // Calculate size (base64 is ~33% larger than binary)
-          const base64Data = compressedBase64.split(',')[1];
-          if (!base64Data) {
-            reject(new Error('Failed to compress image'));
-            return;
-          }
-
-          // Approximate binary size from base64
-          const binarySize = (base64Data.length * 3) / 4;
-
-          // If size is acceptable, return
-          if (binarySize <= maxSizeBytes) {
-            resolve(compressedBase64);
-            return;
-          }
-
-          // Reduce quality and try again
-          currentQuality = Math.max(0.3, currentQuality - 0.15);
-          attempts++;
-        }
-
-        // If still too large after quality reduction, check final size
-        const finalBase64Data = compressedBase64.split(',')[1];
-        const finalBinarySize = finalBase64Data ? (finalBase64Data.length * 3) / 4 : 0;
-
-        // This ensures we always return something, even if slightly over limit
-        if (finalBinarySize > maxSizeBytes) {
-          console.warn(`Image compression: Final size (${(finalBinarySize / 1024 / 1024).toFixed(2)}MB) exceeds target (${(maxSizeBytes / 1024 / 1024).toFixed(2)}MB) after ${maxAttempts} attempts`);
-        }
-        resolve(compressedBase64);
-      } catch (error: any) {
-        reject(new Error(`Failed to compress image: ${error.message}`));
+    if (width > adjustedMaxWidth || height > adjustedMaxHeight) {
+      const aspectRatio = width / height;
+      if (width > height) {
+        width = adjustedMaxWidth;
+        height = width / aspectRatio;
+      } else {
+        height = adjustedMaxHeight;
+        width = height * aspectRatio;
       }
-    };
+    }
+  } else if (width > maxWidth || height > maxHeight) {
+    const aspectRatio = width / height;
 
-    img.onerror = () => {
-      reject(new Error('Failed to load image for compression'));
-    };
+    if (width > height) {
+      width = Math.min(width, maxWidth);
+      height = width / aspectRatio;
+    } else {
+      height = Math.min(height, maxHeight);
+      width = height * aspectRatio;
+    }
+  }
 
-    // Load image from base64
-    const dataUrl = base64Image.startsWith('data:')
-      ? base64Image
-      : `data:image/jpeg;base64,${base64Image}`;
-    img.src = dataUrl;
-  });
+  // Create canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) {
+    throw new Error('Failed to get canvas context');
+  }
+
+  // Draw image to canvas
+  ctx.drawImage(img, 0, 0, width, height);
+
+  // Determine output format
+  const inputMimeType = options.mimeType || getMimeTypeFromBase64(base64Image) || 'image/jpeg';
+  const outputMimeType = inputMimeType === 'image/png' ? 'image/png' : 'image/jpeg';
+
+  // Try different quality levels if image is still too large
+  let currentQuality = quality;
+  let compressedBase64 = '';
+  let attempts = 0;
+  const maxAttempts = 5;
+
+  while (attempts < maxAttempts) {
+    // Convert to base64
+    compressedBase64 = canvas.toDataURL(outputMimeType, currentQuality);
+
+    // Calculate size (base64 is ~33% larger than binary)
+    const base64Data = compressedBase64.split(',')[1];
+    if (!base64Data) {
+      throw new Error('Failed to compress image');
+    }
+
+    // Approximate binary size from base64
+    const binarySize = (base64Data.length * 3) / 4;
+
+    // If size is acceptable, return
+    if (binarySize <= maxSizeBytes) {
+      return compressedBase64;
+    }
+
+    // Reduce quality and try again
+    currentQuality = Math.max(0.3, currentQuality - 0.15);
+    attempts++;
+  }
+
+  // If still too large after quality reduction, check final size
+  const finalBase64Data = compressedBase64.split(',')[1];
+  const finalBinarySize = finalBase64Data ? (finalBase64Data.length * 3) / 4 : 0;
+
+  // This ensures we always return something, even if slightly over limit
+  if (finalBinarySize > maxSizeBytes) {
+    console.warn(`Image compression: Final size (${(finalBinarySize / 1024 / 1024).toFixed(2)}MB) exceeds target (${(maxSizeBytes / 1024 / 1024).toFixed(2)}MB) after ${maxAttempts} attempts`);
+  }
+  return compressedBase64;
 }
 
 /**
@@ -206,108 +189,99 @@ export async function compressImageFile(
     quality = DEFAULT_QUALITY,
   } = options;
 
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
+  const url = URL.createObjectURL(file);
+  let img: HTMLImageElement;
+  try {
+    img = await loadImage(url, null);
+  } catch {
+    URL.revokeObjectURL(url);
+    throw new Error('Failed to load image for compression');
+  }
+  URL.revokeObjectURL(url);
 
-    img.onload = () => {
-      try {
-        URL.revokeObjectURL(url);
+  // Calculate new dimensions while maintaining aspect ratio
+  let width = img.width;
+  let height = img.height;
+  const originalSize = (width * height * 4) / 1024 / 1024; // Approximate size in MB (RGBA)
 
-        // Calculate new dimensions while maintaining aspect ratio
-        let width = img.width;
-        let height = img.height;
-        const originalSize = (width * height * 4) / 1024 / 1024; // Approximate size in MB (RGBA)
+  // If image is very large, reduce dimensions more aggressively
+  if (originalSize > 10) {
+    const adjustedMaxWidth = Math.min(maxWidth, 1280);
+    const adjustedMaxHeight = Math.min(maxHeight, 1280);
 
-        // If image is very large, reduce dimensions more aggressively
-        if (originalSize > 10) {
-          const adjustedMaxWidth = Math.min(maxWidth, 1280);
-          const adjustedMaxHeight = Math.min(maxHeight, 1280);
-
-          if (width > adjustedMaxWidth || height > adjustedMaxHeight) {
-            const aspectRatio = width / height;
-            if (width > height) {
-              width = adjustedMaxWidth;
-              height = width / aspectRatio;
-            } else {
-              height = adjustedMaxHeight;
-              width = height * aspectRatio;
-            }
-          }
-        } else if (width > maxWidth || height > maxHeight) {
-          const aspectRatio = width / height;
-
-          if (width > height) {
-            width = Math.min(width, maxWidth);
-            height = width / aspectRatio;
-          } else {
-            height = Math.min(height, maxHeight);
-            width = height * aspectRatio;
-          }
-        }
-
-        // Create canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-
-        if (!ctx) {
-          reject(new Error('Failed to get canvas context'));
-          return;
-        }
-
-        // Draw image to canvas
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Determine output format
-        const inputMimeType = options.mimeType || file.type || 'image/jpeg';
-        const outputMimeType = inputMimeType === 'image/png' ? 'image/png' : 'image/jpeg';
-
-        // Try different quality levels if image is still too large
-        let currentQuality = quality;
-        let attempts = 0;
-        const maxAttempts = 5;
-
-        const tryCompress = (): void => {
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) {
-                reject(new Error('Failed to compress image'));
-                return;
-              }
-
-              // If size is acceptable, return
-              if (blob.size <= maxSizeBytes || attempts >= maxAttempts) {
-                if (blob.size > maxSizeBytes) {
-                  console.warn(`Image compression: Final size (${(blob.size / 1024 / 1024).toFixed(2)}MB) exceeds target (${(maxSizeBytes / 1024 / 1024).toFixed(2)}MB) after ${maxAttempts} attempts`);
-                }
-                resolve(blob);
-                return;
-              }
-
-              // Reduce quality and try again
-              currentQuality = Math.max(0.3, currentQuality - 0.15);
-              attempts++;
-              tryCompress();
-            },
-            outputMimeType,
-            currentQuality
-          );
-        };
-
-        tryCompress();
-      } catch (error: any) {
-        reject(new Error(`Failed to compress image: ${error.message}`));
+    if (width > adjustedMaxWidth || height > adjustedMaxHeight) {
+      const aspectRatio = width / height;
+      if (width > height) {
+        width = adjustedMaxWidth;
+        height = width / aspectRatio;
+      } else {
+        height = adjustedMaxHeight;
+        width = height * aspectRatio;
       }
+    }
+  } else if (width > maxWidth || height > maxHeight) {
+    const aspectRatio = width / height;
+
+    if (width > height) {
+      width = Math.min(width, maxWidth);
+      height = width / aspectRatio;
+    } else {
+      height = Math.min(height, maxHeight);
+      width = height * aspectRatio;
+    }
+  }
+
+  // Create canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) {
+    throw new Error('Failed to get canvas context');
+  }
+
+  // Draw image to canvas
+  ctx.drawImage(img, 0, 0, width, height);
+
+  // Determine output format
+  const inputMimeType = options.mimeType || file.type || 'image/jpeg';
+  const outputMimeType = inputMimeType === 'image/png' ? 'image/png' : 'image/jpeg';
+
+  // Try different quality levels if image is still too large
+  let currentQuality = quality;
+  let attempts = 0;
+  const maxAttempts = 5;
+
+  return new Promise<Blob>((resolve, reject) => {
+    const tryCompress = (): void => {
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Failed to compress image'));
+            return;
+          }
+
+          // If size is acceptable, return
+          if (blob.size <= maxSizeBytes || attempts >= maxAttempts) {
+            if (blob.size > maxSizeBytes) {
+              console.warn(`Image compression: Final size (${(blob.size / 1024 / 1024).toFixed(2)}MB) exceeds target (${(maxSizeBytes / 1024 / 1024).toFixed(2)}MB) after ${maxAttempts} attempts`);
+            }
+            resolve(blob);
+            return;
+          }
+
+          // Reduce quality and try again
+          currentQuality = Math.max(0.3, currentQuality - 0.15);
+          attempts++;
+          tryCompress();
+        },
+        outputMimeType,
+        currentQuality
+      );
     };
 
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Failed to load image for compression'));
-    };
-
-    img.src = url;
+    tryCompress();
   });
 }
 

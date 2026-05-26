@@ -137,13 +137,5 @@ export function renderTextureFilter(
   return canvas;
 }
 
-/** Load an image from URL/base64 string, returns a promise. */
-export function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-}
+// Re-export loadImage from the shared utility for backward compatibility
+export { loadImage } from '@/utils/imageUtils';
