@@ -531,6 +531,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     if (props.strokeWeight != null) frame.strokeWeight = props.strokeWeight;
     if (props.opacity != null) frame.opacity = props.opacity;
     if (props.effects) frame.effects = mapEffects(props.effects);
+    if (props.isMask != null) frame.isMask = props.isMask;
+    if (props.constraints && 'constraints' in frame) (frame as any).constraints = props.constraints;
 
     // Posicionamento do frame
     if (parent === figma.currentPage || parent.type === 'PAGE') {
@@ -602,13 +604,21 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       rect.fills = await applyVariablesToFills(normalized);
     }
     if (props.cornerRadius != null) rect.cornerRadius = props.cornerRadius;
+    if (props.cornerSmoothing != null) rect.cornerSmoothing = props.cornerSmoothing;
+    if (props.topLeftRadius != null) rect.topLeftRadius = props.topLeftRadius;
+    if (props.topRightRadius != null) rect.topRightRadius = props.topRightRadius;
+    if (props.bottomLeftRadius != null) rect.bottomLeftRadius = props.bottomLeftRadius;
+    if (props.bottomRightRadius != null) rect.bottomRightRadius = props.bottomRightRadius;
     if (props.strokes) {
       const normalized = normalizeFills(props.strokes) || [];
       rect.strokes = await applyVariablesToFills(normalized);
     }
     if (props.strokeWeight != null) rect.strokeWeight = props.strokeWeight;
+    if (props.strokeAlign) rect.strokeAlign = props.strokeAlign;
+    if (props.dashPattern) rect.dashPattern = props.dashPattern;
     if (props.opacity != null) rect.opacity = props.opacity;
     if (props.effects) rect.effects = mapEffects(props.effects);
+    if (props.isMask != null) rect.isMask = props.isMask;
     if (props.constraints && 'constraints' in rect) (rect as any).constraints = props.constraints;
     parent.appendChild(rect);
 
@@ -642,8 +652,11 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       ellipse.strokes = await applyVariablesToFills(normalized);
     }
     if (props.strokeWeight != null) ellipse.strokeWeight = props.strokeWeight;
+    if (props.strokeAlign) ellipse.strokeAlign = props.strokeAlign;
+    if (props.dashPattern) ellipse.dashPattern = props.dashPattern;
     if (props.opacity != null) ellipse.opacity = props.opacity;
     if (props.effects) ellipse.effects = mapEffects(props.effects);
+    if (props.isMask != null) ellipse.isMask = props.isMask;
     if (props.constraints && 'constraints' in ellipse) (ellipse as any).constraints = props.constraints;
     parent.appendChild(ellipse);
 
@@ -678,30 +691,29 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     }
     if (!fontStyle) fontStyle = 'Regular';
 
-    const fontFamily = props.fontFamily ?? 'Inter';
-    
+    let fontFamily = props.fontFamily ?? 'Inter';
+
     try {
       await figma.loadFontAsync({ family: fontFamily, style: fontStyle });
     } catch {
-      // Fallback to Regular if specific weight style is not found
       try {
         await figma.loadFontAsync({ family: fontFamily, style: 'Regular' });
         fontStyle = 'Regular';
       } catch {
         await figma.loadFontAsync(DEFAULT_FONT);
+        fontFamily = DEFAULT_FONT.family;
         fontStyle = DEFAULT_FONT.style;
       }
     }
 
     const parent = await getParent(op.parentRef, op.parentNodeId);
     const text = figma.createText();
-    try {
-      text.fontName = { family: fontFamily, style: fontStyle };
-    } catch {
-      text.fontName = DEFAULT_FONT;
-    }
+    text.fontName = { family: fontFamily, style: fontStyle };
     text.characters = props.content || props.characters || '';
     if (props.name) text.name = props.name;
+    if (props.textStyleId) {
+      try { text.textStyleId = props.textStyleId; } catch { /* style not found */ }
+    }
     if (props.fontSize) text.fontSize = props.fontSize;
     if (props.fills) {
       const normalized = normalizeFills(props.fills) || [];
@@ -770,9 +782,30 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     const instance = component.createInstance();
     if (op.name) instance.name = op.name;
     parent.appendChild(instance);
-    
-    // Position & Size if provided
-    if (op.width != null && op.height != null) instance.resize(op.width, op.height);
+
+    // Scale proportionally if size is provided
+    if (op.width != null && op.height != null) {
+      const origW = instance.width;
+      const origH = instance.height;
+      if (origW > 0 && origH > 0) {
+        const scaleX = op.width / origW;
+        const scaleY = op.height / origH;
+        const scale = Math.min(scaleX, scaleY);
+        instance.rescale(scale);
+        // After rescale, adjust to exact requested size if aspect ratios differ
+        if (Math.abs(instance.width - op.width) > 1 || Math.abs(instance.height - op.height) > 1) {
+          instance.resize(op.width, op.height);
+        }
+      } else {
+        instance.resize(op.width, op.height);
+      }
+    } else if (op.width != null) {
+      const scale = op.width / instance.width;
+      instance.rescale(scale);
+    } else if (op.height != null) {
+      const scale = op.height / instance.height;
+      instance.rescale(scale);
+    }
     if (op.x != null) instance.x = op.x;
     if (op.y != null) instance.y = op.y;
     
@@ -782,8 +815,16 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       if (props.layoutSizingVertical) instance.layoutSizingVertical = props.layoutSizingVertical;
     }
 
+    // Apply component property overrides (text, boolean, variant swaps)
+    const overrides = op.componentProperties || props.componentProperties;
+    if (overrides && typeof overrides === 'object') {
+      try {
+        instance.setProperties(overrides as { [k: string]: string | boolean });
+      } catch { /* component properties not supported or invalid keys */ }
+    }
+
     applyCommonProps(instance, props, parent);
-    
+
     if (op.ref) createdNodes.set(op.ref, instance);
     pushSummary(`Instância de @"${instance.name}" criada`, instance);
   }
@@ -805,6 +846,15 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       if (op.strokeWeight != null) node.strokeWeight = op.strokeWeight;
       if (op.strokeAlign && 'strokeAlign' in node) {
         (node as any).strokeAlign = op.strokeAlign;
+      }
+      if (op.dashPattern && 'dashPattern' in node) {
+        (node as any).dashPattern = op.dashPattern;
+      }
+      if (op.strokeCap && 'strokeCap' in node) {
+        (node as any).strokeCap = op.strokeCap;
+      }
+      if (op.strokeJoin && 'strokeJoin' in node) {
+        (node as any).strokeJoin = op.strokeJoin;
       }
       pushSummary(`Editado stroke @"${(node as any).name}"`, node as SceneNode);
     }
@@ -1811,12 +1861,75 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   else if (op.type === 'RECOLOR_NODE') {
     const node = (op.ref ? createdNodes.get(op.ref) : null)
       ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
-    
+
     if (node) {
       const normalizedFills = normalizeFills(props.fills) || [];
       const fills = await applyVariablesToFills(normalizedFills);
       await recolorRecursive(node, fills);
       pushSummary(`Recoloring @"${(node as any).name}" recursivamente`, node as SceneNode);
+    }
+  }
+
+  // ═══ DELETE_NODE ═══
+  else if (op.type === 'DELETE_NODE') {
+    const node = (op.ref ? createdNodes.get(op.ref) : null)
+      ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
+    if (node && 'remove' in node) {
+      const name = (node as any).name;
+      (node as SceneNode).remove();
+      pushSummary(`Removido @"${name}"`, null as any);
+    }
+  }
+
+  // ═══ SELECT_AND_ZOOM ═══
+  else if (op.type === 'SELECT_AND_ZOOM') {
+    const node = (op.ref ? createdNodes.get(op.ref) : null)
+      ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
+    if (node && node.type !== 'DOCUMENT' && node.type !== 'PAGE') {
+      const sceneNode = node as SceneNode;
+      figma.currentPage.selection = [sceneNode];
+      figma.viewport.scrollAndZoomIntoView([sceneNode]);
+      pushSummary(`Selecionado e zoom em @"${sceneNode.name}"`, sceneNode);
+    }
+  }
+
+  // ═══ SWAP_INSTANCE ═══
+  else if (op.type === 'SWAP_INSTANCE') {
+    const node = (op.ref ? createdNodes.get(op.ref) : null)
+      ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
+    if (node && node.type === 'INSTANCE') {
+      const instance = node as InstanceNode;
+      let component: ComponentNode | null = null;
+      try {
+        component = await figma.importComponentByKeyAsync(op.componentKey);
+      } catch {
+        try {
+          await ensurePagesLoaded();
+          const allComps = figma.root.findAllWithCriteria({ types: ['COMPONENT'] });
+          component = allComps.find(c => c.key === op.componentKey) || null;
+        } catch { /* not found */ }
+      }
+      if (component) {
+        instance.swapComponent(component);
+        pushSummary(`Swap de @"${instance.name}" para ${component.name}`, instance);
+      } else {
+        postToUI({ type: 'ERROR', message: `SWAP_INSTANCE: componente não encontrado: ${op.componentKey}` });
+      }
+    }
+  }
+
+  // ═══ SET_EXPORT_SETTINGS ═══
+  else if (op.type === 'SET_EXPORT_SETTINGS') {
+    const node = (op.ref ? createdNodes.get(op.ref) : null)
+      ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
+    if (node && 'exportSettings' in node) {
+      const settings: ExportSettings[] = op.exportSettings.map((s: any) => ({
+        format: s.format,
+        suffix: s.suffix || '',
+        constraint: s.constraint || { type: 'SCALE', value: 1 },
+      } as ExportSettings));
+      (node as SceneNode & ExportMixin).exportSettings = settings;
+      pushSummary(`Export settings em @"${(node as any).name}"`, node as SceneNode);
     }
   }
 }
