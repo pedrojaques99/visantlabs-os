@@ -24,11 +24,11 @@ const BADGE_VARIANTS = [
 ];
 
 const CATEGORIES = [
-  { value: 'design', label: 'DESIGN' },
-  { value: 'mockup', label: 'MOCKUP' },
-  { value: 'effects', label: 'EFFECTS' },
+  { value: 'pro', label: 'PRO SUITE' },
+  { value: 'creative', label: 'CREATIVE LAB' },
   { value: 'audio', label: 'AUDIO' },
-  { value: 'experimental', label: 'EXPERIMENTAL' },
+  { value: 'community', label: 'COMMUNITY' },
+  { value: 'admin', label: 'ADMIN' },
 ];
 
 export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClose, onSaved }) => {
@@ -39,7 +39,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
     thumbnail: '',
     badge: '',
     badgeVariant: 'free',
-    category: 'design',
+    category: 'pro',
     isExternal: false,
     free: true,
     span: 'lg:col-span-1',
@@ -74,7 +74,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
         thumbnail: '',
         badge: '',
         badgeVariant: 'free',
-        category: 'design',
+        category: 'pro',
         isExternal: false,
         free: true,
         span: 'lg:col-span-1',
