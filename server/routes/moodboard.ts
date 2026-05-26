@@ -15,6 +15,7 @@ import {
   upscaleImageMoodboard,
   suggestAnimationPresets,
 } from '../services/geminiService.js';
+import { chargeCredits } from '../lib/credits.js';
 
 const router = express.Router();
 
@@ -48,6 +49,7 @@ router.post(
         return res.status(400).json({ error: 'imageBase64 is required' });
       }
 
+      await chargeCredits(req.userId!, 1);
       const boxes = await detectGridItems(imageBase64);
       res.json({ boxes });
     } catch (err) {
@@ -73,6 +75,7 @@ router.post(
         return res.status(400).json({ error: 'size must be 1K, 2K, or 4K' });
       }
 
+      await chargeCredits(req.userId!, 2);
       const upscaledBase64 = await upscaleImageMoodboard(imageBase64, size as '1K' | '2K' | '4K');
       res.json({ upscaledBase64 });
     } catch (err) {
@@ -103,6 +106,7 @@ router.post(
         return res.status(400).json({ error: 'No valid images provided' });
       }
 
+      await chargeCredits(req.userId!, 1);
       const suggestions = await suggestAnimationPresets(normalized);
       res.json({ suggestions });
     } catch (err) {
