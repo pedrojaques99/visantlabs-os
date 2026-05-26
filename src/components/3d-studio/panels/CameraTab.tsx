@@ -62,13 +62,9 @@ export const CameraTab: React.FC = React.memo(() => {
       <ToolPanelDisclosure label="Rendering" icon={<SlidersHorizontal size={13} />} id="sec-rendering">
         <ToolPanelSection title={t('studio3d.geometry.renderQuality')}>
           <ToolPanelGrid cols={3}>
-            {([
-              { id: 'performance', key: 'studio3d.geometry.qualityPerformance' },
-              { id: 'balanced', key: 'studio3d.geometry.qualityBalanced' },
-              { id: 'quality', key: 'studio3d.geometry.qualityQuality' },
-            ] as const).map((q) => (
-              <ToolPanelChip key={q.id} active={store.renderQuality === q.id} onClick={() => store.setRenderQuality(q.id)}>
-                {t(q.key)}
+            {(['performance', 'balanced', 'quality'] as const).map((q) => (
+              <ToolPanelChip key={q} active={store.renderQuality === q} onClick={() => store.setRenderQuality(q)}>
+                {t(`studio3d.geometry.quality${q.charAt(0).toUpperCase() + q.slice(1)}`)}
               </ToolPanelChip>
             ))}
           </ToolPanelGrid>

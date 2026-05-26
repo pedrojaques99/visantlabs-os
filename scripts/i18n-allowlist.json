@@ -31,7 +31,8 @@
     "studio3d.camera.${view}",
     "studio3d.material.categories.${cat}",
     "studio3d.animation.easings.${e}",
-    "studio3d.background.types.${type}"
+    "studio3d.background.types.${type}",
+    "studio3d.geometry.quality${q.charAt(0).toUpperCase() + q.slice(1)}"
   ],
   "comments": {
     "${...}": "All ${...} entries are dynamic key construction — t('prefix.' + var). Their resolved keys must be defined in the locale (we can't validate that statically).",
