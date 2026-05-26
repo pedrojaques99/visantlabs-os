@@ -1,4 +1,4 @@
-const BASE = 'https://pub-0acbd500af3b4beaa8b93b07f6490d58.r2.dev/static/archetypes';
+const BASE = 'https://assets.visantlabs.com/static/archetypes';
 
 export const ARCHETYPE_IMAGES: Record<string, string> = {
   'O Amante':        `${BASE}/O Amante-1.png`,

@@ -149,7 +149,7 @@ export const MOCKUP_PRESETS: MockupPreset[] = [
     name: 'MacBook on Black Background',
     description: 'MacBook com design aplicado em fundo preto',
     prompt: 'A high-angle shot captures a silver laptop, its screen a blank white, set against a stark black background. The device is positioned slightly angled, with the keyboard facing the viewer. The overall aesthetic is minimalist, sleek, and modern, with strong contrast between the light laptop and the dark background. The lighting is even, highlighting the laptop\'s metallic finish without harsh shadows.',
-    referenceImageUrl: 'https://pub-0acbd500af3b4beaa8b93b07f6490d58.r2.dev/canvas/691e123b304058681621b711/693326b32885b62c1c30471f/node-image-1764976482248-7-1764975944966.png',
+    referenceImageUrl: 'https://assets.visantlabs.com/canvas/691e123b304058681621b711/693326b32885b62c1c30471f/node-image-1764976482248-7-1764975944966.png',
     aspectRatio: '16:9',
     model: GEMINI_MODELS.FLASH,
   },
