@@ -338,6 +338,7 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
         return res.status(400).json({ error: `Invalid source: ${source}` })
     }
 
+    await chargeCredits(req.userId!, 1)
     const extracted = await extractBrandData(chunks, imagesToExtract, req.userId)
     const merged = mergeBrandGuidelines(existing as any, extracted)
 
@@ -2392,6 +2393,7 @@ router.post('/:id/apply-fig-tokens', apiRateLimiter, authenticate, async (req: A
         console.log('[apply-fig-tokens] using pre-computed classifications (skipped Gemini reclassify)')
       } else {
         const { extractBrandData } = await import('../lib/brand-extract.js')
+        await chargeCredits(req.userId!, 1)
         const extracted = await extractBrandData([], images, req.userId)
         classifications = normalizeAssetClassifications(extracted.assetClassifications)
       }
