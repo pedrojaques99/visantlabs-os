@@ -11,6 +11,7 @@ import { checkSubscription, SubscriptionRequest } from '../middleware/subscripti
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 import { rateLimit } from 'express-rate-limit';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { chargeCredits, refundCredits as refundCreditsShared } from '../lib/credits.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -34,124 +35,12 @@ const mockupRateLimiter = rateLimit({
 
 const router = express.Router();
 
-// Helper function to atomically deduct credits BEFORE generation
-// Returns { success: true, updatedUser } if credits were deducted, or throws error
-// IMPORTANT: Admins skip credit deduction entirely
-async function deductCreditsAtomically(userId: string, creditsToDeduct: number): Promise<{ success: true; updatedUser: any }> {
-  await connectToMongoDB();
-  const db = getDb();
-
-  // Each branding step costs 1 credit
-  if (creditsToDeduct !== 1) {
-    throw new Error(`Invalid credits to deduct: ${creditsToDeduct}. Branding steps require exactly 1 credit.`);
-  }
-
-  // Check if user is admin - admins don't have credits deducted
-  const userBefore = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-  if (!userBefore) {
-    throw new Error('User not found');
-  }
-
-  if (userBefore.isAdmin === true) {
-    // Admin users - return user without deducting credits
-    return { success: true, updatedUser: userBefore };
-  }
-
-  const totalCreditsEarnedBefore = userBefore.totalCreditsEarned ?? 0;
-  const monthlyCreditsBefore = userBefore.monthlyCredits ?? 20;
-  const creditsUsedBefore = userBefore.creditsUsed ?? 0;
-  const monthlyCreditsRemainingBefore = Math.max(0, monthlyCreditsBefore - creditsUsedBefore);
-  const totalCreditsBefore = totalCreditsEarnedBefore + monthlyCreditsRemainingBefore;
-
-  // Check if user has enough credits
-  if (totalCreditsBefore < creditsToDeduct) {
-    throw new Error(`Insufficient credits. Required: ${creditsToDeduct}, Available: ${totalCreditsBefore}`);
-  }
-
-  // Calculate deduction strategy: use earned credits first, then monthly
-  const fromEarned = Math.min(totalCreditsEarnedBefore, creditsToDeduct);
-  const fromMonthly = creditsToDeduct - fromEarned;
-
-  // FIXED: Use simple $inc operation which is atomic and reliable
-  // This avoids the issue where aggregation pipelines execute but return null
-  const updateOperation: any = {};
-
-  if (fromEarned > 0) {
-    updateOperation.totalCreditsEarned = -fromEarned;
-  }
-  if (fromMonthly > 0) {
-    updateOperation.creditsUsed = fromMonthly;
-  }
-
-  // Only proceed if we have something to update
-  if (Object.keys(updateOperation).length === 0) {
-    throw new Error('No credits to deduct - calculation error');
-  }
-
-  // Use findOneAndUpdate with $inc for atomic operation
-  // The condition ensures we only update if user still has enough credits
-  const result = await db.collection('users').findOneAndUpdate(
-    {
-      _id: new ObjectId(userId),
-      // Atomic conditions to prevent over-deduction
-      ...(fromEarned > 0 ? { totalCreditsEarned: { $gte: fromEarned } } : {}),
-      ...(fromMonthly > 0 ? {
-        $expr: {
-          $gte: [
-            { $subtract: [{ $ifNull: ['$monthlyCredits', 20] }, { $ifNull: ['$creditsUsed', 0] }] },
-            fromMonthly
-          ]
-        }
-      } : {})
-    },
-    { $inc: updateOperation },
-    { returnDocument: 'after' }
-  );
-
-  // If update failed (no matching document), verify current state
-  if (!result) {
-    // Re-fetch user to check current state
-    const currentUser = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-    if (!currentUser) {
-      throw new Error('User not found');
-    }
-
-    const currentTotalEarned = currentUser.totalCreditsEarned ?? 0;
-    const currentMonthlyCredits = currentUser.monthlyCredits ?? 20;
-    const currentCreditsUsed = currentUser.creditsUsed ?? 0;
-    const currentMonthlyRemaining = Math.max(0, currentMonthlyCredits - currentCreditsUsed);
-    const currentTotal = currentTotalEarned + currentMonthlyRemaining;
-
-    throw new Error(`Atomic update failed. Please try again. Current available: ${currentTotal}`);
-  }
-
-  return { success: true, updatedUser: result };
-}
-
-// Helper function to refund credits if generation fails
-async function refundCredits(userId: string, creditsToRefund: number): Promise<void> {
-  await connectToMongoDB();
-  const db = getDb();
-
-  // Simple refund: add back to totalCreditsEarned and reduce creditsUsed
-  // This is safe because we know these credits were just deducted
-  await db.collection('users').updateOne(
-    { _id: new ObjectId(userId) },
-    {
-      $inc: {
-        totalCreditsEarned: creditsToRefund,
-        creditsUsed: -creditsToRefund
-      }
-    }
-  );
-}
-
 // Generate content for a specific step
 // CRITICAL: Validate and deduct credits BEFORE generation to prevent abuse
 router.post('/generate-step', mockupRateLimiter, authenticate, checkSubscription, async (req: SubscriptionRequest, res) => {
-  let creditsDeducted = false;
-  const creditsToDeduct = 1; // Each branding step costs 1 credit
+  const creditsToDeduct = 1;
   const { step, prompt, previousData } = req.body;
+  let chargeResult: Awaited<ReturnType<typeof chargeCredits>> | undefined;
 
   try {
 
@@ -159,27 +48,8 @@ router.post('/generate-step', mockupRateLimiter, authenticate, checkSubscription
       return res.status(400).json({ error: 'Step and prompt are required' });
     }
 
-    // CRITICAL: Deduct credits BEFORE generation (atomic operation)
-    // Note: Admins skip credit deduction
-    const { updatedUser } = await deductCreditsAtomically(req.userId!, creditsToDeduct);
-    const isAdmin = updatedUser.isAdmin === true;
-    creditsDeducted = !isAdmin; // Only mark as deducted if not admin
-
-    if (isAdmin) {
-      console.log(`[Credit Deduction] Admin user - skipping credit deduction for branding step ${step}`, {
-        userId: req.userId,
-        step,
-        timestamp: new Date().toISOString(),
-      });
-    } else {
-      console.log(`[Credit Deduction] Deducted ${creditsToDeduct} credit(s) for branding step ${step} before generation`, {
-        userId: req.userId,
-        step,
-        totalCreditsEarned: updatedUser.totalCreditsEarned,
-        creditsUsed: updatedUser.creditsUsed,
-        timestamp: new Date().toISOString(),
-      });
-    }
+    chargeResult = await chargeCredits(req.userId!, creditsToDeduct, { requestId: randomUUID() });
+    const isAdmin = chargeResult.reason === 'admin';
 
     // Fetch examples for RAG (Retrieval-Augmented Generation)
     let examples: any[] = [];
@@ -425,8 +295,8 @@ router.post('/generate-step', mockupRateLimiter, authenticate, checkSubscription
         step,
         prompt.length,
         creditsToDeduct,
-        updatedUser.subscriptionStatus || 'free',
-        updatedUser.subscriptionStatus === 'active',
+        chargeResult!.user.subscriptionStatus || 'free',
+        chargeResult!.user.subscriptionStatus === 'active',
         isAdmin,
         inputTokens,
         outputTokens
@@ -464,8 +334,8 @@ router.post('/generate-step', mockupRateLimiter, authenticate, checkSubscription
 
     // Calculate credits remaining for response
     const actualCreditsDeducted = isAdmin ? 0 : creditsToDeduct;
-    const monthlyCreditsRemaining = Math.max(0, (updatedUser.monthlyCredits ?? 20) - (updatedUser.creditsUsed ?? 0));
-    const totalCreditsRemaining = (updatedUser.totalCreditsEarned ?? 0) + monthlyCreditsRemaining;
+    const monthlyCreditsRemaining = Math.max(0, (chargeResult!.user.monthlyCredits ?? 20) - (chargeResult!.user.creditsUsed ?? 0));
+    const totalCreditsRemaining = (chargeResult!.user.totalCreditsEarned ?? 0) + monthlyCreditsRemaining;
 
     res.json({
       data: result,
@@ -477,10 +347,9 @@ router.post('/generate-step', mockupRateLimiter, authenticate, checkSubscription
   } catch (error: any) {
     console.error('Error generating branding step:', error);
 
-    // CRITICAL: Refund credits if generation failed and credits were deducted
-    if (creditsDeducted) {
+    if (chargeResult && chargeResult.reason === 'charged') {
       try {
-        await refundCredits(req.userId!, creditsToDeduct);
+        await refundCreditsShared(req.userId!, creditsToDeduct, chargeResult.deductionSource);
         console.log(`[Credit Refund] Refunded ${creditsToDeduct} credit(s) after failed generation`, {
           userId: req.userId,
           step,

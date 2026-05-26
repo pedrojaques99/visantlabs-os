@@ -20,6 +20,7 @@ import {
   type AssembledPrompt,
 } from '../lib/figmaAgentPrompt.js';
 import { quickTextCall } from '../services/geminiService.js';
+import { chargeCredits } from '../lib/credits.js';
 
 // ── Session error feedback (in-memory, auto-expires) ──
 const sessionErrors = new Map<string, { errors: string[]; ts: number }>();
@@ -271,31 +272,9 @@ async function checkCredits(userId: string): Promise<{ canGenerate: boolean; rea
   }
 }
 
-/**
- * Deduct one credit after successful operation (reuses same fields as payments)
- */
 async function deductCredit(userId: string): Promise<void> {
-  try {
-    await connectToMongoDB();
-    const db = getDb();
-    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-    if (!user) return;
-
-    const hasActiveSubscription = user.subscriptionStatus === 'active';
-    if (hasActiveSubscription) {
-      await db.collection('users').updateOne(
-        { _id: new ObjectId(userId) },
-        { $inc: { creditsUsed: 1 } }
-      );
-    } else {
-      await db.collection('users').updateOne(
-        { _id: new ObjectId(userId) },
-        { $inc: { freeGenerationsUsed: 1 } }
-      );
-    }
-  } catch (_e) {
-    console.error('[Plugin] Failed to deduct credit:', _e);
-  }
+  try { await chargeCredits(userId, 1); }
+  catch (_e) { console.error('[Plugin] Failed to deduct credit:', _e); }
 }
 
 // Types and prompt builder imported from ../lib/figmaAgentPrompt.js

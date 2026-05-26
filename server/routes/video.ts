@@ -8,6 +8,7 @@ import { generateVideo } from '../services/videoService.js';
 import { generateKlingVideo } from '../services/klingService.js';
 import { generateSeedanceVideo } from '../services/seedanceService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
+import { deductCreditsAtomically, refundCredits } from '../lib/credits.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { uploadCanvasVideo, isR2Configured } from '../services/r2Service.js';
 import { calculateVideoCost } from '../../src/utils/pricing.js';
@@ -15,8 +16,6 @@ import { rateLimit } from 'express-rate-limit';
 import { redisClient } from '../lib/redis.js';
 import { CacheKey, CACHE_TTL, hashObject } from '../lib/cache-utils.js';
 
-// API rate limiter - general authenticated endpoints
-// Using express-rate-limit for CodeQL recognition
 const apiRateLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
   max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
@@ -25,8 +24,6 @@ const apiRateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Mockup generation rate limiter (used for video generation)
-// Using express-rate-limit for CodeQL recognition
 const mockupRateLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_MOCKUP_WINDOW_MS || '60000', 10),
   max: parseInt(process.env.RATE_LIMIT_MAX_MOCKUP || '30', 10),
@@ -35,226 +32,11 @@ const mockupRateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Helper function to refund credits if generation fails
-// Uses deduction source information to properly refund credits to their original source
-async function refundCredits(
-  userId: string,
-  creditsToRefund: number,
-  deductionSource?: { fromEarned: number; fromMonthly: number }
-): Promise<void> {
-  await connectToMongoDB();
-  const db = getDb();
-
-  const logPrefix = '[CREDIT]';
-
-  // If deduction source is provided, use it for accurate refund
-  if (deductionSource) {
-    const { fromEarned, fromMonthly } = deductionSource;
-
-    console.log(`${logPrefix} [refundCredits] Refunding with source tracking`, {
-      userId,
-      creditsToRefund,
-      fromEarned,
-      fromMonthly,
-    });
-
-    // Build update based on source using $inc
-    const updateFields: any = {};
-
-    // Add back earned credits
-    if (fromEarned > 0) {
-      updateFields.totalCreditsEarned = fromEarned;
-    }
-
-    // Reduce creditsUsed (only if monthly credits were used)
-    if (fromMonthly > 0) {
-      updateFields.creditsUsed = -fromMonthly;
-    }
-
-    if (Object.keys(updateFields).length > 0) {
-      await db.collection('users').updateOne(
-        { _id: new ObjectId(userId) },
-        { $inc: updateFields }
-      );
-
-      console.log(`${logPrefix} [refundCredits] ✅ Refunded credits with source tracking`, {
-        userId,
-        fromEarned,
-        fromMonthly,
-        totalRefunded: creditsToRefund,
-      });
-    }
-  } else {
-    // Fallback: if source not provided, add back to totalCreditsEarned
-    console.warn(`${logPrefix} [refundCredits] ⚠️ No deduction source provided, using fallback refund`, {
-      userId,
-      creditsToRefund,
-    });
-
-    // Get current user state to determine safe refund
-    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-    if (!user) {
-      throw new Error('User not found for refund');
-    }
-
-    const currentCreditsUsed = user.creditsUsed || 0;
-    const creditsToReduceFromUsed = Math.min(creditsToRefund, currentCreditsUsed);
-    const creditsToAddToEarned = creditsToRefund;
-
-    const updateFields: any = {
-      totalCreditsEarned: creditsToAddToEarned
-    };
-
-    // Only reduce creditsUsed if it's positive and we're refunding some monthly credits
-    if (creditsToReduceFromUsed > 0) {
-      updateFields.creditsUsed = -creditsToReduceFromUsed;
-    }
-
-    await db.collection('users').updateOne(
-      { _id: new ObjectId(userId) },
-      { $inc: updateFields }
-    );
-
-    console.log(`${logPrefix} [refundCredits] ✅ Refunded credits (fallback method)`, {
-      userId,
-      creditsToRefund,
-      creditsToAddToEarned,
-      creditsToReduceFromUsed,
-    });
-  }
-}
-
 const router = express.Router();
 
-// Test route to verify video routes are working
 router.get('/test', apiRateLimiter, (req, res) => {
   res.json({ message: 'Video routes are working', timestamp: new Date().toISOString() });
 });
-
-// Helper function to atomically deduct credits BEFORE generation
-async function deductCreditsAtomically(
-  userId: string,
-  creditsToDeduct: number,
-  requestId?: string
-): Promise<{
-  success: true;
-  updatedUser: any;
-  deductionSource: {
-    fromEarned: number;
-    fromMonthly: number;
-  };
-}> {
-  const logPrefix = '[CREDIT]';
-  console.log(`${logPrefix} [deductCreditsAtomically] Starting`, {
-    userId,
-    creditsToDeduct,
-    requestId: requestId || 'no-request-id',
-    timestamp: new Date().toISOString(),
-  });
-
-  await connectToMongoDB();
-  const db = getDb();
-
-  if (creditsToDeduct <= 0) {
-    throw new Error(`Invalid credits to deduct: ${creditsToDeduct}. Must be greater than 0.`);
-  }
-
-  // Get user data first to calculate deduction strategy
-  const userBefore = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-  if (!userBefore) {
-    throw new Error('User not found');
-  }
-
-  const totalCreditsEarnedBefore = userBefore.totalCreditsEarned || 0;
-  const monthlyCreditsBefore = userBefore.monthlyCredits || 20;
-  const creditsUsedBefore = userBefore.creditsUsed || 0;
-  const monthlyCreditsRemainingBefore = Math.max(0, monthlyCreditsBefore - creditsUsedBefore);
-  const totalCreditsBefore = totalCreditsEarnedBefore + monthlyCreditsRemainingBefore;
-
-  // Check if user has enough credits
-  if (totalCreditsBefore < creditsToDeduct) {
-    console.error(`${logPrefix} [deductCreditsAtomically] ❌ Insufficient credits`, {
-      userId,
-      totalCredits: totalCreditsBefore,
-      creditsToDeduct,
-    });
-    throw new Error(`Insufficient credits. Required: ${creditsToDeduct}, Available: ${totalCreditsBefore}`);
-  }
-
-  // Calculate deduction strategy: use earned credits first, then monthly
-  const fromEarned = Math.min(totalCreditsEarnedBefore, creditsToDeduct);
-  const fromMonthly = creditsToDeduct - fromEarned;
-
-  // Use simple $inc operation which is atomic and reliable
-  const updateOperation: any = {};
-
-  if (fromEarned > 0) {
-    updateOperation.totalCreditsEarned = -fromEarned;
-  }
-  if (fromMonthly > 0) {
-    updateOperation.creditsUsed = fromMonthly;
-  }
-
-  // Only proceed if we have something to update
-  if (Object.keys(updateOperation).length === 0) {
-    throw new Error('No credits to deduct - calculation error');
-  }
-
-  // Use findOneAndUpdate with $inc for atomic operation
-  const result = await db.collection('users').findOneAndUpdate(
-    {
-      _id: new ObjectId(userId),
-      // Atomic conditions to prevent over-deduction
-      ...(fromEarned > 0 ? { totalCreditsEarned: { $gte: fromEarned } } : {}),
-      ...(fromMonthly > 0 ? {
-        $expr: {
-          $gte: [
-            { $subtract: [{ $ifNull: ['$monthlyCredits', 20] }, { $ifNull: ['$creditsUsed', 0] }] },
-            fromMonthly
-          ]
-        }
-      } : {})
-    },
-    { $inc: updateOperation },
-    { returnDocument: 'after' }
-  );
-
-  // If update failed, verify current state
-  if (!result) {
-    const currentUser = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-    if (!currentUser) {
-      throw new Error('User not found');
-    }
-
-    const currentTotalEarned = currentUser.totalCreditsEarned || 0;
-    const currentMonthlyCredits = currentUser.monthlyCredits || 20;
-    const currentCreditsUsed = currentUser.creditsUsed || 0;
-    const currentMonthlyRemaining = Math.max(0, currentMonthlyCredits - currentCreditsUsed);
-    const currentTotal = currentTotalEarned + currentMonthlyRemaining;
-
-    if (currentTotal < creditsToDeduct) {
-      throw new Error(`Insufficient credits. Required: ${creditsToDeduct}, Available: ${currentTotal}`);
-    } else {
-      throw new Error(`System error: Failed to deduct credits. Please try again. Available: ${currentTotal}`);
-    }
-  }
-
-  console.log(`${logPrefix} [deductCreditsAtomically] ✅ Success`, {
-    userId,
-    creditsToDeduct,
-    fromEarned,
-    fromMonthly,
-  });
-
-  return {
-    success: true,
-    updatedUser: result,
-    deductionSource: {
-      fromEarned,
-      fromMonthly
-    }
-  };
-}
 
 // Generate video (validates and deducts credits BEFORE generation)
 router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
