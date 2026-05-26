@@ -8,7 +8,7 @@ import {
   useTextureFilterStore, BLEND_MODES, TEXTURE_PRESETS, FILTER_PRESETS,
   TEXTURE_FILTER_DEFAULTS, type TextureFilterSettings,
 } from '@/stores/textureFilterStore';
-import { Download, UploadIcon, X, ImageIcon, Grid3X3, Layers, Blend, Move, RotateCw, Grid, Palette, Sparkles } from 'lucide-react';
+import { Download, UploadIcon, X, ImageIcon, Grid3X3, Layers, Blend, Move, RotateCw, Grid, Palette, SlidersHorizontal } from 'lucide-react';
 import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
 
 const SECTION_NAV: SectionNavItem[] = [
@@ -19,7 +19,7 @@ const SECTION_NAV: SectionNavItem[] = [
   { id: 'sec-position', icon: <Move size={14} />, label: 'Position' },
   { id: 'sec-tile', icon: <Grid size={14} />, label: 'Tile' },
   { id: 'sec-color', icon: <Palette size={14} />, label: 'Color' },
-  { id: 'sec-post', icon: <Sparkles size={14} />, label: 'Post-Processing' },
+  { id: 'sec-post', icon: <SlidersHorizontal size={14} />, label: 'Post-Processing' },
 ];
 import { ShaderControls } from '@/components/shared/ShaderControls';
 import { SendToButton } from '@/components/shared/SendToButton';

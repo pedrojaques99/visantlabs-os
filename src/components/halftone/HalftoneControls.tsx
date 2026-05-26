@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useHalftoneStore, BLEND_MODES, HALFTONE_PRESETS } from '@/stores/halftoneStore';
-import { Eye, EyeOff, ImageIcon, X, Download, Grid3X3, Layers, Droplets, Blend, Circle, Image, Palette, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, ImageIcon, X, Download, Grid3X3, Layers, Droplets, Blend, Circle, Image, Palette, SlidersHorizontal } from 'lucide-react';
 import { ShaderControls } from '@/components/shared/ShaderControls';
 import { SendToButton } from '@/components/shared/SendToButton';
 import {
@@ -22,7 +22,7 @@ const SECTION_NAV: SectionNavItem[] = [
   { id: 'sec-dot', icon: <Droplets size={14} />, label: 'Dot Advanced' },
   { id: 'sec-image', icon: <Image size={14} />, label: 'Image & Texture' },
   { id: 'sec-ink', icon: <Palette size={14} />, label: 'Ink Colors' },
-  { id: 'sec-post', icon: <Sparkles size={14} />, label: 'Post-Processing' },
+  { id: 'sec-post', icon: <SlidersHorizontal size={14} />, label: 'Post-Processing' },
 ];
 
 interface HalftoneControlsProps {

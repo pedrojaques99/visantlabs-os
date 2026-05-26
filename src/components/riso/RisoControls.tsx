@@ -13,7 +13,7 @@ import {
   ToolPanel, ToolPanelHeader, ToolPanelContent, ToolPanelSection,
   ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
-import { Eye, EyeOff, X, ImageIcon, Zap, Loader2, Focus, Download, Grid3X3, Circle, Layers, Palette, Image, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { Eye, EyeOff, X, ImageIcon, Zap, Loader2, Focus, Download, Grid3X3, Circle, Layers, Palette, Image, SlidersHorizontal } from 'lucide-react';
 import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
 
 const SECTION_NAV: SectionNavItem[] = [
@@ -23,7 +23,7 @@ const SECTION_NAV: SectionNavItem[] = [
   { id: 'sec-palettes', icon: <Palette size={14} />, label: 'Ink Palettes' },
   { id: 'sec-image', icon: <Image size={14} />, label: 'Image & Texture' },
   { id: 'sec-details', icon: <SlidersHorizontal size={14} />, label: 'Layer Details' },
-  { id: 'sec-post', icon: <Sparkles size={14} />, label: 'Post-Processing' },
+  { id: 'sec-post', icon: <SlidersHorizontal size={14} />, label: 'Post-Processing' },
 ];
 
 interface RisoControlsProps {
