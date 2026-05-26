@@ -29,6 +29,7 @@ import { SECTION_TABS, SECTION_BY_ID } from '@/components/brand/guidelines/secti
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
     const { t } = useTranslation();
@@ -302,7 +303,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                             )}
                                             <button
                                                 onClick={() => {
-                                                    navigator.clipboard.writeText(selected.id!);
+                                                    copyToClipboard(selected.id!);
                                                     setFigmaCopied(true);
                                                     setTimeout(() => setFigmaCopied(false), 2000);
                                                 }}

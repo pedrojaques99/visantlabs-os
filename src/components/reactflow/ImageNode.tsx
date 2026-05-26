@@ -29,6 +29,7 @@ import { NODE_LAYOUT, NODE_TYPES } from '@/constants/nodeLayout';
 import { useBaseNode } from '@/hooks/canvas/useBaseNode';
 
 import { Input } from '@/components/ui/input'
+import { copyToClipboard } from '@/utils/clipboard';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -259,7 +260,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   const handleCopyDescription = useCallback(() => {
     if (!description) return;
-    navigator.clipboard.writeText(description);
+    copyToClipboard(description);
     toast.success(t('canvasNodes.imageNode.descriptionCopied'), { duration: 2000 });
   }, [description, t]);
 

@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { NodeLabel } from './node-label';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface SeedControlProps {
   seed?: number;
@@ -56,7 +57,7 @@ export const SeedControl: React.FC<SeedControlProps> = ({
 
   const handleCopy = useCallback(() => {
     if (seed !== undefined) {
-      navigator.clipboard.writeText(seed.toString());
+      copyToClipboard(seed.toString());
       toast.success('Seed copied');
     }
   }, [seed]);

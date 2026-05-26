@@ -13,6 +13,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../components/ui/BreadcrumbWithBack";
+import { copyToClipboard } from '@/utils/clipboard';
 
 // ─── Local CodeBlock component ──────────────────────────────────────────────
 
@@ -28,7 +29,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(code);
+      await copyToClipboard(code);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {

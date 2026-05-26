@@ -2,6 +2,7 @@ import { toast } from 'sonner';
 import { useCreativeStore } from '../store/creativeStore';
 import { PASTE_OFFSET_NORMALIZED } from './editorTokens';
 import type { CreativeLayer, CreativeLayerData } from '../store/creativeTypes';
+import { copyToClipboard } from '@/utils/clipboard';
 
 /**
  * Single source of truth for layer clipboard. Both keyboard (Ctrl+C/V in
@@ -22,7 +23,7 @@ export async function copyLayersToClipboard(ids: string[]): Promise<number> {
   if (!picked.length) return 0;
   const payload: ClipboardPayload = { __vsn: CLIPBOARD_TAG, layers: picked };
   try {
-    await navigator.clipboard.writeText(JSON.stringify(payload));
+    await copyToClipboard(JSON.stringify(payload));
     toast.info(
       `${picked.length} ${picked.length === 1 ? 'camada copiada' : 'camadas copiadas'}`
     );

@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { Share2, Copy, Check, Link2, Globe, Lock, UserPlus, X, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface ShareGuidelineDialogProps {
   isOpen: boolean;
@@ -88,7 +89,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
   const handleCopy = async () => {
     if (!shareUrl) return;
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await copyToClipboard(shareUrl);
       setCopied(true);
       toast.success('Link copied');
       setTimeout(() => setCopied(false), 2000);

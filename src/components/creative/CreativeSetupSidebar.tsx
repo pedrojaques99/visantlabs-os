@@ -19,6 +19,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Gem } from 'lucide-react';
 import type { CreativeFormat } from './store/creativeTypes';
 import type { GeminiModel, SeedreamModel } from '@/types/types';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const FORMAT_OPTS = [
   { id: '1:1', label: 'Quadrado', icon: Square, sub: 'Feed Social' },
@@ -207,7 +208,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                   <button
                     key={i}
                     onClick={() => {
-                      navigator.clipboard.writeText(color.hex || '');
+                      copyToClipboard(color.hex || '');
                       toast.success(`${color.hex} copiada!`);
                     }}
                     style={{ backgroundColor: color.hex }}

@@ -20,6 +20,7 @@ import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
+import { copyToClipboard } from '@/utils/clipboard';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -773,7 +774,7 @@ export const GridPaintPage: React.FC = () => {
               </Button>
             </Tooltip>
             <Tooltip content="Copy state to clipboard" position="bottom">
-              <Button variant="ghost" size="icon-sm" onClick={() => navigator.clipboard.writeText(JSON.stringify({ grid: grid.cells, config }))} aria-label="Copy state to clipboard">
+              <Button variant="ghost" size="icon-sm" onClick={() => copyToClipboard(JSON.stringify({ grid: grid.cells, config }))} aria-label="Copy state to clipboard">
                 <Copy size={12} />
               </Button>
             </Tooltip>

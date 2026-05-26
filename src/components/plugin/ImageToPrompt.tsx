@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Upload, Copy, Check, ThumbsUp, ThumbsDown, Image as ImageIcon } from 'lucide-react';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { copyToClipboard } from '@/utils/clipboard';
 interface GenerationResult {
   prompt: string;
   feedbackId: string;
@@ -98,7 +99,7 @@ export function ImageToPrompt() {
 
   const copyPrompt = () => {
     if (result?.prompt) {
-      navigator.clipboard.writeText(result.prompt);
+      copyToClipboard(result.prompt);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

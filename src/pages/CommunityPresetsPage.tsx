@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Search, SlidersHorizontal, X, Heart, Layers } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import FuseLib from 'fuse.js';
+import { copyToClipboard } from '@/utils/clipboard';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Fuse: any = FuseLib;
 import { PageShell } from '../components/ui/PageShell';
@@ -102,7 +103,7 @@ const PresetDetailModal: React.FC<{
   const [copied, setCopied] = useState(false);
 
   const copyPrompt = () => {
-    navigator.clipboard.writeText(migrated.prompt).then(() => {
+    copyToClipboard(migrated.prompt).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });

@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { checkWCAGCompliance, getContrastRatioPublic, hexToCmyk } from '@/utils/colorUtils';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface ColorsSectionProps {
   guideline: BrandGuideline;
@@ -70,7 +71,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
     else if (format === 'css') content = local.map(c => `--color-${(c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}: ${c.hex};`).join('\n');
     else if (format === 'tailwind') { const o: Record<string, string> = {}; local.forEach(c => { o[(c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')] = c.hex; }); content = JSON.stringify(o, null, 2); }
     else content = local.map(c => { const cm = c.cmyk || hexToCmyk(c.hex); return `${c.name || 'Color'}: C${cm.c} M${cm.m} Y${cm.y} K${cm.k}`; }).join('\n');
-    navigator.clipboard.writeText(content);
+    copyToClipboard(content);
     toast.success(`Copied ${local.length} colors as ${format.toUpperCase()}`);
   };
 
@@ -133,7 +134,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
             {/* Hex */}
             <span
               className="text-[10px] font-mono text-neutral-500 w-16 text-right cursor-pointer hover:text-neutral-300 transition-colors"
-              onClick={() => { navigator.clipboard.writeText(c.hex); toast.success(`Copied ${c.hex}`); }}
+              onClick={() => { copyToClipboard(c.hex); toast.success(`Copied ${c.hex}`); }}
               title="Copy hex"
             >
               {c.hex}

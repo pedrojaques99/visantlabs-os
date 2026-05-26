@@ -1,3 +1,5 @@
+import { copyToClipboard } from './clipboard';
+
 /**
  * Formats PIX code for display (adds spaces for readability)
  */
@@ -18,7 +20,7 @@ export const copyPixToClipboard = async (code: string): Promise<boolean> => {
   try {
     // Remove spaces before copying
     const cleanCode = code.replace(/\s/g, '');
-    await navigator.clipboard.writeText(cleanCode);
+    await copyToClipboard(cleanCode);
     return true;
   } catch (error) {
     console.error('Failed to copy PIX code:', error);

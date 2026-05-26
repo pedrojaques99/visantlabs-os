@@ -11,6 +11,7 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatDate } from '@/utils/localeUtils'
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface ProfileOverviewProps {
     user: UserType;
@@ -87,7 +88,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
         const referralLink = referralService.getReferralLink(referralStats.referralCode);
 
         try {
-            await navigator.clipboard.writeText(referralLink);
+            await copyToClipboard(referralLink);
             toast.success(t('referral.linkCopied') || 'Link de indicação copiado!');
         } catch (err) {
             console.error('Failed to copy link:', err);

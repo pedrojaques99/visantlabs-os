@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { copyToClipboard } from '@/utils/clipboard';
 
 type OutputFormat = 'css' | 'tailwind' | 'react' | 'scss';
 
@@ -73,7 +74,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
 
   const handleCopy = () => {
     if (!currentOutput) return;
-    navigator.clipboard.writeText(currentOutput.content);
+    copyToClipboard(currentOutput.content);
     setCopied(true);
     toast.success('Copied to clipboard');
     setTimeout(() => setCopied(false), 2000);

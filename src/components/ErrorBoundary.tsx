@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home, Copy, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface Props {
   children: ReactNode;
@@ -163,14 +164,7 @@ export class ErrorBoundary extends Component<Props, State> {
     const errorStack = this.state.errorInfo?.componentStack || '';
     const fullError = `Error: ${errorMessage}\n\nStack:\n${errorStack}`;
 
-    navigator.clipboard.writeText(fullError).then(() => {
-      this.setState({ isCopied: true });
-      setTimeout(() => {
-        this.setState({ isCopied: false });
-      }, 2000);
-    }).catch(() => {
-      // Fallback: just copy the message
-      navigator.clipboard.writeText(errorMessage);
+    copyToClipboard(fullError).then(() => {
       this.setState({ isCopied: true });
       setTimeout(() => {
         this.setState({ isCopied: false });

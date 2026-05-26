@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const GLITCH_CHARS = '*•□./-®';
 const GLITCH_INTERVAL_MS = 150;
@@ -34,7 +35,7 @@ export function useGlitchCopy(text: string) {
   const handleCopy = async (successMsg: string, errorMsg: string) => {
     setIsCopying(true);
     try {
-      await navigator.clipboard.writeText(text);
+      await copyToClipboard(text);
       toast.success(successMsg);
     } catch {
       setIsCopying(false);

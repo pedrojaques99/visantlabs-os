@@ -16,6 +16,7 @@ import { fileToBase64, validateFile } from '@/utils/fileUtils';
 import { pdfToBase64, validatePdfBase64Size, validatePdfFile } from '@/utils/pdfUtils';
 import { normalizeImageToBase64 } from '@/services/reactFlowService';
 import { consolidateStrategiesToText } from '@/services/brandPromptService';
+import { copyToClipboard } from '@/utils/clipboard';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -74,7 +75,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
   }, [connectedStrategies, strategicPrompts, id, nodeData]);
 
   const handleCopyPrompt = useCallback((prompt: string, type: string) => {
-    navigator.clipboard.writeText(prompt);
+    copyToClipboard(prompt);
     setCopiedPrompt(type);
     toast.success(t('canvasNodes.brandCore.promptCopied'), { duration: 2000 });
     setTimeout(() => setCopiedPrompt(null), 2000);

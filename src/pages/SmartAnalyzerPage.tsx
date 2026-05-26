@@ -49,6 +49,7 @@ import { GEMINI_MODELS } from '../constants/geminiModels';
 import type { AspectRatio } from '../types/types';
 import { MockupCard } from '@/components/mockupmachine/MockupCard';
 import { API_BASE } from '@/config/api';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const GOOGLE_FONTS = [
   { value: '', label: 'Auto Detect' },
@@ -593,7 +594,7 @@ export const SmartAnalyzerPage: React.FC = () => {
 
   const copyPrompt = () => {
     if (!result || !displayContent) return;
-    navigator.clipboard.writeText(displayContent);
+    copyToClipboard(displayContent);
     setCopied(true);
     toast.success(result.mode === 'figma-plugin' ? 'Operations JSON copied!' : 'Prompt copied!');
     setTimeout(() => setCopied(false), 2000);

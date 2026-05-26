@@ -26,6 +26,7 @@ import {
   buildNavigationWithMcpTools,
   generateTabMarkdown,
 } from './docs/index';
+import { copyToClipboard } from '@/utils/clipboard';
 
 export const DocsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -77,7 +78,7 @@ export const DocsPage: React.FC = () => {
 
   const copyToClipboard = useCallback(async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      await copyToClipboard(text);
     } catch {
       // fallback for non-https contexts
       const el = document.createElement('textarea');

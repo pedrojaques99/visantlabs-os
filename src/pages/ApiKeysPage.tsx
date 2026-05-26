@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { API_BASE } from '@/config/api';
 import { useTranslation } from '@/hooks/useTranslation';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface ApiKeyRaw {
   id: string;
@@ -179,7 +180,7 @@ export const ApiKeysPage: React.FC = () => {
 
   const handleCopyKey = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      await copyToClipboard(text);
       setCopied(true);
       toast.success(t('api.keys.copied_to_clipboard'));
       setTimeout(() => setCopied(false), 2000);

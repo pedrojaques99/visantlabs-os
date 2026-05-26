@@ -11,6 +11,7 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 import { useBrandKitSafe } from '@/contexts/BrandKitContext';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface BrandMediaLibraryPanelProps {
   onSelectAsset?: (url: string, type: 'image' | 'logo' | 'color') => void;
@@ -149,7 +150,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                 <div className="flex flex-wrap gap-2">
                   {colors.map((color, i) => (
                     <div key={i} className="group relative flex flex-col items-center gap-1 cursor-pointer"
-                      onClick={() => { navigator.clipboard.writeText(color.hex || ''); toast.success(`Copied ${color.hex}`); }}
+                      onClick={() => { copyToClipboard(color.hex || ''); toast.success(`Copied ${color.hex}`); }}
                     >
                       <div className="w-10 h-10 rounded-lg border border-white/10 group-hover:scale-110 transition-transform shadow"
                         style={{ backgroundColor: color.hex }} />

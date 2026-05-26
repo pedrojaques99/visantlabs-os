@@ -17,6 +17,7 @@ import { usePasteImage } from '@/hooks/usePasteImage';
 import { Input } from '@/components/ui/input';
 import { WindTunnelCanvas, type WindTunnelConfig, type WindTunnelHandle, type FieldOverlay } from '@/components/labs/wind-tunnel/WindTunnelCanvas';
 import { useTranslation } from '@/hooks/useTranslation';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const DEFAULT_CONFIG: WindTunnelConfig = {
   obstacleType: 'text',
@@ -517,7 +518,7 @@ export function WindTunnelPage() {
 
   const handleShareUrl = useCallback(() => {
     const url = encodeConfigToUrl(config);
-    navigator.clipboard.writeText(url).then(() => {
+    copyToClipboard(url).then(() => {
       toast.success('Share URL copied to clipboard');
     }).catch(() => {
       prompt('Copy this URL:', url);
@@ -526,7 +527,7 @@ export function WindTunnelPage() {
 
   const handleCopyJson = useCallback(() => {
     const json = configToJson(config);
-    navigator.clipboard.writeText(json).then(() => {
+    copyToClipboard(json).then(() => {
       toast.success('Config JSON copied');
     }).catch(() => {
       prompt('Copy this JSON:', json);

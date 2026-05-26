@@ -38,6 +38,7 @@ import type { CommunityPrompt } from '../types/communityPrompts';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { MicroTitle } from '../components/ui/MicroTitle';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const ColorSwatch: React.FC<{
   name: string;
@@ -47,8 +48,8 @@ const ColorSwatch: React.FC<{
 }> = ({ name, variable, resolvedValue, description }) => {
   const [copied, setCopied] = useState(false);
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(`var(${variable})`);
+  const handleCopy = () => {
+    copyToClipboard(`var(${variable})`);
     setCopied(true);
     toast.success('Copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
@@ -64,7 +65,7 @@ const ColorSwatch: React.FC<{
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h4 className="font-semibold text-neutral-200">{name}</h4>
-            <Button variant="ghost" onClick={copyToClipboard}
+            <Button variant="ghost" onClick={handleCopy}
               className="p-1 hover:bg-neutral-800/50 rounded transition-colors"
               title="Copy CSS variable"
             >

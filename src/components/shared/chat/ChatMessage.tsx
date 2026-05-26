@@ -12,6 +12,7 @@ import { FullScreenViewer } from '../../FullScreenViewer';
 
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { copyToClipboard } from '@/utils/clipboard';
 export interface ChatMessageProps {
   id?: string;
   role: 'user' | 'assistant' | 'model'; // 'model' is used in BrandingExpertChat
@@ -124,7 +125,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const handleCopy = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(content);
+      await copyToClipboard(content);
       setIsCopied(true);
       toast.success(t('canvasNodes.chatNode.messageCopied') || 'Copiado!');
       setTimeout(() => setIsCopied(false), 2000);
